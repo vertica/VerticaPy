@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 import scipy.spatial as scipy_st
 
 from matplotlib.axes import Axes
@@ -27,6 +28,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class VoronoiPlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -35,43 +39,63 @@ class VoronoiPlot(MatplotlibBase):
     def _kind(self) -> Literal["voronoi"]:
         return "voronoi"
 
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 2)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        """Must be overridden in child class"""
+        self.init_style = {"show_vertices": False}
+        self.init_style_scatter = {
+            "color": "black",
+            "s": 10,
+            "alpha": 1,
+            "zorder": 3,
+        }
+        self.init_style_crosses = {
+            "color": "white",
+            "s": 200,
+            "linewidths": 5,
+            "alpha": 1,
+            "zorder": 4,
+            "marker": "x",
+        }
+        return None
+
+    # Draw.
+
     def draw(
-        self,
-        clusters: ArrayLike,
-        columns: SQLColumns,
-        input_relation: str,
-        max_nb_points: int = 1000,
-        plot_crosses: bool = True,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
+        self, plot_crosses: bool = True, ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws a KMeans Voronoi plot using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        min_x, max_x, min_y, max_y = (
-            min([elem[0] for elem in clusters]),
-            max([elem[0] for elem in clusters]),
-            min([elem[1] for elem in clusters]),
-            max([elem[1] for elem in clusters]),
+        min_x = min(self.data["clusters"][:, 0])
+        max_x = max(self.data["clusters"][:, 0])
+        min_y = min(self.data["clusters"][:, 1])
+        max_y = max(self.data["clusters"][:, 1])
+        dummies_point = np.array(
+            [
+                [min_x - 999, min_y - 999],
+                [min_x - 999, max_y + 999],
+                [max_x + 999, min_y - 999],
+                [max_x + 999, max_y + 999],
+            ]
         )
-        dummies_point = [
-            [min_x - 999, min_y - 999],
-            [min_x - 999, max_y + 999],
-            [max_x + 999, min_y - 999],
-            [max_x + 999, max_y + 999],
-        ]
-        if hasattr(clusters, "tolist"):
-            clusters = clusters.tolist()
-        v = scipy_st.Voronoi(clusters + dummies_point)
-        param = {"show_vertices": False}
-        scipy_st.voronoi_plot_2d(v, ax=ax, **self._update_dict(param, style_kwargs))
+        v = scipy_st.Voronoi(np.concatenate((self.data["clusters"], dummies_point)))
+        scipy_st.voronoi_plot_2d(
+            v, ax=ax, **self._update_dict(self.init_style, style_kwargs)
+        )
         if not (ax):
             ax = plt
-            ax.xlabel(columns[0])
-            ax.ylabel(columns[1])
-        colors = self.get_colors()
+            ax.xlabel(self.layout["columns"][0])
+            ax.ylabel(self.layout["columns"][1])
         for idx, region in enumerate(v.regions):
             if not -1 in region:
                 polygon = [v.vertices[i] for i in region]
@@ -81,42 +105,19 @@ class VoronoiPlot(MatplotlibBase):
                     else:
                         color = style_kwargs["color"][idx % len(style_kwargs["color"])]
                 else:
-                    color = colors[idx % len(colors)]
+                    color = self.get_colors(idx=idx)
                 ax.fill(*zip(*polygon), alpha=0.4, color=color)
-        ax.plot([elem[0] for elem in clusters], [elem[1] for elem in clusters], "ko")
+        ax.plot(self.data["clusters"][:, 0], self.data["clusters"][:, 1], "ko")
         ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
         ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
-        if max_nb_points > 0:
-            all_points = _executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL('plotting._matplotlib.voronoi_plot')*/ 
-                        {columns[0]}, 
-                        {columns[1]} 
-                    FROM {input_relation} 
-                    WHERE {columns[0]} IS NOT NULL 
-                      AND {columns[1]} IS NOT NULL 
-                    ORDER BY RANDOM() 
-                    LIMIT {int(max_nb_points)}""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            x, y = (
-                [float(c[0]) for c in all_points],
-                [float(c[1]) for c in all_points],
-            )
+        if len(self.data["X"]) > 0:
             ax.scatter(
-                x, y, color="black", s=10, alpha=1, zorder=3,
+                self.data["X"][:, 0], self.data["X"][:, 1], **self.init_style_scatter,
             )
             if plot_crosses:
                 ax.scatter(
-                    [c[0] for c in clusters],
-                    [c[1] for c in clusters],
-                    color="white",
-                    s=200,
-                    linewidths=5,
-                    alpha=1,
-                    zorder=4,
-                    marker="x",
+                    self.data["clusters"][:, 0],
+                    self.data["clusters"][:, 1],
+                    **self.init_style_crosses,
                 )
         return ax

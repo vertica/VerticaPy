@@ -35,25 +35,12 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting.base import PlottingBase
-from verticapy.plotting._highcharts.base import hchart_from_vdf
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-import verticapy.plotting._plotly as vpy_plotly_plt
+from verticapy.plotting._utils import PlottingUtils
+from verticapy.plotting._highcharts.base import hchart_from_vdf
 
 
-class vDFPlot:
-    @staticmethod
-    def _get_plotting_lib(
-        matplotlib_kwargs: dict = {}, plotly_kwargs: dict = {}, style_kwargs: dict = {}
-    ) -> tuple[Literal[vpy_plotly_plt, vpy_matplotlib_plt], dict]:
-        if conf.get_option("plotting_lib") == "plotly":
-            vpy_plt = vpy_plotly_plt
-            kwargs = {**plotly_kwargs, **style_kwargs}
-        else:
-            vpy_plt = vpy_matplotlib_plt
-            kwargs = {**matplotlib_kwargs, **style_kwargs}
-        return vpy_plt, kwargs
-
+class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def animated(
         self,
@@ -509,6 +496,8 @@ class vDFPlot:
         self,
         columns: SQLColumns = [],
         q: tuple = (0.25, 0.75),
+        max_nb_fliers: int = 30,
+        whis: float = 1.5,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -522,6 +511,11 @@ class vDFPlot:
         be used.
     q: tuple, optional
         Tuple including the 2 quantiles used to draw the BoxPlot.
+    max_nb_fliers: int, optional
+        Maximum number of points to use to represent the fliers of each category.
+        Drawing fliers will slow down the graphic computation.
+    whis: float, optional
+        The position of the whiskers.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -546,7 +540,9 @@ class vDFPlot:
         vpy_plt, kwargs = self._get_plotting_lib(
             matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
         )
-        return vpy_plt.BoxPlot(vdf=self, columns=columns, q=q,).draw(**kwargs)
+        return vpy_plt.BoxPlot(
+            vdf=self, columns=columns, q=q, whis=whis, max_nb_fliers=max_nb_fliers,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def contour(
@@ -586,10 +582,16 @@ class vDFPlot:
      vDataFrame.bar         : Draws the Bar Chart of the input vDataColumns based on an aggregation.
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
-        columns = self._format_colnames(columns, expected_nb_of_cols=2)
-        return vpy_matplotlib_plt.ContourPlot().draw(
-            self, columns, func, nbins, ax=ax, **style_kwargs,
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
         )
+        func_name = None
+        if "func_name" in kwargs:
+            func_name = kwargs["func_name"]
+            del kwargs["func_name"]
+        return vpy_plt.ContourPlot(
+            vdf=self, columns=columns, func=func, nbins=nbins, func_name=func_name,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def density(
@@ -1072,7 +1074,7 @@ class vDFPlot:
         self,
         columns: SQLColumns,
         max_cardinality: Union[int, tuple, list] = None,
-        h: Union[float, tuple] = None,
+        h: Union[int, tuple, list] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1087,7 +1089,7 @@ class vDFPlot:
         Maximum number of the vDataColumn distinct elements to be used as categorical 
         (No h will be picked or computed).
         If of type tuple, it must represent each column 'max_cardinality'.
-    h: float/tuple, optional
+    h: int / tuple / list, optional
         Interval width of the bar. If empty, an optimized h will be computed.
         If of type tuple, it must represent each column 'h'.
     ax: Axes, optional
@@ -1105,12 +1107,16 @@ class vDFPlot:
     --------
     vDataFrame[].pie : Draws the Pie Chart of the vDataColumn based on an aggregation.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = self._format_colnames(columns)
-        return vpy_matplotlib_plt.NestedPieChart().draw(
-            self, columns, max_cardinality, h, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.NestedPieChart(
+            vdf=self,
+            columns=columns,
+            max_cardinality=max_cardinality,
+            h=h,
+            method="count",
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def pivot_table(
@@ -1847,6 +1853,8 @@ class vDCPlot:
         h: PythonNumber = 0,
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
+        max_nb_fliers: int = 30,
+        whis: float = 1.5,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1869,6 +1877,11 @@ class vDCPlot:
     cat_priority: PythonScalar / ArrayLike, optional
         ArrayLike of the different categories to consider when drawing the box plot.
         The other categories will be filtered.
+    max_nb_fliers: int, optional
+        Maximum number of points to use to represent the fliers of each category.
+        Drawing fliers will slow down the graphic computation.
+    whis: float, optional
+        The position of the whiskers.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -1895,6 +1908,8 @@ class vDCPlot:
             h=h,
             max_cardinality=max_cardinality,
             cat_priority=cat_priority,
+            max_nb_fliers=max_nb_fliers,
+            whis=whis,
         ).draw(**kwargs)
 
     @save_verticapy_logs

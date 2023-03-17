@@ -45,8 +45,6 @@ from verticapy.machine_learning.vertica.base import (
 
 from verticapy.sql.drop import drop
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-
 if conf._get_import_success("graphviz"):
     from graphviz import Source
 
@@ -116,18 +114,6 @@ class Clustering(Unsupervised):
         else:
             return vdf.copy().eval(name, self.deploySQL(X=X))
 
-    # Plotting Methods.
-
-    def _get_plot_args(self, method: Optional[str] = None) -> list:
-        """
-        Returns the args used by plotting methods.
-        """
-        if method == "contour":
-            args = [self.X, self]
-        else:
-            raise NotImplementedError
-        return args
-
     def _get_plot_kwargs(
         self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
     ) -> dict:
@@ -136,10 +122,7 @@ class Clustering(Unsupervised):
         """
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            if self._model_subcategory == "ANOMALY_DETECTION":
-                res["cbar_title"] = "anomaly_score"
-            else:
-                res["cbar_title"] = "cluster"
+            res["func_name"] = "cluster"
         else:
             raise NotImplementedError
         return res
@@ -369,15 +352,16 @@ class KMeans(Clustering):
             Matplotlib Figure.
         """
         if len(self.X) == 2:
-            return vpy_matplotlib_plt.VoronoiPlot().draw(
-                clusters=self.clusters_,
-                columns=self.X,
-                input_relation=self.input_relation,
-                plot_crosses=plot_crosses,
-                ax=ax,
-                max_nb_points=max_nb_points,
-                **style_kwargs,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax, "plot_crosses": plot_crosses},
+                style_kwargs=style_kwargs,
             )
+            return vpy_plt.VoronoiPlot(
+                vdf=vDataFrame(self.input_relation),
+                columns=self.X,
+                max_nb_points=max_nb_points,
+                misc_data={"clusters": self.clusters_},
+            ).draw(**kwargs)
         else:
             raise Exception("Voronoi Plots are only available in 2D")
 

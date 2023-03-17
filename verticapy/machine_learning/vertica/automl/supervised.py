@@ -696,28 +696,40 @@ class AutoML(VerticaModel):
             Axes.
         """
         if mltype == "champion":
-            return vpy_matplotlib_plt.ChampionChallengerPlot().draw(
-                self.model_grid_["avg_time"],
-                self.model_grid_["avg_score"],
-                self.model_grid_["score_std"],
-                self.model_grid_["model_type"],
-                x_label="time",
-                y_label="score",
-                title="Model Type",
-                ax=ax,
-                reverse=(True, self.parameters["reverse"]),
-                **style_kwargs,
+            data = {
+                "x": self.model_grid_["avg_time"],
+                "y": self.model_grid_["avg_score"],
+                "s": self.model_grid_["score_std"],
+                "c": self.model_grid_["model_type"],
+            }
+            layout = {
+                "x_label": "time",
+                "y_label": "score",
+                "title": "Model Type",
+                "reverse": (True, self.parameters["reverse"]),
+            }
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"plt_text": True, "ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.ChampionChallengerPlot(data=data, layout=layout).draw(
+                **kwargs
             )
         else:
-            return vpy_matplotlib_plt.StepwisePlot().draw(
-                [len(elem) for elem in self.stepwise_["features"]],
-                self.stepwise_[self.parameters["stepwise_criterion"]],
-                self.stepwise_["variable"],
-                self.stepwise_["change"],
-                [self.stepwise_["features"][0], self.stepwise_.best_list_],
-                x_label="n_features",
-                y_label=self.parameters["stepwise_criterion"],
-                direction=self.parameters["stepwise_direction"],
-                ax=ax,
-                **style_kwargs,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            data = {
+                "x": [len(x) for x in self.stepwise_["features"]],
+                "y": self.stepwise_[self.parameters["stepwise_criterion"]],
+                "c": self.stepwise_["variable"],
+                "sign": self.stepwise_["change"],
+            }
+            layout = {
+                "in_variables": self.stepwise_["features"][0],
+                "out_variables": self.stepwise_.best_list_,
+                "x_label": "n_features",
+                "y_label": self.parameters["stepwise_criterion"],
+                "direction": self.parameters["stepwise_direction"],
+            }
+            return vpy_plt.StepwisePlot(data=data, layout=layout).draw(**kwargs)

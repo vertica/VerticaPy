@@ -18,6 +18,8 @@ import random
 from typing import Literal, Optional, Union
 import numpy as np
 
+from matplotlib.axes import Axes
+
 from vertica_python.errors import MissingRelation, QueryError
 
 from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
@@ -43,6 +45,7 @@ General Classes.
 
 
 class RandomForest(Tree):
+
     # Properties.
 
     @property
@@ -55,6 +58,7 @@ class RandomForest(Tree):
 
 
 class XGBoost(Tree):
+
     # Properties.
 
     @property
@@ -1352,3 +1356,28 @@ class IsolationForest(Clustering, Tree):
         return vdf_return.eval(
             name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X)
         )
+
+    # Plotting Methods.
+
+    def _get_plot_args(self, method: Optional[str] = None) -> list:
+        """
+        Returns the args used by plotting methods.
+        """
+        if method == "contour":
+            args = [self.X, self.deploySQL(X=self.X, return_score=True)]
+        else:
+            raise NotImplementedError
+        return args
+
+    def _get_plot_kwargs(
+        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+    ) -> dict:
+        """
+        Returns the kwargs used by plotting methods.
+        """
+        res = {"nbins": nbins, "ax": ax}
+        if method == "contour":
+            res["func_name"] = "anomaly_score"
+        else:
+            raise NotImplementedError
+        return res

@@ -51,6 +51,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
 
+from verticapy.plotting._utils import PlottingUtils
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
@@ -70,7 +71,7 @@ if conf._get_import_success("graphviz"):
 ##
 
 
-class VerticaModel:
+class VerticaModel(PlottingUtils):
     """
     Base Class for Vertica Models.
 	"""
@@ -592,7 +593,10 @@ class VerticaModel:
         """
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            res["cbar_title"] = self.y
+            if self._model_subcategory == "CLASSIFIER":
+                res["func_name"] = f"p({self.y} = 1)"
+            else:
+                res["func_name"] = self.y
         else:
             raise NotImplementedError
         return res
@@ -981,14 +985,16 @@ class Tree:
             Axes.
         """
         if self._model_subcategory == "REGRESSOR":
-            return vpy_matplotlib_plt.RegressionTreePlot().draw(
-                self.X + [self.deploySQL()],
-                self.y,
-                self.input_relation,
-                max_nb_points,
-                ax=ax,
-                **style_kwargs,
+            vdf = vDataFrame(self.input_relation)
+            vdf["_prediction"] = self.deploySQL()
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            return vpy_plt.RegressionTreePlot(
+                vdf=vdf,
+                columns=self.X + [self.y] + ["_prediction"],
+                max_nb_points=max_nb_points,
+            ).draw(**kwargs)
         else:
             raise NotImplementedError
 
@@ -2075,7 +2081,7 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label)
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            res["cbar_title"] = self.y
+            res["func_name"] = f"p({self.y} = '{pos_label}')"
         elif method == "cutoff":
             res["cutoff_curve"] = True
         return res
@@ -2113,7 +2119,9 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(pos_label=pos_label, method="contour"),
-            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
+            **self._get_plot_kwargs(
+                pos_label=pos_label, nbins=nbins, ax=ax, method="contour"
+            ),
             **style_kwargs,
         )
 

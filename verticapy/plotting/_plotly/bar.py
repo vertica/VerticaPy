@@ -50,10 +50,7 @@ class BarChart(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, **style_kwargs,) -> Figure:
         """
         Draws a bar chart using the Plotly API.
         """

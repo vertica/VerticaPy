@@ -321,18 +321,22 @@ class Decomposition(Preprocessing):
         else:
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
-        return vpy_matplotlib_plt.PCAPlot().draw_circle(
-            x,
-            y,
-            self.X,
-            (
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+        )
+        data = {
+            "x": x,
+            "y": y,
+            "explained_variance": [
                 self.explained_variance_[dimensions[0] - 1],
                 self.explained_variance_[dimensions[1] - 1],
-            ),
-            dimensions,
-            ax,
-            **style_kwargs,
-        )
+            ],
+            "dim": dimensions,
+        }
+        layout = {
+            "columns": self.X,
+        }
+        return vpy_matplotlib_plt.PCACirclePlot(data=data, layout=layout).draw(**kwargs)
 
     def plot_scree(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
         """
@@ -716,19 +720,23 @@ class MCA(PCA):
                 style_kwargs["cmap"] = PlottingBase().get_cmap(
                     color=[get_colors(idx=0), get_colors(idx=1), get_colors(idx=2),]
                 )
-        return vpy_matplotlib_plt.PCAPlot().draw_var(
-            x,
-            y,
-            self.X,
-            (
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+        )
+        data = {
+            "x": x,
+            "y": y,
+            "explained_variance": [
                 self.explained_variance_[dimensions[0] - 1],
                 self.explained_variance_[dimensions[1] - 1],
-            ),
-            dimensions,
-            method,
-            ax,
-            **style_kwargs,
-        )
+            ],
+            "dim": dimensions,
+        }
+        layout = {
+            "columns": self.X,
+            "method": method,
+        }
+        return vpy_matplotlib_plt.PCAVarPlot(data=data, layout=layout).draw(**kwargs)
 
 
 class SVD(Decomposition):

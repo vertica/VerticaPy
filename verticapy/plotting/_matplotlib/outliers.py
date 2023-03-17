@@ -81,11 +81,11 @@ class OutliersPlot(ScatterPlot):
         th = self.data["th"]
         if not (cmap):
             cmap = self.get_cmap(color=self.get_colors(idx=2))
-        xlist = np.linspace(min0, max0, 1000)
+        x_grid = np.linspace(min0, max0, 1000)
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
         if len(self.layout["columns"]) == 1:
-            ylist = np.linspace(-1, 1, 1000)
-            X, Y = np.meshgrid(xlist, ylist)
+            y_grid = np.linspace(-1, 1, 1000)
+            X, Y = np.meshgrid(x_grid, y_grid)
             Z = (X - avg0) / std0
             cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
             zvals = [-th * std0 + avg0, th * std0 + avg0]
@@ -110,8 +110,8 @@ class OutliersPlot(ScatterPlot):
         elif len(self.layout["columns"]) == 2:
             min1, max1 = self.data["min"][1], self.data["max"][1]
             avg1, std1 = self.data["avg"][1], self.data["std"][1]
-            ylist = np.linspace(min1, max1, 1000)
-            X, Y = np.meshgrid(xlist, ylist)
+            y_grid = np.linspace(min1, max1, 1000)
+            X, Y = np.meshgrid(x_grid, y_grid)
             Z = np.sqrt(((X - avg0) / std0) ** 2 + ((Y - avg1) / std1) ** 2)
             ax.contourf(X, Y, Z, colors=color)
             ax.contour(

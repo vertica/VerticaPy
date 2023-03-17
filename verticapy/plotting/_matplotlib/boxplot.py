@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -37,6 +38,12 @@ class BoxPlot(MatplotlibBase):
     def _compute_method(self) -> Literal["describe"]:
         return "describe"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"widths": 0.3}
+        return None
+
     # Draw.
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
@@ -54,26 +61,35 @@ class BoxPlot(MatplotlibBase):
             set_axis_below=True,
             grid="y" if style_kwargs["vert"] else "x",
         )
+        if style_kwargs["vert"]:
+            set_lim = ax.set_ylim
+            set_tick = ax.set_xticklabels
+        else:
+            set_lim = ax.set_xlim
+            set_tick = ax.set_yticklabels
         box = ax.boxplot(
             self.data["X"],
             notch=False,
-            sym="",
-            whis=float("Inf"),
-            widths=0.5,
             labels=self.layout["labels"],
             patch_artist=True,
+            **self.init_style,
             **style_kwargs,
         )
-        if not (style_kwargs["vert"]):
-            ax.set_yticklabels(self.layout["labels"], rotation=90)
-        else:
-            ax.set_xticklabels(self.layout["labels"], rotation=90)
+        set_tick(self.layout["labels"], rotation=90)
         for median in box["medians"]:
             median.set(
                 color="black", linewidth=1,
             )
         for i, patch in enumerate(box["boxes"]):
             patch.set_facecolor(self.get_colors(idx=i))
+        for i, flier in enumerate(box["fliers"]):
+            xdata = [i + 1] * len(self.data["fliers"][i])
+            ydata = self.data["fliers"][i]
+            if style_kwargs["vert"]:
+                kwargs = {"xdata": xdata, "ydata": ydata}
+            else:
+                kwargs = {"xdata": ydata, "ydata": xdata}
+            flier.set(**kwargs)
         if self.layout["has_category"]:
             if not (style_kwargs["vert"]):
                 x_label, y_label = self.layout["y_label"], self.layout["x_label"]
@@ -81,4 +97,14 @@ class BoxPlot(MatplotlibBase):
                 x_label, y_label = self.layout["x_label"], self.layout["y_label"]
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
+        min_lim = min(
+            min([min(f) if len(f) > 0 else np.inf for f in self.data["fliers"]]),
+            self.data["X"].min(),
+        )
+        max_lim = max(
+            max([max(f) if len(f) > 0 else -np.inf for f in self.data["fliers"]]),
+            self.data["X"].max(),
+        )
+        h = (max_lim - min_lim) * 0.01
+        set_lim(min_lim - h, max_lim + h)
         return ax
