@@ -29,7 +29,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
+from verticapy.plotting._utils import PlottingUtils
 
 from verticapy.machine_learning.metrics import aic_bic
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
@@ -499,23 +499,28 @@ def stepwise(
         estimator.fit(input_relation, X_current, y)
     res.best_list_ = X_current
     if show:
-        vpy_matplotlib_plt.StepwisePlot().draw(
-            [len(x) for x in res["features"]],
-            res[criterion],
-            res["variable"],
-            res["change"],
-            [res["features"][0], X_current],
-            x_label="n_features",
-            y_label=criterion,
-            direction=direction,
-            ax=ax,
-            **style_kwargs,
+        vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        data = {
+            "x": [len(x) for x in res["features"]],
+            "y": res[criterion],
+            "c": res["variable"],
+            "sign": res["change"],
+        }
+        layout = {
+            "in_variables": res["features"][0],
+            "out_variables": X_current,
+            "x_label": "n_features",
+            "y_label": criterion,
+            "direction": direction,
+        }
+        res.step_wise_ = vpy_plt.StepwisePlot(data=data, layout=layout).draw(**kwargs)
         coeff_importances = {}
         for idx in range(len(importance)):
             if res["variable"][idx] != None:
                 coeff_importances[res["variable"][idx]] = importance[idx]
-        vpy_matplotlib_plt.ImportanceBarChart().draw(
+        res.importance_ = vpy_plt.ImportanceBarChart().draw(
             coeff_importances, print_legend=False, ax=ax, **style_kwargs
         )
     return res

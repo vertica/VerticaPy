@@ -22,7 +22,7 @@ from plotly.graph_objs._figure import Figure
 from verticapy.plotting._plotly.base import PlotlyBase
 
 
-class BarChart(PlotlyBase):
+class HorizontalBarChart(PlotlyBase):
 
     # Properties.
 
@@ -43,28 +43,31 @@ class BarChart(PlotlyBase):
     def _init_style(self) -> None:
         self.init_trace_style = {"marker_color": self.get_colors(idx=0)}
         self.init_layout_style = {
-            "yaxis_title": self.layout['method'],
-            "xaxis_title": self.layout['column'][1:-1],
-            "width": 100 * len(self.layout["labels"]),
-            "height": 500,
+            "xaxis_title": self.layout['method'],
+            "yaxis_title": self.layout["column"][1:-1],
+            # "width": 500 ,
+            "height": 100 * len(self.layout["labels"]),
         }
         return None
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        **style_kwargs,
+    ) -> Figure:
         """
-        Draws a bar chart using the Plotly API.
+        Draws a horizontal bar chart using the Plotly API.
         """
-        fig = px.bar(x=self.layout["labels"], y=self.data["y"])
+        fig = px.bar(y=self.layout["labels"], x=self.data["y"], orientation="h")
         if self.data["is_categorical"]:
-            fig.update_xaxes(type="category")
+            fig.update_yaxes(type="category")
         params = self._update_dict(self.init_layout_style, style_kwargs)
         fig.update_layout(**params)
         fig.update_traces(**self.init_trace_style)
         return fig
 
 
-class BarChart2D(PlotlyBase):
+class HorizontalBarChart2D(PlotlyBase):
 
     ...

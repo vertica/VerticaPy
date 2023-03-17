@@ -162,12 +162,12 @@ class ScatterPlot(MatplotlibBase):
                 kwargs["s"] = 1000 * (self.data["s"] - s_min) / (s_max - s_min) + 1e-50
         if self.layout["has_category"]:
             uniques = self._format_string(np.unique(self.data["c"]), th=20)
-            colors = self.data["c"]
+            colors = np.array(["#FFFFFF" for c in self.data["c"]], dtype=object)
             marker = style_kwargs["marker"] if "marker" in style_kwargs else "o"
             legend = []
             for i, c in enumerate(uniques):
                 color = self.get_colors(idx=i)
-                colors[colors == c] = color
+                colors[self.data["c"] == c] = color
                 legend += [
                     Line2D(
                         [0],

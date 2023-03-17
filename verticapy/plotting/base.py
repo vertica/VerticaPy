@@ -28,6 +28,7 @@ from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
 if TYPE_CHECKING:
@@ -58,24 +59,37 @@ class PlottingBase:
     # System Methods.
 
     def __init__(self, *args, **kwargs) -> None:
-        if "data" not in kwargs or "layout" not in kwargs:
+        kwds = copy.deepcopy(kwargs)
+        if "misc_data" in kwds:
+            misc_data = copy.deepcopy(kwds["misc_data"])
+            del kwds["misc_data"]
+        else:
+            misc_data = {}
+        if "data" not in kwds or "layout" not in kwds:
             functions = {
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
+                "contour": self._compute_contour_grid,
                 "describe": self._compute_statistics,
                 "hist": self._compute_hists_params,
                 "line": self._filter_line,
                 "matrix": self._compute_scatter_matrix,
                 "outliers": self._compute_outliers_params,
                 "range": self._compute_range,
+                "rollup": self._compute_rollup,
                 "sample": self._sample,
             }
             if self._compute_method in functions:
-                functions[self._compute_method](*args, **kwargs)
+                functions[self._compute_method](*args, **kwds)
         else:
-            self.data = copy.deepcopy(kwargs["data"])
-            self.layout = copy.deepcopy(kwargs["layout"])
+            self.data = copy.deepcopy(kwds["data"])
+            self.layout = copy.deepcopy(kwds["layout"])
+        if hasattr(self, "data"):
+            self.data = {
+                **self.data,
+                **misc_data,
+            }
         self._init_style()
         return None
 
@@ -232,6 +246,80 @@ class PlottingBase:
         return d
 
     # Attributes Computations.
+
+    def _compute_contour_grid(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        func: Union[str, StringSQL, Callable],
+        nbins: int = 100,
+        func_name: Optional[str] = None,
+    ) -> None:
+        from verticapy.datasets.generators import gen_meshgrid
+
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(["min", "max"], columns).to_numpy()
+        self.data = {
+            "min": aggregations[:, 0],
+            "max": aggregations[:, 1],
+        }
+        if isinstance(func, Callable):
+            x_grid = np.linspace(self.data["min"][0], self.data["max"][0], nbins)
+            y_grid = np.linspace(self.data["min"][1], self.data["max"][1], nbins)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = func(X, Y)
+        elif isinstance(func, (str, StringSQL)):
+            d = {}
+            for i in range(2):
+                d[quote_ident(columns[i])[1:-1]] = {
+                    "type": float,
+                    "range": [self.data["min"][i], self.data["max"][i]],
+                    "nbins": nbins,
+                }
+            vdf_tmp = gen_meshgrid(d)
+            if "{0}" in func and "{1}" in func:
+                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+            else:
+                vdf_tmp["_contour_Z"] = func
+            dataset = (
+                vdf_tmp[[columns[1], columns[0], "_contour_Z"]].sort(columns).to_numpy()
+            )
+            i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
+            n = len(dataset)
+            X, Y, Z = [], [], []
+            while i < n:
+                x_tmp, y_tmp, z_tmp = [], [], []
+                j, last_non_null_value = 0, 0
+                while y_start == y_new and i < n and j < nbins:
+                    if dataset[i][2] != None:
+                        last_non_null_value = float(dataset[i][2])
+                    x_tmp += [float(dataset[i][1])]
+                    y_tmp += [float(dataset[i][0])]
+                    z_tmp += [
+                        float(
+                            dataset[i][2]
+                            if (dataset[i][2] != None)
+                            else last_non_null_value
+                        )
+                    ]
+                    y_new = dataset[i][1]
+                    i, j = i + 1, j + 1
+                    if j == nbins:
+                        while y_start == y_new and i < n:
+                            y_new = dataset[i][1]
+                            i += 1
+                y_start = y_new
+                X, Y, Z = X + [x_tmp], Y + [y_tmp], Z + [z_tmp]
+        else:
+            raise TypeError
+        self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
+        func_repr = func.__name__ if isinstance(func, Callable) else str(func)
+        self.layout = {
+            "columns": columns,
+            "func": func,
+            "func_repr": func_name if func_name != None else func_repr,
+        }
+        return None
 
     def _compute_plot_params(
         self,
@@ -629,6 +717,51 @@ class PlottingBase:
         }
         return None
 
+    def _compute_rollup(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "density",
+        of: Optional[str] = None,
+        max_cardinality: Union[int, tuple, list] = None,
+        h: Union[int, tuple, list] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        n = len(columns)
+        if isinstance(h, (int, float, type(None))):
+            h = (h,) * n
+        if isinstance(max_cardinality, (int, float, type(None))):
+            if max_cardinality == None:
+                max_cardinality = (6,) * n
+            else:
+                max_cardinality = (max_cardinality,) * n
+        vdf_tmp = vdf[columns]
+        for idx, column in enumerate(columns):
+            vdf_tmp[column].discretize(h=h[idx])
+            vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
+        groups = []
+        for i in range(0, n):
+            groups += [
+                vdf_tmp.groupby(columns[: n - i], [aggregate])
+                .sort(columns[: n - i])
+                .to_numpy()
+                .T
+            ]
+        self.data = {"groups": np.array(groups, dtype=object)}
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+        }
+        return None
+
     def _compute_statistics(
         self,
         vdf: "vDataFrame",
@@ -638,7 +771,11 @@ class PlottingBase:
         h: PythonNumber = 0.0,
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
+        whis: float = 1.5,
+        max_nb_fliers: int = 30,
     ) -> None:
+        if not (0 <= q[0] < 0.5 < q[1] <= 1):
+            raise ValueError
         if isinstance(columns, str):
             columns = [columns]
         elif not (columns):
@@ -648,11 +785,9 @@ class PlottingBase:
         columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
-                f"MIN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[0]})",
                 f"APPROXIMATE_MEDIAN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
-                f"MAX({columns[0]})",
             ]
             if vdf[by].isnum():
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
@@ -669,12 +804,17 @@ class PlottingBase:
             vdf_tmp = vdf_tmp[[_by] + columns]
             X = vdf_tmp.groupby(columns=[by], expr=expr,).sort(columns=[by]).to_numpy()
             if is_num_transf:
-                X_num = np.array(
-                    [
-                        float(x[1:].split(";")[0]) if isinstance(x, str) else x
-                        for x in X[:, 0]
-                    ]
-                ).astype(float)
+                try:
+                    X_num = np.array(
+                        [
+                            float(x[1:].split(";")[0]) if isinstance(x, str) else x
+                            for x in X[:, 0]
+                        ]
+                    ).astype(float)
+                except ValueError:
+                    X_num = np.array(
+                        [float(x) if isinstance(x, str) else x for x in X[:, 0]]
+                    ).astype(float)
                 X = X[X_num.argsort()]
             self.layout = {
                 "x_label": by,
@@ -689,10 +829,33 @@ class PlottingBase:
                 "has_category": False,
             }
             X = vdf.quantile(
-                q=[0.0, q[0], 0.5, q[1], 1.0], columns=columns, approx=True
+                q=[q[0], 0.5, q[1]], columns=columns, approx=True
             ).to_numpy()
+        X = np.transpose(X)
+        IQR = X[2] - X[0]
+        X = np.vstack([X, X[2] + whis * IQR])
+        X = np.vstack([X[0] - whis * IQR, X])
+        n, m = X.shape
+        fliers = []
+        for i in range(m):
+            if max_nb_fliers > 0:
+                if self.layout["has_category"]:
+                    f, k = vdf_tmp[by].isin(self.layout["labels"][i]), 0
+                else:
+                    f, k = vdf, i
+                f = f[[columns[k]]].search(
+                    f"{columns[k]} < {X[:, i][0]} OR {columns[k]} > {X[:, i][-1]}"
+                )
+                try:
+                    fliers += [f.sample(n=max_nb_fliers).to_numpy()[:, 0]]
+                except ZeroDivisionError:
+                    fliers += [np.array([])]
+            else:
+                fliers += [np.array([])]
         self.data = {
-            "X": np.transpose(X),
+            "X": X,
+            "fliers": fliers,
+            "whis": whis,
         }
 
     def _filter_line(
@@ -958,40 +1121,45 @@ class PlottingBase:
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
-        columns = vdf._format_colnames(columns, expected_nb_of_cols=[2, 3])
+        columns = vdf._format_colnames(columns)
         cols_to_select = copy.deepcopy(columns)
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
-        if size_bubble_col != None:
-            cols_to_select += [vdf._format_colnames(size_bubble_col)]
-            has_size = True
-        if catcol != None:
-            has_category = True
-            catcol = vdf._format_colnames(catcol)
-            if vdf[catcol].isnum():
-                cols_to_select += [
-                    vdf[catcol]
-                    .discretize(h=h, return_enum_trans=True)[0]
-                    .replace("{}", catcol)
-                    + f" AS {catcol}"
-                ]
-            else:
-                cols_to_select += [
-                    vdf[catcol]
-                    .discretize(
-                        k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0]
-                    .replace("{}", catcol)
-                    + f" AS {catcol}"
-                ]
-            if cat_priority:
-                vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
-        elif cmap_col != None:
-            cols_to_select += [vdf._format_colnames(cmap_col)]
-            has_cmap = True
-        X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
-        n = len(columns)
-        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
+        if max_nb_points > 0:
+            if size_bubble_col != None:
+                cols_to_select += [vdf._format_colnames(size_bubble_col)]
+                has_size = True
+            if catcol != None:
+                has_category = True
+                catcol = vdf._format_colnames(catcol)
+                if vdf[catcol].isnum():
+                    cols_to_select += [
+                        vdf[catcol]
+                        .discretize(h=h, return_enum_trans=True)[0]
+                        .replace("{}", catcol)
+                        + f" AS {catcol}"
+                    ]
+                else:
+                    cols_to_select += [
+                        vdf[catcol]
+                        .discretize(
+                            k=max_cardinality, method="topk", return_enum_trans=True
+                        )[0]
+                        .replace("{}", catcol)
+                        + f" AS {catcol}"
+                    ]
+                if cat_priority:
+                    vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
+            elif cmap_col != None:
+                cols_to_select += [vdf._format_colnames(cmap_col)]
+                has_cmap = True
+            X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
+            n = len(columns)
+            if len(X) > 0:
+                X = X[:max_nb_points, :n].astype(float)
+        else:
+            X = np.array([])
+        self.data = {"X": X, "s": None, "c": None}
         self.layout = {
             "columns": columns,
             "size": size_bubble_col,
@@ -1000,8 +1168,8 @@ class PlottingBase:
             "has_cmap": has_cmap,
             "has_size": has_size,
         }
-        if size_bubble_col != None:
+        if (size_bubble_col != None) and (max_nb_points > 0):
             self.data["s"] = X[:, n].astype(float)
-        if (catcol != None) or (cmap_col != None):
+        if ((catcol != None) or (cmap_col != None)) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
         return None

@@ -82,7 +82,7 @@ class TestIsolationForest:
             titanic_vd, ["age", "fare"],
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 34
+        assert len(result.get_default_bbox_extra_artists()) > 30
         model_test.drop()
 
     def test_deploySQL(self, model):

@@ -140,7 +140,10 @@ class KNeighborsRegressor(Regressor):
     # I/O Methods.
 
     def deploySQL(
-        self, X: SQLColumns = [], test_relation: str = "", key_columns: SQLColumns = [],
+        self,
+        X: SQLColumns = [],
+        test_relation: Optional[str] = None,
+        key_columns: SQLColumns = [],
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -167,8 +170,8 @@ class KNeighborsRegressor(Regressor):
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns) and key_columns != None:
-            key_columns = [self.y]
+            if not (key_columns):
+                key_columns = [self.y]
         p = self.parameters["p"]
         X_str = ", ".join([f"x.{x}" for x in X])
         if key_columns:
@@ -261,7 +264,12 @@ class KNeighborsRegressor(Regressor):
         Returns the args used by plotting methods.
         """
         if method == "contour":
-            args = [self.X, self]
+            args = [
+                self.X,
+                self.deploySQL(X=self.X, test_relation="{1}").replace(
+                    "predict_neighbors", "{0}"
+                ),
+            ]
         else:
             raise NotImplementedError
         return args
@@ -358,7 +366,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     def deploySQL(
         self,
         X: SQLColumns = [],
-        test_relation: str = "",
+        test_relation: Optional[str] = None,
         predict: bool = False,
         key_columns: SQLColumns = [],
     ) -> str:
@@ -391,8 +399,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         X = [quote_ident(x) for x in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns) and key_columns != None:
-            key_columns = [self.y]
+            if not (key_columns):
+                key_columns = [self.y]
         p = self.parameters["p"]
         n_neighbors = self.parameters["n_neighbors"]
         X_str = ", ".join([f"x.{x}" for x in X])
@@ -660,7 +668,19 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         pos_label = self._check_pos_label(pos_label)
         if method == "contour":
-            args = [self.X, self]
+            sql = (
+                f"""
+                SELECT
+                    {', '.join(self.X)},
+                    ZEROIFNULL(AVG(DECODE(predict_neighbors, 
+                                          '{pos_label}', 
+                                          proba_predict, 
+                                          NULL))) AS {{0}}
+                FROM """
+                + self.deploySQL(X=self.X, test_relation="{1}")
+                + f" GROUP BY {', '.join(self.X)}"
+            )
+            args = [self.X, sql]
         else:
             input_relation = (
                 self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
@@ -681,8 +701,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         pos_label = self._check_pos_label(pos_label)
         res = {"nbins": nbins, "ax": ax}
         if method == "contour":
-            res["cbar_title"] = self.y
-            res["pos_label"] = pos_label
+            res["func_name"] = f"p({self.y} = '{pos_label}')"
         elif method == "cutoff":
             res["cutoff_curve"] = True
         return res
@@ -1423,7 +1442,11 @@ class LocalOutlierFactor(VerticaModel):
         Axes
             Axes.
         """
-        sample = 100 * min(float(max_nb_points / self.cnt_), 1)
-        return vpy_matplotlib_plt.LOFPlot().draw(
-            self.model_name, self.X, "lof_score", sample, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.LOFPlot(
+            vdf=vDataFrame(self.model_name),
+            columns=self.X + ["lof_score"],
+            max_nb_points=max_nb_points,
+        ).draw(**kwargs)

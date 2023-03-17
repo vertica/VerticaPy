@@ -31,6 +31,7 @@ from verticapy._utils._sql._vertica_version import (
 from verticapy.errors import VersionError
 
 from verticapy.core.tablesample.base import TableSample
+from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
@@ -166,15 +167,15 @@ class LinearModel:
         Axes
             Axes.
         """
-        return vpy_matplotlib_plt.RegressionPlot().draw(
-            self.X,
-            self.y,
-            self.input_relation,
-            np.concatenate(([self.intercept_], self.coef_)),
-            max_nb_points,
-            ax=ax,
-            **style_kwargs,
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.RegressionPlot(
+            vdf=vDataFrame(self.input_relation),
+            columns=self.X + [self.y],
+            max_nb_points=max_nb_points,
+            misc_data={"coef": np.concatenate(([self.intercept_], self.coef_))},
+        ).draw(**kwargs)
 
 
 class LinearModelClassifier(LinearModel):
