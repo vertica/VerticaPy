@@ -927,9 +927,14 @@ class Tree:
         """
         fi = self._get_features_importance(tree_id=tree_id)
         if show:
-            vpy_matplotlib_plt.ImportanceBarChart().draw(
-                self.X, fi, print_legend=False, ax=ax, **style_kwargs,
+            data = {
+                "importance": fi,
+            }
+            layout = {"columns": copy.deepcopy(self.X)}
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),

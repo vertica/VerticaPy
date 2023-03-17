@@ -125,9 +125,14 @@ class LinearModel:
         """
         fi = self._get_features_importance()
         if show:
-            vpy_matplotlib_plt.ImportanceBarChart().draw(
-                self.X, fi, print_legend=True, ax=ax, **style_kwargs,
+            data = {
+                "importance": fi,
+            }
+            layout = {"columns": copy.deepcopy(self.X)}
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),
@@ -229,15 +234,15 @@ class LinearModelClassifier(LinearModel):
         Axes
             Axes.
         """
-        return vpy_matplotlib_plt.LogisticRegressionPlot().draw(
-            self.X,
-            self.y,
-            self.input_relation,
-            np.concatenate(([self.intercept_], self.coef_)),
-            max_nb_points,
-            ax=ax,
-            **style_kwargs,
+        vpy_plt, kwargs = self._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
         )
+        return vpy_plt.LogisticRegressionPlot(
+            vdf=vDataFrame(self.input_relation),
+            columns=self.X + [self.y],
+            max_nb_points=max_nb_points,
+            misc_data={"coef": np.concatenate(([self.intercept_], self.coef_))},
+        ).draw(**kwargs)
 
 
 """

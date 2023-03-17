@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math
 from typing import Literal, Optional
 import numpy as np
 
@@ -30,6 +29,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LogisticRegressionPlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -38,87 +40,69 @@ class LogisticRegressionPlot(MatplotlibBase):
     def _kind(self) -> Literal["logit"]:
         return "logit"
 
-    def draw(
-        self,
-        X: SQLColumns,
-        y: str,
-        input_relation: str,
-        coefficients: ArrayLike,
-        max_nb_points: int = 50,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
-        """
-        Draws a Logistic Regression plot using the Matplotlib API.
-        """
-        if isinstance(X, str):
-            X = [X]
-        param0 = {
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 3)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style_0 = {
             "marker": "o",
             "s": 50,
             "color": self.get_colors(idx=0),
             "edgecolors": "black",
             "alpha": 0.8,
         }
-        param1 = {
+        self.init_style_1 = {
             "marker": "o",
             "s": 50,
             "color": self.get_colors(idx=1),
             "edgecolors": "black",
         }
+        self.init_style_Z = {
+            "rstride": 1,
+            "cstride": 1,
+            "alpha": 0.5,
+            "color": "gray",
+        }
+        return None
 
-        def logit(x):
-            return 1 / (1 + math.exp(-x))
+    # Draw.
 
-        if len(X) == 1:
-            query = f"""
-                (SELECT 
-                    /*+LABEL('plotting._matplotlib.logit_plot')*/ 
-                    {X[0]}, 
-                    {y} 
-                 FROM {input_relation} 
-                 WHERE {X[0]} IS NOT NULL 
-                   AND {y} = {{}} 
-                LIMIT {int(max_nb_points / 2)})"""
-            all_points = _executeSQL(
-                query=f"{query.format(0)} UNION ALL {query.format(1)}",
-                method="fetchall",
-                print_time_sql=False,
-            )
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+        """
+        Draws a Logistic Regression plot using the Matplotlib API.
+        """
+        logit = lambda x: 1 / (1 + np.exp(-x))
+        x, z = self.data["X"][:, 0], self.data["X"][:, -1]
+        x0, x1 = x[z == 0], x[z == 1]
+        min_logit_x, max_logit_x = min(self.data["X"][:, 0]), max(self.data["X"][:, 0])
+        step_x = (max_logit_x - min_logit_x) / 40.0
+        if len(self.layout["columns"]) == 2:
             ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
-            x0, x1 = [], []
-            for idx, item in enumerate(all_points):
-                if item[1] == 0:
-                    x0 += [float(item[0])]
-                else:
-                    x1 += [float(item[0])]
-            min_logit, max_logit = min(x0 + x1), max(x0 + x1)
-            step = (max_logit - min_logit) / 40.0
             x_logit = (
-                np.arange(min_logit - 5 * step, max_logit + 5 * step, step)
-                if (step > 0)
-                else [max_logit]
+                np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
+                if (step_x > 0)
+                else np.array([max_logit_x])
             )
-            y_logit = [
-                logit(coefficients[0] + coefficients[1] * item) for item in x_logit
-            ]
+            y_logit = logit(self.data["coef"][0] + self.data["coef"][1] * x_logit)
             ax.plot(x_logit, y_logit, alpha=1, color="black")
-            all_scatter = [
-                ax.scatter(
-                    x0,
-                    [logit(coefficients[0] + coefficients[1] * item) for item in x0],
-                    **self._update_dict(param1, style_kwargs, 1),
-                )
-            ]
-            all_scatter += [
-                ax.scatter(
-                    x1,
-                    [logit(coefficients[0] + coefficients[1] * item) for item in x1],
-                    **self._update_dict(param0, style_kwargs, 0),
-                )
-            ]
-            ax.set_xlabel(X[0])
-            ax.set_ylabel(y)
+            all_scatter = []
+            for i, x, s in [(0, x0, self.init_style_0), (1, x1, self.init_style_1)]:
+                all_scatter += [
+                    ax.scatter(
+                        x,
+                        logit(self.data["coef"][0] + self.data["coef"][1] * x),
+                        **self._update_dict(s, style_kwargs, i),
+                    )
+                ]
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_ylabel(self.layout["columns"][-1])
             ax.legend(
                 all_scatter,
                 [0, 1],
@@ -128,52 +112,32 @@ class LogisticRegressionPlot(MatplotlibBase):
             )
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-        elif len(X) == 2:
-            query = f"""
-                (SELECT 
-                    /*+LABEL('plotting._matplotlib.logit_plot')*/ 
-                    {X[0]}, 
-                    {X[1]}, 
-                    {y} 
-                 FROM {input_relation} 
-                 WHERE {X[0]} IS NOT NULL
-                   AND {X[1]} IS NOT NULL
-                   AND {y} = {{}} LIMIT {int(max_nb_points / 2)})"""
-            all_points = _executeSQL(
-                query=f"{query.format(0)} UNION {query.format(1)}",
-                method="fetchall",
-                print_time_sql=False,
+        elif len(self.layout["columns"]) == 3:
+            y = self.data["X"][:, 1]
+            y0, y1 = y[z == 0], y[z == 1]
+            min_logit_y, max_logit_y = (
+                min(self.data["X"][:, 1]),
+                max(self.data["X"][:, 1]),
             )
-            x0, x1, y0, y1 = [], [], [], []
-            for idx, item in enumerate(all_points):
-                if item[2] == 0:
-                    x0 += [float(item[0])]
-                    y0 += [float(item[1])]
-                else:
-                    x1 += [float(item[0])]
-                    y1 += [float(item[1])]
-            min_logit_x, max_logit_x = min(x0 + x1), max(x0 + x1)
-            step_x = (max_logit_x - min_logit_x) / 40.0
-            min_logit_y, max_logit_y = min(y0 + y1), max(y0 + y1)
             step_y = (max_logit_y - min_logit_y) / 40.0
             X_logit = (
                 np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
                 if (step_x > 0)
-                else [max_logit_x]
+                else np.array([max_logit_x])
             )
             Y_logit = (
                 np.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
                 if (step_y > 0)
-                else [max_logit_y]
+                else np.array([max_logit_y])
             )
             X_logit, Y_logit = np.meshgrid(X_logit, Y_logit)
             Z_logit = 1 / (
                 1
                 + np.exp(
                     -(
-                        coefficients[0]
-                        + coefficients[1] * X_logit
-                        + coefficients[2] * Y_logit
+                        self.data["coef"][0]
+                        + self.data["coef"][1] * X_logit
+                        + self.data["coef"][2] * Y_logit
                     )
                 )
             )
@@ -182,48 +146,35 @@ class LogisticRegressionPlot(MatplotlibBase):
                     plt.figure(figsize=(8, 6))
                 ax = plt.axes(projection="3d")
             ax.plot_surface(
-                X_logit, Y_logit, Z_logit, rstride=1, cstride=1, alpha=0.5, color="gray"
+                X_logit, Y_logit, Z_logit, **self.init_style_Z,
             )
-            all_scatter = [
-                ax.scatter(
-                    x0,
-                    y0,
-                    [
+            all_scatter = []
+            for i, x, y, s in [
+                (0, x0, y0, self.init_style_0),
+                (1, x1, y1, self.init_style_1),
+            ]:
+                all_scatter += [
+                    ax.scatter(
+                        x,
+                        y,
                         logit(
-                            coefficients[0]
-                            + coefficients[1] * x0[i]
-                            + coefficients[2] * y0[i]
-                        )
-                        for i in range(len(x0))
-                    ],
-                    **self._update_dict(param1, style_kwargs, 1),
-                )
-            ]
-            all_scatter += [
-                ax.scatter(
-                    x1,
-                    y1,
-                    [
-                        logit(
-                            coefficients[0]
-                            + coefficients[1] * x1[i]
-                            + coefficients[2] * y1[i]
-                        )
-                        for i in range(len(x1))
-                    ],
-                    **self._update_dict(param0, style_kwargs, 0),
-                )
-            ]
-            ax.set_xlabel(X[0])
-            ax.set_ylabel(X[1])
-            ax.set_zlabel(y)
+                            self.data["coef"][0]
+                            + self.data["coef"][1] * x
+                            + self.data["coef"][2] * y
+                        ),
+                        **self._update_dict(s, style_kwargs, i),
+                    )
+                ]
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_ylabel(self.layout["columns"][1])
+            ax.set_zlabel(self.layout["columns"][2])
             ax.legend(
                 all_scatter,
                 [0, 1],
                 scatterpoints=1,
                 loc="center left",
-                bbox_to_anchor=[1.1, 0.5],
-                title=y,
+                bbox_to_anchor=[1.15, 0.5],
+                title=self.layout["columns"][2],
                 ncol=2,
                 fontsize=8,
             )
