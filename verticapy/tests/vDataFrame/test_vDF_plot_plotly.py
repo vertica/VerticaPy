@@ -40,7 +40,8 @@ conf.set_option("print_info", False)
 def dummy_vd():
     arr1 = np.concatenate((np.ones(60), np.zeros(40))).astype(int)
     np.random.shuffle(arr1)
-    arr2 = np.random.choice(["A", "B", "C"], size=100, p=[0.15, 0.3, 0.55])
+    arr2 = np.concatenate((np.repeat("A", 20), np.repeat("B", 30), np.repeat("C", 50)))
+    np.random.shuffle(arr2)
     dummy = verticapy.vDataFrame(list(zip(arr1, arr2)), ["check 1", "check 2"])
     yield dummy
 
@@ -162,3 +163,58 @@ class TestvDFPlotPlotly:
         assert result.layout["xaxis"]["title"]["text"] == "Custom X Axis Title"
         result = dummy_vd["check 2"].barh(yaxis_title="Custom Y Axis Title")
         assert result.layout["yaxis"]["title"]["text"] == "Custom Y Axis Title"
+
+
+class TestVDFNestedPieChart:
+    def test_properties_type(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd.pie(["check 1", "check 2"])
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure
+
+    def test_properties_branch_values(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd.pie(["check 1", "check 2"])
+        # Assert - checking if the branch values are covering all
+        assert result.data[0]["branchvalues"] == "total"
+
+    def test_data_all_labels_for_nested(self, load_plotly, dummy_vd):
+        # Arrange
+        result = dummy_vd.pie(["check 1", "check 2"])
+        # Act
+        # Assert - checking if all the labels exist
+        assert set(result.data[0]["labels"]) == {"1", "0", "A", "B", "C"}
+
+    def test_data_all_labels_for_simple_pie(self, load_plotly, dummy_vd):
+        # Arrange
+        result = dummy_vd.pie(["check 1"])
+        # Act
+        # Assert - checking if all the labels exist for a simple pie plot
+        assert set(result.data[0]["labels"]) == {"1", "0"}
+
+    def test_data_check_parent_of_A(self, load_plotly, dummy_vd):
+        # Arrange
+        result = dummy_vd.pie(["check 1", "check 2"])
+        # Act
+        # Assert - checking the parent of 'A' which is an element of column "check 2"
+        assert result.data[0]["parents"][result.data[0]["labels"].index("A")] in [
+            "0",
+            "1",
+        ]
+
+    def test_data_check_parent_of_0(self, load_plotly, dummy_vd):
+        # Arrange
+        result = dummy_vd.pie(["check 1", "check 2"])
+        # Act
+        # Assert - checking the parent of '0' which is an element of column "check 1"
+        assert result.data[0]["parents"][result.data[0]["labels"].index("0")] in [""]
+
+    def test_data_add_up_all_0s_from_children(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd.pie(["check 1", "check 2"])
+        zero_indices = [i for i, x in enumerate(result.data[0]["parents"]) if x == "0"]
+        # Assert - checking if if all the children elements of 0 add up to its count
+        assert sum([list(result.data[0]["values"])[i] for i in zero_indices]) == 40
