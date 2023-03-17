@@ -60,7 +60,7 @@ def load_plotly():
 
 
 class TestvDFPlotPlotly:
-    def test_vDF_hist(self, titanic_vd, load_plotly):
+    def test_vDF_bar(self, titanic_vd, load_plotly):
         # 1D bar charts
 
         ## Checking plotting library
@@ -132,3 +132,33 @@ class TestvDFPlotPlotly:
         ### check exploded option
         result = dummy_vd["check 1"].pie(exploded=True)
         assert len(result.data[0]["pull"]) > 0
+
+    def test_vDF_barh(self, dummy_vd, load_plotly):
+        # 1D horizontal bar charts
+
+        ## Creating horizontal bar chart
+        result = dummy_vd["check 2"].barh()
+        ## Testing Plot Properties
+        ### Checking if correct object is created
+        assert type(result) == plotly.graph_objs._figure.Figure
+        ### Checking if the x-axis is a category instead of integer
+        assert result.layout["yaxis"]["type"] == "category"
+
+        ## Testing Data
+        ### Comparing total adds up to 1
+        assert sum(result.data[0]["x"]) == 1
+        ### Checking if all labels are inlcuded
+        assert set(result.data[0]["y"]).issubset(set(["A", "B", "C"]))
+        ### Checking if the density was plotted correctly
+        nums = dummy_vd.to_pandas()["check 2"].value_counts()
+        total = len(dummy_vd)
+        assert set(result.data[0]["x"]).issubset(
+            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
+        )
+
+        ## Testing Additional Options
+        ### Testing keyword arguments (kwargs)
+        result = dummy_vd["check 2"].barh(xaxis_title="Custom X Axis Title")
+        assert result.layout["xaxis"]["title"]["text"] == "Custom X Axis Title"
+        result = dummy_vd["check 2"].barh(yaxis_title="Custom Y Axis Title")
+        assert result.layout["yaxis"]["title"]["text"] == "Custom Y Axis Title"

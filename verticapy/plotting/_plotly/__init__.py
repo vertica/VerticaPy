@@ -16,3 +16,4 @@ permissions and limitations under the License.
 """
 from verticapy.plotting._plotly.bar import BarChart
 from verticapy.plotting._plotly.pie import PieChart
+from verticapy.plotting._plotly.barh import HorizontalBarChart
