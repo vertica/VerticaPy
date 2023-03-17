@@ -35,6 +35,7 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
+import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 

@@ -34,6 +34,12 @@ class StepwisePlot(MatplotlibBase):
     def _kind(self) -> Literal["stepwise"]:
         return "stepwise"
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
+        return None
+
     # Draw.
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
@@ -84,15 +90,17 @@ class StepwisePlot(MatplotlibBase):
             rot_ini, rot_final = 90, -90
             verticalalignment_init, verticalalignment_final = "top", "bottom"
             horizontalalignment = "left"
-        param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
         ax.scatter(
-            x_new[1:-1], y_new[1:-1], c=c0, **self._update_dict(param, style_kwargs)
+            x_new[1:-1],
+            y_new[1:-1],
+            c=c0,
+            **self._update_dict(self.init_style, style_kwargs),
         )
         ax.scatter(
             [x_new[0], x_new[-1]],
             [y_new[0], y_new[-1]],
             c=c1,
-            **self._update_dict(param, style_kwargs),
+            **self._update_dict(self.init_style, style_kwargs),
         )
         ax.text(
             x_new[0] + delta_ini,

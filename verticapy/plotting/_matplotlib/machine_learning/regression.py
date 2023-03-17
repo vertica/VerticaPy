@@ -21,13 +21,14 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RegressionPlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -36,74 +37,48 @@ class RegressionPlot(MatplotlibBase):
     def _kind(self) -> Literal["regression"]:
         return "regression"
 
-    def draw(
-        self,
-        X: list,
-        y: str,
-        input_relation: str,
-        coefficients: list,
-        max_nb_points: int = 50,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
-        """
-        Draws a regression plot using the Matplotlib API.
-        """
-        param = {
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 3)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
             "marker": "o",
             "color": self.get_colors(idx=0),
             "s": 50,
             "edgecolors": "black",
         }
-        if len(X) == 1:
-            all_points = _executeSQL(
-                query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.regression_plot')*/ 
-                    {X[0]}, 
-                    {y} 
-                FROM {input_relation} 
-                WHERE {X[0]} IS NOT NULL 
-                  AND {y} IS NOT NULL LIMIT {int(max_nb_points)}""",
-                method="fetchall",
-                print_time_sql=False,
-            )
+        return None
+
+    # Draw.
+
+    def draw(
+        self, coefficients: list, ax: Optional[Axes] = None, **style_kwargs,
+    ) -> Axes:
+        """
+        Draws a regression plot using the Matplotlib API.
+        """
+        x0 = self.data["X"][:, 0]
+        y0 = self.data["X"][:, 1]
+        min_reg_x, max_reg_x = min(x0), max(x0)
+        if len(self.layout["columns"]) == 2:
             ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
-            x0, y0 = (
-                [float(item[0]) for item in all_points],
-                [float(item[1]) for item in all_points],
-            )
-            min_reg, max_reg = min(x0), max(x0)
-            x_reg = [min_reg, max_reg]
+            x_reg = [min_reg_x, max_reg_x]
             y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
             ax.plot(x_reg, y_reg, alpha=1, color="black")
             ax.scatter(
-                x0, y0, **self._update_dict(param, style_kwargs, 0),
+                x0, y0, **self._update_dict(self.init_style, style_kwargs, 0),
             )
-            ax.set_xlabel(X[0])
-            ax.set_ylabel(y)
-        elif len(X) == 2:
-            all_points = _executeSQL(
-                query=f"""
-                (SELECT 
-                    /*+LABEL('plotting._matplotlib.regression_plot')*/ 
-                    {X[0]}, 
-                    {X[1]}, 
-                    {y} 
-                 FROM {input_relation} 
-                 WHERE {X[0]} IS NOT NULL 
-                   AND {X[1]} IS NOT NULL 
-                   AND {y} IS NOT NULL 
-                 LIMIT {int(max_nb_points)})""",
-                method="fetchall",
-                print_time_sql=False,
-            )
-            x0, y0, z0 = (
-                [float(item[0]) for item in all_points],
-                [float(item[1]) for item in all_points],
-                [float(item[2]) for item in all_points],
-            )
-            min_reg_x, max_reg_x = min(x0), max(x0)
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_ylabel(self.layout["columns"][1])
+        elif len(self.layout["columns"]) == 3:
+            z0 = self.data["X"][:, 2]
             step_x = (max_reg_x - min_reg_x) / 40.0
             min_reg_y, max_reg_y = min(y0), max(y0)
             step_y = (max_reg_y - min_reg_y) / 40.0
@@ -127,11 +102,18 @@ class RegressionPlot(MatplotlibBase):
                 X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
             )
             ax.scatter(
-                x0, y0, z0, **self._update_dict(param, style_kwargs, 0),
+                x0, y0, z0, **self._update_dict(self.init_style, style_kwargs, 0),
             )
-            ax.set_xlabel(X[0])
-            ax.set_ylabel(X[1])
-            ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
+            ax.set_xlabel(self.layout["columns"][0])
+            ax.set_ylabel(self.layout["columns"][1])
+            ax.set_zlabel(
+                self.layout["columns"][2]
+                + " = f("
+                + self.layout["columns"][0]
+                + ", "
+                + self.layout["columns"][1]
+                + ")"
+            )
         else:
-            raise ParameterError("The number of predictors is too big.")
+            raise ValueError("The number of predictors is too big.")
         return ax
