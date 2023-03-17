@@ -29,7 +29,10 @@ from verticapy.plotting._matplotlib.machine_learning.lof import LOFPlot
 from verticapy.plotting._matplotlib.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
 )
-from verticapy.plotting._matplotlib.machine_learning.pca import PCAPlot
+from verticapy.plotting._matplotlib.machine_learning.pca import (
+    PCACirclePlot,
+    PCAVarPlot,
+)
 from verticapy.plotting._matplotlib.machine_learning.regression import RegressionPlot
 from verticapy.plotting._matplotlib.machine_learning.regression_tree import (
     RegressionTreePlot,
