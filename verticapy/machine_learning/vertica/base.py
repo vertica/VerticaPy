@@ -51,6 +51,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.metrics as mt
 
+from verticapy.plotting._utils import PlottingUtils
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
@@ -70,7 +71,7 @@ if conf._get_import_success("graphviz"):
 ##
 
 
-class VerticaModel:
+class VerticaModel(PlottingUtils):
     """
     Base Class for Vertica Models.
 	"""

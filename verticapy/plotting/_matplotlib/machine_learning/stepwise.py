@@ -23,6 +23,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class StepwisePlot(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -31,39 +34,37 @@ class StepwisePlot(MatplotlibBase):
     def _kind(self) -> Literal["stepwise"]:
         return "stepwise"
 
-    def draw(
-        self,
-        x: list,
-        y: list,
-        z: list = [],
-        w: list = [],
-        var: list = [],
-        x_label: str = "n_features",
-        y_label: str = "score",
-        direction="forward",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    # Draw.
+
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a stepwise plot using the Matplotlib API.
         """
         colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
-        sign = "+" if direction == "forward" else "-"
-        x_new, y_new, z_new = [], [], []
-        for idx in range(len(x)):
-            if idx == 0 or w[idx][0] == sign:
-                x_new += [x[idx]]
-                y_new += [y[idx]]
-                z_new += [z[idx]]
-        if len(var[0]) > 3:
-            var0 = var[0][0:2] + ["..."] + var[0][-1:]
+        sign = "+" if self.layout["direction"] == "forward" else "-"
+        x_new, y_new, c_new = [], [], []
+        for idx in range(len(self.data["x"])):
+            if idx == 0 or self.data["sign"][idx][0] == sign:
+                x_new += [self.data["x"][idx]]
+                y_new += [self.data["y"][idx]]
+                c_new += [self.data["c"][idx]]
+        if len(self.layout["in_variables"]) > 3:
+            var0 = (
+                self.layout["in_variables"][0:2]
+                + ["..."]
+                + self.layout["in_variables"][-1:]
+            )
         else:
-            var0 = var[0]
-        if len(var[1]) > 3:
-            var1 = var[1][0:2] + ["..."] + var[1][-1:]
+            var0 = self.layout["in_variables"]
+        if len(self.layout["out_variables"]) > 3:
+            var1 = (
+                self.layout["out_variables"][0:2]
+                + ["..."]
+                + self.layout["out_variables"][-1:]
+            )
         else:
-            var1 = var[1]
+            var1 = self.layout["out_variables"]
         if "color" in style_kwargs:
             if isinstance(style_kwargs["color"], str):
                 c0, c1 = style_kwargs["color"], colors[1]
@@ -73,7 +74,7 @@ class StepwisePlot(MatplotlibBase):
             c0, c1 = colors[0], colors[1]
         if "color" in style_kwargs:
             del style_kwargs["color"]
-        if direction == "forward":
+        if self.layout["direction"] == "forward":
             delta_ini, delta_final = 0.1, -0.15
             rot_ini, rot_final = -90, 90
             verticalalignment_init, verticalalignment_final = "top", "bottom"
@@ -106,13 +107,14 @@ class StepwisePlot(MatplotlibBase):
             ax.text(
                 (x_new[idx] + x_new[idx - 1]) / 2,
                 (y_new[idx] + y_new[idx - 1]) / 2,
-                sign + " " + z_new[idx],
+                sign + " " + c_new[idx],
                 rotation=rot_ini,
             )
-        if direction == "backward":
+        if self.layout["direction"] == "backward":
+            max_x, min_x = min(self.data["x"]), max(self.data["x"])
             ax.set_xlim(
-                max(x) + 0.1 * (1 + max(x) - min(x)),
-                min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
+                max_x + 0.1 * (1 + max_x - min_x),
+                min_x - 0.1 - 0.1 * (1 + max_x - min_x),
             )
         ax.text(
             x_new[-1] + delta_final,
@@ -123,6 +125,6 @@ class StepwisePlot(MatplotlibBase):
             horizontalalignment=horizontalalignment,
         )
         ax.set_xticks(x_new)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
+        ax.set_xlabel(self.layout["x_label"])
+        ax.set_ylabel(self.layout["y_label"])
         return ax

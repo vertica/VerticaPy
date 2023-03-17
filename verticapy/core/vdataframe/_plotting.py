@@ -35,25 +35,11 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._utils import PlottingUtils
 from verticapy.plotting._highcharts.base import hchart_from_vdf
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-import verticapy.plotting._plotly as vpy_plotly_plt
 
 
-class vDFPlot:
-    @staticmethod
-    def _get_plotting_lib(
-        matplotlib_kwargs: dict = {}, plotly_kwargs: dict = {}, style_kwargs: dict = {}
-    ) -> tuple[Literal[vpy_plotly_plt, vpy_matplotlib_plt], dict]:
-        if conf.get_option("plotting_lib") == "plotly":
-            vpy_plt = vpy_plotly_plt
-            kwargs = {**plotly_kwargs, **style_kwargs}
-        else:
-            vpy_plt = vpy_matplotlib_plt
-            kwargs = {**matplotlib_kwargs, **style_kwargs}
-        return vpy_plt, kwargs
-
+class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def animated(
         self,

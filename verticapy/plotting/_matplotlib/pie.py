@@ -61,6 +61,24 @@ class PieChart(MatplotlibBase):
 
         return my_autopct
 
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "colors": self.get_colors(),
+            "shadow": True,
+            "startangle": 290,
+            "textprops": {"color": "w"},
+            "normalize": True,
+        }
+        self.init_style_donut = {
+            **self.init_style,
+            "wedgeprops": dict(width=0.4, edgecolor="w"),
+            "explode": None,
+            "pctdistance": 0.8,
+        }
+        return None
+
     # Draw.
 
     def draw(
@@ -99,23 +117,18 @@ class PieChart(MatplotlibBase):
             ax, fig = self._get_ax_fig(
                 ax, size=(8, 6), set_axis_below=False, grid=False
             )
-            param = {
-                "autopct": autopct,
-                "colors": colors,
-                "shadow": True,
-                "startangle": 290,
-                "explode": explode,
-                "textprops": {"color": "w"},
-                "normalize": True,
-            }
             if pie_type == "donut":
-                param["wedgeprops"] = dict(width=0.4, edgecolor="w")
-                param["explode"] = None
-                param["pctdistance"] = 0.8
+                kwargs = {**self.init_style_donut, "autopct": autopct}
+            else:
+                kwargs = {
+                    **self.init_style,
+                    "autopct": autopct,
+                    "explode": explode,
+                }
             ax.pie(
                 self.data["y"],
                 labels=self.layout["labels"],
-                **self._update_dict(param, style_kwargs),
+                **self._update_dict(kwargs, style_kwargs),
             )
             handles, labels = ax.get_legend_handles_labels()
             labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
@@ -149,16 +162,16 @@ class PieChart(MatplotlibBase):
             ax.set_yticks([])
             ax.set_thetagrids([])
             ax.set_theta_zero_location("N")
-            param = {
+            kwargs = {
                 "color": colors,
             }
-            colors = self._update_dict(param, style_kwargs, -1)["color"]
+            colors = self._update_dict(kwargs, style_kwargs, -1)["color"]
             if isinstance(colors, str):
                 colors = [colors]
             colors = colors + self.get_colors()
             style_kwargs["color"] = colors
             ax.bar(
-                rad, y, width=width, **self._update_dict(param, style_kwargs, -1),
+                rad, y, width=width, **self._update_dict(kwargs, style_kwargs, -1),
             )
             for i in np.arange(N):
                 ax.text(
@@ -213,10 +226,10 @@ class NestedPieChart(MatplotlibBase):
         """
         n = len(self.layout["columns"])
         wedgeprops = dict(width=0.3, edgecolor="w")
-        tmp_style = {}
-        for elem in style_kwargs:
-            if elem not in ("color", "colors", "wedgeprops"):
-                tmp_style[elem] = style_kwargs[elem]
+        kwargs = {}
+        for s in style_kwargs:
+            if s not in ("color", "colors", "wedgeprops"):
+                kwargs[s] = style_kwargs[s]
         if "wedgeprops" in style_kwargs:
             wedgeprops = style_kwargs["wedgeprops"]
         if "colors" in style_kwargs:
@@ -257,7 +270,7 @@ class NestedPieChart(MatplotlibBase):
                 wedgeprops=wedgeprops,
                 autopct=autopct,
                 pctdistance=pctdistance,
-                **tmp_style,
+                **kwargs,
             )
             legend_colors = [all_colors_dict[i][elem] for elem in all_colors_dict[i]]
             if n == 1:
