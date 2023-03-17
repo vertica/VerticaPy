@@ -18,33 +18,38 @@ from verticapy.plotting.base import PlottingBase
 
 import numpy as np
 
-class PlotlyBase(PlottingBase):
 
-    @staticmethod    
-    def _convert_labels_and_get_counts(array):
-        array=np.where(array == None, "NULL", array)
-        array=array.astype('<U21')
-        array = array.astype(str)
-        array[1:-1,:] = np.char.add(array[1:-1,:], "__")
-        if array.shape[0]>3:
-            array[1:-1,:] = np.char.add(np.char.add(array[1:-1,:], array[:-2,:]),array[:-3,:])
+class PlotlyBase(PlottingBase):
+    @staticmethod
+    def _convert_labels_and_get_counts(pivot_array):
+        pivot_array = np.where(pivot_array == None, "NULL", pivot_array)
+        pivot_array = pivot_array.astype("<U21")
+        pivot_array = pivot_array.astype(str)
+        pivot_array[1:-1, :] = np.char.add(pivot_array[1:-1, :], "__")
+        if pivot_array.shape[0] > 3:
+            pivot_array[1:-1, :] = np.char.add(
+                np.char.add(pivot_array[1:-1, :], pivot_array[:-2, :]),
+                pivot_array[:-3, :],
+            )
         else:
-            array[1:-1,:] = np.char.add(array[1:-1,:], array[:-2,:])
-        labels_count={}
-        labels_father={}
-        for j in range(array.shape[0]-1):
-            for i in range(len(array[0])):
-                current_label = array[-2][i]
+            pivot_array[1:-1, :] = np.char.add(
+                pivot_array[1:-1, :], pivot_array[:-2, :]
+            )
+        labels_count = {}
+        labels_father = {}
+        for j in range(pivot_array.shape[0] - 1):
+            for i in range(len(pivot_array[0])):
+                current_label = pivot_array[-2][i]
                 if current_label not in labels_count:
                     labels_count[current_label] = 0
-                labels_count[current_label] += int(array[-1][i])
-                if array.shape[0]>2:
-                    labels_father[current_label]=array[-3][i]
+                labels_count[current_label] += int(pivot_array[-1][i])
+                if pivot_array.shape[0] > 2:
+                    labels_father[current_label] = pivot_array[-3][i]
                 else:
-                    labels_father[current_label]=""
-            array = np.delete(array, -2, axis=0)
-        labels = [s.split('__')[0] for s in list(labels_father.keys())]
-        ids=list(labels_count.keys())
-        parents=list(labels_father.values())
-        values=list(labels_count.values())
-        return ids,labels,parents,values
+                    labels_father[current_label] = ""
+            pivot_array = np.delete(pivot_array, -2, axis=0)
+        labels = [s.split("__")[0] for s in list(labels_father.keys())]
+        ids = list(labels_count.keys())
+        parents = list(labels_father.values())
+        values = list(labels_count.values())
+        return ids, labels, parents, values
