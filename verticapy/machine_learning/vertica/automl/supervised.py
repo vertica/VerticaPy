@@ -664,7 +664,7 @@ class AutoML(VerticaModel):
             vpy_plt, kwargs = self._get_plotting_lib(
                 matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
-            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+            vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return self.best_model_.features_importance(**kwargs)
 
     # Plotting Methods.

@@ -132,7 +132,7 @@ class LinearModel:
             vpy_plt, kwargs = self._get_plotting_lib(
                 matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
-            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+            vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),
