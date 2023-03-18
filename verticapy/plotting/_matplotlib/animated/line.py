@@ -67,7 +67,7 @@ class AnimatedLinePlot(MatplotlibBase):
     # Draw.
 
     def _animate(
-        self, window_size: int, fixed_xy_lim: bool, all_plots: list, ax: Axes
+        self, all_plots: list, window_size: int, fixed_xy_lim: bool, ax: Axes
     ) -> tuple[Axes]:
         def animate(i: int) -> tuple[Axes]:
             k = max(i - window_size, 0)
@@ -128,9 +128,9 @@ class AnimatedLinePlot(MatplotlibBase):
         myAnimation = animation.FuncAnimation(
             fig,
             self._animate(
+                all_plots=all_plots,
                 window_size=window_size,
                 fixed_xy_lim=fixed_xy_lim,
-                all_plots=all_plots,
                 ax=ax,
             ),
             frames=range(0, len(self.data["x"]) - 1, step),

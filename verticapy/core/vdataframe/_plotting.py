@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, math
+import datetime, copy, math
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
 
@@ -190,24 +190,30 @@ class vDFPlot(PlottingUtils):
                 **style_kwargs,
             )
         elif kind == "bar":
-            return vpy_matplotlib_plt.AnimatedBarChart().draw(
-                self,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={
+                    "ax": ax,
+                    "fixed_xy_lim": fixed_xy_lim,
+                    "date_in_title": date_in_title,
+                    "date_f": date_f,
+                    "date_style_dict": date_style_dict,
+                    "interval": interval,
+                    "repeat": repeat,
+                },
+                style_kwargs=style_kwargs,
+            )
+            cols = copy.deepcopy(columns)
+            if by:
+                cols += [by]
+            return vpy_plt.AnimatedBarChart(
+                vdf=self,
                 order_by=ts,
-                columns=columns,
-                by=by,
+                columns=cols,
                 order_by_start=start_date,
                 order_by_end=end_date,
                 limit_over=limit_over,
                 limit=limit,
-                fixed_xy_lim=fixed_xy_lim,
-                date_in_title=date_in_title,
-                date_f=date_f,
-                date_style_dict=date_style_dict,
-                interval=interval,
-                repeat=repeat,
-                ax=ax,
-                **style_kwargs,
-            )
+            ).draw(**kwargs)
         elif kind == "pie":
             return vpy_matplotlib_plt.AnimatedPieChart().draw(
                 self,

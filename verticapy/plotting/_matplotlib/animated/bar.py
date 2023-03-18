@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Callable, Literal, Optional, TYPE_CHECKING
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -35,6 +36,9 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class AnimatedBarChart(MatplotlibBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
@@ -43,44 +47,23 @@ class AnimatedBarChart(MatplotlibBase):
     def _kind(self) -> Literal["animated_bar"]:
         return "animated_bar"
 
-    def draw(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        order_by: str,
-        by: str = "",
-        order_by_start: str = "",
-        order_by_end: str = "",
-        limit_over: int = 6,
-        limit: int = 1000000,
-        fixed_xy_lim: bool = False,
-        date_in_title: bool = False,
-        date_f: Optional[Callable] = None,
-        date_style_dict: dict = {},
-        interval: int = 10,
-        repeat: bool = True,
-        return_html: bool = True,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> animation.Animation:
-        """
-        Draws an animated bar chart using the Matplotlib API.
-        """
-        if not (date_style_dict):
-            date_style_dict = {
-                "fontsize": 50,
-                "alpha": 0.6,
-                "color": "gray",
-                "ha": "right",
-                "va": "center",
-            }
-        if by:
-            columns += [by]
-        if date_f == None:
+    @property
+    def _compute_method(self) -> Literal["line"]:
+        return "line"
 
-            def date_f(x):
-                return str(x)
+    # Styling Methods.
 
+    def _init_style(self) -> None:
+        self.init_date_style_dict = {
+            "fontsize": 50,
+            "alpha": 0.6,
+            "color": "gray",
+            "ha": "right",
+            "va": "center",
+        }
+        return None
+
+    def _get_style_color(self, style_kwargs: dict) -> list:
         colors = self.get_colors()
         for c in ["color", "colors"]:
             if c in style_kwargs:
@@ -88,71 +71,23 @@ class AnimatedBarChart(MatplotlibBase):
                 del style_kwargs[c]
                 break
         if isinstance(colors, str):
-            colors = []
-        colors_map = {}
-        idx = 2 if len(columns) >= 3 else 0
-        all_cats = vdf[columns[idx]].distinct(agg=f"MAX({columns[1]})")
-        for idx, i in enumerate(all_cats):
-            colors_map[i] = colors[idx % len(colors)]
-        order_by_start_str, order_by_end_str = "", ""
-        if order_by_start:
-            order_by_start_str = f"AND {order_by} > '{order_by_start}'"
-        if order_by_end:
-            order_by_end_str = f" AND {order_by} < '{order_by_end}'"
-        condition = " AND ".join([f"{column} IS NOT NULL" for column in columns])
-        query_result = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.AnimatedBarChart.animated_bar')*/ * 
-                FROM 
-                    (SELECT 
-                        {order_by},
-                        {", ".join(columns)} 
-                     FROM {vdf._genSQL()} 
-                     WHERE {order_by} IS NOT NULL 
-                       AND {condition}
-                       {order_by_start_str}
-                       {order_by_end_str} 
-                     LIMIT {limit_over} 
-                        OVER (PARTITION BY {order_by} 
-                              ORDER BY {columns[1]} DESC)) x 
-                ORDER BY {order_by} ASC, {columns[1]} ASC 
-                LIMIT {limit}""",
-            title="Selecting points to draw the animated bar chart.",
-            method="fetchall",
-        )
-        order_by_values = [item[0] for item in query_result]
-        column1 = [item[1] for item in query_result]
-        column2 = [float(item[2]) for item in query_result]
-        column3 = []
-        if len(columns) >= 3:
-            column3 = [item[3] for item in query_result]
-            color = [colors_map[item[3]] for item in query_result]
-        else:
-            color = [colors_map[item[1]] for item in query_result]
-        current_ts, ts_idx = order_by_values[0], 0
-        bar_values = []
-        n = len(order_by_values)
-        for idx, elem in enumerate(order_by_values):
-            if elem != current_ts or idx == n - 1:
-                bar_values += [
-                    {
-                        "y": column1[ts_idx:idx],
-                        "width": column2[ts_idx:idx],
-                        "c": color[ts_idx:idx],
-                        "x": column3[ts_idx:idx],
-                        "date": current_ts,
-                    }
-                ]
-                current_ts, ts_idx = elem, idx
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(9, 6)
-            ax.xaxis.grid()
-            ax.set_axisbelow(True)
+            colors = [colors]
+        return colors
 
-        def animate(i):
+    # Draw.
+
+    def _animate(
+        self,
+        bar_values: dict,
+        m: int,
+        date_f: Callable,
+        fixed_xy_lim: bool,
+        date_in_title: bool,
+        date_style_dict: dict,
+        style_kwargs: dict,
+        ax: Axes,
+    ) -> tuple[Axes]:
+        def animate(i: int) -> tuple[Axes]:
             ax.clear()
             ax.xaxis.grid()
             ax.set_axisbelow(True)
@@ -166,15 +101,16 @@ class AnimatedBarChart(MatplotlibBase):
                 **style_kwargs,
             )
             if bar_values[i]["width"][0] > 0:
+                n = len(bar_values[i]["y"])
                 ax.barh(
                     y=bar_values[i]["y"],
-                    width=[-0.3 * delta_x for elem in bar_values[i]["y"]],
+                    width=[-0.3 * delta_x for i in range(n)],
                     color=bar_values[i]["c"],
                     alpha=0.6,
                     **style_kwargs,
                 )
             if fixed_xy_lim:
-                ax.set_xlim(min(column2), max(column2))
+                ax.set_xlim(min(self.data["Y"][:, 1]), max(self.data["Y"][:, 2]))
             else:
                 ax.set_xlim(min_x - 0.3 * delta_x, max_x + 0.3 * delta_x)
             all_text = []
@@ -203,7 +139,7 @@ class AnimatedBarChart(MatplotlibBase):
                         size=10,
                     )
                 ]
-                if len(columns) >= 3:
+                if m >= 3:
                     tmp_txt += [
                         ax.text(
                             bar_values[i]["width"][k],
@@ -220,25 +156,76 @@ class AnimatedBarChart(MatplotlibBase):
             else:
                 my_text = ax.text(
                     max_x + 0.27 * delta_x,
-                    int(limit_over / 2),
+                    int(self.layout["limit_over"] / 2),
                     date_f(bar_values[i]["date"]),
+                    **self.init_date_style_dict,
                     **date_style_dict,
                 )
             ax.xaxis.tick_top()
             ax.xaxis.set_label_position("top")
-            ax.set_xlabel(columns[1])
+            ax.set_xlabel(self.layout["columns"][1])
             ax.set_yticks([])
             return (ax,)
 
+        return animate
+
+    def draw(
+        self,
+        fixed_xy_lim: bool = False,
+        date_in_title: bool = False,
+        date_f: Optional[Callable] = None,
+        date_style_dict: dict = {},
+        interval: int = 10,
+        repeat: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> animation.Animation:
+        """
+        Draws an animated bar chart using the Matplotlib API.
+        """
+        if date_f == None:
+            date_f = lambda x: str(x)
+        colors = self._get_style_color(style_kwargs=style_kwargs)
+        n, m = self.data["Y"].shape
+        all_cats = np.unique(self.data["Y"][:, 0])
+        colors_map = {}
+        for j, i in enumerate(all_cats):
+            colors_map[i] = colors[j % len(colors)]
+        idx = 2 if m >= 3 else 0
+        color = [colors_map[i] for i in self.data["Y"][:, idx]]
+        bar_values = []
+        current_ts, ts_idx = self.data["x"][0], 0
+        for idx, x in enumerate(self.data["x"]):
+            if x != current_ts or idx == n - 1:
+                bar_values += [
+                    {
+                        "y": self.data["Y"][:, 0][ts_idx:idx],
+                        "width": self.data["Y"][:, 1][ts_idx:idx].astype(float),
+                        "c": color[ts_idx:idx],
+                        "x": self.data["Y"][:, 2][ts_idx:idx] if m >= 3 else [],
+                        "date": current_ts,
+                    }
+                ]
+                current_ts, ts_idx = x, idx
+        ax, fig = self._get_ax_fig(ax, size=(9, 6), set_axis_below=True, grid=True)
         myAnimation = animation.FuncAnimation(
             fig,
-            animate,
+            self._animate(
+                bar_values=bar_values,
+                m=m,
+                date_f=date_f,
+                fixed_xy_lim=fixed_xy_lim,
+                date_in_title=date_in_title,
+                date_style_dict=date_style_dict,
+                style_kwargs=style_kwargs,
+                ax=ax,
+            ),
             frames=range(0, len(bar_values)),
             interval=interval,
             blit=False,
             repeat=repeat,
         )
-        if conf._get_import_success("jupyter") and return_html:
+        if conf._get_import_success("jupyter"):
             anim = myAnimation.to_jshtml()
             plt.close("all")
             return HTML(anim)

@@ -1635,7 +1635,7 @@ class vDFCorr:
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return TableSample({"index": copy.deepcopy(columns), "iv": importance,}).sort(
-            "iv"
+            column="iv", desc=True,
         )
 
 

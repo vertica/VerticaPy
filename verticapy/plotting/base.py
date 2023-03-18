@@ -866,6 +866,7 @@ class PlottingBase:
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
         limit: int = -1,
+        limit_over: int = -1,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
@@ -875,13 +876,26 @@ class PlottingBase:
         X = vdf.between(
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].sort(columns=[order_by])
+        if limit_over > 0:
+            X = X._new_vdataframe(
+                f"""
+                SELECT * FROM {X}
+                LIMIT {limit_over} OVER 
+                    (PARTITION BY {order_by} 
+                     ORDER BY {columns[1]} DESC)"""
+            ).sort(columns=[order_by, columns[1]])
         if limit > 0:
             X = X[:limit]
         X = X.to_numpy()
         if not (vdf[columns[-1]].isnum()):
+            Y = X[:, 1:-1]
+            try:
+                Y = Y.astype(float)
+            except ValueError:
+                pass
             self.data = {
                 "x": X[:, 0],
-                "Y": X[:, 1:-1].astype(float),
+                "Y": Y,
                 "z": X[:, -1],
             }
             has_category = True
@@ -895,6 +909,8 @@ class PlottingBase:
             "columns": columns,
             "order_by": order_by,
             "has_category": has_category,
+            "limit": limit,
+            "limit_over": limit_over,
         }
         return None
 

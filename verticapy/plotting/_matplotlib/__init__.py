@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from verticapy.plotting._matplotlib.animated.bar import AnimatedBarChart
 from verticapy.plotting._matplotlib.animated.bubble import AnimatedBubblePlot
 from verticapy.plotting._matplotlib.animated.line import AnimatedLinePlot
+from verticapy.plotting._matplotlib.animated.pie import AnimatedPieChart
 
 from verticapy.plotting._matplotlib.machine_learning.champion_challenger import (
     ChampionChallengerPlot,
