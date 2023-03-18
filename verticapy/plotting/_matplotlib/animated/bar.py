@@ -14,28 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Callable, Literal, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
-from matplotlib.lines import Line2D
-import matplotlib.pyplot as plt
 
-import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
-from verticapy._utils._sql._sys import _executeSQL
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
-if conf._get_import_success("jupyter"):
-    from IPython.display import HTML
-
-from verticapy.plotting._matplotlib.base import MatplotlibBase
+from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
-class AnimatedBarChart(MatplotlibBase):
+class AnimatedBarChart(AnimatedBase):
 
     # Properties.
 
@@ -169,20 +157,9 @@ class AnimatedBarChart(MatplotlibBase):
 
         return animate
 
-    def draw(
-        self,
-        fixed_xy_lim: bool = False,
-        date_in_title: bool = False,
-        date_f: Optional[Callable] = None,
-        date_style_dict: dict = {},
-        interval: int = 10,
-        repeat: bool = True,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> animation.Animation:
-        """
-        Draws an animated bar chart using the Matplotlib API.
-        """
+    def _compute_anim_params(
+        self, date_f: Optional[Callable] = None, **style_kwargs
+    ) -> tuple:
         if date_f == None:
             date_f = lambda x: str(x)
         colors = self._get_style_color(style_kwargs=style_kwargs)
@@ -207,8 +184,27 @@ class AnimatedBarChart(MatplotlibBase):
                     }
                 ]
                 current_ts, ts_idx = x, idx
+        return m, date_f, bar_values
+
+    def draw(
+        self,
+        fixed_xy_lim: bool = False,
+        date_in_title: bool = False,
+        date_f: Optional[Callable] = None,
+        date_style_dict: dict = {},
+        interval: int = 10,
+        repeat: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> animation.Animation:
+        """
+        Draws an animated bar chart using the Matplotlib API.
+        """
         ax, fig = self._get_ax_fig(ax, size=(9, 6), set_axis_below=True, grid=True)
-        myAnimation = animation.FuncAnimation(
+        m, date_f, bar_values = self._compute_anim_params(
+            date_f=date_f, style_kwargs=style_kwargs
+        )
+        anim = animation.FuncAnimation(
             fig,
             self._animate(
                 bar_values=bar_values,
@@ -225,9 +221,4 @@ class AnimatedBarChart(MatplotlibBase):
             blit=False,
             repeat=repeat,
         )
-        if conf._get_import_success("jupyter"):
-            anim = myAnimation.to_jshtml()
-            plt.close("all")
-            return HTML(anim)
-        else:
-            return myAnimation
+        return self._return_animation(anim)

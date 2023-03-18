@@ -55,6 +55,7 @@ from verticapy.core.vdataframe._math import vDFMath, vDCMath
 from verticapy.core.vdataframe._normalize import vDFNorm, vDCNorm
 from verticapy.core.vdataframe._pivot import vDFPivot
 from verticapy.core.vdataframe._plotting import vDFPlot, vDCPlot
+from verticapy.core.vdataframe._plotting_animated import vDFAnimatedPlot
 from verticapy.core.vdataframe._read import vDFRead, vDCRead
 from verticapy.core.vdataframe._rolling import vDFRolling
 from verticapy.core.vdataframe._sys import vDFSystem, vDCSystem
@@ -89,6 +90,7 @@ from verticapy.sql.flex import (
 
 class vDataFrame(
     vDFAgg,
+    vDFAnimatedPlot,
     vDFCorr,
     vDFEncode,
     vDFEval,

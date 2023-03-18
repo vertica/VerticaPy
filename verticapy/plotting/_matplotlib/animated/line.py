@@ -14,28 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import warnings
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING
+from typing import Any, Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
-import matplotlib.pyplot as plt
 
-import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
-from verticapy._utils._sql._sys import _executeSQL
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
-if conf._get_import_success("jupyter"):
-    from IPython.display import HTML
-
-from verticapy.plotting._matplotlib.base import MatplotlibBase
+from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
-class AnimatedLinePlot(MatplotlibBase):
+class AnimatedLinePlot(AnimatedBase):
 
     # Properties.
 
@@ -125,7 +113,7 @@ class AnimatedLinePlot(MatplotlibBase):
         if fixed_xy_lim:
             ax.set_xlim(self.data["x"][0], self.data["x"][-1])
             ax.set_ylim(np.nanmin(self.data["Y"]), np.nanmax(self.data["Y"]))
-        myAnimation = animation.FuncAnimation(
+        anim = animation.FuncAnimation(
             fig,
             self._animate(
                 all_plots=all_plots,
@@ -138,9 +126,4 @@ class AnimatedLinePlot(MatplotlibBase):
             blit=False,
             repeat=repeat,
         )
-        if conf._get_import_success("jupyter"):
-            anim = myAnimation.to_jshtml()
-            plt.close("all")
-            return HTML(anim)
-        else:
-            return myAnimation
+        return self._return_animation(anim)

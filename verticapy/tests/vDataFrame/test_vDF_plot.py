@@ -94,87 +94,65 @@ def gapminder_vd():
 
 class TestvDFPlot:
     def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
-        result = pop_growth_vd.animated(
-            "year",
-            ["city", "population"],
-            "continent",
-            1970,
-            1980,
-            "bar",
-            return_html=False,
+        result = pop_growth_vd.animated_bar(
+            "year", ["city", "population"], "continent", 1970, 1980,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year",
-            ["city", "population"],
-            "continent",
-            1970,
-            1980,
-            "pie",
-            return_html=False,
+        result = pop_growth_vd.animated_pie(
+            "year", ["city", "population"], "continent", 1970, 1980,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year", ["city", "population"], "", 1970, 1980, "bar", return_html=False
+        result = pop_growth_vd.animated_bar(
+            "year", ["city", "population"], "", 1970, 1980,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year", ["city", "population"], "", 1970, 1980, "pie", return_html=False
+        result = pop_growth_vd.animated_pie(
+            "year", ["city", "population"], "", 1970, 1980,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = amazon_vd.animated(
-            "date", "number", kind="ts", by="state", return_html=False
-        )
+        result = amazon_vd.animated_plot("date", "number", kind="ts", by="state",)
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = commodities_vd.animated("date", kind="ts", color=["r", "g", "b"])
+        result = commodities_vd.animated_plot("date", color=["r", "g", "b"])
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_bubble(
             "year",
             ["lifeExp", "gdpPercap", "country", "pop"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_bubble(
             "year",
             ["lifeExp", "gdpPercap", "country"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_bubble(
             "year",
             ["lifeExp", "gdpPercap", "pop"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_bubble(
             "year",
             ["lifeExp", "gdpPercap"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
