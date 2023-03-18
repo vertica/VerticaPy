@@ -29,7 +29,7 @@ if conf._get_import_success("jupyter"):
 
 class AnimatedBase(MatplotlibBase):
     @staticmethod
-    def _return_animation(a: animation.Animation) -> Union[HTML, animation.Animation]:
+    def _return_animation(a: animation.Animation) -> Union["HTML", animation.Animation]:
         if conf._get_import_success("jupyter"):
             anim = a.to_jshtml()
             plt.close("all")
