@@ -865,19 +865,19 @@ class PlottingBase:
         columns: SQLColumns,
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
+        limit: int = -1,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
         elif not (columns):
             columns = vdf.numcol()
         columns, order_by = vdf._format_colnames(columns, order_by)
-        X = (
-            vdf.between(
-                column=order_by, start=order_by_start, end=order_by_end, inplace=False
-            )[[order_by] + columns]
-            .sort(columns=[order_by])
-            .to_numpy()
-        )
+        X = vdf.between(
+            column=order_by, start=order_by_start, end=order_by_end, inplace=False
+        )[[order_by] + columns].sort(columns=[order_by])
+        if limit > 0:
+            X = X[:limit]
+        X = X.to_numpy()
         if not (vdf[columns[-1]].isnum()):
             self.data = {
                 "x": X[:, 0],

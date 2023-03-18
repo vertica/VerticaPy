@@ -34,14 +34,14 @@ if conf._get_import_success("jupyter"):
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
-class AnimatedBarChart(MatplotlibBase):
+class AnimatedPieChart(MatplotlibBase):
     @property
     def _category(self) -> Literal["chart"]:
         return "chart"
 
     @property
-    def _kind(self) -> Literal["animated_bar"]:
-        return "animated_bar"
+    def _kind(self) -> Literal["animated_pie"]:
+        return "animated_pie"
 
     def draw(
         self,
@@ -148,86 +148,60 @@ class AnimatedBarChart(MatplotlibBase):
         if not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
-                fig.set_size_inches(9, 6)
+                fig.set_size_inches(11, min(limit_over, 600))
             ax.xaxis.grid()
             ax.set_axisbelow(True)
 
         def animate(i):
             ax.clear()
-            ax.xaxis.grid()
-            ax.set_axisbelow(True)
-            min_x, max_x = min(bar_values[i]["width"]), max(bar_values[i]["width"])
-            delta_x = max_x - min_x
-            ax.barh(
-                y=bar_values[i]["y"],
-                width=bar_values[i]["width"],
-                color=bar_values[i]["c"],
-                alpha=0.6,
-                **style_kwargs,
+            param = {
+                "wedgeprops": {"edgecolor": "white", "alpha": 0.5},
+                "textprops": {"fontsize": 10, "fontweight": "bold"},
+                "autopct": "%1.1f%%",
+            }
+
+            def autopct(val):
+                a = val / 100.0 * sum(bar_values[i]["width"])
+                return f"{a:}"
+
+            pie_chart = ax.pie(
+                x=bar_values[i]["width"],
+                labels=bar_values[i]["y"],
+                colors=bar_values[i]["c"],
+                **self._update_dict(param, style_kwargs),
             )
-            if bar_values[i]["width"][0] > 0:
-                ax.barh(
-                    y=bar_values[i]["y"],
-                    width=[-0.3 * delta_x for elem in bar_values[i]["y"]],
-                    color=bar_values[i]["c"],
-                    alpha=0.6,
-                    **style_kwargs,
-                )
-            if fixed_xy_lim:
-                ax.set_xlim(min(column2), max(column2))
-            else:
-                ax.set_xlim(min_x - 0.3 * delta_x, max_x + 0.3 * delta_x)
-            all_text = []
-            for k in range(len(bar_values[i]["y"])):
-                tmp_txt = []
-                tmp_txt += [
-                    ax.text(
-                        bar_values[i]["width"][k],
-                        k + 0.1,
-                        bar_values[i]["y"][k],
-                        ha="right",
-                        fontweight="bold",
-                        size=10,
-                    )
-                ]
-                width_format = bar_values[i]["width"][k]
-                if width_format - int(width_format) == 0:
-                    width_format = int(width_format)
-                width_format = f"{width_format:}"
-                tmp_txt += [
-                    ax.text(
-                        bar_values[i]["width"][k] + 0.005 * delta_x,
-                        k - 0.15,
-                        width_format,
-                        ha="left",
-                        size=10,
-                    )
-                ]
-                if len(columns) >= 3:
-                    tmp_txt += [
-                        ax.text(
-                            bar_values[i]["width"][k],
-                            k - 0.3,
-                            bar_values[i]["x"][k],
-                            ha="right",
-                            size=10,
-                            color="#333333",
-                        )
-                    ]
-                all_text += [tmp_txt]
+            for elem in pie_chart[2]:
+                elem.set_fontweight("normal")
             if date_in_title:
                 ax.set_title(date_f(bar_values[i]["date"]))
             else:
                 my_text = ax.text(
-                    max_x + 0.27 * delta_x,
-                    int(limit_over / 2),
-                    date_f(bar_values[i]["date"]),
-                    **date_style_dict,
+                    1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict
                 )
-            ax.xaxis.tick_top()
-            ax.xaxis.set_label_position("top")
-            ax.set_xlabel(columns[1])
-            ax.set_yticks([])
+            all_categories = []
+            custom_lines = []
+            if len(columns) >= 3:
+                for idx, elem in enumerate(bar_values[i]["x"]):
+                    if elem not in all_categories:
+                        all_categories += [elem]
+                        custom_lines += [
+                            Line2D(
+                                [0],
+                                [0],
+                                color=bar_values[i]["c"][idx],
+                                lw=6,
+                                alpha=self._update_dict(param, style_kwargs)[
+                                    "wedgeprops"
+                                ]["alpha"],
+                            )
+                        ]
+                leg = ax.legend(
+                    custom_lines,
+                    all_categories,
+                    title=by,
+                    loc="center left",
+                    bbox_to_anchor=[1, 0.5],
+                )
             return (ax,)
 
         myAnimation = animation.FuncAnimation(

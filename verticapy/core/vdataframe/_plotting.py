@@ -46,9 +46,9 @@ class vDFPlot(PlottingUtils):
         self,
         ts: str,
         columns: Union[list] = [],
-        by: str = "",
-        start_date: PythonScalar = "",
-        end_date: PythonScalar = "",
+        by: Optional[str] = None,
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
         kind: Literal["auto", "bar", "bubble", "ts", "pie"] = "auto",
         limit_over: int = 6,
         limit: int = 1000000,
@@ -61,7 +61,6 @@ class vDFPlot(PlottingUtils):
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
-        return_html: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -77,10 +76,10 @@ class vDFPlot(PlottingUtils):
         List of the vDataColumns names.
     by: str, optional
         Categorical vDataColumn used in the partition.
-    start_date: str / date, optional
+    start_date: PythonScalar, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str / date, optional
+    end_date: PythonScalar, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     kind: str, optional
@@ -120,9 +119,6 @@ class vDFPlot(PlottingUtils):
         Number of ms between each update.
     repeat: bool, optional
         If set to True, the animation will be repeated.
-    return_html: bool, optional
-        If set to True and if using a Jupyter notebook, the HTML of the animation will be 
-        generated.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -188,13 +184,12 @@ class vDFPlot(PlottingUtils):
                 date_style_dict=date_style_dict,
                 interval=interval,
                 repeat=repeat,
-                return_html=return_html,
                 img=bubble_img["img"],
                 bbox=bubble_img["bbox"],
                 ax=ax,
                 **style_kwargs,
             )
-        elif kind in ("bar", "pie"):
+        elif kind == "bar":
             return vpy_matplotlib_plt.AnimatedBarChart().draw(
                 self,
                 order_by=ts,
@@ -210,8 +205,25 @@ class vDFPlot(PlottingUtils):
                 date_style_dict=date_style_dict,
                 interval=interval,
                 repeat=repeat,
-                return_html=return_html,
-                pie=(kind == "pie"),
+                ax=ax,
+                **style_kwargs,
+            )
+        elif kind == "pie":
+            return vpy_matplotlib_plt.AnimatedPieChart().draw(
+                self,
+                order_by=ts,
+                columns=columns,
+                by=by,
+                order_by_start=start_date,
+                order_by_end=end_date,
+                limit_over=limit_over,
+                limit=limit,
+                fixed_xy_lim=fixed_xy_lim,
+                date_in_title=date_in_title,
+                date_f=date_f,
+                date_style_dict=date_style_dict,
+                interval=interval,
+                repeat=repeat,
                 ax=ax,
                 **style_kwargs,
             )
@@ -221,29 +233,34 @@ class vDFPlot(PlottingUtils):
                     "Parameter 'columns' can not be empty when using kind = 'ts' and when parameter 'by' is not empty."
                 )
                 vdf = self.pivot(index=ts, columns=by, values=columns[0])
+                columns = vdf.numcol()[0:limit_over]
             else:
                 vdf = self
-            columns = vdf.numcol()[0:limit_over]
+                if not (columns):
+                    columns = vdf.numcol()
             if "step" not in ts_steps:
                 ts_steps["step"] = 5
             if "window" not in ts_steps:
                 ts_steps["window"] = 100
-            return vpy_matplotlib_plt.AnimatedLinePlot().draw(
-                vdf,
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={
+                    "ax": ax,
+                    "fixed_xy_lim": fixed_xy_lim,
+                    "window_size": ts_steps["window"],
+                    "step": ts_steps["step"],
+                    "interval": interval,
+                    "repeat": repeat,
+                },
+                style_kwargs=style_kwargs,
+            )
+            return vpy_matplotlib_plt.AnimatedLinePlot(
+                vdf=vdf,
                 order_by=ts,
                 columns=columns,
                 order_by_start=start_date,
                 order_by_end=end_date,
                 limit=limit,
-                fixed_xy_lim=fixed_xy_lim,
-                window_size=ts_steps["window"],
-                step=ts_steps["step"],
-                interval=interval,
-                repeat=repeat,
-                return_html=return_html,
-                ax=ax,
-                **style_kwargs,
-            )
+            ).draw(**kwargs)
 
     @save_verticapy_logs
     def bar(
