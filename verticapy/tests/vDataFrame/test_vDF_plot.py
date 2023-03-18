@@ -114,7 +114,7 @@ class TestvDFPlot:
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = amazon_vd.animated_plot("date", "number", kind="ts", by="state",)
+        result = amazon_vd.animated_plot("date", "number", by="state",)
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
         result = commodities_vd.animated_plot("date", color=["r", "g", "b"])
