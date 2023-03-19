@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
-import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.patches as mpatches
@@ -162,7 +161,7 @@ class PRCCurve(ROCCurve):
             [0 for x in self.data["x"]],
             self.data["y"],
             facecolor=self.get_colors(idx=0),
-            alpha=self._init_style,
+            **self._init_style,
         )
         ax.set_ylim(0, 1)
         ax.set_xlim(0, 1)
@@ -207,10 +206,9 @@ class LiftChart(MatplotlibBase):
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         ax.set_xlabel("Cumulative Data Fraction")
-        z = np.nan_to_num(self.data["z"], nan=np.nanmax(self.data["z"]))
         color1, color2 = self.get_colors(idx=0), self.get_colors(idx=1)
         kwargs = {"color": color1}
-        ax.plot(self.data["x"], z, **self._update_dict(kwargs, style_kwargs, 0))
+        ax.plot(self.data["x"], self.data["z"], **self._update_dict(kwargs, style_kwargs, 0))
         kwargs = {"color": color2}
         ax.plot(
             self.data["x"],
@@ -218,7 +216,7 @@ class LiftChart(MatplotlibBase):
             **self._update_dict(kwargs, style_kwargs, 1),
         )
         ax.fill_between(
-            self.data["x"], self.data["y"], z, facecolor=color1, alpha=0.2,
+            self.data["x"], self.data["y"], self.data["z"], facecolor=color1, alpha=0.2,
         )
         ax.fill_between(
             self.data["x"],

@@ -87,6 +87,7 @@ def lift_chart(
         nbins=nbins,
         fun_sql_name="lift_table",
     )
+    lift = np.nan_to_num(lift, nan=np.nanmax(lift))
     decision_boundary.reverse()
     vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
         matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
