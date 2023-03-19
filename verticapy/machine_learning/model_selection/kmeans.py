@@ -16,11 +16,10 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
+import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -28,11 +27,10 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
 
 from verticapy.core.tablesample.base import TableSample
-from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.cluster import KMeans, KPrototypes
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._utils import PlottingUtils
 
 
 @save_verticapy_logs
@@ -202,7 +200,8 @@ def elbow(
     Returns
     -------
     TableSample
-        Number of Clusters, Elbow Score
+        nb_clusters,total_within_cluster_ss,between_cluster_ss, 
+        total_ss, elbow_score
     """
     if isinstance(X, str):
         X = [X]
@@ -216,10 +215,11 @@ def elbow(
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    elbow_score, model_name = (
-        [],
-        gen_tmp_name(schema=schema, name="kmeans"),
-    )
+    elbow_score = []
+    between_cluster_ss = []
+    total_ss = []
+    total_within_cluster_ss = []
+    model_name = gen_tmp_name(schema=schema, name="kmeans")
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
@@ -238,22 +238,34 @@ def elbow(
             model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         elbow_score += [float(model.elbow_score_)]
+        between_cluster_ss += [float(model.between_cluster_ss_)]
+        total_ss += [float(model.total_ss_)]
+        total_within_cluster_ss += [float(model.total_within_cluster_ss_)]
         model.drop()
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-        ax.grid(axis="y")
-    param = {
-        "color": get_colors()[0],
-        "marker": "o",
-        "markerfacecolor": "white",
-        "markersize": 7,
-        "markeredgecolor": "black",
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    )
+    data = {
+        "x": np.array(L),
+        "y": np.array(elbow_score),
+        "z0": np.array(total_within_cluster_ss),
+        "z1": np.array(between_cluster_ss),
+        "z2": np.array(total_ss),
     }
-    ax.plot(L, elbow_score, **PlottingBase._update_dict(param, style_kwargs))
-    ax.set_title("Elbow Curve")
-    ax.set_xlabel("Number of Clusters")
-    ax.set_ylabel("Elbow Score (Between-Cluster SS / Total SS)")
-    values = {"index": L, "Elbow Score": elbow_score}
+    layout = {
+        "title": "Elbow Curve",
+        "x_label": "Number of Clusters",
+        "y_label": "Elbow Score (Between-Cluster SS / Total SS)",
+        "z0_label": "Total Within Cluster SS",
+        "z1_label": "Between Cluster SS",
+        "z2_label": "Total SS",
+    }
+    vpy_plt.ElbowCurve(data=data, layout=layout).draw(**kwargs)
+    values = {
+        "index": L,
+        "total_within_cluster_ss": total_within_cluster_ss,
+        "between_cluster_ss": between_cluster_ss,
+        "total_ss": total_ss,
+        "elbow_score": elbow_score,
+    }
     return TableSample(values=values)

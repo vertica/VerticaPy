@@ -44,24 +44,6 @@ class ROCCurve(MatplotlibBase):
         }
         return None
 
-    def _get_final_color(self, style_kwargs: dict, idx: int,) -> str:
-        for key in ["colors", "color", "c"]:
-            if key in style_kwargs:
-                if isinstance(style_kwargs[key], list):
-                    n = len(style_kwargs[key])
-                    return style_kwargs[key][idx % n]
-                elif idx == 0:
-                    return style_kwargs[key]
-        return self.get_colors(idx=idx)
-
-    def _get_final_style_kwargs(self, style_kwargs: dict, idx: int,) -> dict:
-        kwargs = copy.deepcopy(style_kwargs)
-        for key in ["colors", "color", "c"]:
-            if key in kwargs:
-                del kwargs[key]
-        kwargs["color"] = self._get_final_color(style_kwargs=style_kwargs, idx=idx,)
-        return kwargs
-
     # Draw.
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
@@ -81,9 +63,17 @@ class ROCCurve(MatplotlibBase):
             facecolor=self._get_final_color(style_kwargs=style_kwargs, idx=0),
             **self.init_style,
         )
-        ax.plot([0, 1], [0, 1], **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=1))
+        ax.plot(
+            [0, 1],
+            [0, 1],
+            **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=1),
+        )
         ax.fill_between(
-            [0, 1], [0, 0], [0, 1], facecolor=self._get_final_color(style_kwargs=style_kwargs, idx=1), **self.init_style
+            [0, 1],
+            [0, 0],
+            [0, 1],
+            facecolor=self._get_final_color(style_kwargs=style_kwargs, idx=1),
+            **self.init_style,
         )
         ax.set_xlabel(self.layout["x_label"])
         ax.set_xlim(0, 1)
@@ -168,7 +158,7 @@ class PRCCurve(ROCCurve):
         ax.plot(
             self.data["x"],
             self.data["y"],
-            **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=0)
+            **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=0),
         )
         ax.fill_between(
             self.data["x"],
@@ -218,14 +208,22 @@ class LiftChart(ROCCurve):
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         ax.set_xlabel(self.layout["x_label"])
-        ax.plot(self.data["x"], self.data["z"], **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=0),)
+        ax.plot(
+            self.data["x"],
+            self.data["z"],
+            **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=0),
+        )
         ax.plot(
             self.data["x"],
             self.data["y"],
             **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=1),
         )
         ax.fill_between(
-            self.data["x"], self.data["y"], self.data["z"], facecolor=self._get_final_color(style_kwargs=style_kwargs, idx=0), alpha=0.2,
+            self.data["x"],
+            self.data["y"],
+            self.data["z"],
+            facecolor=self._get_final_color(style_kwargs=style_kwargs, idx=0),
+            alpha=0.2,
         )
         ax.fill_between(
             self.data["x"],
@@ -235,8 +233,14 @@ class LiftChart(ROCCurve):
             **self.init_style,
         )
         ax.set_title(self.layout["title"])
-        c0 = mpatches.Patch(color=self._get_final_color(style_kwargs=style_kwargs, idx=0), label=self.layout["z_label"])
-        c1 = mpatches.Patch(color=self._get_final_color(style_kwargs=style_kwargs, idx=1), label=self.layout["y_label"])
+        c0 = mpatches.Patch(
+            color=self._get_final_color(style_kwargs=style_kwargs, idx=0),
+            label=self.layout["z_label"],
+        )
+        c1 = mpatches.Patch(
+            color=self._get_final_color(style_kwargs=style_kwargs, idx=1),
+            label=self.layout["y_label"],
+        )
         ax.legend(handles=[c0, c1], loc="center left", bbox_to_anchor=[1, 0.5])
         ax.set_xlim(0, 1)
         ax.set_ylim(0)

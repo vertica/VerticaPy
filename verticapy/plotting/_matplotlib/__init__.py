@@ -22,6 +22,7 @@ from verticapy.plotting._matplotlib.animated.pie import AnimatedPieChart
 from verticapy.plotting._matplotlib.machine_learning.champion_challenger import (
     ChampionChallengerPlot,
 )
+from verticapy.plotting._matplotlib.machine_learning.elbow import ElbowCurve
 from verticapy.plotting._matplotlib.machine_learning.importance import (
     ImportanceBarChart,
 )
@@ -47,7 +48,7 @@ from verticapy.plotting._matplotlib.machine_learning.regression_tree import (
 from verticapy.plotting._matplotlib.machine_learning.stepwise import StepwisePlot
 from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlot
 
-from verticapy.plotting._matplotlib.acf import ACFPlot
+from verticapy.plotting._matplotlib.acf import ACFPlot, ACFPACFPlot
 from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D
 from verticapy.plotting._matplotlib.barh import HorizontalBarChart, HorizontalBarChart2D
 from verticapy.plotting._matplotlib.boxplot import BoxPlot

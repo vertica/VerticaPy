@@ -116,6 +116,24 @@ class PlottingBase:
         self.init_style = {}
         return None
 
+    def _get_final_color(self, style_kwargs: dict, idx: int = 0,) -> str:
+        for key in ["colors", "color", "c"]:
+            if key in style_kwargs:
+                if isinstance(style_kwargs[key], list):
+                    n = len(style_kwargs[key])
+                    return style_kwargs[key][idx % n]
+                elif idx == 0:
+                    return style_kwargs[key]
+        return self.get_colors(idx=idx)
+
+    def _get_final_style_kwargs(self, style_kwargs: dict, idx: int,) -> dict:
+        kwargs = copy.deepcopy(style_kwargs)
+        for key in ["colors", "color", "c"]:
+            if key in kwargs:
+                del kwargs[key]
+        kwargs["color"] = self._get_final_color(style_kwargs=style_kwargs, idx=idx,)
+        return kwargs
+
     @staticmethod
     def get_colors(
         d: Optional[dict] = {}, idx: Optional[int] = None

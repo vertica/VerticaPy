@@ -58,7 +58,6 @@ class RangeCurve(MatplotlibBase):
         ax: Optional[Axes] = None,
         plot_scatter: bool = True,
         plot_median: bool = True,
-        y_label: Optional[str] = None,
         **style_kwargs,
     ) -> Axes:
         """
@@ -105,8 +104,8 @@ class RangeCurve(MatplotlibBase):
         if len(self.layout["columns"]) == 1:
             ax.set_ylabel(self.layout["columns"][0])
         else:
-            if y_label != None:
-                ax.set_ylabel(y_label)
+            if ("y_label" in self.layout) and (self.layout["y_label"] != None):
+                ax.set_ylabel(self.layout["y_label"])
             ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

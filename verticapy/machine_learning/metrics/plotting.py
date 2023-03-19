@@ -179,11 +179,7 @@ def prc_curve(
     }
     vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
     return TableSample(
-        values={
-            "threshold": threshold,
-            "recall": recall,
-            "precision": precision,
-        }
+        values={"threshold": threshold, "recall": recall, "precision": precision,}
     )
 
 
