@@ -97,12 +97,18 @@ def lift_chart(
         "y": np.array(positive_prediction_ratio),
         "z": np.array(lift),
     }
-    vpy_plt.LiftChart(data=data, layout={}).draw(**kwargs)
+    layout = {
+        "title": "Lift Table",
+        "x_label": "Cumulative Data Fraction",
+        "y_label": "Cumulative Capture Rate",
+        "z_label": "Cumulative Lift",
+    }
+    vpy_plt.LiftChart(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         values={
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
-            "lift": lift,
+            "lift": list(lift),
         }
     )
 
@@ -166,12 +172,17 @@ def prc_curve(
         matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
     )
     data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
-    vpy_plt.PRCCurve(data=data, layout={}).draw(**kwargs)
+    layout = {
+        "title": "PRC Curve",
+        "x_label": "Recall",
+        "y_label": "Precision",
+    }
+    vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         values={
             "threshold": threshold,
-            "false_positive": false_positive,
-            "true_positive": true_positive,
+            "recall": recall,
+            "precision": precision,
         }
     )
 
@@ -238,14 +249,25 @@ def roc_curve(
     if cutoff_curve:
         data = {
             "x": np.array(threshold),
-            "y": np.array(false_positive),
+            "y": 1 - np.array(false_positive),
             "z": np.array(true_positive),
             "auc": auc,
         }
-        vpy_plt.CutoffCurve(data=data, layout={}).draw(**kwargs)
+        layout = {
+            "title": "Cutoff Curve",
+            "x_label": "Decision Boundary",
+            "y_label": "Specificity",
+            "z_label": "Sensitivity",
+        }
+        vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
         data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}
-        vpy_plt.ROCCurve(data=data, layout={}).draw(**kwargs)
+        layout = {
+            "title": "ROC Curve",
+            "x_label": "False Positive Rate (1-Specificity)",
+            "y_label": "True Positive Rate (Sensitivity)",
+        }
+        vpy_plt.ROCCurve(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         values={
             "threshold": threshold,
