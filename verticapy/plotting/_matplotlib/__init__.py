@@ -30,6 +30,12 @@ from verticapy.plotting._matplotlib.machine_learning.lof import LOFPlot
 from verticapy.plotting._matplotlib.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
 )
+from verticapy.plotting._matplotlib.machine_learning.model_evaluation import (
+    CutoffCurve,
+    LiftChart,
+    PRCCurve,
+    ROCCurve,
+)
 from verticapy.plotting._matplotlib.machine_learning.pca import (
     PCACirclePlot,
     PCAVarPlot,
