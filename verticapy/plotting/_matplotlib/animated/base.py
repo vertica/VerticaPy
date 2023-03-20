@@ -14,6 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._plotly.bar import BarChart
-from verticapy.plotting._plotly.pie import PieChart
-from verticapy.plotting._plotly.barh import HorizontalBarChart
+from typing import Union
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+import verticapy._config.config as conf
+
+from verticapy.plotting._matplotlib.base import MatplotlibBase
+
+if conf._get_import_success("jupyter"):
+    from IPython.display import HTML
+
+
+class AnimatedBase(MatplotlibBase):
+    @staticmethod
+    def _return_animation(a: animation.Animation) -> Union["HTML", animation.Animation]:
+        if conf._get_import_success("jupyter"):
+            anim = a.to_jshtml()
+            plt.close("all")
+            return HTML(anim)
+        else:
+            return a

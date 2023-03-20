@@ -14,9 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, math
+import datetime, copy, math
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
+import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -35,216 +36,11 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 
 
 class vDFPlot(PlottingUtils):
-    @save_verticapy_logs
-    def animated(
-        self,
-        ts: str,
-        columns: Union[list] = [],
-        by: str = "",
-        start_date: PythonScalar = "",
-        end_date: PythonScalar = "",
-        kind: Literal["auto", "bar", "bubble", "ts", "pie"] = "auto",
-        limit_over: int = 6,
-        limit: int = 1000000,
-        limit_labels: int = 6,
-        ts_steps: dict = {"window": 100, "step": 5},
-        bubble_img: dict = {"bbox": [], "img": ""},
-        fixed_xy_lim: bool = False,
-        date_in_title: bool = False,
-        date_f=None,
-        date_style_dict: dict = {},
-        interval: int = 300,
-        repeat: bool = True,
-        return_html: bool = True,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the animated chart.
-
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns, optional
-        List of the vDataColumns names.
-    by: str, optional
-        Categorical vDataColumn used in the partition.
-    start_date: str / date, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: str / date, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    kind: str, optional
-        Animation Type.
-            auto   : Pick up automatically the type.
-            bar    : Animated Bar Race.
-            bubble : Animated Bubble Plot.
-            pie    : Animated Pie Chart.
-            ts     : Animated Time Series.
-    limit_over: int, optional
-        Limited number of elements to consider for each category.
-    limit: int, optional
-        Maximum number of data points to use.
-    limit_labels: int, optional
-        [Only used when kind = 'bubble']
-        Maximum number of text labels to draw.
-    ts_steps: dict, optional
-        [Only used when kind = 'ts']
-        dictionary including 2 keys.
-            step   : number of elements used to update the time series.
-            window : size of the window used to draw the time series.
-    bubble_img: dict, optional
-        [Only used when kind = 'bubble']
-        dictionary including 2 keys.
-            img  : Path to the image to display as background.
-            bbox : List of 4 elements to delimit the boundaries of the final Plot.
-                   It must be similar the following list: [xmin, xmax, ymin, ymax]
-    fixed_xy_lim: bool, optional
-        If set to True, the xlim and ylim will be fixed.
-    date_in_title: bool, optional
-        If set to True, the ts vDataColumn will be displayed in the title section.
-    date_f: function, optional
-        Function used to display the ts vDataColumn.
-    date_style_dict: dict, optional
-        Style Dictionary used to display the ts vDataColumn when date_in_title = False.
-    interval: int, optional
-        Number of ms between each update.
-    repeat: bool, optional
-        If set to True, the animation will be repeated.
-    return_html: bool, optional
-        If set to True and if using a Jupyter notebook, the HTML of the animation will be 
-        generated.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    animation
-        Matplotlib animation object
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        if kind == "auto":
-            if len(columns) > 3 or len(columns) <= 1:
-                kind = "ts"
-            elif len(columns) == 2:
-                kind = "bar"
-            else:
-                kind = "bubble"
-        assert kind == "ts" or columns, ParameterError(
-            f"Parameter 'columns' can not be empty when using kind = '{kind}'."
-        )
-        assert (
-            2 <= len(columns) <= 4
-            and self[columns[0]].isnum()
-            and self[columns[1]].isnum()
-        ) or kind != "bubble", ParameterError(
-            f"Parameter 'columns' must include at least 2 numerical vDataColumns and maximum 4 vDataColumns when using kind = '{kind}'."
-        )
-        columns, ts, by = self._format_colnames(columns, ts, by)
-        if kind == "bubble":
-            if len(columns) == 3 and not (self[columns[2]].isnum()):
-                label_name = columns[2]
-                columns = columns[0:2]
-            elif len(columns) >= 4:
-                if not (self[columns[3]].isnum()):
-                    label_name = columns[3]
-                    columns = columns[0:3]
-                else:
-                    label_name = columns[2]
-                    columns = columns[0:2] + [columns[3]]
-            else:
-                label_name = ""
-            if "img" not in bubble_img:
-                bubble_img["img"] = ""
-            if "bbox" not in bubble_img:
-                bubble_img["bbox"] = []
-            return vpy_matplotlib_plt.AnimatedBubblePlot().draw(
-                self,
-                order_by=ts,
-                columns=columns,
-                label_name=label_name,
-                by=by,
-                order_by_start=start_date,
-                order_by_end=end_date,
-                limit_over=limit_over,
-                limit=limit,
-                lim_labels=limit_labels,
-                fixed_xy_lim=fixed_xy_lim,
-                date_in_title=date_in_title,
-                date_f=date_f,
-                date_style_dict=date_style_dict,
-                interval=interval,
-                repeat=repeat,
-                return_html=return_html,
-                img=bubble_img["img"],
-                bbox=bubble_img["bbox"],
-                ax=ax,
-                **style_kwargs,
-            )
-        elif kind in ("bar", "pie"):
-            return vpy_matplotlib_plt.AnimatedBarChart().draw(
-                self,
-                order_by=ts,
-                columns=columns,
-                by=by,
-                order_by_start=start_date,
-                order_by_end=end_date,
-                limit_over=limit_over,
-                limit=limit,
-                fixed_xy_lim=fixed_xy_lim,
-                date_in_title=date_in_title,
-                date_f=date_f,
-                date_style_dict=date_style_dict,
-                interval=interval,
-                repeat=repeat,
-                return_html=return_html,
-                pie=(kind == "pie"),
-                ax=ax,
-                **style_kwargs,
-            )
-        else:
-            if by:
-                assert len(columns) == 1, ParameterError(
-                    "Parameter 'columns' can not be empty when using kind = 'ts' and when parameter 'by' is not empty."
-                )
-                vdf = self.pivot(index=ts, columns=by, values=columns[0])
-            else:
-                vdf = self
-            columns = vdf.numcol()[0:limit_over]
-            if "step" not in ts_steps:
-                ts_steps["step"] = 5
-            if "window" not in ts_steps:
-                ts_steps["window"] = 100
-            return vpy_matplotlib_plt.AnimatedLinePlot().draw(
-                vdf,
-                order_by=ts,
-                columns=columns,
-                order_by_start=start_date,
-                order_by_end=end_date,
-                limit=limit,
-                fixed_xy_lim=fixed_xy_lim,
-                window_size=ts_steps["window"],
-                step=ts_steps["step"],
-                interval=interval,
-                repeat=repeat,
-                return_html=return_html,
-                ax=ax,
-                **style_kwargs,
-            )
-
     @save_verticapy_logs
     def bar(
         self,
@@ -641,41 +437,62 @@ class vDFPlot(PlottingUtils):
     --------
     vDataFrame[].bar : Draws the Bar Chart of the vDataColumn based on an aggregation.
         """
+        from verticapy.machine_learning.vertica import KernelDensity
+
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
-        else:
-            for column in columns:
-                assert self[column].isnum(), TypeError(
-                    f"vDataColumn {column} is not numerical to draw KDE"
-                )
-        assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        colors = get_colors()
-        min_max = self.agg(func=["min", "max"], columns=columns)
+        if not (columns):
+            raise ValueError("No numerical columns found.")
+        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
         if not xlim:
-            xmin = min(min_max["min"])
-            xmax = max(min_max["max"])
+            xmin = min(self[columns].min()["min"])
+            xmax = max(self[columns].max()["max"])
+            xlim_ = [(xmin, xmax)]
+        elif isinstance(xlim, tuple):
+            xlim_ = [xlim]
         else:
-            xmin, xmax = xlim
-        custom_lines = []
-        for idx, column in enumerate(columns):
-            param = {"color": colors[idx % len(colors)]}
-            ax = self[column].density(
-                bandwidth=bandwidth,
-                kernel=kernel,
-                nbins=nbins,
-                xlim=(xmin, xmax),
-                ax=ax,
-                **PlottingBase._update_dict(param, style_kwargs, idx),
+            xlim_ = xlim
+        model = KernelDensity(
+            name=name,
+            bandwidth=bandwidth,
+            kernel=kernel,
+            nbins=nbins,
+            xlim=xlim_,
+            store=False,
+        )
+        if len(columns) == 1:
+            try:
+                model.fit(self, columns)
+                return model.plot(ax=ax, **style_kwargs)
+            finally:
+                model.drop()
+        else:
+            custom_lines, X, Y = [], [], []
+            for column in columns:
+                try:
+                    model.fit(self, [column])
+                    data, layout = model._compute_plot_params()
+                    X += [data["x"]]
+                    Y += [data["y"]]
+                finally:
+                    model.drop()
+            X = np.column_stack(X)
+            Y = np.column_stack(Y)
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
             )
-            custom_lines += [
-                Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
-            ]
-        ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
-        ax.set_ylim(bottom=0)
-        return ax
+            data = {"X": X, "Y": Y}
+            layout = {
+                "title": "KernelDensity",
+                "x_label": None,
+                "y_label": "density",
+                "labels": np.array(columns),
+                "labels_title": None,
+            }
+            return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
     @save_verticapy_logs
     def hchart(
@@ -1915,11 +1732,11 @@ class vDCPlot:
     @save_verticapy_logs
     def density(
         self,
-        by: str = "",
+        by: Optional[str] = None,
         bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
-        xlim: tuple = None,
+        xlim: Optional[tuple] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1961,72 +1778,53 @@ class vDCPlot:
         """
         from verticapy.machine_learning.vertica import KernelDensity
 
-        if by:
-            by = self._parent._format_colnames(by)
-            colors = get_colors()
-            if not xlim:
-                xmin = self.min()
-                xmax = self.max()
-            else:
-                xmin, xmax = xlim
-            custom_lines = []
-            columns = self._parent[by].distinct()
-            for idx, column in enumerate(columns):
-                param = {"color": colors[idx % len(colors)]}
-                ax = self._parent.search(f"{self._parent[by]._alias} = '{column}'")[
-                    self._alias
-                ].density(
-                    bandwidth=bandwidth,
-                    kernel=kernel,
-                    nbins=nbins,
-                    xlim=(xmin, xmax),
-                    ax=ax,
-                    **PlottingBase._update_dict(param, style_kwargs, idx),
-                )
-                custom_lines += [
-                    Line2D(
-                        [0],
-                        [0],
-                        color=PlottingBase._update_dict(param, style_kwargs, idx)[
-                            "color"
-                        ],
-                        lw=4,
-                    ),
-                ]
-            ax.set_title("KernelDensity")
-            ax.legend(
-                custom_lines,
-                columns,
-                title=by,
-                loc="center left",
-                bbox_to_anchor=[1, 0.5],
-            )
-            ax.set_xlabel(self._alias)
-            return ax
-        kernel = kernel.lower()
-        schema = conf.get_option("temp_schema")
-        if not (schema):
-            schema = "public"
-        name = gen_tmp_name(schema=schema, name="kde")
-        if isinstance(xlim, (tuple, list)):
-            xlim_tmp = [xlim]
+        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
+        by = self._parent._format_colnames(by)
+        if not xlim:
+            xlim_ = [(self.min(), self.max())]
         else:
-            xlim_tmp = []
+            xlim_ = [xlim]
         model = KernelDensity(
-            name,
+            name=name,
             bandwidth=bandwidth,
             kernel=kernel,
             nbins=nbins,
-            xlim=xlim_tmp,
+            xlim=xlim_,
             store=False,
         )
-        try:
-            result = model.fit(self._parent._genSQL(), [self._alias]).plot(
-                ax=ax, **style_kwargs
+        if not (by):
+            try:
+                model.fit(self._parent, [self._alias])
+                return model.plot(ax=ax, **style_kwargs)
+            finally:
+                model.drop()
+        else:
+            custom_lines = []
+            categories = self._parent[by].distinct()
+            X, Y = [], []
+            for idx, cat in enumerate(categories):
+                vdf = self._parent[by].isin(cat)
+                try:
+                    model.fit(vdf, [self._alias])
+                    data, layout = model._compute_plot_params()
+                    X += [data["x"]]
+                    Y += [data["y"]]
+                finally:
+                    model.drop()
+            X = np.column_stack(X)
+            Y = np.column_stack(Y)
+            vpy_plt, kwargs = self._parent._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
             )
-            return result
-        finally:
-            model.drop()
+            data = {"X": X, "Y": Y}
+            layout = {
+                "title": "KernelDensity",
+                "x_label": self._alias,
+                "y_label": "density",
+                "labels_title": by,
+                "labels": np.array(categories),
+            }
+            return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
     @save_verticapy_logs
     def geo_plot(self, *args, **kwargs):

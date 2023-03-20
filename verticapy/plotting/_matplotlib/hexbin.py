@@ -20,8 +20,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy.errors import ParameterError
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 

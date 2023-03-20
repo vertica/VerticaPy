@@ -14,17 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, PythonScalar
-from verticapy._utils._sql._sys import _executeSQL
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -58,7 +50,6 @@ class RangeCurve(MatplotlibBase):
         ax: Optional[Axes] = None,
         plot_scatter: bool = True,
         plot_median: bool = True,
-        y_label: Optional[str] = None,
         **style_kwargs,
     ) -> Axes:
         """
@@ -105,8 +96,8 @@ class RangeCurve(MatplotlibBase):
         if len(self.layout["columns"]) == 1:
             ax.set_ylabel(self.layout["columns"][0])
         else:
-            if y_label != None:
-                ax.set_ylabel(y_label)
+            if ("y_label" in self.layout) and (self.layout["y_label"] != None):
+                ax.set_ylabel(self.layout["y_label"])
             ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Union
 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import Figure

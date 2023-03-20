@@ -541,8 +541,6 @@ def learning_curve(
         y_label = None
         columns = ["time"]
     data = {"x": x, "Y": Y}
-    layout = {"columns": columns, "order_by": order_by}
-    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(
-        ax=ax, y_label=y_label, **style_kwargs
-    )
+    layout = {"columns": columns, "order_by": order_by, "y_label": y_label}
+    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(ax=ax, **style_kwargs)
     return result

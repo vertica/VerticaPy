@@ -17,10 +17,12 @@ permissions and limitations under the License.
 from verticapy.plotting._matplotlib.animated.bar import AnimatedBarChart
 from verticapy.plotting._matplotlib.animated.bubble import AnimatedBubblePlot
 from verticapy.plotting._matplotlib.animated.line import AnimatedLinePlot
+from verticapy.plotting._matplotlib.animated.pie import AnimatedPieChart
 
 from verticapy.plotting._matplotlib.machine_learning.champion_challenger import (
     ChampionChallengerPlot,
 )
+from verticapy.plotting._matplotlib.machine_learning.elbow import ElbowCurve
 from verticapy.plotting._matplotlib.machine_learning.importance import (
     ImportanceBarChart,
 )
@@ -28,6 +30,12 @@ from verticapy.plotting._matplotlib.machine_learning.kmeans import VoronoiPlot
 from verticapy.plotting._matplotlib.machine_learning.lof import LOFPlot
 from verticapy.plotting._matplotlib.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
+)
+from verticapy.plotting._matplotlib.machine_learning.model_evaluation import (
+    CutoffCurve,
+    LiftChart,
+    PRCCurve,
+    ROCCurve,
 )
 from verticapy.plotting._matplotlib.machine_learning.pca import (
     PCACirclePlot,
@@ -40,11 +48,16 @@ from verticapy.plotting._matplotlib.machine_learning.regression_tree import (
 from verticapy.plotting._matplotlib.machine_learning.stepwise import StepwisePlot
 from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlot
 
-from verticapy.plotting._matplotlib.acf import ACFPlot
+from verticapy.plotting._matplotlib.acf import ACFPlot, ACFPACFPlot
 from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D
 from verticapy.plotting._matplotlib.barh import HorizontalBarChart, HorizontalBarChart2D
 from verticapy.plotting._matplotlib.boxplot import BoxPlot
 from verticapy.plotting._matplotlib.contour_plot import ContourPlot
+from verticapy.plotting._matplotlib.density import (
+    DensityPlot,
+    DensityPlot2D,
+    MultiDensityPlot,
+)
 from verticapy.plotting._matplotlib.heatmap import HeatMap
 from verticapy.plotting._matplotlib.hexbin import HexbinMap
 from verticapy.plotting._matplotlib.hist import Histogram

@@ -17,10 +17,11 @@ permissions and limitations under the License.
 import itertools, warnings
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
+import numpy as np
+
 from vertica_python.errors import QueryError
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
@@ -40,8 +41,7 @@ from verticapy.errors import ParameterError
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
+from verticapy.plotting._utils import PlottingUtils
 
 import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.base import (
@@ -820,12 +820,12 @@ class KernelDensity(Regressor, Tree):
         Drops the model from the Vertica database.
         """
         try:
-            if hasattr(self, "map"):
-                _executeSQL(
-                    query=f"SELECT KDE FROM {self.map} LIMIT 0;",
-                    title="Looking if the KDE table exists.",
-                )
-                drop(self.map, method="table")
+            table_name = self.model_name.replace('"', "") + "_KernelDensity_Map"
+            _executeSQL(
+                query=f"SELECT KDE FROM {table_name} LIMIT 0;",
+                title="Looking if the KDE table exists.",
+            )
+            drop(table_name, method="table")
         except QueryError:
             return False
         return drop(self.model_name, method="model")
@@ -1019,23 +1019,7 @@ class KernelDensity(Regressor, Tree):
 
     # Plotting Methods.
 
-    def plot(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
-        """
-        Draws the Model.
-
-        Parameters
-        ----------
-        ax: Axes, optional
-            The axes to plot on.
-        **style_kwargs
-            Any optional parameter to pass to the 
-            Matplotlib functions.
-
-        Returns
-        -------
-        Axes
-            Axes.
-        """
+    def _compute_plot_params(self,):
         if len(self.X) == 1:
             if self._verticapy_store:
                 query = f"""
@@ -1047,26 +1031,14 @@ class KernelDensity(Regressor, Tree):
                 x, y = [v[0] for v in result], [v[1] for v in result]
             else:
                 x, y = [v[0] for v in self.verticapy_x], self.verticapy_y
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(7, 5)
-                ax.grid()
-                ax.set_axisbelow(True)
-            param = {
-                "color": get_colors()[0],
+            data = {
+                "x": np.array(x).astype(float),
+                "y": np.array(y).astype(float),
             }
-            ax.plot(x, y, **PlottingBase._update_dict(param, style_kwargs))
-            ax.fill_between(
-                x,
-                y,
-                facecolor=PlottingBase._update_dict(param, style_kwargs)["color"],
-                alpha=0.7,
-            )
-            ax.set_xlim(min(x), max(x))
-            ax.set_ylim(bottom=0)
-            ax.set_ylabel("density")
-            return ax
+            layout = {
+                "x_label": self.X[0],
+                "y_label": "density",
+            }
         elif len(self.X) == 2:
             n = self.parameters["nbins"]
             if self._verticapy_store:
@@ -1090,32 +1062,56 @@ class KernelDensity(Regressor, Tree):
                     [v[1] for v in self.verticapy_x],
                     self.verticapy_y,
                 )
-            result, idx = [], 0
+            X, idx = [], 0
             while idx < (n + 1) * (n + 1):
-                result += [[z[idx + i] for i in range(n + 1)]]
+                X += [[z[idx + i] for i in range(n + 1)]]
                 idx += n + 1
-            if not (ax):
-                fig, ax = plt.subplots()
-                if conf._get_import_success("jupyter"):
-                    fig.set_size_inches(8, 6)
-            else:
-                fig = plt
-            param = {
-                "cmap": "Reds",
-                "origin": "lower",
-                "interpolation": "bilinear",
+            extent = [
+                float(np.nanmin(x)),
+                float(np.nanmax(x)),
+                float(np.nanmin(y)),
+                float(np.nanmax(y)),
+            ]
+            data = {
+                "X": np.array(X).astype(float),
             }
-            extent = [min(x), max(x), min(y), max(y)]
-            extent = [float(v) for v in extent]
-            im = ax.imshow(
-                result, extent=extent, **PlottingBase._update_dict(param, style_kwargs)
-            )
-            fig.colorbar(im, ax=ax)
-            ax.set_ylabel(self.X[1])
-            ax.set_xlabel(self.X[0])
-            return ax
+            layout = {
+                "x_label": self.X[0],
+                "y_label": self.X[1],
+                "extent": extent,
+            }
         else:
             raise AttributeError("KDE Plots are only available in 1D or 2D.")
+        return data, layout
+
+    def plot(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
+        """
+        Draws the Model.
+
+        Parameters
+        ----------
+        ax: Axes, optional
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the 
+            Matplotlib functions.
+
+        Returns
+        -------
+        Axes
+            Axes.
+        """
+        vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+        )
+        data, layout = self._compute_plot_params()
+        if len(self.X) == 1:
+            fun = vpy_plt.DensityPlot
+        elif len(self.X) == 2:
+            fun = vpy_plt.DensityPlot2D
+        else:
+            raise AttributeError("KDE Plots are only available in 1D or 2D.")
+        return fun(data=data, layout=layout).draw(**kwargs)
 
 
 """

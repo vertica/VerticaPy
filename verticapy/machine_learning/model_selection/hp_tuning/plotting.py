@@ -19,21 +19,17 @@ from collections.abc import Iterable
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
-from verticapy.plotting.base import PlottingBase
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-
 from verticapy.machine_learning.model_selection.hp_tuning.cv import grid_search_cv
-
 from verticapy.machine_learning.vertica.base import VerticaModel
+
+from verticapy.plotting._utils import PlottingUtils
 
 """
 Tracking Over-fitting.
@@ -184,11 +180,12 @@ def validation_curve(
             "test_score_upper": Y[:, 5],
         }
     )
-    data = {"x": x, "Y": Y}
-    layout = {"columns": ["train", "test"], "order_by": param_name}
-    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(
-        ax=ax, y_label=metric, **style_kwargs
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
     )
+    data = {"x": x, "Y": Y}
+    layout = {"columns": ["train", "test"], "order_by": param_name, "y_label": metric}
+    vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
     return result
 
 
@@ -238,64 +235,27 @@ def plot_acf_pacf(
     """
     if isinstance(by, str):
         by = [by]
-    tmp_style = {}
-    for elem in style_kwargs:
-        if elem not in ("color", "colors"):
-            tmp_style[elem] = style_kwargs[elem]
-    if "color" in style_kwargs:
-        color = style_kwargs["color"]
-    else:
-        color = get_colors()[0]
     by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = TableSample(
+    index = [i for i in range(0, len(acf.values["value"]))]
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(style_kwargs=style_kwargs,)
+    data = {
+        "x": np.array(index),
+        "y0": np.array(acf.values["value"]),
+        "y1": np.array(pacf.values["value"]),
+        "z": np.array(pacf.values["confidence"]),
+    }
+    layout = {
+        "y0_label": "Autocorrelation",
+        "y1_label": "Partial Autocorrelation",
+    }
+    vpy_plt.ACFPACFPlot(data=data, layout=layout).draw(**kwargs)
+    return TableSample(
         {
-            "index": [i for i in range(0, len(acf.values["value"]))],
+            "index": index,
             "acf": acf.values["value"],
             "pacf": pacf.values["value"],
             "confidence": pacf.values["confidence"],
         }
     )
-    fig = plt.figure(figsize=(10, 6))
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    ax1 = fig.add_subplot(211)
-    x, y, confidence = (
-        result.values["index"],
-        result.values["acf"],
-        result.values["confidence"],
-    )
-    plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    param = {
-        "s": 90,
-        "marker": "o",
-        "facecolors": color,
-        "edgecolors": "black",
-        "zorder": 2,
-    }
-    ax1.scatter(x, y, **PlottingBase._update_dict(param, tmp_style))
-    ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax1.set_title("Autocorrelation")
-    y = result.values["pacf"]
-    ax2 = fig.add_subplot(212)
-    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(x, y, **PlottingBase._update_dict(param, tmp_style))
-    ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax2.set_title("Partial Autocorrelation")
-    plt.show()
-    return result
