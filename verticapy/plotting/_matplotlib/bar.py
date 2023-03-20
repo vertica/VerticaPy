@@ -50,6 +50,8 @@ class BarChart(MatplotlibBase):
         """
         Draws a histogram using the Matplotlib API.
         """
+        print(self.data)
+        print(self.layout)
         ax, fig = self._get_ax_fig(
             ax,
             size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
@@ -67,7 +69,9 @@ class BarChart(MatplotlibBase):
             xticks = self.data["x"]
             xticks_label = self._format_string(self.layout["labels"])
         else:
-            xticks = [x - round(self.data["width"] / 2, 10) for x in self.data["x"]]
+            xticks = [li[0] for li in self.layout["labels"]] + [
+                self.layout["labels"][-1][-1]
+            ]
             xticks_label = xticks
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticks_label, rotation=90)

@@ -18,9 +18,6 @@ from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -98,10 +95,7 @@ class RegressionPlot(MatplotlibBase):
                 + self.data["coef"][1] * X_reg
                 + self.data["coef"][2] * Y_reg
             )
-            if not (ax):
-                if conf._get_import_success("jupyter"):
-                    plt.figure(figsize=(8, 6))
-                ax = plt.axes(projection="3d")
+            ax, fig = self._get_ax_fig(ax, size=(8, 6), dim=3,)
             ax.plot_surface(
                 X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
             )

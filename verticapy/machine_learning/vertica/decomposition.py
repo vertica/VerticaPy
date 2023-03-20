@@ -32,7 +32,6 @@ import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
 
 from verticapy.plotting.base import PlottingBase
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
 General Classes.
@@ -322,7 +321,9 @@ class Decomposition(Preprocessing):
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="PCACirclePlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
@@ -336,7 +337,7 @@ class Decomposition(Preprocessing):
         layout = {
             "columns": self.X,
         }
-        return vpy_matplotlib_plt.PCACirclePlot(data=data, layout=layout).draw(**kwargs)
+        return vpy_plt.PCACirclePlot(data=data, layout=layout).draw(**kwargs)
 
     def plot_scree(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
         """
@@ -721,7 +722,9 @@ class MCA(PCA):
                     color=[get_colors(idx=0), get_colors(idx=1), get_colors(idx=2),]
                 )
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="PCAVarPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
@@ -736,7 +739,7 @@ class MCA(PCA):
             "columns": self.X,
             "method": method,
         }
-        return vpy_matplotlib_plt.PCAVarPlot(data=data, layout=layout).draw(**kwargs)
+        return vpy_plt.PCAVarPlot(data=data, layout=layout).draw(**kwargs)
 
 
 class SVD(Decomposition):

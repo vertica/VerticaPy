@@ -36,7 +36,6 @@ from verticapy.errors import EmptyParameter
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting.base import PlottingBase
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
 
@@ -487,6 +486,7 @@ class vDFCorr:
                     cmap = cm1 if (method == "cramer") else cm2
                     style_kwargs["cmap"] = cmap
                 vpy_plt, kwargs = self._get_plotting_lib(
+                    class_name="HeatMap",
                     matplotlib_kwargs={"ax": ax, "mround": mround,},
                     style_kwargs=style_kwargs,
                 )
@@ -703,6 +703,7 @@ class vDFCorr:
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwargs["cmap"] = cmap
             vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="HeatMap",
                 matplotlib_kwargs={"ax": ax, "mround": mround,},
                 style_kwargs=style_kwargs,
             )
@@ -1207,6 +1208,7 @@ class vDFCorr:
                 result.values["confidence"] = acf_band
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
+                    class_name="ACFPlot",
                     matplotlib_kwargs={"ax": ax, "bar_type": acf_type,},
                     style_kwargs=style_kwargs,
                 )
@@ -1391,6 +1393,7 @@ class vDFCorr:
                 result.values["confidence"] = pacf_band
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
+                    class_name="ACFPlot",
                     matplotlib_kwargs={"ax": ax, "bar_type": pacf_type,},
                     style_kwargs=style_kwargs,
                 )
@@ -1559,7 +1562,9 @@ class vDFCorr:
                 matrix[i][j] = current
         if show:
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="HeatMap",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
             layout = {"x_labels": columns, "y_labels": columns}
@@ -1631,7 +1636,9 @@ class vDFCorr:
             }
             layout = {"columns": copy.deepcopy(columns), "x_label": "IV"}
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return TableSample({"index": copy.deepcopy(columns), "iv": importance,}).sort(

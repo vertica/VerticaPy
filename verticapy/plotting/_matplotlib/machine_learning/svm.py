@@ -19,9 +19,6 @@ from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -141,10 +138,7 @@ class SVMClassifierPlot(MatplotlibBase):
                     + self.data["coef"][1] * X_svm
                     + self.data["coef"][2] * Y_svm
                 )
-                if not (ax):
-                    if conf._get_import_success("jupyter"):
-                        plt.figure(figsize=(8, 6))
-                    ax = plt.axes(projection="3d")
+                ax, fig = self._get_ax_fig(ax, size=(8, 6), dim=3,)
                 ax.plot_surface(
                     X_svm, Y_svm, Z_svm, **self.init_style_svm_3d,
                 )

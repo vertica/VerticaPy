@@ -59,8 +59,6 @@ from verticapy.machine_learning.vertica.neighbors import (
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
-
 
 class AutoML(VerticaModel):
     """
@@ -662,7 +660,9 @@ class AutoML(VerticaModel):
             }
             layout = {"columns": copy.deepcopy(self.stepwise_["variable"])}
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return self.best_model_.features_importance(**kwargs)
@@ -709,6 +709,7 @@ class AutoML(VerticaModel):
                 "reverse": (True, self.parameters["reverse"]),
             }
             vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="ChampionChallengerPlot",
                 matplotlib_kwargs={"plt_text": True, "ax": ax,},
                 style_kwargs=style_kwargs,
             )
@@ -717,7 +718,9 @@ class AutoML(VerticaModel):
             )
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="StepwisePlot",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             data = {
                 "x": [len(x) for x in self.stepwise_["features"]],

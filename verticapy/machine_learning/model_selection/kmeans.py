@@ -242,8 +242,10 @@ def elbow(
         total_ss += [float(model.total_ss_)]
         total_within_cluster_ss += [float(model.total_within_cluster_ss_)]
         model.drop()
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="ElbowCurve",
+        matplotlib_kwargs={"ax": ax,},
+        style_kwargs=style_kwargs,
     )
     data = {
         "x": np.array(L),

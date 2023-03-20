@@ -113,6 +113,7 @@ class vDFPlot(PlottingUtils):
             )
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="BarChart2D",
                 matplotlib_kwargs={
                     "ax": ax,
                     "stacked": (bar_type.lower() == "stacked"),
@@ -219,6 +220,7 @@ class vDFPlot(PlottingUtils):
             elif bar_type == "pyramid":
                 bar_type = "density"
             vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="HorizontalBarChart2D",
                 matplotlib_kwargs={"ax": ax, "bar_type": bar_type,},
                 style_kwargs=style_kwargs,
             )
@@ -281,7 +283,9 @@ class vDFPlot(PlottingUtils):
     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            class_name="Histogram",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
             vdf=self, columns=columns, method=method, of=of, h=h,
@@ -334,7 +338,9 @@ class vDFPlot(PlottingUtils):
                              aggregation.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            class_name="BoxPlot",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
             vdf=self, columns=columns, q=q, whis=whis, max_nb_fliers=max_nb_fliers,
@@ -379,7 +385,9 @@ class vDFPlot(PlottingUtils):
      vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            class_name="ContourPlot",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         func_name = None
         if "func_name" in kwargs:
@@ -482,7 +490,9 @@ class vDFPlot(PlottingUtils):
             X = np.column_stack(X)
             Y = np.column_stack(Y)
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+                class_name="MultiDensityPlot",
+                matplotlib_kwargs={"ax": ax},
+                style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
             layout = {
@@ -749,6 +759,7 @@ class vDFPlot(PlottingUtils):
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="HeatMap",
             matplotlib_kwargs={
                 "ax": ax,
                 "show": True,
@@ -821,6 +832,7 @@ class vDFPlot(PlottingUtils):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="HexbinMap",
             matplotlib_kwargs={"ax": ax, "bbox": bbox, "img": img},
             style_kwargs=style_kwargs,
         )
@@ -873,6 +885,7 @@ class vDFPlot(PlottingUtils):
         The axes to plot on.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="OutliersPlot",
             matplotlib_kwargs={
                 "ax": ax,
                 "color": color,
@@ -925,7 +938,9 @@ class vDFPlot(PlottingUtils):
     vDataFrame[].pie : Draws the Pie Chart of the vDataColumn based on an aggregation.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="NestedPieChart",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.NestedPieChart(
             vdf=self,
@@ -1002,6 +1017,7 @@ class vDFPlot(PlottingUtils):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="HeatMap",
             matplotlib_kwargs={"ax": ax, "with_numbers": with_numbers},
             style_kwargs=style_kwargs,
         )
@@ -1072,6 +1088,7 @@ class vDFPlot(PlottingUtils):
     vDataFrame[].plot : Draws the Time Series of one vDataColumn.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="MultiLinePlot",
             matplotlib_kwargs={"ax": ax, "kind": "step" if step else "line",},
             style_kwargs=style_kwargs,
         )
@@ -1132,6 +1149,7 @@ class vDFPlot(PlottingUtils):
     vDataFrame.plot : Draws the time series.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="RangeCurve",
             matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
             style_kwargs=style_kwargs,
         )
@@ -1253,6 +1271,7 @@ class vDFPlot(PlottingUtils):
                 model.drop()
             return ax
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="ScatterPlot",
             matplotlib_kwargs={"ax": ax, "bbox": bbox, "img": img,},
             style_kwargs=style_kwargs,
         )
@@ -1296,7 +1315,9 @@ class vDFPlot(PlottingUtils):
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
-        vpy_plt, kwargs = self._get_plotting_lib(style_kwargs=style_kwargs,)
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="ScatterMatrix", style_kwargs=style_kwargs,
+        )
         return vpy_plt.ScatterMatrix(
             vdf=self, columns=columns, max_nb_points=max_nb_points
         ).draw(**kwargs)
@@ -1352,6 +1373,7 @@ class vDFPlot(PlottingUtils):
         )
         columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="MultiLinePlot",
             matplotlib_kwargs={
                 "ax": ax,
                 "kind": "area_percent" if fully else "area_stacked",
@@ -1514,7 +1536,9 @@ class vDCPlot:
     vDataFrame[].bar : Draws the Bar Chart of vDataColumn based on an aggregation.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+            class_name="BarChart",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.BarChart(
             vdc=self,
@@ -1576,7 +1600,9 @@ class vDCPlot:
     vDataFrame[].bar : Draws the bar chart of the vDataColumn based on an aggregation.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+            class_name="HorizontalBarChart",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.HorizontalBarChart(
             vdc=self,
@@ -1648,7 +1674,9 @@ class vDCPlot:
     vDataFrame[].bar : Draws the bar chart of the vDataColumn based on an aggregation.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs,
+            class_name="Histogram",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
             vdf=self._parent,
@@ -1715,7 +1743,9 @@ class vDCPlot:
     vDataFrame.boxplot : Draws the Box Plot of the input vDataColumns. 
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+            class_name="BoxPlot",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
             vdf=self._parent,
@@ -1814,7 +1844,9 @@ class vDCPlot:
             X = np.column_stack(X)
             Y = np.column_stack(Y)
             vpy_plt, kwargs = self._parent._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+                class_name="MultiDensityPlot",
+                matplotlib_kwargs={"ax": ax},
+                style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
             layout = {
@@ -1921,6 +1953,7 @@ class vDCPlot:
     vDataFrame.donut : Draws the donut chart of the vDataColumn based on an aggregation.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
+            class_name="PieChart",
             matplotlib_kwargs={"ax": ax, "pie_type": pie_type},
             plotly_kwargs={"pie_type": pie_type},
             style_kwargs=style_kwargs,
@@ -1983,6 +2016,7 @@ class vDCPlot:
         """
         ts, by = self._parent._format_colnames(ts, by)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
+            class_name="LinePlot",
             matplotlib_kwargs={"ax": ax, "area": area, "step": step},
             style_kwargs=style_kwargs,
         )
@@ -2107,7 +2141,9 @@ class vDCPlot:
         if by:
             columns += [by]
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
+            class_name="SpiderChart",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.SpiderChart(
             vdf=self._parent,

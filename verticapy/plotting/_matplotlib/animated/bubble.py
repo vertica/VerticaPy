@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import numpy as np
-from typing import Callable, Literal, Optional, TYPE_CHECKING
+from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -32,10 +32,10 @@ if TYPE_CHECKING:
 if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
-from verticapy.plotting._matplotlib.base import MatplotlibBase
+from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
-class AnimatedBubblePlot(MatplotlibBase):
+class AnimatedBubblePlot(AnimatedBase):
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -64,10 +64,9 @@ class AnimatedBubblePlot(MatplotlibBase):
         date_style_dict: dict = {},
         interval: int = 10,
         repeat: bool = True,
-        return_html: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ) -> animation.Animation:
+    ) -> Union["HTML", animation.Animation]:
         """
         Draws an animated bubble plot using the Matplotlib API.
         """
@@ -117,14 +116,7 @@ class AnimatedBubblePlot(MatplotlibBase):
         if label_name:
             columns += [label_name]
         count = vdf.shape()[0]
-        if not (ax):
-            fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
-                fig.set_size_inches(12, 8)
-            ax.grid()
-            ax.set_axisbelow(True)
-        else:
-            fig = ax.get_figure()
+        ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=True, grid=True)
         count = vdf.shape()[0]
         if columns[2] != 1:
             max_size = float(vdf[columns[2]].max())
@@ -313,9 +305,4 @@ class AnimatedBubblePlot(MatplotlibBase):
             blit=False,
             repeat=repeat,
         )
-        if conf._get_import_success("jupyter") and return_html:
-            anim = myAnimation.to_jshtml()
-            plt.close("all")
-            return HTML(anim)
-        else:
-            return myAnimation
+        return self._return_animation(a=myAnimation)

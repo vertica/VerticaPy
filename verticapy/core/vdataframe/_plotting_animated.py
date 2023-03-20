@@ -97,6 +97,7 @@ class vDFAnimatedPlot(PlottingUtils):
             columns = [columns]
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="AnimatedBarChart",
             matplotlib_kwargs={
                 "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
@@ -189,6 +190,7 @@ class vDFAnimatedPlot(PlottingUtils):
             columns = [columns]
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="AnimatedPieChart",
             matplotlib_kwargs={
                 "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
@@ -289,6 +291,7 @@ class vDFAnimatedPlot(PlottingUtils):
             if not (columns):
                 columns = vdf.numcol()
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="AnimatedLinePlot",
             matplotlib_kwargs={
                 "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
@@ -407,6 +410,7 @@ class vDFAnimatedPlot(PlottingUtils):
         else:
             label_name = ""
         vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="AnimatedBubblePlot",
             matplotlib_kwargs={
                 "ax": ax,
                 "img": img,

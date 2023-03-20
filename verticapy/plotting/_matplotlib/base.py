@@ -34,8 +34,14 @@ class MatplotlibBase(PlottingBase):
         size: tuple[int, int] = (8, 6),
         set_axis_below: bool = True,
         grid: Union[str, bool] = True,
+        dim: int = 2,
     ) -> tuple[Axes, Figure]:
-        if not (ax):
+        if not (ax) and dim == 3:
+            if conf._get_import_success("jupyter"):
+                plt.figure(figsize=size)
+            ax = plt.axes(projection="3d")
+            return ax, plt
+        elif not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
                 fig.set_size_inches(*size)
@@ -48,6 +54,13 @@ class MatplotlibBase(PlottingBase):
             return ax, fig
         else:
             return ax, plt
+
+    @staticmethod
+    def _get_matrix_fig_size(n: int,) -> tuple[int, int]:
+        if conf._get_import_success("jupyter"):
+            return min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
+        else:
+            return min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
 
     @staticmethod
     def _format_string(x: ArrayLike, th: int = 50) -> ArrayLike:

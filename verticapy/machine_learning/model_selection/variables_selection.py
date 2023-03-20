@@ -500,8 +500,10 @@ def stepwise(
         estimator.fit(input_relation, X_current, y)
     res.best_list_ = X_current
     if show:
-        vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            class_name="StepwisePlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": [len(x) for x in res["features"]],

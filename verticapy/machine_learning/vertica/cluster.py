@@ -353,6 +353,7 @@ class KMeans(Clustering):
         """
         if len(self.X) == 2:
             vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="VoronoiPlot",
                 matplotlib_kwargs={"ax": ax, "plot_crosses": plot_crosses},
                 style_kwargs=style_kwargs,
             )

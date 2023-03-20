@@ -54,7 +54,7 @@ setuptools.setup(
             "shapely>=1.6.0",
         ],
     },
-    package_data={"": ["*.csv", "*.json"]},
+    package_data={"": ["*.csv", "*.json", "*.css", "*.html"]},
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",

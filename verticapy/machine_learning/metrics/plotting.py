@@ -89,8 +89,10 @@ def lift_chart(
     )
     lift = np.nan_to_num(lift, nan=np.nanmax(lift))
     decision_boundary.reverse()
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="LiftChart",
+        matplotlib_kwargs={"ax": ax,},
+        style_kwargs=style_kwargs,
     )
     data = {
         "x": np.array(decision_boundary),
@@ -168,8 +170,8 @@ def prc_curve(
         fun_sql_name="prc",
     )
     auc = _compute_area(precision, recall)
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="PRCCurve", matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
     )
     data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
     layout = {
@@ -239,10 +241,12 @@ def roc_curve(
         fun_sql_name="roc",
     )
     auc = _compute_area(true_positive, false_positive)
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
-    )
     if cutoff_curve:
+        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            class_name="CutoffCurve",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
         data = {
             "x": np.array(threshold),
             "y": 1 - np.array(false_positive),
@@ -257,6 +261,11 @@ def roc_curve(
         }
         vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
+        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            class_name="ROCCurve",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
         data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}
         layout = {
             "title": "ROC Curve",
