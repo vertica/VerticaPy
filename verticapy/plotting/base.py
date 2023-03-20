@@ -1089,7 +1089,7 @@ class PlottingBase:
         else:
             X = np.array([])
         n = len(columns)
-        self.data = {"X": X[:,:n].astype(float), "s": None, "c": None}
+        self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
         self.layout = {
             "columns": columns,
             "size": size_bubble_col,

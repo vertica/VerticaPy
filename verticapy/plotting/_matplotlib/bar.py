@@ -69,7 +69,9 @@ class BarChart(MatplotlibBase):
             xticks = self.data["x"]
             xticks_label = self._format_string(self.layout["labels"])
         else:
-            xticks = [li[0] for li in self.layout["labels"]] + [self.layout["labels"][-1][-1]]
+            xticks = [li[0] for li in self.layout["labels"]] + [
+                self.layout["labels"][-1][-1]
+            ]
             xticks_label = xticks
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticks_label, rotation=90)
