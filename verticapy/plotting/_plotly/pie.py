@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional, Union
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -44,7 +44,6 @@ class PieChart(PlotlyBase):
     def _init_style(self) -> None:
         self.init_trace_style = {
             "hovertemplate": "%{label} <extra></extra>",
-            "marker_colors": PlotlyBase.get_colors(),
         }
         self.init_layout_style = {
             "title_text": self.layout["column"][1:-1],
@@ -98,4 +97,52 @@ class PieChart(PlotlyBase):
 
 
 class NestedPieChart(PlotlyBase):
-    ...
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["pie"]:
+        return "pie"
+
+    @property
+    def _compute_method(self) -> Literal["rollup"]:
+        return "rollup"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_trace_style = {
+            "hovertemplate": "<b>Fraction: %{percentEntry:.2f} </b> <extra></extra>",
+        }
+
+    # Draw.
+
+    def draw(
+        self,
+        max_cardinality: Union[int, tuple, list] = None,
+        **style_kwargs,
+    ) -> Figure:
+        """
+        Draws a sunburst/nested pie chart using the plotly API.
+        """
+        ids, labels, parents, values = self._convert_labels_and_get_counts(
+            self.data["groups"][0]
+        )
+        trace = go.Sunburst(
+            ids=ids,
+            labels=labels,
+            parents=parents,
+            values=values,
+            branchvalues="total",
+            outsidetextfont={"size": 20},
+            marker={"line": {"width": 2}},
+            **self._update_dict(self.init_trace_style, style_kwargs),
+        )
+        layout = go.Layout(margin=go.layout.Margin(t=0, l=0, r=0, b=0))
+        figure = {"data": [trace], "layout": layout}
+        fig = go.Figure(figure)
+        return fig
