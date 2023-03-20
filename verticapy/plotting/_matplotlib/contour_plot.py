@@ -14,19 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Callable, Literal, Optional, TYPE_CHECKING
-import numpy as np
+from typing import Literal, Optional
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-from verticapy._typing import PythonScalar, SQLColumns
-from verticapy._utils._sql._format import quote_ident
-
-from verticapy.core.string_sql.base import StringSQL
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 

@@ -15,13 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Optional
+import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 
-from verticapy._config.colors import get_colors
-import verticapy._config.config as conf
 from verticapy._typing import PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -33,7 +30,7 @@ from verticapy.machine_learning.metrics.classification import (
     _compute_function_metrics,
 )
 
-from verticapy.plotting.base import PlottingBase
+from verticapy.plotting._utils import PlottingUtils
 
 
 @check_minimum_version
@@ -90,50 +87,28 @@ def lift_chart(
         nbins=nbins,
         fun_sql_name="lift_table",
     )
+    lift = np.nan_to_num(lift, nan=np.nanmax(lift))
     decision_boundary.reverse()
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    ax.set_xlabel("Cumulative Data Fraction")
-    max_value = max([0 if elem != elem else elem for elem in lift])
-    lift = [max_value if elem != elem else elem for elem in lift]
-    param1 = {"color": get_colors()[0]}
-    ax.plot(
-        decision_boundary, lift, **PlottingBase._update_dict(param1, style_kwargs, 0)
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
     )
-    param2 = {"color": get_colors()[1]}
-    ax.plot(
-        decision_boundary,
-        positive_prediction_ratio,
-        **PlottingBase._update_dict(param2, style_kwargs, 1),
-    )
-    color1, color2 = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
-    if color1 == color2:
-        color2 = get_colors()[1]
-    ax.fill_between(
-        decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2,
-    )
-    ax.fill_between(
-        decision_boundary,
-        [0 for elem in decision_boundary],
-        positive_prediction_ratio,
-        facecolor=color2,
-        alpha=0.2,
-    )
-    ax.set_title("Lift Table")
-    ax.set_axisbelow(True)
-    ax.grid()
-    color1 = mpatches.Patch(color=color1, label="Cumulative Lift")
-    color2 = mpatches.Patch(color=color2, label="Cumulative Capture Rate")
-    ax.legend(handles=[color1, color2], loc="center left", bbox_to_anchor=[1, 0.5])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0)
+    data = {
+        "x": np.array(decision_boundary),
+        "y": np.array(positive_prediction_ratio),
+        "z": np.array(lift),
+    }
+    layout = {
+        "title": "Lift Table",
+        "x_label": "Cumulative Data Fraction",
+        "y_label": "Cumulative Capture Rate",
+        "z_label": "Cumulative Lift",
+    }
+    vpy_plt.LiftChart(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         values={
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
-            "lift": lift,
+            "lift": list(lift),
         }
     )
 
@@ -193,36 +168,18 @@ def prc_curve(
         fun_sql_name="prc",
     )
     auc = _compute_area(precision, recall)
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    ax.set_xlabel("Recall")
-    ax.set_ylabel("Precision")
-    param = {"color": get_colors(style_kwargs, 0)}
-    ax.plot(recall, precision, **PlottingBase._update_dict(param, style_kwargs))
-    ax.fill_between(
-        recall,
-        [0 for item in recall],
-        precision,
-        facecolor=get_colors(style_kwargs, 0),
-        alpha=0.1,
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
     )
-    ax.set_ylim(0, 1)
-    ax.set_xlim(0, 1)
-    ax.set_title("PRC Curve")
-    ax.text(
-        0.995,
-        0,
-        f"AUC = {round(auc, 4) * 100}%",
-        verticalalignment="bottom",
-        horizontalalignment="right",
-        fontsize=11.5,
-    )
-    ax.set_axisbelow(True)
-    ax.grid()
+    data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
+    layout = {
+        "title": "PRC Curve",
+        "x_label": "Recall",
+        "y_label": "Precision",
+    }
+    vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
     return TableSample(
-        values={"threshold": threshold, "recall": recall, "precision": precision}
+        values={"threshold": threshold, "recall": recall, "precision": precision,}
     )
 
 
@@ -282,62 +239,31 @@ def roc_curve(
         fun_sql_name="roc",
     )
     auc = _compute_area(true_positive, false_positive)
-    if not (ax):
-        fig, ax = plt.subplots()
-        if conf._get_import_success("jupyter"):
-            fig.set_size_inches(8, 6)
-    color1, color2 = get_colors(style_kwargs, 0), get_colors(style_kwargs, 1)
-    if color1 == color2:
-        color2 = get_colors()[1]
+    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
+        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    )
     if cutoff_curve:
-        ax.plot(
-            threshold,
-            [1 - item for item in false_positive],
-            label="Specificity",
-            **PlottingBase._update_dict({"color": get_colors()[0]}, style_kwargs),
-        )
-        ax.plot(
-            threshold,
-            true_positive,
-            label="Sensitivity",
-            **PlottingBase._update_dict({"color": get_colors()[1]}, style_kwargs),
-        )
-        ax.fill_between(
-            threshold,
-            [1 - item for item in false_positive],
-            true_positive,
-            facecolor="black",
-            alpha=0.02,
-        )
-        ax.set_xlabel("Decision Boundary")
-        ax.set_title("Cutoff Curve")
-        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+        data = {
+            "x": np.array(threshold),
+            "y": 1 - np.array(false_positive),
+            "z": np.array(true_positive),
+            "auc": auc,
+        }
+        layout = {
+            "title": "Cutoff Curve",
+            "x_label": "Decision Boundary",
+            "y_label": "Specificity",
+            "z_label": "Sensitivity",
+        }
+        vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
-        ax.set_xlabel("False Positive Rate (1-Specificity)")
-        ax.set_ylabel("True Positive Rate (Sensitivity)")
-        ax.plot(
-            false_positive,
-            true_positive,
-            **PlottingBase._update_dict({"color": get_colors()[0]}, style_kwargs),
-        )
-        ax.fill_between(
-            false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1,
-        )
-        ax.fill_between([0, 1], [0, 0], [0, 1], facecolor=color2, alpha=0.1)
-        ax.plot([0, 1], [0, 1], color=color2)
-        ax.set_title("ROC Curve")
-        ax.text(
-            0.995,
-            0,
-            f"AUC = {round(auc, 4) * 100}%",
-            verticalalignment="bottom",
-            horizontalalignment="right",
-            fontsize=11.5,
-        )
-    ax.set_ylim(0, 1)
-    ax.set_xlim(0, 1)
-    ax.set_axisbelow(True)
-    ax.grid()
+        data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}
+        layout = {
+            "title": "ROC Curve",
+            "x_label": "False Positive Rate (1-Specificity)",
+            "y_label": "True Positive Rate (Sensitivity)",
+        }
+        vpy_plt.ROCCurve(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         values={
             "threshold": threshold,

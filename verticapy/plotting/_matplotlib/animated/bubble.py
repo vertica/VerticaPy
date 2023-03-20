@@ -41,7 +41,7 @@ class AnimatedBubblePlot(MatplotlibBase):
         return "plot"
 
     @property
-    def _kind(self) -> Literal["bubble"]:
+    def _kind(self) -> Literal["animated_bubble"]:
         return "animated_bubble"
 
     def draw(

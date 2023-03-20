@@ -14,9 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, itertools
+import copy, random, itertools
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
+import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -516,11 +517,11 @@ def stepwise(
             "direction": direction,
         }
         res.step_wise_ = vpy_plt.StepwisePlot(data=data, layout=layout).draw(**kwargs)
-        coeff_importances = {}
-        for idx in range(len(importance)):
-            if res["variable"][idx] != None:
-                coeff_importances[res["variable"][idx]] = importance[idx]
-        res.importance_ = vpy_plt.ImportanceBarChart().draw(
-            coeff_importances, print_legend=False, ax=ax, **style_kwargs
+        data = {
+            "importance": np.array(importance),
+        }
+        layout = {"columns": copy.deepcopy(res["variable"])}
+        res.importance_ = vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(
+            **kwargs
         )
     return res

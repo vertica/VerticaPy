@@ -116,6 +116,24 @@ class PlottingBase:
         self.init_style = {}
         return None
 
+    def _get_final_color(self, style_kwargs: dict, idx: int = 0,) -> str:
+        for key in ["colors", "color", "c"]:
+            if key in style_kwargs:
+                if isinstance(style_kwargs[key], list):
+                    n = len(style_kwargs[key])
+                    return style_kwargs[key][idx % n]
+                elif idx == 0:
+                    return style_kwargs[key]
+        return self.get_colors(idx=idx)
+
+    def _get_final_style_kwargs(self, style_kwargs: dict, idx: int,) -> dict:
+        kwargs = copy.deepcopy(style_kwargs)
+        for key in ["colors", "color", "c"]:
+            if key in kwargs:
+                del kwargs[key]
+        kwargs["color"] = self._get_final_color(style_kwargs=style_kwargs, idx=idx,)
+        return kwargs
+
     @staticmethod
     def get_colors(
         d: Optional[dict] = {}, idx: Optional[int] = None
@@ -865,23 +883,37 @@ class PlottingBase:
         columns: SQLColumns,
         order_by_start: PythonScalar = None,
         order_by_end: PythonScalar = None,
+        limit: int = -1,
+        limit_over: int = -1,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
         elif not (columns):
             columns = vdf.numcol()
         columns, order_by = vdf._format_colnames(columns, order_by)
-        X = (
-            vdf.between(
-                column=order_by, start=order_by_start, end=order_by_end, inplace=False
-            )[[order_by] + columns]
-            .sort(columns=[order_by])
-            .to_numpy()
-        )
+        X = vdf.between(
+            column=order_by, start=order_by_start, end=order_by_end, inplace=False
+        )[[order_by] + columns].sort(columns=[order_by])
+        if limit_over > 0:
+            X = X._new_vdataframe(
+                f"""
+                SELECT * FROM {X}
+                LIMIT {limit_over} OVER 
+                    (PARTITION BY {order_by} 
+                     ORDER BY {columns[1]} DESC)"""
+            ).sort(columns=[order_by, columns[1]])
+        if limit > 0:
+            X = X[:limit]
+        X = X.to_numpy()
         if not (vdf[columns[-1]].isnum()):
+            Y = X[:, 1:-1]
+            try:
+                Y = Y.astype(float)
+            except ValueError:
+                pass
             self.data = {
                 "x": X[:, 0],
-                "Y": X[:, 1:-1].astype(float),
+                "Y": Y,
                 "z": X[:, -1],
             }
             has_category = True
@@ -895,6 +927,8 @@ class PlottingBase:
             "columns": columns,
             "order_by": order_by,
             "has_category": has_category,
+            "limit": limit,
+            "limit_over": limit_over,
         }
         return None
 

@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
@@ -656,15 +657,14 @@ class AutoML(VerticaModel):
             features importance.
         """
         if self.stepwise_:
-            coeff_importances = {}
-            for idx in range(len(self.stepwise_["importance"])):
-                if self.stepwise_["variable"][idx] != None:
-                    coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_[
-                        "importance"
-                    ][idx]
-            return vpy_matplotlib_plt.ImportanceBarChart().draw(
-                coeff_importances, print_legend=False, ax=ax, **style_kwargs
+            data = {
+                "importance": self.stepwise_["importance"],
+            }
+            layout = {"columns": copy.deepcopy(self.stepwise_["variable"])}
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
+            vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return self.best_model_.features_importance(**kwargs)
 
     # Plotting Methods.

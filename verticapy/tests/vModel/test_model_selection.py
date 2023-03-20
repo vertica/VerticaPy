@@ -150,16 +150,16 @@ class TestModelSelection:
             init="kmeanspp",
         )
         plt.close("all")
-        assert result["Elbow Score"][0] == pytest.approx(0.0)
-        assert len(result["Elbow Score"]) == 4
+        assert result["elbow_score"][0] == pytest.approx(0.0)
+        assert len(result["elbow_score"]) == 4
         result2 = elbow(
             winequality_vd,
             ["residual_sugar", "alcohol"],
             n_cluster=(1, 5),
             init="kmeanspp",
         )
-        assert result2["Elbow Score"][0] == pytest.approx(0.0)
-        assert len(result2["Elbow Score"]) == 4
+        assert result2["elbow_score"][0] == pytest.approx(0.0)
+        assert len(result2["elbow_score"]) == 4
         plt.close("all")
 
     def test_gen_params_grid(self):

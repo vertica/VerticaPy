@@ -101,3 +101,81 @@ class ACFPlot(MatplotlibBase):
             )
         ax.set_xlabel("lag")
         return ax
+
+
+class ACFPACFPlot(ACFPlot):
+
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["acf_pacf"]:
+        return "acf_pacf"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "s": 90,
+            "marker": "o",
+            "facecolors": self.get_colors(idx=0),
+            "edgecolors": "black",
+            "zorder": 2,
+        }
+        self.init_style_opacity = {
+            "alpha": 0.1,
+        }
+        self.init_style_bar = {
+            "color": "#444444",
+            "zorder": 1,
+            "linewidth": 0,
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> plt.Figure:
+        """
+        Draws an ACF-PACF Time Series plot using the Matplotlib API.
+        """
+        fig = plt.figure(figsize=(10, 6))
+        plt.rcParams["axes.facecolor"] = "#FCFCFC"
+        color = self._get_final_color(style_kwargs=style_kwargs)
+        width = 0.007 * len(self.data["x"])
+        ax1 = fig.add_subplot(211)
+        x1 = np.concatenate(([-1], self.data["x"], [self.data["x"][-1] + 1]))
+        y1 = [0 for x in range(len(self.data["x"]) + 2)]
+        ax1.bar(self.data["x"], self.data["y0"], width=width, **self.init_style_bar)
+        ax1.scatter(
+            self.data["x"],
+            self.data["y0"],
+            **self._update_dict(self.init_style, style_kwargs),
+        )
+        ax1.plot(x1, y1, color=color, zorder=0)
+        ax1.fill_between(
+            self.data["x"], self.data["z"], color=color, **self.init_style_opacity
+        )
+        ax1.fill_between(
+            self.data["x"], -self.data["z"], color=color, **self.init_style_opacity
+        )
+        ax1.set_title(self.layout["y0_label"])
+        ax1.set_xticks([])
+        ax1.set_xlim(self.data["x"][0] - 0.15, self.data["x"][-1] + 0.15)
+        ax1.set_ylim(-1.1, 1.1)
+        ax2 = fig.add_subplot(212)
+        ax2.bar(self.data["x"], self.data["y1"], width=width, **self.init_style_bar)
+        ax2.scatter(
+            self.data["x"],
+            self.data["y1"],
+            **self._update_dict(self.init_style, style_kwargs),
+        )
+        ax2.plot(x1, y1, color=color, zorder=0)
+        ax2.fill_between(
+            self.data["x"], self.data["z"], color=color, **self.init_style_opacity
+        )
+        ax2.fill_between(
+            self.data["x"], -self.data["z"], color=color, **self.init_style_opacity
+        )
+        ax2.set_title(self.layout["y1_label"])
+        ax2.set_xlim(self.data["x"][0] - 0.15, self.data["x"][-1] + 0.15)
+        ax2.set_ylim(-1.1, 1.1)
+        return fig

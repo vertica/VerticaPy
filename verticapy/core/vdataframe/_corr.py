@@ -1583,6 +1583,7 @@ class vDFCorr:
         nbins: int = 10,
         show: bool = True,
         ax: Optional[Axes] = None,
+        **style_kwargs,
     ):
         """
     Computes the Information Value (IV) Table. It tells the predictive power of 
@@ -1602,8 +1603,9 @@ class vDFCorr:
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
+    **style_kwargs
+        Any optional parameter to pass to the Matplotlib functions.
     
-
     Returns
     -------
     TableSample
@@ -1620,21 +1622,20 @@ class vDFCorr:
         columns, y = self._format_colnames(columns, y)
         if not (columns):
             columns = self.get_columns(exclude_columns=[y])
-        coeff_importances = {}
-        for col in columns:
-            coeff_importances[col] = self[col].iv_woe(y=y, nbins=nbins)["iv"][-1]
+        importance = np.array(
+            [self[col].iv_woe(y=y, nbins=nbins)["iv"][-1] for col in columns]
+        )
         if show:
-            ax = vpy_matplotlib_plt.ImportanceBarChart().draw(
-                coeff_importances, print_legend=False, ax=ax
+            data = {
+                "importance": importance,
+            }
+            layout = {"columns": copy.deepcopy(columns), "x_label": "IV"}
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
             )
-            ax.set_xlabel("IV")
-            return ax
-        index = [col for col in coeff_importances]
-        iv = [coeff_importances[col] for col in coeff_importances]
-        data = [(index[i], iv[i]) for i in range(len(iv))]
-        data = sorted(data, key=lambda tup: tup[1], reverse=True)
-        return TableSample(
-            {"index": [col[0] for col in data], "iv": [col[1] for col in data],}
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+        return TableSample({"index": copy.deepcopy(columns), "iv": importance,}).sort(
+            column="iv", desc=True,
         )
 
 
