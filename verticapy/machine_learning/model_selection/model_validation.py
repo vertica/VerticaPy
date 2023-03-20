@@ -33,7 +33,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.machine_learning.vertica.base import VerticaModel
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
+from verticapy.plotting._utils import PlottingUtils
 
 
 @save_verticapy_logs
@@ -540,7 +540,12 @@ def learning_curve(
         order_by = "n"
         y_label = None
         columns = ["time"]
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="RangeCurve",
+        matplotlib_kwargs={"ax": ax,},
+        style_kwargs=style_kwargs,
+    )
     data = {"x": x, "Y": Y}
     layout = {"columns": columns, "order_by": order_by, "y_label": y_label}
-    vpy_matplotlib_plt.RangeCurve(data=data, layout=layout).draw(ax=ax, **style_kwargs)
+    vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
     return result

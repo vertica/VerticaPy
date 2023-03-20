@@ -17,7 +17,6 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -51,7 +50,7 @@ class Histogram(MatplotlibBase):
         for i, column in enumerate(self.layout[key]):
             kwargs = {"color": colors[i % len(colors)]}
             kwargs = self._update_dict(kwargs, style_kwargs, i)
-            plt.bar(
+            ax.bar(
                 self.data[column]["x"],
                 self.data[column]["y"],
                 self.data["width"],

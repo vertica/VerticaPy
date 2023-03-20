@@ -36,7 +36,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.base import Regressor, BinaryClassifier
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 """
 General Classes.
@@ -130,7 +129,9 @@ class LinearModel:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -173,7 +174,9 @@ class LinearModel:
             Axes.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="RegressionPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.RegressionPlot(
             vdf=vDataFrame(self.input_relation),
@@ -235,7 +238,9 @@ class LinearModelClassifier(LinearModel):
             Axes.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="LogisticRegressionPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.LogisticRegressionPlot(
             vdf=vDataFrame(self.input_relation),

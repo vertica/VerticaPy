@@ -17,11 +17,9 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 import numpy as np
 
-from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -60,12 +58,9 @@ class ScatterMatrix(MatplotlibBase):
         Draws a scatter matrix using the Matplotlib API.
         """
         n = len(self.layout["columns"])
-        if conf._get_import_success("jupyter"):
-            figsize = min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
-            fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
-        else:
-            figsize = min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)
-            fig, axes = plt.subplots(nrows=n, ncols=n, figsize=figsize,)
+        fig, axes = plt.subplots(
+            nrows=n, ncols=n, figsize=self._get_matrix_fig_size(n=n),
+        )
         for i in range(n):
             axes[-1][i].set_xlabel(self.layout["columns"][i], rotation=90)
             axes[i][0].set_ylabel(self.layout["columns"][i], rotation=0)
@@ -139,15 +134,9 @@ class ScatterPlot(MatplotlibBase):
         Draws a scatter plot using the Matplotlib API.
         """
         n, m = self.data["X"].shape
-        if not (ax):
-            if m == 2:
-                ax, fig = self._get_ax_fig(
-                    ax, size=(8, 6), set_axis_below=True, grid=True
-                )
-            else:
-                if conf._get_import_success("jupyter"):
-                    plt.figure(figsize=(8, 6))
-                ax = plt.axes(projection="3d")
+        ax, fig = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, dim=m,
+        )
         args = [self.data["X"][:, i] for i in range(m)]
         kwargs = self._update_dict(self.init_style, style_kwargs, 0)
         if self.layout["has_size"]:

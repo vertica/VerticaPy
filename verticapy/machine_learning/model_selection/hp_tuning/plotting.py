@@ -180,8 +180,10 @@ def validation_curve(
             "test_score_upper": Y[:, 5],
         }
     )
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-        matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="RangeCurve",
+        matplotlib_kwargs={"ax": ax,},
+        style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
     layout = {"columns": ["train", "test"], "order_by": param_name, "y_label": metric}
@@ -239,7 +241,9 @@ def plot_acf_pacf(
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     index = [i for i in range(0, len(acf.values["value"]))]
-    vpy_plt, kwargs = PlottingUtils._get_plotting_lib(style_kwargs=style_kwargs,)
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        class_name="ACFPACFPlot", style_kwargs=style_kwargs,
+    )
     data = {
         "x": np.array(index),
         "y0": np.array(acf.values["value"]),

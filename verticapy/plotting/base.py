@@ -26,7 +26,6 @@ from verticapy._typing import ArrayLike, PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
 
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
@@ -100,11 +99,11 @@ class PlottingBase:
                 message = f"exactly {lower}"
             else:
                 message = f"between {lower} and {upper}."
-            raise ParameterError(
+            raise ValueError(
                 f"The number of columns to draw the plot must be {message}. Found {n}."
             )
         if self._only_standard and not (is_standard):
-            raise ParameterError(
+            raise ValueError(
                 f"When drawing {self._kind} {self._category}s, the parameter "
                 "'method' can not represent a customized aggregation."
             )
@@ -197,7 +196,7 @@ class PlottingBase:
             method not in ["avg", "min", "max", "sum", "density", "count"]
             and "%" != method[-1]
         ) and of:
-            raise ParameterError(
+            raise ValueError(
                 "Parameter 'of' must be empty when using customized aggregations."
             )
         if (
@@ -226,7 +225,7 @@ class PlottingBase:
             fun = None
             is_standard = False
         else:
-            raise ParameterError(
+            raise ValueError(
                 "The parameter 'method' must be in [avg|mean|min|max|sum|"
                 f"median|q%] or a customized aggregation. Found {method}."
             )
@@ -265,79 +264,7 @@ class PlottingBase:
 
     # Attributes Computations.
 
-    def _compute_contour_grid(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        func: Union[str, StringSQL, Callable],
-        nbins: int = 100,
-        func_name: Optional[str] = None,
-    ) -> None:
-        from verticapy.datasets.generators import gen_meshgrid
-
-        columns = vdf._format_colnames(columns)
-        aggregations = vdf.agg(["min", "max"], columns).to_numpy()
-        self.data = {
-            "min": aggregations[:, 0],
-            "max": aggregations[:, 1],
-        }
-        if isinstance(func, Callable):
-            x_grid = np.linspace(self.data["min"][0], self.data["max"][0], nbins)
-            y_grid = np.linspace(self.data["min"][1], self.data["max"][1], nbins)
-            X, Y = np.meshgrid(x_grid, y_grid)
-            Z = func(X, Y)
-        elif isinstance(func, (str, StringSQL)):
-            d = {}
-            for i in range(2):
-                d[quote_ident(columns[i])[1:-1]] = {
-                    "type": float,
-                    "range": [self.data["min"][i], self.data["max"][i]],
-                    "nbins": nbins,
-                }
-            vdf_tmp = gen_meshgrid(d)
-            if "{0}" in func and "{1}" in func:
-                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
-            else:
-                vdf_tmp["_contour_Z"] = func
-            dataset = (
-                vdf_tmp[[columns[1], columns[0], "_contour_Z"]].sort(columns).to_numpy()
-            )
-            i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
-            n = len(dataset)
-            X, Y, Z = [], [], []
-            while i < n:
-                x_tmp, y_tmp, z_tmp = [], [], []
-                j, last_non_null_value = 0, 0
-                while y_start == y_new and i < n and j < nbins:
-                    if dataset[i][2] != None:
-                        last_non_null_value = float(dataset[i][2])
-                    x_tmp += [float(dataset[i][1])]
-                    y_tmp += [float(dataset[i][0])]
-                    z_tmp += [
-                        float(
-                            dataset[i][2]
-                            if (dataset[i][2] != None)
-                            else last_non_null_value
-                        )
-                    ]
-                    y_new = dataset[i][1]
-                    i, j = i + 1, j + 1
-                    if j == nbins:
-                        while y_start == y_new and i < n:
-                            y_new = dataset[i][1]
-                            i += 1
-                y_start = y_new
-                X, Y, Z = X + [x_tmp], Y + [y_tmp], Z + [z_tmp]
-        else:
-            raise TypeError
-        self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
-        func_repr = func.__name__ if isinstance(func, Callable) else str(func)
-        self.layout = {
-            "columns": columns,
-            "func": func,
-            "func_repr": func_name if func_name != None else func_repr,
-        }
-        return None
+    # 1D AGG Graphics: BAR / PIE ...
 
     def _compute_plot_params(
         self,
@@ -350,9 +277,9 @@ class PlottingBase:
         pie: bool = False,
     ) -> None:
         """
-	    Computes the aggregations needed to draw a 1D graphic 
-	    using the Matplotlib API.
-	    """
+        Computes the aggregations needed to draw a 1D graphic 
+        using the Matplotlib API.
+        """
         other_columns = ""
         of = vdc._parent._format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
@@ -376,14 +303,14 @@ class PlottingBase:
         ):
             if (is_numeric) and not (pie):
                 query = f"""
-	                SELECT 
-	                    {vdc._alias},
-	                    {aggregate}
-	                FROM {vdc._parent._genSQL()} 
-	                WHERE {vdc._alias} IS NOT NULL 
-	                GROUP BY {vdc._alias} 
-	                ORDER BY {vdc._alias} ASC 
-	                LIMIT {max_cardinality}"""
+                    SELECT 
+                        {vdc._alias},
+                        {aggregate}
+                    FROM {vdc._parent._genSQL()} 
+                    WHERE {vdc._alias} IS NOT NULL 
+                    GROUP BY {vdc._alias} 
+                    ORDER BY {vdc._alias} ASC 
+                    LIMIT {max_cardinality}"""
             else:
                 table = vdc._parent._genSQL()
                 if (pie) and (is_numeric):
@@ -401,28 +328,28 @@ class PlottingBase:
                     )
                 cast_alias = to_varchar(vdc.category(), vdc._alias)
                 query = f"""
-	                (SELECT 
-	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/ 
-	                    {cast_alias} AS {vdc._alias},
-	                    {aggregate}
-	                 FROM {table} 
-	                 GROUP BY {cast_alias} 
-	                 ORDER BY 2 DESC 
-	                 LIMIT {max_cardinality})"""
+                    (SELECT 
+                        /*+LABEL('plotting._matplotlib._compute_plot_params')*/ 
+                        {cast_alias} AS {vdc._alias},
+                        {aggregate}
+                     FROM {table} 
+                     GROUP BY {cast_alias} 
+                     ORDER BY 2 DESC 
+                     LIMIT {max_cardinality})"""
                 if cardinality > max_cardinality:
                     query += f"""
-	                    UNION 
-	                    (SELECT 
-	                        'Others',
-	                        {aggregate} 
-	                     FROM {table}
-	                     WHERE {vdc._alias} NOT IN
-	                     (SELECT 
-	                        {vdc._alias} 
-	                      FROM {table}
-	                      GROUP BY {vdc._alias}
-	                      ORDER BY {aggregate} DESC
-	                      LIMIT {max_cardinality}))"""
+                        UNION 
+                        (SELECT 
+                            'Others',
+                            {aggregate} 
+                         FROM {table}
+                         WHERE {vdc._alias} NOT IN
+                         (SELECT 
+                            {vdc._alias} 
+                          FROM {table}
+                          GROUP BY {vdc._alias}
+                          ORDER BY {aggregate} DESC
+                          LIMIT {max_cardinality}))"""
             query_result = _executeSQL(
                 query=query, title="Computing the histogram heights", method="fetchall"
             )
@@ -447,10 +374,10 @@ class PlottingBase:
             elif nbins > 0:
                 query_result = _executeSQL(
                     query=f"""
-	                    SELECT 
-	                        /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-	                        DATEDIFF('second', MIN({vdc._alias}), MAX({vdc._alias}))
-	                    FROM {vdc._parent._genSQL()}""",
+                        SELECT 
+                            /*+LABEL('plotting._matplotlib._compute_plot_params')*/
+                            DATEDIFF('second', MIN({vdc._alias}), MAX({vdc._alias}))
+                        FROM {vdc._parent._genSQL()}""",
                     title="Computing the histogram interval",
                     method="fetchrow",
                 )
@@ -459,14 +386,14 @@ class PlottingBase:
             converted_date = f"DATEDIFF('second', '{min_date}', {vdc._alias})"
             query_result = _executeSQL(
                 query=f"""
-	                SELECT 
-	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-	                    FLOOR({converted_date} / {h}) * {h}, 
-	                    {aggregate} 
-	                FROM {vdc._parent._genSQL()}
-	                WHERE {vdc._alias} IS NOT NULL 
-	                GROUP BY 1 
-	                ORDER BY 1""",
+                    SELECT 
+                        /*+LABEL('plotting._matplotlib._compute_plot_params')*/
+                        FLOOR({converted_date} / {h}) * {h}, 
+                        {aggregate} 
+                    FROM {vdc._parent._genSQL()}
+                    WHERE {vdc._alias} IS NOT NULL 
+                    GROUP BY 1 
+                    ORDER BY 1""",
                 title="Computing the histogram heights",
                 method="fetchall",
             )
@@ -479,11 +406,11 @@ class PlottingBase:
             query = "("
             for idx, item in enumerate(query_result):
                 query_tmp = f"""
-	                (SELECT 
-	                    {{}}
-	                    TIMESTAMPADD('second',
-	                                 {math.floor(h * idx)},
-	                                 '{min_date}'::timestamp))"""
+                    (SELECT 
+                        {{}}
+                        TIMESTAMPADD('second',
+                                     {math.floor(h * idx)},
+                                     '{min_date}'::timestamp))"""
                 if idx == 0:
                     query += query_tmp.format(
                         "/*+LABEL('plotting._matplotlib._compute_plot_params')*/"
@@ -508,14 +435,14 @@ class PlottingBase:
                 h = max(1.0, h)
             query_result = _executeSQL(
                 query=f"""
-	                SELECT
-	                    /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-	                    FLOOR({vdc._alias} / {h}) * {h},
-	                    {aggregate} 
-	                FROM {vdc._parent._genSQL()}
-	                WHERE {vdc._alias} IS NOT NULL
-	                GROUP BY 1
-	                ORDER BY 1""",
+                    SELECT
+                        /*+LABEL('plotting._matplotlib._compute_plot_params')*/
+                        FLOOR({vdc._alias} / {h}) * {h},
+                        {aggregate} 
+                    FROM {vdc._parent._genSQL()}
+                    WHERE {vdc._alias} IS NOT NULL
+                    GROUP BY 1
+                    ORDER BY 1""",
                 title="Computing the histogram heights",
                 method="fetchall",
             )
@@ -550,73 +477,7 @@ class PlottingBase:
         }
         return None
 
-    def _compute_outliers_params(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        max_nb_points: int = 1000,
-        threshold: float = 3.0,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = vdf._format_colnames(columns)
-        aggregations = vdf.agg(
-            func=["avg", "std", "min", "max"], columns=columns
-        ).to_numpy()
-        self.data = {
-            "X": vdf[columns].sample(n=max_nb_points).to_numpy().astype(float),
-            "avg": aggregations[:, 0],
-            "std": aggregations[:, 1],
-            "min": aggregations[:, 2],
-            "max": aggregations[:, 3],
-            "th": threshold,
-        }
-        self.layout = {
-            "columns": copy.deepcopy(columns),
-        }
-        return None
-
-    def _compute_aggregate(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "count",
-        of: Optional[str] = None,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = vdf._format_colnames(columns)
-        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
-        self._init_check(dim=len(columns), is_standard=is_standard)
-        if method == "density":
-            over = "/" + str(float(vdf.shape()[0]))
-        else:
-            over = ""
-        X = np.array(
-            _executeSQL(
-                query=f"""
-                SELECT
-                    /*+LABEL('plotting._compute_aggregate')*/
-                    {", ".join(columns)},
-                    {aggregate}{over}
-                FROM {vdf._genSQL()}
-                GROUP BY {", ".join(columns)}""",
-                title="Grouping all the elements for the Hexbin Plot",
-                method="fetchall",
-            )
-        )
-        self.data = {"X": X}
-        self.layout = {
-            "columns": copy.deepcopy(columns),
-            "method": method,
-            "method_of": method + f"({of})" if of else method,
-            "of": of,
-            "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
-            "aggregate_fun": aggregate_fun,
-            "is_standard": is_standard,
-        }
-        return None
+    # HISTOGRAMS
 
     def _compute_hists_params(
         self,
@@ -700,85 +561,7 @@ class PlottingBase:
         }
         return None
 
-    def _compute_range(
-        self,
-        vdf: "vDataFrame",
-        order_by: str,
-        columns: SQLColumns,
-        q: tuple = (0.25, 0.75),
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, order_by = vdf._format_colnames(columns, order_by)
-        expr = []
-        for column in columns:
-            expr += [
-                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
-                f"APPROXIMATE_MEDIAN({column})",
-                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
-            ]
-        X = (
-            vdf.between(column=order_by, start=order_by_start, end=order_by_end)
-            .groupby(columns=[order_by], expr=expr,)
-            .sort(columns=[order_by])
-            .to_numpy()
-        )
-        self.data = {
-            "x": self._parse_datetime(X[:, 0]),
-            "Y": X[:, 1:].astype(float),
-        }
-        self.layout = {
-            "columns": columns,
-            "order_by": order_by,
-        }
-        return None
-
-    def _compute_rollup(
-        self,
-        vdf: "vDataFrame",
-        columns: SQLColumns,
-        method: str = "density",
-        of: Optional[str] = None,
-        max_cardinality: Union[int, tuple, list] = None,
-        h: Union[int, tuple, list] = None,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
-        n = len(columns)
-        if isinstance(h, (int, float, type(None))):
-            h = (h,) * n
-        if isinstance(max_cardinality, (int, float, type(None))):
-            if max_cardinality == None:
-                max_cardinality = (6,) * n
-            else:
-                max_cardinality = (max_cardinality,) * n
-        vdf_tmp = vdf[columns]
-        for idx, column in enumerate(columns):
-            vdf_tmp[column].discretize(h=h[idx])
-            vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
-        groups = []
-        for i in range(0, n):
-            groups += [
-                vdf_tmp.groupby(columns[: n - i], [aggregate])
-                .sort(columns[: n - i])
-                .to_numpy()
-                .T
-            ]
-        self.data = {"groups": np.array(groups, dtype=object)}
-        self.layout = {
-            "columns": copy.deepcopy(columns),
-            "method": method,
-            "method_of": method + f"({of})" if of else method,
-            "of": of,
-            "of_cat": vdf[of].category() if of else None,
-            "aggregate": clean_query(aggregate),
-            "aggregate_fun": aggregate_fun,
-            "is_standard": is_standard,
-        }
-        return None
+    # BOXPLOTS
 
     def _compute_statistics(
         self,
@@ -876,61 +659,7 @@ class PlottingBase:
             "whis": whis,
         }
 
-    def _filter_line(
-        self,
-        vdf: "vDataFrame",
-        order_by: str,
-        columns: SQLColumns,
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
-        limit: int = -1,
-        limit_over: int = -1,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
-            columns = vdf.numcol()
-        columns, order_by = vdf._format_colnames(columns, order_by)
-        X = vdf.between(
-            column=order_by, start=order_by_start, end=order_by_end, inplace=False
-        )[[order_by] + columns].sort(columns=[order_by])
-        if limit_over > 0:
-            X = X._new_vdataframe(
-                f"""
-                SELECT * FROM {X}
-                LIMIT {limit_over} OVER 
-                    (PARTITION BY {order_by} 
-                     ORDER BY {columns[1]} DESC)"""
-            ).sort(columns=[order_by, columns[1]])
-        if limit > 0:
-            X = X[:limit]
-        X = X.to_numpy()
-        if not (vdf[columns[-1]].isnum()):
-            Y = X[:, 1:-1]
-            try:
-                Y = Y.astype(float)
-            except ValueError:
-                pass
-            self.data = {
-                "x": X[:, 0],
-                "Y": Y,
-                "z": X[:, -1],
-            }
-            has_category = True
-        else:
-            self.data = {
-                "x": X[:, 0],
-                "Y": X[:, 1:],
-            }
-            has_category = False
-        self.layout = {
-            "columns": columns,
-            "order_by": order_by,
-            "has_category": has_category,
-            "limit": limit,
-            "limit_over": limit_over,
-        }
-        return None
+    # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 
     def _compute_pivot_table(
         self,
@@ -1115,31 +844,197 @@ class PlottingBase:
         }
         return None
 
-    def _compute_scatter_matrix(
-        self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
+    def _compute_contour_grid(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        func: Union[str, StringSQL, Callable],
+        nbins: int = 100,
+        func_name: Optional[str] = None,
+    ) -> None:
+        from verticapy.datasets.generators import gen_meshgrid
+
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(["min", "max"], columns).to_numpy()
+        self.data = {
+            "min": aggregations[:, 0],
+            "max": aggregations[:, 1],
+        }
+        if isinstance(func, Callable):
+            x_grid = np.linspace(self.data["min"][0], self.data["max"][0], nbins)
+            y_grid = np.linspace(self.data["min"][1], self.data["max"][1], nbins)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = func(X, Y)
+        elif isinstance(func, (str, StringSQL)):
+            d = {}
+            for i in range(2):
+                d[quote_ident(columns[i])[1:-1]] = {
+                    "type": float,
+                    "range": [self.data["min"][i], self.data["max"][i]],
+                    "nbins": nbins,
+                }
+            vdf_tmp = gen_meshgrid(d)
+            if "{0}" in func and "{1}" in func:
+                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+            else:
+                vdf_tmp["_contour_Z"] = func
+            dataset = (
+                vdf_tmp[[columns[1], columns[0], "_contour_Z"]].sort(columns).to_numpy()
+            )
+            i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
+            n = len(dataset)
+            X, Y, Z = [], [], []
+            while i < n:
+                x_tmp, y_tmp, z_tmp = [], [], []
+                j, last_non_null_value = 0, 0
+                while y_start == y_new and i < n and j < nbins:
+                    if dataset[i][2] != None:
+                        last_non_null_value = float(dataset[i][2])
+                    x_tmp += [float(dataset[i][1])]
+                    y_tmp += [float(dataset[i][0])]
+                    z_tmp += [
+                        float(
+                            dataset[i][2]
+                            if (dataset[i][2] != None)
+                            else last_non_null_value
+                        )
+                    ]
+                    y_new = dataset[i][1]
+                    i, j = i + 1, j + 1
+                    if j == nbins:
+                        while y_start == y_new and i < n:
+                            y_new = dataset[i][1]
+                            i += 1
+                y_start = y_new
+                X, Y, Z = X + [x_tmp], Y + [y_tmp], Z + [z_tmp]
+        else:
+            raise TypeError
+        self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
+        func_repr = func.__name__ if isinstance(func, Callable) else str(func)
+        self.layout = {
+            "columns": columns,
+            "func": func,
+            "func_repr": func_name if func_name != None else func_repr,
+        }
+        return None
+
+    def _compute_contour_grid(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        func: Union[str, StringSQL, Callable],
+        nbins: int = 100,
+        func_name: Optional[str] = None,
+    ) -> None:
+        from verticapy.datasets.generators import gen_meshgrid
+
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(["min", "max"], columns).to_numpy()
+        self.data = {
+            "min": aggregations[:, 0],
+            "max": aggregations[:, 1],
+        }
+        if isinstance(func, Callable):
+            x_grid = np.linspace(self.data["min"][0], self.data["max"][0], nbins)
+            y_grid = np.linspace(self.data["min"][1], self.data["max"][1], nbins)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = func(X, Y)
+        elif isinstance(func, (str, StringSQL)):
+            d = {}
+            for i in range(2):
+                d[quote_ident(columns[i])[1:-1]] = {
+                    "type": float,
+                    "range": [self.data["min"][i], self.data["max"][i]],
+                    "nbins": nbins,
+                }
+            vdf_tmp = gen_meshgrid(d)
+            if "{0}" in func and "{1}" in func:
+                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+            else:
+                vdf_tmp["_contour_Z"] = func
+            dataset = (
+                vdf_tmp[[columns[1], columns[0], "_contour_Z"]].sort(columns).to_numpy()
+            )
+            i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
+            n = len(dataset)
+            X, Y, Z = [], [], []
+            while i < n:
+                x_tmp, y_tmp, z_tmp = [], [], []
+                j, last_non_null_value = 0, 0
+                while y_start == y_new and i < n and j < nbins:
+                    if dataset[i][2] != None:
+                        last_non_null_value = float(dataset[i][2])
+                    x_tmp += [float(dataset[i][1])]
+                    y_tmp += [float(dataset[i][0])]
+                    z_tmp += [
+                        float(
+                            dataset[i][2]
+                            if (dataset[i][2] != None)
+                            else last_non_null_value
+                        )
+                    ]
+                    y_new = dataset[i][1]
+                    i, j = i + 1, j + 1
+                    if j == nbins:
+                        while y_start == y_new and i < n:
+                            y_new = dataset[i][1]
+                            i += 1
+                y_start = y_new
+                X, Y, Z = X + [x_tmp], Y + [y_tmp], Z + [z_tmp]
+        else:
+            raise TypeError
+        self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
+        func_repr = func.__name__ if isinstance(func, Callable) else str(func)
+        self.layout = {
+            "columns": columns,
+            "func": func,
+            "func_repr": func_name if func_name != None else func_repr,
+        }
+        return None
+
+    def _compute_aggregate(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "count",
+        of: Optional[str] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
-        elif not (columns):
-            columns = vdf.numcol()
         columns = vdf._format_colnames(columns)
-        n = len(columns)
-        data = {
-            "scatter": {"X": vdf[columns].sample(n=max_nb_points).to_numpy()},
-            "hist": {},
-        }
-        for i in range(n):
-            for j in range(n):
-                if columns[i] == columns[j]:
-                    self._compute_plot_params(
-                        vdf[columns[i]], method="density", max_cardinality=1
-                    )
-                    data["hist"][columns[i]] = copy.deepcopy(self.data)
-        self.data = data
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        self._init_check(dim=len(columns), is_standard=is_standard)
+        if method == "density":
+            over = "/" + str(float(vdf.shape()[0]))
+        else:
+            over = ""
+        X = np.array(
+            _executeSQL(
+                query=f"""
+                SELECT
+                    /*+LABEL('plotting._compute_aggregate')*/
+                    {", ".join(columns)},
+                    {aggregate}{over}
+                FROM {vdf._genSQL()}
+                GROUP BY {", ".join(columns)}""",
+                title="Grouping all the elements for the Hexbin Plot",
+                method="fetchall",
+            )
+        )
+        self.data = {"X": X}
         self.layout = {
             "columns": copy.deepcopy(columns),
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
         }
         return None
+
+    # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
 
     def _sample(
         self,
@@ -1206,4 +1101,196 @@ class PlottingBase:
             self.data["s"] = X[:, n].astype(float)
         if ((catcol != None) or (cmap_col != None)) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
+        return None
+
+    def _compute_outliers_params(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        max_nb_points: int = 1000,
+        threshold: float = 3.0,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns = vdf._format_colnames(columns)
+        aggregations = vdf.agg(
+            func=["avg", "std", "min", "max"], columns=columns
+        ).to_numpy()
+        self.data = {
+            "X": vdf[columns].sample(n=max_nb_points).to_numpy().astype(float),
+            "avg": aggregations[:, 0],
+            "std": aggregations[:, 1],
+            "min": aggregations[:, 2],
+            "max": aggregations[:, 3],
+            "th": threshold,
+        }
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+        }
+        return None
+
+    def _compute_scatter_matrix(
+        self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        columns = vdf._format_colnames(columns)
+        n = len(columns)
+        data = {
+            "scatter": {"X": vdf[columns].sample(n=max_nb_points).to_numpy()},
+            "hist": {},
+        }
+        for i in range(n):
+            for j in range(n):
+                if columns[i] == columns[j]:
+                    self._compute_plot_params(
+                        vdf[columns[i]], method="density", max_cardinality=1
+                    )
+                    data["hist"][columns[i]] = copy.deepcopy(self.data)
+        self.data = data
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+        }
+        return None
+
+    # TIME SERIES: LINE / RANGE
+
+    def _compute_range(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        q: tuple = (0.25, 0.75),
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        expr = []
+        for column in columns:
+            expr += [
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
+                f"APPROXIMATE_MEDIAN({column})",
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
+            ]
+        X = (
+            vdf.between(column=order_by, start=order_by_start, end=order_by_end)
+            .groupby(columns=[order_by], expr=expr,)
+            .sort(columns=[order_by])
+            .to_numpy()
+        )
+        self.data = {
+            "x": self._parse_datetime(X[:, 0]),
+            "Y": X[:, 1:].astype(float),
+        }
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+        }
+        return None
+
+    def _filter_line(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+        limit: int = -1,
+        limit_over: int = -1,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = vdf.numcol()
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        X = vdf.between(
+            column=order_by, start=order_by_start, end=order_by_end, inplace=False
+        )[[order_by] + columns].sort(columns=[order_by])
+        if limit_over > 0:
+            X = X._new_vdataframe(
+                f"""
+                SELECT * FROM {X}
+                LIMIT {limit_over} OVER 
+                    (PARTITION BY {order_by} 
+                     ORDER BY {columns[1]} DESC)"""
+            ).sort(columns=[order_by, columns[1]])
+        if limit > 0:
+            X = X[:limit]
+        X = X.to_numpy()
+        if not (vdf[columns[-1]].isnum()):
+            Y = X[:, 1:-1]
+            try:
+                Y = Y.astype(float)
+            except ValueError:
+                pass
+            self.data = {
+                "x": X[:, 0],
+                "Y": Y,
+                "z": X[:, -1],
+            }
+            has_category = True
+        else:
+            self.data = {
+                "x": X[:, 0],
+                "Y": X[:, 1:],
+            }
+            has_category = False
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+            "has_category": has_category,
+            "limit": limit,
+            "limit_over": limit_over,
+        }
+        return None
+
+    # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
+
+    def _compute_rollup(
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        method: str = "density",
+        of: Optional[str] = None,
+        max_cardinality: Union[int, tuple, list] = None,
+        h: Union[int, tuple, list] = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        n = len(columns)
+        if isinstance(h, (int, float, type(None))):
+            h = (h,) * n
+        if isinstance(max_cardinality, (int, float, type(None))):
+            if max_cardinality == None:
+                max_cardinality = (6,) * n
+            else:
+                max_cardinality = (max_cardinality,) * n
+        vdf_tmp = vdf[columns]
+        for idx, column in enumerate(columns):
+            vdf_tmp[column].discretize(h=h[idx])
+            vdf_tmp[column].discretize(method="topk", k=max_cardinality[idx])
+        groups = []
+        for i in range(0, n):
+            groups += [
+                vdf_tmp.groupby(columns[: n - i], [aggregate])
+                .sort(columns[: n - i])
+                .to_numpy()
+                .T
+            ]
+        self.data = {"groups": np.array(groups, dtype=object)}
+        self.layout = {
+            "columns": copy.deepcopy(columns),
+            "method": method,
+            "method_of": method + f"({of})" if of else method,
+            "of": of,
+            "of_cat": vdf[of].category() if of else None,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
+        }
         return None

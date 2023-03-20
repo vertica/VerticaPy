@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
+
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
-import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -147,7 +148,6 @@ class PieChart(MatplotlibBase):
             N = len(labels)
             width = 2 * np.pi / N
             rad = np.cumsum([width] * N)
-
             fig = plt.figure()
             if not (ax):
                 ax = fig.add_subplot(111, polar=True)
@@ -273,7 +273,7 @@ class NestedPieChart(MatplotlibBase):
                 bbox_to_anchor = [0.4 + n * 0.23, 0.5 + 0.15 * i]
             else:
                 bbox_to_anchor = [0.2 + n * 0.23, 0.5 + 0.15 * i]
-            legend = plt.legend(
+            legend = ax.legend(
                 [Line2D([0], [0], color=color, lw=4) for color in legend_colors],
                 all_categories[i],
                 bbox_to_anchor=bbox_to_anchor,

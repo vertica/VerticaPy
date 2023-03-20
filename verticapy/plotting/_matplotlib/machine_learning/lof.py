@@ -18,9 +18,6 @@ from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -112,10 +109,7 @@ class LOFPlot(MatplotlibBase):
             for kwds in kwargs:
                 ax.scatter(X, Y, **kwds)
         elif len(self.layout["columns"]) == 4:
-            if not (ax):
-                if conf._get_import_success("jupyter"):
-                    plt.figure(figsize=(8, 6))
-                ax = plt.axes(projection="3d")
+            ax, fig = self._get_ax_fig(ax, size=(8, 6), dim=3,)
             ax.set_ylabel(self.layout["columns"][1])
             ax.set_zlabel(self.layout["columns"][2])
             kwargs = [

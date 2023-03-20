@@ -17,7 +17,6 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 

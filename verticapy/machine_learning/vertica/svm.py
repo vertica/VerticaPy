@@ -270,7 +270,9 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             Axes.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="SVMClassifierPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.SVMClassifierPlot(
             vdf=vDataFrame(self.input_relation),

@@ -52,7 +52,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 import verticapy.machine_learning.metrics as mt
 
 from verticapy.plotting._utils import PlottingUtils
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 
 from verticapy.sql.drop import drop
 
@@ -932,7 +931,9 @@ class Tree:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -993,7 +994,9 @@ class Tree:
             vdf = vDataFrame(self.input_relation)
             vdf["_prediction"] = self.deploySQL()
             vpy_plt, kwargs = self._get_plotting_lib(
-                matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+                class_name="RegressionTreePlot",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.RegressionTreePlot(
                 vdf=vdf,

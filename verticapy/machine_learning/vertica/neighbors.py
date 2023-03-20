@@ -1101,13 +1101,20 @@ class KernelDensity(Regressor, Tree):
         Axes
             Axes.
         """
-        vpy_plt, kwargs = PlottingUtils._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
-        )
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
+            vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+                class_name="DensityPlot",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
             fun = vpy_plt.DensityPlot
         elif len(self.X) == 2:
+            vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+                class_name="DensityPlot2D",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
             fun = vpy_plt.DensityPlot2D
         else:
             raise AttributeError("KDE Plots are only available in 1D or 2D.")
@@ -1439,7 +1446,9 @@ class LocalOutlierFactor(VerticaModel):
             Axes.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+            class_name="LOFPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.LOFPlot(
             vdf=vDataFrame(self.model_name),
