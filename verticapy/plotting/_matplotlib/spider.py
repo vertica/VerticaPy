@@ -15,17 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
-
-from verticapy._typing import SQLColumns
-from verticapy.errors import ParameterError
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 

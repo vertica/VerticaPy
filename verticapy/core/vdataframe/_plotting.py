@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import datetime, copy, math
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
+import numpy as np
 
 from matplotlib.axes import Axes
 
@@ -35,7 +36,6 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 from verticapy.plotting._utils import PlottingUtils
 from verticapy.plotting._highcharts.base import hchart_from_vdf
 
@@ -437,41 +437,62 @@ class vDFPlot(PlottingUtils):
     --------
     vDataFrame[].bar : Draws the Bar Chart of the vDataColumn based on an aggregation.
         """
+        from verticapy.machine_learning.vertica import KernelDensity
+
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
-        else:
-            for column in columns:
-                assert self[column].isnum(), TypeError(
-                    f"vDataColumn {column} is not numerical to draw KDE"
-                )
-        assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
-        colors = get_colors()
-        min_max = self.agg(func=["min", "max"], columns=columns)
+        if not (columns):
+            raise ValueError("No numerical columns found.")
+        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
         if not xlim:
-            xmin = min(min_max["min"])
-            xmax = max(min_max["max"])
+            xmin = min(self[columns].min()["min"])
+            xmax = max(self[columns].max()["max"])
+            xlim_ = [(xmin, xmax)]
+        elif isinstance(xlim, tuple):
+            xlim_ = [xlim]
         else:
-            xmin, xmax = xlim
-        custom_lines = []
-        for idx, column in enumerate(columns):
-            param = {"color": colors[idx % len(colors)]}
-            ax = self[column].density(
-                bandwidth=bandwidth,
-                kernel=kernel,
-                nbins=nbins,
-                xlim=(xmin, xmax),
-                ax=ax,
-                **PlottingBase._update_dict(param, style_kwargs, idx),
+            xlim_ = xlim
+        model = KernelDensity(
+            name=name,
+            bandwidth=bandwidth,
+            kernel=kernel,
+            nbins=nbins,
+            xlim=xlim_,
+            store=False,
+        )
+        if len(columns) == 1:
+            try:
+                model.fit(self, columns)
+                return model.plot(ax=ax, **style_kwargs)
+            finally:
+                model.drop()
+        else:
+            custom_lines, X, Y = [], [], []
+            for column in columns:
+                try:
+                    model.fit(self, [column])
+                    data, layout = model._compute_plot_params()
+                    X += [data["x"]]
+                    Y += [data["y"]]
+                finally:
+                    model.drop()
+            X = np.column_stack(X)
+            Y = np.column_stack(Y)
+            vpy_plt, kwargs = self._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
             )
-            custom_lines += [
-                Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
-            ]
-        ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
-        ax.set_ylim(bottom=0)
-        return ax
+            data = {"X": X, "Y": Y}
+            layout = {
+                "title": "KernelDensity",
+                "x_label": None,
+                "y_label": "density",
+                "labels": np.array(columns),
+                "labels_title": None,
+            }
+            return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
     @save_verticapy_logs
     def hchart(
@@ -1711,11 +1732,11 @@ class vDCPlot:
     @save_verticapy_logs
     def density(
         self,
-        by: str = "",
+        by: Optional[str] = None,
         bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
-        xlim: tuple = None,
+        xlim: Optional[tuple] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1757,72 +1778,53 @@ class vDCPlot:
         """
         from verticapy.machine_learning.vertica import KernelDensity
 
-        if by:
-            by = self._parent._format_colnames(by)
-            colors = get_colors()
-            if not xlim:
-                xmin = self.min()
-                xmax = self.max()
-            else:
-                xmin, xmax = xlim
-            custom_lines = []
-            columns = self._parent[by].distinct()
-            for idx, column in enumerate(columns):
-                param = {"color": colors[idx % len(colors)]}
-                ax = self._parent.search(f"{self._parent[by]._alias} = '{column}'")[
-                    self._alias
-                ].density(
-                    bandwidth=bandwidth,
-                    kernel=kernel,
-                    nbins=nbins,
-                    xlim=(xmin, xmax),
-                    ax=ax,
-                    **PlottingBase._update_dict(param, style_kwargs, idx),
-                )
-                custom_lines += [
-                    Line2D(
-                        [0],
-                        [0],
-                        color=PlottingBase._update_dict(param, style_kwargs, idx)[
-                            "color"
-                        ],
-                        lw=4,
-                    ),
-                ]
-            ax.set_title("KernelDensity")
-            ax.legend(
-                custom_lines,
-                columns,
-                title=by,
-                loc="center left",
-                bbox_to_anchor=[1, 0.5],
-            )
-            ax.set_xlabel(self._alias)
-            return ax
-        kernel = kernel.lower()
-        schema = conf.get_option("temp_schema")
-        if not (schema):
-            schema = "public"
-        name = gen_tmp_name(schema=schema, name="kde")
-        if isinstance(xlim, (tuple, list)):
-            xlim_tmp = [xlim]
+        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
+        by = self._parent._format_colnames(by)
+        if not xlim:
+            xlim_ = [(self.min(), self.max())]
         else:
-            xlim_tmp = []
+            xlim_ = [xlim]
         model = KernelDensity(
-            name,
+            name=name,
             bandwidth=bandwidth,
             kernel=kernel,
             nbins=nbins,
-            xlim=xlim_tmp,
+            xlim=xlim_,
             store=False,
         )
-        try:
-            result = model.fit(self._parent._genSQL(), [self._alias]).plot(
-                ax=ax, **style_kwargs
+        if not (by):
+            try:
+                model.fit(self._parent, [self._alias])
+                return model.plot(ax=ax, **style_kwargs)
+            finally:
+                model.drop()
+        else:
+            custom_lines = []
+            categories = self._parent[by].distinct()
+            X, Y = [], []
+            for idx, cat in enumerate(categories):
+                vdf = self._parent[by].isin(cat)
+                try:
+                    model.fit(vdf, [self._alias])
+                    data, layout = model._compute_plot_params()
+                    X += [data["x"]]
+                    Y += [data["y"]]
+                finally:
+                    model.drop()
+            X = np.column_stack(X)
+            Y = np.column_stack(Y)
+            vpy_plt, kwargs = self._parent._get_plotting_lib(
+                matplotlib_kwargs={"ax": ax}, style_kwargs=style_kwargs
             )
-            return result
-        finally:
-            model.drop()
+            data = {"X": X, "Y": Y}
+            layout = {
+                "title": "KernelDensity",
+                "x_label": self._alias,
+                "y_label": "density",
+                "labels_title": by,
+                "labels": np.array(categories),
+            }
+            return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
     @save_verticapy_logs
     def geo_plot(self, *args, **kwargs):

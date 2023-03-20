@@ -14,15 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-
-from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 

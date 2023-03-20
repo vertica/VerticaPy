@@ -21,9 +21,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns
-from verticapy._utils._sql._format import quote_ident
-from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 

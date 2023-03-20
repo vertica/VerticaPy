@@ -53,6 +53,11 @@ from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D
 from verticapy.plotting._matplotlib.barh import HorizontalBarChart, HorizontalBarChart2D
 from verticapy.plotting._matplotlib.boxplot import BoxPlot
 from verticapy.plotting._matplotlib.contour_plot import ContourPlot
+from verticapy.plotting._matplotlib.density import (
+    DensityPlot,
+    DensityPlot2D,
+    MultiDensityPlot,
+)
 from verticapy.plotting._matplotlib.heatmap import HeatMap
 from verticapy.plotting._matplotlib.hexbin import HexbinMap
 from verticapy.plotting._matplotlib.hist import Histogram

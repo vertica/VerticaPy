@@ -21,9 +21,6 @@ import scipy.spatial as scipy_st
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._typing import ArrayLike, SQLColumns
-from verticapy._utils._sql._sys import _executeSQL
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 

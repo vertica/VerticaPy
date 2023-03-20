@@ -19,7 +19,6 @@ from collections.abc import Iterable
 import numpy as np
 
 from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
 
 from verticapy._typing import PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs

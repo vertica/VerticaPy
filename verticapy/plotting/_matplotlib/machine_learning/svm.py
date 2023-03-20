@@ -22,8 +22,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -167,7 +165,7 @@ class SVMClassifierPlot(MatplotlibBase):
                     ]
                     alpha -= 0.2
             else:
-                raise ParameterError("The number of predictors is too big.")
+                raise ValueError("The number of predictors is too big.")
         ax.set_xlabel(self.layout["columns"][0])
         bbox_to_anchor = [1, 0.5]
         kwargs = {}

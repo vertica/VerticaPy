@@ -21,9 +21,6 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, SQLColumns
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -181,5 +178,5 @@ class LogisticRegressionPlot(MatplotlibBase):
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         else:
-            raise ParameterError("The number of predictors is too big.")
+            raise ValueError("The number of predictors is too big.")
         return ax
