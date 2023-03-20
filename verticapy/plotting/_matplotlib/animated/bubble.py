@@ -32,10 +32,10 @@ if TYPE_CHECKING:
 if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
-from verticapy.plotting._matplotlib.base import MatplotlibBase
+from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
-class AnimatedBubblePlot(MatplotlibBase):
+class AnimatedBubblePlot(AnimatedBase):
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"

@@ -1083,12 +1083,12 @@ class PlottingBase:
                 cols_to_select += [vdf._format_colnames(cmap_col)]
                 has_cmap = True
             X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
-            n = len(columns)
             if len(X) > 0:
-                X = X[:max_nb_points, :n].astype(float)
+                X = X[:max_nb_points]
         else:
             X = np.array([])
-        self.data = {"X": X, "s": None, "c": None}
+        n = len(columns)
+        self.data = {"X": X[:,:n].astype(float), "s": None, "c": None}
         self.layout = {
             "columns": columns,
             "size": size_bubble_col,
