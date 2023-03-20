@@ -369,7 +369,7 @@ class PlottingBase:
             is_categorical = True
         # case when date
         elif is_date:
-            if (h <= 0) and (nbins <= 0):
+            if ((h == None) or (h <= 0)) and ((nbins == None) or (nbins <= 0)):
                 h = vdc.numh()
             elif nbins > 0:
                 query_result = _executeSQL(
@@ -427,7 +427,7 @@ class PlottingBase:
             is_categorical = True
         # case when numerical
         else:
-            if (h <= 0) and (nbins <= 0):
+            if ((h == None) or (h <= 0)) and ((nbins == None) or (nbins <= 0)):
                 h = vdc.numh()
             elif nbins > 0:
                 h = float(vdc.max() - vdc.min()) / nbins
@@ -453,7 +453,8 @@ class PlottingBase:
             )
             x = [float(item[0]) + h / 2 for item in query_result]
             adj_width = 0.94 * h
-            labels = None
+            labels = [xi - round(h / 2, 10) for xi in x]
+            labels = [(li, li + h) for li in labels]
         if pie:
             y.reverse()
             labels.reverse()
