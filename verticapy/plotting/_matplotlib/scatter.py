@@ -21,6 +21,8 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+import verticapy._config.config as conf
+
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
