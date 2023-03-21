@@ -51,14 +51,9 @@ class ScatterPlot(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_style = {
-            "width":800, "height":500, "autosize": False,
+            "width":700, "height":500, "autosize": True,
             "xaxis_title": self.layout["columns"][0][1:-1],
             "yaxis_title": self.layout["columns"][1][1:-1],
-            "scene": dict(
-                #aspectmode='manual',
-                aspectratio=go.layout.scene.Aspectratio(
-                x=1, y=1)
-                ),
             "xaxis": dict(showline=True, linewidth=1, linecolor='black', mirror=True,zeroline= False),
             "yaxis": dict(showline=True, linewidth=1, linecolor='black', mirror=True,zeroline= False)
             }
