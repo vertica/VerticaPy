@@ -78,4 +78,4 @@ class ScatterPlot(PlotlyBase):
             df = pd.DataFrame(data = self.data['X'], columns = column_names)
             fig=px.scatter(df,x=column_names[0],y=column_names[1])
         fig.update_layout(**self.init_style)
-        return self.data
+        return fig
