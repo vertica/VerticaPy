@@ -56,10 +56,10 @@ class PlotlyBase(PlottingBase):
 
     @staticmethod
     def _format_col_names(col_names):
-        if not isinstance(col_names,list):
-            if col_names[0]=='"' and col_names[-1]=='"':
+        if not isinstance(col_names, list):
+            if col_names[0] == '"' and col_names[-1] == '"':
                 return col_names[1:-1]
         for i in range(len(col_names)):
-            if col_names[i][0]=='"' and col_names[i][-1]=='"':
-                col_names[i]=col_names[i][1:-1]
+            if col_names[i][0] == '"' and col_names[i][-1] == '"':
+                col_names[i] = col_names[i][1:-1]
         return col_names

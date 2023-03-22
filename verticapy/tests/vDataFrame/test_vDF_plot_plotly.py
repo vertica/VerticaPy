@@ -52,6 +52,7 @@ def titanic_vd():
     yield titanic
     drop(name="public.titanic")
 
+
 @pytest.fixture(scope="module")
 def iris_vd():
     iris = load_iris()
@@ -233,106 +234,164 @@ class TestVDFScatterPlot:
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
-    
+
     def test_properties_xaxis_title(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
         # Assert
-        assert result.layout['xaxis']['title']['text'] == "SepalWidthCm", "X-axis title issue"
+        assert (
+            result.layout["xaxis"]["title"]["text"] == "SepalWidthCm"
+        ), "X-axis title issue"
 
     def test_properties_yaxis_title(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
         # Assert
-        assert result.layout['yaxis']['title']['text'] == "SepalLengthCm", "Y-axis title issue"
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "SepalLengthCm"
+        ), "Y-axis title issue"
 
     def test_properties_xaxis_title_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm","PetalLengthCm"])
+        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"])
         # Assert
-        assert result.layout['scene']['xaxis']['title']['text'] == "SepalWidthCm", "X-axis title issue in 3D plot"
+        assert (
+            result.layout["scene"]["xaxis"]["title"]["text"] == "SepalWidthCm"
+        ), "X-axis title issue in 3D plot"
 
     def test_properties_yaxis_title_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm","PetalLengthCm"])
+        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"])
         # Assert
-        assert result.layout['scene']['yaxis']['title']['text'] == "SepalLengthCm", "Y-axis title issue in 3D plot"
+        assert (
+            result.layout["scene"]["yaxis"]["title"]["text"] == "SepalLengthCm"
+        ), "Y-axis title issue in 3D plot"
 
     def test_properties_zaxis_title_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm","PetalLengthCm"])
+        result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"])
         # Assert
-        assert result.layout['scene']['zaxis']['title']['text'] == "PetalLengthCm", "Z-axis title issue in 3D plot"
-    
+        assert (
+            result.layout["scene"]["zaxis"]["title"]["text"] == "PetalLengthCm"
+        ), "Z-axis title issue in 3D plot"
+
     def test_properties_all_unique_values_for_catcol(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result=iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], 
-                    catcol = "Species")
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], catcol="Species")
         # Assert
-        assert set([result.data[0]['name'],result.data[1]['name'],result.data[2]['name']]).issubset(set(["Iris-virginica","Iris-versicolor","Iris-setosa"])), "Some unique values were not found in the plot"
- 
-    def test_properties_all_unique_values_for_catcol_3D_plot(self, load_plotly, iris_vd):
+        assert set(
+            [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
+        ).issubset(
+            set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
+        ), "Some unique values were not found in the plot"
+
+    def test_properties_all_unique_values_for_catcol_3D_plot(
+        self, load_plotly, iris_vd
+    ):
         # Arrange
         # Act
-        result=iris_vd.scatter(["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], 
-             catcol = "Species")
+        result = iris_vd.scatter(
+            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], catcol="Species"
+        )
         # Assert
-        assert set([result.data[0]['name'],result.data[1]['name'],result.data[2]['name']]).issubset(set(["Iris-virginica","Iris-versicolor","Iris-setosa"])), "Some unique values were not found in the 3D plot"
- 
+        assert set(
+            [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
+        ).issubset(
+            set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
+        ), "Some unique values were not found in the 3D plot"
 
     def test_properties_colors_for_catcol(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result=iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], 
-             catcol = "Species")
-        assert len(set([result.data[0]['marker']['color'],result.data[1]['marker']['color'],result.data[2]['marker']['color']]))==3, "Colors are not unique for three different cat_col parameter"  
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], catcol="Species")
+        assert (
+            len(
+                set(
+                    [
+                        result.data[0]["marker"]["color"],
+                        result.data[1]["marker"]["color"],
+                        result.data[2]["marker"]["color"],
+                    ]
+                )
+            )
+            == 3
+        ), "Colors are not unique for three different cat_col parameter"
 
     def test_properties_colors_for_catcol_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result=iris_vd.scatter(["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], 
-             catcol = "Species")
-        assert len(set([result.data[0]['marker']['color'],result.data[1]['marker']['color'],result.data[2]['marker']['color']]))==3, "Colors are not unique for three different cat_col parameter"  
-
+        result = iris_vd.scatter(
+            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], catcol="Species"
+        )
+        assert (
+            len(
+                set(
+                    [
+                        result.data[0]["marker"]["color"],
+                        result.data[1]["marker"]["color"],
+                        result.data[2]["marker"]["color"],
+                    ]
+                )
+            )
+            == 3
+        ), "Colors are not unique for three different cat_col parameter"
 
     def test_data_total_number_of_points(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
         # Assert - checking if correct object created
-        assert len(result.data[0]['x']) == len(iris_vd), "Number of points not consistent with data"
-        assert len(result.data[0]['y']) == len(iris_vd), "Number of points not consistent with data"
+        assert len(result.data[0]["x"]) == len(
+            iris_vd
+        ), "Number of points not consistent with data"
+        assert len(result.data[0]["y"]) == len(
+            iris_vd
+        ), "Number of points not consistent with data"
 
     def test_data_total_number_of_points_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"])
         # Assert - checking if correct object created
-        assert len(result.data[0]['x']) == len(iris_vd), "Number of points not consistent with data"
-        assert len(result.data[0]['y']) == len(iris_vd), "Number of points not consistent with data"
-        assert len(result.data[0]['z']) == len(iris_vd), "Number of points not consistent with data"
+        assert len(result.data[0]["x"]) == len(
+            iris_vd
+        ), "Number of points not consistent with data"
+        assert len(result.data[0]["y"]) == len(
+            iris_vd
+        ), "Number of points not consistent with data"
+        assert len(result.data[0]["z"]) == len(
+            iris_vd
+        ), "Number of points not consistent with data"
 
     def test_data_random_point_from_plot_in_data(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
-        # Assert - 
-        len_of_data=len(iris_vd.search(conditions = [f"SepalWidthCm ={result.data[0]['x'][0]} and SepalLengthCm={result.data[0]['y'][0]}"],
-                    usecols = ["SepalWidthCm", "SepalLengthCm"],))
-        assert len_of_data>0, "A wrong point was plotted"
+        # Assert -
+        len_of_data = len(
+            iris_vd.search(
+                conditions=[
+                    f"SepalWidthCm ={result.data[0]['x'][0]} and SepalLengthCm={result.data[0]['y'][0]}"
+                ],
+                usecols=["SepalWidthCm", "SepalLengthCm"],
+            )
+        )
+        assert len_of_data > 0, "A wrong point was plotted"
 
     def test_data_random_point_from_data_in_plot(self, load_plotly, iris_vd):
         # Arrange
-        sample=iris_vd.sample(n=1)
-        x_test=sample["SepalWidthCm"][0]
-        y_test=sample["SepalLengthCm"][0]
-        #Act
+        sample = iris_vd.sample(n=1)
+        x_test = sample["SepalWidthCm"][0]
+        y_test = sample["SepalLengthCm"][0]
+        # Act
         result = iris_vd.scatter(["SepalWidthCm", "SepalLengthCm"])
-        # Assert - 
-        assert y_test in result.data[0]['y'][np.where(result.data[0]['x']==x_test)[0]],  "A random sample datapoint was not plotted"
+        # Assert -
+        assert (
+            y_test in result.data[0]["y"][np.where(result.data[0]["x"] == x_test)[0]]
+        ), "A random sample datapoint was not plotted"
