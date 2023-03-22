@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, decimal
-from typing import Annotated, Union, TYPE_CHECKING
+from typing import Annotated, Literal, Union, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
@@ -45,6 +45,6 @@ SQLRelation = Annotated[Union[str, "vDataFrame"], ""]
 
 # Plotting data types.
 
-PlottingObject = Union["PlottingBase"]
+PlottingObject = Union["PlottingBase", "TableSample"]
 PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
 ColorType = str

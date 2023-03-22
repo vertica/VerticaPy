@@ -25,7 +25,7 @@ import scipy.special as scipy_special
 from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -44,20 +44,14 @@ class vDFCorr:
     def _aggregate_matrix(
         self,
         method: str = "pearson",
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Global method to use to compute the Correlation/Cov/Regr Matrix.
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.cov  : Computes the Covariance  Matrix of the vDataFrame.
-    vDataFrame.regr : Computes the Regression  Matrix of the vDataFrame.
+        Global method to use to compute the Correlation/Cov/Regr Matrix.
         """
         method_name = "Correlation"
         method_type = f" using the method = '{method}'"
@@ -527,20 +521,14 @@ class vDFCorr:
         self,
         focus: str,
         method: str = "pearson",
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Global method to use to compute the Correlation/Cov/Beta Vector.
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.regr : Computes the regression matrix of the vDataFrame.
+        Global method to use to compute the Correlation/Cov/Beta Vector.
         """
         if not (columns):
             if method == "cramer":
@@ -724,7 +712,7 @@ class vDFCorr:
     @save_verticapy_logs
     def corr(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         method: Literal[
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
@@ -733,7 +721,7 @@ class vDFCorr:
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
     Computes the Correlation Matrix of the vDataFrame. 
 
@@ -1005,7 +993,7 @@ class vDFCorr:
     @save_verticapy_logs
     def cov(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         focus: str = "",
         show: bool = True,
         ax: Optional[Axes] = None,
@@ -1066,7 +1054,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: SQLColumns = [],
+        by: SQLColumns = None,
         p: Union[int, list] = 12,
         unit: str = "rows",
         method: Literal[
@@ -1226,7 +1214,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: SQLColumns = [],
+        by: SQLColumns = None,
         p: Union[int, list] = 5,
         unit: str = "rows",
         method: Literal[
@@ -1409,7 +1397,7 @@ class vDFCorr:
     @save_verticapy_logs
     def regr(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         method: Literal[
             "avgx",
             "avgy",
@@ -1584,7 +1572,7 @@ class vDFCorr:
     def iv_woe(
         self,
         y: str,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         nbins: int = 10,
         show: bool = True,
         ax: Optional[Axes] = None,
