@@ -15,11 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, math
-from typing import Optional
+from typing import Callable, Optional
 
 from matplotlib.axes import Axes
 
 from verticapy._typing import (
+    PlottingObject,
     PythonScalar,
     SQLColumns,
 )
@@ -29,6 +30,9 @@ from verticapy.plotting._utils import PlottingUtils
 
 
 class vDFAnimatedPlot(PlottingUtils):
+
+    # 1D CHARTS.
+
     @save_verticapy_logs
     def animated_bar(
         self,
@@ -41,57 +45,62 @@ class vDFAnimatedPlot(PlottingUtils):
         limit: int = 1000000,
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
-        date_f=None,
+        date_f: Optional[Callable] = None,
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the animated chart.
+        Draws the animated bar chart (bar race).
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns
-        List of the vDataColumns names.
-    by: str, optional
-        Categorical vDataColumn used in the partition.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    limit_over: int, optional
-        Limited number of elements to consider for each category.
-    limit: int, optional
-        Maximum number of data points to use.
-    fixed_xy_lim: bool, optional
-        If set to True, the xlim and ylim will be fixed.
-    date_in_title: bool, optional
-        If set to True, the ts vDataColumn will be displayed in the title section.
-    date_f: function, optional
-        Function used to display the ts vDataColumn.
-    date_style_dict: dict, optional
-        Style Dictionary used to display the ts vDataColumn when date_in_title = False.
-    interval: int, optional
-        Number of ms between each update.
-    repeat: bool, optional
-        If set to True, the animation will be repeated.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series) vDataColumn to use to order the data. 
+            The vDataColumn type must be date like (date, datetime, 
+            timestamp...) or numerical.
+        columns: SQLColumns
+            List of the vDataColumns names.
+        by: str, optional
+            Categorical vDataColumn used in the partition.
+        start_date: PythonScalar, optional
+            Input Start Date. For example, time = '03-11-1993' will 
+            filter the data when  'ts' is lesser than November 1993 
+            the 3rd.
+        end_date: PythonScalar, optional
+            Input End Date.  For  example, time = '03-11-1993' will 
+            filter the data when 'ts' is greater than November 1993 
+            the 3rd.
+        limit_over: int, optional
+            Limited number of elements to consider for each category.
+        limit: int, optional
+            Maximum number of data points to use.
+        fixed_xy_lim: bool, optional
+            If set to True, the xlim and ylim will be fixed.
+        date_in_title: bool, optional
+            If  set to True, the ts vDataColumn will be displayed in 
+            the title section.
+        date_f: function, optional
+            Function used to display the ts vDataColumn.
+        date_style_dict: dict, optional
+            Style Dictionary used to display the ts vDataColumn when 
+            date_in_title = False.
+        interval: int, optional
+            Number of ms between each update.
+        repeat: bool, optional
+            If set to True, the animation will be repeated.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting functions.
 
-    Returns
-    -------
-    animation
-        Matplotlib animation object
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -134,57 +143,62 @@ class vDFAnimatedPlot(PlottingUtils):
         limit: int = 1000000,
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
-        date_f=None,
+        date_f: Optional[Callable] = None,
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the animated chart.
+        Draws the animated pie chart.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns
-        List of the vDataColumns names.
-    by: str, optional
-        Categorical vDataColumn used in the partition.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    limit_over: int, optional
-        Limited number of elements to consider for each category.
-    limit: int, optional
-        Maximum number of data points to use.
-    fixed_xy_lim: bool, optional
-        If set to True, the xlim and ylim will be fixed.
-    date_in_title: bool, optional
-        If set to True, the ts vDataColumn will be displayed in the title section.
-    date_f: function, optional
-        Function used to display the ts vDataColumn.
-    date_style_dict: dict, optional
-        Style Dictionary used to display the ts vDataColumn when date_in_title = False.
-    interval: int, optional
-        Number of ms between each update.
-    repeat: bool, optional
-        If set to True, the animation will be repeated.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series) vDataColumn to use to order the data. 
+            The vDataColumn type must be date like (date, datetime, 
+            timestamp...) or numerical.
+        columns: SQLColumns
+            List of the vDataColumns names.
+        by: str, optional
+            Categorical vDataColumn used in the partition.
+        start_date: PythonScalar, optional
+            Input Start Date. For example, time = '03-11-1993' will 
+            filter the data when  'ts' is lesser than November 1993 
+            the 3rd.
+        end_date: PythonScalar, optional
+            Input End Date.  For  example, time = '03-11-1993' will 
+            filter the data when 'ts' is greater than November 1993 
+            the 3rd.
+        limit_over: int, optional
+            Limited number of elements to consider for each category.
+        limit: int, optional
+            Maximum number of data points to use.
+        fixed_xy_lim: bool, optional
+            If set to True, the xlim and ylim will be fixed.
+        date_in_title: bool, optional
+            If  set to True, the ts vDataColumn will be displayed in 
+            the title section.
+        date_f: function, optional
+            Function used to display the ts vDataColumn.
+        date_style_dict: dict, optional
+            Style Dictionary used to display the ts vDataColumn when 
+            date_in_title = False.
+        interval: int, optional
+            Number of ms between each update.
+        repeat: bool, optional
+            If set to True, the animation will be repeated.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting functions.
 
-    Returns
-    -------
-    animation
-        Matplotlib animation object
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -215,6 +229,8 @@ class vDFAnimatedPlot(PlottingUtils):
             limit=limit,
         ).draw(**kwargs)
 
+    # Time Series.
+
     @save_verticapy_logs
     def animated_plot(
         self,
@@ -232,49 +248,54 @@ class vDFAnimatedPlot(PlottingUtils):
         repeat: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the animated chart.
+        Draws the animated line plot.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns, optional
-        List of the vDataColumns names.
-    by: str, optional
-        Categorical vDataColumn used in the partition.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    limit_over: int, optional
-        Limited number of elements to consider for each category.
-    limit: int, optional
-        Maximum number of data points to use.
-    step: int, optional
-        Number of elements used to update the time series.
-    window_size: int, optional
-        Size of the window used to draw the time series.
-    fixed_xy_lim: bool, optional
-        If set to True, the xlim and ylim will be fixed.
-    interval: int, optional
-        Number of ms between each update.
-    repeat: bool, optional
-        If set to True, the animation will be repeated.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ts: str
+            TS  (Time Series)  vDataColumn to use to order the 
+            data. The vDataColumn type must be date like (date, 
+            datetime, timestamp...) or numerical.
+        columns: SQLColumns, optional
+            List of the vDataColumns names.
+        by: str, optional
+            Categorical  vDataColumn  used  in  the partition.
+        start_date: PythonScalar, optional
+            Input Start Date. For example, time = '03-11-1993' 
+            will  filter  the data when  'ts' is lesser  than 
+            November 1993 the 3rd.
+        end_date: PythonScalar, optional
+            Input  End Date. For example,  time = '03-11-1993' 
+            will  filter  the data when 'ts' is greater  than 
+            November 1993 the 3rd.
+        limit_over: int, optional
+            Limited number of  elements to consider for  each 
+            category.
+        limit: int, optional
+            Maximum number of data points to use.
+        step: int, optional
+            Number of elements used to update the time series.
+        window_size: int, optional
+            Size  of the window used to draw the time  series.
+        fixed_xy_lim: bool, optional
+            If set  to True, the xlim and ylim will be  fixed.
+        interval: int, optional
+            Number of ms between each update.
+        repeat: bool, optional
+            If set  to  True, the animation will  be repeated.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter to pass to the  plotting 
+            functions.
 
-    Returns
-    -------
-    animation
-        Matplotlib animation object
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -282,7 +303,8 @@ class vDFAnimatedPlot(PlottingUtils):
         if by:
             if len(columns) != 1:
                 raise ValueError(
-                    "Parameter columns must include only one element when using parameter 'by'."
+                    "Parameter columns must include only one element"
+                    " when using parameter 'by'."
                 )
             vdf = self.pivot(index=ts, columns=by, values=columns[0])
             columns = vdf.numcol()[0:limit_over]
@@ -311,8 +333,10 @@ class vDFAnimatedPlot(PlottingUtils):
             limit=limit,
         ).draw(**kwargs)
 
+    # Scatters.
+
     @save_verticapy_logs
-    def animated_bubble(
+    def animated_scatter(
         self,
         ts: str,
         columns: SQLColumns,
@@ -332,58 +356,66 @@ class vDFAnimatedPlot(PlottingUtils):
         repeat: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the animated chart.
+        Draws the animated scatter plot.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns
-        List of the vDataColumns names.
-    by: str, optional
-        Categorical vDataColumn used in the partition.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    limit_over: int, optional
-        Limited number of elements to consider for each category.
-    limit: int, optional
-        Maximum number of data points to use.
-    limit_labels: int, optional
-        Maximum number of text labels to draw.
-    img: str, optional
-        Path to the image to display as background.
-    bbox: list, optional
-        List of 4 elements to delimit the boundaries of the final Plot.
-        It must be similar the following list: [xmin, xmax, ymin, ymax]
-    fixed_xy_lim: bool, optional
-        If set to True, the xlim and ylim will be fixed.
-    date_in_title: bool, optional
-        If set to True, the ts vDataColumn will be displayed in the title section.
-    date_f: function, optional
-        Function used to display the ts vDataColumn.
-    date_style_dict: dict, optional
-        Style Dictionary used to display the ts vDataColumn when date_in_title = False.
-    interval: int, optional
-        Number of ms between each update.
-    repeat: bool, optional
-        If set to True, the animation will be repeated.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        ts: str
+            TS  (Time Series)  vDataColumn to use to order the 
+            data. The vDataColumn type must be date like (date, 
+            datetime, timestamp...) or numerical.
+        columns: SQLColumns, optional
+            List of the vDataColumns names.
+        by: str, optional
+            Categorical  vDataColumn  used  in  the partition.
+        start_date: PythonScalar, optional
+            Input Start Date. For example, time = '03-11-1993' 
+            will  filter  the data when  'ts' is lesser  than 
+            November 1993 the 3rd.
+        end_date: PythonScalar, optional
+            Input  End Date. For example,  time = '03-11-1993' 
+            will  filter  the data when 'ts' is greater  than 
+            November 1993 the 3rd.
+        limit_over: int, optional
+            Limited number of  elements to consider for  each 
+            category.
+        limit: int, optional
+            Maximum   number   of    data   points   to   use.
+        limit_labels: int, optional
+            Maximum   number   of    text   labels  to   draw.
+        img: str, optional
+            Path  to  the  image  to  display  as  background.
+        bbox: list, optional
+            List  of 4 elements to delimit the boundaries  of 
+            the final Plot.  It must be similar the following 
+            list: [xmin, xmax, ymin, ymax]
+        fixed_xy_lim: bool, optional
+            If  set to True, the xlim  and ylim will be fixed.
+        date_in_title: bool, optional
+            If  set  to  True,  the  ts  vDataColumn  will be 
+            displayed in the title section.
+        date_f: function, optional
+            Function  used  to  display  the  ts  vDataColumn.
+        date_style_dict: dict, optional
+            Style   Dictionary   used   to   display  the  ts 
+            vDataColumn when date_in_title = False.
+        interval: int, optional
+            Number of ms between each update.
+        repeat: bool, optional
+            If  set to True, the animation will  be  repeated.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter  to  pass to the plotting 
+            functions.
 
-    Returns
-    -------
-    animation
-        Matplotlib animation object
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]

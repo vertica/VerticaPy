@@ -45,6 +45,6 @@ SQLRelation = Annotated[Union[str, "vDataFrame"], ""]
 
 # Plotting data types.
 
-PlottingObject = Union[PlottingBase]
+PlottingObject = Union["PlottingBase"]
 PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
 ColorType = str

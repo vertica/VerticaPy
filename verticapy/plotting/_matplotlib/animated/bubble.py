@@ -44,8 +44,8 @@ class AnimatedBubblePlot(AnimatedBase):
         return "plot"
 
     @property
-    def _kind(self) -> Literal["animated_bubble"]:
-        return "animated_bubble"
+    def _kind(self) -> Literal["animated_scatter"]:
+        return "animated_scatter"
 
     @property
     def _compute_method(self) -> Literal["line_bubble"]:

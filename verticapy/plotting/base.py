@@ -73,7 +73,7 @@ class PlottingBase:
                 "describe": self._compute_statistics,
                 "hist": self._compute_hists_params,
                 "line": self._filter_line,
-                "line_bubble": self._filter_line_animated_bubble,
+                "line_bubble": self._filter_line_animated_scatter,
                 "matrix": self._compute_scatter_matrix,
                 "outliers": self._compute_outliers_params,
                 "range": self._compute_range,
@@ -1250,7 +1250,7 @@ class PlottingBase:
         }
         return None
 
-    def _filter_line_animated_bubble(
+    def _filter_line_animated_scatter(
         self,
         vdf: "vDataFrame",
         order_by: str,
@@ -1279,7 +1279,7 @@ class PlottingBase:
         query_result = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('plotting._matplotlib._filter_line_animated_bubble')*/ * 
+                    /*+LABEL('plotting._matplotlib._filter_line_animated_scatter')*/ * 
                 FROM 
                     (SELECT 
                         {order_by}, 

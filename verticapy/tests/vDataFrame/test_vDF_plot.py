@@ -120,7 +120,7 @@ class TestvDFPlot:
         result = commodities_vd.animated_plot("date", color=["r", "g", "b"])
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated_bubble(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "country", "pop"],
             "continent",
@@ -129,7 +129,7 @@ class TestvDFPlot:
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated_bubble(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "country"],
             "continent",
@@ -138,7 +138,7 @@ class TestvDFPlot:
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated_bubble(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "pop"],
             "continent",
@@ -147,7 +147,7 @@ class TestvDFPlot:
         )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated_bubble(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap"],
             "continent",
