@@ -719,6 +719,82 @@ class vDFPlot(PlottingUtils):
     # 2D MAP.
 
     @save_verticapy_logs
+    def _pivot_table(
+        self,
+        columns: SQLColumns,
+        method: PlottingMethod = "count",
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (20, 20),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        fill_none: float = 0.0,
+    ) -> Tablesample:
+        """
+        Computes and  returns the pivot table of one or two 
+        columns based on an aggregation.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List  of the vDataColumns names.  The list  must 
+            have one or two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage of the distribution.
+                mean    : Average of the vDataColumn 'of'.
+                min     : Minimum of the vDataColumn 'of'.
+                max     : Maximum of the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of 
+                          (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The   vDataColumn   to   use  to  compute   the 
+            aggregation.
+        max_cardinality: tuple, optional
+            Maximum   number   of  distinct  elements   for 
+            vDataColumns 1 and 2 to  be used as categorical 
+            (No h will be picked or computed)
+        h: tuple, optional
+            Interval width of the vDataColumns 1 and 2 bars. 
+            It  is  only  valid   if  the  vDataColumns  are 
+            numerical. 
+            Optimized h will be computed if the parameter is 
+            empty or invalid.
+        fill_none: float, optional
+            The  empty  values  of the pivot table  will  be 
+            filled by this number.
+
+        Returns
+        -------
+        obj
+            Tablesample.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        vpy_plt = self._get_plotting_lib(class_name="HeatMap")[0]
+        plt_obj = vpy_plt.HeatMap(
+            vdf=self,
+            columns=columns,
+            method=method,
+            of=of,
+            h=h,
+            max_cardinality=max_cardinality,
+            fill_none=fill_none,
+        )
+        values = {"index": plt_obj.layout["x_labels"]}
+        if len(plt_obj.data["X"].shape) == 1:
+            values[plt_obj.layout["aggregate"]] = list(plt_obj.data["X"])
+        else:
+            for idx in range(plt_obj.data["X"].shape[1]):
+                values[plt_obj.layout["y_labels"][idx]] = list(
+                    plt_obj.data["X"][:, idx]
+                )
+        return TableSample(values=values)
+
+    @save_verticapy_logs
     def pivot_table(
         self,
         columns: SQLColumns,
@@ -726,8 +802,8 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (20, 20),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        with_numbers: bool = True,
         fill_none: float = 0.0,
+        with_numbers: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -765,12 +841,12 @@ class vDFPlot(PlottingUtils):
             numerical. 
             Optimized h will be computed if the parameter is 
             empty or invalid.
-        with_numbers: bool, optional
-            If  set to True, no number will be  displayed in 
-            the final drawing.
         fill_none: float, optional
             The  empty  values  of the pivot table  will  be 
             filled by this number.
+        with_numbers: bool, optional
+            If  set to True, no number will be  displayed in 
+            the final drawing.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -800,19 +876,6 @@ class vDFPlot(PlottingUtils):
             max_cardinality=max_cardinality,
             fill_none=fill_none,
         ).draw(**kwargs)
-        """
-        if show:
-            return plt_obj.draw(**kwargs)
-        values = {"index": plt_obj.layout["x_labels"]}
-        if len(plt_obj.data["X"].shape) == 1:
-            values[plt_obj.layout["aggregate"]] = list(plt_obj.data["X"])
-        else:
-            for idx in range(plt_obj.data["X"].shape[1]):
-                values[plt_obj.layout["y_labels"][idx]] = list(
-                    plt_obj.data["X"][:, idx]
-                )
-        return TableSample(values=values)
-        """
 
     @save_verticapy_logs
     def contour(

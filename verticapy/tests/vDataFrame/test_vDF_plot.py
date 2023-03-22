@@ -623,12 +623,8 @@ class TestvDFPlot:
         plt.close("all")
 
     def test_vDF_pivot_table(self, titanic_vd):
-        result = titanic_vd.pivot_table(
-            columns=["age", "pclass"],
-            method="avg",
-            of="survived",
-            cmap="Reds",
-            show=False,
+        result = titanic_vd._pivot_table(
+            columns=["age", "pclass"], method="avg", of="survived",
         )
         assert result[1][0] == pytest.approx(0.75)
         assert result[1][1] == pytest.approx(1.0)

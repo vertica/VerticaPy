@@ -41,6 +41,9 @@ from verticapy.sql.drop import drop
 
 
 class vDFCorr:
+
+    # System Methods.
+
     def _aggregate_matrix(
         self,
         method: str = "pearson",
@@ -709,6 +712,8 @@ class vDFCorr:
             values={"index": cols, focus: list(matrix[0])}
         ).decimal_to_float()
 
+    # Correlation.
+
     @save_verticapy_logs
     def corr(
         self,
@@ -1001,6 +1006,8 @@ class vDFCorr:
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
         return (val, pvalue)
 
+    # Covariance.
+
     @save_verticapy_logs
     def cov(
         self,
@@ -1053,6 +1060,179 @@ class vDFCorr:
             fun = self._aggregate_vector
 
         return fun(*args, **kwargs)
+
+    # Regression Metrics.
+
+    @save_verticapy_logs
+    def regr(
+        self,
+        columns: SQLColumns = None,
+        method: Literal[
+            "avgx",
+            "avgy",
+            "count",
+            "intercept",
+            "r2",
+            "slope",
+            "sxx",
+            "sxy",
+            "syy",
+            "beta",
+            "alpha",
+        ] = "r2",
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Computes the regression matrix of the vDataFrame.
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the  vDataColumns names. If empty, all numerical 
+            vDataColumns will be used.
+        method: str, optional
+            Method to use to compute the regression matrix.
+                avgx  : Average  of  the  independent  expression  in 
+                        an expression pair.
+                avgy  : Average  of  the dependent  expression in  an 
+                        expression pair.
+                count : Count  of  all  rows  in  an expression  pair.
+                alpha : Intercept  of the regression line  determined 
+                        by a set of expression pairs.
+                r2    : Square  of  the correlation  coefficient of a 
+                        set of expression pairs.
+                beta  : Slope of  the regression  line, determined by 
+                        a set of expression pairs.
+                sxx   : Sum of squares of  the independent expression 
+                        in an expression pair.
+                sxy   : Sum of products of the independent expression 
+                        multiplied by the  dependent expression in an 
+                        expression pair.
+                syy   : Returns  the sum of squares of the  dependent 
+                        expression in an expression pair.
+        show: bool, optional
+            If set to True, the Plotting object will be returned.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if method == "beta":
+            method = "slope"
+        elif method == "alpha":
+            method = "intercept"
+        method = f"regr_{method}"
+        if not (columns):
+            columns = self.numcol()
+            assert columns, EmptyParameter(
+                "No numerical column found in the vDataFrame."
+            )
+        columns = self._format_colnames(columns)
+        for column in columns:
+            assert self[column].isnum(), TypeError(
+                f"vDataColumn {column} must be numerical to compute the Regression Matrix."
+            )
+        n = len(columns)
+        all_list, nb_precomputed = [], 0
+        for i in range(0, n):
+            for j in range(0, n):
+                cast_i = "::int" if (self[columns[i]].isbool()) else ""
+                cast_j = "::int" if (self[columns[j]].isbool()) else ""
+                pre_comp_val = self._get_catalog_value(
+                    method=method, columns=[columns[i], columns[j]]
+                )
+                if pre_comp_val == None or pre_comp_val != pre_comp_val:
+                    pre_comp_val = "NULL"
+                if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
+                    all_list += [str(pre_comp_val)]
+                    nb_precomputed += 1
+                else:
+                    all_list += [
+                        f"{method.upper()}({columns[i]}{cast_i}, {columns[j]}{cast_j})"
+                    ]
+        try:
+            if nb_precomputed == n * n:
+                result = _executeSQL(
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.regr')*/ 
+                            {", ".join(all_list)}""",
+                    print_time_sql=False,
+                    method="fetchrow",
+                )
+            else:
+                result = _executeSQL(
+                    query=f"""
+                        SELECT 
+                            /*+LABEL('vDataframe.regr')*/
+                            {", ".join(all_list)} 
+                        FROM {self._genSQL()}""",
+                    title=f"Computing the {method.upper()} Matrix.",
+                    method="fetchrow",
+                    sql_push_ext=self._vars["sql_push_ext"],
+                    symbol=self._vars["symbol"],
+                )
+            if n == 1:
+                return result[0]
+        except:
+            n = len(columns)
+            result = []
+            for i in range(0, n):
+                for j in range(0, n):
+                    result += [
+                        _executeSQL(
+                            query=f"""
+                                SELECT 
+                                    /*+LABEL('vDataframe.regr')*/ 
+                                    {method.upper()}({columns[i]}{cast_i}, 
+                                                     {columns[j]}{cast_j}) 
+                                FROM {self._genSQL()}""",
+                            title=f"Computing the {method.upper()} aggregation, one at a time.",
+                            method="fetchfirstelem",
+                            sql_push_ext=self._vars["sql_push_ext"],
+                            symbol=self._vars["symbol"],
+                        )
+                    ]
+        matrix = np.array([[1.0 for i in range(0, n)] for i in range(0, n)])
+        k = 0
+        for i in range(0, n):
+            for j in range(0, n):
+                current = result[k]
+                k += 1
+                if current == None:
+                    current = np.nan
+                matrix[i][j] = current
+        if show:
+            vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="HeatMap",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            data = {"X": matrix}
+            layout = {"x_labels": columns, "y_labels": columns}
+            return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
+        values = {"index": columns}
+        for idx in range(len(matrix)):
+            values[columns[idx]] = list(matrix[:, idx])
+        for column1 in values:
+            if column1 != "index":
+                val = {}
+                for idx, column2 in enumerate(values["index"]):
+                    val[column2] = values[column1][idx]
+                self._update_catalog(values=val, matrix=method, column=column1)
+        return TableSample(values=values).decimal_to_float()
+
+    # Time Series.
 
     @save_verticapy_logs
     def acf(
@@ -1418,172 +1598,7 @@ class vDFCorr:
                 return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
             return result
 
-    @save_verticapy_logs
-    def regr(
-        self,
-        columns: SQLColumns = None,
-        method: Literal[
-            "avgx",
-            "avgy",
-            "count",
-            "intercept",
-            "r2",
-            "slope",
-            "sxx",
-            "sxy",
-            "syy",
-            "beta",
-            "alpha",
-        ] = "r2",
-        show: bool = True,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Computes the regression matrix of the vDataFrame.
-
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    method: str, optional
-        Method to use to compute the regression matrix.
-            avgx  : Average of the independent expression in an expression pair.
-            avgy  : Average of the dependent expression in an expression pair.
-            count : Count of all rows in an expression pair.
-            alpha : Intercept of the regression line determined by a set of 
-                expression pairs.
-            r2    : Square of the correlation coefficient of a set of expression 
-                pairs.
-            beta  : Slope of the regression line, determined by a set of expression 
-                pairs.
-            sxx   : Sum of squares of the independent expression in an expression 
-                pair.
-            sxy   : Sum of products of the independent expression multiplied by the 
-                dependent expression in an expression pair.
-            syy   : Returns the sum of squares of the dependent expression in an 
-                expression pair.
-    show: bool, optional
-        If set to True, the Regression Matrix will be drawn using Matplotlib.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-        **style_kwargs
-            Any  optional  parameter to  pass to the  plotting 
-            functions.
-
-        Returns
-        -------
-        obj
-            Plotting Object.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        if method == "beta":
-            method = "slope"
-        elif method == "alpha":
-            method = "intercept"
-        method = f"regr_{method}"
-        if not (columns):
-            columns = self.numcol()
-            assert columns, EmptyParameter(
-                "No numerical column found in the vDataFrame."
-            )
-        columns = self._format_colnames(columns)
-        for column in columns:
-            assert self[column].isnum(), TypeError(
-                f"vDataColumn {column} must be numerical to compute the Regression Matrix."
-            )
-        n = len(columns)
-        all_list, nb_precomputed = [], 0
-        for i in range(0, n):
-            for j in range(0, n):
-                cast_i = "::int" if (self[columns[i]].isbool()) else ""
-                cast_j = "::int" if (self[columns[j]].isbool()) else ""
-                pre_comp_val = self._get_catalog_value(
-                    method=method, columns=[columns[i], columns[j]]
-                )
-                if pre_comp_val == None or pre_comp_val != pre_comp_val:
-                    pre_comp_val = "NULL"
-                if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
-                    all_list += [str(pre_comp_val)]
-                    nb_precomputed += 1
-                else:
-                    all_list += [
-                        f"{method.upper()}({columns[i]}{cast_i}, {columns[j]}{cast_j})"
-                    ]
-        try:
-            if nb_precomputed == n * n:
-                result = _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL('vDataframe.regr')*/ 
-                            {", ".join(all_list)}""",
-                    print_time_sql=False,
-                    method="fetchrow",
-                )
-            else:
-                result = _executeSQL(
-                    query=f"""
-                        SELECT 
-                            /*+LABEL('vDataframe.regr')*/
-                            {", ".join(all_list)} 
-                        FROM {self._genSQL()}""",
-                    title=f"Computing the {method.upper()} Matrix.",
-                    method="fetchrow",
-                    sql_push_ext=self._vars["sql_push_ext"],
-                    symbol=self._vars["symbol"],
-                )
-            if n == 1:
-                return result[0]
-        except:
-            n = len(columns)
-            result = []
-            for i in range(0, n):
-                for j in range(0, n):
-                    result += [
-                        _executeSQL(
-                            query=f"""
-                                SELECT 
-                                    /*+LABEL('vDataframe.regr')*/ 
-                                    {method.upper()}({columns[i]}{cast_i}, 
-                                                     {columns[j]}{cast_j}) 
-                                FROM {self._genSQL()}""",
-                            title=f"Computing the {method.upper()} aggregation, one at a time.",
-                            method="fetchfirstelem",
-                            sql_push_ext=self._vars["sql_push_ext"],
-                            symbol=self._vars["symbol"],
-                        )
-                    ]
-        matrix = np.array([[1.0 for i in range(0, n)] for i in range(0, n)])
-        k = 0
-        for i in range(0, n):
-            for j in range(0, n):
-                current = result[k]
-                k += 1
-                if current == None:
-                    current = np.nan
-                matrix[i][j] = current
-        if show:
-            vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="HeatMap",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
-            )
-            data = {"X": matrix}
-            layout = {"x_labels": columns, "y_labels": columns}
-            return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
-        values = {"index": columns}
-        for idx in range(len(matrix)):
-            values[columns[idx]] = list(matrix[:, idx])
-        for column1 in values:
-            if column1 != "index":
-                val = {}
-                for idx, column2 in enumerate(values["index"]):
-                    val[column2] = values[column1][idx]
-                self._update_catalog(values=val, matrix=method, column=column1)
-        return TableSample(values=values).decimal_to_float()
+    # Weight of Evidence.
 
     @save_verticapy_logs
     def iv_woe(
@@ -1650,6 +1665,9 @@ class vDFCorr:
 
 
 class vDCCorr:
+
+    # Weight of Evidence.
+
     @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10) -> TableSample:
         """
