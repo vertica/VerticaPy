@@ -72,6 +72,11 @@ class PieChart(MatplotlibBase):
             "explode": None,
             "pctdistance": 0.8,
         }
+        self.init_style_text = {
+            "rotation_mode": "anchor",
+            "alpha": 1,
+            "color": "black",
+        }
         return None
 
     # Draw.
@@ -173,9 +178,7 @@ class PieChart(MatplotlibBase):
                     [yi * 1.02 for yi in y][i],
                     [round(yi, 2) for yi in y][i],
                     rotation=rad[i] * 180 / np.pi,
-                    rotation_mode="anchor",
-                    alpha=1,
-                    color="black",
+                    **self.init_style_text,
                 )
             try:
                 labels, colors = zip(
@@ -248,10 +251,10 @@ class NestedPieChart(MatplotlibBase):
             all_colors_dict[i] = {}
             all_categories[i] = list(dict.fromkeys(result[-2]))
             all_categories_col += [self.layout["columns"][n - i - 1]]
-            for elem in all_categories[i]:
-                all_colors_dict[i][elem] = colors[k % m]
+            for c in all_categories[i]:
+                all_colors_dict[i][c] = colors[k % m]
                 k += 1
-            group = [int(elem) for elem in result[-1]]
+            group = [int(c) for c in result[-1]]
             tmp_colors = [all_colors_dict[i][j] for j in result[-2]]
             if len(group) > 16:
                 autopct = None
@@ -266,7 +269,7 @@ class NestedPieChart(MatplotlibBase):
                 pctdistance=pctdistance,
                 **kwargs,
             )
-            legend_colors = [all_colors_dict[i][elem] for elem in all_colors_dict[i]]
+            legend_colors = [all_colors_dict[i][c] for c in all_colors_dict[i]]
             if n == 1:
                 bbox_to_anchor = [0.5, 1]
             elif n < 4:

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Literal, Optional
+from typing import Any, Callable, Literal, Optional
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -56,7 +56,7 @@ class AnimatedLinePlot(AnimatedBase):
 
     def _animate(
         self, all_plots: list, window_size: int, fixed_xy_lim: bool, ax: Axes
-    ) -> tuple[Axes]:
+    ) -> Callable:
         def animate(i: int) -> tuple[Axes]:
             k = max(i - window_size, 0)
             min_y, max_y = np.inf, -np.inf

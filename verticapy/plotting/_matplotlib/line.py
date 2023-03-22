@@ -51,6 +51,9 @@ class LinePlot(MatplotlibBase):
         }
         if len(self.data["x"]) < 20:
             self.init_style["markerfacecolor"] = "white"
+        self.init_style_fill = {
+            "alpha": 0.2,
+        }
         return None
 
     def _get_style(self, idx: int = 0) -> dict[str, Any]:
@@ -90,7 +93,7 @@ class LinePlot(MatplotlibBase):
                     color = self._update_dict(kwargs, style_kwargs)["color"]
                 else:
                     color = colors[0]
-                ax.fill_between(*args, facecolor=color, alpha=0.2)
+                ax.fill_between(*args, facecolor=color, **self.init_style_fill)
             ax.set_xlim(min(self.data["x"]), max(self.data["x"]))
         else:
             uniques = np.unique(self.data["z"])

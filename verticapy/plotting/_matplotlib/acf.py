@@ -45,6 +45,14 @@ class ACFPlot(MatplotlibBase):
             "edgecolors": "black",
             "zorder": 2,
         }
+        self.init_style_bar = {
+            "color": "#444444",
+            "zorder": 1,
+            "linewidth": 0,
+        }
+        self.init_style_alpha = {
+            "alpha": 0.1,
+        }
         return None
 
     # Draw.
@@ -67,9 +75,7 @@ class ACFPlot(MatplotlibBase):
                 self.data["x"],
                 self.data["y"],
                 width=0.007 * len(self.data["x"]),
-                color="#444444",
-                zorder=1,
-                linewidth=0,
+                **self.init_style_bar,
             )
             ax.scatter(
                 self.data["x"],
@@ -95,7 +101,7 @@ class ACFPlot(MatplotlibBase):
                 -self.data["confidence"],
                 self.data["confidence"],
                 color=color,
-                alpha=0.1,
+                **self.init_style_alpha,
             )
         ax.set_xlabel("lag")
         return ax

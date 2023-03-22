@@ -49,14 +49,13 @@ class Histogram(MatplotlibBase):
         delta = alpha / len(self.layout[key]) * 0.8
         for i, column in enumerate(self.layout[key]):
             kwargs = {"color": colors[i % len(colors)]}
-            kwargs = self._update_dict(kwargs, style_kwargs, i)
             ax.bar(
                 self.data[column]["x"],
                 self.data[column]["y"],
                 self.data["width"],
                 label=column,
                 alpha=alpha,
-                **kwargs,
+                **self._update_dict(kwargs, style_kwargs, i),
             )
             alpha -= delta
         ax.set_ylabel(self.layout["method_of"])

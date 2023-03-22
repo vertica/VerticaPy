@@ -25,7 +25,7 @@ import scipy.special as scipy_special
 from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -41,23 +41,20 @@ from verticapy.sql.drop import drop
 
 
 class vDFCorr:
+
+    # System Methods.
+
     def _aggregate_matrix(
         self,
         method: str = "pearson",
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Global method to use to compute the Correlation/Cov/Regr Matrix.
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.cov  : Computes the Covariance  Matrix of the vDataFrame.
-    vDataFrame.regr : Computes the Regression  Matrix of the vDataFrame.
+        Global method to use to compute the Correlation/Cov/Regr Matrix.
         """
         method_name = "Correlation"
         method_type = f" using the method = '{method}'"
@@ -527,20 +524,14 @@ class vDFCorr:
         self,
         focus: str,
         method: str = "pearson",
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Global method to use to compute the Correlation/Cov/Beta Vector.
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.regr : Computes the regression matrix of the vDataFrame.
+        Global method to use to compute the Correlation/Cov/Beta Vector.
         """
         if not (columns):
             if method == "cramer":
@@ -721,10 +712,12 @@ class vDFCorr:
             values={"index": cols, focus: list(matrix[0])}
         ).decimal_to_float()
 
+    # Correlation.
+
     @save_verticapy_logs
     def corr(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         method: Literal[
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
@@ -733,54 +726,59 @@ class vDFCorr:
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Computes the Correlation Matrix of the vDataFrame. 
+        Computes the Correlation Matrix of the vDataFrame. 
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    method: str, optional
-        Method to use to compute the correlation.
-            pearson   : Pearson's correlation coefficient (linear).
-            spearman  : Spearman's correlation coefficient (monotonic - rank based).
-            spearmanD : Spearman's correlation coefficient using the DENSE RANK
-                        function instead of the RANK function.
-            kendall   : Kendall's correlation coefficient (similar trends). The method
-                        will compute the Tau-B coefficient.
-                        \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                         and is therefore computationally expensive at 
-                                         O(n * n), where n is the total count of the 
-                                         vDataFrame.
-            cramer    : Cramer's V (correlation between categories).
-            biserial  : Biserial Point (correlation between binaries and a numericals).
-    mround: int, optional
-        Rounds the coefficient using the input number of digits. It is only used to
-        display the correlation matrix.
-    focus: str, optional
-        Focus the computation on only one vDataColumn.
-    show: bool, optional
-        If set to True, the Correlation Matrix will be drawn using Matplotlib.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, all 
+            numerical vDataColumns will be used.
+        method: str, optional
+            Method to use to compute the correlation.
+                pearson   : Pearson's  correlation coefficient 
+                            (linear).
+                spearman  : Spearman's correlation coefficient 
+                            (monotonic - rank based).
+                spearmanD : Spearman's correlation coefficient 
+                            using  the   DENSE  RANK  function 
+                            instead of the RANK function.
+                kendall   : Kendall's  correlation coefficient 
+                            (similar trends).  The method will 
+                            compute the Tau-B coefficient.
+                            \u26A0 Warning : This method  uses a CROSS 
+                                             JOIN  during  computation 
+                                             and      is     therefore 
+                                             computationally expensive 
+                                             at  O(n * n),  where n is 
+                                             the  total  count of  the 
+                                             vDataFrame.
+                cramer    : Cramer's V 
+                            (correlation between categories).
+                biserial  : Biserial Point 
+                            (correlation between binaries and a 
+                            numericals).
+        mround: int, optional
+            Rounds  the coefficient using  the input number of 
+            digits. It is only used to display the correlation 
+            matrix.
+        focus: str, optional
+            Focus  the  computation  on  only one  vDataColumn.
+        show: bool, optional
+            If  set  to  True,  the  Plotting  object  will be 
+            returned.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to pass to the  plotting 
+            functions.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.acf  : Computes the correlations between a vDataColumn and its lags.
-    vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the partial autocorrelations of the input vDataColumn.
-    vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         method = str(method).lower()
         if isinstance(columns, str):
@@ -817,40 +815,46 @@ class vDFCorr:
             "biserial",
             "cramer",
         ] = "pearson",
-    ):
+    ) -> tuple[float, float]:
         """
-    Computes the Correlation Coefficient of the two input vDataColumns and its pvalue. 
+        Computes  the Correlation Coefficient of the two input 
+        vDataColumns and its pvalue. 
 
-    Parameters
-    ----------
-    column1: str
-        Input vDataColumn.
-    column2: str
-        Input vDataColumn.
-    method: str, optional
-        Method to use to compute the correlation.
-            pearson   : Pearson's correlation coefficient (linear).
-            spearman  : Spearman's correlation coefficient (monotonic - rank based).
-            spearmanD : Spearman's correlation coefficient using the DENSE RANK
-                        function instead of the RANK function.
-            kendall   : Kendall's correlation coefficient (similar trends). 
-                        Use kendallA to compute Tau-A, kendallB or kendall to compute 
-                        Tau-B and kendallC to compute Tau-C.
-                        \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                         and is therefore computationally expensive at 
-                                         O(n * n), where n is the total count of the 
-                                         vDataFrame.
-            cramer    : Cramer's V (correlation between categories).
-            biserial  : Biserial Point (correlation between binaries and a numericals).
+        Parameters
+        ----------
+        column1: str
+            Input vDataColumn.
+        column2: str
+            Input vDataColumn.
+        method: str, optional
+            Method to use to compute the correlation.
+                pearson   : Pearson's  correlation coefficient 
+                            (linear).
+                spearman  : Spearman's correlation coefficient 
+                            (monotonic - rank based).
+                spearmanD : Spearman's correlation coefficient 
+                            using  the   DENSE  RANK  function 
+                            instead of the RANK function.
+                kendall   : Kendall's  correlation coefficient 
+                            (similar trends).  The method will 
+                            compute the Tau-B coefficient.
+                            \u26A0 Warning : This method  uses a CROSS 
+                                             JOIN  during  computation 
+                                             and      is     therefore 
+                                             computationally expensive 
+                                             at  O(n * n),  where n is 
+                                             the  total  count of  the 
+                                             vDataFrame.
+                cramer    : Cramer's V 
+                            (correlation between categories).
+                biserial  : Biserial Point 
+                            (correlation between binaries and a 
+                            numericals).
 
-    Returns
-    -------
-    tuple
-        (Correlation Coefficient, pvalue)
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+        Returns
+        -------
+        tuple
+            (Correlation Coefficient, pvalue)
         """
         method = str(method).lower()
         column1, column2 = self._format_colnames(column1, column2)
@@ -1002,45 +1006,41 @@ class vDFCorr:
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
         return (val, pvalue)
 
+    # Covariance.
+
     @save_verticapy_logs
     def cov(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         focus: str = "",
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Computes the covariance matrix of the vDataFrame. 
+        Computes the covariance matrix of the vDataFrame. 
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    focus: str, optional
-        Focus the computation on only one vDataColumn.
-    show: bool, optional
-        If set to True, the Covariance Matrix will be drawn using Matplotlib.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, all numerical 
+            vDataColumns will be used.
+        focus: str, optional
+            Focus the computation on only one vDataColumn.
+        show: bool, optional
+            If   set  to   True,  the   Plotting   object  will  be 
+            returned.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any   optional  parameter  to  pass  to  the   plotting 
+            functions.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.acf  : Computes the correlations between a vDataColumn and its lags.
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the partial autocorrelations of the input vDataColumn.
-    vDataFrame.regr : Computes the regression matrix of the vDataFrame.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1061,355 +1061,12 @@ class vDFCorr:
 
         return fun(*args, **kwargs)
 
-    @save_verticapy_logs
-    def acf(
-        self,
-        column: str,
-        ts: str,
-        by: SQLColumns = [],
-        p: Union[int, list] = 12,
-        unit: str = "rows",
-        method: Literal[
-            "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
-        ] = "pearson",
-        confidence: bool = True,
-        alpha: float = 0.95,
-        show: bool = True,
-        acf_type: Literal["line", "heatmap", "bar"] = "bar",
-        mround: int = 3,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Computes the correlations of the input vDataColumn and its lags. 
-
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn to use to compute the Auto Correlation Plot.
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. It can be of type date
-        or a numerical vDataColumn.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    p: int | list, optional
-        Int equals to the maximum number of lag to consider during the computation
-        or List of the different lags to include during the computation.
-        p must be positive or a list of positive integers.
-    unit: str, optional
-        Unit to use to compute the lags.
-            rows: Natural lags
-            else : Any time unit, for example you can write 'hour' to compute the hours
-                lags or 'day' to compute the days lags.
-    method: str, optional
-        Method to use to compute the correlation.
-            pearson   : Pearson's correlation coefficient (linear).
-            spearman  : Spearman's correlation coefficient (monotonic - rank based).
-            spearmanD : Spearman's correlation coefficient using the DENSE RANK
-                        function instead of the RANK function.
-            kendall   : Kendall's correlation coefficient (similar trends). The method
-                        will compute the Tau-B coefficient.
-                       \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                        and is therefore computationally expensive at 
-                                        O(n * n), where n is the total count of the 
-                                        vDataFrame.
-            cramer    : Cramer's V (correlation between categories).
-            biserial  : Biserial Point (correlation between binaries and a numericals).
-    confidence: bool, optional
-        If set to True, the confidence band width is drawn.
-    alpha: float, optional
-        Significance Level. Probability to accept H0. Only used to compute the confidence
-        band width.
-    show: bool, optional
-        If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
-    acf_type: str, optional
-        ACF Type.
-            bar     : Classical Autocorrelation Plot using bars.
-            heatmap : Draws the ACF heatmap.
-            line    : Draws the ACF using a Line Plot.
-    mround: int, optional
-        Round the coefficient using the input number of digits. It is used only
-        to display the ACF Matrix (acf_type must be set to 'heatmap').
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.interpolate : Interpolates and computes a regular time 
-                             interval vDataFrame.
-    vDataFrame.corr        : Computes the Correlation Matrix of a vDataFrame.
-    vDataFrame.cov         : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.pacf        : Computes the partial autocorrelations of the 
-                             input vDataColumn.
-        """
-        method = str(method).lower()
-        if isinstance(by, str):
-            by = [by]
-        by, column, ts = self._format_colnames(by, column, ts)
-        if unit == "rows":
-            table = self._genSQL()
-        else:
-            table = self.interpolate(
-                ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
-            )._genSQL()
-        if isinstance(p, (int, float)):
-            p = range(1, p + 1)
-        by = f"PARTITION BY {', '.join(by)} " if (by) else ""
-        columns = [
-            f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
-            for i in p
-        ]
-        query = f"SELECT {', '.join([column] + columns)} FROM {table}"
-        if len(p) == 1:
-            return self._new_vdataframe(query).corr([], method=method)
-        elif acf_type == "heatmap":
-            return self._new_vdataframe(query).corr(
-                [],
-                method=method,
-                mround=mround,
-                focus=column,
-                show=show,
-                **style_kwargs,
-            )
-        else:
-            result = self._new_vdataframe(query).corr(
-                [], method=method, focus=column, show=False
-            )
-            columns = [elem for elem in result.values["index"]]
-            acf = [elem for elem in result.values[column]]
-            acf_band = []
-            if confidence:
-                for k in range(1, len(acf) + 1):
-                    acf_band += [
-                        math.sqrt(2)
-                        * scipy_special.erfinv(alpha)
-                        / math.sqrt(self[column].count() - k + 1)
-                        * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
-                    ]
-            if columns[0] == column:
-                columns[0] = 0
-            for i in range(1, len(columns)):
-                columns[i] = int(columns[i].split("_")[1])
-            data = [(columns[i], acf[i]) for i in range(len(columns))]
-            data.sort(key=lambda tup: tup[0])
-            del result.values[column]
-            result.values["index"] = [elem[0] for elem in data]
-            result.values["value"] = [elem[1] for elem in data]
-            if acf_band:
-                result.values["confidence"] = acf_band
-            if show:
-                vpy_plt, kwargs = self._get_plotting_lib(
-                    class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": acf_type,},
-                    style_kwargs=style_kwargs,
-                )
-                data = {
-                    "x": np.array(result.values["index"]),
-                    "y": np.array(result.values["value"]),
-                    "confidence": np.array(acf_band),
-                }
-                layout = {}
-                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
-            return result
-
-    @save_verticapy_logs
-    def pacf(
-        self,
-        column: str,
-        ts: str,
-        by: SQLColumns = [],
-        p: Union[int, list] = 5,
-        unit: str = "rows",
-        method: Literal[
-            "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
-        ] = "pearson",
-        confidence: bool = True,
-        alpha: float = 0.95,
-        show: bool = True,
-        pacf_type: Literal["line", "bar"] = "bar",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Computes the partial autocorrelations of the input vDataColumn.
-
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn to use to compute the partial autocorrelation plot.
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. It can be of type date
-        or a numerical vDataColumn.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    p: int | list, optional
-        Int equals to the maximum number of lag to consider during the computation
-        or List of the different lags to include during the computation.
-        p must be positive or a list of positive integers.
-    unit: str, optional
-        Unit to use to compute the lags.
-            rows: Natural lags
-            else : Any time unit, for example you can write 'hour' to compute the hours
-                lags or 'day' to compute the days lags.
-    method: str, optional
-        Method to use to compute the partial auto-correlation.
-            pearson   : Pearson's correlation coefficient (linear).
-            spearman  : Spearman's correlation coefficient (monotonic - rank based).
-            spearmanD : Spearman's correlation coefficient using the DENSE RANK
-                        function instead of the RANK function.
-            kendall   : Kendall's correlation coefficient (similar trends). The method
-                        will compute the Tau-B coefficient.
-                       \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                        and is therefore computationally expensive at 
-                                        O(n * n), where n is the total count of the 
-                                        vDataFrame.
-            cramer    : Cramer's V (correlation between categories).
-            biserial  : Biserial Point (correlation between binaries and a numericals).
-    confidence: bool, optional
-        If set to True, the confidence band width is drawn.
-    alpha: float, optional
-        Significance Level. Probability to accept H0. Only used to compute the confidence
-        band width.
-    show: bool, optional
-        If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
-    pacf_type: str, optional
-        PACF Type.
-            bar  : Classical Partial Autocorrelation Plot using bars.
-            line : Draws the PACF using a Line Plot.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.acf    : Computes the correlations between a vDataColumn and its lags.
-    vDataFrame.interpolate : Interpolates and computes a regular time interval vDataFrame.
-    vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
-    vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
-        """
-        from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(p, Iterable) and (len(p) == 1):
-            p = p[0]
-            if p == 0:
-                return 1.0
-            elif p == 1:
-                return self.acf(
-                    ts=ts, column=column, by=by, p=[1], unit=unit, method=method
-                )
-            by, column, ts = self._format_colnames(by, column, ts)
-            if unit == "rows":
-                table = self._genSQL()
-            else:
-                table = self.interpolate(
-                    ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
-                )._genSQL()
-            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
-            columns = [
-                f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
-                for i in range(1, p + 1)
-            ]
-            relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
-            tmp_view_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="linear_reg_view"
-            )
-            tmp_lr0_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="linear_reg0"
-            )
-            tmp_lr1_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="linear_reg1"
-            )
-            try:
-                drop(tmp_view_name, method="view")
-                query = f"""
-                    CREATE VIEW {tmp_view_name} 
-                        AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
-                _executeSQL(query, print_time_sql=False)
-                vdf = self._new_vdataframe(tmp_view_name)
-                drop(tmp_lr0_name, method="model")
-                model = LinearRegression(name=tmp_lr0_name, solver="Newton")
-                model.fit(
-                    input_relation=tmp_view_name,
-                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
-                    y=column,
-                )
-                model.predict(vdf, name="prediction_0")
-                drop(tmp_lr1_name, method="model")
-                model = LinearRegression(name=tmp_lr1_name, solver="Newton")
-                model.fit(
-                    input_relation=tmp_view_name,
-                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
-                    y=f"lag_{p}_{gen_name([column])}",
-                )
-                model.predict(vdf, name="prediction_p")
-                vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
-                vdf.eval(
-                    expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
-                )
-                result = vdf.corr(["eps_0", "eps_p"], method=method)
-            finally:
-                drop(tmp_view_name, method="view")
-                drop(tmp_lr0_name, method="model")
-                drop(tmp_lr1_name, method="model")
-            return result
-        else:
-            if isinstance(p, (float, int)):
-                p = range(0, p + 1)
-            loop = tqdm(p) if conf.get_option("tqdm") else p
-            pacf = []
-            for i in loop:
-                pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
-            columns = [elem for elem in p]
-            pacf_band = []
-            if confidence:
-                for k in range(1, len(pacf) + 1):
-                    pacf_band += [
-                        math.sqrt(2)
-                        * scipy_special.erfinv(alpha)
-                        / math.sqrt(self[column].count() - k + 1)
-                        * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
-                    ]
-            result = TableSample({"index": columns, "value": pacf})
-            if pacf_band:
-                result.values["confidence"] = pacf_band
-            if show:
-                vpy_plt, kwargs = self._get_plotting_lib(
-                    class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": pacf_type,},
-                    style_kwargs=style_kwargs,
-                )
-                data = {
-                    "x": np.array(result.values["index"]),
-                    "y": np.array(result.values["value"]),
-                    "confidence": np.array(pacf_band),
-                }
-                layout = {}
-                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
-            return result
+    # Regression Metrics.
 
     @save_verticapy_logs
     def regr(
         self,
-        columns: SQLColumns = [],
+        columns: SQLColumns = None,
         method: Literal[
             "avgx",
             "avgy",
@@ -1426,52 +1083,47 @@ class vDFCorr:
         show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Computes the regression matrix of the vDataFrame.
+        Computes the regression matrix of the vDataFrame.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    method: str, optional
-        Method to use to compute the regression matrix.
-            avgx  : Average of the independent expression in an expression pair.
-            avgy  : Average of the dependent expression in an expression pair.
-            count : Count of all rows in an expression pair.
-            alpha : Intercept of the regression line determined by a set of 
-                expression pairs.
-            r2    : Square of the correlation coefficient of a set of expression 
-                pairs.
-            beta  : Slope of the regression line, determined by a set of expression 
-                pairs.
-            sxx   : Sum of squares of the independent expression in an expression 
-                pair.
-            sxy   : Sum of products of the independent expression multiplied by the 
-                dependent expression in an expression pair.
-            syy   : Returns the sum of squares of the dependent expression in an 
-                expression pair.
-    show: bool, optional
-        If set to True, the Regression Matrix will be drawn using Matplotlib.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the  vDataColumns names. If empty, all numerical 
+            vDataColumns will be used.
+        method: str, optional
+            Method to use to compute the regression matrix.
+                avgx  : Average  of  the  independent  expression  in 
+                        an expression pair.
+                avgy  : Average  of  the dependent  expression in  an 
+                        expression pair.
+                count : Count  of  all  rows  in  an expression  pair.
+                alpha : Intercept  of the regression line  determined 
+                        by a set of expression pairs.
+                r2    : Square  of  the correlation  coefficient of a 
+                        set of expression pairs.
+                beta  : Slope of  the regression  line, determined by 
+                        a set of expression pairs.
+                sxx   : Sum of squares of  the independent expression 
+                        in an expression pair.
+                sxy   : Sum of products of the independent expression 
+                        multiplied by the  dependent expression in an 
+                        expression pair.
+                syy   : Returns  the sum of squares of the  dependent 
+                        expression in an expression pair.
+        show: bool, optional
+            If set to True, the Plotting object will be returned.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting functions.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.acf   : Computes the correlations between a vDataColumn and its lags.
-    vDataFrame.cov   : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf  : Computes the partial autocorrelations of the input vDataColumn.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1580,47 +1232,413 @@ class vDFCorr:
                 self._update_catalog(values=val, matrix=method, column=column1)
         return TableSample(values=values).decimal_to_float()
 
+    # Time Series.
+
     @save_verticapy_logs
-    def iv_woe(
+    def acf(
         self,
-        y: str,
-        columns: SQLColumns = [],
-        nbins: int = 10,
+        column: str,
+        ts: str,
+        by: SQLColumns = None,
+        p: Union[int, list] = 12,
+        unit: str = "rows",
+        method: Literal[
+            "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
+        ] = "pearson",
+        confidence: bool = True,
+        alpha: float = 0.95,
         show: bool = True,
+        acf_type: Literal["line", "heatmap", "bar"] = "bar",
+        mround: int = 3,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Computes the correlations of the input vDataColumn 
+        and its lags. 
+
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn  to use to compute the Auto 
+            Correlation Plot.
+        ts: str
+            TS (Time Series)  vDataColumn to use to order 
+            the  data.  It  can  be  of type  date  or  a 
+            numerical vDataColumn.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        p: int | list, optional
+            Int  equals  to  the  maximum  number  of lag  to 
+            consider  during the  computation or  List of the 
+            different  lags to include during the computation.
+            p must be positive or a list of positive integers.
+        unit: str, optional
+            Unit to use to compute the lags.
+                rows: Natural lags
+                else : Any time unit,  for  example  you  can 
+                       write 'hour' to compute the hours lags 
+                       or 'day' to compute the days lags.
+        method: str, optional
+            Method to use to compute the correlation.
+                pearson   : Pearson's  correlation coefficient 
+                            (linear).
+                spearman  : Spearman's correlation coefficient 
+                            (monotonic - rank based).
+                spearmanD : Spearman's correlation coefficient 
+                            using  the   DENSE  RANK  function 
+                            instead of the RANK function.
+                kendall   : Kendall's  correlation coefficient 
+                            (similar trends).  The method will 
+                            compute the Tau-B coefficient.
+                            \u26A0 Warning : This method  uses a CROSS 
+                                             JOIN  during  computation 
+                                             and      is     therefore 
+                                             computationally expensive 
+                                             at  O(n * n),  where n is 
+                                             the  total  count of  the 
+                                             vDataFrame.
+                cramer    : Cramer's V 
+                            (correlation between categories).
+                biserial  : Biserial Point 
+                            (correlation between binaries and a 
+                            numericals).
+        confidence: bool, optional
+            If set to True, the confidence band width is drawn.
+        alpha: float, optional
+            Significance Level. Probability to accept H0. Only 
+            used   to  compute   the  confidence  band   width.
+        show: bool, optional
+                If  set  to True,  the Plotting object will be 
+                returned.
+        acf_type: str, optional
+            ACF Type.
+                bar     : Classical Autocorrelation Plot using 
+                          bars.
+                heatmap : Draws the ACF heatmap.
+                line    : Draws the ACF using a Line Plot.
+        mround: int, optional
+            Round  the  coefficient using the input number  of 
+            digits. It is used only to display the ACF  Matrix 
+            (acf_type must be set to 'heatmap').
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter  to  pass  to  the plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        method = str(method).lower()
+        if isinstance(by, str):
+            by = [by]
+        by, column, ts = self._format_colnames(by, column, ts)
+        if unit == "rows":
+            table = self._genSQL()
+        else:
+            table = self.interpolate(
+                ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
+            )._genSQL()
+        if isinstance(p, (int, float)):
+            p = range(1, p + 1)
+        by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+        columns = [
+            f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
+            for i in p
+        ]
+        query = f"SELECT {', '.join([column] + columns)} FROM {table}"
+        if len(p) == 1:
+            return self._new_vdataframe(query).corr([], method=method)
+        elif acf_type == "heatmap":
+            return self._new_vdataframe(query).corr(
+                [],
+                method=method,
+                mround=mround,
+                focus=column,
+                show=show,
+                **style_kwargs,
+            )
+        else:
+            result = self._new_vdataframe(query).corr(
+                [], method=method, focus=column, show=False
+            )
+            columns = [elem for elem in result.values["index"]]
+            acf = [elem for elem in result.values[column]]
+            acf_band = []
+            if confidence:
+                for k in range(1, len(acf) + 1):
+                    acf_band += [
+                        math.sqrt(2)
+                        * scipy_special.erfinv(alpha)
+                        / math.sqrt(self[column].count() - k + 1)
+                        * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
+                    ]
+            if columns[0] == column:
+                columns[0] = 0
+            for i in range(1, len(columns)):
+                columns[i] = int(columns[i].split("_")[1])
+            data = [(columns[i], acf[i]) for i in range(len(columns))]
+            data.sort(key=lambda tup: tup[0])
+            del result.values[column]
+            result.values["index"] = [elem[0] for elem in data]
+            result.values["value"] = [elem[1] for elem in data]
+            if acf_band:
+                result.values["confidence"] = acf_band
+            if show:
+                vpy_plt, kwargs = self._get_plotting_lib(
+                    class_name="ACFPlot",
+                    matplotlib_kwargs={"ax": ax, "bar_type": acf_type,},
+                    style_kwargs=style_kwargs,
+                )
+                data = {
+                    "x": np.array(result.values["index"]),
+                    "y": np.array(result.values["value"]),
+                    "confidence": np.array(acf_band),
+                }
+                layout = {}
+                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
+            return result
+
+    @save_verticapy_logs
+    def pacf(
+        self,
+        column: str,
+        ts: str,
+        by: SQLColumns = None,
+        p: Union[int, list] = 5,
+        unit: str = "rows",
+        method: Literal[
+            "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
+        ] = "pearson",
+        confidence: bool = True,
+        alpha: float = 0.95,
+        show: bool = True,
+        pacf_type: Literal["line", "bar"] = "bar",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
         """
-    Computes the Information Value (IV) Table. It tells the predictive power of 
-    an independent variable in relation to the dependent variable.
+        Computes the partial autocorrelations of the input 
+        vDataColumn.
 
-    Parameters
-    ----------
-    y: str
-        Response vDataColumn.
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all vDataColumns except the response 
-        will be used.
-    nbins: int, optional
-        Maximum number of bins used for the discretization (must be > 1).
-    show: bool, optional
-        If set to True, the IV Plot will be drawn using Matplotlib.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-    
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn  to use to compute the Auto 
+            Correlation Plot.
+        ts: str
+            TS (Time Series)  vDataColumn to use to order 
+            the  data.  It  can  be  of type  date  or  a 
+            numerical vDataColumn.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        p: int | list, optional
+            Int  equals  to  the  maximum  number  of lag  to 
+            consider  during the  computation or  List of the 
+            different  lags to include during the computation.
+            p must be positive or a list of positive integers.
+        unit: str, optional
+            Unit to use to compute the lags.
+                rows: Natural lags
+                else : Any time unit,  for  example  you  can 
+                       write 'hour' to compute the hours lags 
+                       or 'day' to compute the days lags.
+        method: str, optional
+            Method to use to compute the correlation.
+                pearson   : Pearson's  correlation coefficient 
+                            (linear).
+                spearman  : Spearman's correlation coefficient 
+                            (monotonic - rank based).
+                spearmanD : Spearman's correlation coefficient 
+                            using  the   DENSE  RANK  function 
+                            instead of the RANK function.
+                kendall   : Kendall's  correlation coefficient 
+                            (similar trends).  The method will 
+                            compute the Tau-B coefficient.
+                            \u26A0 Warning : This method  uses a CROSS 
+                                             JOIN  during  computation 
+                                             and      is     therefore 
+                                             computationally expensive 
+                                             at  O(n * n),  where n is 
+                                             the  total  count of  the 
+                                             vDataFrame.
+                cramer    : Cramer's V 
+                            (correlation between categories).
+                biserial  : Biserial Point 
+                            (correlation between binaries and a 
+                            numericals).
+        confidence: bool, optional
+            If set to True, the confidence band width is drawn.
+        alpha: float, optional
+            Significance Level. Probability to accept H0. Only 
+            used   to  compute   the  confidence  band   width.
+        show: bool, optional
+                If  set  to True,  the Plotting object will be 
+                returned.
+        pacf_type: str, optional
+            ACF Type.
+                bar  : Classical  Partial Autocorrelation Plot 
+                       using bars.
+                line : Draws  the   PACF  using  a  Line  Plot.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter  to  pass  to  the plotting 
+            functions.
 
-    See Also
-    --------
-    vDataFrame[].iv_woe : Computes the Information Value (IV) / 
-        Weight Of Evidence (WOE) Table.
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(p, Iterable) and (len(p) == 1):
+            p = p[0]
+            if p == 0:
+                return 1.0
+            elif p == 1:
+                return self.acf(
+                    ts=ts, column=column, by=by, p=[1], unit=unit, method=method
+                )
+            by, column, ts = self._format_colnames(by, column, ts)
+            if unit == "rows":
+                table = self._genSQL()
+            else:
+                table = self.interpolate(
+                    ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
+                )._genSQL()
+            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+            columns = [
+                f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
+                for i in range(1, p + 1)
+            ]
+            relation = f"(SELECT {', '.join([column] + columns)} FROM {table}) pacf"
+            tmp_view_name = gen_tmp_name(
+                schema=conf.get_option("temp_schema"), name="linear_reg_view"
+            )
+            tmp_lr0_name = gen_tmp_name(
+                schema=conf.get_option("temp_schema"), name="linear_reg0"
+            )
+            tmp_lr1_name = gen_tmp_name(
+                schema=conf.get_option("temp_schema"), name="linear_reg1"
+            )
+            try:
+                drop(tmp_view_name, method="view")
+                query = f"""
+                    CREATE VIEW {tmp_view_name} 
+                        AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
+                _executeSQL(query, print_time_sql=False)
+                vdf = self._new_vdataframe(tmp_view_name)
+                drop(tmp_lr0_name, method="model")
+                model = LinearRegression(name=tmp_lr0_name, solver="Newton")
+                model.fit(
+                    input_relation=tmp_view_name,
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
+                    y=column,
+                )
+                model.predict(vdf, name="prediction_0")
+                drop(tmp_lr1_name, method="model")
+                model = LinearRegression(name=tmp_lr1_name, solver="Newton")
+                model.fit(
+                    input_relation=tmp_view_name,
+                    X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
+                    y=f"lag_{p}_{gen_name([column])}",
+                )
+                model.predict(vdf, name="prediction_p")
+                vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
+                vdf.eval(
+                    expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
+                )
+                result = vdf.corr(["eps_0", "eps_p"], method=method)
+            finally:
+                drop(tmp_view_name, method="view")
+                drop(tmp_lr0_name, method="model")
+                drop(tmp_lr1_name, method="model")
+            return result
+        else:
+            if isinstance(p, (float, int)):
+                p = range(0, p + 1)
+            loop = tqdm(p) if conf.get_option("tqdm") else p
+            pacf = []
+            for i in loop:
+                pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
+            columns = [elem for elem in p]
+            pacf_band = []
+            if confidence:
+                for k in range(1, len(pacf) + 1):
+                    pacf_band += [
+                        math.sqrt(2)
+                        * scipy_special.erfinv(alpha)
+                        / math.sqrt(self[column].count() - k + 1)
+                        * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
+                    ]
+            result = TableSample({"index": columns, "value": pacf})
+            if pacf_band:
+                result.values["confidence"] = pacf_band
+            if show:
+                vpy_plt, kwargs = self._get_plotting_lib(
+                    class_name="ACFPlot",
+                    matplotlib_kwargs={"ax": ax, "bar_type": pacf_type,},
+                    style_kwargs=style_kwargs,
+                )
+                data = {
+                    "x": np.array(result.values["index"]),
+                    "y": np.array(result.values["value"]),
+                    "confidence": np.array(pacf_band),
+                }
+                layout = {}
+                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
+            return result
+
+    # Weight of Evidence.
+
+    @save_verticapy_logs
+    def iv_woe(
+        self,
+        y: str,
+        columns: SQLColumns = None,
+        nbins: int = 10,
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Computes the Information Value (IV) Table. It tells 
+        the predictive power  of an independent variable in 
+        relation to the dependent variable.
+
+        Parameters
+        ----------
+        y: str
+            Response vDataColumn.
+        columns: SQLColumns, optional
+            List  of  the  vDataColumns names. If  empty,  all 
+            vDataColumns  except  the response  will  be used.
+        nbins: int, optional
+            Maximum number of bins used for the discretization 
+            (must be > 1).
+        show: bool, optional
+            If  set  to True,  the  Plotting  object  will  be 
+            returned.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter to  pass to the  plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1647,29 +1665,29 @@ class vDFCorr:
 
 
 class vDCCorr:
+
+    # Weight of Evidence.
+
     @save_verticapy_logs
-    def iv_woe(self, y: str, nbins: int = 10):
+    def iv_woe(self, y: str, nbins: int = 10) -> TableSample:
         """
-    Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
-    the predictive power of an independent variable in relation to the dependent 
-    variable.
+        Computes the Information Value (IV) / Weight Of 
+        Evidence  (WOE) Table.  It tells the predictive 
+        power of an independent variable in relation to 
+        the dependent variable.
 
-    Parameters
-    ----------
-    y: str
-        Response vDataColumn.
-    nbins: int, optional
-        Maximum number of nbins used for the discretization (must be > 1)
+        Parameters
+        ----------
+        y: str
+            Response vDataColumn.
+        nbins: int, optional
+            Maximum  number  of   nbins  used  for  the 
+            discretization (must be > 1)
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.iv_woe : Computes the Information Value (IV) Table.
+        Returns
+        -------
+        obj
+            Tablesample.
         """
         y = self._parent._format_colnames(y)
         assert self._parent[y].nunique() == 2, TypeError(

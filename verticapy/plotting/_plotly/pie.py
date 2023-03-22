@@ -122,9 +122,7 @@ class NestedPieChart(PlotlyBase):
     # Draw.
 
     def draw(
-        self,
-        max_cardinality: Union[int, tuple, list] = None,
-        **style_kwargs,
+        self, max_cardinality: Union[int, tuple, list] = None, **style_kwargs,
     ) -> Figure:
         """
         Draws a sunburst/nested pie chart using the plotly API.

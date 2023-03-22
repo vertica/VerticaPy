@@ -73,6 +73,7 @@ class PlottingBase:
                 "describe": self._compute_statistics,
                 "hist": self._compute_hists_params,
                 "line": self._filter_line,
+                "line_bubble": self._filter_line_animated_scatter,
                 "matrix": self._compute_scatter_matrix,
                 "outliers": self._compute_outliers_params,
                 "range": self._compute_range,
@@ -1248,6 +1249,68 @@ class PlottingBase:
             "limit_over": limit_over,
         }
         return None
+
+    def _filter_line_animated_scatter(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        by: Optional[str] = None,
+        catcol: Optional[str] = None,
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+        limit_over: int = 10,
+        limit: int = 1000000,
+        lim_labels: int = 6,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, order_by, by, catcol = vdf._format_colnames(
+            columns, order_by, by, catcol
+        )
+        cols = copy.deepcopy(columns)
+        if len(cols) == 2:
+            cols += [1]
+        by_ = 1 if by == None else by
+        if catcol:
+            cols += [catcol]
+        where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
+        where += f" AND {order_by} < '{order_by_end}'" if (order_by_end) else ""
+        query_result = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('plotting._matplotlib._filter_line_animated_scatter')*/ * 
+                FROM 
+                    (SELECT 
+                        {order_by}, 
+                        {", ".join([str(column) for column in cols])}, 
+                        {by_} 
+                     FROM {vdf._genSQL(True)} 
+                     WHERE  {cols[0]} IS NOT NULL 
+                        AND {cols[1]} IS NOT NULL 
+                        AND {cols[2]} IS NOT NULL
+                        AND {order_by} IS NOT NULL
+                        AND {by_} IS NOT NULL{where} 
+                     LIMIT {limit_over} OVER (PARTITION BY {order_by} 
+                                    ORDER BY {order_by}, {cols[2]} DESC)) x 
+                ORDER BY {order_by}, 4 DESC, 3 DESC, 2 DESC 
+                LIMIT {limit}""",
+            title="Selecting points to draw the animated bubble plot.",
+            method="fetchall",
+        )
+        self.data = {
+            "x": np.array([x[0] for x in query_result]),
+            "Y": np.array([x[1:] for x in query_result]),
+        }
+        self.layout = {
+            "columns": columns,
+            "order_by": order_by,
+            "by": by,
+            "by_is_num": vdf[by].isnum() if by != None else None,
+            "catcol": catcol,
+            "limit": limit,
+            "limit_over": limit_over,
+        }
 
     # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
 

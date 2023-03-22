@@ -51,6 +51,22 @@ class ScatterMatrix(MatplotlibBase):
         }
         return None
 
+    def _get_final_style_bar(self, style_kwargs: dict) -> dict:
+        kwargs = {
+            "color": self.get_colors(d=style_kwargs, idx=0),
+            "edgecolor": "black",
+        }
+        if "edgecolor" in style_kwargs:
+            kwargs["edgecolor"] = style_kwargs["edgecolor"]
+        return kwargs
+
+    def _get_final_style_scatter(self, style_kwargs: dict) -> dict:
+        kwargs = {
+            "color": self.get_colors(d=style_kwargs, idx=1),
+            **self.init_style,
+        }
+        return self._update_dict(kwargs, style_kwargs, 1)
+
     # Draw.
 
     def draw(self, **style_kwargs,) -> Axes:
@@ -69,27 +85,17 @@ class ScatterMatrix(MatplotlibBase):
                 axes[i][j].get_xaxis().set_ticks([])
                 axes[i][j].get_yaxis().set_ticks([])
                 if self.layout["columns"][i] == self.layout["columns"][j]:
-                    kwargs = {
-                        "color": self.get_colors(d=style_kwargs, idx=0),
-                        "edgecolor": "black",
-                    }
-                    if "edgecolor" in style_kwargs:
-                        kwargs["edgecolor"] = style_kwargs["edgecolor"]
                     axes[i, j].bar(
                         self.data["hist"][self.layout["columns"][i]]["x"],
                         self.data["hist"][self.layout["columns"][i]]["y"],
                         self.data["hist"][self.layout["columns"][i]]["width"],
-                        **kwargs,
+                        **self._get_final_style_bar(style_kwargs=style_kwargs),
                     )
                 else:
-                    kwargs = {
-                        "color": self.get_colors(d=style_kwargs, idx=1),
-                        **self.init_style,
-                    }
                     axes[i, j].scatter(
                         self.data["scatter"]["X"][:, j],
                         self.data["scatter"]["X"][:, i],
-                        **self._update_dict(kwargs, style_kwargs, 1),
+                        **self._get_final_style_scatter(style_kwargs=style_kwargs),
                     )
         return axes
 
@@ -118,6 +124,10 @@ class ScatterPlot(MatplotlibBase):
             "s": 50,
             "edgecolors": "black",
             "marker": "o",
+        }
+        self.init_style_line = {
+            "color": "w",
+            "markersize": 8,
         }
         return None
 
@@ -156,10 +166,9 @@ class ScatterPlot(MatplotlibBase):
                         [0],
                         [0],
                         marker=marker,
-                        color="w",
                         markerfacecolor=color,
                         label=c,
-                        markersize=8,
+                        **self.init_style_line,
                     )
                 ]
             kwargs["color"] = colors
