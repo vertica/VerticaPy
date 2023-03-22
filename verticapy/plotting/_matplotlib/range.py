@@ -41,7 +41,18 @@ class RangeCurve(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"alpha1": 0.5, "alpha2": 0.9}
+        self.init_style_scatter = {
+            "c": "white",
+            "marker": "o",
+            "s": 60,
+            "edgecolors": "black",
+            "zorder": 3,
+        }
         return None
+
+    def _get_final_color(self, style_kwargs: dict, idx: int):
+        kwargs = {"color": self.get_colors(d=style_kwargs, idx=idx)}
+        return self._update_dict(kwargs, style_kwargs, idx)
 
     # Draw.
 
@@ -59,38 +70,30 @@ class RangeCurve(MatplotlibBase):
         n, m = self.data["Y"].shape
         for i in range(0, m, 3):
             idx = int(i / 3)
-            kwargs = {"facecolor": self.get_colors(d=style_kwargs, idx=idx)}
             ax.fill_between(
                 self.data["x"],
                 self.data["Y"][:, i],
                 self.data["Y"][:, i + 2],
                 alpha=self.init_style["alpha1"],
                 label=self.layout["columns"][idx],
-                **kwargs,
+                facecolor=self.get_colors(d=style_kwargs, idx=idx),
             )
-            kwargs = {"color": self.get_colors(d=style_kwargs, idx=idx)}
             for j in [0, 2]:
                 ax.plot(
                     self.data["x"],
                     self.data["Y"][:, i + j],
                     alpha=self.init_style["alpha2"],
-                    **self._update_dict(kwargs, style_kwargs, idx),
+                    **self._get_final_color(style_kwargs=style_kwargs, idx=idx),
                 )
             if plot_median:
                 ax.plot(
                     self.data["x"],
                     self.data["Y"][:, i + 1],
-                    **self._update_dict(kwargs, style_kwargs, idx),
+                    **self._get_final_color(style_kwargs=style_kwargs, idx=idx),
                 )
             if ((plot_scatter) or n < 20) and plot_median:
                 ax.scatter(
-                    self.data["x"],
-                    self.data["Y"][:, i + 1],
-                    c="white",
-                    marker="o",
-                    s=60,
-                    edgecolors="black",
-                    zorder=3,
+                    self.data["x"], self.data["Y"][:, i + 1], **self.init_style_scatter,
                 )
         ax.set_xlabel(self.layout["order_by"])
         if len(self.layout["columns"]) == 1:

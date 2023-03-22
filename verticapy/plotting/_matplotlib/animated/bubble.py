@@ -36,6 +36,9 @@ from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
 class AnimatedBubblePlot(AnimatedBase):
+
+    # Properties.
+
     @property
     def _category(self) -> Literal["plot"]:
         return "plot"
@@ -44,17 +47,158 @@ class AnimatedBubblePlot(AnimatedBase):
     def _kind(self) -> Literal["animated_bubble"]:
         return "animated_bubble"
 
+    @property
+    def _compute_method(self) -> Literal["line_bubble"]:
+        return "line_bubble"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 4)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "alpha": 0.8,
+            "edgecolors": "black",
+        }
+        self.init_date_style_dict = {
+            "fontsize": 100,
+            "alpha": 0.6,
+            "color": "gray",
+            "ha": "center",
+            "va": "center",
+        }
+        return None
+
+    def _get_final_color(self, style_kwargs: dict) -> list:
+        if "color" in style_kwargs:
+            colors = style_kwargs["color"]
+        elif "colors" in style_kwargs:
+            colors = style_kwargs["colors"]
+        else:
+            colors = self.get_colors()
+        if isinstance(colors, str):
+            colors = [colors]
+        return colors
+
+    # Draw.
+
+    def _animate(
+        self,
+        scatter_plot_init: plt.scatter,
+        scatter_values: list,
+        lim_labels: int,
+        set_size: bool,
+        date_in_title: bool,
+        fixed_xy_lim: bool,
+        text_plots: list,
+        anim_text: plt.Text,
+        date_f: Callable,
+        kwargs: dict,
+        style_kwargs: dict,
+        ax: Axes,
+    ) -> Callable:
+        def animate(i: int) -> tuple[Axes]:
+            array = np.array(
+                [
+                    (scatter_values[i]["x"][j], scatter_values[i]["y"][j])
+                    for j in range(len(scatter_values[i]["x"]))
+                ]
+            )
+            scatter_plot_init.set_offsets(array)
+            if set_size:
+                scatter_plot_init.set_sizes(np.array(scatter_values[i]["s"]))
+            if "cmap" in kwargs:
+                scatter_plot_init.set_array(np.array(scatter_values[i]["c"]))
+            elif self.layout["catcol"] != None:
+                scatter_plot_init.set_color(np.array(scatter_values[i]["c"]))
+            if "edgecolors" in self._update_dict(kwargs, style_kwargs):
+                scatter_plot_init.set_edgecolor(
+                    self._update_dict(kwargs, style_kwargs)["edgecolors"]
+                )
+            if self.layout["catcol"] != None:
+                for k in range(lim_labels):
+                    text_plots[k].set_position(
+                        (scatter_values[i]["x"][k], scatter_values[i]["y"][k])
+                    )
+                    text_plots[k].set_text(scatter_values[i]["label"][k])
+            min_x, max_x = min(scatter_values[i]["x"]), max(scatter_values[i]["x"])
+            min_y, max_y = min(scatter_values[i]["y"]), max(scatter_values[i]["y"])
+            delta_x, delta_y = max_x - min_x, max_y - min_y
+            if not (fixed_xy_lim):
+                ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
+                ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
+                if not (date_in_title):
+                    anim_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
+            if not (date_in_title):
+                anim_text.set_text(date_f(scatter_values[i]["date"]))
+            else:
+                ax.set_title(date_f(scatter_values[i]["date"]))
+            return (ax,)
+
+        return animate
+
+    def _compute_anim_params(
+        self, date_f: Optional[Callable] = None, **style_kwargs
+    ) -> tuple:
+        if date_f == None:
+            date_f = lambda x: str(x)
+        colors = self._get_final_color(style_kwargs=style_kwargs)
+        kwargs = self.init_style
+        if self.layout["by"]:
+            if self.layout["by_is_num"]:
+                kwargs = {
+                    **kwargs,
+                    "cmap": self.get_cmap(idx=0),
+                }
+            else:
+                colors_map = {}
+                all_cats = np.unique(self.data["Y"][:, -1])
+                for idx, cat in enumerate(all_cats):
+                    colors_map[cat] = colors[idx % len(colors)]
+        size = 50
+        if len(self.layout["columns"]) > 2:
+            Y2 = self.data["Y"][:, 2].astype(float)
+            min_size = np.nanmin(Y2)
+            max_size = np.nanmax(Y2)
+            size = 1000 * (Y2 - min_size) / max((max_size - min_size), 1e-50)
+        custom_lines, all_categories, c = [], [], []
+        if "cmap" in kwargs:
+            c = list(self.data["Y"][:, 2].astype(float))
+        elif self.layout["by"] == None:
+            c = [colors[0]] * len(self.data["x"])
+        else:
+            for cat in self.data["Y"][:, -1]:
+                if cat not in all_categories:
+                    all_categories += [cat]
+                    custom_lines += [Line2D([0], [0], color=colors_map[cat], lw=6)]
+                c += [colors_map[cat]]
+        current_ts, ts_idx = self.data["x"][0], 0
+        scatter_values = []
+        n = len(self.data["x"])
+        Y0 = self.data["Y"][:, 0].astype(float)
+        Y1 = self.data["Y"][:, 1].astype(float)
+        for idx, x in enumerate(self.data["x"]):
+            if x != current_ts or idx == n - 1:
+                scatter_values += [
+                    {
+                        "x": Y0[ts_idx:idx],
+                        "y": Y1[ts_idx:idx],
+                        "c": c if isinstance(c, str) or c == None else c[ts_idx:idx],
+                        "s": size
+                        if isinstance(size, (float, int))
+                        else size[ts_idx:idx],
+                        "date": current_ts,
+                    }
+                ]
+                if self.layout["catcol"]:
+                    scatter_values[-1]["label"] = self.data["Y"][:, -2][ts_idx:idx]
+                current_ts, ts_idx = x, idx
+        return kwargs, date_f, scatter_values, custom_lines, all_categories
+
     def draw(
         self,
-        vdf: "vDataFrame",
-        order_by: str,
-        columns: SQLColumns,
-        by: str = "",
-        label_name: str = "",
-        order_by_start: str = "",
-        order_by_end: str = "",
-        limit_over: int = 10,
-        limit: int = 1000000,
         lim_labels: int = 6,
         fixed_xy_lim: bool = False,
         bbox: list = [],
@@ -70,135 +214,23 @@ class AnimatedBubblePlot(AnimatedBase):
         """
         Draws an animated bubble plot using the Matplotlib API.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if not (date_style_dict):
-            date_style_dict = {
-                "fontsize": 100,
-                "alpha": 0.6,
-                "color": "gray",
-                "ha": "center",
-                "va": "center",
-            }
-        if date_f == None:
-
-            def date_f(x):
-                return str(x)
-
-        if len(columns) == 2:
-            columns += [1]
-        if "color" in style_kwargs:
-            colors = style_kwargs["color"]
-        elif "colors" in style_kwargs:
-            colors = style_kwargs["colors"]
-        else:
-            colors = self.get_colors()
-        if isinstance(colors, str):
-            colors = [colors]
-        param = {
-            "alpha": 0.8,
-            "edgecolors": "black",
-        }
-        if by:
-            if vdf[by].isnum():
-                param = {
-                    "alpha": 0.8,
-                    "cmap": self.get_cmap(idx=0),
-                    "edgecolors": "black",
-                }
-            else:
-                colors_map = {}
-                all_cats = vdf[by].distinct(agg=f"MAX({columns[2]})")
-                for idx, elem in enumerate(all_cats):
-                    colors_map[elem] = colors[idx % len(colors)]
-        else:
-            by = 1
-        if label_name:
-            columns += [label_name]
-        count = vdf.shape()[0]
         ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=True, grid=True)
-        count = vdf.shape()[0]
-        if columns[2] != 1:
-            max_size = float(vdf[columns[2]].max())
-            min_size = float(vdf[columns[2]].min())
-        where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
-        where += f" AND {order_by} < '{order_by_end}'" if (order_by_end) else ""
-        query_result = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('plotting._matplotlib.AnimatedBubblePlot.animated_bubble_plot')*/ * 
-                FROM 
-                    (SELECT 
-                        {order_by}, 
-                        {", ".join([str(column) for column in columns])}, 
-                        {by} 
-                     FROM {vdf._genSQL(True)} 
-                     WHERE  {columns[0]} IS NOT NULL 
-                        AND {columns[1]} IS NOT NULL 
-                        AND {columns[2]} IS NOT NULL
-                        AND {order_by} IS NOT NULL
-                        AND {by} IS NOT NULL{where} 
-                     LIMIT {limit_over} OVER (PARTITION BY {order_by} 
-                                    ORDER BY {order_by}, {columns[2]} DESC)) x 
-                ORDER BY {order_by}, 4 DESC, 3 DESC, 2 DESC 
-                LIMIT {limit}""",
-            title="Selecting points to draw the animated bubble plotting._matplotlib.",
-            method="fetchall",
-        )
-        size = 50
-        order_by_values = [item[0] for item in query_result]
-        if columns[2] != 1:
-            size = [
-                1000 * (float(item[3]) - min_size) / max((max_size - min_size), 1e-50)
-                for item in query_result
-            ]
-        column1, column2 = (
-            [float(item[1]) for item in query_result],
-            [float(item[2]) for item in query_result],
-        )
-        if label_name:
-            label_columns = [item[-2] for item in query_result]
-        if "cmap" in param:
-            c = [float(item[4]) for item in query_result]
-        elif by == 1:
-            c = colors[0]
-        else:
-            custom_lines = []
-            all_categories = []
-            c = []
-            for item in query_result:
-                if item[-1] not in all_categories:
-                    all_categories += [item[-1]]
-                    custom_lines += [Line2D([0], [0], color=colors_map[item[-1]], lw=6)]
-                c += [colors_map[item[-1]]]
-        current_ts, ts_idx = order_by_values[0], 0
-        scatter_values = []
-        n = len(order_by_values)
-        for idx, elem in enumerate(order_by_values):
-            if elem != current_ts or idx == n - 1:
-                scatter_values += [
-                    {
-                        "x": column1[ts_idx:idx],
-                        "y": column2[ts_idx:idx],
-                        "c": c[ts_idx:idx] if isinstance(c, list) else c,
-                        "s": size
-                        if isinstance(size, (float, int))
-                        else size[ts_idx:idx],
-                        "date": current_ts,
-                    }
-                ]
-                if label_name:
-                    scatter_values[-1]["label"] = label_columns[ts_idx:idx]
-                current_ts, ts_idx = elem, idx
-        im = ax.scatter(
+        (
+            kwargs,
+            date_f,
+            scatter_values,
+            custom_lines,
+            all_cats,
+        ) = self._compute_anim_params(date_f=date_f, style_kwargs=style_kwargs,)
+        sc = ax.scatter(
             scatter_values[0]["x"],
             scatter_values[0]["y"],
             c=scatter_values[0]["c"],
             s=scatter_values[0]["s"],
-            **self._update_dict(param, style_kwargs),
+            **self._update_dict(kwargs, style_kwargs),
         )
-        if label_name:
-            text_plots = []
+        text_plots = []
+        if self.layout["catcol"] != None:
             for idx in range(lim_labels):
                 text_plots += [
                     ax.text(
@@ -209,95 +241,79 @@ class AnimatedBubblePlot(AnimatedBase):
                         va="bottom",
                     )
                 ]
-        ax.set_xlabel(columns[0])
-        ax.set_ylabel(columns[1])
+        ax.set_xlabel(self.layout["columns"][0])
+        ax.set_ylabel(self.layout["columns"][1])
+        Y0 = self.data["Y"][:, 0].astype(float)
+        Y1 = self.data["Y"][:, 1].astype(float)
+        min_x = np.nanmin(Y0)
+        max_x = np.nanmax(Y0)
+        min_y = np.nanmin(Y1)
+        max_y = np.nanmax(Y1)
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
             if not (date_in_title):
-                my_text = ax.text(
+                anim_text = ax.text(
                     (bbox[0] + bbox[1]) / 2,
                     (bbox[2] + bbox[3]) / 2,
                     date_f(scatter_values[0]["date"]),
+                    **self.init_date_style_dict,
                     **date_style_dict,
                 )
         elif fixed_xy_lim:
-            min_x, max_x = min(column1), max(column1)
-            min_y, max_y = min(column2), max(column2)
             delta_x, delta_y = max_x - min_x, max_y - min_y
             ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
             ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
             if not (date_in_title):
-                my_text = ax.text(
+                anim_text = ax.text(
                     (max_x + min_x) / 2,
                     (max_y + min_y) / 2,
                     date_f(scatter_values[0]["date"]),
+                    **self.init_date_style_dict,
                     **date_style_dict,
                 )
         if img:
             bim = plt.imread(img)
             if not (bbox):
-                bbox = (min(column1), max(column1), min(column2), max(column2))
+                bbox = (min_x, max_x, min_y, max_y)
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(bim, extent=bbox)
         elif not (date_in_title):
-            my_text = ax.text(
+            anim_text = ax.text(
                 (max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2,
                 (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2,
                 date_f(scatter_values[0]["date"]),
+                **self.init_date_style_dict,
                 **date_style_dict,
             )
-        if "cmap" in param:
-            fig.colorbar(im, ax=ax).set_label(by)
-        elif label_name:
+        if "cmap" in kwargs:
+            fig.colorbar(sc, ax=ax).set_label(self.layout["by"])
+        elif self.layout["catcol"] != None:
             leg = ax.legend(
                 custom_lines,
-                all_categories,
-                title=by,
+                all_cats,
+                title=self.layout["by"],
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
             box = ax.get_position()
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-
-        def animate(i):
-            array = np.array(
-                [
-                    (scatter_values[i]["x"][j], scatter_values[i]["y"][j])
-                    for j in range(len(scatter_values[i]["x"]))
-                ]
-            )
-            im.set_offsets(array)
-            if columns[2] != 1:
-                im.set_sizes(np.array(scatter_values[i]["s"]))
-            if "cmap" in param:
-                im.set_array(np.array(scatter_values[i]["c"]))
-            elif label_name:
-                im.set_color(np.array(scatter_values[i]["c"]))
-            if "edgecolors" in self._update_dict(param, style_kwargs):
-                im.set_edgecolor(self._update_dict(param, style_kwargs)["edgecolors"])
-            if label_name:
-                for k in range(lim_labels):
-                    text_plots[k].set_position(
-                        (scatter_values[i]["x"][k], scatter_values[i]["y"][k])
-                    )
-                    text_plots[k].set_text(scatter_values[i]["label"][k])
-            min_x, max_x = min(scatter_values[i]["x"]), max(scatter_values[i]["x"])
-            min_y, max_y = min(scatter_values[i]["y"]), max(scatter_values[i]["y"])
-            delta_x, delta_y = max_x - min_x, max_y - min_y
-            if not (fixed_xy_lim):
-                ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
-                ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
-                if not (date_in_title):
-                    my_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
-            if not (date_in_title):
-                my_text.set_text(date_f(scatter_values[i]["date"]))
-            else:
-                ax.set_title(date_f(scatter_values[i]["date"]))
-            return (ax,)
-
-        myAnimation = animation.FuncAnimation(
+        animate = self._animate(
+            scatter_plot_init=sc,
+            scatter_values=scatter_values,
+            lim_labels=lim_labels,
+            set_size=(len(self.layout["columns"]) > 2),
+            date_in_title=date_in_title,
+            fixed_xy_lim=fixed_xy_lim,
+            anim_text=anim_text,
+            text_plots=text_plots,
+            date_f=date_f,
+            kwargs=kwargs,
+            style_kwargs=style_kwargs,
+            ax=ax,
+        )
+        anim = animation.FuncAnimation(
             fig,
             animate,
             frames=range(1, len(scatter_values)),
@@ -305,4 +321,4 @@ class AnimatedBubblePlot(AnimatedBase):
             blit=False,
             repeat=repeat,
         )
-        return self._return_animation(a=myAnimation)
+        return self._return_animation(a=anim)

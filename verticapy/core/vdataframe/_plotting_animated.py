@@ -393,22 +393,22 @@ class vDFAnimatedPlot(PlottingUtils):
             and self[columns[1]].isnum()
         ):
             raise ValueError(
-                f"Parameter 'columns' must include at least 2 numerical vDataColumns"
-                " and maximum 4 vDataColumns."
+                f"Parameter 'columns' must include at least 2 numerical "
+                "vDataColumns and maximum 4 vDataColumns."
             )
         columns, ts, by = self._format_colnames(columns, ts, by)
         if len(columns) == 3 and not (self[columns[2]].isnum()):
-            label_name = columns[2]
+            catcol = columns[2]
             columns = columns[0:2]
         elif len(columns) >= 4:
             if not (self[columns[3]].isnum()):
-                label_name = columns[3]
+                catcol = columns[3]
                 columns = columns[0:3]
             else:
-                label_name = columns[2]
+                catcol = columns[2]
                 columns = columns[0:2] + [columns[3]]
         else:
-            label_name = ""
+            catcol = None
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedBubblePlot",
             matplotlib_kwargs={
@@ -424,25 +424,14 @@ class vDFAnimatedPlot(PlottingUtils):
             },
             style_kwargs=style_kwargs,
         )
-        return vpy_plt.AnimatedBubblePlot().draw(
-            self,
+        return vpy_plt.AnimatedBubblePlot(
+            vdf=self,
             order_by=ts,
             columns=columns,
-            label_name=label_name,
+            catcol=catcol,
             by=by,
             order_by_start=start_date,
             order_by_end=end_date,
             limit_over=limit_over,
             limit=limit,
-            lim_labels=limit_labels,
-            img=img,
-            bbox=bbox,
-            fixed_xy_lim=fixed_xy_lim,
-            date_in_title=date_in_title,
-            date_f=date_f,
-            date_style_dict=date_style_dict,
-            interval=interval,
-            repeat=repeat,
-            ax=ax,
-            **style_kwargs,
-        )
+        ).draw(**kwargs)

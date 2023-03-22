@@ -53,6 +53,18 @@ class OutliersPlot(ScatterPlot):
             "s": 40,
             "marker": "o",
         }
+        self.init_style_line = {
+            "marker": "o",
+            "color": "black",
+            "label": "Scatter",
+            "markersize": 8,
+        }
+        self.init_style_line_inlier = {
+            "lw": 4,
+        }
+        self.init_style_linewidth = {
+            "linewidths": 2,
+        }
         return None
 
     # Draw.
@@ -109,7 +121,12 @@ class OutliersPlot(ScatterPlot):
             Z = np.sqrt(((X - avg0) / std0) ** 2 + ((Y - avg1) / std1) ** 2)
             ax.contourf(X, Y, Z, colors=color)
             ax.contour(
-                X, Y, Z, levels=[th], linewidths=2, colors=inliers_border_color,
+                X,
+                Y,
+                Z,
+                levels=[th],
+                colors=inliers_border_color,
+                **self.init_style_linewidth,
             )
             cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
             ax.set_xlabel(self.layout["columns"][0])
@@ -135,17 +152,13 @@ class OutliersPlot(ScatterPlot):
                 )
         fig.colorbar(cp).set_label("ZSCORE")
         args = [[0], [0]]
-        kwargs = {
-            "marker": "o",
-            "color": "black",
-            "label": "Scatter",
-            "markersize": 8,
-        }
         ax.legend(
             [
-                Line2D(*args, color=inliers_border_color, lw=4),
-                Line2D(*args, **kwargs, markerfacecolor=inliers_color),
-                Line2D(*args, **kwargs, markerfacecolor=outliers_color),
+                Line2D(
+                    *args, color=inliers_border_color, **self.init_style_line_inlier
+                ),
+                Line2D(*args, **self.init_style_line, markerfacecolor=inliers_color),
+                Line2D(*args, **self.init_style_line, markerfacecolor=outliers_color),
             ],
             ["threshold", "inliers", "outliers"],
             loc="center left",

@@ -59,7 +59,7 @@ class AnimatedPieChart(AnimatedBarChart):
         date_style_dict: dict,
         style_kwargs: dict,
         ax: Axes,
-    ) -> tuple[Axes]:
+    ) -> Callable:
         def animate(i: int) -> tuple[Axes]:
             ax.clear()
             pie_chart = ax.pie(

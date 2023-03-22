@@ -44,6 +44,7 @@ class SpiderChart(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"linewidth": 1, "linestyle": "solid"}
+        self.init_style_opacity = {"alpha": 0.1}
         return None
 
     # Draw.
@@ -74,7 +75,7 @@ class SpiderChart(MatplotlibBase):
             kwargs = self._update_dict(kwargs, style_kwargs, i)
             args = [angles, values]
             ax.plot(*args, label=category, **kwargs)
-            ax.fill(*args, alpha=0.1, color=kwargs["color"])
+            ax.fill(*args, color=kwargs["color"], **self.init_style_opacity)
         y_ticks = [
             min(spider_vals),
             (max(spider_vals) + min(spider_vals)) / 2,

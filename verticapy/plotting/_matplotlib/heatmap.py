@@ -43,6 +43,7 @@ class HeatMap(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"cmap": self.get_cmap(idx=0), "interpolation": "nearest"}
+        self.init_style_text = {"color": "black", "ha": "center", "va": "center"}
         return None
 
     # Draw.
@@ -105,7 +106,7 @@ class HeatMap(MatplotlibBase):
                 for x_index in range(m):
                     label = X[y_index][x_index]
                     ax.text(
-                        x_index, y_index, label, color="black", ha="center", va="center"
+                        x_index, y_index, label, **self.init_style_text,
                     )
         if "columns" in self.layout:
             if len(self.layout["columns"]) > 0:

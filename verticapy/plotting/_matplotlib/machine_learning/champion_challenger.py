@@ -45,6 +45,11 @@ class ChampionChallengerPlot(MatplotlibBase):
             "color": self.get_colors(idx=0),
             "edgecolors": "black",
         }
+        self.init_style_line = {
+            "marker": "o",
+            "color": "black",
+            "markersize": 8,
+        }
         self.layout = {
             "x_label": "x",
             "y_label": "y",
@@ -120,14 +125,7 @@ class ChampionChallengerPlot(MatplotlibBase):
                     idx += 1
             ax.legend(
                 [
-                    Line2D(
-                        [0],
-                        [0],
-                        marker="o",
-                        color="black",
-                        markerfacecolor=color,
-                        markersize=8,
-                    )
+                    Line2D([0], [0], markerfacecolor=color, **self.init_style_line,)
                     for color in tmp_colors
                 ],
                 all_categories,
