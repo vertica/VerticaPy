@@ -727,7 +727,7 @@ class vDFPlot(PlottingUtils):
         max_cardinality: tuple[int, int] = (20, 20),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         fill_none: float = 0.0,
-    ) -> Tablesample:
+    ) -> TableSample:
         """
         Computes and  returns the pivot table of one or two 
         columns based on an aggregation.
@@ -769,7 +769,7 @@ class vDFPlot(PlottingUtils):
         Returns
         -------
         obj
-            Tablesample.
+            TableSample.
         """
         if isinstance(columns, str):
             columns = [columns]
