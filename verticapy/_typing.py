@@ -21,6 +21,8 @@ import numpy as np
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
     from verticapy.core.string_sql.base import StringSQL
+    from verticapy.core.tablesample.base import TableSample
+    from verticapy.plotting.base import PlottingBase
 
 # Pythonic data types.
 
@@ -36,7 +38,13 @@ Datetime = Annotated[Union[None, str, datetime.datetime], ""]
 # SQL data types.
 
 SQLColumns = Annotated[
-    Union[str, list[str]], "STRING representing one column or a list of columns"
+    Union[None, str, list[str]], "STRING representing one column or a list of columns"
 ]
 SQLExpression = Annotated[Union[str, list[str], "StringSQL", list["StringSQL"]], ""]
 SQLRelation = Annotated[Union[str, "vDataFrame"], ""]
+
+# Plotting data types.
+
+PlottingObject = Union[PlottingBase]
+PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
+ColorType = str

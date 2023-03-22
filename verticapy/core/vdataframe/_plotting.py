@@ -25,6 +25,9 @@ from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    ColorType,
+    PlottingMethod,
+    PlottingObject,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -41,64 +44,120 @@ from verticapy.plotting._highcharts.base import hchart_from_vdf
 
 
 class vDFPlot(PlottingUtils):
+
+    # Boxplots.
+
+    @save_verticapy_logs
+    def boxplot(
+        self,
+        columns: SQLColumns = [],
+        q: tuple = (0.25, 0.75),
+        max_nb_fliers: int = 30,
+        whis: float = 1.5,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the Box Plot of the input vDataColumns. 
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the vDataColumns names.  If  empty, all 
+            numerical vDataColumns will be used.
+        q: tuple, optional
+            Tuple including the 2 quantiles used to draw the 
+            BoxPlot.
+        max_nb_fliers: int, optional
+            Maximum number of points to use to represent the 
+            fliers  of each category.  Drawing  fliers  will 
+            slow down the graphic computation.
+        whis: float, optional
+            The position of the whiskers.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the Matplotlib 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="BoxPlot",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.BoxPlot(
+            vdf=self, columns=columns, q=q, whis=whis, max_nb_fliers=max_nb_fliers,
+        ).draw(**kwargs)
+
+    # 2D / ND CHARTS.
+
     @save_verticapy_logs
     def bar(
         self,
         columns: SQLColumns,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         bar_type: Literal["auto", "stacked"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the histogram of the input vDataColumns based on an aggregation.
+        Draws the bar chart of the input vDataColumns based 
+        on an aggregation.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have one or two elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    of: str, optional
-        The vDataColumn to use to compute the aggregation.
-    max_cardinality: tuple, optional
-        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
-        categorical (No h will be picked or computed)
-    h: tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
-        vDataColumns are numerical. Optimized h will be computed if the parameter 
-        is empty or invalid.
-    bar_type: str, optional
-        The BarChart Type.
-            auto    : Regular BarChart based on 1 or 2 vDataColumns.
-            stacked : Stacked BarChart based on 2 vDataColumns.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of  the vDataColumns names.  The list must 
+            have one or two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage  of  the  distribution.
+                mean    : Average  of the  vDataColumn 'of'.
+                min     : Minimum  of the  vDataColumn 'of'.
+                max     : Maximum  of the  vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of' 
+                          (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The  vDataColumn to use to compute the  aggregation.
+        max_cardinality: tuple, optional
+            Maximum number of distinct elements for vDataColumns 
+            1  and  2  to be used as categorical (No  h will  be 
+            picked or computed)
+        h: tuple, optional
+            Interval width of  the vDataColumns 1 and 2 bars. It 
+            is  only  valid if the  vDataColumns are  numerical. 
+            Optimized  h will be  computed  if the parameter  is 
+            empty or invalid.
+        bar_type: str, optional
+            The BarChart Type.
+                auto    : Regular  BarChart  based  on  1  or  2 
+                          vDataColumns.
+                stacked : Stacked    BarChart    based    on   2 
+                          vDataColumns.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to  pass  to  the plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.bar         : Draws the bar chart of the input vDataColumns based on an aggregation.
-    vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
-    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -133,7 +192,7 @@ class vDFPlot(PlottingUtils):
     def barh(
         self,
         columns: SQLColumns,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
@@ -148,59 +207,62 @@ class vDFPlot(PlottingUtils):
         ] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the bar chart of the input vDataColumns based on an aggregation.
+        Draws  the  horizontal  bar  chart  of  the  input 
+        vDataColumns based on an aggregation.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have one or two elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    of: str, optional
-         The vDataColumn to use to compute the aggregation.
-    max_cardinality: tuple, optional
-        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
-        categorical (No h will be picked or computed)
-    h: tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
-        vDataColumns are numerical. Optimized h will be computed if the parameter 
-        is empty or invalid.
-    bar_type: str, optional
-        The BarChart Type.
-            auto          : Regular Bar Chart based on 1 or 2 vDataColumns.
-            pyramid       : Pyramid Density Bar Chart. Only works if one of
-                            the two vDataColumns is binary and the 'method' is 
-                            set to 'density'.
-            stacked       : Stacked Bar Chart based on 2 vDataColumns.
-            fully_stacked : Fully Stacked Bar Chart based on 2 vDataColumns.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of  the vDataColumns names.  The list must 
+            have one or two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage  of  the  distribution.
+                mean    : Average  of the  vDataColumn 'of'.
+                min     : Minimum  of the  vDataColumn 'of'.
+                max     : Maximum  of the  vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of' 
+                          (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The  vDataColumn to use to compute the  aggregation.
+        max_cardinality: tuple, optional
+            Maximum number of distinct elements for vDataColumns 
+            1  and  2  to be used as categorical (No  h will  be 
+            picked or computed)
+        h: tuple, optional
+            Interval width of  the vDataColumns 1 and 2 bars. It 
+            is  only  valid if the  vDataColumns are  numerical. 
+            Optimized  h will be  computed  if the parameter  is 
+            empty or invalid.
+        bar_type: str, optional
+            The BarChart Type.
+                auto          : Regular Bar Chart  based on 1 or 2 
+                                vDataColumns.
+                pyramid       : Pyramid  Density  Bar  Chart. Only 
+                                works if one of
+                                the two vDataColumns is binary and 
+                                the 'method' is set to 'density'.
+                stacked       : Stacked  Bar  Chart   based  on  2 
+                                vDataColumns.
+                fully_stacked : Fully Stacked Bar Chart based on 2 
+                                vDataColumns.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to  pass  to  the plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-     See Also
-     --------
-     vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
-     vDataFrame.bar         : Draws the Bar Chart of the input vDataColumns based 
-                              on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an 
-                              aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -234,53 +296,112 @@ class vDFPlot(PlottingUtils):
             ).draw(**kwargs)
 
     @save_verticapy_logs
+    def pie(
+        self,
+        columns: SQLColumns,
+        max_cardinality: Union[None, int, tuple] = None,
+        h: Union[None, int, tuple] = None,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the nested density pie chart of the input 
+        vDataColumns.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of the vDataColumns names.
+        max_cardinality: int / tuple, optional
+            Maximum number of the vDataColumn distinct 
+            elements  to  be   used   as   categorical 
+            (No h will be picked or computed).
+            If  of type tuple,  it must represent each 
+            column 'max_cardinality'.
+        h: int / tuple, optional
+            Interval  width  of the bar. If empty,  an 
+            optimized h will be computed.
+            If  of type tuple, it must represent  each 
+            column 'h'.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to  pass to  the 
+            plotting functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="NestedPieChart",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.NestedPieChart(
+            vdf=self,
+            columns=columns,
+            max_cardinality=max_cardinality,
+            h=h,
+            method="count",
+        ).draw(**kwargs)
+
+    # Histogram & Density
+
+    @save_verticapy_logs
     def hist(
         self,
         columns: SQLColumns,
-        method: str = "density",
+        method: PlottingMethod = "density",
         of: Optional[str] = None,
         h: PythonNumber = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the histogram of the input vDataColumns based on an aggregation.
+        Draws  the  histograms  of  the  input vDataColumns 
+        based on an aggregation.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have less than 5 elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of' (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    of: str, optional
-        The vDataColumn to use to compute the aggregation.
-    h: tuple, optional
-        Interval width of the input vDataColumns. Optimized h will be computed 
-        if the parameter is empty or invalid.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of  the vDataColumns names.  The list must 
+            have less than 5 elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage  of  the  distribution.
+                mean    : Average  of the  vDataColumn 'of'.
+                min     : Minimum  of the  vDataColumn 'of'.
+                max     : Maximum  of the  vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of' 
+                          (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The  vDataColumn to use to compute the  aggregation.
+        max_cardinality: tuple, optional
+            Maximum number of distinct elements for vDataColumns 
+            1  and  2  to be used as categorical (No  h will  be 
+            picked or computed)
+        h: tuple, optional
+            Interval width of the  input vDataColumns. Optimized 
+            h  will be  computed if  the  parameter  is empty or 
+            invalid.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to  pass  to  the plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.bar         : Draws the bar chart of the input vDataColumns based on an aggregation.
-    vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
-    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="Histogram",
@@ -292,158 +413,51 @@ class vDFPlot(PlottingUtils):
         ).draw(**kwargs)
 
     @save_verticapy_logs
-    def boxplot(
-        self,
-        columns: SQLColumns = [],
-        q: tuple = (0.25, 0.75),
-        max_nb_fliers: int = 30,
-        whis: float = 1.5,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the Box Plot of the input vDataColumns. 
-
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will 
-        be used.
-    q: tuple, optional
-        Tuple including the 2 quantiles used to draw the BoxPlot.
-    max_nb_fliers: int, optional
-        Maximum number of points to use to represent the fliers of each category.
-        Drawing fliers will slow down the graphic computation.
-    whis: float, optional
-        The position of the whiskers.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.bar         : Draws the bar chart of the input vDataColumns based 
-                             on an aggregation.
-    vDataFrame.boxplot     : Draws the vDataColumn box plot.
-    vDataFrame.bar         : Draws the Bar Chart of the input vDataColumns based 
-                             on an aggregation.
-    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an 
-                             aggregation.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="BoxPlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.BoxPlot(
-            vdf=self, columns=columns, q=q, whis=whis, max_nb_fliers=max_nb_fliers,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def contour(
-        self,
-        columns: SQLColumns,
-        func,
-        nbins: int = 100,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the contour plot of the input function two input vDataColumns.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have two elements.
-    func: function / str
-        Function used to compute the contour score. It can also be a SQL
-        expression.
-    nbins: int, optional
-        Number of bins used to discretize the two input numerical vDataColumns.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Axes
-
-     See Also
-     --------
-     vDataFrame.boxplot     : Draws the Box Plot of the input vDataColumns.
-     vDataFrame.bar         : Draws the Bar Chart of the input vDataColumns based on an aggregation.
-     vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="ContourPlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
-        )
-        func_name = None
-        if "func_name" in kwargs:
-            func_name = kwargs["func_name"]
-            del kwargs["func_name"]
-        return vpy_plt.ContourPlot(
-            vdf=self, columns=columns, func=func, nbins=nbins, func_name=func_name,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
     def density(
         self,
         columns: SQLColumns = [],
         bandwidth: float = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
-        xlim: tuple = None,
+        xlim: list[tuple[float, float]] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the vDataColumns Density Plot.
+        Draws the vDataColumns Density Plot.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will 
-        be selected.
-    bandwidth: float, optional
-        The bandwidth of the kernel.
-    kernel: str, optional
-        The method used for the plot.
-            gaussian  : Gaussian Kernel.
-            logistic  : Logistic Kernel.
-            sigmoid   : Sigmoid Kernel.
-            silverman : Silverman Kernel.
-    nbins: int, optional
-        Maximum number of points to use to evaluate the approximate density function.
-        Increasing this parameter will increase the precision but will also increase 
-        the time of the learning and the scoring phases.
-    xlim: tuple, optional
-        Set the x limits of the current axes.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the vDataColumns names.  If  empty, 
+            all numerical vDataColumns will be selected.
+        bandwidth: float, optional
+            The bandwidth of the kernel.
+        kernel: str, optional
+            The method used for the plot.
+                gaussian  : Gaussian Kernel.
+                logistic  : Logistic Kernel.
+                sigmoid   : Sigmoid Kernel.
+                silverman : Silverman Kernel.
+        nbins: int, optional
+            Maximum  number of  points to use to  evaluate 
+            the approximate density function.
+            Increasing  this  parameter will increase  the 
+            precision  but will  also increase the time of 
+            the learning and the scoring phases.
+        xlim: list of tuple, optional
+            Set the x limits of the current axes.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame[].bar : Draws the Bar Chart of the vDataColumn based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         from verticapy.machine_learning.vertica import KernelDensity
 
@@ -504,251 +518,399 @@ class vDFPlot(PlottingUtils):
             }
             return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
+    # Time Series.
+
     @save_verticapy_logs
-    def hchart(
+    def plot(
         self,
-        x: SQLExpression = None,
-        y: SQLExpression = None,
-        z: SQLExpression = None,
-        c: SQLExpression = None,
-        aggregate: bool = True,
-        kind: Literal[
-            "area",
-            "area_range",
-            "area_ts",
-            "bar",
-            "boxplot",
-            "bubble",
-            "candlestick",
-            "donut",
-            "donut3d",
-            "heatmap",
-            "hist",
-            "line",
-            "negative_bar",
-            "pie",
-            "pie_half",
-            "pie3d",
-            "scatter",
-            "spider",
-            "spline",
-            "stacked_bar",
-            "stacked_hist",
-            "pearson",
-            "kendall",
-            "cramer",
-            "biserial",
-            "spearman",
-            "spearmand",
-        ] = "boxplot",
-        width: int = 600,
-        height: int = 400,
-        options: dict = {},
-        h: float = -1,
-        max_cardinality: int = 10,
-        limit: int = 10000,
-        drilldown: bool = False,
-        stock: bool = False,
-        alpha: float = 0.25,
-    ):
+        ts: str,
+        columns: SQLColumns = [],
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        step: bool = False,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
-    [Beta Version]
-    Draws responsive charts using the High Chart API: 
-    https://api.highcharts.com/highcharts/
+        Draws the time series.
 
-    The returned object can be customized using the API parameters and the 
-    'set_dict_options' method.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series)  vDataColumn to use to order 
+            the data.  The vDataColumn type must be  date 
+            like   (date,   datetime,   timestamp...)  or 
+            numerical.
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, all 
+            numerical vDataColumns will be used.
+        start_date: PythonScalar, optional
+            Input   Start  Date.  For  example,   time  = 
+            '03-11-1993'  will  filter the data when 'ts' 
+            is lesser than November 1993 the 3rd.
+        end_date: PythonScalar, optional
+            Input   End   Date.   For   example,   time = 
+            '03-11-1993'   will  filter  the  data   when 
+            'ts'  is greater than November 1993 the  3rd.
+        step: bool, optional
+            If set to True, draw a Step Plot.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any   optional  parameter  to   pass  to  the  
+            plotting functions.
 
-    \u26A0 Warning : This function uses the unsupported HighChart Python API. 
-                     For more information, see python-hicharts repository:
-                     https://github.com/kyper-data/python-highcharts
-
-    Parameters
-    ----------
-    x / y / z / c: SQLExpression
-        The vDataColumns and aggregations used to draw the chart. These will depend 
-        on the chart type. You can also specify an expression, but it must be a SQL 
-        statement. For example: AVG(column1) + SUM(column2) AS new_name.
-
-            area / area_ts / line / spline
-                x: numerical or type date like vDataColumn.
-                y: a single expression or list of expressions used to draw the plot
-                z: [OPTIONAL] vDataColumn representing the different categories 
-                    (only if y is a single vDataColumn)
-            area_range
-                x: numerical or date type vDataColumn.
-                y: list of three expressions [expression, lower bound, upper bound]
-            bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
-                x: vDataColumn used to compute the categories.
-                y: [OPTIONAL] numerical expression representing the categories values. 
-                    If empty, COUNT(*) is used as the default aggregation.
-            bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
-            / stacked_bar / stacked_hist
-                x: vDataColumn used to compute the first category.
-                y: vDataColumn used to compute the second category.
-                z: [OPTIONAL] numerical expression representing the different categories 
-                    values. 
-                    If empty, COUNT(*) is used as the default aggregation.
-            biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
-                x: list of the vDataColumns used to draw the Chart.
-            bubble / scatter
-                x: numerical vDataColumn.
-                y: numerical vDataColumn.
-                z: numerical vDataColumn (bubble size in case of bubble plot, third 
-                     dimension in case of scatter plot)
-                c: [OPTIONAL] vDataColumn used to compute the different categories.
-            candlestick
-                x: date type vDataColumn.
-                y: Can be a numerical vDataColumn or list of 5 expressions 
-                    [last quantile, maximum, minimum, first quantile, volume]
-            negative_bar
-                x: binary vDataColumn used to compute the first category.
-                y: vDataColumn used to compute the second category.
-                z: [OPTIONAL] numerical expression representing the categories values. 
-                    If empty, COUNT(*) is used as the default aggregation.
-            spider
-                x: vDataColumn used to compute the different categories.
-                y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
-                    or a single expression. 
-                    If empty, COUNT(*) is used as the default aggregation.
-    aggregate: bool, optional
-        If set to True, the input vDataColumns will be aggregated.
-    kind: str, optional
-        Chart Type.
-            area         : Area Chart
-            area_range   : Area Range Chart
-            area_ts      : Area Chart with Time Series Design
-            bar          : Bar Chart
-            biserial     : Biserial Point Matrix (Correlation between binary
-                             variables and numerical)
-            boxplot      : Box Plot
-            bubble       : Bubble Plot
-            candlestick  : Candlestick and Volumes (Time Series Special Plot)
-            cramer       : Cramer's V Matrix (Correlation between categories)
-            donut        : Donut Chart
-            donut3d      : 3D Donut Chart
-            heatmap      : Heatmap
-            hist         : BarChart
-            kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
-                           coefficients.
-                           \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                            and is therefore computationally expensive at 
-                                            O(n * n), where n is the total count of the 
-                                            vDataFrame.
-            line         : Line Plot
-            negative_bar : Multi Bar Chart for binary classes
-            pearson      : Pearson Correlation Matrix
-            pie          : Pie Chart
-            pie_half     : Half Pie Chart
-            pie3d        : 3D Pie Chart
-            scatter      : Scatter Plot
-            spider       : Spider Chart
-            spline       : Spline Plot
-            stacked_bar  : Stacked Bar Chart
-            stacked_hist : Stacked BarChart
-            spearman     : Spearman's Correlation Matrix
-            spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
-                           function instead of the RANK function.
-    width: int, optional
-        Chart Width.
-    height: int, optional
-        Chart Height.
-    options: dict, optional
-        High Chart Dictionary to use to customize the Chart. Look at the API 
-        documentation to know the different options.
-    h: float, optional
-        Interval width of the bar. If empty, an optimized value will be used.
-    max_cardinality: int, optional
-        Maximum number of the vDataColumn distinct elements.
-    limit: int, optional
-        Maximum number of elements to draw.
-    drilldown: bool, optional
-        Drilldown Chart: Only possible for Bars, BarCharts, donuts and pies.
-                          Instead of drawing 2D charts, this option allows you
-                          to add a drilldown effect to 1D Charts.
-    stock: bool, optional
-        Stock Chart: Only possible for Time Series. The design of the Time
-                     Series is dragable and have multiple options.
-    alpha: float, optional
-        Value used to determine the position of the upper and lower quantile 
-        (Used when kind is set to 'candlestick')
-
-    Returns
-    -------
-    Highchart
-        Chart Object
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
-        kind = str(kind).lower()
-        params = [
-            self,
-            x,
-            y,
-            z,
-            c,
-            aggregate,
-            kind,
-            width,
-            height,
-            options,
-            h,
-            max_cardinality,
-            limit,
-            drilldown,
-            stock,
-            alpha,
-        ]
-        try:
-            return hchart_from_vdf(*params)
-        except:
-            params[5] = not (params[5])
-            return hchart_from_vdf(*params)
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="MultiLinePlot",
+            matplotlib_kwargs={"ax": ax, "kind": "step" if step else "line",},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(**kwargs)
+
+    @save_verticapy_logs
+    def range_plot(
+        self,
+        columns: SQLColumns,
+        ts: str,
+        q: tuple = (0.25, 0.75),
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        plot_median: bool = False,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the range plot of the input vDataColumns. The 
+        aggregations  used  are  the median and  two  input 
+        quantiles.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of vDataColumns names.
+        ts: str
+            TS (Time Series) vDataColumn to use to order the 
+            data.  The  vDataColumn  type must be date  like 
+            (date, datetime, timestamp...) or numerical.
+        q: tuple, optional
+            Tuple including the 2 quantiles used to draw the 
+            Plot.
+        start_date: str / PythonNumber / date, optional
+            Input Start Date. For example, time = '03-11-1993' 
+            will  filter  the data when 'ts' is  lesser  than 
+            November 1993 the 3rd.
+        end_date: str / PythonNumber / date, optional
+            Input End Date.  For example, time = '03-11-1993' 
+            will  filter the  data when 'ts' is greater than 
+            November 1993 the 3rd.
+        plot_median: bool, optional
+            If set to True, the Median will be drawn.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter to pass to the  plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="RangeCurve",
+            matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.RangeCurve(
+            vdf=self,
+            columns=columns,
+            order_by=ts,
+            q=q,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(**kwargs)
+
+    @save_verticapy_logs
+    def stacked_area(
+        self,
+        ts: str,
+        columns: SQLColumns = None,
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        fully: bool = False,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the stacked area chart of the time series.
+
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series)  vDataColumn  to use to order 
+            the  data.  The vDataColumn  type must be date 
+            like   (date,   datetime,   timestamp...)   or 
+            numerical.
+        columns: SQLColumns, optional
+            List of the vDataColumns  names. If empty, all 
+            numerical vDataColumns will be used. They must 
+            all include only positive values.
+        start_date: PythonScalar, optional
+            Input   Start  Date.   For  example,  time  = 
+            '03-11-1993' will filter the data when 'ts' is 
+            lesser than November 1993 the 3rd.
+        end_date: PythonScalar, optional
+            Input End Date. For example, time = '03-11-1993' 
+            will  filter the data when 'ts' is greater than 
+            November 1993 the 3rd.
+        fully: bool, optional
+            If set to True, a Fully Stacked Area Chart will 
+            be drawn.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter to pass to the plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not (columns):
+            columns = self.numcol()
+        assert min(self.min(columns)["min"]) >= 0, ValueError(
+            "Columns having negative values can not be "
+            "processed by the 'stacked_area' method."
+        )
+        columns, ts = self._format_colnames(columns, ts)
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="MultiLinePlot",
+            matplotlib_kwargs={
+                "ax": ax,
+                "kind": "area_percent" if fully else "area_stacked",
+            },
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.MultiLinePlot(
+            vdf=self,
+            order_by=ts,
+            columns=columns,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(**kwargs)
+
+    # 2D MAP.
+
+    @save_verticapy_logs
+    def pivot_table(
+        self,
+        columns: SQLColumns,
+        method: PlottingMethod = "count",
+        of: Optional[str] = None,
+        max_cardinality: tuple[int, int] = (20, 20),
+        h: tuple[PythonNumber, PythonNumber] = (None, None),
+        with_numbers: bool = True,
+        fill_none: float = 0.0,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the pivot table of one or two columns based on 
+        an aggregation.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List  of the vDataColumns names.  The list  must 
+            have one or two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage of the distribution.
+                mean    : Average of the vDataColumn 'of'.
+                min     : Minimum of the vDataColumn 'of'.
+                max     : Maximum of the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of 
+                          (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The   vDataColumn   to   use  to  compute   the 
+            aggregation.
+        max_cardinality: tuple, optional
+            Maximum   number   of  distinct  elements   for 
+            vDataColumns 1 and 2 to  be used as categorical 
+            (No h will be picked or computed)
+        h: tuple, optional
+            Interval width of the vDataColumns 1 and 2 bars. 
+            It  is  only  valid   if  the  vDataColumns  are 
+            numerical. 
+            Optimized h will be computed if the parameter is 
+            empty or invalid.
+        with_numbers: bool, optional
+            If  set to True, no number will be  displayed in 
+            the final drawing.
+        fill_none: float, optional
+            The  empty  values  of the pivot table  will  be 
+            filled by this number.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter to pass to the  plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="HeatMap",
+            matplotlib_kwargs={"ax": ax, "with_numbers": with_numbers},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.HeatMap(
+            vdf=self,
+            columns=columns,
+            method=method,
+            of=of,
+            h=h,
+            max_cardinality=max_cardinality,
+            fill_none=fill_none,
+        ).draw(**kwargs)
+        """
+        if show:
+            return plt_obj.draw(**kwargs)
+        values = {"index": plt_obj.layout["x_labels"]}
+        if len(plt_obj.data["X"].shape) == 1:
+            values[plt_obj.layout["aggregate"]] = list(plt_obj.data["X"])
+        else:
+            for idx in range(plt_obj.data["X"].shape[1]):
+                values[plt_obj.layout["y_labels"][idx]] = list(
+                    plt_obj.data["X"][:, idx]
+                )
+        return TableSample(values=values)
+        """
+
+    @save_verticapy_logs
+    def contour(
+        self,
+        columns: SQLColumns,
+        func: Union[Callable, str],
+        nbins: int = 100,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws  the  contour  plot of the input function  two 
+        input vDataColumns.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List  of the  vDataColumns  names. The list must 
+            have two elements.
+        func: function / str
+            Function  used to compute  the contour score. It 
+            can also be a SQL expression.
+        nbins: int, optional
+            Number of bins used to  discretize the two input 
+            numerical vDataColumns.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter to pass to  the plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="ContourPlot",
+            matplotlib_kwargs={"ax": ax},
+            style_kwargs=style_kwargs,
+        )
+        func_name = None
+        if "func_name" in kwargs:
+            func_name = kwargs["func_name"]
+            del kwargs["func_name"]
+        return vpy_plt.ContourPlot(
+            vdf=self, columns=columns, func=func, nbins=nbins, func_name=func_name,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def heatmap(
         self,
         columns: SQLColumns,
-        method: str = "count",
+        method: PlottingMethod = "count",
         of: Optional[str] = None,
         h: tuple = (None, None),
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the Heatmap of the two input vDataColumns.
+        Draws the Heatmap of  the two input vDataColumns.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have two elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    of: str, optional
-        The vDataColumn to use to compute the aggregation.
-    h: tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. Optimized h will be computed 
-        if the parameter is empty or invalid.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of the vDataColumns names. The list must 
+            have two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage of the distribution.
+                mean    : Average of the vDataColumn 'of'.
+                min     : Minimum of the vDataColumn 'of'.
+                max     : Maximum of the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q  Quantile  of the  vDataColumn 
+                          'of (ex: 50% to get the median).
+            It can also be a cutomized aggregation 
+            (ex: AVG(column1) + 5).
+        of: str, optional
+            The   vDataColumn  to   use  to  compute   the 
+            aggregation.
+        h: tuple, optional
+            Interval width  of  the vDataColumns 1  and  2 
+            bars.  Optimized  h  will  be computed if  the 
+            parameter is empty or invalid.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.pivot_table  : Draws the pivot table of vDataColumns based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -783,50 +945,52 @@ class vDFPlot(PlottingUtils):
     def hexbin(
         self,
         columns: SQLColumns,
-        method: Literal["density", "count", "avg", "min", "max", "sum"] = "count",
+        method: PlottingMethod = "count",
         of: Optional[str] = None,
         bbox: list = [],
         img: str = "",
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the Hexbin of the input vDataColumns based on an aggregation.
+        Draws the Hexbin of the  input vDataColumns based 
+        on an aggregation.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have two elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
-    of: str, optional
-        The vDataColumn to use to compute the aggregation.
-    bbox: list, optional
-        List of 4 elements to delimit the boundaries of the final Plot. 
-        It must be similar the following list: [xmin, xmax, ymin, ymax]
-    img: str, optional
-         Path to the image to display as background.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of the vDataColumns names. The list must 
+            have two elements.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                density : Percentage of the distribution.
+                mean    : Average of  the vDataColumn 'of'.
+                min     : Minimum of  the vDataColumn 'of'.
+                max     : Maximum of  the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of 
+                          (ex: 50% to get the median).
+        of: str, optional
+            The   vDataColumn   to  use  to   compute   the 
+            aggregation.
+        bbox: list, optional
+            List of 4 elements  to delimit the boundaries of 
+            the final Plot. It must be similar the following 
+            list: [xmin, xmax, ymin, ymax]
+        img: str, optional
+            Path  to the  image to  display  as  background.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional parameter to pass to the  plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -840,327 +1004,7 @@ class vDFPlot(PlottingUtils):
             **kwargs
         )
 
-    @save_verticapy_logs
-    def outliers_plot(
-        self,
-        columns: SQLColumns,
-        threshold: float = 3.0,
-        color: str = "orange",
-        outliers_color: str = "black",
-        inliers_color: str = "white",
-        inliers_border_color: str = "red",
-        max_nb_points: int = 500,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the global outliers plot of one or two columns based on their ZSCORE.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of one or two vDataColumn names.
-    threshold: float, optional
-        ZSCORE threshold used to detect outliers.
-    color: str, optional
-        Inliers Area color.
-    outliers_color: str, optional
-        Outliers color.
-    inliers_color: str, optional
-        Inliers color.
-    inliers_border_color: str, optional
-        Inliers border color.
-    max_nb_points: int, optional
-        Maximum number of points to display.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="OutliersPlot",
-            matplotlib_kwargs={
-                "ax": ax,
-                "color": color,
-                "outliers_color": outliers_color,
-                "inliers_color": inliers_color,
-                "inliers_border_color": inliers_border_color,
-            },
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.OutliersPlot(
-            vdf=self, columns=columns, threshold=threshold, max_nb_points=max_nb_points,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def pie(
-        self,
-        columns: SQLColumns,
-        max_cardinality: Union[int, tuple, list] = None,
-        h: Union[int, tuple, list] = None,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the nested density pie chart of the input vDataColumns.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names.
-    max_cardinality: int / tuple / list, optional
-        Maximum number of the vDataColumn distinct elements to be used as categorical 
-        (No h will be picked or computed).
-        If of type tuple, it must represent each column 'max_cardinality'.
-    h: int / tuple / list, optional
-        Interval width of the bar. If empty, an optimized h will be computed.
-        If of type tuple, it must represent each column 'h'.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame[].pie : Draws the Pie Chart of the vDataColumn based on an aggregation.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="NestedPieChart",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.NestedPieChart(
-            vdf=self,
-            columns=columns,
-            max_cardinality=max_cardinality,
-            h=h,
-            method="count",
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def pivot_table(
-        self,
-        columns: SQLColumns,
-        method: str = "count",
-        of: Optional[str] = None,
-        max_cardinality: tuple[int, int] = (20, 20),
-        h: tuple[PythonNumber, PythonNumber] = (None, None),
-        show: bool = True,
-        with_numbers: bool = True,
-        fill_none: float = 0.0,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the pivot table of one or two columns based on an aggregation.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. The list must have one or two elements.
-    method: str, optional
-        The method to use to aggregate the data.
-            count   : Number of elements.
-            density : Percentage of the distribution.
-            mean    : Average of the vDataColumn 'of'.
-            min     : Minimum of the vDataColumn 'of'.
-            max     : Maximum of the vDataColumn 'of'.
-            sum     : Sum of the vDataColumn 'of'.
-            q%      : q Quantile of the vDataColumn 'of (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
-    of: str, optional
-        The vDataColumn to use to compute the aggregation.
-    max_cardinality: tuple, optional
-        Maximum number of distinct elements for vDataColumns 1 and 2 to be used as 
-        categorical (No h will be picked or computed)
-    h: tuple, optional
-        Interval width of the vDataColumns 1 and 2 bars. It is only valid if the 
-        vDataColumns are numerical. Optimized h will be computed if the parameter 
-        is empty or invalid.
-    show: bool, optional
-        If set to True, the result will be drawn using Matplotlib.
-    with_numbers: bool, optional
-        If set to True, no number will be displayed in the final drawing.
-    fill_none: float, optional
-        The empty values of the pivot table will be filled by this number.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.hexbin : Draws the Hexbin Plot of 2 vDataColumns based on an aggregation.
-    vDataFrame.pivot  : Returns the Pivot of the vDataFrame using the input aggregation.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="HeatMap",
-            matplotlib_kwargs={"ax": ax, "with_numbers": with_numbers},
-            style_kwargs=style_kwargs,
-        )
-        plt_obj = vpy_plt.HeatMap(
-            vdf=self,
-            columns=columns,
-            method=method,
-            of=of,
-            h=h,
-            max_cardinality=max_cardinality,
-            fill_none=fill_none,
-        )
-        if show:
-            return plt_obj.draw(**kwargs)
-        values = {"index": plt_obj.layout["x_labels"]}
-        if len(plt_obj.data["X"].shape) == 1:
-            values[plt_obj.layout["aggregate"]] = list(plt_obj.data["X"])
-        else:
-            for idx in range(plt_obj.data["X"].shape[1]):
-                values[plt_obj.layout["y_labels"][idx]] = list(
-                    plt_obj.data["X"][:, idx]
-                )
-        return TableSample(values=values)
-
-    @save_verticapy_logs
-    def plot(
-        self,
-        ts: str,
-        columns: SQLColumns = [],
-        start_date: PythonScalar = None,
-        end_date: PythonScalar = None,
-        step: bool = False,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the time series.
-
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    step: bool, optional
-        If set to True, draw a Step Plot.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame[].plot : Draws the Time Series of one vDataColumn.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="MultiLinePlot",
-            matplotlib_kwargs={"ax": ax, "kind": "step" if step else "line",},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.MultiLinePlot(
-            vdf=self,
-            order_by=ts,
-            columns=columns,
-            order_by_start=start_date,
-            order_by_end=end_date,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def range_plot(
-        self,
-        columns: SQLColumns,
-        ts: str,
-        q: tuple = (0.25, 0.75),
-        start_date: PythonScalar = None,
-        end_date: PythonScalar = None,
-        plot_median: bool = False,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ):
-        """
-    Draws the range plot of the input vDataColumns. The aggregations used are the median 
-    and two input quantiles.
-
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of vDataColumns names.
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    q: tuple, optional
-        Tuple including the 2 quantiles used to draw the Plot.
-    start_date: str / PythonNumber / date, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: str / PythonNumber / date, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    plot_median: bool, optional
-        If set to True, the Median will be drawn.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.plot : Draws the time series.
-        """
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="RangeCurve",
-            matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.RangeCurve(
-            vdf=self,
-            columns=columns,
-            order_by=ts,
-            q=q,
-            order_by_start=start_date,
-            order_by_end=end_date,
-        ).draw(**kwargs)
+    # Scatters.
 
     @save_verticapy_logs
     def scatter(
@@ -1177,53 +1021,56 @@ class vDFPlot(PlottingUtils):
         img: Optional[str] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the scatter plot of the input vDataColumns.
+        Draws the scatter plot of the input vDataColumns.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns names. 
-    catcol: str, optional
-        Categorical vDataColumn to use to label the data.
-    cmap_col: str, optional
-        Numerical column used with a color map as color.
-    size_bubble_col: str
-        Numerical vDataColumn to use to represent the Bubble size.
-    max_cardinality: int, optional
-        Maximum number of distinct elements for 'catcol' to be used as 
-        categorical. The less frequent elements will be gathered together to 
-        create a new category: 'Others'.
-    cat_priority: PythonScalar / ArrayLike, optional
-        ArrayLike of the different categories to consider when labeling the data using
-        the vDataColumn 'catcol'. The other categories will be filtered.
-    max_nb_points: int, optional
-        Maximum number of points to display.
-    dimensions: tuple, optional
-        Tuple of two elements representing the IDs of the PCA's components.
-        If empty and the number of input columns is greater than 3, the
-        first and second PCA will be drawn.
-    bbox: list, optional
-        Tuple of 4 elements to delimit the boundaries of the final Plot. 
-        It must be similar the following list: [xmin, xmax, ymin, ymax]
-    img: str, optional
-        Path to the image to display as background.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of the vDataColumns names. 
+        catcol: str, optional
+            Categorical  vDataColumn  to  use to label  the 
+            data.
+        cmap_col: str, optional
+            Numerical  column  used  with  a  color  map as 
+            color.
+        size_bubble_col: str
+            Numerical  vDataColumn to use to represent  the 
+            Bubble size.
+        max_cardinality: int, optional
+            Maximum number of distinct elements for 'catcol' 
+            to  be  used as categorical.  The less  frequent 
+            elements will  be gathered together  to create a 
+            new category: 'Others'.
+        cat_priority: PythonScalar / ArrayLike, optional
+            ArrayLike of the different categories to consider 
+            when  labeling  the  data using  the  vDataColumn 
+            'catcol'.  The other categories will be filtered.
+        max_nb_points: int, optional
+            Maximum number of points to display.
+        dimensions: tuple, optional
+            Tuple of two  elements representing the IDs of the 
+            PCA's components. If empty and the number of input 
+            columns  is greater  than 3, the first and  second 
+            PCA will be drawn.
+        bbox: list, optional
+            Tuple  of 4 elements to delimit the boundaries  of 
+            the  final Plot. It must be similar the  following 
+            list: [xmin, xmax, ymin, ymax]
+        img: str, optional
+            Path to the image to display as background.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to pass to the  plotting 
+            functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.bubble      : Draws the bubble plot of the input vDataColumns.
-    vDataFrame.pivot_table : Draws the pivot table of vDataColumns based on an aggregation.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         from verticapy.machine_learning.vertica.decomposition import PCA
 
@@ -1289,28 +1136,26 @@ class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def scatter_matrix(
         self, columns: SQLColumns = [], max_nb_points: int = 1000, **style_kwargs
-    ):
+    ) -> PlottingObject:
         """
-    Draws the scatter matrix of the vDataFrame.
+        Draws the scatter matrix of the vDataFrame.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    max_nb_points: int, optional
-        Maximum number of points to display for each scatter plot.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, 
+            all numerical  vDataColumns will be used.
+        max_nb_points: int, optional
+            Maximum  number of points to display for 
+            each scatter plot.
+        **style_kwargs
+            Any  optional  parameter  to pass to the  
+            plotting functions.
 
-    Returns
-    -------
-    ax
-        Axes
-
-    See Also
-    --------
-    vDataFrame.scatter : Draws the scatter plot of the input vDataColumns.
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -1323,76 +1168,274 @@ class vDFPlot(PlottingUtils):
         ).draw(**kwargs)
 
     @save_verticapy_logs
-    def stacked_area(
+    def outliers_plot(
         self,
-        ts: str,
-        columns: SQLColumns = [],
-        start_date: PythonScalar = None,
-        end_date: PythonScalar = None,
-        fully: bool = False,
+        columns: SQLColumns,
+        threshold: float = 3.0,
+        color: ColorType = "orange",
+        outliers_color: ColorType = "black",
+        inliers_color: ColorType = "white",
+        inliers_border_color: ColorType = "red",
+        max_nb_points: int = 500,
         ax: Optional[Axes] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
-    Draws the stacked area chart of the time series.
+        Draws the global  outliers plot of one or two 
+        columns based on their ZSCORE.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...) or numerical.
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used. They must all include only positive values.
-    start_date: PythonScalar, optional
-        Input Start Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is lesser than November 1993 the 3rd.
-    end_date: PythonScalar, optional
-        Input End Date. For example, time = '03-11-1993' will filter the data when 
-        'ts' is greater than November 1993 the 3rd.
-    fully: bool, optional
-        If set to True, a Fully Stacked Area Chart will be drawn.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
-    **style_kwargs
-        Any optional parameter to pass to the Matplotlib functions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List  of  one or two  vDataColumn  names.
+        threshold: float, optional
+            ZSCORE threshold used to detect outliers.
+        color: ColorType, optional
+            Inliers Area color.
+        outliers_color: ColorType, optional
+            Outliers color.
+        inliers_color: ColorType, optional
+            Inliers color.
+        inliers_border_color: ColorType, optional
+            Inliers border color.
+        max_nb_points: int, optional
+            Maximum number of points to display.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter to pass to  the  
+            plotting functions.
 
-    Returns
-    -------
-    ax
-        Axes
+        Returns
+        -------
+        obj
+            Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
-            columns = self.numcol()
-        assert min(self.min(columns)["min"]) >= 0, ValueError(
-            "Columns having negative values can not be "
-            "processed by the 'stacked_area' method."
-        )
-        columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="MultiLinePlot",
+            class_name="OutliersPlot",
             matplotlib_kwargs={
                 "ax": ax,
-                "kind": "area_percent" if fully else "area_stacked",
+                "color": color,
+                "outliers_color": outliers_color,
+                "inliers_color": inliers_color,
+                "inliers_border_color": inliers_border_color,
             },
             style_kwargs=style_kwargs,
         )
-        return vpy_plt.MultiLinePlot(
-            vdf=self,
-            order_by=ts,
-            columns=columns,
-            order_by_start=start_date,
-            order_by_end=end_date,
+        return vpy_plt.OutliersPlot(
+            vdf=self, columns=columns, threshold=threshold, max_nb_points=max_nb_points,
         ).draw(**kwargs)
+
+    # DEPRECATED.
+
+    @save_verticapy_logs
+    def hchart(
+        self,
+        x: SQLExpression = None,
+        y: SQLExpression = None,
+        z: SQLExpression = None,
+        c: SQLExpression = None,
+        aggregate: bool = True,
+        kind: Literal[
+            "area",
+            "area_range",
+            "area_ts",
+            "bar",
+            "boxplot",
+            "bubble",
+            "candlestick",
+            "donut",
+            "donut3d",
+            "heatmap",
+            "hist",
+            "line",
+            "negative_bar",
+            "pie",
+            "pie_half",
+            "pie3d",
+            "scatter",
+            "spider",
+            "spline",
+            "stacked_bar",
+            "stacked_hist",
+            "pearson",
+            "kendall",
+            "cramer",
+            "biserial",
+            "spearman",
+            "spearmand",
+        ] = "boxplot",
+        width: int = 600,
+        height: int = 400,
+        options: dict = {},
+        h: float = -1,
+        max_cardinality: int = 10,
+        limit: int = 10000,
+        drilldown: bool = False,
+        stock: bool = False,
+        alpha: float = 0.25,
+    ):
+        """
+        [Beta Version]
+        Draws responsive charts using the High Chart API: 
+        https://api.highcharts.com/highcharts/
+
+        The returned object can be customized using the API parameters and the 
+        'set_dict_options' method.
+
+        \u26A0 Warning : This function uses the unsupported HighChart Python API. 
+                         For more information, see python-hicharts repository:
+                         https://github.com/kyper-data/python-highcharts
+
+        Parameters
+        ----------
+        x / y / z / c: SQLExpression
+            The vDataColumns and aggregations used to draw the chart. These will depend 
+            on the chart type. You can also specify an expression, but it must be a SQL 
+            statement. For example: AVG(column1) + SUM(column2) AS new_name.
+
+                area / area_ts / line / spline
+                    x: numerical or type date like vDataColumn.
+                    y: a single expression or list of expressions used to draw the plot
+                    z: [OPTIONAL] vDataColumn representing the different categories 
+                        (only if y is a single vDataColumn)
+                area_range
+                    x: numerical or date type vDataColumn.
+                    y: list of three expressions [expression, lower bound, upper bound]
+                bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
+                    x: vDataColumn used to compute the categories.
+                    y: [OPTIONAL] numerical expression representing the categories values. 
+                        If empty, COUNT(*) is used as the default aggregation.
+                bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
+                / stacked_bar / stacked_hist
+                    x: vDataColumn used to compute the first category.
+                    y: vDataColumn used to compute the second category.
+                    z: [OPTIONAL] numerical expression representing the different categories 
+                        values. 
+                        If empty, COUNT(*) is used as the default aggregation.
+                biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
+                    x: list of the vDataColumns used to draw the Chart.
+                bubble / scatter
+                    x: numerical vDataColumn.
+                    y: numerical vDataColumn.
+                    z: numerical vDataColumn (bubble size in case of bubble plot, third 
+                         dimension in case of scatter plot)
+                    c: [OPTIONAL] vDataColumn used to compute the different categories.
+                candlestick
+                    x: date type vDataColumn.
+                    y: Can be a numerical vDataColumn or list of 5 expressions 
+                        [last quantile, maximum, minimum, first quantile, volume]
+                negative_bar
+                    x: binary vDataColumn used to compute the first category.
+                    y: vDataColumn used to compute the second category.
+                    z: [OPTIONAL] numerical expression representing the categories values. 
+                        If empty, COUNT(*) is used as the default aggregation.
+                spider
+                    x: vDataColumn used to compute the different categories.
+                    y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
+                        or a single expression. 
+                        If empty, COUNT(*) is used as the default aggregation.
+        aggregate: bool, optional
+            If set to True, the input vDataColumns will be aggregated.
+        kind: str, optional
+            Chart Type.
+                area         : Area Chart
+                area_range   : Area Range Chart
+                area_ts      : Area Chart with Time Series Design
+                bar          : Bar Chart
+                biserial     : Biserial Point Matrix (Correlation between binary
+                                 variables and numerical)
+                boxplot      : Box Plot
+                bubble       : Bubble Plot
+                candlestick  : Candlestick and Volumes (Time Series Special Plot)
+                cramer       : Cramer's V Matrix (Correlation between categories)
+                donut        : Donut Chart
+                donut3d      : 3D Donut Chart
+                heatmap      : Heatmap
+                hist         : BarChart
+                kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
+                               coefficients.
+                               \u26A0 Warning : This method uses a CROSS JOIN during computation 
+                                                and is therefore computationally expensive at 
+                                                O(n * n), where n is the total count of the 
+                                                vDataFrame.
+                line         : Line Plot
+                negative_bar : Multi Bar Chart for binary classes
+                pearson      : Pearson Correlation Matrix
+                pie          : Pie Chart
+                pie_half     : Half Pie Chart
+                pie3d        : 3D Pie Chart
+                scatter      : Scatter Plot
+                spider       : Spider Chart
+                spline       : Spline Plot
+                stacked_bar  : Stacked Bar Chart
+                stacked_hist : Stacked BarChart
+                spearman     : Spearman's Correlation Matrix
+                spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
+                               function instead of the RANK function.
+        width: int, optional
+            Chart Width.
+        height: int, optional
+            Chart Height.
+        options: dict, optional
+            High Chart Dictionary to use to customize the Chart. Look at the API 
+            documentation to know the different options.
+        h: float, optional
+            Interval width of the bar. If empty, an optimized value will be used.
+        max_cardinality: int, optional
+            Maximum number of the vDataColumn distinct elements.
+        limit: int, optional
+            Maximum number of elements to draw.
+        drilldown: bool, optional
+            Drilldown Chart: Only possible for Bars, BarCharts, donuts and pies.
+                              Instead of drawing 2D charts, this option allows you
+                              to add a drilldown effect to 1D Charts.
+        stock: bool, optional
+            Stock Chart: Only possible for Time Series. The design of the Time
+                         Series is dragable and have multiple options.
+        alpha: float, optional
+            Value used to determine the position of the upper and lower quantile 
+            (Used when kind is set to 'candlestick')
+
+        Returns
+        -------
+        Highchart
+            Chart Object
+        """
+        kind = str(kind).lower()
+        params = [
+            self,
+            x,
+            y,
+            z,
+            c,
+            aggregate,
+            kind,
+            width,
+            height,
+            options,
+            h,
+            max_cardinality,
+            limit,
+            drilldown,
+            stock,
+            alpha,
+        ]
+        try:
+            return hchart_from_vdf(*params)
+        except:
+            params[5] = not (params[5])
+            return hchart_from_vdf(*params)
 
 
 class vDCPlot:
+
+    # Special Methods.
+
     def numh(
         self, method: Literal["sturges", "freedman_diaconis", "fd", "auto"] = "auto"
-    ):
+    ) -> float:
         """
     Computes the optimal vDataColumn bar width.
 
