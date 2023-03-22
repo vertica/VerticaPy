@@ -536,7 +536,7 @@ class vDFMachineLearning:
         chi2_list = []
         for col in columns:
             tmp_res = vdf._pivot_table(
-                columns=[col, response], max_cardinality=(10000, 100), show=False
+                columns=[col, response], max_cardinality=(10000, 100)
             ).to_numpy()
             i = 0
             all_chi2 = []
