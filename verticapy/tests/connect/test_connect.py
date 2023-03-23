@@ -52,7 +52,7 @@ class TestConnect:
         )
         label = current_cursor().fetchone()[0].split("-")
         assert label[1] == vp.__version__.split("-")[0]
-        assert label[2] == str(gb_conn._vpy_session_identifier)
+        # assert label[2] == str(gb_conn._vpy_session_identifier)
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(

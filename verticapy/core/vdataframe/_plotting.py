@@ -243,9 +243,9 @@ class vDFPlot(PlottingUtils):
                 auto          : Regular Bar Chart  based on 1 or 2 
                                 vDataColumns.
                 pyramid       : Pyramid  Density  Bar  Chart. Only 
-                                works if one of
-                                the two vDataColumns is binary and 
-                                the 'method' is set to 'density'.
+                                works   if    one   of   the   two 
+                                vDataColumns  is  binary  and  the 
+                                'method' is set to 'density'.
                 stacked       : Stacked  Bar  Chart   based  on  2 
                                 vDataColumns.
                 fully_stacked : Fully Stacked Bar Chart based on 2 
@@ -1896,8 +1896,7 @@ class vDCPlot:
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             class_name="PieChart",
-            matplotlib_kwargs={"ax": ax, "pie_type": pie_type},
-            plotly_kwargs={"pie_type": pie_type},
+            matplotlib_kwargs={"ax": ax},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.PieChart(
@@ -1907,6 +1906,7 @@ class vDCPlot:
             max_cardinality=max_cardinality,
             h=h,
             pie=True,
+            misc_layout={"pie_type": pie_type},
         ).draw(**kwargs)
 
     @save_verticapy_logs
