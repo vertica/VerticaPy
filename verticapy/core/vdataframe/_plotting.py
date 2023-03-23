@@ -802,6 +802,7 @@ class vDFPlot(PlottingUtils):
         max_cardinality: tuple[int, int] = (20, 20),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         fill_none: float = 0.0,
+        mround: int = 3,
         with_numbers: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -843,6 +844,10 @@ class vDFPlot(PlottingUtils):
         fill_none: float, optional
             The  empty  values  of the pivot table  will  be 
             filled by this number.
+        mround: int, optional
+            Rounds the coefficient using the input number of 
+            digits.  It  is only  used to display the  final 
+            pivot table.
         with_numbers: bool, optional
             If  set to True, no number will be  displayed in 
             the final drawing.
@@ -863,7 +868,7 @@ class vDFPlot(PlottingUtils):
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HeatMap",
-            matplotlib_kwargs={"ax": ax, "with_numbers": with_numbers},
+            matplotlib_kwargs={"ax": ax},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.HeatMap(
@@ -874,6 +879,7 @@ class vDFPlot(PlottingUtils):
             h=h,
             max_cardinality=max_cardinality,
             fill_none=fill_none,
+            misc_layout={"mround": mround, "with_numbers": with_numbers,},
         ).draw(**kwargs)
 
     @save_verticapy_logs

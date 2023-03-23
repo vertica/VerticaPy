@@ -35,8 +35,6 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting.base import PlottingBase
-
 from verticapy.sql.drop import drop
 
 
@@ -478,21 +476,21 @@ class vDFCorr:
                     )
                     else None
                 )
-                if "cmap" not in style_kwargs:
-                    cm1, cm2 = PlottingBase().get_cmap()
-                    cmap = cm1 if (method == "cramer") else cm2
-                    style_kwargs["cmap"] = cmap
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="HeatMap",
-                    matplotlib_kwargs={"ax": ax, "mround": mround,},
+                    matplotlib_kwargs={"ax": ax},
                     style_kwargs=style_kwargs,
                 )
                 data = {"X": matrix}
                 layout = {
+                    "columns": [None, None],
+                    "method": method,
                     "x_labels": columns,
                     "y_labels": columns,
                     "vmax": vmax,
                     "vmin": vmin,
+                    "mround": mround,
+                    "with_numbers": True,
                 }
                 return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
             values = {"index": columns}
@@ -689,17 +687,22 @@ class vDFCorr:
                 )
                 else None
             )
-            if "cmap" not in style_kwargs:
-                cm1, cm2 = PlottingBase().get_cmap()
-                cmap = cm1 if (method == "cramer") else cm2
-                style_kwargs["cmap"] = cmap
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="HeatMap",
-                matplotlib_kwargs={"ax": ax, "mround": mround,},
+                matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
-            layout = {"x_labels": [focus], "y_labels": cols, "vmax": vmax, "vmin": vmin}
+            layout = {
+                "columns": [None, None],
+                "method": method,
+                "x_labels": [focus],
+                "y_labels": cols,
+                "vmax": vmax,
+                "vmin": vmin,
+                "mround": mround,
+                "with_numbers": True,
+            }
             return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         for idx, column in enumerate(cols):
             self._update_catalog(
@@ -783,6 +786,8 @@ class vDFCorr:
         method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
+        elif columns == None:
+            columns = self.numcol()
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
@@ -1219,7 +1224,12 @@ class vDFCorr:
                 style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
-            layout = {"x_labels": columns, "y_labels": columns}
+            layout = {
+                "columns": [None, None],
+                "x_labels": columns,
+                "y_labels": columns,
+                "with_numbers": True,
+            }
             return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         values = {"index": columns}
         for idx in range(len(matrix)):

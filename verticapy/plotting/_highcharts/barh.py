@@ -63,6 +63,7 @@ class HorizontalBarChart(HighchartsBase):
         """
         chart = Highchart(width=600, height=400)
         chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
         chart.add_data_set(self.data["y"], "bar", self.layout["column"])
         return chart
 
@@ -111,6 +112,7 @@ class HorizontalBarChart2D(HighchartsBase):
         """
         chart = Highchart(width=600, height=400)
         chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):
             chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
         if self.layout["bar_type"] == "stacked":

@@ -794,7 +794,7 @@ class PlottingBase:
                     {where}
                     GROUP BY 1 {order_by}"""
             ).to_numpy()
-            matrix = res[:, 1].astype(float)
+            X = res[:, 1:2].astype(float)
             x_labels = list(res[:, 0])
             y_labels = [method]
         else:
