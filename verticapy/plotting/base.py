@@ -654,6 +654,8 @@ class PlottingBase:
             X = X[:, 1:].astype(float)
         else:
             self.layout = {
+                "x_label": None,
+                "y_label": None,
                 "labels": copy.deepcopy(columns),
                 "has_category": False,
             }

@@ -16,4 +16,6 @@ permissions and limitations under the License.
 """
 from verticapy.plotting._highcharts.bar import BarChart, BarChart2D
 from verticapy.plotting._highcharts.barh import HorizontalBarChart, HorizontalBarChart2D
+from verticapy.plotting._highcharts.boxplot import BoxPlot
 from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.spider import SpiderChart
