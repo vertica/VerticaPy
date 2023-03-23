@@ -39,6 +39,7 @@ from verticapy.plotting._matplotlib.machine_learning.model_evaluation import (
 )
 from verticapy.plotting._matplotlib.machine_learning.pca import (
     PCACirclePlot,
+    PCAScreePlot,
     PCAVarPlot,
 )
 from verticapy.plotting._matplotlib.machine_learning.regression import RegressionPlot
