@@ -46,7 +46,7 @@ class PieChart(PlotlyBase):
             "hovertemplate": "%{label} <extra></extra>",
         }
         self.init_layout_style = {
-            "title_text": self.layout["column"][1:-1],
+            "title_text": self.layout["column"],
             "title_x": 0.5,
             "title_xanchor": "center",
         }
@@ -65,7 +65,6 @@ class PieChart(PlotlyBase):
         Draws a pie chart using the Plotly API.
         """
         labels = self.layout["labels"]
-        labels = ["Null" if elm is None else elm for elm in labels]
         if pie_type == "donut":
             hole_fraction = 0.2
         else:
@@ -92,7 +91,6 @@ class PieChart(PlotlyBase):
             ]
         )
         fig.update_layout(**self.init_layout_style)
-        fig.show()
         return fig
 
 

@@ -1678,6 +1678,8 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
+        categorical: bool = True,
+        bargap: float = 0.06,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1711,6 +1713,16 @@ class vDCPlot:
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized h 
             will be computed.
+        categorical: bool, optional
+            If  set to False and the  vDataColumn is numerical,
+            the parmater  'max_cardinality' will be ignored and
+            the bar  chart will be represented as an histogram.
+        bargap: float, optional
+            A float between  0 exclusive and 1 inclusive which
+            represents the proportion  taken out from each bar
+            to render the chart.  This proportion  will create
+            gaps  between  each bar.  The  bigger  it is,  the 
+            bigger the gap will be.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1735,6 +1747,8 @@ class vDCPlot:
             max_cardinality=max_cardinality,
             nbins=nbins,
             h=h,
+            pie=categorical,
+            bargap=bargap,
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -1745,6 +1759,8 @@ class vDCPlot:
         max_cardinality: int = 6,
         nbins: int = 0,
         h: PythonNumber = 0,
+        categorical: bool = True,
+        bargap: float = 0.06,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1778,6 +1794,16 @@ class vDCPlot:
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized h 
             will be computed.
+        categorical: bool, optional
+            If  set to False and the  vDataColumn is numerical,
+            the parmater  'max_cardinality' will be ignored and
+            the bar  chart will be represented as an histogram.
+        bargap: float, optional
+            A float between  0 exclusive and 1 inclusive which
+            represents the proportion  taken out from each bar
+            to render the chart.  This proportion  will create
+            gaps  between  each bar.  The  bigger  it is,  the 
+            bigger the gap will be.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1802,6 +1828,8 @@ class vDCPlot:
             max_cardinality=max_cardinality,
             nbins=nbins,
             h=h,
+            pie=categorical,
+            bargap=bargap,
         ).draw(**kwargs)
 
     @save_verticapy_logs

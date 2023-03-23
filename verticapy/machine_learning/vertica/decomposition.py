@@ -371,6 +371,7 @@ class Decomposition(Preprocessing):
             h=1,
             max_cardinality=1,
             ax=ax,
+            categorical=False,
             **style_kwargs,
         )
         ax = information["percentage_explained_variance"].plot(
@@ -604,7 +605,7 @@ class MCA(PCA):
         ).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
         ax = contrib["row_nb"].bar(
-            method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwargs
+            method="avg", of="contrib", max_cardinality=1, h=1, categorical=False, ax=ax, **style_kwargs
         )
         ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
         ax.set_xlim(1, n + 1)
@@ -653,7 +654,7 @@ class MCA(PCA):
         )
         quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
         ax = quality["variables"].bar(
-            method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwargs
+            method="avg", of="quality", max_cardinality=n, categorical=False, ax=ax, **style_kwargs
         )
         ax.set_ylabel("Cos2 - Quality of Representation")
         ax.set_xlabel("")
