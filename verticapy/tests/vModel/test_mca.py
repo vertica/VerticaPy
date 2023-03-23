@@ -139,7 +139,7 @@ class TestMCA:
 
     def test_plot_scree(self, model):
         result = model.plot_scree()
-        assert len(result.get_default_bbox_extra_artists()) == 114
+        assert len(result.get_default_bbox_extra_artists()) == 113
 
     def test_plot_circle(self, model):
         result = model.plot_circle()
