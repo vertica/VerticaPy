@@ -54,6 +54,7 @@ class BoxPlot(PlotlyBase):
         fig.add_trace(go.Box(
             x=self.data['fliers'], 
             boxpoints='outliers',
+            hovertemplate ='%{x}',
                         ),**style_kwargs)
         fig.update_traces(q1=self.data['X'][1], 
                         median=self.data['X'][2],
@@ -67,6 +68,7 @@ class BoxPlot(PlotlyBase):
                 title=self.layout['labels'][0][1:-1]
             )
         )
+        fig.update_layout(hovermode='y')
         return fig
 
 
