@@ -64,6 +64,11 @@ class PlottingBase:
             del kwds["misc_data"]
         else:
             misc_data = {}
+        if "misc_layout" in kwds:
+            misc_layout = copy.deepcopy(kwds["misc_layout"])
+            del kwds["misc_layout"]
+        else:
+            misc_layout = {}
         if "data" not in kwds or "layout" not in kwds:
             functions = {
                 "1D": self._compute_plot_params,
@@ -89,6 +94,11 @@ class PlottingBase:
             self.data = {
                 **self.data,
                 **misc_data,
+            }
+        if hasattr(self, "layout"):
+            self.layout = {
+                **self.layout,
+                **misc_layout,
             }
         self._init_style()
         return None
@@ -1167,7 +1177,9 @@ class PlottingBase:
                     self._compute_plot_params(
                         vdf[columns[i]], method="density", max_cardinality=1
                     )
-                    data["hist"][self._clean_quotes(columns[i])] = copy.deepcopy(self.data)
+                    data["hist"][self._clean_quotes(columns[i])] = copy.deepcopy(
+                        self.data
+                    )
         self.data = data
         self.layout = {
             "columns": self._clean_quotes(columns),

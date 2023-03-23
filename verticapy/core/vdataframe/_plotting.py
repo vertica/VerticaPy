@@ -40,7 +40,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting._utils import PlottingUtils
-from verticapy.plotting._highcharts.base import hchart_from_vdf
+from verticapy.plotting._highcharts_tmp.base import hchart_from_vdf
 
 
 class vDFPlot(PlottingUtils):
@@ -173,10 +173,7 @@ class vDFPlot(PlottingUtils):
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="BarChart2D",
-                matplotlib_kwargs={
-                    "ax": ax,
-                    "stacked": (bar_type.lower() == "stacked"),
-                },
+                matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.BarChart2D(
@@ -186,6 +183,7 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
+                misc_layout={"stacked": (bar_type.lower() == "stacked")},
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -283,7 +281,7 @@ class vDFPlot(PlottingUtils):
                 bar_type = "density"
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="HorizontalBarChart2D",
-                matplotlib_kwargs={"ax": ax, "bar_type": bar_type,},
+                matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.HorizontalBarChart2D(
@@ -293,6 +291,7 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 max_cardinality=max_cardinality,
                 h=h,
+                misc_layout={"bar_type": bar_type},
             ).draw(**kwargs)
 
     @save_verticapy_logs

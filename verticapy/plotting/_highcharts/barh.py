@@ -21,7 +21,7 @@ from vertica_highcharts import Highchart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-class BarChart(HighchartsBase):
+class HorizontalBarChart(HighchartsBase):
 
     # Properties.
 
@@ -30,8 +30,8 @@ class BarChart(HighchartsBase):
         return "chart"
 
     @property
-    def _kind(self) -> Literal["bar"]:
-        return "bar"
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
 
     @property
     def _compute_method(self) -> Literal["1D"]:
@@ -42,7 +42,7 @@ class BarChart(HighchartsBase):
     def _init_style(self) -> None:
         self.init_style = {
             "title": {"text": ""},
-            "chart": {"type": "column"},
+            "chart": {"type": "column", "inverted": True},
             "xAxis": {"type": "category"},
             "legend": {"enabled": False},
             "colors": [self.get_colors(idx=0)],
@@ -67,7 +67,7 @@ class BarChart(HighchartsBase):
         return chart
 
 
-class BarChart2D(HighchartsBase):
+class HorizontalBarChart2D(HighchartsBase):
 
     # Properties.
 
@@ -76,8 +76,8 @@ class BarChart2D(HighchartsBase):
         return "chart"
 
     @property
-    def _kind(self) -> Literal["bar"]:
-        return "bar"
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
 
     @property
     def _compute_method(self) -> Literal["2D"]:
@@ -88,7 +88,7 @@ class BarChart2D(HighchartsBase):
     def _init_style(self) -> None:
         self.init_style = {
             "title": {"text": ""},
-            "chart": {"type": "column"},
+            "chart": {"type": "column", "inverted": True},
             "xAxis": {"type": "category"},
             "legend": {"enabled": False},
             "colors": self.get_colors(),
@@ -100,6 +100,7 @@ class BarChart2D(HighchartsBase):
             "legend": {"enabled": True, "title": {"text": self.layout["columns"][1]}},
         }
         self.init_style_stacked = {"plotOptions": {"series": {"stacking": "normal"}}}
+        self.init_style_fstacked = {"plotOptions": {"series": {"stacking": "percent"}}}
         return None
 
     # Draw.
@@ -112,6 +113,8 @@ class BarChart2D(HighchartsBase):
         chart.set_dict_options(self.init_style)
         for idx, label in enumerate(self.layout["y_labels"]):
             chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
-        if self.layout["stacked"]:
+        if self.layout["bar_type"] == "stacked":
             chart.set_dict_options(self.init_style_stacked)
+        elif self.layout["bar_type"] == "fully_stacked":
+            chart.set_dict_options(self.init_style_fstacked)
         return chart
