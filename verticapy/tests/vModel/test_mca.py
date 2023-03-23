@@ -127,19 +127,19 @@ class TestMCA:
 
     def test_plot_contrib(self, model):
         result = model.plot_contrib()
-        assert len(result.get_default_bbox_extra_artists()) == 113
+        assert len(result.get_default_bbox_extra_artists()) == 114
         result = model.plot_contrib(dimension=2)
-        assert len(result.get_default_bbox_extra_artists()) == 113
+        assert len(result.get_default_bbox_extra_artists()) == 114
 
     def test_plot_cos2(self, model):
         result = model.plot_cos2()
-        assert len(result.get_default_bbox_extra_artists()) == 59
+        assert len(result.get_default_bbox_extra_artists()) == 111
         result = model.plot_cos2(dimensions=(2, 3))
-        assert len(result.get_default_bbox_extra_artists()) == 59
+        assert len(result.get_default_bbox_extra_artists()) == 111
 
     def test_plot_scree(self, model):
         result = model.plot_scree()
-        assert len(result.get_default_bbox_extra_artists()) == 112
+        assert len(result.get_default_bbox_extra_artists()) == 114
 
     def test_plot_circle(self, model):
         result = model.plot_circle()
