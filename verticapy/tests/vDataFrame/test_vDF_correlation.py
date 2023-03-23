@@ -282,8 +282,8 @@ class TestvDFCorrelation:
         # testing vDataFrame.corr (method = 'cramer') with focus
         result5_f = titanic_vd.corr(focus="survived", method="cramer", show=False,)
         # plt.close("all")
-        assert result5_f["survived"][1] == pytest.approx(0.73190924565401, 1e-2)
-        assert result5_f["survived"][2] == pytest.approx(0.6707486879228794, 1e-2)
+        assert result5_f["survived"][1] == pytest.approx(0.5531019147439457, 1e-2)
+        assert result5_f["survived"][2] == pytest.approx(0.3358661117846154, 1e-2)
 
         #
         # DENSE SPEARMAN

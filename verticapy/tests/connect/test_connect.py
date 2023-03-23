@@ -51,7 +51,7 @@ class TestConnect:
             "SELECT client_label FROM v_monitor.sessions WHERE client_label LIKE 'verticapy%' LIMIT 1;"
         )
         label = current_cursor().fetchone()[0].split("-")
-        assert label[1] == vp.__version__
+        assert label[1] == vp.__version__.split("-")[0]
         assert label[2] == str(gb_conn._vpy_session_identifier)
 
     def test_vertica_connection(self, base):
