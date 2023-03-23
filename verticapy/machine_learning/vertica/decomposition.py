@@ -371,6 +371,7 @@ class Decomposition(Preprocessing):
             h=1,
             max_cardinality=1,
             ax=ax,
+            categorical=False,
             **style_kwargs,
         )
         ax = information["percentage_explained_variance"].plot(
