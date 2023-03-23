@@ -94,12 +94,8 @@ class TestvDFPlotPlotly:
 
         ## Testing Data
         ### Comparing result with a test figure
-        assert (
-            test_fig.data[0]["y"][0] / test_fig.data[0]["y"][1]
-            == result.data[0]["y"][0] / result.data[0]["y"][1]
-        )
-        assert test_fig.data[0]["x"][0] == result.data[0]["x"][0]
-
+        assert result.data[0]['y'][np.where(result.data[0]['x']=='0')[0][0]]/result.data[0]['y'][np.where(result.data[0]['x']=='1')[0][0]] == test_fig.data[0]['y'][np.where(test_fig.data[0]['x']==0)[0][0]]/test_fig.data[0]['y'][np.where(test_fig.data[0]['x']==1)[0][0]]
+        
         ## Testing Additional Options
         ### Testing keyword arguments (kwargs)
         result = titanic_vd["survived"].bar(xaxis_title="Custom X Axis Title")

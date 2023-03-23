@@ -85,29 +85,26 @@ class ScatterPlot(PlotlyBase):
             if self.data["c"] is not None
             else self.data["X"]
         )
+        column_names = self.layout["columns"]
         columns = (
-            self.layout["columns"] + [self.layout["c"]]
+            column_names + [self.layout["c"]]
             if self.layout["c"] is not None
-            else self.layout["columns"]
+            else column_names
         )
         df = pd.DataFrame(data=data, columns=columns,)
         if self.layout["c"]:
             color_option["color"] = self.layout["c"]
         if self.data["X"].shape[1] < 3:
             fig = px.scatter(
-                df,
-                x=self.layout["columns"][0],
-                y=self.layout["columns"][1],
-                **color_option,
-                **style_kwargs,
+                df, x=column_names[0], y=column_names[1], **color_option, **style_kwargs
             )
             fig.update_layout(**self.init_style)
         elif self.data["X"].shape[1] == 3:
             fig = px.scatter_3d(
                 df,
-                x=self.layout["columns"][0],
-                y=self.layout["columns"][1],
-                z=self.layout["columns"][2],
+                x=column_names[0],
+                y=column_names[1],
+                z=column_names[2],
                 **color_option,
                 **style_kwargs,
             )
