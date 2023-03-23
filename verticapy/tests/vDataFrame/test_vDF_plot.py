@@ -180,7 +180,7 @@ class TestvDFPlot:
     def test_vDF_barh(self, titanic_vd, amazon_vd):
         # testing vDataFrame[].bar
         # auto
-        result = titanic_vd["fare"].barh(color="b")
+        result = titanic_vd["fare"].barh(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.7965964343598055
         )
@@ -190,7 +190,7 @@ class TestvDFPlot:
         assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
 
         # auto + date
-        result = amazon_vd["date"].barh(color="b")
+        result = amazon_vd["date"].barh(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.07530213820886272
         )
@@ -201,7 +201,7 @@ class TestvDFPlot:
 
         # method=sum of=survived and nbins=5
         result2 = titanic_vd["fare"].barh(
-            method="sum", of="survived", nbins=5, color="b"
+            method="sum", of="survived", nbins=5, color="b", categorical=False
         )
         assert result2.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             391
@@ -542,7 +542,7 @@ class TestvDFPlot:
     def test_vDF_bar(self, titanic_vd):
         # testing vDataFrame[].bar
         # auto
-        result = titanic_vd["age"].bar(color="b")
+        result = titanic_vd["age"].bar(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_height() == pytest.approx(
             0.050243111831442464
         )
@@ -553,7 +553,9 @@ class TestvDFPlot:
         plt.close("all")
 
         # method=avg of=survived and h=15
-        result2 = titanic_vd["age"].bar(method="avg", of="survived", h=15, color="b")
+        result2 = titanic_vd["age"].bar(
+            method="avg", of="survived", h=15, color="b", categorical=False
+        )
         assert result2.get_default_bbox_extra_artists()[
             0
         ].get_height() == pytest.approx(0.534653465346535)

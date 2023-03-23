@@ -53,13 +53,3 @@ class PlotlyBase(PlottingBase):
         parents = list(labels_father.values())
         values = list(labels_count.values())
         return ids, labels, parents, values
-
-    @staticmethod
-    def _format_col_names(col_names):
-        if not isinstance(col_names,list):
-            if col_names[0]=='"' and col_names[-1]=='"':
-                return col_names[1:-1]
-        for i in range(len(col_names)):
-            if col_names[i][0]=='"' and col_names[i][-1]=='"':
-                col_names[i]=col_names[i][1:-1]
-        return col_names

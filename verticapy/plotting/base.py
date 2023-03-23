@@ -109,6 +109,16 @@ class PlottingBase:
                 "'method' can not represent a customized aggregation."
             )
 
+    # Columns formatting methods.
+
+    def _clean_quotes(self, columns: SQLColumns) -> SQLColumns:
+        if columns == None:
+            return None
+        elif isinstance(columns, str):
+            return quote_ident(columns)[1:-1]
+        else:
+            return [self._clean_quotes(col) for col in columns]
+
     # Styling Methods.
 
     def _init_style(self) -> None:
@@ -276,11 +286,14 @@ class PlottingBase:
         nbins: int = 0,
         h: float = 0.0,
         pie: bool = False,
+        bargap: float = 0.06,
     ) -> None:
         """
         Computes the aggregations needed to draw a 1D graphic 
         using the Matplotlib API.
         """
+        if not (0.0 < bargap <= 1.0):
+            raise ValueError("Parameter 'bargap' must be between 0 and 1.")
         other_columns = ""
         of = vdc._parent._format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
@@ -331,10 +344,10 @@ class PlottingBase:
                 query = f"""
                     (SELECT 
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/ 
-                        {cast_alias} AS {vdc._alias},
+                        COALESCE({cast_alias}, 'NULL') AS {vdc._alias},
                         {aggregate}
                      FROM {table} 
-                     GROUP BY {cast_alias} 
+                     GROUP BY 1
                      ORDER BY 2 DESC 
                      LIMIT {max_cardinality})"""
                 if cardinality > max_cardinality:
@@ -345,17 +358,19 @@ class PlottingBase:
                             {aggregate} 
                          FROM {table}
                          WHERE {vdc._alias} NOT IN
-                         (SELECT 
-                            {vdc._alias} 
-                          FROM {table}
-                          GROUP BY {vdc._alias}
-                          ORDER BY {aggregate} DESC
-                          LIMIT {max_cardinality}))"""
+                            (SELECT 
+                                {vdc._alias} 
+                            FROM
+                             (SELECT 
+                                COALESCE({cast_alias}, 'NULL') AS {vdc._alias},
+                                {aggregate}
+                             FROM {table} 
+                             GROUP BY 1
+                             ORDER BY 2 DESC 
+                             LIMIT {max_cardinality}) x))"""
             query_result = _executeSQL(
                 query=query, title="Computing the histogram heights", method="fetchall"
             )
-            if query_result[-1][1] == None:
-                del query_result[-1]
             y = (
                 [
                     item[1] / float(count) if item[1] != None else 0
@@ -365,7 +380,7 @@ class PlottingBase:
                 else [item[1] if item[1] != None else 0 for item in query_result]
             )
             x = [0.4 * i + 0.2 for i in range(0, len(y))]
-            adj_width = 0.39
+            adj_width = 0.4 * (1 - bargap)
             labels = [item[0] for item in query_result]
             is_categorical = True
         # case when date
@@ -422,7 +437,7 @@ class PlottingBase:
             query_result = _executeSQL(
                 query, title="Computing the datetime intervals.", method="fetchall"
             )
-            adj_width = 0.94 * h
+            adj_width = (1.0 - bargap) * h
             labels = [item[0] for item in query_result]
             labels.sort()
             is_categorical = True
@@ -453,7 +468,7 @@ class PlottingBase:
                 else [item[1] for item in query_result]
             )
             x = [float(item[0]) + h / 2 for item in query_result]
-            adj_width = 0.94 * h
+            adj_width = (1.0 - bargap) * h
             labels = [xi - round(h / 2, 10) for xi in x]
             labels = [(li, li + h) for li in labels]
         if pie:
@@ -464,14 +479,15 @@ class PlottingBase:
             "y": y,
             "width": h,
             "adj_width": adj_width,
+            "bargap": bargap,
             "is_categorical": is_categorical,
         }
         self.layout = {
-            "labels": labels,
-            "column": vdc._alias,
+            "labels": [li if li != None else "None" for li in labels],
+            "column": self._clean_quotes(vdc._alias),
             "method": method,
             "method_of": method + f"({of})" if of else method,
-            "of": of,
+            "of": self._clean_quotes(of),
             "of_cat": vdc._parent[of].category() if of else None,
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
@@ -539,7 +555,7 @@ class PlottingBase:
                         vdf[column], method=method, of=of, max_cardinality=1, h=h
                     )
                     cols += [column]
-                    data[column] = copy.deepcopy(self.data)
+                    data[self._clean_quotes(column)] = copy.deepcopy(self.data)
                 else:
                     if vdf._vars["display"]["print_info"]:
                         warning_message = (
@@ -549,12 +565,12 @@ class PlottingBase:
                         warnings.warn(warning_message, Warning)
         self.data = data
         self.layout = {
-            "columns": cols,
+            "columns": self._clean_quotes(cols),
             "categories": categories,
-            "by": by,
+            "by": self._clean_quotes(by),
             "method": method,
             "method_of": method + f"({of})" if of else method,
-            "of": of,
+            "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
@@ -659,6 +675,7 @@ class PlottingBase:
             "X": X,
             "fliers": fliers,
             "whis": whis,
+            "q": q,
         }
 
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
@@ -835,10 +852,10 @@ class PlottingBase:
             "y_labels": y_labels,
             "vmax": None,
             "vmin": None,
-            "columns": copy.deepcopy(columns),
+            "columns": self._clean_quotes(columns),
             "method": method,
             "method_of": method + f"({of})" if of else method,
-            "of": of,
+            "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
@@ -914,7 +931,7 @@ class PlottingBase:
         self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
         func_repr = func.__name__ if isinstance(func, Callable) else str(func)
         self.layout = {
-            "columns": columns,
+            "columns": self._clean_quotes(columns),
             "func": func,
             "func_repr": func_name if func_name != None else func_repr,
         }
@@ -988,7 +1005,7 @@ class PlottingBase:
         self.data = {**self.data, "X": np.array(X), "Y": np.array(Y), "Z": np.array(Z)}
         func_repr = func.__name__ if isinstance(func, Callable) else str(func)
         self.layout = {
-            "columns": columns,
+            "columns": self._clean_quotes(columns),
             "func": func,
             "func_repr": func_name if func_name != None else func_repr,
         }
@@ -1025,10 +1042,10 @@ class PlottingBase:
         )
         self.data = {"X": X}
         self.layout = {
-            "columns": copy.deepcopy(columns),
+            "columns": self._clean_quotes(columns),
             "method": method,
             "method_of": method + f"({of})" if of else method,
-            "of": of,
+            "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
@@ -1092,9 +1109,9 @@ class PlottingBase:
         n = len(columns)
         self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
         self.layout = {
-            "columns": columns,
-            "size": size_bubble_col,
-            "c": catcol if (catcol != None) else cmap_col,
+            "columns": self._clean_quotes(columns),
+            "size": self._clean_quotes(size_bubble_col),
+            "c": self._clean_quotes(catcol) if (catcol != None) else cmap_col,
             "has_category": has_category,
             "has_cmap": has_cmap,
             "has_size": has_size,
@@ -1127,7 +1144,7 @@ class PlottingBase:
             "th": threshold,
         }
         self.layout = {
-            "columns": copy.deepcopy(columns),
+            "columns": self._clean_quotes(columns),
         }
         return None
 
@@ -1150,10 +1167,10 @@ class PlottingBase:
                     self._compute_plot_params(
                         vdf[columns[i]], method="density", max_cardinality=1
                     )
-                    data["hist"][columns[i]] = copy.deepcopy(self.data)
+                    data["hist"][self._clean_quotes(columns[i])] = copy.deepcopy(self.data)
         self.data = data
         self.layout = {
-            "columns": copy.deepcopy(columns),
+            "columns": self._clean_quotes(columns),
         }
         return None
 
@@ -1189,8 +1206,8 @@ class PlottingBase:
             "Y": X[:, 1:].astype(float),
         }
         self.layout = {
-            "columns": columns,
-            "order_by": order_by,
+            "columns": self._clean_quotes(columns),
+            "order_by": self._clean_quotes(order_by),
         }
         return None
 
@@ -1242,8 +1259,8 @@ class PlottingBase:
             }
             has_category = False
         self.layout = {
-            "columns": columns,
-            "order_by": order_by,
+            "columns": self._clean_quotes(columns),
+            "order_by": self._clean_quotes(order_by),
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,
@@ -1303,11 +1320,11 @@ class PlottingBase:
             "Y": np.array([x[1:] for x in query_result]),
         }
         self.layout = {
-            "columns": columns,
-            "order_by": order_by,
-            "by": by,
+            "columns": self._clean_quotes(columns),
+            "order_by": self._clean_quotes(order_by),
+            "by": self._clean_quotes(by),
+            "catcol": self._clean_quotes(catcol),
             "by_is_num": vdf[by].isnum() if by != None else None,
-            "catcol": catcol,
             "limit": limit,
             "limit_over": limit_over,
         }
@@ -1348,10 +1365,10 @@ class PlottingBase:
             ]
         self.data = {"groups": np.array(groups, dtype=object)}
         self.layout = {
-            "columns": copy.deepcopy(columns),
+            "columns": self._clean_quotes(columns),
             "method": method,
             "method_of": method + f"({of})" if of else method,
-            "of": of,
+            "of": self._clean_quotes(of),
             "of_cat": vdf[of].category() if of else None,
             "aggregate": clean_query(aggregate),
             "aggregate_fun": aggregate_fun,
