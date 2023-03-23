@@ -54,8 +54,8 @@ class ScatterPlot(PlotlyBase):
             "width": 700,
             "height": 500,
             "autosize": False,
-            "xaxis_title": self.layout["columns"][0][1:-1],
-            "yaxis_title": self.layout["columns"][1][1:-1],
+            "xaxis_title": self.layout["columns"][0],
+            "yaxis_title": self.layout["columns"][1],
             "xaxis": dict(
                 showline=True,
                 linewidth=1,
@@ -85,26 +85,29 @@ class ScatterPlot(PlotlyBase):
             if self.data["c"] is not None
             else self.data["X"]
         )
-        column_names = self._format_col_names(self.layout["columns"])
         columns = (
-            column_names + [self.layout["c"][1:-1]]
+            self.layout["columns"] + [self.layout["c"]]
             if self.layout["c"] is not None
-            else column_names
+            else self.layout["columns"]
         )
         df = pd.DataFrame(data=data, columns=columns,)
         if self.layout["c"]:
-            color_option["color"] = self.layout["c"][1:-1]
+            color_option["color"] = self.layout["c"]
         if self.data["X"].shape[1] < 3:
             fig = px.scatter(
-                df, x=column_names[0], y=column_names[1], **color_option, **style_kwargs
+                df,
+                x=self.layout["columns"][0],
+                y=self.layout["columns"][1],
+                **color_option,
+                **style_kwargs,
             )
             fig.update_layout(**self.init_style)
         elif self.data["X"].shape[1] == 3:
             fig = px.scatter_3d(
                 df,
-                x=column_names[0],
-                y=column_names[1],
-                z=column_names[2],
+                x=self.layout["columns"][0],
+                y=self.layout["columns"][1],
+                z=self.layout["columns"][2],
                 **color_option,
                 **style_kwargs,
             )

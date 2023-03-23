@@ -46,7 +46,7 @@ class PieChart(PlotlyBase):
             "hovertemplate": "%{label} <extra></extra>",
         }
         self.init_layout_style = {
-            "title_text": self.layout["column"][1:-1],
+            "title_text": self.layout["column"],
             "title_x": 0.5,
             "title_xanchor": "center",
         }
