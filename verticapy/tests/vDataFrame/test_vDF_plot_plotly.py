@@ -26,6 +26,7 @@ import plotly.express as px
 import plotly
 import pandas as pd
 import numpy as np
+import scipy
 
 # VerticaPy
 import verticapy
@@ -43,6 +44,18 @@ def dummy_vd():
     arr2 = np.concatenate((np.repeat("A", 20), np.repeat("B", 30), np.repeat("C", 50)))
     np.random.shuffle(arr2)
     dummy = verticapy.vDataFrame(list(zip(arr1, arr2)), ["check 1", "check 2"])
+    yield dummy
+
+@pytest.fixture(scope="module")
+def dummy_dist_vd():
+    median = 50
+    q1 = 40
+    q3 = 60
+    std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
+    data = np.random.normal(median, std, 1000)
+    data=data.reshape(len(data),1)
+    data=pd.DataFrame(data)
+    dummy=verticapy.vDataFrame(data)
     yield dummy
 
 
@@ -396,3 +409,111 @@ class TestVDFScatterPlot:
         assert (
             y_test in result.data[0]["y"][np.where(result.data[0]["x"] == x_test)[0]]
         ), "A random sample datapoint was not plotted"
+
+# change q1 and then check label
+class TestVDFBoxPlot:
+    def test_properties_output_type(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    # ToDo
+    # Need to update the text from '"0"' to "0" after the code is updated
+    def test_properties_xaxis_title(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert (
+            result.layout['xaxis']['title']['text'] == '"0"'
+        ), "X-axis title issue"
+
+    def test_properties_yaxis_title(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert (
+            result.layout['yaxis']['title']['text'] is None
+        ), "Y-axis title issue"
+
+    def test_properties_orientation(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert (
+            result.data[0]['orientation'] ==  "h"
+        ), "Orientation is not correct"
+
+
+
+    def test_properties_bound_hover_labels(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        name_list=[]
+        for i in range(len(result.data)):
+            name_list.append(result.data[i]['hovertemplate'].split(':')[0])
+        test_list = ['Lower', 'Median', 'Upper']
+        is_subset = all(elem in name_list for elem in test_list)
+        # Assert
+        assert is_subset, "Hover label error"
+
+
+    def test_properties_quartile_labels(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        name_list=[]
+        for i in range(len(result.data)):
+            name_list.append(result.data[i]['hovertemplate'].split('%')[0])
+        test_list = ['25.0', '75.0']
+        is_subset = all(elem in name_list for elem in test_list)
+        # Assert
+        assert is_subset, "Hover label error for quantiles"
+
+    def test_properties_quartile_labels_for_custom_q1(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(q=[0.2,0.7])
+        name_list=[]
+        for i in range(len(result.data)):
+            name_list.append(result.data[i]['hovertemplate'].split('%')[0])
+        test_list = ['20.0', '70.0']
+        is_subset = all(elem in name_list for elem in test_list)
+        # Assert
+        assert is_subset, "Hover label error for quantiles"
+
+    def test_properties_lower_hover_box_max_value_is_equal_to_minimum_of_q1(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert result.data[1]['base'][0]+result.data[1]['x'][0] == result.data[2]['base'][0], "Hover boxes may overlap"
+
+    def test_properties_q1_hover_box_max_value_is_equal_to_minimum_of_median(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert result.data[2]['base'][0]+result.data[2]['x'][0] == result.data[3]['base'][0], "Hover boxes may overlap"
+
+
+
+    def test_data_median_value(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert result.data[0]['median'][0] == pytest.approx(50,1) , "median not computed correctly"
+
+    def test_data_maximum_point_value(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot()
+        # Assert
+        assert dummy_dist_vd.max()["max"][0] == max(result.data[0]['x'][0]), "Maximum value not in plot"
+
