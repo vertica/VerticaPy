@@ -788,7 +788,7 @@ def seasonal_decompose(
     else:
         vdf[seasonal_name] = vdf[column] - vdf[trend_name]
     if period <= 0:
-        acf = vdf.acf(column=seasonal_name, ts=ts, p=23, acf_type="heatmap", show=False)
+        acf = vdf.acf(column=seasonal_name, ts=ts, p=23, kind="heatmap", show=False)
         period = int(acf["index"][1].split("_")[1])
         if period == 1:
             period = int(acf["index"][2].split("_")[1])

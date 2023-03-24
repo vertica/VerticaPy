@@ -55,17 +55,12 @@ class PieChart(PlotlyBase):
 
     # Draw
 
-    def draw(
-        self,
-        pie_type: Literal["auto", "donut"] = "auto",
-        exploded: bool = False,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, exploded: bool = False, **style_kwargs,) -> Figure:
         """
         Draws a pie chart using the Plotly API.
         """
         labels = self.layout["labels"]
-        if pie_type == "donut":
+        if self.layout["pie_type"] == "donut":
             hole_fraction = 0.2
         else:
             hole_fraction = 0

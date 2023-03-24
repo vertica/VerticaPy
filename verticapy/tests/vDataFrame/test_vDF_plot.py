@@ -170,7 +170,7 @@ class TestvDFPlot:
         assert (
             len(
                 amazon_vd.pivot("date", "state", "number")
-                .stacked_area("date", ["ACRE", "BAHIA"], fully=True, color="b")
+                .stacked_area("date", ["ACRE", "BAHIA"], kind="area_percent", color="b")
                 .get_default_bbox_extra_artists()
             )
             == 12
@@ -213,12 +213,12 @@ class TestvDFPlot:
 
         # testing vDataFrame.bar
         # auto & stacked
-        for bar_type in ["auto", "stacked"]:
+        for kind in ["auto", "stacked"]:
             result3 = titanic_vd.barh(
                 columns=["pclass", "survived"],
                 method="50%",
                 of="fare",
-                bar_type=bar_type,
+                kind=kind,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[
@@ -229,7 +229,7 @@ class TestvDFPlot:
             ].get_width() == pytest.approx(77.9583)
         # fully_stacked
         result4 = titanic_vd.barh(
-            columns=["pclass", "survived"], bar_type="fully_stacked", color="b",
+            columns=["pclass", "survived"], kind="fully_stacked", color="b",
         )
         assert result4.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.38782051282051283
@@ -239,7 +239,7 @@ class TestvDFPlot:
         )
         # pyramid
         result5 = titanic_vd.barh(
-            columns=["pclass", "survived"], bar_type="pyramid", color="b"
+            columns=["pclass", "survived"], kind="pyramid", color="b"
         )
         assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.09805510534846029
@@ -567,12 +567,12 @@ class TestvDFPlot:
 
         # testing vDataFrame.bar
         # auto & stacked
-        for bar_type in ["auto", "stacked"]:
+        for kind in ["auto", "stacked"]:
             result3 = titanic_vd.bar(
                 columns=["pclass", "sex"],
                 method="avg",
                 of="survived",
-                bar_type=bar_type,
+                kind=kind,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[

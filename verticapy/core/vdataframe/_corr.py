@@ -35,8 +35,6 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting.base import PlottingBase
-
 from verticapy.sql.drop import drop
 
 
@@ -478,21 +476,21 @@ class vDFCorr:
                     )
                     else None
                 )
-                if "cmap" not in style_kwargs:
-                    cm1, cm2 = PlottingBase().get_cmap()
-                    cmap = cm1 if (method == "cramer") else cm2
-                    style_kwargs["cmap"] = cmap
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="HeatMap",
-                    matplotlib_kwargs={"ax": ax, "mround": mround,},
+                    matplotlib_kwargs={"ax": ax},
                     style_kwargs=style_kwargs,
                 )
                 data = {"X": matrix}
                 layout = {
+                    "columns": [None, None],
+                    "method": method,
                     "x_labels": columns,
                     "y_labels": columns,
                     "vmax": vmax,
                     "vmin": vmin,
+                    "mround": mround,
+                    "with_numbers": True,
                 }
                 return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
             values = {"index": columns}
@@ -689,17 +687,22 @@ class vDFCorr:
                 )
                 else None
             )
-            if "cmap" not in style_kwargs:
-                cm1, cm2 = PlottingBase().get_cmap()
-                cmap = cm1 if (method == "cramer") else cm2
-                style_kwargs["cmap"] = cmap
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="HeatMap",
-                matplotlib_kwargs={"ax": ax, "mround": mround,},
+                matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
-            layout = {"x_labels": [focus], "y_labels": cols, "vmax": vmax, "vmin": vmin}
+            layout = {
+                "columns": [None, None],
+                "method": method,
+                "x_labels": [focus],
+                "y_labels": cols,
+                "vmax": vmax,
+                "vmin": vmin,
+                "mround": mround,
+                "with_numbers": True,
+            }
             return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         for idx, column in enumerate(cols):
             self._update_catalog(
@@ -783,6 +786,8 @@ class vDFCorr:
         method = str(method).lower()
         if isinstance(columns, str):
             columns = [columns]
+        elif columns == None:
+            columns = self.numcol()
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
@@ -1219,7 +1224,12 @@ class vDFCorr:
                 style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
-            layout = {"x_labels": columns, "y_labels": columns}
+            layout = {
+                "columns": [None, None],
+                "x_labels": columns,
+                "y_labels": columns,
+                "with_numbers": True,
+            }
             return vpy_plt.HeatMap(data=data, layout=layout).draw(**kwargs)
         values = {"index": columns}
         for idx in range(len(matrix)):
@@ -1248,7 +1258,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        acf_type: Literal["line", "heatmap", "bar"] = "bar",
+        kind: Literal["line", "heatmap", "bar"] = "bar",
         mround: int = 3,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -1311,7 +1321,7 @@ class vDFCorr:
         show: bool, optional
                 If  set  to True,  the Plotting object will be 
                 returned.
-        acf_type: str, optional
+        kind: str, optional
             ACF Type.
                 bar     : Classical Autocorrelation Plot using 
                           bars.
@@ -1320,7 +1330,7 @@ class vDFCorr:
         mround: int, optional
             Round  the  coefficient using the input number  of 
             digits. It is used only to display the ACF  Matrix 
-            (acf_type must be set to 'heatmap').
+            (kind must be set to 'heatmap').
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1353,7 +1363,7 @@ class vDFCorr:
         query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
             return self._new_vdataframe(query).corr([], method=method)
-        elif acf_type == "heatmap":
+        elif kind == "heatmap":
             return self._new_vdataframe(query).corr(
                 [],
                 method=method,
@@ -1391,7 +1401,7 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": acf_type,},
+                    matplotlib_kwargs={"ax": ax, "kind": kind,},
                     style_kwargs=style_kwargs,
                 )
                 data = {
@@ -1417,7 +1427,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        pacf_type: Literal["line", "bar"] = "bar",
+        kind: Literal["line", "bar"] = "bar",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1479,7 +1489,7 @@ class vDFCorr:
         show: bool, optional
                 If  set  to True,  the Plotting object will be 
                 returned.
-        pacf_type: str, optional
+        kind: str, optional
             ACF Type.
                 bar  : Classical  Partial Autocorrelation Plot 
                        using bars.
@@ -1586,7 +1596,7 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": pacf_type,},
+                    matplotlib_kwargs={"ax": ax, "kind": kind,},
                     style_kwargs=style_kwargs,
                 )
                 data = {

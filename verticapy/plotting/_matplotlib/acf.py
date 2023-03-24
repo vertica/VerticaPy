@@ -59,7 +59,7 @@ class ACFPlot(MatplotlibBase):
 
     def draw(
         self,
-        bar_type: Literal["line", "bar"] = "bar",
+        kind: Literal["line", "bar"] = "bar",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
@@ -70,7 +70,7 @@ class ACFPlot(MatplotlibBase):
         if "color" not in style_kwargs:
             style_kwargs["color"] = self.get_colors(idx=0)
         color = style_kwargs["color"]
-        if bar_type == "bar":
+        if kind == "bar":
             ax.bar(
                 self.data["x"],
                 self.data["y"],

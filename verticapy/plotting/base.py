@@ -654,6 +654,8 @@ class PlottingBase:
             X = X[:, 1:].astype(float)
         else:
             self.layout = {
+                "x_label": None,
+                "y_label": None,
                 "labels": copy.deepcopy(columns),
                 "has_category": False,
             }
@@ -794,7 +796,7 @@ class PlottingBase:
                     {where}
                     GROUP BY 1 {order_by}"""
             ).to_numpy()
-            matrix = res[:, 1].astype(float)
+            X = res[:, 1:2].astype(float)
             x_labels = list(res[:, 0])
             y_labels = [method]
         else:
@@ -1273,6 +1275,7 @@ class PlottingBase:
         self.layout = {
             "columns": self._clean_quotes(columns),
             "order_by": self._clean_quotes(order_by),
+            "order_by_cat": vdf[order_by].category(),
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,
