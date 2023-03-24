@@ -71,24 +71,18 @@ class LinePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(
-        self,
-        area: bool = False,
-        step: bool = False,
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a time series plot using the Matplotlib API.
         """
         colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
-        plot_fun = ax.step if step else ax.plot
+        plot_fun = ax.step if (self.layout["kind"] == "step") else ax.plot
         if not (self.layout["has_category"]):
             args = [self.data["x"], self.data["Y"][:, 0]]
             kwargs = self._update_dict(self.init_style, style_kwargs)
             plot_fun(*args, **kwargs)
-            if area and not (step):
+            if self.layout["kind"] == "area":
                 if "color" in self._update_dict(kwargs, style_kwargs):
                     color = self._update_dict(kwargs, style_kwargs)["color"]
                 else:
@@ -148,11 +142,7 @@ class MultiLinePlot(MatplotlibBase):
             self.init_style["markerfacecolor"] = "white"
         return None
 
-    def _get_style(
-        self,
-        kind: Literal["step", "line", "area_percent", "area_stacked"],
-        idx: int = 0,
-    ) -> dict[str, Any]:
+    def _get_style(self, idx: int = 0,) -> dict[str, Any]:
         colors = self.get_colors()
         kwargs = {"linewidth": 1}
         kwargs_small = {
@@ -161,7 +151,7 @@ class MultiLinePlot(MatplotlibBase):
             "markerfacecolor": colors[idx],
             "markersize": 7,
         }
-        if kind in ("line", "step"):
+        if self.layout["kind"] in ("line", "step"):
             color = colors[idx]
             if self.data["Y"].shape[0] < 20:
                 kwargs = {
@@ -170,7 +160,7 @@ class MultiLinePlot(MatplotlibBase):
                 }
             kwargs["label"] = self.layout["columns"][idx]
             kwargs["linewidth"] = 2
-        elif kind == "area_percent":
+        elif self.layout["kind"] == "area_percent":
             color = "white"
             if self.data["Y"].shape[0] < 20:
                 kwargs = {
@@ -189,33 +179,28 @@ class MultiLinePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(
-        self,
-        kind: Literal["step", "line", "area_percent", "area_stacked"] = "line",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a multi-time series plot using the Matplotlib API.
         """
         colors = self.get_colors()
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
         n, m = self.data["Y"].shape
-        plot_fun = ax.step if (kind == "step") else ax.plot
+        plot_fun = ax.step if (self.layout["kind"] == "step") else ax.plot
         prec = [0 for j in range(n)]
         for i in range(0, m):
-            if kind in ("area_percent", "area_stacked"):
+            if self.layout["kind"] in ("area_percent", "area_stacked"):
                 points = np.sum(self.data["Y"][:, : i + 1], axis=1).astype(float)
-                if kind == "area_percent":
+                if self.layout["kind"] == "area_percent":
                     points /= np.sum(self.data["Y"], axis=1).astype(float)
             else:
                 points = self.data["Y"][:, i].astype(float)
-            kwargs = self._get_style(kind=kind, idx=i)
+            kwargs = self._get_style(idx=i)
             if "color" in style_kwargs and n < 20:
                 kwargs["markerfacecolor"] = self.get_colors(d=style_kwargs, idx=i)
             kwargs = self._update_dict(kwargs, style_kwargs, i)
             plot_fun(self.data["x"], points, **kwargs)
-            if kind not in ("line", "step"):
+            if self.layout["kind"] not in ("line", "step"):
                 args = [self.data["x"], prec, points]
                 kwargs = {
                     "label": self.layout["columns"][i],
@@ -228,9 +213,9 @@ class MultiLinePlot(MatplotlibBase):
                 prec = points
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
-        if kind == "area_percent":
+        if self.layout["kind"] == "area_percent":
             ax.set_ylim(0, 1)
-        elif kind == "area_stacked":
+        elif self.layout["kind"] == "area_stacked":
             ax.set_ylim(0)
         ax.set_xlim(min(self.data["x"]), max(self.data["x"]))
         ax.set_xlabel(self.layout["order_by"])

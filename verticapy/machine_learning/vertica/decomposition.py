@@ -275,22 +275,29 @@ class Decomposition(Preprocessing):
         Axes
             Axes.
         """
-        vdf = vDataFrame(self.input_relation)
-        ax = self.transform(vdf).scatter(
+        vdf = self.transform(vDataFrame(self.input_relation))
+        dim_perc = []
+        for d in dimensions:
+            if not (self.explained_variance_[d - 1]):
+                dim_perc += [""]
+            else:
+                dim_perc += [f" ({round(self.explained_variance_[d - 1] * 100, 1)}%)"]
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="ScatterPlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.ScatterPlot(
+            vdf=vdf,
             columns=[f"col{dimensions[0]}", f"col{dimensions[1]}"],
             max_nb_points=100000,
-            ax=ax,
-            **style_kwargs,
-        )
-        if not (self.explained_variance_[dimensions[0] - 1]):
-            dimensions_1 = ""
-        else:
-            dimensions_1 = (
-                f"({round(self.explained_variance_[dimensions[0] - 1] * 100, 1)}%)"
-            )
-        ax.set_xlabel(f"Dim{dimensions[0]} {dimensions_1}")
-        ax.set_ylabel(f"Dim{dimensions[0]} {dimensions_1}")
-        return ax
+            misc_layout={
+                "columns": [
+                    f"Dim{dimensions[0]}{dim_perc[0]}",
+                    f"Dim{dimensions[1]}{dim_perc[1]}",
+                ]
+            },
+        ).draw(**kwargs)
 
     def plot_circle(
         self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
@@ -356,38 +363,26 @@ class Decomposition(Preprocessing):
         Axes
             Axes.
         """
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="PCAScreePlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
         n = len(self.explained_variance_)
-        explained_variance = [100 * x for x in self.explained_variance_]
-        information = TableSample(
-            {
-                "dimensions": [i + 1 for i in range(n)],
-                "percentage_explained_variance": explained_variance,
-            }
-        ).to_vdf()
-        information["dimensions_center"] = information["dimensions"] + 0.5
-        ax = information["dimensions"].bar(
-            method="avg",
-            of="percentage_explained_variance",
-            h=1,
-            max_cardinality=1,
-            ax=ax,
-            categorical=False,
-            **style_kwargs,
-        )
-        ax = information["percentage_explained_variance"].plot(
-            ts="dimensions_center", ax=ax, color="black"
-        )
-        ax.set_xlim(1, n + 1)
-        ax.set_xticks([i + 1.5 for i in range(n)])
-        ax.set_xticklabels([i + 1 for i in range(n)])
-        ax.set_ylabel('"percentage_explained_variance"')
-        ax.set_xlabel('"dimensions"')
-        for i in range(n):
-            text_str = f"{round(explained_variance[i], 1)}%"
-            ax.text(
-                i + 1.5, explained_variance[i] + 1, text_str,
-            )
-        return ax
+        data = {
+            "x": np.array([i + 1 for i in range(n)]),
+            "y": 100 * self.explained_variance_,
+            "adj_width": 0.94,
+        }
+        layout = {
+            "labels": [i + 1 for i in range(n)],
+            "x_label": "dimensions",
+            "y_label": "percentage_explained_variance (%)",
+            "title": None,
+            "plot_scree": True,
+            "plot_line": False,
+        }
+        return vpy_plt.PCAScreePlot(data=data, layout=layout).draw(**kwargs)
 
 
 """
@@ -592,34 +587,31 @@ class MCA(PCA):
         Axes
             Axes.
         """
-        contrib = self.principal_components_[:, dimension - 1]
-        contrib = [elem ** 2 for elem in contrib]
-        total = sum(contrib)
-        contrib = [100 * elem / total for elem in contrib]
-        n = len(contrib)
+        contrib = self.principal_components_[:, dimension - 1] ** 2
+        contrib = 100 * contrib / contrib.sum()
         variables, contribution = zip(
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
-        contrib = TableSample(
-            {"row_nb": [i + 1 for i in range(n)], "contrib": contribution}
-        ).to_vdf()
-        contrib["row_nb_2"] = contrib["row_nb"] + 0.5
-        ax = contrib["row_nb"].bar(
-            method="avg", of="contrib", max_cardinality=1, h=1, categorical=False, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="PCAScreePlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
-        ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
-        ax.set_xlim(1, n + 1)
-        ax.set_xticks([i + 1.5 for i in range(n)])
-        ax.set_xticklabels(variables)
-        ax.set_ylabel("Cos2 - Quality of Representation")
-        ax.set_xlabel("")
-        ax.set_title(f"Contribution of variables to Dim {dimension}")
-        ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c="r", linestyle="--")
-        for i in range(n):
-            ax.text(
-                i + 1.5, contribution[i] + 1, f"{round(contribution[i], 1)}%",
-            )
-        return ax
+        n = len(contribution)
+        data = {
+            "x": np.array([i + 1 for i in range(n)]),
+            "y": contribution,
+            "adj_width": 0.94,
+        }
+        layout = {
+            "labels": variables,
+            "x_label": None,
+            "y_label": "Contribution (%)",
+            "title": f"Contribution of variables to Dim {dimension}",
+            "plot_scree": True,
+            "plot_line": True,
+        }
+        return vpy_plt.PCAScreePlot(data=data, layout=layout).draw(**kwargs)
 
     def plot_cos2(
         self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
@@ -652,14 +644,26 @@ class MCA(PCA):
         variables, quality = zip(
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
-        quality = TableSample({"variables": variables, "quality": quality}).to_vdf()
-        ax = quality["variables"].bar(
-            method="avg", of="quality", max_cardinality=n, categorical=False, ax=ax, **style_kwargs
+        vpy_plt, kwargs = self._get_plotting_lib(
+            class_name="PCAScreePlot",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
         )
-        ax.set_ylabel("Cos2 - Quality of Representation")
-        ax.set_xlabel("")
-        ax.set_title(f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}")
-        return ax
+        n = len(self.explained_variance_)
+        data = {
+            "x": np.array([i + 1 for i in range(n)]),
+            "y": 100 * np.array(quality),
+            "adj_width": 1.0,
+        }
+        layout = {
+            "labels": variables,
+            "x_label": None,
+            "y_label": "Cos2 - Quality of Representation (%)",
+            "title": f"Cos2 of variables to Dim {dimensions[0]}-{dimensions[1]}",
+            "plot_scree": False,
+            "plot_line": False,
+        }
+        return vpy_plt.PCAScreePlot(data=data, layout=layout).draw(**kwargs)
 
     def plot_var(
         self,

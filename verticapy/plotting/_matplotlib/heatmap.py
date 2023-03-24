@@ -46,39 +46,43 @@ class HeatMap(MatplotlibBase):
         self.init_style_text = {"color": "black", "ha": "center", "va": "center"}
         return None
 
+    def _get_cmap_style(self, style_kwargs: dict) -> dict:
+        if (
+            "cmap" not in style_kwargs
+            and "method" in self.layout
+            and (
+                self.layout["method"]
+                in ("pearson", "spearman", "spearmand", "kendall", "biserial",)
+            )
+        ):
+            return {"cmap": self.get_cmap(idx=1)}
+        elif "cmap" not in style_kwargs:
+            return {"cmap": self.get_cmap(idx=0)}
+        else:
+            return {}
+
     # Draw.
 
     def draw(
         self,
         colorbar: str = "",
-        with_numbers: bool = True,
-        mround: int = 3,
         extent: Optional[list] = None,
-        is_pivot: bool = False,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
         """
         Draws a heatmap using the Matplotlib API.
         """
-        if len(self.data["X"].shape) == 1:
-            n, m = self.data["X"].shape[0], 1
-            X = np.transpose(np.array([self.data["X"]]))
-            is_vector = True
-        else:
-            n, m = self.data["X"].shape
-            X = copy.deepcopy(self.data["X"])
-            is_vector = False
+        X = copy.deepcopy(self.data["X"])
         x_labels = list(self.layout["x_labels"])
         y_labels = list(self.layout["y_labels"])
-        if is_pivot and not (is_vector):
-            np.flip(X, axis=1)
-            x_labels.reverse()
+        n, m = self.data["X"].shape
         ax, fig = self._get_ax_fig(
-            ax, size=(min(m, 500), min(n, 500)), set_axis_below=False, grid=False
+            ax, size=(min(n, 500), min(m, 500)), set_axis_below=False, grid=False
         )
         kwargs = {
             **self.init_style,
+            **self._get_cmap_style(style_kwargs=style_kwargs),
             "extent": extent,
         }
         if "vmax" in self.layout:
@@ -87,30 +91,28 @@ class HeatMap(MatplotlibBase):
             kwargs["vmin"] = self.layout["vmin"]
         kwargs = self._update_dict(kwargs, style_kwargs)
         try:
-            im = ax.imshow(X, **kwargs)
+            im = ax.imshow(np.transpose(X), **kwargs)
         except:
             if kwargs["extent"] != None:
                 kwargs["extent"] = None
-                im = ax.imshow(X, **kwargs)
+                im = ax.imshow(np.transpose(X), **kwargs)
             else:
                 raise
         fig.colorbar(im, ax=ax).set_label(colorbar)
         if not (extent):
-            ax.set_yticks([i for i in range(0, n)])
-            ax.set_xticks([i for i in range(0, m)])
-            ax.set_xticklabels(y_labels, rotation=90)
-            ax.set_yticklabels(x_labels, rotation=0)
-        if with_numbers:
-            X = X.round(mround)
-            for y_index in range(n):
-                for x_index in range(m):
-                    label = X[y_index][x_index]
+            ax.set_xticks([i for i in range(0, n)])
+            ax.set_yticks([i for i in range(0, m)])
+            ax.set_xticklabels(x_labels, rotation=90)
+            ax.set_yticklabels(y_labels, rotation=0)
+        if "with_numbers" in self.layout and self.layout["with_numbers"]:
+            X = X.round(self.layout["mround"])
+            for x_index in range(n):
+                for y_index in range(m):
+                    label = X[x_index][y_index]
                     ax.text(
                         x_index, y_index, label, **self.init_style_text,
                     )
-        if "columns" in self.layout:
-            if len(self.layout["columns"]) > 0:
-                ax.set_ylabel(self.layout["columns"][0])
-            if len(self.layout["columns"]) > 1:
-                ax.set_xlabel(self.layout["columns"][1])
+        ax.set_xlabel(self.layout["columns"][0])
+        if len(self.layout["columns"]) > 1:
+            ax.set_ylabel(self.layout["columns"][1])
         return ax

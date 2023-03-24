@@ -39,8 +39,8 @@ class PlottingUtils:
             lib = self._first_available_lib(class_name=class_name)
             warning_message = (
                 f"This plot is not yet available using the '{last_lib}' module.\n"
-                f"This plot will be drawn by using the '{lib}' module."
-                "You can switch to any graphical library by using the 'set_option'\n"
+                f"This plot will be drawn by using the '{lib}' module.\n"
+                "You can switch to any graphical library by using the 'set_option' "
                 "function.\nThe following example sets matplotlib as graphical library:\n"
                 "import verticapy\nverticapy.set_option('plotting_lib', 'matplotlib')"
             )

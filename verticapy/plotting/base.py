@@ -64,6 +64,11 @@ class PlottingBase:
             del kwds["misc_data"]
         else:
             misc_data = {}
+        if "misc_layout" in kwds:
+            misc_layout = copy.deepcopy(kwds["misc_layout"])
+            del kwds["misc_layout"]
+        else:
+            misc_layout = {}
         if "data" not in kwds or "layout" not in kwds:
             functions = {
                 "1D": self._compute_plot_params,
@@ -89,6 +94,11 @@ class PlottingBase:
             self.data = {
                 **self.data,
                 **misc_data,
+            }
+        if hasattr(self, "layout"):
+            self.layout = {
+                **self.layout,
+                **misc_layout,
             }
         self._init_style()
         return None
@@ -644,6 +654,8 @@ class PlottingBase:
             X = X[:, 1:].astype(float)
         else:
             self.layout = {
+                "x_label": None,
+                "y_label": None,
                 "labels": copy.deepcopy(columns),
                 "has_category": False,
             }
@@ -784,7 +796,7 @@ class PlottingBase:
                     {where}
                     GROUP BY 1 {order_by}"""
             ).to_numpy()
-            matrix = res[:, 1].astype(float)
+            X = res[:, 1:2].astype(float)
             x_labels = list(res[:, 0])
             y_labels = [method]
         else:
@@ -1167,7 +1179,9 @@ class PlottingBase:
                     self._compute_plot_params(
                         vdf[columns[i]], method="density", max_cardinality=1
                     )
-                    data["hist"][self._clean_quotes(columns[i])] = copy.deepcopy(self.data)
+                    data["hist"][self._clean_quotes(columns[i])] = copy.deepcopy(
+                        self.data
+                    )
         self.data = data
         self.layout = {
             "columns": self._clean_quotes(columns),
@@ -1261,6 +1275,7 @@ class PlottingBase:
         self.layout = {
             "columns": self._clean_quotes(columns),
             "order_by": self._clean_quotes(order_by),
+            "order_by_cat": vdf[order_by].category(),
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,

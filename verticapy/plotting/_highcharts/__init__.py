@@ -14,14 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._highcharts.bar import bar
-from verticapy.plotting._highcharts.base import hchart_from_vdf
-from verticapy.plotting._highcharts.boxplot import boxplot
-from verticapy.plotting._highcharts.candlestick import candlestick
-from verticapy.plotting._highcharts.drilldown_chart import drilldown_chart
-from verticapy.plotting._highcharts.heatmap import heatmap
-from verticapy.plotting._highcharts.line import line
-from verticapy.plotting._highcharts.negative_bar import negative_bar
-from verticapy.plotting._highcharts.pie import pie
-from verticapy.plotting._highcharts.scatter import scatter
-from verticapy.plotting._highcharts.spider import spider
+from verticapy.plotting._highcharts.bar import BarChart, BarChart2D
+from verticapy.plotting._highcharts.barh import HorizontalBarChart, HorizontalBarChart2D
+from verticapy.plotting._highcharts.boxplot import BoxPlot
+from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
+from verticapy.plotting._highcharts.pie import PieChart
+from verticapy.plotting._highcharts.spider import SpiderChart

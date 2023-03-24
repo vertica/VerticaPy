@@ -31,8 +31,8 @@ class PCACirclePlot(MatplotlibBase):
         return "plot"
 
     @property
-    def _kind(self) -> Literal["pca"]:
-        return "pca"
+    def _kind(self) -> Literal["pca_circle"]:
+        return "pca_circle"
 
     # Styling Methods.
 
@@ -86,6 +86,80 @@ class PCACirclePlot(MatplotlibBase):
         return ax
 
 
+class PCAScreePlot(MatplotlibBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["pca_scree"]:
+        return "pca_scree"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style_bar = {"color": self.get_colors(idx=0), "alpha": 0.86}
+        self.init_style_scree = {
+            "color": "black",
+            "linewidth": 2,
+            "marker": "o",
+            "markevery": 0.05,
+            "markersize": 7,
+            "markeredgecolor": "black",
+            "markerfacecolor": "white",
+        }
+        self.init_style_line = {
+            "c": "r",
+            "linestyle": "--",
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+        """
+        Draws a PCA Variance Plot using the Matplotlib API.
+        """
+        ax, fig = self._get_ax_fig(
+            ax,
+            size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
+            set_axis_below=True,
+            grid="y",
+        )
+        ax.bar(
+            self.data["x"],
+            self.data["y"],
+            self.data["adj_width"],
+            **self._update_dict(self.init_style_bar, style_kwargs),
+        )
+        n, dt = len(self.data["x"]), 0.6
+        if self.layout["plot_scree"]:
+            dt = 1.0
+            ax.plot(
+                self.data["x"],
+                self.data["y"],
+                self.data["adj_width"],
+                **self.init_style_scree,
+            )
+        if self.layout["plot_line"]:
+            ax.plot([0.5, n + 0.5], [1 / n * 100, 1 / n * 100], **self.init_style_line)
+        ax.set_xlabel(self.layout["x_label"])
+        ax.set_ylabel(self.layout["y_label"])
+        ax.set_xticks([i + 1 for i in range(n)])
+        ax.set_xticklabels(self.layout["labels"], rotation=90)
+        for i in range(n):
+            text_str = f"{round(self.data['y'][i], 1)}%"
+            ax.text(
+                i + dt, self.data["y"][i] + 1, text_str,
+            )
+        ax.set_xlim(0.5, n + 0.5)
+        ax.set_title(self.layout["title"])
+        return ax
+
+
 class PCAVarPlot(MatplotlibBase):
 
     # Properties.
@@ -95,8 +169,8 @@ class PCAVarPlot(MatplotlibBase):
         return "plot"
 
     @property
-    def _kind(self) -> Literal["pca"]:
-        return "pca"
+    def _kind(self) -> Literal["pca_var"]:
+        return "pca_var"
 
     # Styling Methods.
 

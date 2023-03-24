@@ -18,87 +18,83 @@ from typing import Literal
 
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_colors
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.connection import current_cursor
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-def pie(
-    query: str,
-    options: dict = {},
-    width: int = 600,
-    height: int = 400,
-    chart_type: Literal["donut", "donut3d", "half", "pie3d", "regular"] = "regular",
-):
-    """
-    Draws a pie chart using the High Chart API 
-    and the input SQL query.
-    """
-    data = _executeSQL(
-        query,
-        title="Selecting the categories and their respective aggregations to draw the chart.",
-        method="fetchall",
-    )
-    names = [desc[0] for desc in current_cursor().description]
-    n = len(names)
-    chart = Highchart(width=width, height=height)
-    default_options = {
-        "title": {"text": ""},
-        "chart": {"inverted": True},
-        "xAxis": {
-            "reversed": False,
-            "title": {"text": names[0], "enabled": True},
-            "maxPadding": 0.05,
-            "showLastLabel": True,
-        },
-        "yAxis": {"title": {"text": names[1], "enabled": True}},
-        "plotOptions": {
-            "pie": {
-                "allowPointSelect": True,
-                "cursor": "pointer",
-                "showInLegend": True,
-                "size": "110%",
-            }
-        },
-        "tooltip": {"pointFormat": str(names[1]) + ": <b>{point.y}</b>"},
-    }
-    if "3d" not in chart_type:
-        default_options["colors"] = get_colors()
-    chart.set_dict_options(default_options)
-    if "3d" in chart_type:
-        chart.set_dict_options(
-            {"chart": {"type": "pie", "options3d": {"enabled": True, "alpha": 45}}}
-        )
-        chart.add_JSsource("https://code.highcharts.com/6/highcharts-3d.js")
-        chart_type = chart_type.replace("3d", "")
-    data_pie = []
-    for elem in data:
-        try:
-            val = float(elem[1])
-        except:
-            val = elem[1]
-        try:
-            key = float(elem[0])
-        except:
-            key = elem[0]
-            if key == None:
-                key = "None"
-        data_pie += [{"name": key, "y": val}]
-    data_pie[-1]["sliced"], data_pie[-1]["selected"] = True, True
-    chart.add_data_set(data_pie, "pie")
-    if chart_type == "half":
-        chart.set_dict_options(
-            {
-                "plotOptions": {"pie": {"startAngle": -90, "endAngle": 90}},
-                "legend": {"enabled": False},
-            }
-        )
-    elif chart_type == "donut":
-        chart.set_dict_options(
-            {
+class PieChart(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["pie"]:
+        return "pie"
+
+    @property
+    def _compute_method(self) -> Literal["1D"]:
+        return "1D"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "title": {"text": ""},
+            "chart": {"inverted": True},
+            "xAxis": {
+                "reversed": False,
+                "title": {"text": self.layout["column"], "enabled": True},
+                "maxPadding": 0.05,
+                "showLastLabel": True,
+            },
+            "yAxis": {"title": {"text": self.layout["method_of"], "enabled": True}},
+            "plotOptions": {
+                "pie": {
+                    "allowPointSelect": True,
+                    "cursor": "pointer",
+                    "showInLegend": True,
+                    "size": "110%",
+                }
+            },
+            "tooltip": {
+                "pointFormat": str(self.layout["method_of"]) + ": <b>{point.y}</b>"
+            },
+            "colors": self.get_colors(),
+        }
+        if self.layout["pie_type"] == "donut":
+            self.init_style = {
+                **self.init_style,
                 "chart": {"type": "pie"},
                 "plotOptions": {"pie": {"innerSize": 100, "depth": 45}},
             }
-        )
-    chart.set_dict_options(options)
-    return chart
+        elif self.layout["pie_type"] == "rose":
+            self.init_style = {
+                **self.init_style,
+                "plotOptions": {"pie": {"startAngle": -90, "endAngle": 90}},
+                "legend": {"enabled": False},
+            }
+        self.init_style_3d = {
+            "chart": {"type": "pie", "options3d": {"enabled": True, "alpha": 45}}
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> Highchart:
+        """
+        Draws a pie chart using the HC API.
+        """
+        chart = Highchart(width=600, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        data = []
+        for idx, y in enumerate(self.data["y"]):
+            data += [{"name": self.layout["labels"][idx], "y": y}]
+        data[-1] = {**data[-1], "sliced": True, "selected": True}
+        chart.add_data_set(data, "pie")
+        if self.layout["pie_type"] == "3d":
+            chart.set_dict_options(self.init_style_3d)
+            chart.add_JSsource("https://code.highcharts.com/6/highcharts-3d.js")
+        return chart

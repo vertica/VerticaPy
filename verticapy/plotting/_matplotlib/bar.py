@@ -101,9 +101,7 @@ class BarChart2D(MatplotlibBase):
 
     # Draw.
 
-    def draw(
-        self, stacked: bool = False, ax: Optional[Axes] = None, **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a 2D BarChart using the Matplotlib API.
         """
@@ -121,7 +119,7 @@ class BarChart2D(MatplotlibBase):
                 **self.init_style,
             }
             params = self._update_dict(params, style_kwargs, i)
-            if stacked:
+            if self.layout["stacked"]:
                 if i == 0:
                     bottom = np.array([0.0 for j in range(m)])
                 else:
@@ -131,7 +129,7 @@ class BarChart2D(MatplotlibBase):
                 params["x"] = [j + i * self.init_style["width"] / n for j in range(m)]
                 params["width"] = self.init_style["width"] / n
             ax.bar(**params)
-        if stacked:
+        if self.layout["stacked"]:
             xticks = [j for j in range(m)]
         else:
             xticks = [

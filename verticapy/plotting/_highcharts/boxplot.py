@@ -14,66 +14,75 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, TYPE_CHECKING
+from typing import Literal
+import numpy as np
 
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_colors
-from verticapy._typing import SQLColumns
-
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-def boxplot(
-    data: list = [],
-    options: dict = {},
-    width: int = 600,
-    height: int = 400,
-    vdf: Optional["vDataFrame"] = None,
-    columns: SQLColumns = [],
-    by: str = "",
-) -> Highchart:
-    """
-    Draws a boxplot using the High Chart API
-    and the input SQL query.
-    """
-    chart = Highchart(width=width, height=height)
-    default_options = {
-        "chart": {"type": "boxplot"},
-        "title": {"text": ""},
-        "legend": {"enabled": False},
-        "xAxis": {"title": {"text": ""}},
-        "yAxis": {"title": {"text": ""}},
-    }
-    default_options["colors"] = get_colors()
-    chart.set_dict_options(default_options)
-    aggregations = ["min", "approx_25%", "approx_50%", "approx_75%", "max"]
-    if (vdf) and not (by):
-        x = vdf.agg(func=aggregations, columns=columns).transpose().values
-        data = [x[elem] for elem in x]
-        del data[0]
-        chart.set_dict_options({"xAxis": {"categories": columns}})
-        chart.set_dict_options({"yAxis": {"title": {"text": "Observations"}}})
-        title = "Observations"
-    elif vdf:
-        categories = vdf[by].distinct()
-        data = []
-        for elem in categories:
-            data += [
-                vdf.search(f"{by} = '{elem}'", usecols=[columns[0], by])[columns[0]]
-                .agg(func=aggregations)
-                .values[columns[0]]
-            ]
-        chart.set_dict_options({"xAxis": {"categories": categories}})
-        chart.set_dict_options({"yAxis": {"title": {"text": str(columns[0])}}})
-        title = by
-    chart.add_data_set(
-        data,
-        "boxplot",
-        title,
-        tooltip={"headerFormat": "<em>{point.key}</em><br/>"},
-        colorByPoint=True,
-    )
-    chart.set_dict_options(options)
-    return chart
+class BoxPlot(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["box"]:
+        return "box"
+
+    @property
+    def _compute_method(self) -> Literal["describe"]:
+        return "describe"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        labels = self.layout["labels"]
+        y_label = self.layout["y_label"]
+        if hasattr(labels, "tolist"):
+            labels = labels.tolist()
+        if y_label == None:
+            pointFormat = ""
+        else:
+            pointFormat = f"{y_label}: "
+        self.init_style = {
+            "chart": {"type": "boxplot"},
+            "title": {"text": ""},
+            "legend": {"enabled": False},
+            "xAxis": {"categories": labels, "title": {"text": self.layout["x_label"]},},
+            "yAxis": {"title": {"text": y_label}},
+            "colors": self.get_colors(),
+        }
+        self.init_style_boxplot = {
+            "tooltip": {"headerFormat": "<em>{point.key}</em><br/>"},
+            "colorByPoint": True,
+        }
+        self.init_style_scatter = {
+            "color": "#444444",
+            "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "#444444",},
+            "tooltip": {"pointFormat": pointFormat + "{point.y}"},
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> HighchartsBase:
+        """
+        Draws a multi box plot using the HC API.
+        """
+        chart = Highchart(width=600, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        chart.add_data_set(
+            np.transpose(self.data["X"]).tolist(), "boxplot", **self.init_style_boxplot
+        )
+        fliers = []
+        for i, fli in enumerate(self.data["fliers"]):
+            for flj in fli:
+                fliers += [[i, flj]]
+        chart.add_data_set(fliers, "scatter", "Outliers", **self.init_style_scatter)
+        return chart

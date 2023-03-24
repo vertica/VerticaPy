@@ -14,192 +14,167 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+import copy
+from datetime import date, datetime
+from typing import Literal, Union
+import numpy as np
 
 from vertica_highcharts import Highchart, Highstock
 
-from verticapy._config.colors import get_colors
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.connection import current_cursor
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-def line(
-    query: str,
-    options: dict = {},
-    width: int = 600,
-    height: int = 400,
-    chart_type: Literal[
-        "area",
-        "area_range",
-        "area_ts",
-        "line",
-        "multi_area",
-        "multi_line",
-        "multi_spline",
-        "spline",
-    ] = "line",
-    stock: bool = False,
-) -> Highstock:
-    """
-    Draws a line chart using the High Chart API 
-    and the input SQL query.
-    """
-    is_ts = True if (chart_type == "area_ts") else False
-    is_range = True if (chart_type == "area_range") else False
-    is_date = False
-    is_multi = True if ("multi" in chart_type) else False
-    if chart_type in ("area_ts", "area_range", "multi_area"):
-        chart_type = "area"
-    if chart_type == "multi_line":
-        chart_type = "line"
-    if chart_type == "multi_spline":
-        chart_type = "spline"
-    data = _executeSQL(
-        query,
-        title="Selecting the different values to draw the chart.",
-        method="fetchall",
-    )
-    names = [desc[0] for desc in current_cursor().description]
-    n = len(names)
-    if stock:
-        chart = Highstock(width=width, height=height)
-        default_options = {
-            "rangeSelector": {"selected": 0},
-            "title": {"text": ""},
-            "tooltip": {
-                "style": {"width": "200px"},
-                "valueDecimals": 4,
-                "shared": True,
-            },
-            "yAxis": {"title": {"text": ""}},
-        }
-    else:
-        chart = Highchart(width=width, height=height)
-        default_options = {
-            "title": {"text": ""},
-            "xAxis": {
-                "reversed": False,
-                "title": {"enabled": True, "text": names[0]},
-                "startOnTick": True,
-                "endOnTick": True,
-                "showLastLabel": True,
-            },
-            "yAxis": {"title": {"text": names[1] if len(names) == 2 else ""}},
-            "legend": {"enabled": False},
-            "plotOptions": {
-                "scatter": {
-                    "marker": {
-                        "radius": 5,
-                        "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
-                        },
-                    },
-                    "states": {"hover": {"marker": {"enabled": False}}},
-                    "tooltip": {
-                        "headerFormat": "",
-                        "pointFormat": "[{point.x}, {point.y}]",
-                    },
-                }
-            },
-        }
-    default_options["colors"] = get_colors()
-    chart.set_dict_options(default_options)
-    for i in range(len(data)):
-        if "datetime" in str(type(data[i][0])):
-            is_date = True
-        for j in range(n):
-            try:
-                data[i][j] = float(data[i][j])
-            except:
-                pass
-    if is_date:
-        chart.set_options("xAxis", {"type": "datetime", "dateTimeLabelFormats": {}})
-    if n == 2:
-        chart.add_data_set(data, chart_type, names[1])
-    elif (n >= 3) and (is_multi):
-        for i in range(1, n):
-            chart.add_data_set([elem[i] for elem in data], chart_type, name=names[i])
-        chart.set_dict_options(
-            {
-                "legend": {"enabled": True},
-                "plotOptions": {
-                    "area": {
-                        "stacking": "normal",
-                        "lineColor": "#666666",
-                        "lineWidth": 1,
-                        "marker": {"lineWidth": 1, "lineColor": "#666666"},
-                    }
+class LinePlot(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["graph"]:
+        return "graph"
+
+    @property
+    def _kind(self) -> Literal["line"]:
+        return "line"
+
+    @property
+    def _compute_method(self) -> Literal["line"]:
+        return "line"
+
+    # Formatting Methods.
+
+    @staticmethod
+    def _to_datetime(x: list) -> list:
+        if len(x) > 0 and not (isinstance(x[0], datetime)) and isinstance(x[0], date):
+            return [datetime.combine(d, datetime.min.time()) for d in x]
+        else:
+            return copy.deepcopy(x)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        if "stock" in self.layout and self.layout["stock"]:
+            self.init_style = {
+                "rangeSelector": {"selected": 0},
+                "title": {"text": ""},
+                "tooltip": {
+                    "style": {"width": "200px"},
+                    "valueDecimals": 4,
+                    "shared": True,
                 },
-                "tooltip": {"shared": True},
-                "xAxis": {
-                    "categories": [elem[0] for elem in data],
-                    "tickmarkPlacement": "on",
-                    "title": {"enabled": False},
-                },
+                "yAxis": {"title": {"text": ""}},
             }
-        )
-        if is_date:
-            chart.set_dict_options(
-                {
-                    "xAxis": {
-                        "type": "datetime",
-                        "labels": {
-                            "formatter": (
-                                "function() {return "
-                                "Highcharts.dateFormat('%a %d %b', this.value);}"
-                            )
+        else:
+            self.init_style = {
+                "title": {"text": ""},
+                "xAxis": {
+                    "reversed": False,
+                    "title": {"enabled": True, "text": self.layout["order_by"]},
+                    "startOnTick": True,
+                    "endOnTick": True,
+                    "showLastLabel": True,
+                },
+                "yAxis": {
+                    "title": {
+                        "text": self.layout["columns"][0]
+                        if len(self.layout["columns"]) == 1
+                        else ""
+                    }
+                },
+                "legend": {"enabled": False},
+                "plotOptions": {
+                    "scatter": {
+                        "marker": {
+                            "radius": 5,
+                            "states": {
+                                "hover": {
+                                    "enabled": True,
+                                    "lineColor": "rgb(100,100,100)",
+                                }
+                            },
+                        },
+                        "states": {"hover": {"marker": {"enabled": False}}},
+                        "tooltip": {
+                            "headerFormat": "",
+                            "pointFormat": "[{point.x}, {point.y}]",
                         },
                     }
-                }
-            )
-    elif n == 3:
-        all_categories = list(set([elem[-1] for elem in data]))
-        dict_categories = {}
-        for elem in all_categories:
-            dict_categories[elem] = []
-        for i in range(len(data)):
-            dict_categories[data[i][-1]] += [[data[i][0], data[i][1]]]
-        for idx, elem in enumerate(dict_categories):
-            chart.add_data_set(dict_categories[elem], chart_type, name=str(elem))
-        chart.set_dict_options(
-            {"legend": {"enabled": True, "title": {"text": names[-1]}}}
-        )
-    elif (n == 4) and (is_range):
-        data_value = [[elem[0], elem[1]] for elem in data]
-        data_range = [[elem[0], elem[2], elem[3]] for elem in data]
-        chart.add_data_set(
-            data_value,
-            "line",
-            names[1],
-            zIndex=1,
-            marker={"fillColor": "#263133", "lineWidth": 2},
-        )
-        chart.add_data_set(
-            data_range,
-            "arearange",
-            "Range",
-            lineWidth=0,
-            linkedTo=":previous",
-            fillOpacity=0.3,
-            zIndex=0,
-        )
-    if is_range:
-        chart.set_dict_options({"tooltip": {"crosshairs": True, "shared": True}})
-    if is_ts:
-        chart.set_options(
-            "plotOptions",
-            {
-                "area": {
-                    "fillColor": {
-                        "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
-                        "stops": [[0, "#FFFFFF"], [1, get_colors()[0]]],
-                    },
-                    "marker": {"radius": 2},
-                    "lineWidth": 1,
-                    "states": {"hover": {"lineWidth": 1}},
-                    "threshold": None,
-                }
-            },
-        )
-    chart.set_dict_options(options)
-    return chart
+                },
+                "colors": self.get_colors(),
+            }
+        if self.layout["order_by_cat"] == "date":
+            self.init_style["xAxis"] = {
+                **self.init_style["xAxis"],
+                "type": "datetime",
+                "dateTimeLabelFormats": {},
+            }
+        if self.layout["has_category"]:
+            self.init_style["legend"] = {
+                "enabled": True,
+                "title": {"text": self.layout["columns"][1]},
+            }
+        elif len(self.layout["columns"]) > 1:
+            self.init_style["legend"] = {"enabled": True}
+        return None
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
+        """
+        Draws a time series plot using the Matplotlib API.
+        """
+        if "stock" in self.layout and self.layout["stock"]:
+            chart = Highstock(width=600, height=400)
+        else:
+            chart = Highchart(width=600, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        if self.layout["has_category"]:
+            uniques = np.unique(self.data["z"])
+            for i, c in enumerate(uniques):
+                x = self._to_datetime(self.data["x"][self.data["z"] == c])
+                y = self.data["Y"][:, 0][self.data["z"] == c]
+                data = np.column_stack((x, y)).tolist()
+                chart.add_data_set(data, self.layout["kind"], c)
+        else:
+            x = self._to_datetime(self.data["x"])
+            y = self.data["Y"][:, 0]
+            data = np.column_stack((x, y)).tolist()
+            chart.add_data_set(data, self.layout["kind"], self.layout["columns"][0])
+        return chart
+
+
+class MultiLinePlot(LinePlot):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["graph"]:
+        return "graph"
+
+    @property
+    def _kind(self) -> Literal["line"]:
+        return "line"
+
+    @property
+    def _compute_method(self) -> Literal["line"]:
+        return "line"
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
+        """
+        Draws a multi-time series plot using the Matplotlib API.
+        """
+        if "stock" in self.layout and self.layout["stock"]:
+            chart = Highstock(width=600, height=400)
+        else:
+            chart = Highchart(width=600, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        n, m = self.data["Y"].shape
+        x = self._to_datetime(self.data["x"])
+        for idx in range(m):
+            y = self.data["Y"][:, idx]
+            data = np.column_stack((x, y)).tolist()
+            chart.add_data_set(data, self.layout["kind"], self.layout["columns"][idx])
+        return chart

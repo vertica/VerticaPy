@@ -14,55 +14,71 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
+
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_colors
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.connection import current_cursor
-
-from verticapy.plotting._highcharts.utils import data_to_columns
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-def spider(
-    query: str, options: dict = {}, width: int = 600, height: int = 400
-) -> Highchart:
-    """
-    Draws a spider plot using the High Chart API 
-    and the input SQL query.
-    """
-    data = _executeSQL(
-        query,
-        title=(
-            "Selecting the categories and their respective "
-            "aggregations to draw the chart."
-        ),
-        method="fetchall",
-    )
-    names = [desc[0] for desc in current_cursor().description]
-    n = len(names)
-    chart = Highchart(width=width, height=height)
-    default_options = {
-        "chart": {"polar": True, "type": "line", "renderTo": "test"},
-        "title": {"text": "", "x": -80},
-        "pane": {"size": "80%"},
-        "xAxis": {"tickmarkPlacement": "on", "lineWidth": 0},
-        "yAxis": {"gridLineInterpolation": "polygon", "lineWidth": 0, "min": 0},
-        "tooltip": {
-            "shared": True,
-            "pointFormat": '<span style="color:{series.color}">{series.name}: <b>{point.y:,.0f}</b><br/>',
-        },
-        "legend": {
-            "align": "right",
-            "verticalAlign": "top",
-            "y": 70,
-            "layout": "vertical",
-        },
-    }
-    default_options["colors"] = get_colors()
-    chart.set_dict_options(default_options)
-    columns = data_to_columns(data, n)
-    chart.set_dict_options({"xAxis": {"categories": columns[0]}})
-    for i in range(1, n):
-        chart.add_data_set(columns[i], name=names[i], pointPlacement="on")
-    chart.set_dict_options(options)
-    return chart
+class SpiderChart(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["spider"]:
+        return "spider"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "chart": {"polar": True, "type": "line", "renderTo": "test"},
+            "title": {"text": "", "x": -80},
+            "pane": {"size": "80%"},
+            "xAxis": {
+                # "title": {"text": self.layout["columns"][0]},
+                "categories": self.layout["x_labels"],
+                "tickmarkPlacement": "on",
+                "lineWidth": 0,
+            },
+            "yAxis": {"gridLineInterpolation": "polygon", "lineWidth": 0, "min": 0,},
+            "tooltip": {
+                "shared": True,
+                "pointFormat": '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>',
+            },
+            "legend": {"enabled": False,},
+            "colors": self.get_colors(),
+        }
+        if len(self.layout["columns"]) > 1:
+            self.init_style["legend"] = {
+                "title": {"text": self.layout["columns"][1]},
+                "align": "right",
+                "verticalAlign": "top",
+                "y": 70,
+                "layout": "vertical",
+            }
+        return None
+
+    # Draw.
+
+    def draw(self, **style_kwargs,) -> Highchart:
+        """
+        Draws a spider plot using the HC API.
+        """
+        chart = Highchart(width=600, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        for idx, label in enumerate(self.layout["y_labels"]):
+            chart.add_data_set(
+                list(self.data["X"][:, idx]), name=label, pointPlacement="on"
+            )
+        return chart

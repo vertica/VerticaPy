@@ -14,107 +14,148 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
+from typing import Literal
+import numpy as np
+
 from vertica_highcharts import Highchart
 
-from verticapy._config.colors import get_colors
-from verticapy._utils._sql._sys import _executeSQL
-from verticapy.connection import current_cursor
-
-from verticapy.plotting._highcharts.utils import data_to_columns
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-def heatmap(
-    query: str = "",
-    data: list = [],
-    options: dict = {},
-    width: int = 600,
-    height: int = 400,
-) -> Highchart:
-    """
-    Draws a heatmap using the High Chart API 
-    and the input SQL query.
-    """
-    chart = Highchart(width=width, height=height)
-    default_options = {
-        "chart": {
-            "type": "heatmap",
-            "marginTop": 40,
-            "marginBottom": 80,
-            "plotBorderWidth": 1,
-        },
-        "title": {"text": ""},
-        "legend": {},
-        "colorAxis": {"minColor": "#FFFFFF", "maxColor": get_colors()[0]},
-        "xAxis": {"title": {"text": ""}},
-        "yAxis": {"title": {"text": ""}},
-        "tooltip": {
-            "formatter": (
-                "function () {return '<b>[' + this.series.xAxis."
-                "categories[this.point.x] + ', ' + this.series.yAxis"
-                ".categories[this.point.y] + ']</b>: ' + this.point"
-                ".value + '</b>';}"
+class HeatMap(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["map"]:
+        return "map"
+
+    @property
+    def _kind(self) -> Literal["heatmap"]:
+        return "heatmap"
+
+    @property
+    def _compute_method(self) -> Literal["2D"]:
+        return "2D"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        if len(self.layout["columns"]) > 1:
+            y_label = self.layout["columns"][1]
+        elif "method_of" in self.layout:
+            y_label = self.layout["method_of"]
+        else:
+            y_label = ""
+        if isinstance(self.layout["y_labels"], list):
+            y_labels = copy.deepcopy(self.layout["y_labels"])
+            y_labels.reverse()
+        else:
+            y_labels = self.layout["y_labels"]
+        self.init_style = {
+            "chart": {
+                "type": "heatmap",
+                "marginTop": 40,
+                "marginBottom": 80,
+                "plotBorderWidth": 1,
+            },
+            "title": {"text": ""},
+            "legend": {},
+            "tooltip": {
+                "formatter": (
+                    "function () {return '<b>[' + this.series.xAxis."
+                    "categories[this.point.x] + ', ' + this.series.yAxis"
+                    ".categories[this.point.y] + ']</b>: ' + this.point"
+                    ".value + '</b>';}"
+                )
+            },
+            "xAxis": {
+                "categories": self.layout["x_labels"],
+                "title": {"text": self.layout["columns"][0]},
+            },
+            "yAxis": {"categories": y_labels, "title": {"text": y_label},},
+            "legend": {
+                "align": "right",
+                "layout": "vertical",
+                "margin": 0,
+                "verticalAlign": "top",
+                "y": 25,
+                "symbolHeight": max(self.data["X"].shape[1] * 60, 220) * 0.7 - 25,
+            },
+            "colors": ["#EFEFEF"],
+        }
+        self.init_style_matrix = {
+            "series_type": "heatmap",
+            "borderWidth": 1,
+            "dataLabels": {
+                "enabled": (
+                    "with_numbers" in self.layout and self.layout["with_numbers"]
+                ),
+                "color": "#000000",
+            },
+        }
+        return None
+
+    def _get_cmap_style(self, style_kwargs: dict) -> dict:
+        if (
+            "colorAxis" not in style_kwargs
+            and "method" in self.layout
+            and (
+                self.layout["method"]
+                in ("pearson", "spearman", "spearmand", "kendall", "biserial",)
             )
-        },
-    }
-    default_options["colors"] = get_colors()
-    chart.set_dict_options(default_options)
-    if query:
-        data = _executeSQL(
-            query,
-            title=(
-                "Selecting the categories and their respective "
-                "aggregations to draw the chart."
-            ),
-            method="fetchall",
-        )
-        names = [desc[0] for desc in current_cursor().description]
-        n = len(names)
-        columns = data_to_columns(data, n)
-        all_categories = list(set(columns[0]))
-        all_subcategories = list(set(columns[1]))
-        dict_categories = {}
-        for elem in all_categories:
-            dict_categories[elem] = {}
-        for i in range(len(columns[0])):
-            dict_categories[columns[0][i]][columns[1][i]] = columns[2][i]
-        data = []
-        for idx, elem in enumerate(dict_categories):
-            for idx2, cat in enumerate(all_subcategories):
-                try:
-                    data += [[idx, idx2, dict_categories[elem][cat]]]
-                except:
-                    data += [[idx, idx2, None]]
-        for i in range(len(all_categories)):
-            if all_categories[i] == None:
-                all_categories[i] = "None"
-        for i in range(len(all_subcategories)):
-            if all_subcategories[i] == None:
-                all_subcategories[i] = "None"
-        chart.set_dict_options(
-            {
-                "xAxis": {"categories": all_categories, "title": {"text": names[0]},},
-                "yAxis": {
-                    "categories": all_subcategories,
-                    "title": {"text": names[1]},
-                },
+        ):
+            d = {
+                "stops": [
+                    [0, self.get_colors(idx=1)],
+                    [0.45, "#FFFFFF"],
+                    [0.55, "#FFFFFF"],
+                    [1, self.get_colors(idx=0)],
+                ],
+                "min": -1,
+                "max": 1,
             }
+        elif (
+            "colorAxis" not in style_kwargs
+            and "method" in self.layout
+            and self.layout["method"] == "cramer"
+        ):
+            d = {
+                "stops": [
+                    [0, "#FFFFFF"],
+                    [0.2, "#FFFFFF"],
+                    [1, self.get_colors(idx=0)],
+                ],
+                "min": 0,
+                "max": 1,
+            }
+        elif "colorAxis" not in style_kwargs:
+            d = {"minColor": "#FFFFFF", "maxColor": self.get_colors(idx=0)}
+        else:
+            d = {}
+        for vm in ["vmin", "vmax"]:
+            if vm in self.layout and self.layout[vm] != None:
+                d[vm[1:]] = self.layout[vm]
+        return d
+
+    # Draw.
+
+    def draw(self, **style_kwargs) -> Highchart:
+        """
+        Draws a heatmap using the HC API.
+        """
+        n, m = self.data["X"].shape
+        chart = Highchart(width=max(n * 80, 400), height=max(m * 60, 220))
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        X = np.flip(self.data["X"], axis=1)
+        data = []
+        for i, x in enumerate(self.layout["x_labels"]):
+            for j, y in enumerate(self.layout["y_labels"]):
+                data += [[i, j, round(X[i, j], self.layout["mround"])]]
+        chart.add_data_set(data, **self.init_style_matrix)
+        chart.set_dict_options(
+            {"colorAxis": self._get_cmap_style(style_kwargs=style_kwargs)}
         )
-    chart.set_options(
-        "legend",
-        {
-            "align": "right",
-            "layout": "vertical",
-            "margin": 0,
-            "verticalAlign": "top",
-            "y": 25,
-            "symbolHeight": height * 0.8 - 25,
-        },
-    )
-    chart.add_data_set(
-        data,
-        series_type="heatmap",
-        borderWidth=1,
-        dataLabels={"enabled": True, "color": "#000000"},
-    )
-    chart.set_dict_options(options)
-    return chart
+        return chart
