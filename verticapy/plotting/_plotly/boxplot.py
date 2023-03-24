@@ -79,6 +79,8 @@ class BoxPlot(PlotlyBase):
         """
         Draws a boxplot using the Plotly API.
         """
+        print(self.data)
+        print(self.layout)
         if self.data["X"].shape[1] < 2:
             min_val = self.data["X"][0][0]
             q1 = self.data["X"][1][0]
@@ -115,7 +117,7 @@ class BoxPlot(PlotlyBase):
             )
             bins = [
                 min_val,
-                (min_val + q1),
+                (min_val + q1)/2,
                 (q1 + median) / 2,
                 (median + q3) / 2,
                 (q3 + max_val) / 2,
