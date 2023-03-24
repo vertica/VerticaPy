@@ -1258,7 +1258,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        acf_type: Literal["line", "heatmap", "bar"] = "bar",
+        kind: Literal["line", "heatmap", "bar"] = "bar",
         mround: int = 3,
         ax: Optional[Axes] = None,
         **style_kwargs,
@@ -1321,7 +1321,7 @@ class vDFCorr:
         show: bool, optional
                 If  set  to True,  the Plotting object will be 
                 returned.
-        acf_type: str, optional
+        kind: str, optional
             ACF Type.
                 bar     : Classical Autocorrelation Plot using 
                           bars.
@@ -1330,7 +1330,7 @@ class vDFCorr:
         mround: int, optional
             Round  the  coefficient using the input number  of 
             digits. It is used only to display the ACF  Matrix 
-            (acf_type must be set to 'heatmap').
+            (kind must be set to 'heatmap').
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1363,7 +1363,7 @@ class vDFCorr:
         query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
             return self._new_vdataframe(query).corr([], method=method)
-        elif acf_type == "heatmap":
+        elif kind == "heatmap":
             return self._new_vdataframe(query).corr(
                 [],
                 method=method,
@@ -1401,7 +1401,7 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": acf_type,},
+                    matplotlib_kwargs={"ax": ax, "kind": kind,},
                     style_kwargs=style_kwargs,
                 )
                 data = {
@@ -1427,7 +1427,7 @@ class vDFCorr:
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
-        pacf_type: Literal["line", "bar"] = "bar",
+        kind: Literal["line", "bar"] = "bar",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ):
@@ -1489,7 +1489,7 @@ class vDFCorr:
         show: bool, optional
                 If  set  to True,  the Plotting object will be 
                 returned.
-        pacf_type: str, optional
+        kind: str, optional
             ACF Type.
                 bar  : Classical  Partial Autocorrelation Plot 
                        using bars.
@@ -1596,7 +1596,7 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "bar_type": pacf_type,},
+                    matplotlib_kwargs={"ax": ax, "kind": kind,},
                     style_kwargs=style_kwargs,
                 )
                 data = {

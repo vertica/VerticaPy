@@ -103,7 +103,7 @@ class HorizontalBarChart2D(HighchartsBase):
         }
         self.init_style_stacked = {"plotOptions": {"series": {"stacking": "normal"}}}
         self.init_style_fstacked = {"plotOptions": {"series": {"stacking": "percent"}}}
-        if self.layout["bar_type"] == "density":
+        if self.layout["kind"] == "density":
             columns = self.layout["columns"]
             x_labels = self.layout["x_labels"]
             n, m = self.data["X"].shape
@@ -153,7 +153,7 @@ class HorizontalBarChart2D(HighchartsBase):
         chart = Highchart(width=600, height=400)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        if self.layout["bar_type"] == "density":
+        if self.layout["kind"] == "density":
             lookup = {0: 1, 1: -1}
             X = self.data["X"]
             y_labels = self.layout["y_labels"]
@@ -166,8 +166,8 @@ class HorizontalBarChart2D(HighchartsBase):
         else:
             for idx, label in enumerate(self.layout["y_labels"]):
                 chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
-            if self.layout["bar_type"] == "stacked":
+            if self.layout["kind"] == "stacked":
                 chart.set_dict_options(self.init_style_stacked)
-            elif self.layout["bar_type"] == "fully_stacked":
+            elif self.layout["kind"] == "fully_stacked":
                 chart.set_dict_options(self.init_style_fstacked)
         return chart

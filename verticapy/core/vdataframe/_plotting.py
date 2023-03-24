@@ -105,7 +105,7 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        bar_type: Literal["auto", "stacked"] = "auto",
+        kind: Literal["auto", "stacked"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -141,7 +141,7 @@ class vDFPlot(PlottingUtils):
             is  only  valid if the  vDataColumns are  numerical. 
             Optimized  h will be  computed  if the parameter  is 
             empty or invalid.
-        bar_type: str, optional
+        kind: str, optional
             The BarChart Type.
                 auto    : Regular  BarChart  based  on  1  or  2 
                           vDataColumns.
@@ -183,7 +183,7 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
-                misc_layout={"stacked": (bar_type.lower() == "stacked")},
+                misc_layout={"stacked": (kind.lower() == "stacked")},
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -194,7 +194,7 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        bar_type: Literal[
+        kind: Literal[
             "auto",
             "fully_stacked",
             "stacked",
@@ -238,7 +238,7 @@ class vDFPlot(PlottingUtils):
             is  only  valid if the  vDataColumns are  numerical. 
             Optimized  h will be  computed  if the parameter  is 
             empty or invalid.
-        bar_type: str, optional
+        kind: str, optional
             The BarChart Type.
                 auto          : Regular Bar Chart  based on 1 or 2 
                                 vDataColumns.
@@ -275,10 +275,10 @@ class vDFPlot(PlottingUtils):
                 **style_kwargs,
             )
         else:
-            if bar_type in ("fully", "fully stacked"):
-                bar_type = "fully_stacked"
-            elif bar_type == "pyramid":
-                bar_type = "density"
+            if kind in ("fully", "fully stacked"):
+                kind = "fully_stacked"
+            elif kind == "pyramid":
+                kind = "density"
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="HorizontalBarChart2D",
                 matplotlib_kwargs={"ax": ax,},
@@ -291,7 +291,7 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 max_cardinality=max_cardinality,
                 h=h,
-                misc_layout={"bar_type": bar_type},
+                misc_layout={"kind": kind},
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -526,7 +526,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns = [],
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        step: bool = False,
+        kind: Literal["line", "spline", "step"] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -551,8 +551,11 @@ class vDFPlot(PlottingUtils):
             Input   End   Date.   For   example,   time = 
             '03-11-1993'   will  filter  the  data   when 
             'ts'  is greater than November 1993 the  3rd.
-        step: bool, optional
-            If set to True, draw a Step Plot.
+        kind: str, optional
+            The plot type.
+                line   : Line Plot.
+                spline : Spline Plot.
+                step   : Step Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -567,7 +570,7 @@ class vDFPlot(PlottingUtils):
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="MultiLinePlot",
-            matplotlib_kwargs={"ax": ax, "kind": "step" if step else "line",},
+            matplotlib_kwargs={"ax": ax},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.MultiLinePlot(
@@ -576,6 +579,7 @@ class vDFPlot(PlottingUtils):
             columns=columns,
             order_by_start=start_date,
             order_by_end=end_date,
+            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -649,7 +653,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns = None,
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        fully: bool = False,
+        kind: Literal["area_percent", "area_stacked"] = "area_stacked",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -675,9 +679,10 @@ class vDFPlot(PlottingUtils):
             Input End Date. For example, time = '03-11-1993' 
             will  filter the data when 'ts' is greater than 
             November 1993 the 3rd.
-        fully: bool, optional
-            If set to True, a Fully Stacked Area Chart will 
-            be drawn.
+        kind: str, optional
+            The plot type.
+                area_stacked : Stacked Area Plot.
+                area_percent : Fully Stacked Area Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -701,10 +706,7 @@ class vDFPlot(PlottingUtils):
         columns, ts = self._format_colnames(columns, ts)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="MultiLinePlot",
-            matplotlib_kwargs={
-                "ax": ax,
-                "kind": "area_percent" if fully else "area_stacked",
-            },
+            matplotlib_kwargs={"ax": ax,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.MultiLinePlot(
@@ -713,6 +715,7 @@ class vDFPlot(PlottingUtils):
             columns=columns,
             order_by_start=start_date,
             order_by_end=end_date,
+            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     # 2D MAP.
@@ -2169,8 +2172,7 @@ class vDCPlot:
         by: str = "",
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        area: bool = False,
-        step: bool = False,
+        kind: Literal["line", "spline", "step", "area"] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -2193,10 +2195,12 @@ class vDCPlot:
             Input  End  Date. For example, time = '03-11-1993' 
             will filter  the data when 'ts' is  greater  than 
             November 1993 the 3rd.
-        area: bool, optional
-            If set to True, draw an Area Plot.
-        step: bool, optional
-            If set to True, draw a Step Plot.
+        kind: str, optional
+            The plot type.
+                line   : Line Plot.
+                spline : Spline Plot.
+                area   : Area Plot.
+                step   : Step Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -2212,7 +2216,7 @@ class vDCPlot:
         ts, by = self._parent._format_colnames(ts, by)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
             class_name="LinePlot",
-            matplotlib_kwargs={"ax": ax, "area": area, "step": step},
+            matplotlib_kwargs={"ax": ax,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.LinePlot(
@@ -2221,6 +2225,7 @@ class vDCPlot:
             columns=[self._alias, by] if by else [self._alias],
             order_by_start=start_date,
             order_by_end=end_date,
+            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     @save_verticapy_logs

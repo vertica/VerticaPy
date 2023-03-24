@@ -1275,6 +1275,7 @@ class PlottingBase:
         self.layout = {
             "columns": self._clean_quotes(columns),
             "order_by": self._clean_quotes(order_by),
+            "order_by_cat": vdf[order_by].category(),
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,

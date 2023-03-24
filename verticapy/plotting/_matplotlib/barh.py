@@ -103,12 +103,12 @@ class HorizontalBarChart2D(MatplotlibBase):
         """
         colors = self.get_colors()
         n, m = self.data["X"].shape
-        if self.layout["bar_type"] == "fully_stacked":
+        if self.layout["kind"] == "fully_stacked":
             if self.layout["method"] != "density":
                 raise ValueError(
                     "Fully Stacked Bar works only with the 'density' method."
                 )
-        if self.layout["bar_type"] == "density":
+        if self.layout["kind"] == "density":
             if self.layout["method"] != "density":
                 raise ValueError("Pyramid Bar works only with the 'density' method.")
             if n != 2 and m != 2:
@@ -128,11 +128,11 @@ class HorizontalBarChart2D(MatplotlibBase):
         m, n = matrix.shape
         yticks = [j for j in range(m)]
         bar_height = 0.5
-        if self.layout["bar_type"] == "density":
+        if self.layout["kind"] == "density":
             ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 8 + 1), grid="x")
         else:
             ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 2 + 1), grid="x")
-        if self.layout["bar_type"] == "fully_stacked":
+        if self.layout["kind"] == "fully_stacked":
             for i in range(0, m):
                 matrix[i] /= sum(matrix[i])
         for i in range(0, n):
@@ -145,13 +145,13 @@ class HorizontalBarChart2D(MatplotlibBase):
                 **self.init_style,
             }
             params = self._update_dict(params, style_kwargs, i)
-            if self.layout["bar_type"] in ("stacked", "fully_stacked"):
+            if self.layout["kind"] in ("stacked", "fully_stacked"):
                 if i == 0:
                     last_column = np.array([0.0 for j in range(m)])
                 else:
                     last_column += matrix[:, i - 1].astype(float)
                 params["left"] = last_column
-            elif self.layout["bar_type"] == "density":
+            elif self.layout["kind"] == "density":
                 if i == 1:
                     current_column = [-j for j in current_column]
                 params["width"] = current_column
@@ -160,7 +160,7 @@ class HorizontalBarChart2D(MatplotlibBase):
                 params["y"] = [j + i * self.init_style["height"] / n for j in range(m)]
                 params["height"] = self.init_style["height"] / n
             ax.barh(**params)
-        if self.layout["bar_type"] not in ("stacked", "fully_stacked"):
+        if self.layout["kind"] not in ("stacked", "fully_stacked"):
             yticks = [
                 j + self.init_style["height"] / 2 - self.init_style["height"] / 2 / n
                 for j in range(m)
@@ -169,7 +169,7 @@ class HorizontalBarChart2D(MatplotlibBase):
         ax.set_yticklabels(self.layout["x_labels"])
         ax.set_ylabel(self.layout["columns"][0])
         ax.set_xlabel(self.layout["method"])
-        if self.layout["bar_type"] in ("density", "fully_stacked"):
+        if self.layout["kind"] in ("density", "fully_stacked"):
             vals = ax.get_xticks()
             max_val = max([abs(x) for x in vals])
             ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
