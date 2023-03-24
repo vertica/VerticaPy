@@ -63,6 +63,9 @@ class LinePlot(HighchartsBase):
                     }
                 }
             }
+        elif self.layout["kind"] == "step":
+            kind = "line"
+            kwargs = {"step": "right"}
         else:
             kind = self.layout["kind"]
             kwargs = {}
@@ -133,19 +136,23 @@ class LinePlot(HighchartsBase):
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        chart.set_dict_options(kind_kwargs)
+        if self.layout["kind"] == "step":
+            step_kwargs = kind_kwargs
+        else:
+            step_kwargs = {}
+            chart.set_dict_options(kind_kwargs)
         if self.layout["has_category"]:
             uniques = np.unique(self.data["z"])
             for i, c in enumerate(uniques):
                 x = self._to_datetime(self.data["x"][self.data["z"] == c])
                 y = self.data["Y"][:, 0][self.data["z"] == c]
                 data = np.column_stack((x, y)).tolist()
-                chart.add_data_set(data, kind, c)
+                chart.add_data_set(data, kind, c, **step_kwargs)
         else:
             x = self._to_datetime(self.data["x"])
             y = self.data["Y"][:, 0]
             data = np.column_stack((x, y)).tolist()
-            chart.add_data_set(data, kind, self.layout["columns"][0])
+            chart.add_data_set(data, kind, self.layout["columns"][0], **step_kwargs)
         return chart
 
 
@@ -178,11 +185,15 @@ class MultiLinePlot(LinePlot):
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        chart.set_dict_options(kind_kwargs)
+        if self.layout["kind"] == "step":
+            step_kwargs = kind_kwargs
+        else:
+            step_kwargs = {}
+            chart.set_dict_options(kind_kwargs)
         n, m = self.data["Y"].shape
         x = self._to_datetime(self.data["x"])
         for idx in range(m):
             y = self.data["Y"][:, idx]
             data = np.column_stack((x, y)).tolist()
-            chart.add_data_set(data, kind, self.layout["columns"][idx])
+            chart.add_data_set(data, kind, self.layout["columns"][idx], **step_kwargs)
         return chart
