@@ -46,126 +46,167 @@ class BoxPlot(PlotlyBase):
         self.init_layout_style = {}
         return None
 
-    def _create_bar_info(self,y_value,base,bar,labl_value,labl) -> Figure:
-        data=[[y_value,bar-base,base]]
-        df=pd.DataFrame(data, columns=['Y', 'bar',"base"])
-        fig=px.bar(df,y="Y",x="bar",base="base",orientation="h",barmode="stack",
-                ).update_traces(opacity=0.01, hovertemplate=f'{labl}:{labl_value}')
+    def _create_bar_info(
+        self, y_value, base, bar, labl_value, labl, orientation
+    ) -> Figure:
+        data = [[y_value, bar - base, base]]
+        df = pd.DataFrame(data, columns=["Y", "bar", "base"])
+        if orientation == "h":
+            data_dic = {"y": "Y", "x": "bar"}
+        else:
+            data_dic = {"x": "Y", "y": "bar"}
+        fig = px.bar(
+            df, base="base", orientation=orientation, barmode="stack", **data_dic
+        ).update_traces(opacity=0.00, hovertemplate=f"{labl}:{labl_value}")
         return fig
 
-    def _create_dataframe_for_outliers(self,fliers,traces):
-        a=[]
-        b=[]
-        c=[]
-        for i,ele in enumerate(fliers):
+    def _create_dataframe_for_outliers(self, fliers, traces):
+        a = []
+        b = []
+        c = []
+        for i, ele in enumerate(fliers):
             for j in range(len(ele)):
                 if ele[j]:
                     a.append(ele[j])
                     b.append(traces[i])
                     c.append(self.get_colors()[i])
-        df = pd.DataFrame({
-            'value': a,
-            'trace': b,
-            'color': c
-        })
+        df = pd.DataFrame({"value": a, "trace": b, "color": c})
         return df
 
-    def _create_bar_info_vertical(self,y_value,base,bar,labl_value,labl):
-        data=[[y_value,bar-base,base]]
-        df=pd.DataFrame(data, columns=['Y', 'bar',"base"])
-        fig=px.bar(df,x="Y",y="bar",base="base",orientation="v",barmode="stack",
-                ).update_traces(opacity=0.00, hovertemplate=f'{labl}:{labl_value}')
-        return fig
-    
     # Draw.
 
     def draw(self, **style_kwargs) -> Figure:
         """
         Draws a boxplot using the Plotly API.
         """
-        if self.data['X'].shape[1]<2:
-            min_val=self.data['X'][0][0]
-            q1=self.data['X'][1][0]
-            median=self.data['X'][2][0]
-            q3=self.data['X'][3][0]
-            max_val=self.data['X'][4][0]
+        if self.data["X"].shape[1] < 2:
+            min_val = self.data["X"][0][0]
+            q1 = self.data["X"][1][0]
+            median = self.data["X"][2][0]
+            q3 = self.data["X"][3][0]
+            max_val = self.data["X"][4][0]
+
+            if (self.data["fliers"][0].size) > 0:
+                points_dic = dict(x=self.data["fliers"], boxpoints="outliers")
+            else:
+                points_dic = dict(x=self.data["X"][2], boxpoints=False)
             fig = go.Figure()
-            fig.add_trace(go.Box(
-                x=self.data['fliers'],
-                name=self.layout['labels'][0],
-                boxpoints='outliers',
-                hovertemplate ='%{x}',
-                            ),**style_kwargs)
-            fig.update_traces(q1=[q1], 
-                            median=[median],
-                            q3=[q3], 
-                            lowerfence=[min_val],
-                            upperfence=[max_val],
-                            )
+            fig.add_trace(
+                go.Box(
+                    name=self.layout["labels"][0],
+                    hovertemplate="%{x}",
+                    **points_dic,
+                ),
+                **style_kwargs,
+            )
+            fig.update_traces(
+                q1=[q1],
+                median=[median],
+                q3=[q3],
+                lowerfence=[min_val],
+                upperfence=[max_val],
+                orientation="h",
+            )
             fig.update_layout(
-                yaxis = dict(
+                yaxis=dict(
                     showticklabels=False,
                 ),
-                xaxis = dict(
-                    title=self.layout['labels'][0]
-                )
+                xaxis=dict(title=self.layout["labels"][0]),
             )
-            bins=[min_val,(min_val+q1),(q1+median)/2,(median+q3)/2,(q3+max_val)/2,max_val]
-            labels=["Min",f"{self.data['q'][0]*100}%","Median",f"{self.data['q'][1]*100}% ","Maximum"]
-            values=[min_val,q1,median,q3,max_val]
-            for i in range(len(values)):        
-                fig_add=self._create_bar_info(0,bins[i],bins[i+1],values[i],labels[i])
+            bins = [
+                min_val,
+                (min_val + q1),
+                (q1 + median) / 2,
+                (median + q3) / 2,
+                (q3 + max_val) / 2,
+                max_val,
+            ]
+            labels = [
+                "Min",
+                f"{self.data['q'][0]*100}%",
+                "Median",
+                f"{self.data['q'][1]*100}% ",
+                "Maximum",
+            ]
+            values = [min_val, q1, median, q3, max_val]
+            for i in range(len(values)):
+                fig_add = self._create_bar_info(
+                    0, bins[i], bins[i + 1], values[i], labels[i], orientation="h"
+                )
                 fig.add_traces(fig_add.data)
-            fig.update_layout(barmode='relative')
+            fig.update_layout(barmode="relative")
         else:
             fig = go.Figure()
-            for I in range(self.data['X'].shape[1]):
-                I=[I]
-                fig.add_trace(go.Box(
-                    x=([self.layout['labels'][I[0]]]),
-                    name=self.layout['labels'][I[0]],
-                        hovertemplate ='%{x}',
-                                ))
-                fig.update_traces(q1=self.data['X'][1,I], 
-                                median=self.data['X'][2,I],
-                                q3=self.data['X'][3,I], 
-                                lowerfence=self.data['X'][0,I],
-                                upperfence=self.data['X'][4,I],
-                                orientation='v',
-                                selector = ({'name':self.layout['labels'][I[0]]}))
-            df=self._create_dataframe_for_outliers(self.data['fliers'],self.layout['labels'])
-            fig_1 = px.strip(df,
-                x='trace',
-                y='value',
-                color='color',
-                stripmode='overlay',
-                            hover_data ={**{"color": False, "trace": False}},
-                            )
+            for I in range(self.data["X"].shape[1]):
+                I = [I]
+                fig.add_trace(
+                    go.Box(
+                        x=([self.layout["labels"][I[0]]]),
+                        name=self.layout["labels"][I[0]],
+                        hovertemplate="%{x}",
+                    )
+                )
+                fig.update_traces(
+                    q1=self.data["X"][1, I],
+                    median=self.data["X"][2, I],
+                    q3=self.data["X"][3, I],
+                    lowerfence=self.data["X"][0, I],
+                    upperfence=self.data["X"][4, I],
+                    orientation="v",
+                    selector=({"name": self.layout["labels"][I[0]]}),
+                )
+            df = self._create_dataframe_for_outliers(
+                self.data["fliers"], self.layout["labels"]
+            )
+            fig_1 = px.strip(
+                df,
+                x="trace",
+                y="value",
+                color="color",
+                stripmode="overlay",
+                hover_data={**{"color": False, "trace": False}},
+            )
             fig_1.update_layout(showlegend=False)
             for i in range(len(fig_1.data)):
                 fig.add_trace(fig_1.data[i])
             fig.update_layout(showlegend=False)
-            for I in range(self.data['X'].shape[1]):
-                y_value=self.layout['labels'][I]
-                min_val=self.data['X'][0][I]
-                q1=self.data['X'][1][I]
-                median=self.data['X'][2][I]
-                q3=self.data['X'][3][I]
-                max_val=self.data['X'][4][I]
-                bins=[min_val,(min_val+q1)/2,(q1+median)/2,(median+q3)/2,(q3+max_val)/2,max_val]
-                labels=["Min",f"{self.data['q'][0]*100}%","Median",f"{self.data['q'][1]*100}% ","Maximum"]
-                values=[min_val,q1,median,q3,max_val]
+            for I in range(self.data["X"].shape[1]):
+                y_value = self.layout["labels"][I]
+                min_val = self.data["X"][0][I]
+                q1 = self.data["X"][1][I]
+                median = self.data["X"][2][I]
+                q3 = self.data["X"][3][I]
+                max_val = self.data["X"][4][I]
+                bins = [
+                    min_val,
+                    (min_val + q1) / 2,
+                    (q1 + median) / 2,
+                    (median + q3) / 2,
+                    (q3 + max_val) / 2,
+                    max_val,
+                ]
+                labels = [
+                    "Min",
+                    f"{self.data['q'][0]*100}%",
+                    "Median",
+                    f"{self.data['q'][1]*100}% ",
+                    "Maximum",
+                ]
+                values = [min_val, q1, median, q3, max_val]
                 for i in range(len(values)):
-                    fig_add=self._create_bar_info_vertical(y_value,bins[i],bins[i+1],values[i],labels[i])
+                    fig_add = self._create_bar_info(
+                        y_value,
+                        bins[i],
+                        bins[i + 1],
+                        values[i],
+                        labels[i],
+                        orientation="v",
+                    )
                     fig.add_traces(fig_add.data)
-                fig.update_layout(barmode='relative')  
+                fig.update_layout(barmode="relative")
                 fig.update_layout(
-                    yaxis = dict(
-                        title=self.layout['y_label']
-                    ),
-                    xaxis = dict(
-                        title=self.layout['x_label']
-                    ),
+                    yaxis=dict(title=self.layout["y_label"]),
+                    xaxis=dict(title=self.layout["x_label"]),
                 )
         return fig
 
