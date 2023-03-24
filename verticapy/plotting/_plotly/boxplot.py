@@ -122,11 +122,11 @@ class BoxPlot(PlotlyBase):
                 max_val,
             ]
             labels = [
-                "Min",
+                "Lower",
                 f"{self.data['q'][0]*100}%",
                 "Median",
                 f"{self.data['q'][1]*100}% ",
-                "Maximum",
+                "Upper",
             ]
             values = [min_val, q1, median, q3, max_val]
             for i in range(len(values)):
@@ -186,11 +186,11 @@ class BoxPlot(PlotlyBase):
                     max_val,
                 ]
                 labels = [
-                    "Min",
+                    "Lower",
                     f"{self.data['q'][0]*100}%",
                     "Median",
                     f"{self.data['q'][1]*100}% ",
-                    "Maximum",
+                    "Upper",
                 ]
                 values = [min_val, q1, median, q3, max_val]
                 for i in range(len(values)):
