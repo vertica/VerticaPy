@@ -117,7 +117,7 @@ class BoxPlot(PlotlyBase):
             )
             bins = [
                 min_val,
-                (min_val + q1)/2,
+                (min_val + q1) / 2,
                 (q1 + median) / 2,
                 (median + q3) / 2,
                 (q3 + max_val) / 2,
