@@ -526,7 +526,9 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns = [],
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        kind: Literal["line", "spline", "step"] = "line",
+        kind: Literal[
+            "area_percent", "area_stacked", "line", "spline", "step"
+        ] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -553,9 +555,11 @@ class vDFPlot(PlottingUtils):
             'ts'  is greater than November 1993 the  3rd.
         kind: str, optional
             The plot type.
-                line   : Line Plot.
-                spline : Spline Plot.
-                step   : Step Plot.
+                line         : Line Plot.
+                spline       : Spline Plot.
+                step         : Step Plot.
+                area_stacked : Stacked Area Plot.
+                area_percent : Fully Stacked Area Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -644,78 +648,6 @@ class vDFPlot(PlottingUtils):
             q=q,
             order_by_start=start_date,
             order_by_end=end_date,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def stacked_area(
-        self,
-        ts: str,
-        columns: SQLColumns = None,
-        start_date: PythonScalar = None,
-        end_date: PythonScalar = None,
-        kind: Literal["area_percent", "area_stacked"] = "area_stacked",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> PlottingObject:
-        """
-        Draws the stacked area chart of the time series.
-
-        Parameters
-        ----------
-        ts: str
-            TS (Time Series)  vDataColumn  to use to order 
-            the  data.  The vDataColumn  type must be date 
-            like   (date,   datetime,   timestamp...)   or 
-            numerical.
-        columns: SQLColumns, optional
-            List of the vDataColumns  names. If empty, all 
-            numerical vDataColumns will be used. They must 
-            all include only positive values.
-        start_date: PythonScalar, optional
-            Input   Start  Date.   For  example,  time  = 
-            '03-11-1993' will filter the data when 'ts' is 
-            lesser than November 1993 the 3rd.
-        end_date: PythonScalar, optional
-            Input End Date. For example, time = '03-11-1993' 
-            will  filter the data when 'ts' is greater than 
-            November 1993 the 3rd.
-        kind: str, optional
-            The plot type.
-                area_stacked : Stacked Area Plot.
-                area_percent : Fully Stacked Area Plot.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
-        **style_kwargs
-            Any  optional parameter to pass to the plotting 
-            functions.
-
-        Returns
-        -------
-        obj
-            Plotting Object.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
-            columns = self.numcol()
-        assert min(self.min(columns)["min"]) >= 0, ValueError(
-            "Columns having negative values can not be "
-            "processed by the 'stacked_area' method."
-        )
-        columns, ts = self._format_colnames(columns, ts)
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="MultiLinePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.MultiLinePlot(
-            vdf=self,
-            order_by=ts,
-            columns=columns,
-            order_by_start=start_date,
-            order_by_end=end_date,
-            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     # 2D MAP.
@@ -2172,7 +2104,9 @@ class vDCPlot:
         by: str = "",
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        kind: Literal["line", "spline", "step", "area"] = "line",
+        kind: Literal[
+            "area", "area_percent", "area_stacked", "line", "spline", "step"
+        ] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -2197,10 +2131,12 @@ class vDCPlot:
             November 1993 the 3rd.
         kind: str, optional
             The plot type.
-                line   : Line Plot.
-                spline : Spline Plot.
-                area   : Area Plot.
-                step   : Step Plot.
+                area_stacked : Stacked Area Plot.
+                area_percent : Fully Stacked Area Plot.
+                line         : Line Plot.
+                spline       : Spline Plot.
+                area         : Area Plot.
+                step         : Step Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
