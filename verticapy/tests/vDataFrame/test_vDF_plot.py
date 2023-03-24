@@ -170,7 +170,7 @@ class TestvDFPlot:
         assert (
             len(
                 amazon_vd.pivot("date", "state", "number")
-                .stacked_area("date", ["ACRE", "BAHIA"], fully=True, color="b")
+                .stacked_area("date", ["ACRE", "BAHIA"], kind="area_percent", color="b")
                 .get_default_bbox_extra_artists()
             )
             == 12
