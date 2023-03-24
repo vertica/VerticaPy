@@ -123,7 +123,7 @@ class BoxPlot(PlotlyBase):
             ]
             labels = [
                 "Lower",
-                f"{self.data['q'][0]*100}%",
+                f"{self.data['q'][0]*100}% ",
                 "Median",
                 f"{self.data['q'][1]*100}% ",
                 "Upper",
