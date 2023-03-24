@@ -50,7 +50,7 @@ class BoxPlot(PlotlyBase):
         data=[[y_value,bar-base,base]]
         df=pd.DataFrame(data, columns=['Y', 'bar',"base"])
         fig=px.bar(df,y="Y",x="bar",base="base",orientation="h",barmode="stack",
-                ).update_traces(opacity=0.05, hovertemplate=f'{labl}:{labl_value}')
+                ).update_traces(opacity=0.01, hovertemplate=f'{labl}:{labl_value}')
         return fig
 
     def _create_dataframe_for_outliers(self,fliers,traces):
@@ -69,6 +69,13 @@ class BoxPlot(PlotlyBase):
             'color': c
         })
         return df
+
+    def _create_bar_info_vertical(self,y_value,base,bar,labl_value,labl):
+        data=[[y_value,bar-base,base]]
+        df=pd.DataFrame(data, columns=['Y', 'bar',"base"])
+        fig=px.bar(df,x="Y",y="bar",base="base",orientation="v",barmode="stack",
+                ).update_traces(opacity=0.00, hovertemplate=f'{labl}:{labl_value}')
+        return fig
     
     # Draw.
 
@@ -76,9 +83,7 @@ class BoxPlot(PlotlyBase):
         """
         Draws a boxplot using the Plotly API.
         """
-        print("SHAPE OF X IS:",self.data['X'].shape)
         if self.data['X'].shape[1]<2:
-            print("ONE DIMENSIONAL")
             min_val=self.data['X'][0][0]
             q1=self.data['X'][1][0]
             median=self.data['X'][2][0]
@@ -86,7 +91,8 @@ class BoxPlot(PlotlyBase):
             max_val=self.data['X'][4][0]
             fig = go.Figure()
             fig.add_trace(go.Box(
-                x=self.data['fliers'], 
+                x=self.data['fliers'],
+                name=self.layout['labels'][0],
                 boxpoints='outliers',
                 hovertemplate ='%{x}',
                             ),**style_kwargs)
@@ -99,6 +105,8 @@ class BoxPlot(PlotlyBase):
             fig.update_layout(
                 yaxis = dict(
                     showticklabels=False,
+                ),
+                xaxis = dict(
                     title=self.layout['labels'][0]
                 )
             )
@@ -115,12 +123,8 @@ class BoxPlot(PlotlyBase):
                 I=[I]
                 fig.add_trace(go.Box(
                     x=([self.layout['labels'][I[0]]]),
-                    #y=D['fliers'][I[0]], 
-                    #y=data,
                     name=self.layout['labels'][I[0]],
-                    #boxpoints='outliers',
                         hovertemplate ='%{x}',
-                #    hover_data=['year','Mean','Median','IQR'],
                                 ))
                 fig.update_traces(q1=self.data['X'][1,I], 
                                 median=self.data['X'][2,I],
@@ -139,9 +143,30 @@ class BoxPlot(PlotlyBase):
                             )
             fig_1.update_layout(showlegend=False)
             for i in range(len(fig_1.data)):
-                
                 fig.add_trace(fig_1.data[i])
             fig.update_layout(showlegend=False)
+            for I in range(self.data['X'].shape[1]):
+                y_value=self.layout['labels'][I]
+                min_val=self.data['X'][0][I]
+                q1=self.data['X'][1][I]
+                median=self.data['X'][2][I]
+                q3=self.data['X'][3][I]
+                max_val=self.data['X'][4][I]
+                bins=[min_val,(min_val+q1)/2,(q1+median)/2,(median+q3)/2,(q3+max_val)/2,max_val]
+                labels=["Min",f"{self.data['q'][0]*100}%","Median",f"{self.data['q'][1]*100}% ","Maximum"]
+                values=[min_val,q1,median,q3,max_val]
+                for i in range(len(values)):
+                    fig_add=self._create_bar_info_vertical(y_value,bins[i],bins[i+1],values[i],labels[i])
+                    fig.add_traces(fig_add.data)
+                fig.update_layout(barmode='relative')  
+                fig.update_layout(
+                    yaxis = dict(
+                        title=self.layout['y_label']
+                    ),
+                    xaxis = dict(
+                        title=self.layout['x_label']
+                    ),
+                )
         return fig
 
 
