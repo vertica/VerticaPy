@@ -526,7 +526,9 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns = [],
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        kind: Literal["line", "spline", "step"] = "line",
+        kind: Literal[
+            "area_percent", "area_stacked", "line", "spline", "step"
+        ] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -553,9 +555,11 @@ class vDFPlot(PlottingUtils):
             'ts'  is greater than November 1993 the  3rd.
         kind: str, optional
             The plot type.
-                line   : Line Plot.
-                spline : Spline Plot.
-                step   : Step Plot.
+                line         : Line Plot.
+                spline       : Spline Plot.
+                step         : Step Plot.
+                area_stacked : Stacked Area Plot.
+                area_percent : Fully Stacked Area Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -644,78 +648,6 @@ class vDFPlot(PlottingUtils):
             q=q,
             order_by_start=start_date,
             order_by_end=end_date,
-        ).draw(**kwargs)
-
-    @save_verticapy_logs
-    def stacked_area(
-        self,
-        ts: str,
-        columns: SQLColumns = None,
-        start_date: PythonScalar = None,
-        end_date: PythonScalar = None,
-        kind: Literal["area_percent", "area_stacked"] = "area_stacked",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> PlottingObject:
-        """
-        Draws the stacked area chart of the time series.
-
-        Parameters
-        ----------
-        ts: str
-            TS (Time Series)  vDataColumn  to use to order 
-            the  data.  The vDataColumn  type must be date 
-            like   (date,   datetime,   timestamp...)   or 
-            numerical.
-        columns: SQLColumns, optional
-            List of the vDataColumns  names. If empty, all 
-            numerical vDataColumns will be used. They must 
-            all include only positive values.
-        start_date: PythonScalar, optional
-            Input   Start  Date.   For  example,  time  = 
-            '03-11-1993' will filter the data when 'ts' is 
-            lesser than November 1993 the 3rd.
-        end_date: PythonScalar, optional
-            Input End Date. For example, time = '03-11-1993' 
-            will  filter the data when 'ts' is greater than 
-            November 1993 the 3rd.
-        kind: str, optional
-            The plot type.
-                area_stacked : Stacked Area Plot.
-                area_percent : Fully Stacked Area Plot.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
-        **style_kwargs
-            Any  optional parameter to pass to the plotting 
-            functions.
-
-        Returns
-        -------
-        obj
-            Plotting Object.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
-            columns = self.numcol()
-        assert min(self.min(columns)["min"]) >= 0, ValueError(
-            "Columns having negative values can not be "
-            "processed by the 'stacked_area' method."
-        )
-        columns, ts = self._format_colnames(columns, ts)
-        vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="MultiLinePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.MultiLinePlot(
-            vdf=self,
-            order_by=ts,
-            columns=columns,
-            order_by_start=start_date,
-            order_by_end=end_date,
-            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     # 2D MAP.
@@ -1081,9 +1013,9 @@ class vDFPlot(PlottingUtils):
     def scatter(
         self,
         columns: SQLColumns,
-        catcol: Optional[str] = None,
+        by: Optional[str] = None,
+        size: Optional[str] = None,
         cmap_col: Optional[str] = None,
-        size_bubble_col: Optional[str] = None,
         max_cardinality: int = 6,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         max_nb_points: int = 20000,
@@ -1100,24 +1032,24 @@ class vDFPlot(PlottingUtils):
         ----------
         columns: SQLColumns
             List of the vDataColumns names. 
-        catcol: str, optional
+        by: str, optional
             Categorical  vDataColumn  to  use to label  the 
             data.
-        cmap_col: str, optional
-            Numerical  column  used  with  a  color  map as 
-            color.
-        size_bubble_col: str
+        size: str
             Numerical  vDataColumn to use to represent  the 
             Bubble size.
+        cmap_col: str, optional
+            Numerical  column used  to represent the  color 
+            map.
         max_cardinality: int, optional
-            Maximum number of distinct elements for 'catcol' 
+            Maximum  number  of  distinct elements for  'by' 
             to  be  used as categorical.  The less  frequent 
             elements will  be gathered together  to create a 
             new category: 'Others'.
         cat_priority: PythonScalar / ArrayLike, optional
             ArrayLike of the different categories to consider 
             when  labeling  the  data using  the  vDataColumn 
-            'catcol'.  The other categories will be filtered.
+            'by'.  The  other  categories  will be  filtered.
         max_nb_points: int, optional
             Maximum number of points to display.
         dimensions: tuple, optional
@@ -1165,9 +1097,9 @@ class vDFPlot(PlottingUtils):
                 model.fit(self, columns)
                 ax = model.transform(self).scatter(
                     columns=["col1", "col2"],
-                    catcol=catcol,
+                    by=by,
                     cmap_col=cmap_col,
-                    size_bubble_col=size_bubble_col,
+                    size=size,
                     max_cardinality=max_cardinality,
                     cat_priority=cat_priority,
                     max_nb_points=max_nb_points,
@@ -1196,9 +1128,9 @@ class vDFPlot(PlottingUtils):
         return vpy_plt.ScatterPlot(
             vdf=self,
             columns=columns,
-            catcol=catcol,
+            by=by,
             cmap_col=cmap_col,
-            size_bubble_col=size_bubble_col,
+            size=size,
             max_cardinality=max_cardinality,
             cat_priority=cat_priority,
             max_nb_points=max_nb_points,
@@ -2172,7 +2104,9 @@ class vDCPlot:
         by: str = "",
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        kind: Literal["line", "spline", "step", "area"] = "line",
+        kind: Literal[
+            "area", "area_percent", "area_stacked", "line", "spline", "step"
+        ] = "line",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -2197,10 +2131,12 @@ class vDCPlot:
             November 1993 the 3rd.
         kind: str, optional
             The plot type.
-                line   : Line Plot.
-                spline : Spline Plot.
-                area   : Area Plot.
-                step   : Step Plot.
+                area_stacked : Stacked Area Plot.
+                area_percent : Fully Stacked Area Plot.
+                line         : Line Plot.
+                spline       : Spline Plot.
+                area         : Area Plot.
+                step         : Step Plot.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.

@@ -614,9 +614,11 @@ class PlottingBase:
         columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
+                f"MIN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[0]})",
                 f"APPROXIMATE_MEDIAN({columns[0]})",
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
+                f"MAX({columns[0]})",
             ]
             if vdf[by].isnum():
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
@@ -647,7 +649,7 @@ class PlottingBase:
                 X = X[X_num.argsort()]
             self.layout = {
                 "x_label": by,
-                "y_label": columns[0],
+                "y_label": self._clean_quotes(columns[0]),
                 "labels": X[:, 0],
                 "has_category": True,
             }
@@ -656,16 +658,23 @@ class PlottingBase:
             self.layout = {
                 "x_label": None,
                 "y_label": None,
-                "labels": copy.deepcopy(columns),
+                "labels": self._clean_quotes(columns),
                 "has_category": False,
             }
             X = vdf.quantile(
-                q=[q[0], 0.5, q[1]], columns=columns, approx=True
+                q=[0.0, q[0], 0.5, q[1], 1.0], columns=columns, approx=True
             ).to_numpy()
         X = np.transpose(X)
+        Xmin, Xmax = X[0], X[-1]
+        X = np.delete(X, 0, 0)
+        X = np.delete(X, -1, 0)
         IQR = X[2] - X[0]
-        X = np.vstack([X, X[2] + whis * IQR])
-        X = np.vstack([X[0] - whis * IQR, X])
+        Xmax_adj = X[2] + whis * IQR
+        Xmin_adj = X[0] - whis * IQR
+        Xmaxf = np.array((Xmax, Xmax_adj)).min(axis=0)
+        Xminf = np.array((Xmin, Xmin_adj)).max(axis=0)
+        X = np.vstack((X, Xmaxf))
+        X = np.vstack((Xminf, X))
         n, m = X.shape
         fliers = []
         for i in range(m):
@@ -685,6 +694,8 @@ class PlottingBase:
                 fliers += [np.array([])]
         self.data = {
             "X": X,
+            "xmin": Xmin,
+            "xmax": Xmax,
             "fliers": fliers,
             "whis": whis,
             "q": q,
@@ -1071,8 +1082,8 @@ class PlottingBase:
         self,
         vdf: "vDataFrame",
         columns: SQLColumns,
-        size_bubble_col: Optional[str] = None,
-        catcol: Optional[str] = None,
+        size: Optional[str] = None,
+        by: Optional[str] = None,
         cmap_col: Optional[str] = None,
         max_nb_points: int = 20000,
         h: PythonNumber = 0.0,
@@ -1086,30 +1097,30 @@ class PlottingBase:
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
         if max_nb_points > 0:
-            if size_bubble_col != None:
-                cols_to_select += [vdf._format_colnames(size_bubble_col)]
+            if size != None:
+                cols_to_select += [vdf._format_colnames(size)]
                 has_size = True
-            if catcol != None:
+            if by != None:
                 has_category = True
-                catcol = vdf._format_colnames(catcol)
-                if vdf[catcol].isnum():
+                by = vdf._format_colnames(by)
+                if vdf[by].isnum():
                     cols_to_select += [
-                        vdf[catcol]
+                        vdf[by]
                         .discretize(h=h, return_enum_trans=True)[0]
-                        .replace("{}", catcol)
-                        + f" AS {catcol}"
+                        .replace("{}", by)
+                        + f" AS {by}"
                     ]
                 else:
                     cols_to_select += [
-                        vdf[catcol]
+                        vdf[by]
                         .discretize(
                             k=max_cardinality, method="topk", return_enum_trans=True
                         )[0]
-                        .replace("{}", catcol)
-                        + f" AS {catcol}"
+                        .replace("{}", by)
+                        + f" AS {by}"
                     ]
                 if cat_priority:
-                    vdf_tmp = vdf_tmp[catcol].isin(cat_priority)
+                    vdf_tmp = vdf_tmp[by].isin(cat_priority)
             elif cmap_col != None:
                 cols_to_select += [vdf._format_colnames(cmap_col)]
                 has_cmap = True
@@ -1122,15 +1133,15 @@ class PlottingBase:
         self.data = {"X": X[:, :n].astype(float), "s": None, "c": None}
         self.layout = {
             "columns": self._clean_quotes(columns),
-            "size": self._clean_quotes(size_bubble_col),
-            "c": self._clean_quotes(catcol) if (catcol != None) else cmap_col,
+            "size": self._clean_quotes(size),
+            "c": self._clean_quotes(by) if (by != None) else cmap_col,
             "has_category": has_category,
             "has_cmap": has_cmap,
             "has_size": has_size,
         }
-        if (size_bubble_col != None) and (max_nb_points > 0):
+        if (size != None) and (max_nb_points > 0):
             self.data["s"] = X[:, n].astype(float)
-        if ((catcol != None) or (cmap_col != None)) and (max_nb_points > 0):
+        if ((by != None) or (cmap_col != None)) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
         return None
 
@@ -1210,7 +1221,9 @@ class PlottingBase:
                 f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
             ]
         X = (
-            vdf.between(column=order_by, start=order_by_start, end=order_by_end)
+            vdf.between(
+                column=order_by, start=order_by_start, end=order_by_end, inplace=False
+            )
             .groupby(columns=[order_by], expr=expr,)
             .sort(columns=[order_by])
             .to_numpy()
@@ -1222,6 +1235,7 @@ class PlottingBase:
         self.layout = {
             "columns": self._clean_quotes(columns),
             "order_by": self._clean_quotes(order_by),
+            "order_by_cat": vdf[order_by].category(),
         }
         return None
 

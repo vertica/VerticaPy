@@ -20,4 +20,6 @@ from verticapy.plotting._highcharts.boxplot import BoxPlot
 from verticapy.plotting._highcharts.heatmap import HeatMap
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
 from verticapy.plotting._highcharts.pie import PieChart
+from verticapy.plotting._highcharts.range import RangeCurve
+from verticapy.plotting._highcharts.scatter import ScatterPlot
 from verticapy.plotting._highcharts.spider import SpiderChart

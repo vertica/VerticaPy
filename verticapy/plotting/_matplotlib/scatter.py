@@ -119,7 +119,6 @@ class ScatterPlot(MatplotlibBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        """Must be overridden in child class"""
         self.init_style = {
             "s": 50,
             "edgecolors": "black",
