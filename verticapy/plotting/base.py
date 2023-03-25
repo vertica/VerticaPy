@@ -286,6 +286,22 @@ class PlottingBase:
 
     # Attributes Computations.
 
+    # Features Importance.
+
+    def _compute_importance(self):
+        coef_names = np.array(self.layout["columns"])
+        importances = self.data["importance"].astype(float)
+        signs = np.sign(importances)
+        importances = abs(importances)
+        coef_names = coef_names[importances != np.nan]
+        importances = importances[importances != np.nan]
+        importances = importances[coef_names != None]
+        coef_names = coef_names[coef_names != None]
+        importances, coef_names, signs = zip(
+            *sorted(zip(importances, coef_names, signs))
+        )
+        return importances, coef_names, signs
+
     # 1D AGG Graphics: BAR / PIE ...
 
     def _compute_plot_params(

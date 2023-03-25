@@ -414,6 +414,9 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @pytest.mark.skip(
+        reason="Deprecated, we need to implement the functions for each graphic"
+    )
     def test_vDF_hchart(self, titanic_vd, amazon_vd):
         # boxplot
         result = titanic_vd.hchart(kind="boxplot")

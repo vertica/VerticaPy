@@ -47,18 +47,9 @@ class ImportanceBarChart(MatplotlibBase):
         """
         Draws a coeff importance bar chart using the Matplotlib API.
         """
-        coef_names = np.array(self.layout["columns"])
-        importances = abs(self.data["importance"]).astype(float)
-        coef_names = coef_names[importances != np.nan]
-        importances = importances[importances != np.nan]
-        importances = importances[coef_names != None]
-        coef_names = coef_names[coef_names != None]
-        signs = np.sign(importances)
+        importances, coef_names, signs = self._compute_importance()
         x_label = self.layout["x_label"] if "x_label" in self.layout else "Importance"
         y_label = self.layout["y_label"] if "y_label" in self.layout else "Features"
-        importances, coef_names, signs = zip(
-            *sorted(zip(importances, coef_names, signs))
-        )
         ax, fig = self._get_ax_fig(
             ax, size=(12, int(len(importances) / 2) + 1), set_axis_below=True, grid=True
         )

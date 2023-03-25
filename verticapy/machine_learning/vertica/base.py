@@ -935,7 +935,7 @@ class Tree:
                 matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
-            vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),

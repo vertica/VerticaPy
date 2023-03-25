@@ -36,9 +36,9 @@ class ROCCurve(HighchartsBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        auc = self.data["auc"]
+        auc = round(self.data["auc"], 3)
         self.init_style = {
-            "title": {"text": ""},
+            "title": {"text": self.layout["title"]},
             "xAxis": {
                 "reversed": False,
                 "title": {"enabled": True, "text": self.layout["x_label"]},
@@ -70,7 +70,7 @@ class ROCCurve(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = np.column_stack((self.data["x"], self.data["y"])).tolist()
-        chart.add_data_set(data, "area", self.layout["x_label"], step=True)
+        chart.add_data_set(data, "area", self.layout["y_label"], step=True)
         return chart
 
 
@@ -81,3 +81,94 @@ class PRCCurve(ROCCurve):
     @property
     def _kind(self) -> Literal["prc"]:
         return "prc"
+
+
+class CutoffCurve(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["cutoff"]:
+        return "cutoff"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "title": {"text": self.layout["title"]},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": self.layout["x_label"]},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+                "min": 0.0,
+                "max": 1.0,
+            },
+            "yAxis": {"min": 0.0, "max": 1.0,},
+            "legend": {"enabled": True},
+            "tooltip": {"crosshairs": True, "shared": True},
+            "colors": self.get_colors(),
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+        """
+        Draws a Machine Cutoff Curve using the Matplotlib API.
+        """
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        data = np.column_stack((self.data["x"], self.data["y"])).tolist()
+        chart.add_data_set(data, "spline", self.layout["y_label"])
+        data = np.column_stack((self.data["x"], self.data["z"])).tolist()
+        chart.add_data_set(data, "spline", self.layout["z_label"])
+        return chart
+
+
+class LiftChart(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["lift"]:
+        return "lift"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "title": {"text": self.layout["title"]},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": self.layout["x_label"]},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+                "min": 0.0,
+                "max": 1.0,
+            },
+            "legend": {"enabled": True},
+            "tooltip": {"crosshairs": True, "shared": True},
+            "colors": self.get_colors(),
+        }
+        self.init_style_y = {"zIndex": 1, "fillOpacity": 0.9}
+        self.init_style_z = {"zIndex": 0, "fillOpacity": 0.9}
+        return None
+
+    # Draw.
+
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+        """
+        Draws a Machine Cutoff Curve using the Matplotlib API.
+        """
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        data = np.column_stack((self.data["x"], self.data["y"])).tolist()
+        chart.add_data_set(data, "area", self.layout["y_label"], **self.init_style_y)
+        data = np.column_stack((self.data["x"], self.data["z"])).tolist()
+        chart.add_data_set(data, "area", self.layout["z_label"], **self.init_style_z)
+        return chart

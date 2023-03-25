@@ -23,7 +23,13 @@ from verticapy.plotting._highcharts.barh import (
 from verticapy.plotting._highcharts.boxplot import BoxPlot
 from verticapy.plotting._highcharts.candlestick import CandleStick
 from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.machine_learning.elbow import ElbowCurve
+from verticapy.plotting._highcharts.machine_learning.importance import (
+    ImportanceBarChart,
+)
 from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
+    CutoffCurve,
+    LiftChart,
     PRCCurve,
     ROCCurve,
 )

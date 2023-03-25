@@ -59,12 +59,15 @@ class BoxPlot(HighchartsBase):
         self.init_style_boxplot = {
             "tooltip": {"headerFormat": "<em>{point.key}</em><br/>"},
             "colorByPoint": True,
+            "fillColor": "#FDFDFD",
         }
         self.init_style_scatter = {
             "color": "#444444",
             "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "#444444",},
             "tooltip": {"pointFormat": pointFormat + "{point.y}"},
         }
+        if len(labels) == 1:
+            self.init_style["chart"]["inverted"] = True
         return None
 
     # Draw.
@@ -77,7 +80,10 @@ class BoxPlot(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
-            np.transpose(self.data["X"]).tolist(), "boxplot", **self.init_style_boxplot
+            np.transpose(self.data["X"]).tolist(),
+            "boxplot",
+            "Quantiles",
+            **self.init_style_boxplot,
         )
         fliers = []
         for i, fli in enumerate(self.data["fliers"]):

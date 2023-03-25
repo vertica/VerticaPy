@@ -148,6 +148,7 @@ class TestModelSelection:
             ["residual_sugar", "alcohol"],
             n_cluster=(1, 5),
             init="kmeanspp",
+            show=False,
         )
         plt.close("all")
         assert result["elbow_score"][0] == pytest.approx(0.0)
@@ -157,6 +158,7 @@ class TestModelSelection:
             ["residual_sugar", "alcohol"],
             n_cluster=(1, 5),
             init="kmeanspp",
+            show=False,
         )
         assert result2["elbow_score"][0] == pytest.approx(0.0)
         assert len(result2["elbow_score"]) == 4
