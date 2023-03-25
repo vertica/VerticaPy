@@ -162,7 +162,7 @@ class Clustering(Unsupervised):
         else:
             fun = vdf.scatter
             name = "cluster"
-            kwargs["catcol"] = name
+            kwargs["by"] = name
             kwargs["max_cardinality"] = 100
         self.predict(vdf, name=name)
         return fun(**kwargs)
@@ -1089,7 +1089,7 @@ class DBSCAN(VerticaModel):
         """
         return vDataFrame(self.model_name).scatter(
             columns=self.X,
-            catcol="dbscan_cluster",
+            by="dbscan_cluster",
             max_cardinality=100,
             max_nb_points=max_nb_points,
             ax=ax,

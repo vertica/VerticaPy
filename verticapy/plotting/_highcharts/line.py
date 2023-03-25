@@ -49,65 +49,72 @@ class LinePlot(HighchartsBase):
         else:
             return copy.deepcopy(x)
 
+    def _get_kind(self):
+        if self.layout["kind"] in {"area_stacked", "area_percent"}:
+            kind = "area"
+            stacking = "normal" if self.layout["kind"] == "area_stacked" else "percent"
+            kwargs = {
+                "plotOptions": {
+                    "area": {
+                        "stacking": stacking,
+                        "lineColor": "#666666",
+                        "lineWidth": 1,
+                        "marker": {"lineWidth": 1, "lineColor": "#666666"},
+                    }
+                }
+            }
+        elif self.layout["kind"] == "step":
+            kind = "line"
+            kwargs = {"step": "right"}
+        else:
+            kind = self.layout["kind"]
+            kwargs = {}
+        return kind, kwargs
+
     # Styling Methods.
 
     def _init_style(self) -> None:
-        if "stock" in self.layout and self.layout["stock"]:
-            self.init_style = {
-                "rangeSelector": {"selected": 0},
-                "title": {"text": ""},
-                "tooltip": {
-                    "style": {"width": "200px"},
-                    "valueDecimals": 4,
-                    "shared": True,
-                },
-                "yAxis": {"title": {"text": ""}},
-            }
-        else:
-            self.init_style = {
-                "title": {"text": ""},
-                "xAxis": {
-                    "reversed": False,
-                    "title": {"enabled": True, "text": self.layout["order_by"]},
-                    "startOnTick": True,
-                    "endOnTick": True,
-                    "showLastLabel": True,
-                },
-                "yAxis": {
-                    "title": {
-                        "text": self.layout["columns"][0]
-                        if len(self.layout["columns"]) == 1
-                        else ""
-                    }
-                },
-                "legend": {"enabled": False},
-                "plotOptions": {
-                    "scatter": {
-                        "marker": {
-                            "radius": 5,
-                            "states": {
-                                "hover": {
-                                    "enabled": True,
-                                    "lineColor": "rgb(100,100,100)",
-                                }
-                            },
+        self.init_style = {
+            "title": {"text": ""},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": self.layout["order_by"]},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+            },
+            "yAxis": {
+                "title": {
+                    "text": self.layout["columns"][0]
+                    if len(self.layout["columns"]) == 1
+                    else ""
+                }
+            },
+            "legend": {"enabled": False},
+            "plotOptions": {
+                "scatter": {
+                    "marker": {
+                        "radius": 5,
+                        "states": {
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
                         },
-                        "states": {"hover": {"marker": {"enabled": False}}},
-                        "tooltip": {
-                            "headerFormat": "",
-                            "pointFormat": "[{point.x}, {point.y}]",
-                        },
-                    }
-                },
-                "colors": self.get_colors(),
-            }
+                    },
+                    "states": {"hover": {"marker": {"enabled": False}}},
+                    "tooltip": {
+                        "headerFormat": "",
+                        "pointFormat": "[{point.x}, {point.y}]",
+                    },
+                }
+            },
+            "colors": self.get_colors(),
+        }
         if self.layout["order_by_cat"] == "date":
             self.init_style["xAxis"] = {
                 **self.init_style["xAxis"],
                 "type": "datetime",
                 "dateTimeLabelFormats": {},
             }
-        if self.layout["has_category"]:
+        if "has_category" in self.layout and self.layout["has_category"]:
             self.init_style["legend"] = {
                 "enabled": True,
                 "title": {"text": self.layout["columns"][1]},
@@ -120,26 +127,32 @@ class LinePlot(HighchartsBase):
 
     def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
         """
-        Draws a time series plot using the Matplotlib API.
+        Draws a time series plot using the HC API.
         """
         if "stock" in self.layout and self.layout["stock"]:
             chart = Highstock(width=600, height=400)
         else:
             chart = Highchart(width=600, height=400)
+        kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
+        if self.layout["kind"] == "step":
+            step_kwargs = kind_kwargs
+        else:
+            step_kwargs = {}
+            chart.set_dict_options(kind_kwargs)
         if self.layout["has_category"]:
             uniques = np.unique(self.data["z"])
             for i, c in enumerate(uniques):
                 x = self._to_datetime(self.data["x"][self.data["z"] == c])
                 y = self.data["Y"][:, 0][self.data["z"] == c]
                 data = np.column_stack((x, y)).tolist()
-                chart.add_data_set(data, self.layout["kind"], c)
+                chart.add_data_set(data, kind, c, **step_kwargs)
         else:
             x = self._to_datetime(self.data["x"])
             y = self.data["Y"][:, 0]
             data = np.column_stack((x, y)).tolist()
-            chart.add_data_set(data, self.layout["kind"], self.layout["columns"][0])
+            chart.add_data_set(data, kind, self.layout["columns"][0], **step_kwargs)
         return chart
 
 
@@ -163,18 +176,24 @@ class MultiLinePlot(LinePlot):
 
     def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
         """
-        Draws a multi-time series plot using the Matplotlib API.
+        Draws a multi-time series plot using the HC API.
         """
         if "stock" in self.layout and self.layout["stock"]:
             chart = Highstock(width=600, height=400)
         else:
             chart = Highchart(width=600, height=400)
+        kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
+        if self.layout["kind"] == "step":
+            step_kwargs = kind_kwargs
+        else:
+            step_kwargs = {}
+            chart.set_dict_options(kind_kwargs)
         n, m = self.data["Y"].shape
         x = self._to_datetime(self.data["x"])
         for idx in range(m):
             y = self.data["Y"][:, idx]
             data = np.column_stack((x, y)).tolist()
-            chart.add_data_set(data, self.layout["kind"], self.layout["columns"][idx])
+            chart.add_data_set(data, kind, self.layout["columns"][idx], **step_kwargs)
         return chart

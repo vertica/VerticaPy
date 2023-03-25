@@ -281,10 +281,10 @@ class TestVDFScatterPlot:
             result.layout["scene"]["zaxis"]["title"]["text"] == "PetalLengthCm"
         ), "Z-axis title issue in 3D plot"
 
-    def test_properties_all_unique_values_for_catcol(self, load_plotly, iris_vd):
+    def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], catcol="Species")
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species")
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -292,13 +292,13 @@ class TestVDFScatterPlot:
             set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
         ), "Some unique values were not found in the plot"
 
-    def test_properties_all_unique_values_for_catcol_3D_plot(
+    def test_properties_all_unique_values_for_by_3D_plot(
         self, load_plotly, iris_vd
     ):
         # Arrange
         # Act
         result = iris_vd.scatter(
-            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], catcol="Species"
+            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], by="Species"
         )
         # Assert
         assert set(
@@ -307,10 +307,10 @@ class TestVDFScatterPlot:
             set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
         ), "Some unique values were not found in the 3D plot"
 
-    def test_properties_colors_for_catcol(self, load_plotly, iris_vd):
+    def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], catcol="Species")
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species")
         assert (
             len(
                 set(
@@ -324,11 +324,11 @@ class TestVDFScatterPlot:
             == 3
         ), "Colors are not unique for three different cat_col parameter"
 
-    def test_properties_colors_for_catcol_3D_plot(self, load_plotly, iris_vd):
+    def test_properties_colors_for_by_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(
-            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], catcol="Species"
+            ["PetalWidthCm", "PetalLengthCm", "SepalLengthCm"], by="Species"
         )
         assert (
             len(
