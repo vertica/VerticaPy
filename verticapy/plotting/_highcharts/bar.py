@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
 from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
@@ -60,7 +61,7 @@ class BarChart(HighchartsBase):
         """
         Draws a histogram using the HC API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(self.data["y"], "bar", self.layout["column"])
@@ -108,11 +109,75 @@ class BarChart2D(HighchartsBase):
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):
             chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
         if self.layout["stacked"]:
             chart.set_dict_options(self.init_style_stacked)
+        return chart
+
+
+class DrillDownBarChart(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["chart"]:
+        return "chart"
+
+    @property
+    def _kind(self) -> Literal["bar"]:
+        return "bar"
+
+    @property
+    def _compute_method(self) -> Literal["rollup"]:
+        return "rollup"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "chart": {"type": "column"},
+            "title": {"text": ""},
+            "subtitle": {"text": ""},
+            "xAxis": {"type": "category"},
+            "yAxis": {"title": {"text": self.layout["method_of"]}},
+            "legend": {"enabled": False},
+            "plotOptions": {
+                "series": {"borderWidth": 0, "dataLabels": {"enabled": True}}
+            },
+            "tooltip": {
+                "headerFormat": "",
+                "pointFormat": '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b><br/>',
+            },
+            "colors": self.get_colors(),
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+        """
+        Draws a 2D BarChart using the HC API.
+        """
+        kind = "bar" if self._kind == "barh" else "column"
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        chart.add_JSsource("https://code.highcharts.com/6/modules/drilldown.js")
+        init_group = np.column_stack(self.data["groups"][1])
+        data = []
+        for row in init_group:
+            data += [
+                {"name": str(row[0]), "y": float(row[1]), "drilldown": str(row[0])}
+            ]
+        chart.add_data_set(data, kind, colorByPoint=True)
+        drilldown_group = np.column_stack(self.data["groups"][0])
+        uniques = np.unique(drilldown_group[:, 0])
+        for i, c in enumerate(uniques):
+            data = drilldown_group[drilldown_group[:, 0] == c].tolist()
+            data = [(str(x[1]), float(x[2])) for x in data]
+            chart.add_drilldown_data_set(data, kind, str(c), name=str(c))
         return chart

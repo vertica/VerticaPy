@@ -23,7 +23,7 @@ from verticapy.plotting.base import PlottingBase
 
 
 class HighchartsBase(PlottingBase):
-    def get_chart(
+    def _get_chart(
         self,
         chart: Optional[HChart] = None,
         width: int = 600,

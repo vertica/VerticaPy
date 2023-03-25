@@ -105,14 +105,14 @@ def lift_chart(
         "y_label": "Cumulative Capture Rate",
         "z_label": "Cumulative Lift",
     }
-    vpy_plt.LiftChart(data=data, layout=layout).draw(**kwargs)
-    return TableSample(
-        values={
-            "decision_boundary": decision_boundary,
-            "positive_prediction_ratio": positive_prediction_ratio,
-            "lift": list(lift),
-        }
-    )
+    return vpy_plt.LiftChart(data=data, layout=layout).draw(**kwargs)
+    # return TableSample(
+    #    values={
+    #        "decision_boundary": decision_boundary,
+    #        "positive_prediction_ratio": positive_prediction_ratio,
+    #        "lift": list(lift),
+    #    }
+    # )
 
 
 @check_minimum_version
@@ -179,10 +179,10 @@ def prc_curve(
         "x_label": "Recall",
         "y_label": "Precision",
     }
-    vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
-    return TableSample(
-        values={"threshold": threshold, "recall": recall, "precision": precision,}
-    )
+    return vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
+    # return TableSample(
+    #    values={"threshold": threshold, "recall": recall, "precision": precision,}
+    # )
 
 
 @check_minimum_version
@@ -259,7 +259,7 @@ def roc_curve(
             "y_label": "Specificity",
             "z_label": "Sensitivity",
         }
-        vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
+        return vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
             class_name="ROCCurve",
@@ -272,11 +272,11 @@ def roc_curve(
             "x_label": "False Positive Rate (1-Specificity)",
             "y_label": "True Positive Rate (Sensitivity)",
         }
-        vpy_plt.ROCCurve(data=data, layout=layout).draw(**kwargs)
-    return TableSample(
-        values={
-            "threshold": threshold,
-            "false_positive": false_positive,
-            "true_positive": true_positive,
-        }
-    )
+        return vpy_plt.ROCCurve(data=data, layout=layout).draw(**kwargs)
+    # return TableSample(
+    #    values={
+    #        "threshold": threshold,
+    #        "false_positive": false_positive,
+    #        "true_positive": true_positive,
+    #    }
+    # )

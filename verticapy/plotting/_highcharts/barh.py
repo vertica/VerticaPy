@@ -19,6 +19,7 @@ import numpy as np
 
 from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
+from verticapy.plotting._highcharts.bar import DrillDownBarChart
 
 
 class HorizontalBarChart(HighchartsBase):
@@ -61,7 +62,7 @@ class HorizontalBarChart(HighchartsBase):
         """
         Draws a histogram using the HC API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(self.data["y"], "bar", self.layout["column"])
@@ -149,7 +150,7 @@ class HorizontalBarChart2D(HighchartsBase):
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         if self.layout["kind"] == "density":
@@ -170,3 +171,19 @@ class HorizontalBarChart2D(HighchartsBase):
             elif self.layout["kind"] == "fully_stacked":
                 chart.set_dict_options(self.init_style_fstacked)
         return chart
+
+
+class DrillDownHorizontalBarChart(DrillDownBarChart):
+
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        super()._init_style()
+        self.init_style["chart"] = {"type": "column", "inverted": True}
+        return None

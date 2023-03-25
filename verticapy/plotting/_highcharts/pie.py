@@ -85,7 +85,7 @@ class PieChart(HighchartsBase):
         """
         Draws a pie chart using the HC API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = []

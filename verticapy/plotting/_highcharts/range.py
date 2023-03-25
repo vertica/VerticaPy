@@ -67,7 +67,7 @@ class RangeCurve(LinePlot):
         """
         Draws a time series plot using the Matplotlib API.
         """
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         colors = {**self.init_style, **style_kwargs}["colors"]

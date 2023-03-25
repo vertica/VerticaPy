@@ -105,7 +105,7 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        kind: Literal["auto", "stacked"] = "auto",
+        kind: Literal["auto", "drilldown", "stacked"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -143,10 +143,12 @@ class vDFPlot(PlottingUtils):
             empty or invalid.
         kind: str, optional
             The BarChart Type.
-                auto    : Regular  BarChart  based  on  1  or  2 
-                          vDataColumns.
-                stacked : Stacked    BarChart    based    on   2 
-                          vDataColumns.
+                auto      : Regular  BarChart  based on  1  or 2 
+                            vDataColumns.
+                drilldown : Drill   Down  BarChart  based  on  2
+                            vDataColumns.
+                stacked   : Stacked   BarChart    based    on  2 
+                            vDataColumns.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -170,6 +172,20 @@ class vDFPlot(PlottingUtils):
                 h=h[0],
                 **style_kwargs,
             )
+        elif kind == "drilldown":
+            vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="DrillDownBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.DrillDownBarChart(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                h=h,
+                max_cardinality=max_cardinality,
+            ).draw(**kwargs)
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="BarChart2D",
@@ -274,6 +290,20 @@ class vDFPlot(PlottingUtils):
                 ax=ax,
                 **style_kwargs,
             )
+        elif kind == "drilldown":
+            vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="DrillDownHorizontalBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.DrillDownHorizontalBarChart(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                h=h,
+                max_cardinality=max_cardinality,
+            ).draw(**kwargs)
         else:
             if kind in ("fully", "fully stacked"):
                 kind = "fully_stacked"

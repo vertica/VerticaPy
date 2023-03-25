@@ -14,11 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._highcharts.bar import BarChart, BarChart2D
-from verticapy.plotting._highcharts.barh import HorizontalBarChart, HorizontalBarChart2D
+from verticapy.plotting._highcharts.bar import BarChart, BarChart2D, DrillDownBarChart
+from verticapy.plotting._highcharts.barh import (
+    HorizontalBarChart,
+    HorizontalBarChart2D,
+    DrillDownHorizontalBarChart,
+)
 from verticapy.plotting._highcharts.boxplot import BoxPlot
 from verticapy.plotting._highcharts.candlestick import CandleStick
 from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
+    PRCCurve,
+    ROCCurve,
+)
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
 from verticapy.plotting._highcharts.pie import PieChart
 from verticapy.plotting._highcharts.range import RangeCurve

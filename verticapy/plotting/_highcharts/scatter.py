@@ -116,7 +116,7 @@ class ScatterPlot(HighchartsBase):
         if self.layout["has_cmap"]:
             warning_message = f"The parameter {has_cmap} is not supported on the Highchart API. It is ignored."
             warnings.warn(warning_message, Warning)
-        chart = self.get_chart(chart)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         kind = "bubble" if self.layout["has_size"] else "scatter"
