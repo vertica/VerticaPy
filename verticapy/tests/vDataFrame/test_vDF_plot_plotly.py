@@ -292,9 +292,7 @@ class TestVDFScatterPlot:
             set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
         ), "Some unique values were not found in the plot"
 
-    def test_properties_all_unique_values_for_by_3D_plot(
-        self, load_plotly, iris_vd
-    ):
+    def test_properties_all_unique_values_for_by_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(

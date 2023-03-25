@@ -74,6 +74,7 @@ class PlottingBase:
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,
                 "aggregate": self._compute_aggregate,
+                "candle": self._compute_candle_aggregate,
                 "contour": self._compute_contour_grid,
                 "describe": self._compute_statistics,
                 "hist": self._compute_hists_params,
@@ -1201,44 +1202,6 @@ class PlottingBase:
 
     # TIME SERIES: LINE / RANGE
 
-    def _compute_range(
-        self,
-        vdf: "vDataFrame",
-        order_by: str,
-        columns: SQLColumns,
-        q: tuple = (0.25, 0.75),
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
-    ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        columns, order_by = vdf._format_colnames(columns, order_by)
-        expr = []
-        for column in columns:
-            expr += [
-                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
-                f"APPROXIMATE_MEDIAN({column})",
-                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
-            ]
-        X = (
-            vdf.between(
-                column=order_by, start=order_by_start, end=order_by_end, inplace=False
-            )
-            .groupby(columns=[order_by], expr=expr,)
-            .sort(columns=[order_by])
-            .to_numpy()
-        )
-        self.data = {
-            "x": self._parse_datetime(X[:, 0]),
-            "Y": X[:, 1:].astype(float),
-        }
-        self.layout = {
-            "columns": self._clean_quotes(columns),
-            "order_by": self._clean_quotes(order_by),
-            "order_by_cat": vdf[order_by].category(),
-        }
-        return None
-
     def _filter_line(
         self,
         vdf: "vDataFrame",
@@ -1293,6 +1256,89 @@ class PlottingBase:
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,
+        }
+        return None
+
+    def _compute_range(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: SQLColumns,
+        q: tuple = (0.25, 0.75),
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        if isinstance(columns, str):
+            columns = [columns]
+        columns, order_by = vdf._format_colnames(columns, order_by)
+        expr = []
+        for column in columns:
+            expr += [
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
+                f"APPROXIMATE_MEDIAN({column})",
+                f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
+            ]
+        X = (
+            vdf.between(
+                column=order_by, start=order_by_start, end=order_by_end, inplace=False
+            )
+            .groupby(columns=[order_by], expr=expr,)
+            .sort(columns=[order_by])
+            .to_numpy()
+        )
+        self.data = {
+            "x": self._parse_datetime(X[:, 0]),
+            "Y": X[:, 1:].astype(float),
+            "q": q,
+        }
+        self.layout = {
+            "columns": self._clean_quotes(columns),
+            "order_by": self._clean_quotes(order_by),
+            "order_by_cat": vdf[order_by].category(),
+        }
+        return None
+
+    def _compute_candle_aggregate(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        column: str,
+        method: str = "sum",
+        q: tuple = (0.25, 0.75),
+        order_by_start: PythonScalar = None,
+        order_by_end: PythonScalar = None,
+    ) -> None:
+        order_by, column = vdf._format_colnames(order_by, column)
+        try:
+            of = column
+            method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        except ValueError:
+            of = None
+            method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
+        expr = [
+            f"MIN({column})",
+            f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[0]})",
+            f"APPROXIMATE_PERCENTILE({column} USING PARAMETERS percentile = {q[1]})",
+            f"MAX({column})",
+            aggregate,
+        ]
+        X = (
+            vdf.between(
+                column=order_by, start=order_by_start, end=order_by_end, inplace=False
+            )
+            .groupby(order_by, expr)
+            .sort(order_by)
+            .to_numpy()
+        )
+        self.data = {"x": X[:, 0], "Y": X[:, 1:5], "z": X[:, 5], "q": q}
+        self.layout = {
+            "column": self._clean_quotes(column),
+            "order_by": self._clean_quotes(order_by),
+            "method": method,
+            "method_of": method + f"({column})" if of else method,
+            "aggregate": clean_query(aggregate),
+            "aggregate_fun": aggregate_fun,
+            "is_standard": is_standard,
         }
         return None
 

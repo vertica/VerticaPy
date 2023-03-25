@@ -14,10 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 
-from vertica_highcharts import Highchart
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -57,11 +56,11 @@ class BarChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a histogram using the HC API.
         """
-        chart = Highchart(width=600, height=400)
+        chart = self.get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(self.data["y"], "bar", self.layout["column"])
@@ -105,11 +104,11 @@ class BarChart2D(HighchartsBase):
 
     # Draw.
 
-    def draw(self, stacked: bool = False, **style_kwargs,) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = Highchart(width=600, height=400)
+        chart = self.get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):

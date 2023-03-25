@@ -16,11 +16,10 @@ permissions and limitations under the License.
 """
 import copy
 from datetime import date, datetime
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
-from vertica_highcharts import Highchart, Highstock
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -125,14 +124,11 @@ class LinePlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a time series plot using the HC API.
         """
-        if "stock" in self.layout and self.layout["stock"]:
-            chart = Highstock(width=600, height=400)
-        else:
-            chart = Highchart(width=600, height=400)
+        chart = self.get_chart(chart)
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
@@ -174,14 +170,11 @@ class MultiLinePlot(LinePlot):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a multi-time series plot using the HC API.
         """
-        if "stock" in self.layout and self.layout["stock"]:
-            chart = Highstock(width=600, height=400)
-        else:
-            chart = Highchart(width=600, height=400)
+        chart = self.get_chart(chart)
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)

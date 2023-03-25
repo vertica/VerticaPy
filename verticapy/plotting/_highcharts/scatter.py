@@ -14,11 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 import numpy as np
 
-from vertica_highcharts import Highchart
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -110,14 +109,14 @@ class ScatterPlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a scatter plot using the HC API.
         """
         if self.layout["has_cmap"]:
             warning_message = f"The parameter {has_cmap} is not supported on the Highchart API. It is ignored."
             warnings.warn(warning_message, Warning)
-        chart = Highchart(width=600, height=400)
+        chart = self.get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         kind = "bubble" if self.layout["has_size"] else "scatter"

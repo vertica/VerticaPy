@@ -2098,6 +2098,76 @@ class vDCPlot:
     # Time Series.
 
     @save_verticapy_logs
+    def candlestick(
+        self,
+        ts: str,
+        method: str = "sum",
+        q: tuple[float, float] = (0.25, 0.75),
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the Time Series of the vDataColumn.
+
+        Parameters
+        ----------
+        ts: str
+            TS  (Time Series)  vDataColumn  to use   to order 
+            the  data.  The  vDataColumn  type must  be  date 
+            like (date, datetime, timestamp...) or  numerical.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                mean    : Average of the vDataColumn 'of'.
+                min     : Minimum of the vDataColumn 'of'.
+                max     : Maximum of the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of' 
+                          (ex: 50% to get the median).
+            It   can  also  be  a  cutomized   aggregation 
+            (ex: AVG(column1) + 5).
+        q: tuple, optional
+            Tuple including the  2 quantiles used to draw the 
+            Plot.
+        start_date: str / PythonNumber / date, optional
+            Input Start Date. For example, time = '03-11-1993' 
+            will  filter  the  data  when 'ts' is lesser than 
+            November 1993 the 3rd.
+        end_date: str / PythonNumber / date, optional
+            Input  End  Date. For example, time = '03-11-1993' 
+            will filter  the data when 'ts' is  greater  than 
+            November 1993 the 3rd.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to pass to the  plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        ts = self._parent._format_colnames(ts)
+        vpy_plt, kwargs = self._parent._get_plotting_lib(
+            class_name="CandleStick",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.CandleStick(
+            vdf=self._parent,
+            order_by=ts,
+            method=method,
+            q=q,
+            column=self._alias,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(**kwargs)
+
+    @save_verticapy_logs
     def plot(
         self,
         ts: str,
