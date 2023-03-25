@@ -85,7 +85,7 @@ class TestLinearSVR:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["alcohol", "residual_sugar", "citric_acid"]
         assert fim["importance"] == [52.68, 33.27, 14.05]

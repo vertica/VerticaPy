@@ -150,7 +150,7 @@ class TestDecisionTreeClassifier:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        f_imp = model.features_importance()
+        f_imp = model.features_importance(show=False)
 
         assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
         assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]

@@ -126,7 +126,7 @@ class TestLogisticRegression:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        f_imp = model.features_importance()
+        f_imp = model.features_importance(show=False)
 
         assert f_imp["index"] == ["fare", "age"]
         assert f_imp["importance"] == [85.51, 14.49]

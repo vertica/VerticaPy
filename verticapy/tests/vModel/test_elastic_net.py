@@ -92,7 +92,7 @@ class TestElasticNet:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["total_sulfur_dioxide", "residual_sugar", "alcohol"]
         assert fim["importance"] == [100, 0, 0]

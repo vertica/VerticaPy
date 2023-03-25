@@ -113,5 +113,5 @@ class RegressionPlot(MatplotlibBase):
                 + ")"
             )
         else:
-            raise ValueError("The number of predictors is too big.")
+            raise ValueError("The number of predictors is too big to draw the plot.")
         return ax

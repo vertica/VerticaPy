@@ -33,6 +33,10 @@ from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
     PRCCurve,
     ROCCurve,
 )
+from verticapy.plotting._highcharts.machine_learning.regression import RegressionPlot
+from verticapy.plotting._highcharts.machine_learning.regression_tree import (
+    RegressionTreePlot,
+)
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
 from verticapy.plotting._highcharts.pie import PieChart
 from verticapy.plotting._highcharts.range import RangeCurve

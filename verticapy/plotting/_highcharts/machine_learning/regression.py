@@ -1,0 +1,107 @@
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+from typing import Literal, Optional
+import numpy as np
+
+from verticapy._typing import HChart
+from verticapy.plotting._highcharts.base import HighchartsBase
+
+
+class RegressionPlot(HighchartsBase):
+
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["regression"]:
+        return "regression"
+
+    @property
+    def _compute_method(self) -> Literal["sample"]:
+        return "sample"
+
+    @property
+    def _dimension_bounds(self) -> tuple[int, int]:
+        return (2, 2)
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "title": {"text": ""},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": self.layout["columns"][0]},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+            },
+            "yAxis": {"title": {"text": self.layout["columns"][1]}},
+            "legend": {"enabled": True},
+            "plotOptions": {
+                "scatter": {
+                    "marker": {
+                        "radius": 5,
+                        "states": {
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
+                        },
+                    },
+                    "states": {"hover": {"marker": {"enabled": False}}},
+                }
+            },
+            "tooltip": {"headerFormat": "", "pointFormat": "[{point.x}, {point.y}]",},
+            "colors": ["black"],
+        }
+        self.init_style_scatter = {
+            "marker": {
+                "fillColor": "white",
+                "lineWidth": 1,
+                "lineColor": self.get_colors(idx=0),
+            },
+            "tooltip": {"pointFormat": "[{point.x}, {point.y}]"},
+            "zIndex": 0,
+        }
+        self.init_style_line = {
+            "zIndex": 1,
+        }
+        return None
+
+    # Draw.
+
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
+        """
+        Draws a regression plot using the Matplotlib API.
+        """
+        if len(self.layout["columns"]) == 2:
+            chart = self._get_chart(chart)
+            chart.set_dict_options(self.init_style)
+            chart.set_dict_options(style_kwargs)
+            min_reg_x = np.nanmin(self.data["X"][:, 0])
+            max_reg_x = np.nanmax(self.data["X"][:, 0])
+            x_reg = [min_reg_x, max_reg_x]
+            data = [[x, self.data["coef"][0] + self.data["coef"][1] * x] for x in x_reg]
+            chart.add_data_set(data, "line", name="Prediction", **self.init_style_line)
+            data = self.data["X"].tolist()
+            chart.add_data_set(
+                data, "scatter", name="Observations", **self.init_style_scatter
+            )
+            return chart
+        else:
+            raise ValueError("The number of predictors is too big to draw the plot.")

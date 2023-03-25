@@ -109,7 +109,7 @@ class TestDummyTreeRegressor:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
