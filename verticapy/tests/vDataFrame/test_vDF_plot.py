@@ -306,7 +306,7 @@ class TestvDFPlot:
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
         plt.close("all")
-        # testing vDataFrame.scatter using parameter catcol
+        # testing vDataFrame.scatter using parameter by
         result2 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
             size="PetalWidthCm",
@@ -717,7 +717,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
         plt.close("all")
 
-        # testing vDataFrame.scatter using parameter catcol
+        # testing vDataFrame.scatter using parameter by
         result3 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"], by="Species", color="b",
         )

@@ -162,7 +162,7 @@ class Clustering(Unsupervised):
         else:
             fun = vdf.scatter
             name = "cluster"
-            kwargs["catcol"] = name
+            kwargs["by"] = name
             kwargs["max_cardinality"] = 100
         self.predict(vdf, name=name)
         return fun(**kwargs)
