@@ -1013,9 +1013,9 @@ class vDFPlot(PlottingUtils):
     def scatter(
         self,
         columns: SQLColumns,
-        catcol: Optional[str] = None,
+        by: Optional[str] = None,
+        size: Optional[str] = None,
         cmap_col: Optional[str] = None,
-        size_bubble_col: Optional[str] = None,
         max_cardinality: int = 6,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         max_nb_points: int = 20000,
@@ -1032,24 +1032,24 @@ class vDFPlot(PlottingUtils):
         ----------
         columns: SQLColumns
             List of the vDataColumns names. 
-        catcol: str, optional
+        by: str, optional
             Categorical  vDataColumn  to  use to label  the 
             data.
-        cmap_col: str, optional
-            Numerical  column  used  with  a  color  map as 
-            color.
-        size_bubble_col: str
+        size: str
             Numerical  vDataColumn to use to represent  the 
             Bubble size.
+        cmap_col: str, optional
+            Numerical  column used  to represent the  color 
+            map.
         max_cardinality: int, optional
-            Maximum number of distinct elements for 'catcol' 
+            Maximum  number  of  distinct elements for  'by' 
             to  be  used as categorical.  The less  frequent 
             elements will  be gathered together  to create a 
             new category: 'Others'.
         cat_priority: PythonScalar / ArrayLike, optional
             ArrayLike of the different categories to consider 
             when  labeling  the  data using  the  vDataColumn 
-            'catcol'.  The other categories will be filtered.
+            'by'.  The  other  categories  will be  filtered.
         max_nb_points: int, optional
             Maximum number of points to display.
         dimensions: tuple, optional
@@ -1097,9 +1097,9 @@ class vDFPlot(PlottingUtils):
                 model.fit(self, columns)
                 ax = model.transform(self).scatter(
                     columns=["col1", "col2"],
-                    catcol=catcol,
+                    by=by,
                     cmap_col=cmap_col,
-                    size_bubble_col=size_bubble_col,
+                    size=size,
                     max_cardinality=max_cardinality,
                     cat_priority=cat_priority,
                     max_nb_points=max_nb_points,
@@ -1128,9 +1128,9 @@ class vDFPlot(PlottingUtils):
         return vpy_plt.ScatterPlot(
             vdf=self,
             columns=columns,
-            catcol=catcol,
+            by=by,
             cmap_col=cmap_col,
-            size_bubble_col=size_bubble_col,
+            size=size,
             max_cardinality=max_cardinality,
             cat_priority=cat_priority,
             max_nb_points=max_nb_points,

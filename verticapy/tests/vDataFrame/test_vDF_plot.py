@@ -290,7 +290,7 @@ class TestvDFPlot:
         # testing vDataFrame.bubble - img
         result = titanic_vd.scatter(
             columns=["fare", "age"],
-            size_bubble_col="pclass",
+            size="pclass",
             color="b",
             img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png",
             bbox=[0, 10, 0, 10],
@@ -300,9 +300,7 @@ class TestvDFPlot:
         plt.close("all")
         # testing vDataFrame.bubble
         result = iris_vd.scatter(
-            columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
-            color="b",
+            columns=["PetalLengthCm", "SepalLengthCm"], size="PetalWidthCm", color="b",
         )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
@@ -311,8 +309,8 @@ class TestvDFPlot:
         # testing vDataFrame.scatter using parameter catcol
         result2 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
-            catcol="Species",
+            size="PetalWidthCm",
+            by="Species",
             color="b",
         )
         result2 = result2.get_default_bbox_extra_artists()[0]
@@ -322,7 +320,7 @@ class TestvDFPlot:
         # testing vDataFrame.scatter using parameter cmap_col
         result3 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
+            size="PetalWidthCm",
             cmap_col="SepalWidthCm",
         )
         result3 = result3.get_default_bbox_extra_artists()[0]
@@ -721,7 +719,7 @@ class TestvDFPlot:
 
         # testing vDataFrame.scatter using parameter catcol
         result3 = iris_vd.scatter(
-            columns=["PetalLengthCm", "SepalLengthCm"], catcol="Species", color="b",
+            columns=["PetalLengthCm", "SepalLengthCm"], by="Species", color="b",
         )
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
@@ -729,7 +727,7 @@ class TestvDFPlot:
         plt.close("all")
         result4 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"],
-            catcol="Species",
+            by="Species",
             color="b",
         )
         result4 = result4.get_default_bbox_extra_artists()[0]
