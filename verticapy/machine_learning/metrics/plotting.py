@@ -41,6 +41,7 @@ def lift_chart(
     input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 30,
+    show: bool = True,
     ax: Optional[Axes] = None,
     **style_kwargs,
 ) -> TableSample:
@@ -67,6 +68,9 @@ def lift_chart(
         decision  boundaries.  Decision boundaries are 
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
+    show: bool, optional
+        If set to True,  the  Plotting object  will be 
+        returned.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -89,6 +93,14 @@ def lift_chart(
     )
     lift = np.nan_to_num(lift, nan=np.nanmax(lift))
     decision_boundary.reverse()
+    if not (show):
+        return TableSample(
+            values={
+                "decision_boundary": decision_boundary,
+                "positive_prediction_ratio": positive_prediction_ratio,
+                "lift": list(lift),
+            }
+        )
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
         class_name="LiftChart",
         matplotlib_kwargs={"ax": ax,},
@@ -106,13 +118,6 @@ def lift_chart(
         "z_label": "Cumulative Lift",
     }
     return vpy_plt.LiftChart(data=data, layout=layout).draw(**kwargs)
-    # return TableSample(
-    #    values={
-    #        "decision_boundary": decision_boundary,
-    #        "positive_prediction_ratio": positive_prediction_ratio,
-    #        "lift": list(lift),
-    #    }
-    # )
 
 
 @check_minimum_version
@@ -123,6 +128,7 @@ def prc_curve(
     input_relation: SQLRelation,
     pos_label: PythonScalar = 1,
     nbins: int = 30,
+    show: bool = True,
     ax: Optional[Axes] = None,
     **style_kwargs,
 ) -> TableSample:
@@ -149,6 +155,9 @@ def prc_curve(
         decision  boundaries.  Decision boundaries are 
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
+    show: bool, optional
+        If set to True,  the  Plotting object  will be 
+        returned.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -169,6 +178,10 @@ def prc_curve(
         nbins=nbins,
         fun_sql_name="prc",
     )
+    if not (show):
+        return TableSample(
+            values={"threshold": threshold, "recall": recall, "precision": precision,}
+        )
     auc = _compute_area(precision, recall)
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
         class_name="PRCCurve", matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
@@ -180,9 +193,6 @@ def prc_curve(
         "y_label": "Precision",
     }
     return vpy_plt.PRCCurve(data=data, layout=layout).draw(**kwargs)
-    # return TableSample(
-    #    values={"threshold": threshold, "recall": recall, "precision": precision,}
-    # )
 
 
 @check_minimum_version
@@ -194,6 +204,7 @@ def roc_curve(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     cutoff_curve: bool = False,
+    show: bool = True,
     ax: Optional[Axes] = None,
     **style_kwargs,
 ) -> TableSample:
@@ -220,6 +231,9 @@ def roc_curve(
         decision  boundaries.  Decision boundaries are 
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
+    show: bool, optional
+        If set to True,  the  Plotting object  will be 
+        returned.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -240,6 +254,14 @@ def roc_curve(
         nbins=nbins,
         fun_sql_name="roc",
     )
+    if not (show):
+        return TableSample(
+            values={
+                "threshold": threshold,
+                "false_positive": false_positive,
+                "true_positive": true_positive,
+            }
+        )
     auc = _compute_area(true_positive, false_positive)
     if cutoff_curve:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
@@ -273,10 +295,3 @@ def roc_curve(
             "y_label": "True Positive Rate (Sensitivity)",
         }
         return vpy_plt.ROCCurve(data=data, layout=layout).draw(**kwargs)
-    # return TableSample(
-    #    values={
-    #        "threshold": threshold,
-    #        "false_positive": false_positive,
-    #        "true_positive": true_positive,
-    #    }
-    # )

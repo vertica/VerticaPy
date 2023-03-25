@@ -133,7 +133,7 @@ class TestLinearSVC:
         plt.close("all")
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(nbins=1000)
+        lift_ch = model.lift_chart(nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][10] == pytest.approx(0.01)
         assert lift_ch["positive_prediction_ratio"][10] == pytest.approx(0.0)
@@ -273,7 +273,7 @@ class TestLinearSVC:
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(nbins=1000)
+        prc = model.prc_curve(nbins=1000, show=False)
 
         assert prc["threshold"][10] == pytest.approx(0.009)
         assert prc["recall"][10] == pytest.approx(1.0)
@@ -299,7 +299,7 @@ class TestLinearSVC:
         assert titanic_copy["probability"].min() == pytest.approx(0.33841486903496)
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(nbins=1000)
+        roc = model.roc_curve(nbins=1000, show=False)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(1.0)
@@ -310,7 +310,7 @@ class TestLinearSVC:
         plt.close("all")
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(nbins=1000)
+        cutoff_curve = model.cutoff_curve(nbins=1000, show=False)
 
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(1.0)

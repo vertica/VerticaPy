@@ -74,7 +74,7 @@ class TestKNeighborsClassifier:
         model_test.drop()
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(nbins=1000)
+        lift_ch = model.lift_chart(nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(
@@ -87,7 +87,7 @@ class TestKNeighborsClassifier:
         plt.close("all")
 
     def test_roc_curve(self, model):
-        roc_curve = model.roc_curve(nbins=1000)
+        roc_curve = model.roc_curve(nbins=1000, show=False)
 
         assert roc_curve["threshold"][100] == pytest.approx(0.1)
         assert roc_curve["false_positive"][100] == pytest.approx(1.0)
@@ -98,7 +98,7 @@ class TestKNeighborsClassifier:
         plt.close("all")
 
     def test_prc_curve(self, model):
-        prc_curve = model.prc_curve(nbins=1000)
+        prc_curve = model.prc_curve(nbins=1000, show=False)
 
         assert prc_curve["threshold"][100] == pytest.approx(0.099)
         assert prc_curve["recall"][100] == pytest.approx(1.0)
@@ -109,7 +109,7 @@ class TestKNeighborsClassifier:
         plt.close("all")
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(nbins=1000)
+        cutoff_curve = model.cutoff_curve(nbins=1000, show=False)
 
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(1.0)

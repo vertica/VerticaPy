@@ -171,7 +171,7 @@ class TestRFC:
         ]
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
+        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(1.0)
@@ -325,7 +325,7 @@ class TestRFC:
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(pos_label="Car", nbins=1000)
+        prc = model.prc_curve(pos_label="Car", nbins=1000, show=False)
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(1.0)
@@ -359,7 +359,7 @@ class TestRFC:
         assert rfc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(pos_label="Train", nbins=1000)
+        roc = model.roc_curve(pos_label="Train", nbins=1000, show=False)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(0.0)
@@ -370,7 +370,7 @@ class TestRFC:
         plt.close("all")
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
+        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000, show=False)
 
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(0.0)
