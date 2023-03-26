@@ -1401,16 +1401,18 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "kind": kind,},
+                    matplotlib_kwargs={"ax": ax},
                     style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
                     "y": np.array(result.values["value"]),
-                    "confidence": np.array(acf_band),
+                    "z": np.array(acf_band),
                 }
                 layout = {}
-                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
+                return vpy_plt.ACFPlot(
+                    data=data, layout=layout, misc_layout={"kind": kind, "pacf": False}
+                ).draw(**kwargs)
             return result
 
     @save_verticapy_logs
@@ -1596,16 +1598,18 @@ class vDFCorr:
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
                     class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax, "kind": kind,},
+                    matplotlib_kwargs={"ax": ax},
                     style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
                     "y": np.array(result.values["value"]),
-                    "confidence": np.array(pacf_band),
+                    "z": np.array(pacf_band),
                 }
                 layout = {}
-                return vpy_plt.ACFPlot(data=data, layout=layout).draw(**kwargs)
+                return vpy_plt.ACFPlot(
+                    data=data, layout=layout, misc_layout={"kind": kind, "pacf": True}
+                ).draw(**kwargs)
             return result
 
     # Weight of Evidence.

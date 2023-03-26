@@ -203,6 +203,7 @@ def plot_acf_pacf(
     ts: str,
     by: SQLColumns = [],
     p: Union[int, list] = 15,
+    show: bool = True,
     **style_kwargs,
 ) -> TableSample:
     """
@@ -226,6 +227,9 @@ def plot_acf_pacf(
         consider during the computation or  List of  the 
         different lags to include during the computation.
         p must be positive or a list of positive integers.
+    show: bool, optional
+        If  set to  True,  the  Plotting  object will  be 
+        returned.
     **style_kwargs
         Any optional  parameter to pass to the Matplotlib 
         functions.
@@ -241,20 +245,21 @@ def plot_acf_pacf(
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     index = [i for i in range(0, len(acf.values["value"]))]
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-        class_name="ACFPACFPlot", style_kwargs=style_kwargs,
-    )
-    data = {
-        "x": np.array(index),
-        "y0": np.array(acf.values["value"]),
-        "y1": np.array(pacf.values["value"]),
-        "z": np.array(pacf.values["confidence"]),
-    }
-    layout = {
-        "y0_label": "Autocorrelation",
-        "y1_label": "Partial Autocorrelation",
-    }
-    vpy_plt.ACFPACFPlot(data=data, layout=layout).draw(**kwargs)
+    if show:
+        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            class_name="ACFPACFPlot", style_kwargs=style_kwargs,
+        )
+        data = {
+            "x": np.array(index),
+            "y0": np.array(acf.values["value"]),
+            "y1": np.array(pacf.values["value"]),
+            "z": np.array(pacf.values["confidence"]),
+        }
+        layout = {
+            "y0_label": "Autocorrelation",
+            "y1_label": "Partial Autocorrelation",
+        }
+        return vpy_plt.ACFPACFPlot(data=data, layout=layout).draw(**kwargs)
     return TableSample(
         {
             "index": index,

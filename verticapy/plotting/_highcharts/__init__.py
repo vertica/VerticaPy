@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from verticapy.plotting._highcharts.acf import ACFPACFPlot, ACFPlot
 from verticapy.plotting._highcharts.bar import BarChart, BarChart2D, DrillDownBarChart
 from verticapy.plotting._highcharts.barh import (
     HorizontalBarChart,

@@ -53,18 +53,21 @@ class BarChart(HighchartsBase):
             "yAxis": {"title": {"text": self.layout["method_of"]}},
             "tooltip": {"headerFormat": "", "pointFormat": "{point.y}"},
         }
+        self.init_style_bar = {"pointPadding": self.data["bargap"] / 2}
         return None
 
     # Draw.
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a histogram using the HC API.
+        Draws a BarChart using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        chart.add_data_set(self.data["y"], "bar", self.layout["column"])
+        chart.add_data_set(
+            self.data["y"], "bar", self.layout["column"], **self.init_style_bar
+        )
         return chart
 
 

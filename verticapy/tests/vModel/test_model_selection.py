@@ -250,7 +250,9 @@ class TestModelSelection:
         ]
 
     def test_plot_acf_pacf(self, amazon_vd):
-        result = plot_acf_pacf(amazon_vd, ts="date", by=["state"], column="number", p=3)
+        result = plot_acf_pacf(
+            amazon_vd, ts="date", by=["state"], column="number", p=3, show=False
+        )
         plt.close("all")
         assert result["acf"] == [
             pytest.approx(1.0),
