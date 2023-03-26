@@ -15,14 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
-from matplotlib.axes import Axes
-import matplotlib.pyplot as plt
-
-from verticapy.plotting._matplotlib.base import MatplotlibBase
+from verticapy._typing import HChart
+from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-class PCACirclePlot(MatplotlibBase):
+class PCACirclePlot(HighchartsBase):
 
     # Properties.
 
@@ -37,57 +36,65 @@ class PCACirclePlot(MatplotlibBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
+        if self.data["explained_variance"][0]:
+            x_label = f"({round(self.data['explained_variance'][0] * 100, 1)}%)"
+            x_label = f"Dim{self.data['dim'][0]} {x_label}"
+        else:
+            x_label = ""
+        if self.data["explained_variance"][1]:
+            y_label = f"({round(self.data['explained_variance'][1] * 100, 1)}%)"
+            y_label = f"Dim{self.data['dim'][1]} {y_label}"
+        else:
+            y_label = ""
         self.init_style = {
-            "head_width": 0.05,
-            "color": "black",
-            "length_includes_head": True,
+            "title": {"text": ""},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": x_label},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+                "min": -1,
+                "max": 1,
+            },
+            "yAxis": {"title": {"text": y_label}, "min": -1, "max": 1,},
+            "legend": {"enabled": True},
+            "tooltip": {
+                "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
+                "pointFormat": f"Dim{self.data['dim'][0]}"
+                + ": {point.x} <br/> "
+                + f"Dim{self.data['dim'][1]}"
+                + ": {point.y}",
+            },
+            "colors": self.get_colors(),
         }
-        self.init_style_circle = {
-            "edgecolor": self.get_colors(idx=0),
-            "facecolor": "none",
-        }
-        self.init_style_plot = {"linestyle": "--", "color": "black"}
+        self.init_style_circle = {"color": "#EFEFEF", "zIndex": 0}
         self.layout["columns"] = self._clean_quotes(self.layout["columns"])
         return None
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a PCA circle plot using the Matplotlib API.
         """
-        colors = self.get_colors()
-        if "color" in style_kwargs:
-            colors[0] = style_kwargs["color"]
-        circle1 = plt.Circle((0, 0), 1, **self.init_style_circle)
-        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=False)
+        chart = self._get_chart(chart, width=400, height=400)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        data = [[x / 1000, np.sqrt(1 - (x / 1000) ** 2)] for x in range(-1000, 1000, 1)]
+        data += [
+            [x / 1000, -np.sqrt(1 - (x / 1000) ** 2)] for x in range(1000, -1000, -1)
+        ]
+        data += [[-1, 0]]
+        chart.add_data_set(data, "spline", name="Circle", **self.init_style_circle)
         n = len(self.data["x"])
-        ax.add_patch(circle1)
         for i in range(n):
-            ax.arrow(
-                0, 0, self.data["x"][i], self.data["y"][i], **self.init_style,
-            )
-            ax.text(self.data["x"][i], self.data["y"][i], self.layout["columns"][i])
-        ax.plot([-1.1, 1.1], [0.0, 0.0], **self.init_style_plot)
-        ax.plot([0.0, 0.0], [-1.1, 1.1], **self.init_style_plot)
-        if self.data["explained_variance"][0]:
-            dim1 = f"({round(self.data['explained_variance'][0] * 100, 1)}%)"
-        else:
-            dim1 = ""
-        ax.set_xlabel(f"Dim{self.data['dim'][0]} {dim1}")
-        if self.data["explained_variance"][1]:
-            dim1 = f"({round(self.data['explained_variance'][1] * 100, 1)}%)"
-        else:
-            dim1 = ""
-        ax.set_ylabel(f"Dim{self.data['dim'][1]} {dim1}")
-        ax.xaxis.set_ticks_position("bottom")
-        ax.yaxis.set_ticks_position("left")
-        ax.set_xlim(-1.1, 1.1)
-        ax.set_ylim(-1.1, 1.1)
-        return ax
+            data = [[0, 0], [self.data["x"][i], self.data["y"][i]]]
+            chart.add_data_set(data, "line", name=self.layout["columns"][i])
+        return chart
 
 
-class PCAScreePlot(MatplotlibBase):
+class PCAScreePlot(PCACirclePlot):
 
     # Properties.
 
@@ -120,7 +127,7 @@ class PCAScreePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
@@ -161,7 +168,7 @@ class PCAScreePlot(MatplotlibBase):
         return ax
 
 
-class PCAVarPlot(MatplotlibBase):
+class PCAVarPlot(PCACirclePlot):
 
     # Properties.
 
@@ -190,7 +197,7 @@ class PCAVarPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
