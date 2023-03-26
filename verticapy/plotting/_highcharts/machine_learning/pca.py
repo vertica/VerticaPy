@@ -81,11 +81,10 @@ class PCACirclePlot(HighchartsBase):
         chart = self._get_chart(chart, width=400, height=400)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        data = [[x / 1000, np.sqrt(1 - (x / 1000) ** 2)] for x in range(-1000, 1000, 1)]
-        data += [
-            [x / 1000, -np.sqrt(1 - (x / 1000) ** 2)] for x in range(1000, -1000, -1)
+        data = [
+            [np.cos(2 * np.pi * x / 1000), np.sin(2 * np.pi * x / 1000)]
+            for x in range(-1000, 1000, 1)
         ]
-        data += [[-1, 0]]
         chart.add_data_set(data, "spline", name="Circle", **self.init_style_circle)
         n = len(self.data["x"])
         for i in range(n):

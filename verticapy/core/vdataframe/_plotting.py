@@ -1204,11 +1204,11 @@ class vDFPlot(PlottingUtils):
         self,
         columns: SQLColumns,
         threshold: float = 3.0,
+        max_nb_points: int = 500,
         color: ColorType = "orange",
         outliers_color: ColorType = "black",
         inliers_color: ColorType = "white",
         inliers_border_color: ColorType = "red",
-        max_nb_points: int = 500,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1222,6 +1222,8 @@ class vDFPlot(PlottingUtils):
             List  of  one or two  vDataColumn  names.
         threshold: float, optional
             ZSCORE threshold used to detect outliers.
+        max_nb_points: int, optional
+            Maximum number of points to display.
         color: ColorType, optional
             Inliers Area color.
         outliers_color: ColorType, optional
@@ -1230,8 +1232,6 @@ class vDFPlot(PlottingUtils):
             Inliers color.
         inliers_border_color: ColorType, optional
             Inliers border color.
-        max_nb_points: int, optional
-            Maximum number of points to display.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1246,17 +1246,20 @@ class vDFPlot(PlottingUtils):
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="OutliersPlot",
-            matplotlib_kwargs={
-                "ax": ax,
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.OutliersPlot(
+            vdf=self,
+            columns=columns,
+            threshold=threshold,
+            max_nb_points=max_nb_points,
+            misc_layout={
                 "color": color,
                 "outliers_color": outliers_color,
                 "inliers_color": inliers_color,
                 "inliers_border_color": inliers_border_color,
             },
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.OutliersPlot(
-            vdf=self, columns=columns, threshold=threshold, max_nb_points=max_nb_points,
         ).draw(**kwargs)
 
 

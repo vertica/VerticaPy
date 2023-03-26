@@ -49,6 +49,7 @@ from verticapy.plotting._highcharts.machine_learning.regression_tree import (
 )
 from verticapy.plotting._highcharts.machine_learning.svm import SVMClassifierPlot
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
+from verticapy.plotting._highcharts.outliers import OutliersPlot
 from verticapy.plotting._highcharts.pie import PieChart
 from verticapy.plotting._highcharts.range import RangeCurve
 from verticapy.plotting._highcharts.scatter import ScatterPlot
