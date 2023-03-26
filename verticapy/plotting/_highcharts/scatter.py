@@ -42,17 +42,20 @@ class ScatterPlot(HighchartsBase):
     def _init_style(self) -> None:
         tooltip = {
             "headerFormat": "",
-            "pointFormat": str(self.layout["columns"][0])
-            + ": <b>{point.x}</b><br>"
+            "pointFormat": "<b>"
+            + str(self.layout["columns"][0])
+            + "</b>: {point.x}<br><b>"
             + str(self.layout["columns"][1])
-            + ": <b>{point.y}</b><br>",
+            + "</b>: {point.y}<br>",
         }
         if len(self.layout["columns"]) > 2:
             tooltip["pointFormat"] += (
-                str(self.layout["columns"][2]) + ": <b>{point.z}</b>"
+                "<b>" + str(self.layout["columns"][2]) + "</b>: {point.z}"
             )
         elif self.layout["has_size"]:
-            tooltip["pointFormat"] += str(self.layout["size"]) + ": <b>{point.z}</b>"
+            tooltip["pointFormat"] += (
+                "<b>" + str(self.layout["size"]) + "</b>: {point.z}"
+            )
         self.init_style = {
             "title": {"text": ""},
             "xAxis": {

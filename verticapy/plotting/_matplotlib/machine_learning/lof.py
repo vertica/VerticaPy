@@ -79,7 +79,8 @@ class LOFPlot(MatplotlibBase):
             **self.init_style,
             "color": colors[0],
         }
-        min_lof, max_lof = self.data["X"][:, -1].min(), self.data["X"][:, -1].max()
+        min_lof = np.nanmin(self.data["X"][:, -1])
+        max_lof = np.nanmax(self.data["X"][:, -1])
         radius = 1000 * (self.data["X"][:, -1] - min_lof) / (max_lof - min_lof)
         x_label = self.layout["columns"][0]
         if 2 <= len(self.layout["columns"]) <= 3:
@@ -128,7 +129,7 @@ class LOFPlot(MatplotlibBase):
             ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         else:
             raise Exception(
-                "LocalOutlierFactor Plot is available for a maximum of 3 columns"
+                "LocalOutlierFactor Plot is available for a maximum of 3 columns."
             )
         ax.set_xlabel(x_label)
         return ax

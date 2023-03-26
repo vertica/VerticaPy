@@ -29,14 +29,15 @@ from verticapy.plotting._highcharts.machine_learning.elbow import ElbowCurve
 from verticapy.plotting._highcharts.machine_learning.importance import (
     ImportanceBarChart,
 )
+from verticapy.plotting._highcharts.machine_learning.lof import LOFPlot
+from verticapy.plotting._highcharts.machine_learning.logistic_reg import (
+    LogisticRegressionPlot,
+)
 from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
     CutoffCurve,
     LiftChart,
     PRCCurve,
     ROCCurve,
-)
-from verticapy.plotting._highcharts.machine_learning.logistic_reg import (
-    LogisticRegressionPlot,
 )
 from verticapy.plotting._highcharts.machine_learning.pca import (
     PCACirclePlot,
