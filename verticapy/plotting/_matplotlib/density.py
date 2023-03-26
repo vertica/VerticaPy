@@ -64,8 +64,8 @@ class DensityPlot(MatplotlibBase):
         )
         ax.set_xlim(np.nanmin(self.data["x"]), np.nanmax(self.data["x"]))
         ax.set_ylim(bottom=0)
-        ax.set_xlabel(self.layout["x_label"])
-        ax.set_ylabel(self.layout["y_label"])
+        ax.set_xlabel(self._clean_quotes(self.layout["x_label"]))
+        ax.set_ylabel(self._clean_quotes(self.layout["y_label"]))
         return ax
 
 
@@ -83,7 +83,7 @@ class MultiDensityPlot(DensityPlot):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a density plot using the Matplotlib API.
+        Draws a multi density plot using the Matplotlib API.
         """
         ax, fig = self._get_ax_fig(ax, size=(7, 5), set_axis_below=True, grid=True)
         n, m = self.data["X"].shape
@@ -113,8 +113,8 @@ class MultiDensityPlot(DensityPlot):
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
-        ax.set_xlabel(self.layout["x_label"])
-        ax.set_ylabel(self.layout["y_label"])
+        ax.set_xlabel(self._clean_quotes(self.layout["x_label"]))
+        ax.set_ylabel(self._clean_quotes(self.layout["y_label"]))
         return ax
 
 
@@ -153,6 +153,6 @@ class DensityPlot2D(MatplotlibBase):
             **self._update_dict(self.init_style, style_kwargs),
         )
         fig.colorbar(im, ax=ax)
-        ax.set_xlabel(self.layout["x_label"])
-        ax.set_ylabel(self.layout["y_label"])
+        ax.set_xlabel(self._clean_quotes(self.layout["x_label"]))
+        ax.set_ylabel(self._clean_quotes(self.layout["y_label"]))
         return ax

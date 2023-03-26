@@ -123,7 +123,7 @@ class PlottingBase:
     # Columns formatting methods.
 
     def _clean_quotes(self, columns: SQLColumns) -> SQLColumns:
-        if columns == None:
+        if isinstance(columns, type(None)):
             return None
         elif isinstance(columns, str):
             return quote_ident(columns)[1:-1]

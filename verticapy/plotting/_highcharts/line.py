@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 from datetime import date, datetime
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 import numpy as np
 
 from verticapy._typing import HChart
@@ -100,8 +100,13 @@ class LinePlot(HighchartsBase):
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},
                     "tooltip": {
-                        "headerFormat": "",
-                        "pointFormat": "[{point.x}, {point.y}]",
+                        "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
+                        "pointFormat": "<b>"
+                        + self.layout["order_by"]
+                        + "</b>: {point.x} <br/> <b>"
+                        + self.layout["columns"][0]
+                        if len(self.layout["columns"]) == 1
+                        else "value" + "</b>: {point.y}",
                     },
                 }
             },
