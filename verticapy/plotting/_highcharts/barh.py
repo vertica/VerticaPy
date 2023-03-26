@@ -44,10 +44,10 @@ class HorizontalBarChart(HighchartsBase):
         self.init_style = {
             "title": {"text": ""},
             "chart": {"type": "column", "inverted": True},
-            "xAxis": {"type": "category"},
             "legend": {"enabled": False},
             "colors": [self.get_colors(idx=0)],
             "xAxis": {
+                "type": "category",
                 "title": {"text": self.layout["column"]},
                 "categories": self.layout["labels"],
             },

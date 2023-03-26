@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import random
 from typing import Literal, Optional
 import numpy as np
 
@@ -21,7 +22,7 @@ from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
-class RegressionPlot(HighchartsBase):
+class SVMClassifierPlot(HighchartsBase):
 
     # Properties.
 
@@ -30,8 +31,8 @@ class RegressionPlot(HighchartsBase):
         return "plot"
 
     @property
-    def _kind(self) -> Literal["regression"]:
-        return "regression"
+    def _kind(self) -> Literal["svm"]:
+        return "svm"
 
     @property
     def _compute_method(self) -> Literal["sample"]:
@@ -39,7 +40,7 @@ class RegressionPlot(HighchartsBase):
 
     @property
     def _dimension_bounds(self) -> tuple[int, int]:
-        return (2, 2)
+        return (2, 3)
 
     # Styling Methods.
 
@@ -67,25 +68,22 @@ class RegressionPlot(HighchartsBase):
                 }
             },
             "tooltip": {
-                "headerFormat": "<b>{series.name}</b> <br/>",
+                "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
                 "pointFormat": "<b>"
                 + self.layout["columns"][0]
                 + "</b>: {point.x} <br/> <b>"
                 + self.layout["columns"][1]
                 + "</b>: {point.y}",
             },
-            "colors": ["black"],
+            "colors": self.get_colors(),
         }
         self.init_style_scatter = {
-            "marker": {
-                "fillColor": "white",
-                "lineWidth": 1,
-                "lineColor": self.get_colors(idx=0),
-            },
+            "marker": {"lineWidth": 1},
             "zIndex": 0,
         }
         self.init_style_line = {
             "zIndex": 1,
+            "color": "black",
         }
         return None
 
@@ -93,21 +91,41 @@ class RegressionPlot(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws a regression plot using the Matplotlib API.
+        Draws a SVM Classifier plot using the Matplotlib API.
         """
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        x, w = self.data["X"][:, 0], self.data["X"][:, -1]
+        x0, x1 = x[w == 0], x[w == 1]
         if len(self.layout["columns"]) == 2:
-            chart = self._get_chart(chart)
-            chart.set_dict_options(self.init_style)
-            chart.set_dict_options(style_kwargs)
-            min_reg_x = np.nanmin(self.data["X"][:, 0])
-            max_reg_x = np.nanmax(self.data["X"][:, 0])
-            x_reg = [min_reg_x + (max_reg_x - min_reg_x) * i / 100 for i in range(101)]
-            data = [[x, self.data["coef"][0] + self.data["coef"][1] * x] for x in x_reg]
-            chart.add_data_set(data, "line", name="Prediction", **self.init_style_line)
-            data = self.data["X"].tolist()
-            chart.add_data_set(
-                data, "scatter", name="Observations", **self.init_style_scatter
-            )
-            return chart
+            data_svm = [
+                [-self.data["coef"][0] / self.data["coef"][1], i / 100]
+                for i in range(-100, 101)
+            ]
+            data_1 = [[xi, 2 * (random.random() - 0.5)] for xi in x1]
+            data_0 = [[xi, 2 * (random.random() - 0.5)] for xi in x0]
+        elif len(self.layout["columns"]) == 3:
+            y = self.data["X"][:, 1]
+            y0, y1 = y[w == 0], y[w == 1]
+            min_svm_x, max_svm_x = np.nanmin(x), np.nanmax(x)
+            data_svm = [
+                [
+                    (min_svm_x + (max_svm_x - min_svm_x) * (i / 100)),
+                    -(
+                        self.data["coef"][0]
+                        + self.data["coef"][1]
+                        * (min_svm_x + (max_svm_x - min_svm_x) * (i / 100))
+                    )
+                    / self.data["coef"][2],
+                ]
+                for i in range(101)
+            ]
+            data_1 = np.column_stack((x1, y1)).tolist()
+            data_0 = np.column_stack((x0, y0)).tolist()
         else:
             raise ValueError("The number of predictors is too big to draw the plot.")
+        chart.add_data_set(data_svm, "line", name="SVM", **self.init_style_line)
+        chart.add_data_set(data_1, "scatter", name="+1", **self.init_style_scatter)
+        chart.add_data_set(data_0, "scatter", name="-1", **self.init_style_scatter)
+        return chart
