@@ -20,7 +20,13 @@ from tqdm.auto import tqdm
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
+from verticapy._typing import (
+    PlottingObject,
+    PythonNumber,
+    PythonScalar,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
