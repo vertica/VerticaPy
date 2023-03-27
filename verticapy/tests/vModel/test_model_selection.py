@@ -148,6 +148,7 @@ class TestModelSelection:
             ["residual_sugar", "alcohol"],
             n_cluster=(1, 5),
             init="kmeanspp",
+            show=False,
         )
         plt.close("all")
         assert result["elbow_score"][0] == pytest.approx(0.0)
@@ -157,6 +158,7 @@ class TestModelSelection:
             ["residual_sugar", "alcohol"],
             n_cluster=(1, 5),
             init="kmeanspp",
+            show=False,
         )
         assert result2["elbow_score"][0] == pytest.approx(0.0)
         assert len(result2["elbow_score"]) == 4
@@ -226,7 +228,9 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
-        result = lift_chart("good", "prediction", data, pos_label=1, nbins=30,)
+        result = lift_chart(
+            "good", "prediction", data, pos_label=1, nbins=30, show=False
+        )
         assert result["lift"][0] == pytest.approx(2.95543129990643)
         assert len(result["lift"]) == 31
         model.drop()
@@ -246,7 +250,9 @@ class TestModelSelection:
         ]
 
     def test_plot_acf_pacf(self, amazon_vd):
-        result = plot_acf_pacf(amazon_vd, ts="date", by=["state"], column="number", p=3)
+        result = plot_acf_pacf(
+            amazon_vd, ts="date", by=["state"], column="number", p=3, show=False
+        )
         plt.close("all")
         assert result["acf"] == [
             pytest.approx(1.0),
@@ -267,7 +273,9 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict_proba(data, name="prediction", pos_label=1)
-        result = prc_curve("good", "prediction", data, pos_label=1, nbins=30,)
+        result = prc_curve(
+            "good", "prediction", data, pos_label=1, nbins=30, show=False
+        )
         assert result["precision"][1] == pytest.approx(0.196552254886871)
         assert len(result["precision"]) == 30
         model.drop()
@@ -293,7 +301,9 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict_proba(data, name="prediction", pos_label=1)
-        result = roc_curve("good", "prediction", data, pos_label=1, nbins=30,)
+        result = roc_curve(
+            "good", "prediction", data, pos_label=1, nbins=30, show=False
+        )
         assert result["true_positive"][2] == pytest.approx(0.945967110415035)
         assert len(result["true_positive"]) == 31
         model.drop()

@@ -15,11 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Literal, Optional
 import numpy as np
 
-from vertica_highcharts import Highchart, Highstock
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.line import LinePlot
 
 
@@ -64,14 +63,11 @@ class RangeCurve(LinePlot):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Union[Highchart, Highstock]:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a time series plot using the Matplotlib API.
         """
-        if "stock" in self.layout and self.layout["stock"]:
-            chart = Highstock(width=600, height=400)
-        else:
-            chart = Highchart(width=600, height=400)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         colors = {**self.init_style, **style_kwargs}["colors"]

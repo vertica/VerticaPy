@@ -57,12 +57,7 @@ class ACFPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(
-        self,
-        kind: Literal["line", "bar"] = "bar",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
-    ) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws an ACF Time Series plot using the Matplotlib API.
         """
@@ -70,7 +65,7 @@ class ACFPlot(MatplotlibBase):
         if "color" not in style_kwargs:
             style_kwargs["color"] = self.get_colors(idx=0)
         color = style_kwargs["color"]
-        if kind == "bar":
+        if self.layout["kind"] == "bar":
             ax.bar(
                 self.data["x"],
                 self.data["y"],
@@ -95,11 +90,11 @@ class ACFPlot(MatplotlibBase):
             )
         ax.set_xticks(self.data["x"])
         ax.set_xticklabels(self.data["x"], rotation=90)
-        if isinstance(self.data["confidence"], np.ndarray):
+        if isinstance(self.data["z"], np.ndarray):
             ax.fill_between(
                 self.data["x"],
-                -self.data["confidence"],
-                self.data["confidence"],
+                -self.data["z"],
+                self.data["z"],
                 color=color,
                 **self.init_style_alpha,
             )

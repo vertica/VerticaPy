@@ -935,7 +935,7 @@ class Tree:
                 matplotlib_kwargs={"ax": ax,},
                 style_kwargs=style_kwargs,
             )
-            vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
             "index": [quote_ident(x)[1:-1].lower() for x in self.X],
             "importance": list(abs(fi)),
@@ -1429,7 +1429,11 @@ class BinaryClassifier(Classifier):
     # Plotting Methods.
 
     def cutoff_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
+        self,
+        nbins: int = 30,
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> TableSample:
         """
         Draws the model Cutoff curve.
@@ -1438,6 +1442,9 @@ class BinaryClassifier(Classifier):
         ----------
         nbins: int, optional
             The number of bins.
+        show: bool, optional
+            If set to True,  the  Plotting 
+            object  will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -1453,14 +1460,19 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            ax=ax,
-            cutoff_curve=True,
             nbins=nbins,
+            cutoff_curve=True,
+            show=show,
+            ax=ax,
             **style_kwargs,
         )
 
     def lift_chart(
-        self, nbins: int = 1000, ax: Optional[Axes] = None, **style_kwargs
+        self,
+        nbins: int = 1000,
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> TableSample:
         """
     	Draws the model Lift Chart.
@@ -1469,6 +1481,9 @@ class BinaryClassifier(Classifier):
         ----------
         nbins: int, optional
             The number of bins.
+        show: bool, optional
+            If set to True,  the  Plotting 
+            object  will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -1484,13 +1499,18 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            ax=ax,
             nbins=nbins,
+            show=show,
+            ax=ax,
             **style_kwargs,
         )
 
     def prc_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
+        self,
+        nbins: int = 30,
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> TableSample:
         """
     	Draws the model PRC curve.
@@ -1499,6 +1519,9 @@ class BinaryClassifier(Classifier):
         ----------
         nbins: int, optional
             The number of bins.
+        show: bool, optional
+            If set to True,  the  Plotting 
+            object  will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -1514,13 +1537,18 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            ax=ax,
             nbins=nbins,
+            show=show,
+            ax=ax,
             **style_kwargs,
         )
 
     def roc_curve(
-        self, nbins: int = 30, ax: Optional[Axes] = None, **style_kwargs
+        self,
+        nbins: int = 30,
+        show: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> TableSample:
         """
         Draws the model ROC curve.
@@ -1529,6 +1557,9 @@ class BinaryClassifier(Classifier):
         ----------
         nbins: int, optional
             The number of bins.
+        show: bool, optional
+            If set to True,  the  Plotting 
+            object  will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -1544,8 +1575,9 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            ax=ax,
             nbins=nbins,
+            show=show,
+            ax=ax,
             **style_kwargs,
         )
 
@@ -2137,6 +2169,7 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 30,
+        show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> TableSample:
@@ -2153,6 +2186,8 @@ class MulticlassClassifier(Classifier):
             An integer value that determines the number of decision   
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
+        show: bool, optional
+            If set to True,  the  Plotting object will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -2166,6 +2201,7 @@ class MulticlassClassifier(Classifier):
         """
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
+            show=show,
             **self._get_plot_kwargs(nbins=nbins, ax=ax, method="cutoff"),
             **style_kwargs,
         )
@@ -2174,6 +2210,7 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 1000,
+        show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> TableSample:
@@ -2190,6 +2227,8 @@ class MulticlassClassifier(Classifier):
             An integer value that determines the number of decision   
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
+        show: bool, optional
+            If set to True,  the  Plotting object will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -2203,6 +2242,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
+            show=show,
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwargs,
         )
@@ -2211,6 +2251,7 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 30,
+        show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> TableSample:
@@ -2227,6 +2268,8 @@ class MulticlassClassifier(Classifier):
             An integer value that determines the number of decision   
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
+        show: bool, optional
+            If set to True,  the  Plotting object will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -2240,6 +2283,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
+            show=show,
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwargs,
         )
@@ -2248,6 +2292,7 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 30,
+        show: bool = True,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> TableSample:
@@ -2264,6 +2309,8 @@ class MulticlassClassifier(Classifier):
             An integer value that determines the number of decision   
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
+        show: bool, optional
+            If set to True,  the  Plotting object will be returned.
         ax: Axes, optional
             The axes to plot on.
         **style_kwargs
@@ -2277,6 +2324,7 @@ class MulticlassClassifier(Classifier):
 		"""
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
+            show=show,
             **self._get_plot_kwargs(nbins=nbins, ax=ax),
             **style_kwargs,
         )

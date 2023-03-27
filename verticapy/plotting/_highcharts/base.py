@@ -14,8 +14,25 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
+from vertica_highcharts import Highchart, Highstock
+
+from verticapy._typing import HChart
 from verticapy.plotting.base import PlottingBase
 
 
 class HighchartsBase(PlottingBase):
-    ...
+    def _get_chart(
+        self,
+        chart: Optional[HChart] = None,
+        width: int = 600,
+        height: int = 400,
+        stock: bool = False,
+    ) -> HChart:
+        if chart != None:
+            return chart
+        elif stock or ("stock" in self.layout and self.layout["stock"]):
+            return Highstock(width=width, height=height)
+        else:
+            return Highchart(width=width, height=height)

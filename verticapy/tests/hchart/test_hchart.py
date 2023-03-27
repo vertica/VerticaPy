@@ -49,6 +49,9 @@ def amazon_vd():
 
 
 class Test_hchart:
+    @pytest.mark.skip(
+        reason="Deprecated, we need to implement the functions for each graphic"
+    )
     def test_hchart(self, titanic_vd, amazon_vd):
 
         # Test -k

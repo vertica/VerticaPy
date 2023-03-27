@@ -14,11 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 import numpy as np
 
-from vertica_highcharts import Highchart
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -43,17 +42,20 @@ class ScatterPlot(HighchartsBase):
     def _init_style(self) -> None:
         tooltip = {
             "headerFormat": "",
-            "pointFormat": str(self.layout["columns"][0])
-            + ": <b>{point.x}</b><br>"
+            "pointFormat": "<b>"
+            + str(self.layout["columns"][0])
+            + "</b>: {point.x}<br><b>"
             + str(self.layout["columns"][1])
-            + ": <b>{point.y}</b><br>",
+            + "</b>: {point.y}<br>",
         }
         if len(self.layout["columns"]) > 2:
             tooltip["pointFormat"] += (
-                str(self.layout["columns"][2]) + ": <b>{point.z}</b>"
+                "<b>" + str(self.layout["columns"][2]) + "</b>: {point.z}"
             )
         elif self.layout["has_size"]:
-            tooltip["pointFormat"] += str(self.layout["size"]) + ": <b>{point.z}</b>"
+            tooltip["pointFormat"] += (
+                "<b>" + str(self.layout["size"]) + "</b>: {point.z}"
+            )
         self.init_style = {
             "title": {"text": ""},
             "xAxis": {
@@ -103,6 +105,9 @@ class ScatterPlot(HighchartsBase):
                 "zAxis": {"title": {"text": self.layout["columns"][2]}},
             }
         if self.layout["has_category"]:
+            self.init_style["tooltip"][
+                "headerFormat"
+            ] = '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>'
             self.init_style_cat = {
                 "legend": {"enabled": True, "title": {"text": self.layout["c"]}}
             }
@@ -110,14 +115,14 @@ class ScatterPlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a scatter plot using the HC API.
         """
         if self.layout["has_cmap"]:
             warning_message = f"The parameter {has_cmap} is not supported on the Highchart API. It is ignored."
             warnings.warn(warning_message, Warning)
-        chart = Highchart(width=600, height=400)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         kind = "bubble" if self.layout["has_size"] else "scatter"

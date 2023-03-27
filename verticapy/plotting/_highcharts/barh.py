@@ -14,12 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 import numpy as np
 
-from vertica_highcharts import Highchart
-
+from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
+from verticapy.plotting._highcharts.bar import DrillDownBarChart
 
 
 class HorizontalBarChart(HighchartsBase):
@@ -44,28 +44,31 @@ class HorizontalBarChart(HighchartsBase):
         self.init_style = {
             "title": {"text": ""},
             "chart": {"type": "column", "inverted": True},
-            "xAxis": {"type": "category"},
             "legend": {"enabled": False},
             "colors": [self.get_colors(idx=0)],
             "xAxis": {
+                "type": "category",
                 "title": {"text": self.layout["column"]},
                 "categories": self.layout["labels"],
             },
             "yAxis": {"title": {"text": self.layout["method_of"]}},
             "tooltip": {"headerFormat": "", "pointFormat": "{point.y}"},
         }
+        self.init_style_bar = {"pointPadding": self.data["bargap"] / 2}
         return None
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
         Draws a histogram using the HC API.
         """
-        chart = Highchart(width=600, height=400)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        chart.add_data_set(self.data["y"], "bar", self.layout["column"])
+        chart.add_data_set(
+            self.data["y"], "bar", self.layout["column"], **self.init_style_bar
+        )
         return chart
 
 
@@ -146,11 +149,11 @@ class HorizontalBarChart2D(HighchartsBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs) -> Highchart:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = Highchart(width=600, height=400)
+        chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         if self.layout["kind"] == "density":
@@ -171,3 +174,19 @@ class HorizontalBarChart2D(HighchartsBase):
             elif self.layout["kind"] == "fully_stacked":
                 chart.set_dict_options(self.init_style_fstacked)
         return chart
+
+
+class DrillDownHorizontalBarChart(DrillDownBarChart):
+
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["barh"]:
+        return "barh"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        super()._init_style()
+        self.init_style["chart"] = {"type": "column", "inverted": True}
+        return None

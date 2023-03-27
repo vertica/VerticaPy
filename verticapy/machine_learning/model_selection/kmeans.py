@@ -147,6 +147,7 @@ def elbow(
     tol: float = 1e-4,
     use_kprototype: bool = False,
     gamma: float = 1.0,
+    show: bool = True,
     ax: Optional[Axes] = None,
     **style_kwargs,
 ) -> TableSample:
@@ -190,6 +191,8 @@ def elbow(
         Weighting factor for categorical columns. It determines 
         the  relative  importance of numerical and  categorical 
         attributes.
+    show: bool, optional
+        If set to True, the  Plotting object  will be returned.
     ax: Axes, optional
         [Only for MATPLOTLIB]
         The axes to plot on.
@@ -242,27 +245,28 @@ def elbow(
         total_ss += [float(model.total_ss_)]
         total_within_cluster_ss += [float(model.total_within_cluster_ss_)]
         model.drop()
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-        class_name="ElbowCurve",
-        matplotlib_kwargs={"ax": ax,},
-        style_kwargs=style_kwargs,
-    )
-    data = {
-        "x": np.array(L),
-        "y": np.array(elbow_score),
-        "z0": np.array(total_within_cluster_ss),
-        "z1": np.array(between_cluster_ss),
-        "z2": np.array(total_ss),
-    }
-    layout = {
-        "title": "Elbow Curve",
-        "x_label": "Number of Clusters",
-        "y_label": "Elbow Score (Between-Cluster SS / Total SS)",
-        "z0_label": "Total Within Cluster SS",
-        "z1_label": "Between Cluster SS",
-        "z2_label": "Total SS",
-    }
-    vpy_plt.ElbowCurve(data=data, layout=layout).draw(**kwargs)
+    if show:
+        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            class_name="ElbowCurve",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        data = {
+            "x": np.array(L),
+            "y": np.array(elbow_score),
+            "z0": np.array(total_within_cluster_ss),
+            "z1": np.array(between_cluster_ss),
+            "z2": np.array(total_ss),
+        }
+        layout = {
+            "title": "Elbow Curve",
+            "x_label": "Number of Clusters",
+            "y_label": "Elbow Score (Between-Cluster SS / Total SS)",
+            "z0_label": "Total Within Cluster SS",
+            "z1_label": "Between Cluster SS",
+            "z2_label": "Total SS",
+        }
+        return vpy_plt.ElbowCurve(data=data, layout=layout).draw(**kwargs)
     values = {
         "index": L,
         "total_within_cluster_ss": total_within_cluster_ss,

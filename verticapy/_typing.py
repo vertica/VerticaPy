@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from verticapy.core.string_sql.base import StringSQL
     from verticapy.core.tablesample.base import TableSample
     from verticapy.plotting.base import PlottingBase
+    from vertica_highcharts import Highchart, Highstock
 
 # Pythonic data types.
 
@@ -44,7 +45,7 @@ SQLExpression = Annotated[Union[str, list[str], "StringSQL", list["StringSQL"]],
 SQLRelation = Annotated[Union[str, "vDataFrame"], ""]
 
 # Plotting data types.
-
+HChart = Union["Highchart", "Highstock"]
 PlottingObject = Union["PlottingBase", "TableSample"]
 PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
 ColorType = str

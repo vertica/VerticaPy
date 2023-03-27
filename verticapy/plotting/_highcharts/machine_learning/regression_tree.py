@@ -15,13 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
-from matplotlib.axes import Axes
+from verticapy._typing import HChart
+from verticapy.plotting._highcharts.machine_learning.regression import RegressionPlot
 
-from verticapy.plotting._matplotlib.base import MatplotlibBase
 
-
-class RegressionTreePlot(MatplotlibBase):
+class RegressionTreePlot(RegressionPlot):
 
     # Properties.
 
@@ -41,35 +41,15 @@ class RegressionTreePlot(MatplotlibBase):
     def _dimension_bounds(self) -> tuple[int, int]:
         return (3, 3)
 
-    # Styling Methods.
-
-    def _init_style(self) -> None:
-        self.init_style = {
-            "marker": "o",
-            "color": self.get_colors(idx=0),
-            "s": 50,
-            "edgecolors": "black",
-        }
-        return None
-
-    @staticmethod
-    def _get_final_color(style_kwargs: dict) -> str:
-        color = "black"
-        if "color" in style_kwargs:
-            if (
-                not (isinstance(style_kwargs["color"], str))
-                and len(style_kwargs["color"]) > 1
-            ):
-                color = style_kwargs["color"][1]
-        return color
-
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
         Draws a regression tree plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
         X = self.data["X"][self.data["X"][:, 0].argsort()]
         x0 = X[:, 0]
         x1 = X[:, 0]
@@ -77,8 +57,12 @@ class RegressionTreePlot(MatplotlibBase):
         y1 = X[:, 1]
         x0, y0 = zip(*sorted(zip(x0, y0)))
         x1, y1 = zip(*sorted(zip(x1, y1)))
-        ax.step(x1, y1, color=self._get_final_color(style_kwargs=style_kwargs))
-        ax.scatter(x0, y0, **self._update_dict(self.init_style, style_kwargs))
-        ax.set_xlabel(self.layout["columns"][0])
-        ax.set_ylabel(self.layout["columns"][1])
-        return ax
+        data = np.column_stack((x0, y0)).tolist()
+        chart.add_data_set(
+            data, "line", name="Prediction", **self.init_style_line, step="right"
+        )
+        data = np.column_stack((x1, y1)).tolist()
+        chart.add_data_set(
+            data, "scatter", name="Observations", **self.init_style_scatter
+        )
+        return chart

@@ -169,7 +169,7 @@ class TestXGBR:
 
     @pytest.mark.skip(reason="needs Vertica 12.0.3")
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [91.85, 7.18, 0.97, 0.0]

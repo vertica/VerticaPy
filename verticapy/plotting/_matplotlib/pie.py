@@ -215,13 +215,9 @@ class NestedPieChart(MatplotlibBase):
     def _compute_method(self) -> Literal["rollup"]:
         return "rollup"
 
-    # Draw.
+    # Styling Methods.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
-        """
-        Draws a nested pie chart using the Matplotlib API.
-        """
-        n = len(self.layout["columns"])
+    def _get_final_style(self, style_kwargs: dict) -> tuple:
         wedgeprops = dict(width=0.3, edgecolor="w")
         kwargs = {}
         for s in style_kwargs:
@@ -235,6 +231,17 @@ class NestedPieChart(MatplotlibBase):
             colors = style_kwargs["color"]
         else:
             colors = self.get_colors()
+        return colors, wedgeprops, kwargs
+
+    # Draw.
+
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+        """
+        Draws a nested pie chart using the Matplotlib API.
+        """
+        n = len(self.layout["columns"])
+        wedgeprops = dict(width=0.3, edgecolor="w")
+        colors, wedgeprops, kwargs = self._get_final_style(style_kwargs=style_kwargs)
         m, k = len(colors), 0
         ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=False, grid=False,)
         all_colors_dict, all_categories, all_categories_col = {}, {}, []
@@ -247,19 +254,15 @@ class NestedPieChart(MatplotlibBase):
                 pctdistance = 0.88
             else:
                 pctdistance = 0.85
-            result = self.data["groups"][i]
             all_colors_dict[i] = {}
-            all_categories[i] = list(dict.fromkeys(result[-2]))
+            all_categories[i] = list(dict.fromkeys(self.data["groups"][i][-2]))
             all_categories_col += [self.layout["columns"][n - i - 1]]
             for c in all_categories[i]:
                 all_colors_dict[i][c] = colors[k % m]
                 k += 1
-            group = [int(c) for c in result[-1]]
-            tmp_colors = [all_colors_dict[i][j] for j in result[-2]]
-            if len(group) > 16:
-                autopct = None
-            else:
-                autopct = "%1.1f%%"
+            group = [int(c) for c in self.data["groups"][i][-1]]
+            tmp_colors = [all_colors_dict[i][j] for j in self.data["groups"][i][-2]]
+            autopct = None if len(group) > 16 else "%1.1f%%"
             ax.pie(
                 group,
                 radius=0.3 * (i + 2),

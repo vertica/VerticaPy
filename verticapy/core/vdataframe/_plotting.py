@@ -40,7 +40,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting._utils import PlottingUtils
-from verticapy.plotting._highcharts_tmp.base import hchart_from_vdf
 
 
 class vDFPlot(PlottingUtils):
@@ -105,7 +104,7 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        kind: Literal["auto", "stacked"] = "auto",
+        kind: Literal["auto", "drilldown", "stacked"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -143,10 +142,12 @@ class vDFPlot(PlottingUtils):
             empty or invalid.
         kind: str, optional
             The BarChart Type.
-                auto    : Regular  BarChart  based  on  1  or  2 
-                          vDataColumns.
-                stacked : Stacked    BarChart    based    on   2 
-                          vDataColumns.
+                auto      : Regular  BarChart  based on  1  or 2 
+                            vDataColumns.
+                drilldown : Drill   Down  BarChart  based  on  2
+                            vDataColumns.
+                stacked   : Stacked   BarChart    based    on  2 
+                            vDataColumns.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -170,6 +171,20 @@ class vDFPlot(PlottingUtils):
                 h=h[0],
                 **style_kwargs,
             )
+        elif kind == "drilldown":
+            vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="DrillDownBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.DrillDownBarChart(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                h=h,
+                max_cardinality=max_cardinality,
+            ).draw(**kwargs)
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="BarChart2D",
@@ -274,6 +289,20 @@ class vDFPlot(PlottingUtils):
                 ax=ax,
                 **style_kwargs,
             )
+        elif kind == "drilldown":
+            vpy_plt, kwargs = self._get_plotting_lib(
+                class_name="DrillDownHorizontalBarChart",
+                matplotlib_kwargs={"ax": ax,},
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.DrillDownHorizontalBarChart(
+                vdf=self,
+                columns=columns,
+                method=method,
+                of=of,
+                h=h,
+                max_cardinality=max_cardinality,
+            ).draw(**kwargs)
         else:
             if kind in ("fully", "fully stacked"):
                 kind = "fully_stacked"
@@ -1175,11 +1204,11 @@ class vDFPlot(PlottingUtils):
         self,
         columns: SQLColumns,
         threshold: float = 3.0,
+        max_nb_points: int = 500,
         color: ColorType = "orange",
         outliers_color: ColorType = "black",
         inliers_color: ColorType = "white",
         inliers_border_color: ColorType = "red",
-        max_nb_points: int = 500,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1193,6 +1222,8 @@ class vDFPlot(PlottingUtils):
             List  of  one or two  vDataColumn  names.
         threshold: float, optional
             ZSCORE threshold used to detect outliers.
+        max_nb_points: int, optional
+            Maximum number of points to display.
         color: ColorType, optional
             Inliers Area color.
         outliers_color: ColorType, optional
@@ -1201,8 +1232,6 @@ class vDFPlot(PlottingUtils):
             Inliers color.
         inliers_border_color: ColorType, optional
             Inliers border color.
-        max_nb_points: int, optional
-            Maximum number of points to display.
         ax: Axes, optional
             [Only for MATPLOTLIB]
             The axes to plot on.
@@ -1217,219 +1246,21 @@ class vDFPlot(PlottingUtils):
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="OutliersPlot",
-            matplotlib_kwargs={
-                "ax": ax,
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.OutliersPlot(
+            vdf=self,
+            columns=columns,
+            threshold=threshold,
+            max_nb_points=max_nb_points,
+            misc_layout={
                 "color": color,
                 "outliers_color": outliers_color,
                 "inliers_color": inliers_color,
                 "inliers_border_color": inliers_border_color,
             },
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.OutliersPlot(
-            vdf=self, columns=columns, threshold=threshold, max_nb_points=max_nb_points,
         ).draw(**kwargs)
-
-    # DEPRECATED.
-
-    @save_verticapy_logs
-    def hchart(
-        self,
-        x: SQLExpression = None,
-        y: SQLExpression = None,
-        z: SQLExpression = None,
-        c: SQLExpression = None,
-        aggregate: bool = True,
-        kind: Literal[
-            "area",
-            "area_range",
-            "area_ts",
-            "bar",
-            "boxplot",
-            "bubble",
-            "candlestick",
-            "donut",
-            "donut3d",
-            "heatmap",
-            "hist",
-            "line",
-            "negative_bar",
-            "pie",
-            "pie_half",
-            "pie3d",
-            "scatter",
-            "spider",
-            "spline",
-            "stacked_bar",
-            "stacked_hist",
-            "pearson",
-            "kendall",
-            "cramer",
-            "biserial",
-            "spearman",
-            "spearmand",
-        ] = "boxplot",
-        width: int = 600,
-        height: int = 400,
-        options: dict = {},
-        h: float = -1,
-        max_cardinality: int = 10,
-        limit: int = 10000,
-        drilldown: bool = False,
-        stock: bool = False,
-        alpha: float = 0.25,
-    ):
-        """
-        [Beta Version]
-        Draws responsive charts using the High Chart API: 
-        https://api.highcharts.com/highcharts/
-
-        The returned object can be customized using the API parameters and the 
-        'set_dict_options' method.
-
-        \u26A0 Warning : This function uses the unsupported HighChart Python API. 
-                         For more information, see python-hicharts repository:
-                         https://github.com/kyper-data/python-highcharts
-
-        Parameters
-        ----------
-        x / y / z / c: SQLExpression
-            The vDataColumns and aggregations used to draw the chart. These will depend 
-            on the chart type. You can also specify an expression, but it must be a SQL 
-            statement. For example: AVG(column1) + SUM(column2) AS new_name.
-
-                area / area_ts / line / spline
-                    x: numerical or type date like vDataColumn.
-                    y: a single expression or list of expressions used to draw the plot
-                    z: [OPTIONAL] vDataColumn representing the different categories 
-                        (only if y is a single vDataColumn)
-                area_range
-                    x: numerical or date type vDataColumn.
-                    y: list of three expressions [expression, lower bound, upper bound]
-                bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
-                    x: vDataColumn used to compute the categories.
-                    y: [OPTIONAL] numerical expression representing the categories values. 
-                        If empty, COUNT(*) is used as the default aggregation.
-                bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
-                / stacked_bar / stacked_hist
-                    x: vDataColumn used to compute the first category.
-                    y: vDataColumn used to compute the second category.
-                    z: [OPTIONAL] numerical expression representing the different categories 
-                        values. 
-                        If empty, COUNT(*) is used as the default aggregation.
-                biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
-                    x: list of the vDataColumns used to draw the Chart.
-                bubble / scatter
-                    x: numerical vDataColumn.
-                    y: numerical vDataColumn.
-                    z: numerical vDataColumn (bubble size in case of bubble plot, third 
-                         dimension in case of scatter plot)
-                    c: [OPTIONAL] vDataColumn used to compute the different categories.
-                candlestick
-                    x: date type vDataColumn.
-                    y: Can be a numerical vDataColumn or list of 5 expressions 
-                        [last quantile, maximum, minimum, first quantile, volume]
-                negative_bar
-                    x: binary vDataColumn used to compute the first category.
-                    y: vDataColumn used to compute the second category.
-                    z: [OPTIONAL] numerical expression representing the categories values. 
-                        If empty, COUNT(*) is used as the default aggregation.
-                spider
-                    x: vDataColumn used to compute the different categories.
-                    y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
-                        or a single expression. 
-                        If empty, COUNT(*) is used as the default aggregation.
-        aggregate: bool, optional
-            If set to True, the input vDataColumns will be aggregated.
-        kind: str, optional
-            Chart Type.
-                area         : Area Chart
-                area_range   : Area Range Chart
-                area_ts      : Area Chart with Time Series Design
-                bar          : Bar Chart
-                biserial     : Biserial Point Matrix (Correlation between binary
-                                 variables and numerical)
-                boxplot      : Box Plot
-                bubble       : Bubble Plot
-                candlestick  : Candlestick and Volumes (Time Series Special Plot)
-                cramer       : Cramer's V Matrix (Correlation between categories)
-                donut        : Donut Chart
-                donut3d      : 3D Donut Chart
-                heatmap      : Heatmap
-                hist         : BarChart
-                kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
-                               coefficients.
-                               \u26A0 Warning : This method uses a CROSS JOIN during computation 
-                                                and is therefore computationally expensive at 
-                                                O(n * n), where n is the total count of the 
-                                                vDataFrame.
-                line         : Line Plot
-                negative_bar : Multi Bar Chart for binary classes
-                pearson      : Pearson Correlation Matrix
-                pie          : Pie Chart
-                pie_half     : Half Pie Chart
-                pie3d        : 3D Pie Chart
-                scatter      : Scatter Plot
-                spider       : Spider Chart
-                spline       : Spline Plot
-                stacked_bar  : Stacked Bar Chart
-                stacked_hist : Stacked BarChart
-                spearman     : Spearman's Correlation Matrix
-                spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
-                               function instead of the RANK function.
-        width: int, optional
-            Chart Width.
-        height: int, optional
-            Chart Height.
-        options: dict, optional
-            High Chart Dictionary to use to customize the Chart. Look at the API 
-            documentation to know the different options.
-        h: float, optional
-            Interval width of the bar. If empty, an optimized value will be used.
-        max_cardinality: int, optional
-            Maximum number of the vDataColumn distinct elements.
-        limit: int, optional
-            Maximum number of elements to draw.
-        drilldown: bool, optional
-            Drilldown Chart: Only possible for Bars, BarCharts, donuts and pies.
-                              Instead of drawing 2D charts, this option allows you
-                              to add a drilldown effect to 1D Charts.
-        stock: bool, optional
-            Stock Chart: Only possible for Time Series. The design of the Time
-                         Series is dragable and have multiple options.
-        alpha: float, optional
-            Value used to determine the position of the upper and lower quantile 
-            (Used when kind is set to 'candlestick')
-
-        Returns
-        -------
-        Highchart
-            Chart Object
-        """
-        kind = str(kind).lower()
-        params = [
-            self,
-            x,
-            y,
-            z,
-            c,
-            aggregate,
-            kind,
-            width,
-            height,
-            options,
-            h,
-            max_cardinality,
-            limit,
-            drilldown,
-            stock,
-            alpha,
-        ]
-        try:
-            return hchart_from_vdf(*params)
-        except:
-            params[5] = not (params[5])
-            return hchart_from_vdf(*params)
 
 
 class vDCPlot:
@@ -1779,7 +1610,7 @@ class vDCPlot:
         of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
-        pie_type: Literal["auto", "donut", "rose"] = "auto",
+        pie_type: Literal["auto", "donut", "rose", "3d"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1815,6 +1646,7 @@ class vDCPlot:
                 auto   : Regular pie chart.
                 donut  : Donut chart.
                 rose   : Rose chart.
+                3d     : 3D Pie.
             It   can    also   be  a  cutomized   aggregation 
             (ex: AVG(column1) + 5).
         ax: Axes, optional
@@ -2096,6 +1928,76 @@ class vDCPlot:
             return vpy_plt.MultiDensityPlot(data=data, layout=layout).draw(**kwargs)
 
     # Time Series.
+
+    @save_verticapy_logs
+    def candlestick(
+        self,
+        ts: str,
+        method: str = "sum",
+        q: tuple[float, float] = (0.25, 0.75),
+        start_date: PythonScalar = None,
+        end_date: PythonScalar = None,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the Time Series of the vDataColumn.
+
+        Parameters
+        ----------
+        ts: str
+            TS  (Time Series)  vDataColumn  to use   to order 
+            the  data.  The  vDataColumn  type must  be  date 
+            like (date, datetime, timestamp...) or  numerical.
+        method: str, optional
+            The method to use to aggregate the data.
+                count   : Number of elements.
+                mean    : Average of the vDataColumn 'of'.
+                min     : Minimum of the vDataColumn 'of'.
+                max     : Maximum of the vDataColumn 'of'.
+                sum     : Sum of the vDataColumn 'of'.
+                q%      : q Quantile of the vDataColumn 'of' 
+                          (ex: 50% to get the median).
+            It   can  also  be  a  cutomized   aggregation 
+            (ex: AVG(column1) + 5).
+        q: tuple, optional
+            Tuple including the  2 quantiles used to draw the 
+            Plot.
+        start_date: str / PythonNumber / date, optional
+            Input Start Date. For example, time = '03-11-1993' 
+            will  filter  the  data  when 'ts' is lesser than 
+            November 1993 the 3rd.
+        end_date: str / PythonNumber / date, optional
+            Input  End  Date. For example, time = '03-11-1993' 
+            will filter  the data when 'ts' is  greater  than 
+            November 1993 the 3rd.
+        ax: Axes, optional
+            [Only for MATPLOTLIB]
+            The axes to plot on.
+        **style_kwargs
+            Any  optional  parameter  to pass to the  plotting 
+            functions.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        ts = self._parent._format_colnames(ts)
+        vpy_plt, kwargs = self._parent._get_plotting_lib(
+            class_name="CandleStick",
+            matplotlib_kwargs={"ax": ax,},
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.CandleStick(
+            vdf=self._parent,
+            order_by=ts,
+            method=method,
+            q=q,
+            column=self._alias,
+            order_by_start=start_date,
+            order_by_end=end_date,
+        ).draw(**kwargs)
 
     @save_verticapy_logs
     def plot(

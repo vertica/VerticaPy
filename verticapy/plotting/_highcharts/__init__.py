@@ -14,12 +14,45 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._highcharts.bar import BarChart, BarChart2D
-from verticapy.plotting._highcharts.barh import HorizontalBarChart, HorizontalBarChart2D
+from verticapy.plotting._highcharts.acf import ACFPACFPlot, ACFPlot
+from verticapy.plotting._highcharts.bar import BarChart, BarChart2D, DrillDownBarChart
+from verticapy.plotting._highcharts.barh import (
+    HorizontalBarChart,
+    HorizontalBarChart2D,
+    DrillDownHorizontalBarChart,
+)
 from verticapy.plotting._highcharts.boxplot import BoxPlot
+from verticapy.plotting._highcharts.candlestick import CandleStick
+from verticapy.plotting._highcharts.contour_plot import ContourPlot
+from verticapy.plotting._highcharts.density import DensityPlot, MultiDensityPlot
 from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.machine_learning.elbow import ElbowCurve
+from verticapy.plotting._highcharts.machine_learning.importance import (
+    ImportanceBarChart,
+)
+from verticapy.plotting._highcharts.machine_learning.lof import LOFPlot
+from verticapy.plotting._highcharts.machine_learning.logistic_reg import (
+    LogisticRegressionPlot,
+)
+from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
+    CutoffCurve,
+    LiftChart,
+    PRCCurve,
+    ROCCurve,
+)
+from verticapy.plotting._highcharts.machine_learning.pca import (
+    PCACirclePlot,
+    PCAScreePlot,
+    PCAVarPlot,
+)
+from verticapy.plotting._highcharts.machine_learning.regression import RegressionPlot
+from verticapy.plotting._highcharts.machine_learning.regression_tree import (
+    RegressionTreePlot,
+)
+from verticapy.plotting._highcharts.machine_learning.svm import SVMClassifierPlot
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
-from verticapy.plotting._highcharts.pie import PieChart
+from verticapy.plotting._highcharts.outliers import OutliersPlot
+from verticapy.plotting._highcharts.pie import NestedPieChart, PieChart
 from verticapy.plotting._highcharts.range import RangeCurve
 from verticapy.plotting._highcharts.scatter import ScatterPlot
 from verticapy.plotting._highcharts.spider import SpiderChart

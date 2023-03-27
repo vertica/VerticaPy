@@ -46,7 +46,7 @@ class ROCCurve(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Bubble Plot using the Matplotlib API.
+        Draws a Machine Learning Roc Curve using the Matplotlib API.
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         ax.plot(
@@ -111,7 +111,7 @@ class CutoffCurve(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Bubble Plot using the Matplotlib API.
+        Draws a Machine Cutoff Curve using the Matplotlib API.
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         ax.plot(
@@ -149,7 +149,7 @@ class PRCCurve(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Bubble Plot using the Matplotlib API.
+        Draws a Machine Learning PRC Curve using the Matplotlib API.
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         kwargs = {"color": self.get_colors(idx=0)}
@@ -202,7 +202,7 @@ class LiftChart(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Bubble Plot using the Matplotlib API.
+        Draws a Machine Learning Lift Chart using the Matplotlib API.
         """
         ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
         ax.set_xlabel(self.layout["x_label"])
