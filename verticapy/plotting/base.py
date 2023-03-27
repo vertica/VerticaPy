@@ -648,7 +648,7 @@ class PlottingBase:
                     ).astype(float)
                 X = X[X_num.argsort()]
             self.layout = {
-                "x_label": by,
+                "x_label": self._clean_quotes(by),
                 "y_label": self._clean_quotes(columns[0]),
                 "labels": X[:, 0],
                 "has_category": True,
