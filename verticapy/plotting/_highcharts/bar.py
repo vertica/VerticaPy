@@ -62,7 +62,7 @@ class BarChart(HighchartsBase):
         """
         Draws a BarChart using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
@@ -112,7 +112,7 @@ class BarChart2D(HighchartsBase):
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):
@@ -166,7 +166,7 @@ class DrillDownBarChart(HighchartsBase):
         Draws a 2D BarChart using the HC API.
         """
         kind = "bar" if self._kind == "barh" else "column"
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_JSsource("https://code.highcharts.com/6/modules/drilldown.js")

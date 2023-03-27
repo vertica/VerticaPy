@@ -63,7 +63,7 @@ class HorizontalBarChart(HighchartsBase):
         """
         Draws a histogram using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
@@ -153,7 +153,7 @@ class HorizontalBarChart2D(HighchartsBase):
         """
         Draws a 2D BarChart using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         if self.layout["kind"] == "density":

@@ -35,12 +35,12 @@ class MatplotlibBase(PlottingBase):
         set_axis_below: bool = True,
         grid: Union[str, bool] = True,
         dim: int = 2,
-        style_kwargs: dict,
+        style_kwargs: dict = {},
     ) -> tuple[Axes, Figure]:
         kwargs = copy.deepcopy(style_kwargs)
         if "figsize" in kwargs and isinstance(kwargs, tuple):
             size = kwargs["figsize"]
-            del kwargs[size]
+            del kwargs["size"]
         if "width" in kwargs:
             size[0] = kwargs["width"]
             del kwargs["width"]

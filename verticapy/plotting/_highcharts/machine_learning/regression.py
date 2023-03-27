@@ -96,7 +96,7 @@ class RegressionPlot(HighchartsBase):
         Draws a regression plot using the HC API.
         """
         if len(self.layout["columns"]) == 2:
-            chart = self._get_chart(chart)
+            chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
             chart.set_dict_options(self.init_style)
             chart.set_dict_options(style_kwargs)
             min_reg_x = np.nanmin(self.data["X"][:, 0])

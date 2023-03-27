@@ -47,7 +47,7 @@ class RegressionTreePlot(RegressionPlot):
         """
         Draws a regression tree plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         X = self.data["X"][self.data["X"][:, 0].argsort()]

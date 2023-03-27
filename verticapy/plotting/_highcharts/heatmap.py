@@ -145,7 +145,12 @@ class HeatMap(HighchartsBase):
         Draws a heatmap using the HC API.
         """
         n, m = self.data["X"].shape
-        chart = self._get_chart(chart, width=max(n * 80, 400), height=max(m * 60, 220))
+        chart, style_kwargs = self._get_chart(
+            chart,
+            width=max(n * 80, 400),
+            height=max(m * 60, 220),
+            style_kwargs=style_kwargs,
+        )
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         X = np.flip(self.data["X"], axis=1)

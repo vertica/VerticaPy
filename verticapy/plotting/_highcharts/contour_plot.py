@@ -114,7 +114,9 @@ class ContourPlot(HighchartsBase):
         Draws a contour plot using the HC API.
         """
         data = self._get_narrow_vars()
-        chart = self._get_chart(chart, width=400, height=400)
+        chart, style_kwargs = self._get_chart(
+            chart, width=400, height=400, style_kwargs=style_kwargs
+        )
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(data, **self.init_style_matrix)

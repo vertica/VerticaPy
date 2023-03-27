@@ -93,7 +93,7 @@ class SVMClassifierPlot(HighchartsBase):
         """
         Draws a SVM Classifier plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         x, w = self.data["X"][:, 0], self.data["X"][:, -1]

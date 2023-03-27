@@ -70,7 +70,9 @@ class CandleStick(LinePlot):
         """
         Draws a candle stick using the HC API.
         """
-        chart = self._get_chart(chart, stock=True)
+        chart, style_kwargs = self._get_chart(
+            chart, stock=True, style_kwargs=style_kwargs
+        )
         chart.set_dict_options(self.init_style)
         x = self._to_datetime(self.data["x"])
         Y = np.column_stack(

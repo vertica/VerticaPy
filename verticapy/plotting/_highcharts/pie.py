@@ -84,7 +84,7 @@ class PieChart(HighchartsBase):
         """
         Draws a pie chart using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = []
@@ -145,7 +145,7 @@ class NestedPieChart(HighchartsBase):
         """
         Draws a nested pie chart using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         n = len(self.layout["columns"])

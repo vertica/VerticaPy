@@ -78,7 +78,9 @@ class PCACirclePlot(HighchartsBase):
         """
         Draws a PCA circle plot using the HC API.
         """
-        chart = self._get_chart(chart, width=400, height=400)
+        chart, style_kwargs = self._get_chart(
+            chart, width=400, height=400, style_kwargs=style_kwargs
+        )
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = [
@@ -137,7 +139,7 @@ class PCAScreePlot(HighchartsBase):
         """
         Draws a PCA Scree Plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
@@ -231,7 +233,7 @@ class PCAVarPlot(HighchartsBase):
         """
         Draws a PCA Variance Plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         kind = "scatter"

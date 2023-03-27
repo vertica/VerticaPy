@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Optional
 
 from vertica_highcharts import Highchart, Highstock
@@ -29,10 +30,21 @@ class HighchartsBase(PlottingBase):
         width: int = 600,
         height: int = 400,
         stock: bool = False,
+        style_kwargs: dict = {},
     ) -> HChart:
+        kwargs = copy.deepcopy(style_kwargs)
         if chart != None:
-            return chart
+            return chart, kwargs
+        if "figsize" in kwargs and isinstance(kwargs, tuple):
+            width, height = kwargs["figsize"]
+            del kwargs["size"]
+        if "width" in kwargs:
+            width = kwargs["width"]
+            del kwargs["width"]
+        if "height" in kwargs:
+            height = kwargs["height"]
+            del kwargs["height"]
         elif stock or ("stock" in self.layout and self.layout["stock"]):
-            return Highstock(width=width, height=height)
+            return Highstock(width=width, height=height), kwargs
         else:
-            return Highchart(width=width, height=height)
+            return Highchart(width=width, height=height), kwargs
