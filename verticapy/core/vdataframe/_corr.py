@@ -22,8 +22,6 @@ import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
-from matplotlib.axes import Axes
-
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
@@ -48,7 +46,7 @@ class vDFCorr:
         columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -477,9 +475,7 @@ class vDFCorr:
                     else None
                 )
                 vpy_plt, kwargs = self._get_plotting_lib(
-                    class_name="HeatMap",
-                    matplotlib_kwargs={"ax": ax},
-                    style_kwargs=style_kwargs,
+                    class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {"X": matrix}
                 layout = {
@@ -525,7 +521,7 @@ class vDFCorr:
         columns: SQLColumns = None,
         mround: int = 3,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -688,9 +684,7 @@ class vDFCorr:
                 else None
             )
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="HeatMap",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
             layout = {
@@ -727,7 +721,7 @@ class vDFCorr:
         mround: int = 3,
         focus: str = "",
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -771,9 +765,8 @@ class vDFCorr:
         show: bool, optional
             If  set  to  True,  the  Plotting  object  will be 
             returned.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -796,7 +789,7 @@ class vDFCorr:
             "columns": columns,
             "mround": mround,
             "show": show,
-            "ax": ax,
+            "chart": chart,
             **style_kwargs,
         }
         if focus:
@@ -1019,7 +1012,7 @@ class vDFCorr:
         columns: SQLColumns = None,
         focus: str = "",
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1035,9 +1028,8 @@ class vDFCorr:
         show: bool, optional
             If   set  to   True,  the   Plotting   object  will  be 
             returned.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any   optional  parameter  to  pass  to  the   plotting 
             functions.
@@ -1057,7 +1049,7 @@ class vDFCorr:
             "method": "cov",
             "columns": columns,
             "show": show,
-            "ax": ax,
+            "chart": chart,
             **style_kwargs,
         }
         if focus:
@@ -1086,7 +1078,7 @@ class vDFCorr:
             "alpha",
         ] = "r2",
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1119,9 +1111,8 @@ class vDFCorr:
                         expression in an expression pair.
         show: bool, optional
             If set to True, the Plotting object will be returned.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the plotting functions.
 
@@ -1219,9 +1210,7 @@ class vDFCorr:
                 matrix[i][j] = current
         if show:
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="HeatMap",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
             layout = {
@@ -1260,7 +1249,7 @@ class vDFCorr:
         show: bool = True,
         kind: Literal["line", "heatmap", "bar"] = "bar",
         mround: int = 3,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1331,9 +1320,8 @@ class vDFCorr:
             Round  the  coefficient using the input number  of 
             digits. It is used only to display the ACF  Matrix 
             (kind must be set to 'heatmap').
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter  to  pass  to  the plotting 
             functions.
@@ -1400,9 +1388,7 @@ class vDFCorr:
                 result.values["confidence"] = acf_band
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
-                    class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax},
-                    style_kwargs=style_kwargs,
+                    class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
@@ -1430,7 +1416,7 @@ class vDFCorr:
         alpha: float = 0.95,
         show: bool = True,
         kind: Literal["line", "bar"] = "bar",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ):
         """
@@ -1496,9 +1482,8 @@ class vDFCorr:
                 bar  : Classical  Partial Autocorrelation Plot 
                        using bars.
                 line : Draws  the   PACF  using  a  Line  Plot.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter  to  pass  to  the plotting 
             functions.
@@ -1597,9 +1582,7 @@ class vDFCorr:
                 result.values["confidence"] = pacf_band
             if show:
                 vpy_plt, kwargs = self._get_plotting_lib(
-                    class_name="ACFPlot",
-                    matplotlib_kwargs={"ax": ax},
-                    style_kwargs=style_kwargs,
+                    class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
@@ -1621,7 +1604,7 @@ class vDFCorr:
         columns: SQLColumns = None,
         nbins: int = 10,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1642,9 +1625,8 @@ class vDFCorr:
         show: bool, optional
             If  set  to True,  the  Plotting  object  will  be 
             returned.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter to  pass to the  plotting 
             functions.
@@ -1668,9 +1650,7 @@ class vDFCorr:
             }
             layout = {"columns": copy.deepcopy(columns), "x_label": "IV"}
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="ImportanceBarChart",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return TableSample({"index": copy.deepcopy(columns), "iv": importance,}).sort(

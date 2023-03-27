@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 
 import plotly.express as px
 from plotly.graph_objs._figure import Figure
@@ -52,7 +52,7 @@ class HorizontalBarChart(PlotlyBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a horizontal bar chart using the Plotly API.
         """

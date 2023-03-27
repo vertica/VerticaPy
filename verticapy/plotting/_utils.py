@@ -15,26 +15,48 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Literal
+from typing import Literal, Optional
 
 import verticapy._config.config as conf
+from verticapy._typing import PlottingObject
 
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 import verticapy.plotting._plotly as vpy_plotly_plt
 import verticapy.plotting._highcharts as vpy_highcharts_plt
+
+from matplotlib.axes import Axes
+from matplotlib.pyplot import Figure as mFigure
+from plotly.graph_objs._figure import Figure
+from vertica_highcharts import Highchart, Highstock
 
 
 class PlottingUtils:
     def _get_plotting_lib(
         self,
         class_name: str = "",
+        chart: Optional[PlottingObject] = None,
         matplotlib_kwargs: dict = {},
         plotly_kwargs: dict = {},
         highchart_kwargs={},
         style_kwargs: dict = {},
     ) -> tuple[Literal[vpy_highcharts_plt, vpy_matplotlib_plt, vpy_plotly_plt], dict]:
-        lib = conf.get_option("plotting_lib")
+        chart_not_none = True
+        if isinstance(chart, (Axes, mFigure)):
+            lib = "matplotlib"
+        elif isinstance(chart, (Highchart, Highstock)):
+            lib = "highcharts"
+        elif isinstance(chart, Figure):
+            lib = "plotly"
+        else:
+            chart_not_none = False
+            lib = conf.get_option("plotting_lib")
         if not (self._is_available(class_name=class_name, lib=lib)):
+            if chart_not_none:
+                raise NotImplementedError(
+                    f"The type of the input parameter 'chart' ('{lib}' object)"
+                    " is not supported for the current library. Leave it empty"
+                    " if you want to use the first available plotting library."
+                )
             last_lib = lib
             lib = self._first_available_lib(class_name=class_name)
             warning_message = (
@@ -47,13 +69,13 @@ class PlottingUtils:
             warnings.warn(warning_message, Warning)
         if lib == "plotly":
             vpy_plt = vpy_plotly_plt
-            kwargs = {**plotly_kwargs, **style_kwargs}
+            kwargs = {"fig": chart, **plotly_kwargs, **style_kwargs}
         elif lib == "highcharts":
             vpy_plt = vpy_highcharts_plt
-            kwargs = {**highchart_kwargs, **style_kwargs}
+            kwargs = {"chart": chart, **highchart_kwargs, **style_kwargs}
         elif lib == "matplotlib":
             vpy_plt = vpy_matplotlib_plt
-            kwargs = {**matplotlib_kwargs, **style_kwargs}
+            kwargs = {"ax": chart, **matplotlib_kwargs, **style_kwargs}
         else:
             raise ModuleNotFoundError(f"Unrecognized library: '{lib}'.")
         return vpy_plt, kwargs

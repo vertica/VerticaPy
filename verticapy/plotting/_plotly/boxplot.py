@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -75,7 +75,7 @@ class BoxPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs) -> Figure:
         """
         Draws a boxplot using the Plotly API.
         """
@@ -93,9 +93,7 @@ class BoxPlot(PlotlyBase):
             fig = go.Figure()
             fig.add_trace(
                 go.Box(
-                    name=self.layout["labels"][0],
-                    hovertemplate="%{x}",
-                    **points_dic,
+                    name=self.layout["labels"][0], hovertemplate="%{x}", **points_dic,
                 ),
                 **style_kwargs,
             )
@@ -108,9 +106,7 @@ class BoxPlot(PlotlyBase):
                 orientation="h",
             )
             fig.update_layout(
-                yaxis=dict(
-                    showticklabels=False,
-                ),
+                yaxis=dict(showticklabels=False,),
                 xaxis=dict(title=self.layout["labels"][0]),
             )
             bins = [

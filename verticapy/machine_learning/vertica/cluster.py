@@ -20,11 +20,8 @@ from typing import Literal, Optional, Union
 import numpy as np
 from vertica_python.errors import QueryError
 
-from matplotlib.axes import Axes
-from matplotlib.pyplot import Figure
-
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLRelation, PythonScalar
+from verticapy._typing import PlottingObject, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, schema_relation
@@ -115,12 +112,15 @@ class Clustering(Unsupervised):
             return vdf.copy().eval(name, self.deploySQL(X=X))
 
     def _get_plot_kwargs(
-        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+        self,
+        nbins: int = 30,
+        chart: Optional[PlottingObject] = None,
+        method: Optional[str] = None,
     ) -> dict:
         """
         Returns the kwargs used by plotting methods.
         """
-        res = {"nbins": nbins, "ax": ax}
+        res = {"nbins": nbins, "chart": chart}
         if method == "contour":
             res["func_name"] = "cluster"
         else:
@@ -128,8 +128,11 @@ class Clustering(Unsupervised):
         return res
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -137,22 +140,22 @@ class Clustering(Unsupervised):
         ----------
         max_nb_points: int
             Maximum number  of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vdf = vDataFrame(self.input_relation)
         kwargs = {
             "columns": self.X,
             "max_nb_points": max_nb_points,
-            "ax": ax,
+            "chart": chart,
             **style_kwargs,
         }
         if self._model_subcategory == "ANOMALY_DETECTION":
@@ -327,7 +330,7 @@ class KMeans(Clustering):
         self,
         max_nb_points: int = 50,
         plot_crosses: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> Figure:
         """
@@ -340,8 +343,8 @@ class KMeans(Clustering):
         plot_crosses: bool, optional
             If set to True, the centers are represented 
             by white crosses.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the 
             Matplotlib functions.
@@ -354,7 +357,8 @@ class KMeans(Clustering):
         if len(self.X) == 2:
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="VoronoiPlot",
-                matplotlib_kwargs={"ax": ax, "plot_crosses": plot_crosses},
+                chart=chart,
+                matplotlib_kwargs={"plot_crosses": plot_crosses},
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.VoronoiPlot(
@@ -1067,8 +1071,11 @@ class DBSCAN(VerticaModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -1076,23 +1083,23 @@ class DBSCAN(VerticaModel):
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
             Matplotlib functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         return vDataFrame(self.model_name).scatter(
             columns=self.X,
             by="dbscan_cluster",
             max_cardinality=100,
             max_nb_points=max_nb_points,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 

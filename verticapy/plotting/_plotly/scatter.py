@@ -75,7 +75,7 @@ class ScatterPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a scatter plot using the Plotly API.
         """

@@ -21,7 +21,7 @@ from tqdm.auto import tqdm
 from matplotlib.axes import Axes
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonScalar, SQLRelation, SQLColumns
+from verticapy._typing import PlottingObject, PythonScalar, SQLRelation, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
@@ -634,24 +634,23 @@ class AutoML(VerticaModel):
 
     # Features Importance Methods.
 
-    def features_importance(self, ax: Optional[Axes] = None, **kwargs) -> TableSample:
+    def features_importance(
+        self, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Computes the model's features importance.
 
         Parameters
         ----------
-        ax: Axes, optional
-            The axes to plot on.
-        **kwargs
-            Any optional  parameter  to  pass  to  the 
-            best estimator features importance method.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to pass  to  the 
-            Matplotlib functions.
+            Any optional parameter to pass to the 
+            Plotting functions.
 
         Returns
         -------
-        TableSample
+        obj
             features importance.
         """
         if self.stepwise_:
@@ -660,9 +659,7 @@ class AutoML(VerticaModel):
             }
             layout = {"columns": copy.deepcopy(self.stepwise_["variable"])}
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="ImportanceBarChart",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return self.best_model_.features_importance(**kwargs)
@@ -672,9 +669,9 @@ class AutoML(VerticaModel):
     def plot(
         self,
         mltype: Literal["champion", "step"] = "champion",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws the AutoML plot.
 
@@ -684,16 +681,16 @@ class AutoML(VerticaModel):
             The plot type.
                 champion : champion challenger plot.
                 step     : stepwise plot.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional  parameter  to pass to  the 
             Matplotlib functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         if mltype == "champion":
             data = {
@@ -710,7 +707,8 @@ class AutoML(VerticaModel):
             }
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="ChampionChallengerPlot",
-                matplotlib_kwargs={"plt_text": True, "ax": ax,},
+                chart=chart,
+                matplotlib_kwargs={"plt_text": True},
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.ChampionChallengerPlot(data=data, layout=layout).draw(
@@ -718,9 +716,7 @@ class AutoML(VerticaModel):
             )
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="StepwisePlot",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {
                 "x": [len(x) for x in self.stepwise_["features"]],

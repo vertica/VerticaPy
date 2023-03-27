@@ -19,8 +19,6 @@ from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 import numpy as np
 
-from matplotlib.axes import Axes
-
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -309,7 +307,7 @@ def stepwise(
     x_order: Literal["pearson", "spearman", "random", "none", None] = "pearson",
     print_info: bool = True,
     show: bool = True,
-    ax: Optional[Axes] = None,
+    chart: Optional[PlottingObject] = None,
     **style_kwargs,
 ) -> TableSample:
     """
@@ -357,9 +355,8 @@ def stepwise(
         step.
     show: bool, optional
         If  set to True, the stepwise graphic will be drawn.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
+    chart: PlottingObject, optional
+        The chart object to plot on.
     **style_kwargs
         Any  optional  parameter  to pass to the  Matplotlib 
         functions.
@@ -501,9 +498,7 @@ def stepwise(
     res.best_list_ = X_current
     if show:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-            class_name="StepwisePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
             "x": [len(x) for x in res["features"]],

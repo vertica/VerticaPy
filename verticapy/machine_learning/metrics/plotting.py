@@ -17,9 +17,7 @@ permissions and limitations under the License.
 from typing import Optional
 import numpy as np
 
-from matplotlib.axes import Axes
-
-from verticapy._typing import PythonScalar, SQLRelation
+from verticapy._typing import PlottingObject, PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -42,9 +40,9 @@ def lift_chart(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     show: bool = True,
-    ax: Optional[Axes] = None,
+    chart: Optional[PlottingObject] = None,
     **style_kwargs,
-) -> TableSample:
+) -> PlottingObject:
     """
     Draws the Lift Chart.
 
@@ -71,16 +69,15 @@ def lift_chart(
     show: bool, optional
         If set to True,  the  Plotting object  will be 
         returned.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
+    chart: PlottingObject, optional
+       The chart object to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
     Returns
     -------
-    TableSample
+    obj
         decision_boundary, positive_prediction_ratio, lift
     """
     decision_boundary, positive_prediction_ratio, lift = _compute_function_metrics(
@@ -102,9 +99,7 @@ def lift_chart(
             }
         )
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-        class_name="LiftChart",
-        matplotlib_kwargs={"ax": ax,},
-        style_kwargs=style_kwargs,
+        class_name="LiftChart", chart=chart, style_kwargs=style_kwargs,
     )
     data = {
         "x": np.array(decision_boundary),
@@ -129,9 +124,9 @@ def prc_curve(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     show: bool = True,
-    ax: Optional[Axes] = None,
+    chart: Optional[PlottingObject] = None,
     **style_kwargs,
-) -> TableSample:
+) -> PlottingObject:
     """
     Draws the PRC Curve.
 
@@ -158,16 +153,15 @@ def prc_curve(
     show: bool, optional
         If set to True,  the  Plotting object  will be 
         returned.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
+    chart: PlottingObject, optional
+       The chart object to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
     Returns
     -------
-    TableSample
+    obj
         threshold, recall, precision
     """
     threshold, recall, precision = _compute_function_metrics(
@@ -184,7 +178,7 @@ def prc_curve(
         )
     auc = _compute_area(precision, recall)
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-        class_name="PRCCurve", matplotlib_kwargs={"ax": ax,}, style_kwargs=style_kwargs,
+        class_name="PRCCurve", chart=chart, style_kwargs=style_kwargs,
     )
     data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
     layout = {
@@ -205,9 +199,9 @@ def roc_curve(
     nbins: int = 30,
     cutoff_curve: bool = False,
     show: bool = True,
-    ax: Optional[Axes] = None,
+    chart: Optional[PlottingObject] = None,
     **style_kwargs,
-) -> TableSample:
+) -> PlottingObject:
     """
     Draws the ROC Curve.
 
@@ -234,16 +228,15 @@ def roc_curve(
     show: bool, optional
         If set to True,  the  Plotting object  will be 
         returned.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
+    chart: PlottingObject, optional
+       The chart object to plot on.
     **style_kwargs
         Any   optional  parameter  to  pass  to   the 
         Matplotlib functions.
 
     Returns
     -------
-    TableSample
+    obj
         threshold, false_positive, true_positive
     """
     threshold, false_positive, true_positive = _compute_function_metrics(
@@ -265,9 +258,7 @@ def roc_curve(
     auc = _compute_area(true_positive, false_positive)
     if cutoff_curve:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-            class_name="CutoffCurve",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="CutoffCurve", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
             "x": np.array(threshold),
@@ -284,9 +275,7 @@ def roc_curve(
         return vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-            class_name="ROCCurve",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="ROCCurve", chart=chart, style_kwargs=style_kwargs,
         )
         data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}
         layout = {

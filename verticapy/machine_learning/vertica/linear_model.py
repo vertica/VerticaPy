@@ -18,9 +18,7 @@ import copy
 from typing import Literal, Optional, Union
 import numpy as np
 
-from matplotlib.axes import Axes
-
-from verticapy._typing import PythonNumber
+from verticapy._typing import PlottingObject, PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -102,8 +100,8 @@ class LinearModel:
         return copy.deepcopy(self.features_importance_)
 
     def features_importance(
-        self, show: bool = True, ax: Optional[Axes] = None, **style_kwargs
-    ) -> TableSample:
+        self, show: bool = True, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Computes the model's features importance.
 
@@ -111,15 +109,15 @@ class LinearModel:
         ----------
         show: bool
             If set to True,  draw the features  importance.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the Matplotlib 
             functions.
 
         Returns
         -------
-        TableSample
+        obj
             features importance.
         """
         fi = self._get_features_importance()
@@ -129,9 +127,7 @@ class LinearModel:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="ImportanceBarChart",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -153,8 +149,11 @@ class LinearModel:
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -162,21 +161,19 @@ class LinearModel:
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        object
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="RegressionPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="RegressionPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.RegressionPlot(
             vdf=vDataFrame(self.input_relation),
@@ -217,8 +214,11 @@ class LinearModelClassifier(LinearModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -226,21 +226,19 @@ class LinearModelClassifier(LinearModel):
         ----------
         max_nb_points: int
             Maximum number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="LogisticRegressionPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="LogisticRegressionPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LogisticRegressionPlot(
             vdf=vDataFrame(self.input_relation),
