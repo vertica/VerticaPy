@@ -23,6 +23,7 @@ from verticapy.plotting._highcharts.barh import (
 )
 from verticapy.plotting._highcharts.boxplot import BoxPlot
 from verticapy.plotting._highcharts.candlestick import CandleStick
+from verticapy.plotting._highcharts.contour_plot import ContourPlot
 from verticapy.plotting._highcharts.density import DensityPlot, MultiDensityPlot
 from verticapy.plotting._highcharts.heatmap import HeatMap
 from verticapy.plotting._highcharts.machine_learning.elbow import ElbowCurve

@@ -987,6 +987,8 @@ class PlottingBase:
     ) -> None:
         from verticapy.datasets.generators import gen_meshgrid
 
+        if hasattr(self, "_max_nbins"):
+            nbins = min(nbins, self._max_nbins)
         columns = vdf._format_colnames(columns)
         aggregations = vdf.agg(["min", "max"], columns).to_numpy()
         self.data = {
