@@ -19,7 +19,7 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-import datetime, os, sys
+import datetime, os, sys, random
 
 # Other Modules
 import plotly.express as px
@@ -32,7 +32,7 @@ import scipy
 import verticapy
 import verticapy._config.config as conf
 from verticapy import drop
-from verticapy.datasets import load_titanic, load_iris
+from verticapy.datasets import load_titanic, load_iris, load_amazon
 
 conf.set_option("print_info", False)
 
@@ -75,6 +75,13 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
+
+
+@pytest.fixture(scope="module")
+def amazon_vd():
+    amazon = load_amazon()
+    yield amazon
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
@@ -636,3 +643,84 @@ class TestVDFBoxPlot:
         assert dummy_dist_vd.max()["max"][0] == max(
             result.data[0]["x"][0]
         ), "Maximum value not in plot"
+
+
+class testVDFlineplot:
+    def test_properties_output_type(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_simple(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_x_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert (
+            result.layout["xaxis"]["title"]["text"] == "time"
+        ), "X axis title incorrect"
+
+    def test_properties_y_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "number"
+        ), "Y axis title incorrect"
+
+    def test_data_count_of_all_values(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        assert (
+            result.data[0]["x"].shape + result.data[1]["x"].shape
+            == amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')").shape()[0]
+        ), "The total values in the plot are not equal to the values in the dataframe."
+
+    def test_data_spot_check(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        assert (
+            amazon_vd["date"][random.randint(0, len(amazon_vd))] in result.data[0]["x"]
+        ), "One date that exists in the data does not exist in the plot"
+
+    def test_additional_options_custom_width(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state", width=400)
+        # Assert - checking if correct object created
+        assert result.layout["width"] == 400, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state", width=600, height=600)
+        # Assert - checking if correct object created
+        assert result.layout["height"] == "time", "Custom height not working"
+
+    def test_additional_options_marker_off(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", markers=False)
+        # Assert - checking if correct object created
+        assert result.data["mode"] == "lines", "Markers not turned off"
