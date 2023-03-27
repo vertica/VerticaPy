@@ -52,8 +52,11 @@ class HorizontalBarChart(MatplotlibBase):
         """
         Draws a bar chart using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(
-            ax, size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)), grid="x"
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)),
+            grid="x",
+            style_kwargs=style_kwargs,
         )
         ax.barh(
             self.data["x"],
@@ -129,9 +132,19 @@ class HorizontalBarChart2D(MatplotlibBase):
         yticks = [j for j in range(m)]
         bar_height = 0.5
         if self.layout["kind"] == "density":
-            ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 8 + 1), grid="x")
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax,
+                size=(10, min(m * 3, 600) / 8 + 1),
+                grid="x",
+                style_kwargs=style_kwargs,
+            )
         else:
-            ax, fig = self._get_ax_fig(ax, size=(10, min(m * 3, 600) / 2 + 1), grid="x")
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax,
+                size=(10, min(m * 3, 600) / 2 + 1),
+                grid="x",
+                style_kwargs=style_kwargs,
+            )
         if self.layout["kind"] == "fully_stacked":
             for i in range(0, m):
                 matrix[i] /= sum(matrix[i])

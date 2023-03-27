@@ -18,8 +18,6 @@ import random
 from typing import Literal, Optional, Union
 import numpy as np
 
-from matplotlib.axes import Axes
-
 from vertica_python.errors import MissingRelation, QueryError
 
 from verticapy._typing import PlottingObject, PythonNumber, SQLColumns, SQLRelation

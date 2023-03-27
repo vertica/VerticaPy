@@ -268,8 +268,8 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="SVMClassifierPlot", chart=chart, style_kwargs=style_kwargs,

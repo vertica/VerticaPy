@@ -48,7 +48,7 @@ class LogisticRegressionPlot(SVMClassifierPlot):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws a SVM Classifier plot using the Matplotlib API.
+        Draws a SVM Classifier plot using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)

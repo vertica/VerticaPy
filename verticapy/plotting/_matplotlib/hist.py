@@ -43,7 +43,9 @@ class Histogram(MatplotlibBase):
         """
         Draws an histogram using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
+        )
         alpha, colors = 1.0, self.get_colors()
         key = "categories" if self.layout["has_category"] else "columns"
         delta = alpha / len(self.layout[key]) * 0.8

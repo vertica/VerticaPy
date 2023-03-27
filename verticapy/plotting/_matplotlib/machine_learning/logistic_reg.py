@@ -78,7 +78,13 @@ class LogisticRegressionPlot(MatplotlibBase):
         min_logit_x, max_logit_x = min(self.data["X"][:, 0]), max(self.data["X"][:, 0])
         step_x = (max_logit_x - min_logit_x) / 40.0
         if len(self.layout["columns"]) == 2:
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax,
+                size=(8, 6),
+                set_axis_below=True,
+                grid=True,
+                style_kwargs=style_kwargs,
+            )
             x_logit = (
                 np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
                 if (step_x > 0)
@@ -135,7 +141,9 @@ class LogisticRegressionPlot(MatplotlibBase):
                     )
                 )
             )
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), dim=3,)
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax, size=(8, 6), dim=3, style_kwargs=style_kwargs
+            )
             ax.plot_surface(
                 X_logit, Y_logit, Z_logit, **self.init_style_Z,
             )

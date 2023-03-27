@@ -35,12 +35,23 @@ class MatplotlibBase(PlottingBase):
         set_axis_below: bool = True,
         grid: Union[str, bool] = True,
         dim: int = 2,
+        style_kwargs: dict,
     ) -> tuple[Axes, Figure]:
+        kwargs = copy.deepcopy(style_kwargs)
+        if "figsize" in kwargs and isinstance(kwargs, tuple):
+            size = kwargs["figsize"]
+            del kwargs[size]
+        if "width" in kwargs:
+            size[0] = kwargs["width"]
+            del kwargs["width"]
+        if "height" in kwargs:
+            size[1] = kwargs["height"]
+            del kwargs["height"]
         if not (ax) and dim == 3:
             if conf._get_import_success("jupyter"):
                 plt.figure(figsize=size)
             ax = plt.axes(projection="3d")
-            return ax, plt
+            return ax, plt, kwargs
         elif not (ax):
             fig, ax = plt.subplots()
             if conf._get_import_success("jupyter"):
@@ -51,9 +62,9 @@ class MatplotlibBase(PlottingBase):
                 else:
                     ax.grid()
             ax.set_axisbelow(set_axis_below)
-            return ax, fig
+            return ax, fig, kwargs
         else:
-            return ax, plt
+            return ax, plt, kwargs
 
     @staticmethod
     def _get_matrix_fig_size(n: int,) -> tuple[int, int]:

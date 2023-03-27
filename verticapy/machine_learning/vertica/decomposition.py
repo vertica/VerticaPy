@@ -253,7 +253,7 @@ class Decomposition(Preprocessing):
         dimensions: tuple = (1, 2),
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws a decomposition scatter plot.
 
@@ -270,8 +270,8 @@ class Decomposition(Preprocessing):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vdf = self.transform(vDataFrame(self.input_relation))
         dim_perc = []
@@ -300,7 +300,7 @@ class Decomposition(Preprocessing):
         dimensions: tuple = (1, 2),
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws a decomposition circle.
 
@@ -317,8 +317,8 @@ class Decomposition(Preprocessing):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         if self._model_type == "SVD":
             x = self.vectors_[:, dimensions[0] - 1]
@@ -345,7 +345,7 @@ class Decomposition(Preprocessing):
 
     def plot_scree(
         self, chart: Optional[PlottingObject] = None, **style_kwargs
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws a decomposition scree plot.
 
@@ -359,8 +359,8 @@ class Decomposition(Preprocessing):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
@@ -563,7 +563,7 @@ class MCA(PCA):
 
     def plot_contrib(
         self, dimension: int = 1, chart: Optional[PlottingObject] = None, **style_kwargs
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws a decomposition  contribution plot of the input 
         dimension.
@@ -581,8 +581,8 @@ class MCA(PCA):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         contrib = self.principal_components_[:, dimension - 1] ** 2
         contrib = 100 * contrib / contrib.sum()
@@ -613,7 +613,7 @@ class MCA(PCA):
         dimensions: tuple = (1, 2),
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws a MCA (multiple correspondence analysis) cos2 
         plot of the two input dimensions.
@@ -630,8 +630,8 @@ class MCA(PCA):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         cos2_1 = self.cos2_[:, dimensions[0] - 1]
         cos2_2 = self.cos2_[:, dimensions[1] - 1]
@@ -667,7 +667,7 @@ class MCA(PCA):
         method: Literal["auto", "cos2", "contrib"] = "auto",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws  the  MCA  (multiple correspondence analysis) 
         graph.
@@ -690,8 +690,8 @@ class MCA(PCA):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         x = self.principal_components_[:, dimensions[0] - 1]
         y = self.principal_components_[:, dimensions[1] - 1]

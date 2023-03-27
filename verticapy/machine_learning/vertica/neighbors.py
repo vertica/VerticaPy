@@ -1083,7 +1083,9 @@ class KernelDensity(Regressor, Tree):
             raise AttributeError("KDE Plots are only available in 1D or 2D.")
         return data, layout
 
-    def plot(self, chart: Optional[PlottingObject] = None, **style_kwargs) -> Axes:
+    def plot(
+        self, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Draws the Model.
 
@@ -1097,8 +1099,8 @@ class KernelDensity(Regressor, Tree):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
@@ -1424,7 +1426,7 @@ class LocalOutlierFactor(VerticaModel):
         max_nb_points: int = 100,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -1440,8 +1442,8 @@ class LocalOutlierFactor(VerticaModel):
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="LOFPlot", chart=chart, style_kwargs=style_kwargs,

@@ -50,8 +50,12 @@ class ImportanceBarChart(MatplotlibBase):
         importances, coef_names, signs = self._compute_importance()
         x_label = self.layout["x_label"] if "x_label" in self.layout else "Importance"
         y_label = self.layout["y_label"] if "y_label" in self.layout else "Features"
-        ax, fig = self._get_ax_fig(
-            ax, size=(12, int(len(importances) / 2) + 1), set_axis_below=True, grid=True
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(12, int(len(importances) / 2) + 1),
+            set_axis_below=True,
+            grid=True,
+            style_kwargs=style_kwargs,
         )
         plus = self.get_colors(d=style_kwargs, idx=0)
         minus = self.get_colors(d=style_kwargs, idx=1)

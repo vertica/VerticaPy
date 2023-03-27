@@ -76,7 +76,9 @@ class LinePlot(MatplotlibBase):
         Draws a time series plot using the Matplotlib API.
         """
         colors = self.get_colors()
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
+        )
         plot_fun = ax.step if (self.layout["kind"] == "step") else ax.plot
         if not (self.layout["has_category"]):
             args = [self.data["x"], self.data["Y"][:, 0]]
@@ -184,7 +186,9 @@ class MultiLinePlot(MatplotlibBase):
         Draws a multi-time series plot using the Matplotlib API.
         """
         colors = self.get_colors()
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
+        )
         n, m = self.data["Y"].shape
         plot_fun = ax.step if (self.layout["kind"] == "step") else ax.plot
         prec = [0 for j in range(n)]

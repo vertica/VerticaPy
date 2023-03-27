@@ -69,7 +69,7 @@ class ImportanceBarChart(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a coeff importance bar chart using the Matplotlib API.
+        Draws a coeff importance bar chart using the HC API.
         """
         importances, coef_names, signs = self._compute_importance()
         chart = self._get_chart(chart)

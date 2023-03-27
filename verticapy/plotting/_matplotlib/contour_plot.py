@@ -71,7 +71,9 @@ class ContourPlot(MatplotlibBase):
         """
         Draws a contour plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=False, grid=False, style_kwargs=style_kwargs
+        )
         ax.contour(
             self.data["X"],
             self.data["Y"],

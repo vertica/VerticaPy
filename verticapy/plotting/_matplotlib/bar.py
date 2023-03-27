@@ -50,11 +50,12 @@ class BarChart(MatplotlibBase):
         """
         Draws a histogram using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(
+        ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
             set_axis_below=True,
             grid="y",
+            style_kwargs=style_kwargs,
         )
         ax.bar(
             self.data["x"],
@@ -107,8 +108,12 @@ class BarChart2D(MatplotlibBase):
         """
         colors = self.get_colors()
         m, n = self.data["X"].shape
-        ax, fig = self._get_ax_fig(
-            ax, size=(min(600, 3 * m) / 2 + 1, 6), set_axis_below=True, grid="y"
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(min(600, 3 * m) / 2 + 1, 6),
+            set_axis_below=True,
+            grid="y",
+            style_kwargs=style_kwargs,
         )
         for i in range(0, n):
             params = {

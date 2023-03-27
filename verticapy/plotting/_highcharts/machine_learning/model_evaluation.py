@@ -64,7 +64,7 @@ class ROCCurve(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a Machine Learning Roc Curve using the Matplotlib API.
+        Draws a Machine Learning Roc Curve using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
@@ -116,7 +116,7 @@ class CutoffCurve(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a Machine Cutoff Curve using the Matplotlib API.
+        Draws a Machine Cutoff Curve using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)
@@ -162,7 +162,7 @@ class LiftChart(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a Machine Cutoff Curve using the Matplotlib API.
+        Draws a Machine Cutoff Curve using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)

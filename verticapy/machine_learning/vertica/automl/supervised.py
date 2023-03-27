@@ -18,8 +18,6 @@ import copy
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
-from matplotlib.axes import Axes
-
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, PythonScalar, SQLRelation, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs

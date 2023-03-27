@@ -17,8 +17,6 @@ permissions and limitations under the License.
 import copy, math
 from typing import Callable, Optional
 
-from matplotlib.axes import Axes
-
 from verticapy._typing import (
     PlottingObject,
     PythonScalar,

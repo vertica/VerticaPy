@@ -81,7 +81,9 @@ class OutliersPlot(ScatterPlot):
         if not (cmap):
             cmap = self.get_cmap(color=self.get_colors(idx=2))
         x_grid = np.linspace(min0, max0, 1000)
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=False, grid=False, style_kwargs=style_kwargs
+        )
         if len(self.layout["columns"]) == 1:
             y_grid = np.linspace(-1, 1, 1000)
             X, Y = np.meshgrid(x_grid, y_grid)
