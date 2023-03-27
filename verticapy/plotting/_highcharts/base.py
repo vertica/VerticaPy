@@ -44,7 +44,7 @@ class HighchartsBase(PlottingBase):
         if "height" in kwargs:
             height = kwargs["height"]
             del kwargs["height"]
-        elif stock or ("stock" in self.layout and self.layout["stock"]):
+        if stock or ("stock" in self.layout and self.layout["stock"]):
             return Highstock(width=width, height=height), kwargs
         else:
             return Highchart(width=width, height=height), kwargs

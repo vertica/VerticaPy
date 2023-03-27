@@ -69,7 +69,7 @@ class ScatterMatrix(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a scatter matrix using the Matplotlib API.
         """

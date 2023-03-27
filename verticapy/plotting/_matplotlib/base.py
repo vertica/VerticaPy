@@ -42,10 +42,10 @@ class MatplotlibBase(PlottingBase):
             size = kwargs["figsize"]
             del kwargs["size"]
         if "width" in kwargs:
-            size[0] = kwargs["width"]
+            size = (kwargs["width"], size[1])
             del kwargs["width"]
         if "height" in kwargs:
-            size[1] = kwargs["height"]
+            size = (size[0], kwargs["height"])
             del kwargs["height"]
         if not (ax) and dim == 3:
             if conf._get_import_success("jupyter"):
