@@ -49,14 +49,24 @@ def dummy_vd():
 
 @pytest.fixture(scope="module")
 def dummy_dist_vd():
+    N = 1000
+    ones_percentage = 0.4
     median = 50
     q1 = 40
     q3 = 60
+    zeros_array = np.zeros(int(N * (1 - ones_percentage)))
+    ones_array = np.ones(int(N * ones_percentage))
+    result_array = np.concatenate((zeros_array, ones_array))
+    np.random.shuffle(result_array)
+    result_array = result_array.reshape(len(result_array), 1)
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
-    data = np.random.normal(median, std, 1000)
+    data = np.random.normal(median, std, N)
     data = data.reshape(len(data), 1)
-    data = pd.DataFrame(data)
-    dummy = verticapy.vDataFrame(data)
+    cols_combined = np.concatenate((data, result_array), axis=1)
+    data_all = pd.DataFrame(cols_combined)
+    dummy = verticapy.vDataFrame(data_all)
+    dummy["1"].rename("binary")
+    dummy["binary"].astype("int")
     yield dummy
 
 
@@ -431,13 +441,30 @@ class TestVDFBoxPlot:
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
-    # ToDo
+    def test_properties_output_type_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
     def test_properties_xaxis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
         result = dummy_dist_vd["0"].boxplot()
         # Assert
         assert result.layout["xaxis"]["title"]["text"] == "0", "X-axis title issue"
+
+    def test_properties_xaxis_title_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert result.layout["xaxis"]["title"]["text"] == "binary", "X-axis title issue"
 
     def test_properties_yaxis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
@@ -446,12 +473,28 @@ class TestVDFBoxPlot:
         # Assert
         assert result.layout["yaxis"]["title"]["text"] is None, "Y-axis title issue"
 
+    def test_properties_yaxis_title_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert result.layout["yaxis"]["title"]["text"] == "0", "Y-axis title issue"
+
     def test_properties_orientation(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
         result = dummy_dist_vd["0"].boxplot()
         # Assert
         assert result.data[0]["orientation"] == "h", "Orientation is not correct"
+
+    def test_properties_orientation(self, load_plotly, dummy_dist_vd):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert result.data[0]["orientation"] == "v", "Orientation is not correct"
 
     def test_properties_bound_hover_labels(self, load_plotly, dummy_dist_vd):
         # Arrange
@@ -464,6 +507,22 @@ class TestVDFBoxPlot:
         is_subset = all(elem in name_list for elem in test_list)
         # Assert
         assert is_subset, "Hover label error"
+
+    def test_properties_bound_hover_labels_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        name_list = []
+        for i in range(len(result.data)):
+            name_list.append(result.data[i]["hovertemplate"].split(":")[0])
+        # Assert
+        assert name_list.count("25.0% ") == 2, "Hover label error"
+        assert name_list.count("75.0% ") == 2, "Hover label error"
+        assert name_list.count("Lower") == 2, "Hover label error"
+        assert name_list.count("Median") == 2, "Hover label error"
+        assert name_list.count("Upper") == 2, "Hover label error"
 
     def test_properties_quartile_labels(self, load_plotly, dummy_dist_vd):
         # Arrange
@@ -489,6 +548,19 @@ class TestVDFBoxPlot:
         # Assert
         assert is_subset, "Hover label error for quantiles"
 
+    def test_properties_quartile_labels_for_custom_q1_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary", q=[0.2, 0.7])
+        name_list = []
+        for i in range(len(result.data)):
+            name_list.append(result.data[i]["hovertemplate"].split("%")[0])
+        # Assert
+        assert name_list.count("20.0") == 2, "Hover label error for quantiles"
+        assert name_list.count("70.0") == 2, "Hover label error for quantiles"
+
     def test_properties_lower_hover_box_max_value_is_equal_to_minimum_of_q1(
         self, load_plotly, dummy_dist_vd
     ):
@@ -499,6 +571,18 @@ class TestVDFBoxPlot:
         assert (
             result.data[1]["base"][0] + result.data[1]["x"][0]
             == result.data[2]["base"][0]
+        ), "Hover boxes may overlap"
+
+    def test_properties_lower_hover_box_max_value_is_equal_to_minimum_of_q1_for_partitioned_data(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert (
+            result.data[4]["base"][0] + result.data[4]["y"][0]
+            == result.data[5]["base"][0]
         ), "Hover boxes may overlap"
 
     def test_properties_q1_hover_box_max_value_is_equal_to_minimum_of_median(
@@ -521,6 +605,28 @@ class TestVDFBoxPlot:
         assert result.data[0]["median"][0] == pytest.approx(
             50, 1
         ), "median not computed correctly"
+
+    def test_data_median_value_for_partitioned_data_for_x_is_0(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert result.data[0]["median"][0] == pytest.approx(
+            50, 1
+        ), "median not computed correctly for binary=0"
+
+    def test_data_median_value_for_partitioned_data_for_x_is_0(
+        self, load_plotly, dummy_dist_vd
+    ):
+        # Arrange
+        # Act
+        result = dummy_dist_vd["0"].boxplot(by="binary")
+        # Assert
+        assert result.data[1]["median"][0] == pytest.approx(
+            50, 1
+        ), "median not computed correctly for binary=1"
 
     def test_data_maximum_point_value(self, load_plotly, dummy_dist_vd):
         # Arrange
