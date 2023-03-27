@@ -617,7 +617,7 @@ class VerticaModel(PlottingUtils):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -918,7 +918,7 @@ class Tree:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
@@ -986,7 +986,7 @@ class Tree:
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -1450,7 +1450,7 @@ class BinaryClassifier(Classifier):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
         Returns
         -------
@@ -1489,7 +1489,7 @@ class BinaryClassifier(Classifier):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
     	Returns
     	-------
@@ -1527,7 +1527,7 @@ class BinaryClassifier(Classifier):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
     	Returns
     	-------
@@ -1565,7 +1565,7 @@ class BinaryClassifier(Classifier):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
         Returns
         -------
@@ -2149,7 +2149,7 @@ class MulticlassClassifier(Classifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
@@ -2192,7 +2192,7 @@ class MulticlassClassifier(Classifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
         Returns
@@ -2233,7 +2233,7 @@ class MulticlassClassifier(Classifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns
@@ -2274,7 +2274,7 @@ class MulticlassClassifier(Classifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns
@@ -2315,7 +2315,7 @@ class MulticlassClassifier(Classifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns

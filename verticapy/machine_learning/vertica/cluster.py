@@ -144,7 +144,7 @@ class Clustering(Unsupervised):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -332,7 +332,7 @@ class KMeans(Clustering):
         plot_crosses: bool = True,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Figure:
+    ) -> PlottingObject:
         """
         Draws the Voronoi Graph of the model.
 
@@ -347,12 +347,12 @@ class KMeans(Clustering):
             The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Figure
-            Matplotlib Figure.
+        obj
+            Plotting Object.
         """
         if len(self.X) == 2:
             vpy_plt, kwargs = self._get_plotting_lib(
@@ -1087,7 +1087,7 @@ class DBSCAN(VerticaModel):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------

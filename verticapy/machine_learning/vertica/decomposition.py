@@ -266,7 +266,7 @@ class Decomposition(Preprocessing):
             The chart object to plot on.
         **style_kwargs
             Any optional  parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -313,7 +313,7 @@ class Decomposition(Preprocessing):
             The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to  the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -355,7 +355,7 @@ class Decomposition(Preprocessing):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
@@ -576,7 +576,7 @@ class MCA(PCA):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
@@ -625,7 +625,7 @@ class MCA(PCA):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
@@ -685,7 +685,7 @@ class MCA(PCA):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns

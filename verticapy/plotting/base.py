@@ -316,8 +316,7 @@ class PlottingBase:
         bargap: float = 0.06,
     ) -> None:
         """
-        Computes the aggregations needed to draw a 1D graphic 
-        using the Matplotlib API.
+        Computes the aggregations needed to draw a 1D graphic.
         """
         if not (0.0 < bargap <= 1.0):
             raise ValueError("Parameter 'bargap' must be between 0 and 1.")
@@ -731,7 +730,7 @@ class PlottingBase:
         fill_none: float = 0.0,
     ) -> None:
         """
-        Draws a pivot table using the Matplotlib API.
+        Computes a pivot table.
         """
         other_columns = ""
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)

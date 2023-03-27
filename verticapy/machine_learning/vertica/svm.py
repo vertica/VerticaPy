@@ -264,7 +264,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------

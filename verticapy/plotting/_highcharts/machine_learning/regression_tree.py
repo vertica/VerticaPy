@@ -45,7 +45,7 @@ class RegressionTreePlot(RegressionPlot):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws a regression tree plot using the Matplotlib API.
+        Draws a regression tree plot using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)

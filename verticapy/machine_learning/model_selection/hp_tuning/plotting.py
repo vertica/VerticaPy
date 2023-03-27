@@ -117,7 +117,7 @@ def validation_curve(
         The chart object to plot on.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the 
-        Matplotlib functions.
+        Plotting functions.
 
     Returns
     -------
@@ -226,7 +226,7 @@ def plot_acf_pacf(
         If  set to  True,  the  Plotting  object will  be 
         returned.
     **style_kwargs
-        Any optional  parameter to pass to the Matplotlib 
+        Any optional  parameter to pass to the Plotting 
         functions.
 
     Returns

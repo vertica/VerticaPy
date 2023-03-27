@@ -100,7 +100,7 @@ class OutliersPlot(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws an outliers plot using the Matplotlib API.
+        Draws an outliers plot using the HC API.
         """
         chart = self._get_chart(chart)
         chart.set_dict_options(self.init_style)

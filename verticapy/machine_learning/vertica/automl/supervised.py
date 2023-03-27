@@ -685,7 +685,7 @@ class AutoML(VerticaModel):
             The chart object to plot on.
         **style_kwargs
             Any optional  parameter  to pass to  the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------

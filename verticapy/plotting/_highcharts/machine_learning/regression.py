@@ -93,7 +93,7 @@ class RegressionPlot(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws a regression plot using the Matplotlib API.
+        Draws a regression plot using the HC API.
         """
         if len(self.layout["columns"]) == 2:
             chart = self._get_chart(chart)
