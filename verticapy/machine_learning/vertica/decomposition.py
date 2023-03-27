@@ -19,7 +19,6 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
-from verticapy._config.colors import get_colors
 from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
@@ -30,8 +29,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 import verticapy.machine_learning.memmodel as mm
 from verticapy.machine_learning.vertica.preprocessing import Preprocessing
-
-from verticapy.plotting.base import PlottingBase
 
 """
 General Classes.

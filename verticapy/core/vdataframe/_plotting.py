@@ -1610,7 +1610,7 @@ class vDCPlot:
         of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
-        pie_type: Literal["auto", "donut", "rose"] = "auto",
+        pie_type: Literal["auto", "donut", "rose", "3d"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1646,6 +1646,7 @@ class vDCPlot:
                 auto   : Regular pie chart.
                 donut  : Donut chart.
                 rose   : Rose chart.
+                3d     : 3D Pie.
             It   can    also   be  a  cutomized   aggregation 
             (ex: AVG(column1) + 5).
         ax: Axes, optional

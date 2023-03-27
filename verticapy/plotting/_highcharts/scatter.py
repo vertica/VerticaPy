@@ -105,7 +105,7 @@ class ScatterPlot(HighchartsBase):
                 "zAxis": {"title": {"text": self.layout["columns"][2]}},
             }
         if self.layout["has_category"]:
-            self.layout["tooltip"][
+            self.init_style["tooltip"][
                 "headerFormat"
             ] = '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>'
             self.init_style_cat = {
