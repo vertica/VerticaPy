@@ -298,7 +298,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species")
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -306,9 +312,7 @@ class TestVDFScatterPlot:
             set(["Iris-virginica", "Iris-versicolor", "Iris-setosa"])
         ), "Some unique values were not found in the plot"
 
-    def test_properties_all_unique_values_for_by_3D_plot(
-        self, load_plotly, iris_vd
-    ):
+    def test_properties_all_unique_values_for_by_3D_plot(self, load_plotly, iris_vd):
         # Arrange
         # Act
         result = iris_vd.scatter(
@@ -324,7 +328,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species")
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -422,13 +432,12 @@ class TestVDFBoxPlot:
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
     # ToDo
-    # Need to update the text from '"0"' to "0" after the code is updated
     def test_properties_xaxis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
         result = dummy_dist_vd["0"].boxplot()
         # Assert
-        assert result.layout["xaxis"]["title"]["text"] == '"0"', "X-axis title issue"
+        assert result.layout["xaxis"]["title"]["text"] == "0", "X-axis title issue"
 
     def test_properties_yaxis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
