@@ -42,6 +42,7 @@ from verticapy.plotting._highcharts.machine_learning.model_evaluation import (
 from verticapy.plotting._highcharts.machine_learning.pca import (
     PCACirclePlot,
     PCAScreePlot,
+    PCAVarPlot,
 )
 from verticapy.plotting._highcharts.machine_learning.regression import RegressionPlot
 from verticapy.plotting._highcharts.machine_learning.regression_tree import (

@@ -700,31 +700,33 @@ class MCA(PCA):
         x = self.principal_components_[:, dimensions[0] - 1]
         y = self.principal_components_[:, dimensions[1] - 1]
         n = len(self.cos2_[:, dimensions[0] - 1])
+        c = None
+        has_category = False
         if method in ("cos2", "contrib"):
+            has_category = True
             if method == "cos2":
-                c = [
-                    self.cos2_[:, dimensions[0] - 1][i]
-                    + self.cos2_[:, dimensions[1] - 1][i]
-                    for i in range(n)
-                ]
+                c = np.array(
+                    [
+                        self.cos2_[:, dimensions[0] - 1][i]
+                        + self.cos2_[:, dimensions[1] - 1][i]
+                        for i in range(n)
+                    ]
+                )
             else:
                 sum_1, sum_2 = (
                     sum(self.cos2_[:, dimensions[0] - 1]),
                     sum(self.cos2_[:, dimensions[1] - 1]),
                 )
-                c = [
-                    0.5
-                    * 100
-                    * (
-                        self.cos2_[:, dimensions[0] - 1][i] / sum_1
-                        + self.cos2_[:, dimensions[1] - 1][i] / sum_2
-                    )
-                    for i in range(n)
-                ]
-            style_kwargs["c"] = c
-            if "cmap" not in style_kwargs:
-                style_kwargs["cmap"] = PlottingBase().get_cmap(
-                    color=[get_colors(idx=0), get_colors(idx=1), get_colors(idx=2),]
+                c = np.array(
+                    [
+                        0.5
+                        * 100
+                        * (
+                            self.cos2_[:, dimensions[0] - 1][i] / sum_1
+                            + self.cos2_[:, dimensions[1] - 1][i] / sum_2
+                        )
+                        for i in range(n)
+                    ]
                 )
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="PCAVarPlot",
@@ -734,6 +736,7 @@ class MCA(PCA):
         data = {
             "x": x,
             "y": y,
+            "c": c,
             "explained_variance": [
                 self.explained_variance_[dimensions[0] - 1],
                 self.explained_variance_[dimensions[1] - 1],
@@ -743,6 +746,7 @@ class MCA(PCA):
         layout = {
             "columns": self.X,
             "method": method,
+            "has_category": has_category,
         }
         return vpy_plt.PCAVarPlot(data=data, layout=layout).draw(**kwargs)
 

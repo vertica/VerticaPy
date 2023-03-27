@@ -155,7 +155,7 @@ class PCAScreePlot(HighchartsBase):
         return chart
 
 
-class PCAVarPlot(PCACirclePlot):
+class PCAVarPlot(HighchartsBase):
 
     # Properties.
 
@@ -170,15 +170,58 @@ class PCAVarPlot(PCACirclePlot):
     # Styling Methods.
 
     def _init_style(self) -> None:
+        min_x, max_x = np.nanmin(self.data["x"]), np.nanmax(self.data["x"])
+        min_y, max_y = np.nanmin(self.data["y"]), np.nanmax(self.data["y"])
+        if self.data["explained_variance"][0]:
+            x_label = f"Dim{self.data['dim'][0]} ({round(self.data['explained_variance'][0] * 100, 1)}%)"
+        else:
+            x_label = ""
+        if self.data["explained_variance"][1]:
+            y_label = f"Dim{self.data['dim'][1]} ({round(self.data['explained_variance'][1] * 100, 1)}%)"
+        else:
+            y_label = ""
         self.init_style = {
-            "marker": "^",
-            "s": 100,
-            "edgecolors": "black",
-            "color": self.get_colors(idx=0),
+            "title": {"text": ""},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": x_label},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+                "min": min_x,
+                "max": max_x,
+            },
+            "yAxis": {"title": {"text": y_label}, "min": min_y, "max": max_y,},
+            "legend": {"enabled": True},
+            "plotOptions": {
+                "scatter": {
+                    "marker": {
+                        "radius": 5,
+                        "states": {
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)"}
+                        },
+                    },
+                    "states": {"hover": {"marker": {"enabled": False}}},
+                }
+            },
+            "tooltip": {
+                "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
+                "pointFormat": "<b>"
+                + f"Dim{self.data['dim'][0]}"
+                + "</b>: {point.x}<br><b>"
+                + f"Dim{self.data['dim'][1]}"
+                + "</b>: {point.y}<br>",
+            },
+            "colors": self.get_colors(),
         }
-        self.init_style_plot = {
-            "linestyle": "--",
+        if self.layout["has_category"]:
+            self.init_style["tooltip"]["pointFormat"] += (
+                "<b>" + self.layout["method"] + "</b>: {point.z}<br>"
+            )
+        self.init_style_axis = {
             "color": "black",
+            "dashStyle": "longdash",
+            "enableMouseTracking": False,
         }
         return None
 
@@ -188,48 +231,22 @@ class PCAVarPlot(PCACirclePlot):
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=True)
-        n = len(self.data["x"])
-        min_x, max_x = min(self.data["x"]), max(self.data["x"])
-        min_y, max_y = min(self.data["y"]), max(self.data["y"])
-        delta_x = (max_x - min_x) * 0.04
-        delta_y = (max_y - min_y) * 0.04
-        for i in range(n):
-            ax.text(
-                self.data["x"][i],
-                self.data["y"][i] + delta_y,
-                self.layout["columns"][i],
-                horizontalalignment="center",
-            )
-        img = ax.scatter(
-            self.data["x"],
-            self.data["y"],
-            **self._update_dict(self.init_style, style_kwargs, 0),
+        chart = self._get_chart(chart)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        kind = "scatter"
+        for i, col in enumerate(self._clean_quotes(self.layout["columns"])):
+            data = [self.data["x"][i], self.data["y"][i]]
+            if self.layout["has_category"]:
+                kind = "bubble"
+                data += [self.data["c"][i]]
+            chart.add_data_set([data], kind, name=col)
+        min_x, max_x = np.nanmin(self.data["x"]), np.nanmax(self.data["x"])
+        min_y, max_y = np.nanmin(self.data["y"]), np.nanmax(self.data["y"])
+        data_x = [[min_x + (max_x - min_x) * i / 1000, 0] for i in range(1001)]
+        data_y = [[0, min_y + (max_y - min_y) * i / 1000] for i in range(1001)]
+        chart.add_data_set(data_x, "line", name="axis", **self.init_style_axis)
+        chart.add_data_set(
+            data_y, "line", name="axis", linkedTo=":previous", **self.init_style_axis
         )
-        ax.plot(
-            [min_x - 5 * delta_x, max_x + 5 * delta_x],
-            [0.0, 0.0],
-            **self.init_style_plot,
-        )
-        ax.plot(
-            [0.0, 0.0],
-            [min_y - 5 * delta_y, max_y + 5 * delta_y],
-            **self.init_style_plot,
-        )
-        ax.set_xlim(min_x - 5 * delta_x, max_x + 5 * delta_x)
-        ax.set_ylim(min_y - 5 * delta_y, max_y + 5 * delta_y)
-        if self.data["explained_variance"][0]:
-            dim1 = f"({round(self.data['explained_variance'][0] * 100, 1)}%)"
-        else:
-            dim1 = ""
-        ax.set_xlabel(f"Dim{self.data['dim'][0]} {dim1}")
-        if self.data["explained_variance"][1]:
-            dim1 = f"({round(self.data['explained_variance'][1] * 100, 1)}%)"
-        else:
-            dim1 = ""
-        ax.set_ylabel(f"Dim{self.data['dim'][1]} {dim1}")
-        ax.xaxis.set_ticks_position("bottom")
-        ax.yaxis.set_ticks_position("left")
-        if "c" in style_kwargs:
-            fig.colorbar(img).set_label(self.layout["method"])
-        return ax
+        return chart
