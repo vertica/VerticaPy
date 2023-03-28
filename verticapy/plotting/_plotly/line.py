@@ -81,7 +81,7 @@ class LinePlot(PlotlyBase):
         )
         fig_base.add_trace(fig.data[0])
         fig_base.update_layout(fig.layout)
-        return fig
+        return fig_base
 
 
 class MultiLinePlot(PlotlyBase):
