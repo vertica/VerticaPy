@@ -724,7 +724,7 @@ class AutoML(VerticaModel):
                     self.stepwise_[self.parameters["stepwise_criterion"]]
                 ).astype(float),
                 "c": np.array(self.stepwise_["variable"]),
-                "sign": np.array(self.stepwise_["change"]).astype(int),
+                "sign": np.array(self.stepwise_["change"]),
             }
             layout = {
                 "in_variables": self.stepwise_["features"][0],

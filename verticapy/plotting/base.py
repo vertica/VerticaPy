@@ -294,8 +294,10 @@ class PlottingBase:
         signs = np.sign(importances)
         importances = abs(importances)
         coef_names = coef_names[importances != np.nan]
+        signs = signs[importances != np.nan]
         importances = importances[importances != np.nan]
         importances = importances[coef_names != None]
+        signs = signs[coef_names != None]
         coef_names = coef_names[coef_names != None]
         importances, coef_names, signs = zip(
             *sorted(zip(importances, coef_names, signs))

@@ -36,104 +36,107 @@ class StepwisePlot(HighchartsBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
+        self.init_style = {
+            "title": {"text": ""},
+            "xAxis": {
+                "reversed": False,
+                "title": {"enabled": True, "text": self.layout["x_label"]},
+                "startOnTick": True,
+                "endOnTick": True,
+                "showLastLabel": True,
+            },
+            "yAxis": {"reversed": True, "title": {"text": self.layout["y_label"]},},
+            "legend": {"enabled": True},
+            "plotOptions": {
+                "scatter": {
+                    "marker": {
+                        "radius": 5,
+                        "states": {
+                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)"}
+                        },
+                    },
+                    "states": {"hover": {"marker": {"enabled": False}}},
+                }
+            },
+            "tooltip": {
+                "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
+                "pointFormat": "<b>"
+                + str(self.layout["x_label"])
+                + "</b>: {point.x}<br><b>"
+                + str(self.layout["y_label"])
+                + "</b>: {point.y}<br>"
+                + str(self.layout["z_label"])
+                + "</b>: {point.z}<br>",
+            },
+            "colors": self.get_colors(),
+        }
+        self.init_style_plus = {
+            "color": self.get_colors(idx=0),
+            "zIndex": 2,
+        }
+        self.init_style_minus = {
+            "color": self.get_colors(idx=1),
+            "zIndex": 2,
+        }
+        self.init_style_line = {
+            "color": "#CFCFCF",
+            "zIndex": 1,
+            "dashStyle": "longdash",
+            "enableMouseTracking": False,
+        }
+        self.init_style_start_end = {
+            "color": self.get_colors(idx=2),
+            "zIndex": 0,
+            "tooltip": {
+                "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
+                "pointFormat": "<b>"
+                + str(self.layout["x_label"])
+                + "</b>: {point.x}<br><b>"
+                + str(self.layout["y_label"])
+                + "</b>: {point.y}<br>",
+            },
+        }
         return None
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(self, chart: Optional[HChart] = None, **style_kwargs) -> HChart:
         """
-        Draws a stepwise plot using the Matplotlib API.
+        Draws a champion challenger plot using the HC API.
         """
-        colors = self.get_colors()
-        ax, fig, style_kwargs = self._get_ax_fig(
-            ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
-        )
-        sign = "+" if self.layout["direction"] == "forward" else "-"
-        x_new, y_new, c_new = [], [], []
-        for idx in range(len(self.data["x"])):
-            if idx == 0 or self.data["sign"][idx][0] == sign:
-                x_new += [self.data["x"][idx]]
-                y_new += [self.data["y"][idx]]
-                c_new += [self.data["c"][idx]]
-        if len(self.layout["in_variables"]) > 3:
-            var0 = (
-                self.layout["in_variables"][0:2]
-                + ["..."]
-                + self.layout["in_variables"][-1:]
-            )
-        else:
-            var0 = self.layout["in_variables"]
-        if len(self.layout["out_variables"]) > 3:
-            var1 = (
-                self.layout["out_variables"][0:2]
-                + ["..."]
-                + self.layout["out_variables"][-1:]
-            )
-        else:
-            var1 = self.layout["out_variables"]
-        if "color" in style_kwargs:
-            if isinstance(style_kwargs["color"], str):
-                c0, c1 = style_kwargs["color"], colors[1]
-            else:
-                c0, c1 = style_kwargs["color"][0], style_kwargs["color"][1]
-        else:
-            c0, c1 = colors[0], colors[1]
-        if "color" in style_kwargs:
-            del style_kwargs["color"]
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
+        chart.set_dict_options(self.init_style)
+        chart.set_dict_options(style_kwargs)
+        lookup_table = {
+            "+": self.init_style_plus,
+            "-": self.init_style_minus,
+        }
+        for i, c in enumerate(self.data["c"]):
+            data = [
+                [
+                    int(self.data["x"][i]),
+                    float(self.data["y"][i]),
+                    float(self.data["s"][i]),
+                ]
+            ]
+            if c != None:
+                sign = self.data["sign"][i]
+                chart.add_data_set(data, "bubble", sign + c, **lookup_table[sign])
+        i = -1
         if self.layout["direction"] == "forward":
-            delta_ini, delta_final = 0.1, -0.15
-            rot_ini, rot_final = -90, 90
-            verticalalignment_init, verticalalignment_final = "top", "bottom"
-            horizontalalignment = "center"
+            condition = self.data["sign"] != "-"
+            while self.data["sign"][i] == "-":
+                i -= 1
         else:
-            delta_ini, delta_final = 0.35, -0.3
-            rot_ini, rot_final = 90, -90
-            verticalalignment_init, verticalalignment_final = "top", "bottom"
-            horizontalalignment = "left"
-        ax.scatter(
-            x_new[1:-1],
-            y_new[1:-1],
-            c=c0,
-            **self._update_dict(self.init_style, style_kwargs),
-        )
-        ax.scatter(
-            [x_new[0], x_new[-1]],
-            [y_new[0], y_new[-1]],
-            c=c1,
-            **self._update_dict(self.init_style, style_kwargs),
-        )
-        ax.text(
-            x_new[0] + delta_ini,
-            y_new[0],
-            f"Initial Variables: [{', '.join(var0)}]",
-            rotation=rot_ini,
-            verticalalignment=verticalalignment_init,
-        )
-        for idx in range(1, len(x_new)):
-            dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
-            ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc="k", ec="k", alpha=0.2)
-            ax.text(
-                (x_new[idx] + x_new[idx - 1]) / 2,
-                (y_new[idx] + y_new[idx - 1]) / 2,
-                sign + " " + c_new[idx],
-                rotation=rot_ini,
-            )
-        if self.layout["direction"] == "backward":
-            max_x, min_x = min(self.data["x"]), max(self.data["x"])
-            ax.set_xlim(
-                max_x + 0.1 * (1 + max_x - min_x),
-                min_x - 0.1 - 0.1 * (1 + max_x - min_x),
-            )
-        ax.text(
-            x_new[-1] + delta_final,
-            y_new[-1],
-            f"Final Variables: [{', '.join(var1)}]",
-            rotation=rot_final,
-            verticalalignment=verticalalignment_final,
-            horizontalalignment=horizontalalignment,
-        )
-        ax.set_xticks(x_new)
-        ax.set_xlabel(self.layout["x_label"])
-        ax.set_ylabel(self.layout["y_label"])
-        return ax
+            condition = self.data["sign"] != "+"
+            while self.data["sign"][i] == "+":
+                i -= 1
+        data = np.column_stack(
+            (self.data["x"][condition], self.data["y"][condition])
+        ).tolist()
+        chart.add_data_set(data, "spline", "stepwise", **self.init_style_line)
+        start = [[int(self.data["x"][0]), float(self.data["y"][0]), 100]]
+        chart.add_data_set(start, "bubble", "start", **self.init_style_start_end)
+        end = [[int(self.data["x"][i]), float(self.data["y"][i]), 100]]
+        chart.add_data_set(end, "bubble", "end", **self.init_style_start_end)
+        return chart

@@ -52,6 +52,7 @@ from verticapy.plotting._highcharts.machine_learning.regression import Regressio
 from verticapy.plotting._highcharts.machine_learning.regression_tree import (
     RegressionTreePlot,
 )
+from verticapy.plotting._highcharts.machine_learning.stepwise import StepwisePlot
 from verticapy.plotting._highcharts.machine_learning.svm import SVMClassifierPlot
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
 from verticapy.plotting._highcharts.outliers import OutliersPlot
