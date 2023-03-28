@@ -507,16 +507,18 @@ def stepwise(
             class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
-            "x": [len(x) for x in res["features"]],
-            "y": res[criterion],
-            "c": res["variable"],
-            "sign": res["change"],
+            "x": np.array([len(x) for x in res["features"]]).astype(int),
+            "y": np.array(res[criterion]).astype(float),
+            "s": np.array(importance),
+            "c": np.array(res["variable"]),
+            "sign": np.array(res["change"]),
         }
         layout = {
             "in_variables": res["features"][0],
             "out_variables": X_current,
             "x_label": "n_features",
             "y_label": criterion,
+            "z_label": "importance",
             "direction": direction,
         }
         res.step_wise_ = vpy_plt.StepwisePlot(data=data, layout=layout).draw(**kwargs)
