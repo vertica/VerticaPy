@@ -507,10 +507,10 @@ def stepwise(
             class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
-            "x": [len(x) for x in res["features"]],
-            "y": res[criterion],
-            "c": res["variable"],
-            "sign": res["change"],
+            "x": np.array([len(x) for x in res["features"]]).astype(int),
+            "y": np.array(res[criterion]).astype(float),
+            "c": np.array(res["variable"]),
+            "sign": np.array(res["change"]).astype(int),
         }
         layout = {
             "in_variables": res["features"][0],

@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
+import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, PythonScalar, SQLRelation, SQLColumns
@@ -692,14 +693,15 @@ class AutoML(VerticaModel):
         """
         if mltype == "champion":
             data = {
-                "x": self.model_grid_["avg_time"],
-                "y": self.model_grid_["avg_score"],
-                "s": self.model_grid_["score_std"],
-                "c": self.model_grid_["model_type"],
+                "x": np.array(self.model_grid_["avg_time"]).astype(float),
+                "y": np.array(self.model_grid_["avg_score"]).astype(float),
+                "s": np.array(self.model_grid_["score_std"]).astype(float),
+                "c": np.array(self.model_grid_["model_type"]),
             }
             layout = {
                 "x_label": "time",
-                "y_label": "score",
+                "y_label": self.parameters["metric"],
+                "z_label": self.parameters["metric"] + "_std",
                 "title": "Model Type",
                 "reverse": (True, self.parameters["reverse"]),
             }
@@ -717,10 +719,12 @@ class AutoML(VerticaModel):
                 class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {
-                "x": [len(x) for x in self.stepwise_["features"]],
-                "y": self.stepwise_[self.parameters["stepwise_criterion"]],
-                "c": self.stepwise_["variable"],
-                "sign": self.stepwise_["change"],
+                "x": np.array([len(x) for x in self.stepwise_["features"]]).astype(int),
+                "y": np.array(
+                    self.stepwise_[self.parameters["stepwise_criterion"]]
+                ).astype(float),
+                "c": np.array(self.stepwise_["variable"]),
+                "sign": np.array(self.stepwise_["change"]).astype(int),
             }
             layout = {
                 "in_variables": self.stepwise_["features"][0],

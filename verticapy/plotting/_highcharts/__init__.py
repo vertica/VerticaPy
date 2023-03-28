@@ -26,6 +26,9 @@ from verticapy.plotting._highcharts.candlestick import CandleStick
 from verticapy.plotting._highcharts.contour_plot import ContourPlot
 from verticapy.plotting._highcharts.density import DensityPlot, MultiDensityPlot
 from verticapy.plotting._highcharts.heatmap import HeatMap
+from verticapy.plotting._highcharts.machine_learning.champion_challenger import (
+    ChampionChallengerPlot,
+)
 from verticapy.plotting._highcharts.machine_learning.elbow import ElbowCurve
 from verticapy.plotting._highcharts.machine_learning.importance import (
     ImportanceBarChart,
