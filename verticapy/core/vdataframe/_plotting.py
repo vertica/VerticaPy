@@ -936,7 +936,7 @@ class vDFPlot(PlottingUtils):
             h=h,
             max_cardinality=(0, 0),
             fill_none=0.0,
-            misc_layout={"with_numbers": with_numbers,},
+            misc_layout={"with_numbers": False,},
         ).draw(**kwargs)
 
     @save_verticapy_logs
