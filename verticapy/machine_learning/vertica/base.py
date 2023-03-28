@@ -20,11 +20,10 @@ from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
 
-from matplotlib.axes import Axes
-
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    PlottingObject,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -585,12 +584,15 @@ class VerticaModel(PlottingUtils):
         return args
 
     def _get_plot_kwargs(
-        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+        self,
+        nbins: int = 30,
+        chart: Optional[PlottingObject] = None,
+        method: Optional[str] = None,
     ) -> dict:
         """
         Returns the kwargs used by plotting methods.
         """
-        res = {"nbins": nbins, "ax": ax}
+        res = {"nbins": nbins, "chart": chart}
         if method == "contour":
             if self._model_subcategory == "CLASSIFIER":
                 res["func_name"] = f"p({self.y} = 1)"
@@ -601,8 +603,8 @@ class VerticaModel(PlottingUtils):
         return res
 
     def contour(
-        self, nbins: int = 100, ax: Optional[Axes] = None, **style_kwargs,
-    ) -> Axes:
+        self, nbins: int = 100, chart: Optional[PlottingObject] = None, **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model's contour plot.
 
@@ -611,20 +613,20 @@ class VerticaModel(PlottingUtils):
         nbins: int, optional
             Number of bins used to discretize the 
             two predictors.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(method="contour"),
-            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="contour"),
+            **self._get_plot_kwargs(nbins=nbins, chart=chart, method="contour"),
             **style_kwargs,
         )
 
@@ -901,7 +903,7 @@ class Tree:
         self,
         tree_id: Optional[int] = None,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -913,10 +915,10 @@ class Tree:
             Tree ID.
         show: bool
             If  set to True,  draw the features  importance.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
@@ -931,9 +933,7 @@ class Tree:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="ImportanceBarChart",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -970,8 +970,11 @@ class Tree:
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -979,24 +982,22 @@ class Tree:
         ----------
         max_nb_points: int
             Maximum  number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         if self._model_subcategory == "REGRESSOR":
             vdf = vDataFrame(self.input_relation)
             vdf["_prediction"] = self.deploySQL()
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="RegressionTreePlot",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="RegressionTreePlot", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.RegressionTreePlot(
                 vdf=vdf,
@@ -1432,7 +1433,7 @@ class BinaryClassifier(Classifier):
         self,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -1445,11 +1446,11 @@ class BinaryClassifier(Classifier):
         show: bool, optional
             If set to True,  the  Plotting 
             object  will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
         Returns
         -------
@@ -1463,7 +1464,7 @@ class BinaryClassifier(Classifier):
             nbins=nbins,
             cutoff_curve=True,
             show=show,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 
@@ -1471,7 +1472,7 @@ class BinaryClassifier(Classifier):
         self,
         nbins: int = 1000,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -1484,11 +1485,11 @@ class BinaryClassifier(Classifier):
         show: bool, optional
             If set to True,  the  Plotting 
             object  will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
     	Returns
     	-------
@@ -1501,7 +1502,7 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             nbins=nbins,
             show=show,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 
@@ -1509,7 +1510,7 @@ class BinaryClassifier(Classifier):
         self,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -1522,11 +1523,11 @@ class BinaryClassifier(Classifier):
         show: bool, optional
             If set to True,  the  Plotting 
             object  will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
     	Returns
     	-------
@@ -1539,7 +1540,7 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             nbins=nbins,
             show=show,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 
@@ -1547,7 +1548,7 @@ class BinaryClassifier(Classifier):
         self,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -1560,11 +1561,11 @@ class BinaryClassifier(Classifier):
         show: bool, optional
             If set to True,  the  Plotting 
             object  will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass 
-            to the Matplotlib functions.
+            to the Plotting functions.
 
         Returns
         -------
@@ -1577,7 +1578,7 @@ class BinaryClassifier(Classifier):
             self.test_relation,
             nbins=nbins,
             show=show,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 
@@ -2112,14 +2113,14 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 30,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         method: Optional[str] = None,
     ) -> dict:
         """
         Returns the kwargs used by plotting methods.
         """
         pos_label = self._check_pos_label(pos_label)
-        res = {"nbins": nbins, "ax": ax}
+        res = {"nbins": nbins, "chart": chart}
         if method == "contour":
             res["func_name"] = f"p({self.y} = '{pos_label}')"
         elif method == "cutoff":
@@ -2130,9 +2131,9 @@ class MulticlassClassifier(Classifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 100,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws the model's contour plot.
 
@@ -2145,22 +2146,22 @@ class MulticlassClassifier(Classifier):
         nbins: int, optional
              Number  of  bins  used to  discretize  the  two 
              predictors.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         pos_label = self._check_pos_label(pos_label=pos_label)
         return vDataFrame(self.input_relation).contour(
             *self._get_plot_args(pos_label=pos_label, method="contour"),
             **self._get_plot_kwargs(
-                pos_label=pos_label, nbins=nbins, ax=ax, method="contour"
+                pos_label=pos_label, nbins=nbins, chart=chart, method="contour"
             ),
             **style_kwargs,
         )
@@ -2170,7 +2171,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -2188,10 +2189,10 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
             If set to True,  the  Plotting object will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
         Returns
@@ -2202,7 +2203,7 @@ class MulticlassClassifier(Classifier):
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label, method="cutoff"),
             show=show,
-            **self._get_plot_kwargs(nbins=nbins, ax=ax, method="cutoff"),
+            **self._get_plot_kwargs(nbins=nbins, chart=chart, method="cutoff"),
             **style_kwargs,
         )
 
@@ -2211,7 +2212,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 1000,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -2229,10 +2230,10 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
             If set to True,  the  Plotting object will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns
@@ -2243,7 +2244,7 @@ class MulticlassClassifier(Classifier):
         return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
-            **self._get_plot_kwargs(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, chart=chart),
             **style_kwargs,
         )
 
@@ -2252,7 +2253,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -2270,10 +2271,10 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
             If set to True,  the  Plotting object will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns
@@ -2284,7 +2285,7 @@ class MulticlassClassifier(Classifier):
         return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
-            **self._get_plot_kwargs(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, chart=chart),
             **style_kwargs,
         )
 
@@ -2293,7 +2294,7 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar = None,
         nbins: int = 30,
         show: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> TableSample:
         """
@@ -2311,10 +2312,10 @@ class MulticlassClassifier(Classifier):
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
             If set to True,  the  Plotting object will be returned.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Matplotlib 
+            Any  optional  parameter  to  pass  to  the  Plotting 
             functions.
 
     	Returns
@@ -2325,7 +2326,7 @@ class MulticlassClassifier(Classifier):
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
-            **self._get_plot_kwargs(nbins=nbins, ax=ax),
+            **self._get_plot_kwargs(nbins=nbins, chart=chart),
             **style_kwargs,
         )
 

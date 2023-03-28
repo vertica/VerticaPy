@@ -62,7 +62,9 @@ class PCACirclePlot(MatplotlibBase):
         if "color" in style_kwargs:
             colors[0] = style_kwargs["color"]
         circle1 = plt.Circle((0, 0), 1, **self.init_style_circle)
-        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(6, 6), set_axis_below=True, grid=False, style_kwargs=style_kwargs
+        )
         n = len(self.data["x"])
         ax.add_patch(circle1)
         for i in range(n):
@@ -126,11 +128,12 @@ class PCAScreePlot(MatplotlibBase):
         """
         Draws a PCA Scree Plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(
+        ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
             set_axis_below=True,
             grid="y",
+            style_kwargs=style_kwargs,
         )
         ax.bar(
             self.data["x"],
@@ -219,7 +222,9 @@ class PCAVarPlot(MatplotlibBase):
         """
         Draws a PCA Variance Plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(6, 6), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(6, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         n = len(self.data["x"])
         min_x, max_x = np.nanmin(self.data["x"]), np.nanmax(self.data["x"])
         min_y, max_y = np.nanmin(self.data["y"]), np.nanmax(self.data["y"])

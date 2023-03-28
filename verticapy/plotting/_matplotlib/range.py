@@ -66,7 +66,9 @@ class RangeCurve(MatplotlibBase):
         """
         Draws a range curve using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         n, m = self.data["Y"].shape
         for i in range(0, m, 3):
             idx = int(i / 3)

@@ -20,10 +20,14 @@ from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 import numpy as np
 
-from matplotlib.axes import Axes
-
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
+from verticapy._typing import (
+    PlottingObject,
+    PythonNumber,
+    PythonScalar,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
@@ -331,7 +335,7 @@ def learning_curve(
     pos_label: PythonScalar = None,
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
-    ax: Optional[Axes] = None,
+    chart: Optional[PlottingObject] = None,
     **style_kwargs,
 ) -> TableSample:
     """
@@ -405,12 +409,11 @@ def learning_curve(
         Value of the standard deviation coefficient 
         used to compute the area plot 
         around each score.
-    ax: Axes, optional
-        [Only for MATPLOTLIB]
-        The axes to plot on.
+    chart: PlottingObject, optional
+        The chart object to plot on.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the 
-        Matplotlib functions.
+        Plotting functions.
 
     Returns
     -------
@@ -541,9 +544,7 @@ def learning_curve(
         y_label = None
         columns = ["time"]
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-        class_name="RangeCurve",
-        matplotlib_kwargs={"ax": ax,},
-        style_kwargs=style_kwargs,
+        class_name="RangeCurve", chart=chart, style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
     layout = {"columns": columns, "order_by": order_by, "y_label": y_label}

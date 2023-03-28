@@ -63,7 +63,13 @@ class RegressionPlot(MatplotlibBase):
         y0 = self.data["X"][:, 1]
         min_reg_x, max_reg_x = min(x0), max(x0)
         if len(self.layout["columns"]) == 2:
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax,
+                size=(8, 6),
+                set_axis_below=True,
+                grid=True,
+                style_kwargs=style_kwargs,
+            )
             x_reg = [min_reg_x, max_reg_x]
             y_reg = [
                 self.data["coef"][0] + self.data["coef"][1] * item for item in x_reg
@@ -95,7 +101,9 @@ class RegressionPlot(MatplotlibBase):
                 + self.data["coef"][1] * X_reg
                 + self.data["coef"][2] * Y_reg
             )
-            ax, fig = self._get_ax_fig(ax, size=(8, 6), dim=3,)
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax, size=(8, 6), dim=3, style_kwargs=style_kwargs
+            )
             ax.plot_surface(
                 X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
             )

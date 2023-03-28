@@ -48,7 +48,9 @@ class ROCCurve(MatplotlibBase):
         """
         Draws a Machine Learning Roc Curve using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         ax.plot(
             self.data["x"],
             self.data["y"],
@@ -113,7 +115,9 @@ class CutoffCurve(ROCCurve):
         """
         Draws a Machine Cutoff Curve using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         ax.plot(
             self.data["x"],
             self.data["y"],
@@ -151,7 +155,9 @@ class PRCCurve(ROCCurve):
         """
         Draws a Machine Learning PRC Curve using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         kwargs = {"color": self.get_colors(idx=0)}
         ax.plot(
             self.data["x"],
@@ -204,7 +210,9 @@ class LiftChart(ROCCurve):
         """
         Draws a Machine Learning Lift Chart using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True,)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         ax.set_xlabel(self.layout["x_label"])
         ax.plot(
             self.data["x"],

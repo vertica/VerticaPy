@@ -69,7 +69,9 @@ class RegressionTreePlot(MatplotlibBase):
         """
         Draws a regression tree plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         X = self.data["X"][self.data["X"][:, 0].argsort()]
         x0 = X[:, 0]
         x1 = X[:, 0]

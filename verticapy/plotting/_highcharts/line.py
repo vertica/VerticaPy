@@ -133,7 +133,7 @@ class LinePlot(HighchartsBase):
         """
         Draws a time series plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
@@ -179,7 +179,7 @@ class MultiLinePlot(LinePlot):
         """
         Draws a multi-time series plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         kind, kind_kwargs = self._get_kind()
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)

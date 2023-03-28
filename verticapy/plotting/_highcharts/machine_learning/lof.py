@@ -95,7 +95,7 @@ class LOFPlot(HighchartsBase):
         """
         Draws a Local Outlier Plot using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         s = self.data["X"][:, -1]

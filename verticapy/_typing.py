@@ -19,11 +19,17 @@ from typing import Annotated, Literal, Union, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.pyplot import Figure as mFigure
+    from plotly.graph_objs._figure import Figure
+    from vertica_highcharts import Highchart, Highstock
+
     from verticapy.core.vdataframe.base import vDataFrame
     from verticapy.core.string_sql.base import StringSQL
     from verticapy.core.tablesample.base import TableSample
+
     from verticapy.plotting.base import PlottingBase
-    from vertica_highcharts import Highchart, Highstock
+
 
 # Pythonic data types.
 
@@ -46,6 +52,8 @@ SQLRelation = Annotated[Union[str, "vDataFrame"], ""]
 
 # Plotting data types.
 HChart = Union["Highchart", "Highstock"]
-PlottingObject = Union["PlottingBase", "TableSample"]
+PlottingObject = Union[
+    "PlottingBase", "TableSample", "Axes", "mFigure", "Highchart", "Highstock", "Figure"
+]
 PlottingMethod = Union[Literal["density", "count", "avg", "min", "max", "sum"], str]
 ColorType = str

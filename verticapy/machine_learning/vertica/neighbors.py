@@ -21,12 +21,11 @@ import numpy as np
 
 from vertica_python.errors import QueryError
 
-from matplotlib.axes import Axes
-
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    PlottingObject,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -692,14 +691,14 @@ class KNeighborsClassifier(MulticlassClassifier):
         self,
         pos_label: PythonScalar = None,
         nbins: int = 30,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         method: Optional[str] = None,
     ) -> dict:
         """
         Returns the kwargs used by plotting methods.
         """
         pos_label = self._check_pos_label(pos_label)
-        res = {"nbins": nbins, "ax": ax}
+        res = {"nbins": nbins, "chart": chart}
         if method == "contour":
             res["func_name"] = f"p({self.y} = '{pos_label}')"
         elif method == "cutoff":
@@ -1084,36 +1083,34 @@ class KernelDensity(Regressor, Tree):
             raise AttributeError("KDE Plots are only available in 1D or 2D.")
         return data, layout
 
-    def plot(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
+    def plot(
+        self, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Draws the Model.
 
         Parameters
         ----------
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
             vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-                class_name="DensityPlot",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="DensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot
         elif len(self.X) == 2:
             vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
-                class_name="DensityPlot2D",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="DensityPlot2D", chart=chart, style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot2D
         else:
@@ -1425,8 +1422,11 @@ class LocalOutlierFactor(VerticaModel):
     # Plotting Methods.
 
     def plot(
-        self, max_nb_points: int = 100, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        max_nb_points: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws the model.
 
@@ -1434,21 +1434,19 @@ class LocalOutlierFactor(VerticaModel):
         ----------
         max_nb_points: int
             Maximum  number of points to display.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="LOFPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="LOFPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LOFPlot(
             vdf=vDataFrame(self.model_name),

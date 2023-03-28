@@ -93,7 +93,9 @@ class AnimatedLinePlot(AnimatedBase):
         """
         Draws an animated Time Series plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=True, grid="y")
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
+        )
         all_plots = []
         n = len(self.layout["columns"])
         for i in range(0, n):

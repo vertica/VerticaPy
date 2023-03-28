@@ -77,8 +77,12 @@ class HeatMap(MatplotlibBase):
         x_labels = list(self.layout["x_labels"])
         y_labels = list(self.layout["y_labels"])
         n, m = self.data["X"].shape
-        ax, fig = self._get_ax_fig(
-            ax, size=(min(n, 500), min(m, 500)), set_axis_below=False, grid=False
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(min(n, 500), min(m, 500)),
+            set_axis_below=False,
+            grid=False,
+            style_kwargs=style_kwargs,
         )
         kwargs = {
             **self.init_style,

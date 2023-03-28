@@ -19,8 +19,6 @@ from typing import Callable, Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
 
-from matplotlib.axes import Axes
-
 from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import (
@@ -53,7 +51,7 @@ class vDFPlot(PlottingUtils):
         q: tuple[float, float] = (0.25, 0.75),
         max_nb_fliers: int = 30,
         whis: float = 1.5,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -73,9 +71,8 @@ class vDFPlot(PlottingUtils):
             slow down the graphic computation.
         whis: float, optional
             The position of the whiskers.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to  pass to the plotting 
             functions.
@@ -86,9 +83,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="BoxPlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
             vdf=self, columns=columns, q=q, whis=whis, max_nb_fliers=max_nb_fliers,
@@ -105,7 +100,7 @@ class vDFPlot(PlottingUtils):
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
         kind: Literal["auto", "drilldown", "stacked"] = "auto",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -148,9 +143,8 @@ class vDFPlot(PlottingUtils):
                             vDataColumns.
                 stacked   : Stacked   BarChart    based    on  2 
                             vDataColumns.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the plotting 
             functions.
@@ -173,9 +167,7 @@ class vDFPlot(PlottingUtils):
             )
         elif kind == "drilldown":
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="DrillDownBarChart",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="DrillDownBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.DrillDownBarChart(
                 vdf=self,
@@ -187,9 +179,7 @@ class vDFPlot(PlottingUtils):
             ).draw(**kwargs)
         else:
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="BarChart2D",
-                matplotlib_kwargs={"ax": ax,},
-                style_kwargs=style_kwargs,
+                class_name="BarChart2D", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.BarChart2D(
                 vdf=self,
@@ -218,7 +208,7 @@ class vDFPlot(PlottingUtils):
             "pyramid",
             "density",
         ] = "auto",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -265,9 +255,8 @@ class vDFPlot(PlottingUtils):
                                 vDataColumns.
                 fully_stacked : Fully Stacked Bar Chart based on 2 
                                 vDataColumns.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the plotting 
             functions.
@@ -286,13 +275,13 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 max_cardinality=max_cardinality[0],
                 h=h[0],
-                ax=ax,
+                chart=chart,
                 **style_kwargs,
             )
         elif kind == "drilldown":
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="DrillDownHorizontalBarChart",
-                matplotlib_kwargs={"ax": ax,},
+                chart=chart,
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.DrillDownHorizontalBarChart(
@@ -310,7 +299,7 @@ class vDFPlot(PlottingUtils):
                 kind = "density"
             vpy_plt, kwargs = self._get_plotting_lib(
                 class_name="HorizontalBarChart2D",
-                matplotlib_kwargs={"ax": ax,},
+                chart=chart,
                 style_kwargs=style_kwargs,
             )
             return vpy_plt.HorizontalBarChart2D(
@@ -329,7 +318,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         max_cardinality: Union[None, int, tuple] = None,
         h: Union[None, int, tuple] = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -351,9 +340,8 @@ class vDFPlot(PlottingUtils):
             optimized h will be computed.
             If  of type tuple, it must represent  each 
             column 'h'.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to  the 
             plotting functions.
@@ -364,9 +352,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="NestedPieChart",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="NestedPieChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.NestedPieChart(
             vdf=self,
@@ -385,7 +371,7 @@ class vDFPlot(PlottingUtils):
         method: PlottingMethod = "density",
         of: Optional[str] = None,
         h: PythonNumber = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -419,9 +405,8 @@ class vDFPlot(PlottingUtils):
             Interval width of the  input vDataColumns. Optimized 
             h  will be  computed if  the  parameter  is empty or 
             invalid.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the plotting 
             functions.
@@ -432,9 +417,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="Histogram",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="Histogram", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
             vdf=self, columns=columns, method=method, of=of, h=h,
@@ -448,7 +431,7 @@ class vDFPlot(PlottingUtils):
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
         xlim: list[tuple[float, float]] = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -475,9 +458,8 @@ class vDFPlot(PlottingUtils):
             the learning and the scoring phases.
         xlim: list of tuple, optional
             Set the x limits of the current axes.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the plotting 
             functions.
@@ -516,7 +498,7 @@ class vDFPlot(PlottingUtils):
         if len(columns) == 1:
             try:
                 model.fit(self, columns)
-                return model.plot(ax=ax, **style_kwargs)
+                return model.plot(chart=chart, **style_kwargs)
             finally:
                 model.drop()
         else:
@@ -532,9 +514,7 @@ class vDFPlot(PlottingUtils):
             X = np.column_stack(X)
             Y = np.column_stack(Y)
             vpy_plt, kwargs = self._get_plotting_lib(
-                class_name="MultiDensityPlot",
-                matplotlib_kwargs={"ax": ax},
-                style_kwargs=style_kwargs,
+                class_name="MultiDensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
             layout = {
@@ -558,7 +538,7 @@ class vDFPlot(PlottingUtils):
         kind: Literal[
             "area_percent", "area_stacked", "line", "spline", "step"
         ] = "line",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -589,9 +569,8 @@ class vDFPlot(PlottingUtils):
                 step         : Step Plot.
                 area_stacked : Stacked Area Plot.
                 area_percent : Fully Stacked Area Plot.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any   optional  parameter  to   pass  to  the  
             plotting functions.
@@ -602,9 +581,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="MultiLinePlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="MultiLinePlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.MultiLinePlot(
             vdf=self,
@@ -624,7 +601,7 @@ class vDFPlot(PlottingUtils):
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -653,9 +630,8 @@ class vDFPlot(PlottingUtils):
             November 1993 the 3rd.
         plot_median: bool, optional
             If set to True, the Median will be drawn.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to the  plotting 
             functions.
@@ -667,7 +643,8 @@ class vDFPlot(PlottingUtils):
         """
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="RangeCurve",
-            matplotlib_kwargs={"ax": ax, "plot_median": plot_median,},
+            chart=chart,
+            matplotlib_kwargs={"plot_median": plot_median,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.RangeCurve(
@@ -768,7 +745,7 @@ class vDFPlot(PlottingUtils):
         fill_none: float = 0.0,
         mround: int = 3,
         with_numbers: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -815,9 +792,8 @@ class vDFPlot(PlottingUtils):
         with_numbers: bool, optional
             If  set to True, no number will be  displayed in 
             the final drawing.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to the  plotting 
             functions.
@@ -831,9 +807,7 @@ class vDFPlot(PlottingUtils):
             columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="HeatMap",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.HeatMap(
             vdf=self,
@@ -852,7 +826,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         func: Union[Callable, str],
         nbins: int = 100,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -870,9 +844,8 @@ class vDFPlot(PlottingUtils):
         nbins: int, optional
             Number of bins used to  discretize the two input 
             numerical vDataColumns.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to  the plotting 
             functions.
@@ -883,9 +856,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="ContourPlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="ContourPlot", chart=chart, style_kwargs=style_kwargs,
         )
         func_name = None
         if "func_name" in kwargs:
@@ -902,7 +873,7 @@ class vDFPlot(PlottingUtils):
         method: PlottingMethod = "count",
         of: Optional[str] = None,
         h: tuple = (None, None),
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -932,9 +903,8 @@ class vDFPlot(PlottingUtils):
             Interval width  of  the vDataColumns 1  and  2 
             bars.  Optimized  h  will  be computed if  the 
             parameter is empty or invalid.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the plotting 
             functions.
@@ -954,14 +924,8 @@ class vDFPlot(PlottingUtils):
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HeatMap",
-            matplotlib_kwargs={
-                "ax": ax,
-                "show": True,
-                "with_numbers": with_numbers,
-                "fill_none": 0.0,
-                "return_ax": True,
-                "extent": min_max[columns[0]] + min_max[columns[1]],
-            },
+            chart=chart,
+            matplotlib_kwargs={"extent": min_max[columns[0]] + min_max[columns[1]],},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.HeatMap(
@@ -971,6 +935,8 @@ class vDFPlot(PlottingUtils):
             of=of,
             h=h,
             max_cardinality=(0, 0),
+            fill_none=0.0,
+            misc_layout={"with_numbers": with_numbers,},
         ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -981,7 +947,7 @@ class vDFPlot(PlottingUtils):
         of: Optional[str] = None,
         bbox: list = [],
         img: str = "",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1012,9 +978,8 @@ class vDFPlot(PlottingUtils):
             list: [xmin, xmax, ymin, ymax]
         img: str, optional
             Path  to the  image to  display  as  background.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to the  plotting 
             functions.
@@ -1029,7 +994,8 @@ class vDFPlot(PlottingUtils):
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HexbinMap",
-            matplotlib_kwargs={"ax": ax, "bbox": bbox, "img": img},
+            chart=chart,
+            matplotlib_kwargs={"bbox": bbox, "img": img},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.HexbinMap(vdf=self, columns=columns, method=method, of=of,).draw(
@@ -1051,7 +1017,7 @@ class vDFPlot(PlottingUtils):
         dimensions: tuple = None,
         bbox: Optional[tuple] = None,
         img: Optional[str] = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1092,9 +1058,8 @@ class vDFPlot(PlottingUtils):
             list: [xmin, xmax, ymin, ymax]
         img: str, optional
             Path to the image to display as background.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -1134,7 +1099,7 @@ class vDFPlot(PlottingUtils):
                     max_nb_points=max_nb_points,
                     bbox=bbox,
                     img=img,
-                    ax=ax,
+                    chart=chart,
                     **style_kwargs,
                 )
                 for idx, fun in enumerate([ax.set_xlabel, ax.set_ylabel]):
@@ -1151,7 +1116,8 @@ class vDFPlot(PlottingUtils):
             return ax
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="ScatterPlot",
-            matplotlib_kwargs={"ax": ax, "bbox": bbox, "img": img,},
+            chart=chart,
+            matplotlib_kwargs={"bbox": bbox, "img": img,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.ScatterPlot(
@@ -1209,7 +1175,7 @@ class vDFPlot(PlottingUtils):
         outliers_color: ColorType = "black",
         inliers_color: ColorType = "white",
         inliers_border_color: ColorType = "red",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1232,9 +1198,8 @@ class vDFPlot(PlottingUtils):
             Inliers color.
         inliers_border_color: ColorType, optional
             Inliers border color.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter to pass to  the  
             plotting functions.
@@ -1245,9 +1210,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="OutliersPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="OutliersPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.OutliersPlot(
             vdf=self,
@@ -1376,7 +1339,7 @@ class vDCPlot:
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
         max_nb_fliers: int = 30,
         whis: float = 1.5,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ):
         """
@@ -1410,9 +1373,8 @@ class vDCPlot:
             computation.
         whis: float, optional
             The position of the whiskers.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to the  plotting 
             functions.
@@ -1423,9 +1385,7 @@ class vDCPlot:
             Plotting Object.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="BoxPlot",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
             vdf=self._parent,
@@ -1451,7 +1411,7 @@ class vDCPlot:
         h: PythonNumber = 0,
         categorical: bool = True,
         bargap: float = 0.06,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1494,9 +1454,8 @@ class vDCPlot:
             to render the chart.  This proportion  will create
             gaps  between  each bar.  The  bigger  it is,  the 
             bigger the gap will be.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to the  plotting 
             functions.
@@ -1507,9 +1466,7 @@ class vDCPlot:
             Plotting Object.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="BarChart",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="BarChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BarChart(
             vdc=self,
@@ -1532,7 +1489,7 @@ class vDCPlot:
         h: PythonNumber = 0,
         categorical: bool = True,
         bargap: float = 0.06,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1575,9 +1532,8 @@ class vDCPlot:
             to render the chart.  This proportion  will create
             gaps  between  each bar.  The  bigger  it is,  the 
             bigger the gap will be.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to the  plotting 
             functions.
@@ -1588,9 +1544,7 @@ class vDCPlot:
             Plotting Object.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="HorizontalBarChart",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="HorizontalBarChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.HorizontalBarChart(
             vdc=self,
@@ -1611,7 +1565,7 @@ class vDCPlot:
         max_cardinality: int = 6,
         h: PythonNumber = 0,
         pie_type: Literal["auto", "donut", "rose", "3d"] = "auto",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1649,9 +1603,8 @@ class vDCPlot:
                 3d     : 3D Pie.
             It   can    also   be  a  cutomized   aggregation 
             (ex: AVG(column1) + 5).
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to  the  plotting 
             functions.
@@ -1662,9 +1615,7 @@ class vDCPlot:
             Plotting Object.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="PieChart",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="PieChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.PieChart(
             vdc=self,
@@ -1684,7 +1635,7 @@ class vDCPlot:
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
         h: tuple[PythonNumber, PythonNumber] = (None, None),
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1716,9 +1667,8 @@ class vDCPlot:
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized 
             h will be computed.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter to pass to  the  plotting 
             functions.
@@ -1733,9 +1683,7 @@ class vDCPlot:
         if by:
             columns += [by]
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="SpiderChart",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="SpiderChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.SpiderChart(
             vdf=self._parent,
@@ -1758,7 +1706,7 @@ class vDCPlot:
         h_by: PythonNumber = 0,
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1800,9 +1748,8 @@ class vDCPlot:
             ArrayLike  of  the different  categories to  consider 
             when drawing the box plot.  The other categories will 
             be filtered.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass  to  the  plotting 
             functions.
@@ -1813,9 +1760,7 @@ class vDCPlot:
             Plotting Object.
         """
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="Histogram",
-            matplotlib_kwargs={"ax": ax},
-            style_kwargs=style_kwargs,
+            class_name="Histogram", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
             vdf=self._parent,
@@ -1837,7 +1782,7 @@ class vDCPlot:
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 200,
         xlim: Optional[tuple[float, float]] = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1863,9 +1808,8 @@ class vDCPlot:
             the learning and scoring phases.
         xlim: tuple, optional
             Set the x limits of the current axes.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass   to  the  
             plotting functions.
@@ -1894,7 +1838,7 @@ class vDCPlot:
         if not (by):
             try:
                 model.fit(self._parent, [self._alias])
-                return model.plot(ax=ax, **style_kwargs)
+                return model.plot(chart=chart, **style_kwargs)
             finally:
                 model.drop()
         else:
@@ -1913,9 +1857,7 @@ class vDCPlot:
             X = np.column_stack(X)
             Y = np.column_stack(Y)
             vpy_plt, kwargs = self._parent._get_plotting_lib(
-                class_name="MultiDensityPlot",
-                matplotlib_kwargs={"ax": ax},
-                style_kwargs=style_kwargs,
+                class_name="MultiDensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
             layout = {
@@ -1937,7 +1879,7 @@ class vDCPlot:
         q: tuple[float, float] = (0.25, 0.75),
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -1971,9 +1913,8 @@ class vDCPlot:
             Input  End  Date. For example, time = '03-11-1993' 
             will filter  the data when 'ts' is  greater  than 
             November 1993 the 3rd.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -1985,9 +1926,7 @@ class vDCPlot:
         """
         ts = self._parent._format_colnames(ts)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="CandleStick",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="CandleStick", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.CandleStick(
             vdf=self._parent,
@@ -2009,7 +1948,7 @@ class vDCPlot:
         kind: Literal[
             "area", "area_percent", "area_stacked", "line", "spline", "step"
         ] = "line",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -2039,9 +1978,8 @@ class vDCPlot:
                 spline       : Spline Plot.
                 area         : Area Plot.
                 step         : Step Plot.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -2053,9 +1991,7 @@ class vDCPlot:
         """
         ts, by = self._parent._format_colnames(ts, by)
         vpy_plt, kwargs = self._parent._get_plotting_lib(
-            class_name="LinePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="LinePlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LinePlot(
             vdf=self._parent,
@@ -2074,7 +2010,7 @@ class vDCPlot:
         start_date: PythonScalar = None,
         end_date: PythonScalar = None,
         plot_median: bool = False,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -2101,9 +2037,8 @@ class vDCPlot:
             November 1993 the 3rd.
         plot_median: bool, optional
             If set to True, the Median will be drawn.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -2120,7 +2055,7 @@ class vDCPlot:
             start_date=start_date,
             end_date=end_date,
             plot_median=plot_median,
-            ax=ax,
+            chart=chart,
             **style_kwargs,
         )
 

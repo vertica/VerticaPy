@@ -61,7 +61,13 @@ class ACFPlot(MatplotlibBase):
         """
         Draws an ACF Time Series plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(10, 3), set_axis_below=False, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(10, 3),
+            set_axis_below=False,
+            grid=False,
+            style_kwargs=style_kwargs,
+        )
         if "color" not in style_kwargs:
             style_kwargs["color"] = self.get_colors(idx=0)
         color = style_kwargs["color"]

@@ -214,7 +214,9 @@ class AnimatedBubblePlot(AnimatedBase):
         """
         Draws an animated bubble plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(12, 8), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         (
             kwargs,
             date_f,
