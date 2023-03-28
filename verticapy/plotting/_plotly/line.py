@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 
 import pandas as pd
 import numpy as np
@@ -50,11 +50,13 @@ class LinePlot(PlotlyBase):
 
     def draw(
         self,
+        fig: Optional[Figure] = None,
         **style_kwargs,
     ) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
+        fig_base=self._get_fig(fig)
         if "z" in self.data:
             self.init_style["markers"] = False
             self.init_style["color"] = "color"
@@ -77,6 +79,8 @@ class LinePlot(PlotlyBase):
             y=self.layout["columns"][0],
             **self._update_dict(self.init_style, style_kwargs),
         )
+        fig_base.add_trace(fig.data[0])
+        fig_base.update_layout(fig.layout)
         return fig
 
 
