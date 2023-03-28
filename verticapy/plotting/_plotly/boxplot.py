@@ -79,6 +79,7 @@ class BoxPlot(PlotlyBase):
         """
         Draws a boxplot using the Plotly API.
         """
+        fig=self._get_fig(fig)
         if self.data["X"].shape[1] < 2:
             min_val = self.data["X"][0][0]
             q1 = self.data["X"][1][0]
@@ -90,7 +91,6 @@ class BoxPlot(PlotlyBase):
                 points_dic = dict(x=self.data["fliers"], boxpoints="outliers")
             else:
                 points_dic = dict(x=self.data["X"][2], boxpoints=False)
-            fig = go.Figure()
             fig.add_trace(
                 go.Box(
                     name=self.layout["labels"][0], hovertemplate="%{x}", **points_dic,
@@ -132,7 +132,6 @@ class BoxPlot(PlotlyBase):
                 fig.add_traces(fig_add.data)
             fig.update_layout(barmode="relative")
         else:
-            fig = go.Figure()
             for I in range(self.data["X"].shape[1]):
                 I = [I]
                 fig.add_trace(
