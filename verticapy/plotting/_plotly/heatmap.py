@@ -66,5 +66,6 @@ class HeatMap(PlotlyBase):
                     )
         fig.update_xaxes(type='category')
         fig.update_yaxes(type='category')
+        fig.layout.yaxis.automargin=True
         fig.update_layout(**self._update_dict(self.init_style,style_kwargs))
         return fig
