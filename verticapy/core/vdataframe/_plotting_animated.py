@@ -17,8 +17,6 @@ permissions and limitations under the License.
 import copy, math
 from typing import Callable, Optional
 
-from matplotlib.axes import Axes
-
 from verticapy._typing import (
     PlottingObject,
     PythonScalar,
@@ -49,7 +47,7 @@ class vDFAnimatedPlot(PlottingUtils):
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -91,9 +89,8 @@ class vDFAnimatedPlot(PlottingUtils):
             Number of ms between each update.
         repeat: bool, optional
             If set to True, the animation will be repeated.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the plotting functions.
 
@@ -107,8 +104,8 @@ class vDFAnimatedPlot(PlottingUtils):
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedBarChart",
+            chart=chart,
             matplotlib_kwargs={
-                "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
                 "date_in_title": date_in_title,
                 "date_f": date_f,
@@ -147,7 +144,7 @@ class vDFAnimatedPlot(PlottingUtils):
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -189,9 +186,8 @@ class vDFAnimatedPlot(PlottingUtils):
             Number of ms between each update.
         repeat: bool, optional
             If set to True, the animation will be repeated.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the plotting functions.
 
@@ -205,8 +201,8 @@ class vDFAnimatedPlot(PlottingUtils):
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedPieChart",
+            chart=chart,
             matplotlib_kwargs={
-                "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
                 "date_in_title": date_in_title,
                 "date_f": date_f,
@@ -246,7 +242,7 @@ class vDFAnimatedPlot(PlottingUtils):
         fixed_xy_lim: bool = False,
         interval: int = 300,
         repeat: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -285,9 +281,8 @@ class vDFAnimatedPlot(PlottingUtils):
             Number of ms between each update.
         repeat: bool, optional
             If set  to  True, the animation will  be repeated.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter to pass to the  plotting 
             functions.
@@ -314,8 +309,8 @@ class vDFAnimatedPlot(PlottingUtils):
                 columns = vdf.numcol()
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedLinePlot",
+            chart=chart,
             matplotlib_kwargs={
-                "ax": ax,
                 "fixed_xy_lim": fixed_xy_lim,
                 "window_size": window_size,
                 "step": step,
@@ -354,7 +349,7 @@ class vDFAnimatedPlot(PlottingUtils):
         date_style_dict: dict = {},
         interval: int = 300,
         repeat: bool = True,
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
         """
@@ -405,9 +400,8 @@ class vDFAnimatedPlot(PlottingUtils):
             Number of ms between each update.
         repeat: bool, optional
             If  set to True, the animation will  be  repeated.
-        ax: Axes, optional
-            [Only for MATPLOTLIB]
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional parameter  to  pass to the plotting 
             functions.
@@ -443,8 +437,8 @@ class vDFAnimatedPlot(PlottingUtils):
             catcol = None
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedBubblePlot",
+            chart=chart,
             matplotlib_kwargs={
-                "ax": ax,
                 "img": img,
                 "bbox": bbox,
                 "fixed_xy_lim": fixed_xy_lim,

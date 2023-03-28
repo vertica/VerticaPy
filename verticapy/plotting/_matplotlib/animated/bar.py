@@ -200,7 +200,9 @@ class AnimatedBarChart(AnimatedBase):
         """
         Draws an animated bar chart using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(9, 6), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(9, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         m, date_f, bar_values = self._compute_anim_params(
             date_f=date_f, style_kwargs=style_kwargs
         )

@@ -52,7 +52,9 @@ class DensityPlot(MatplotlibBase):
         """
         Draws a density plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(7, 5), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(7, 5), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         ax.plot(
             self.data["x"],
             self.data["y"],
@@ -85,7 +87,9 @@ class MultiDensityPlot(DensityPlot):
         """
         Draws a multi density plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(7, 5), set_axis_below=True, grid=True)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(7, 5), set_axis_below=True, grid=True, style_kwargs=style_kwargs
+        )
         n, m = self.data["X"].shape
         custom_lines = []
         for i in range(m):
@@ -146,7 +150,9 @@ class DensityPlot2D(MatplotlibBase):
         """
         Draws a density plot using the Matplotlib API.
         """
-        ax, fig = self._get_ax_fig(ax, size=(8, 6), set_axis_below=False, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(8, 6), set_axis_below=False, grid=False, style_kwargs=style_kwargs
+        )
         im = ax.imshow(
             self.data["X"],
             extent=self.layout["extent"],

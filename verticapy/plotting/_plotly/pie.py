@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -55,7 +55,9 @@ class PieChart(PlotlyBase):
 
     # Draw
 
-    def draw(self, exploded: bool = False, **style_kwargs,) -> Figure:
+    def draw(
+        self, fig: Optional[Figure] = None, exploded: bool = False, **style_kwargs,
+    ) -> Figure:
         """
         Draws a pie chart using the Plotly API.
         """
@@ -114,9 +116,7 @@ class NestedPieChart(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self, max_cardinality: Union[int, tuple, list] = None, **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a sunburst/nested pie chart using the plotly API.
         """

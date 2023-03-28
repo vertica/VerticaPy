@@ -114,8 +114,12 @@ class PieChart(MatplotlibBase):
                 category = None
             autopct = self._make_autopct(self.data["y"], category)
         if pie_type != "rose":
-            ax, fig = self._get_ax_fig(
-                ax, size=(8, 6), set_axis_below=False, grid=False
+            ax, fig, style_kwargs = self._get_ax_fig(
+                ax,
+                size=(8, 6),
+                set_axis_below=False,
+                grid=False,
+                style_kwargs=style_kwargs,
             )
             if pie_type == "donut":
                 kwargs = {**self.init_style_donut, "autopct": autopct}
@@ -243,7 +247,13 @@ class NestedPieChart(MatplotlibBase):
         wedgeprops = dict(width=0.3, edgecolor="w")
         colors, wedgeprops, kwargs = self._get_final_style(style_kwargs=style_kwargs)
         m, k = len(colors), 0
-        ax, fig = self._get_ax_fig(ax, size=(12, 8), set_axis_below=False, grid=False,)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(12, 8),
+            set_axis_below=False,
+            grid=False,
+            style_kwargs=style_kwargs,
+        )
         all_colors_dict, all_categories, all_categories_col = {}, {}, []
         for i in range(0, n):
             if i in [0]:

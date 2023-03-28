@@ -69,7 +69,7 @@ class ScatterMatrix(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> Axes:
+    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
         Draws a scatter matrix using the Matplotlib API.
         """
@@ -143,8 +143,13 @@ class ScatterPlot(MatplotlibBase):
         Draws a scatter plot using the Matplotlib API.
         """
         n, m = self.data["X"].shape
-        ax, fig = self._get_ax_fig(
-            ax, size=(8, 6), set_axis_below=True, grid=True, dim=m,
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            size=(8, 6),
+            set_axis_below=True,
+            grid=True,
+            dim=m,
+            style_kwargs=style_kwargs,
         )
         args = [self.data["X"][:, i] for i in range(m)]
         kwargs = self._update_dict(self.init_style, style_kwargs, 0)

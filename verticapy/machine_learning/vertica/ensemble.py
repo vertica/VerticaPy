@@ -18,11 +18,9 @@ import random
 from typing import Literal, Optional, Union
 import numpy as np
 
-from matplotlib.axes import Axes
-
 from vertica_python.errors import MissingRelation, QueryError
 
-from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
+from verticapy._typing import PlottingObject, PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
@@ -1370,12 +1368,15 @@ class IsolationForest(Clustering, Tree):
         return args
 
     def _get_plot_kwargs(
-        self, nbins: int = 30, ax: Optional[Axes] = None, method: Optional[str] = None,
+        self,
+        nbins: int = 30,
+        chart: Optional[PlottingObject] = None,
+        method: Optional[str] = None,
     ) -> dict:
         """
         Returns the kwargs used by plotting methods.
         """
-        res = {"nbins": nbins, "ax": ax}
+        res = {"nbins": nbins, "chart": chart}
         if method == "contour":
             res["func_name"] = "anomaly_score"
         else:

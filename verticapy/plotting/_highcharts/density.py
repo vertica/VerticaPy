@@ -82,7 +82,7 @@ class DensityPlot(HighchartsBase):
         Draws a density plot using the HC API.
         """
         x_label = self._clean_quotes(self.layout["x_label"])
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = np.column_stack((self.data["x"], self.data["y"])).tolist()
@@ -112,7 +112,7 @@ class MultiDensityPlot(DensityPlot):
         Draws a multi density plot using the HC API.
         """
         labels = self._clean_quotes(self.layout["labels"])
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         n, m = self.data["X"].shape

@@ -62,9 +62,9 @@ class ElbowCurve(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a Machine Learning Roc Curve using the Matplotlib API.
+        Draws a Machine Learning Roc Curve using the HC API.
         """
-        chart = self._get_chart(chart)
+        chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         data = np.column_stack((self.data["x"], self.data["y"])).tolist()

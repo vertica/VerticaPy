@@ -69,7 +69,9 @@ class HexbinMap(MatplotlibBase):
         """
         matrix = self.data["X"]
         matrix = matrix[(matrix != np.array(None)).all(axis=1)].astype(float)
-        ax, fig = self._get_ax_fig(ax, size=(9, 7), set_axis_below=False, grid=False)
+        ax, fig, style_kwargs = self._get_ax_fig(
+            ax, size=(9, 7), set_axis_below=False, grid=False, style_kwargs=style_kwargs
+        )
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])

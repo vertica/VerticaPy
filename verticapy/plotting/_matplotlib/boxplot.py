@@ -55,11 +55,12 @@ class BoxPlot(MatplotlibBase):
             style_kwargs["vert"] = False
         elif "vert" not in style_kwargs:
             style_kwargs["vert"] = True
-        ax, fig = self._get_ax_fig(
+        ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(10, 6),
             set_axis_below=True,
             grid="y" if style_kwargs["vert"] else "x",
+            style_kwargs=style_kwargs,
         )
         if style_kwargs["vert"]:
             set_lim = ax.set_ylim

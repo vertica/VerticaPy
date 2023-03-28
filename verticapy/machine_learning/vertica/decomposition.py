@@ -17,9 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 import numpy as np
 
-from matplotlib.axes import Axes
-
-from verticapy._typing import PythonNumber, SQLColumns, SQLRelation
+from verticapy._typing import PlottingObject, PythonNumber, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -251,8 +249,11 @@ class Decomposition(Preprocessing):
     # Plotting Methods.
 
     def plot(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        dimensions: tuple = (1, 2),
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws a decomposition scatter plot.
 
@@ -261,16 +262,16 @@ class Decomposition(Preprocessing):
         dimensions: tuple, optional
             Tuple of two elements representing the 
             IDs of the model's components.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional  parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vdf = self.transform(vDataFrame(self.input_relation))
         dim_perc = []
@@ -280,9 +281,7 @@ class Decomposition(Preprocessing):
             else:
                 dim_perc += [f" ({round(self.explained_variance_[d - 1] * 100, 1)}%)"]
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="ScatterPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="ScatterPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.ScatterPlot(
             vdf=vdf,
@@ -297,8 +296,11 @@ class Decomposition(Preprocessing):
         ).draw(**kwargs)
 
     def plot_circle(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        dimensions: tuple = (1, 2),
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws a decomposition circle.
 
@@ -307,16 +309,16 @@ class Decomposition(Preprocessing):
         dimensions: tuple, optional
             Tuple of two elements representing the IDs 
             of the model's components.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any  optional  parameter  to  pass to  the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         if self._model_type == "SVD":
             x = self.vectors_[:, dimensions[0] - 1]
@@ -325,9 +327,7 @@ class Decomposition(Preprocessing):
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="PCACirclePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="PCACirclePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
@@ -343,27 +343,27 @@ class Decomposition(Preprocessing):
         }
         return vpy_plt.PCACirclePlot(data=data, layout=layout).draw(**kwargs)
 
-    def plot_scree(self, ax: Optional[Axes] = None, **style_kwargs) -> Axes:
+    def plot_scree(
+        self, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Draws a decomposition scree plot.
 
         Parameters
         ----------
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
             Any optional parameter to pass to the 
-            Matplotlib functions.
+            Plotting functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="PCAScreePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
         data = {
@@ -562,8 +562,8 @@ class MCA(PCA):
     # Plotting Methods.
 
     def plot_contrib(
-        self, dimension: int = 1, ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self, dimension: int = 1, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
         """
         Draws a decomposition  contribution plot of the input 
         dimension.
@@ -573,16 +573,16 @@ class MCA(PCA):
         dimension: int, optional
             Integer  representing  the  IDs  of the  model's 
             component.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         contrib = self.principal_components_[:, dimension - 1] ** 2
         contrib = 100 * contrib / contrib.sum()
@@ -590,9 +590,7 @@ class MCA(PCA):
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="PCAScreePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(contribution)
         data = {
@@ -611,8 +609,11 @@ class MCA(PCA):
         return vpy_plt.PCAScreePlot(data=data, layout=layout).draw(**kwargs)
 
     def plot_cos2(
-        self, dimensions: tuple = (1, 2), ax: Optional[Axes] = None, **style_kwargs
-    ) -> Axes:
+        self,
+        dimensions: tuple = (1, 2),
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
         """
         Draws a MCA (multiple correspondence analysis) cos2 
         plot of the two input dimensions.
@@ -621,16 +622,16 @@ class MCA(PCA):
         ----------
         dimensions: tuple, optional
             Tuple of two IDs of the model's components.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         cos2_1 = self.cos2_[:, dimensions[0] - 1]
         cos2_2 = self.cos2_[:, dimensions[1] - 1]
@@ -642,9 +643,7 @@ class MCA(PCA):
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="PCAScreePlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
         data = {
@@ -666,9 +665,9 @@ class MCA(PCA):
         self,
         dimensions: tuple = (1, 2),
         method: Literal["auto", "cos2", "contrib"] = "auto",
-        ax: Optional[Axes] = None,
+        chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ) -> Axes:
+    ) -> PlottingObject:
         """
         Draws  the  MCA  (multiple correspondence analysis) 
         graph.
@@ -683,16 +682,16 @@ class MCA(PCA):
                 cos2    : The cos2 is used as CMAP.
                 contrib : The feature  contribution is  used 
                           as CMAP.
-        ax: Axes, optional
-            The axes to plot on.
+        chart: PlottingObject, optional
+            The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Matplotlib 
+            Any optional parameter to pass to the Plotting 
             functions.
 
         Returns
         -------
-        Axes
-            Axes.
+        obj
+            Plotting Object.
         """
         x = self.principal_components_[:, dimensions[0] - 1]
         y = self.principal_components_[:, dimensions[1] - 1]
@@ -726,9 +725,7 @@ class MCA(PCA):
                     ]
                 )
         vpy_plt, kwargs = self._get_plotting_lib(
-            class_name="PCAVarPlot",
-            matplotlib_kwargs={"ax": ax,},
-            style_kwargs=style_kwargs,
+            class_name="PCAVarPlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
