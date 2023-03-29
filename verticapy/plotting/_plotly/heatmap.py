@@ -45,6 +45,20 @@ class HeatMap(PlotlyBase):
         self.init_style = {
             "width": 500 + 100 * max(len(self.layout["x_labels"]) - 5, 0),
             "height": 400 + 50 * max(len(self.layout["y_labels"]) - 5, 0),
+            "xaxis": dict(
+                showline=True,
+                linewidth=2,
+                linecolor="black",
+                mirror=True,
+                zeroline=False,
+            ),
+            "yaxis": dict(
+                showline=True,
+                linewidth=2,
+                linecolor="black",
+                mirror=True,
+                zeroline=False,
+            ),
         }
         return None
 
@@ -63,9 +77,12 @@ class HeatMap(PlotlyBase):
         params = {}
         trace_params = {}
         data = np.transpose((self.data["X"]))
+        if data.shape[1] == 1:
+            data = np.delete(data, -1, axis=0)
+            self.init_style["width"] = 250
+            self.layout["y_labels"].pop(0)
         decimal_points = self._get_max_decimal_point(data)
-        if decimal_points > 0:
-            print("PhARIYA GYA")
+        if decimal_points > 3:
             data = np.around(data.astype(np.float32), decimals=3)
         if len(self.layout["x_labels"][0].split(";")) > 1:
             x = self._convert_labels_for_heatmap(self.layout["x_labels"])
@@ -84,7 +101,7 @@ class HeatMap(PlotlyBase):
                 "texttemplate": "%{text}",
                 "textfont": dict(size=12),
             }
-            if decimal_points > 0:
+            if decimal_points > 2:
                 trace_params["texttemplate"] = "%{text:.2f}"
             if decimal_points > 8:
                 trace_params["texttemplate"] = "%{text:.2e}"
@@ -100,8 +117,8 @@ class HeatMap(PlotlyBase):
         fig.update_yaxes(type="category")
         fig.layout.yaxis.automargin = True
         fig.layout.xaxis.automargin = True
-        fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         fig.update_traces(
             **trace_params,
         )
+        fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
