@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from verticapy.plotting.base import PlottingBase
+
 from plotly.graph_objs._figure import Figure
 import plotly.graph_objects as go
 import numpy as np
@@ -56,9 +57,35 @@ class PlotlyBase(PlottingBase):
         return ids, labels, parents, values
 
     @staticmethod
-    def _get_fig(fig) -> tuple[Figure]:
+    def _get_fig(fig) -> Figure:
         if fig:
             return fig
         else:
             return go.Figure()
 
+    @staticmethod
+    def _convert_labels_for_heatmap(lst):
+        result = []
+        for item in lst:
+            # Remove the brackets and split the string by semicolon
+            values = item[1:-1].split(";")
+            # Convert the values to floating-point numbers and take their average
+            avg = str(round((float(values[0]) + float(values[1])) / 2, 2))
+            # Append the average to the result list
+            result.append(avg)
+        return result
+
+    @staticmethod
+    def _get_max_decimal_point(arr):
+        max_decimals = 0
+        for i in range(arr.shape[0]):
+            for j in range(arr.shape[1]):
+                if isinstance(arr[i][j], float):
+                    string_repr = str(arr[i][j])
+                    num_decimals = (
+                        len(string_repr.split(".")[-1])
+                        if len(string_repr.split(".")) > 1
+                        else 0
+                    )
+                    max_decimals = max(max_decimals, num_decimals)
+        return max_decimals
