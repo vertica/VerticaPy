@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from verticapy.plotting.base import PlottingBase
 
+from plotly.graph_objs._figure import Figure
+import plotly.graph_objects as go
 import numpy as np
 
 
@@ -53,6 +55,13 @@ class PlotlyBase(PlottingBase):
         parents = list(labels_father.values())
         values = list(labels_count.values())
         return ids, labels, parents, values
+
+    @staticmethod
+    def _get_fig(fig) -> Figure:
+        if fig:
+            return fig
+        else:
+            return go.Figure()
 
     @staticmethod
     def _convert_labels_for_heatmap(lst):
