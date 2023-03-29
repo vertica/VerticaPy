@@ -87,8 +87,8 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
     for i in range(m):
         tp = cm[i][i]
         tn = np.diagonal(cm).sum() - cm[i][i]
-        fp = cm[:, i].sum() - cm[i][i]
-        fn = cm.sum() - tp - tn - fp
+        fn = cm[:, i].sum() - cm[i][i]
+        fp = cm.sum() - tp - tn - fn
         res += [(tn, fn, fp, tp)]
     return res
 
