@@ -15,12 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import copy
 
 import numpy as np
 import plotly.express as px
 from plotly.graph_objs._figure import Figure
 
 from verticapy.plotting._plotly.base import PlotlyBase
+
 
 class HeatMap(PlotlyBase):
 
@@ -39,9 +41,11 @@ class HeatMap(PlotlyBase):
         return "2D"
 
     # Styling Methods.
-
     def _init_style(self) -> None:
-        self.init_style = {"width":800,"height":600}
+        self.init_style = {
+            "width": 500 + 100 * max(len(self.layout["x_labels"]) - 5, 0),
+            "height": 400 + 50 * max(len(self.layout["y_labels"]) - 5, 0),
+        }
         return None
 
     # Draw.
@@ -54,18 +58,50 @@ class HeatMap(PlotlyBase):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a heatmap using the Matplotlib API.
+        Draws a heatmap using the Plotly API.
         """
-        print(self.data)
-        print(self.layout)
-        fig = px.imshow(np.transpose((self.data['X'])),
-                        labels=dict(x=self.layout['columns'][0], y=self.layout['columns'][1]),
-                        x=self.layout['x_labels'],
-                        y=list(self.layout['y_labels'][::-1]),
-                        aspect="auto"
-                    )
-        fig.update_xaxes(type='category')
-        fig.update_yaxes(type='category')
-        fig.layout.yaxis.automargin=True
-        fig.update_layout(**self._update_dict(self.init_style,style_kwargs))
+        params = {}
+        trace_params = {}
+        data = np.transpose((self.data["X"]))
+        decimal_points = self._get_max_decimal_point(data)
+        if decimal_points > 0:
+            print("PhARIYA GYA")
+            data = np.around(data.astype(np.float32), decimals=3)
+        if len(self.layout["x_labels"][0].split(";")) > 1:
+            x = self._convert_labels_for_heatmap(self.layout["x_labels"])
+        else:
+            x = self.layout["x_labels"]
+        if len(self.layout["y_labels"][0].split(";")) > 1:
+            y = self._convert_labels_for_heatmap(self.layout["y_labels"])
+        else:
+            y = self.layout["y_labels"]
+        if self.layout["with_numbers"]:
+            params["text_auto"] = True
+            text = data
+            text.astype(str)
+            trace_params = {
+                "text": text,
+                "texttemplate": "%{text}",
+                "textfont": dict(size=12),
+            }
+            if decimal_points > 0:
+                trace_params["texttemplate"] = "%{text:.2f}"
+            if decimal_points > 8:
+                trace_params["texttemplate"] = "%{text:.2e}"
+        fig = px.imshow(
+            data,
+            labels=dict(x=self.layout["columns"][0], y=self.layout["columns"][1]),
+            x=x,
+            y=y[::-1],
+            aspect="auto",
+            **params,
+        )
+        fig.update_xaxes(type="category")
+        fig.update_yaxes(type="category")
+        fig.layout.yaxis.automargin = True
+        fig.layout.xaxis.automargin = True
+        fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
+        fig.update_traces(
+            **trace_params,
+        )
         return fig
