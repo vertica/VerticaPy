@@ -554,7 +554,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
-        if self._is_binary_classifier:
+        if self._is_binary_classifier():
             table = self.deploySQL(
                 X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
             )

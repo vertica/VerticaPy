@@ -16,10 +16,10 @@ permissions and limitations under the License.
 """
 import math
 from collections.abc import Iterable
-from typing import Union
+from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 
-from verticapy._typing import PythonNumber, PythonScalar, SQLRelation
+from verticapy._typing import ArrayLike, PythonNumber, PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -28,105 +28,8 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.machine_learning.metrics.regression import _compute_metric_query
 
-"""
-General Metrics.
-"""
-
-
-@save_verticapy_logs
-def accuracy_score(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    pos_label: PythonScalar = None,
-) -> float:
-    """
-    Computes the Accuracy Score.
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation  to  use  for  scoring.  This  relation 
-        can  be a view, table, or a customized  relation 
-        (if an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    pos_label: PythonScalar, optional
-        Label to use to identify the positive class. If 
-        pos_label is NULL then the global accuracy will 
-        be computed.
-
-    Returns
-    -------
-    float
-        score.
-    """
-    if pos_label != None:
-        tn, fn, fp, tp = _compute_tn_fn_fp_tp(
-            y_true, y_score, input_relation, pos_label
-        )
-        acc = (tp + tn) / (tp + tn + fn + fp)
-        return acc
-    else:
-        try:
-            return _compute_metric_query(
-                "AVG(CASE WHEN {0} = {1} THEN 1 ELSE 0 END)",
-                y_true,
-                y_score,
-                input_relation,
-                "Computing the Accuracy Score.",
-            )
-        except:
-            return _compute_metric_query(
-                "AVG(CASE WHEN {0}::varchar = {1}::varchar THEN 1 ELSE 0 END)",
-                y_true,
-                y_score,
-                input_relation,
-                "Computing the Accuracy Score.",
-            )
-
-
-@save_verticapy_logs
-def log_loss(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
-) -> float:
-    """
-    Computes the Log Loss.
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction Probability.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table, or a customized relation (if an  alias 
-        is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    pos_label: PythonScalar, optional
-        To compute the log loss,  one of the response column 
-        classes  must  be  the  positive one.  The parameter 
-        'pos_label' represents this class.
-
-    Returns
-    -------
-    float
-        score.
-    """
-    metric = f"""
-        AVG(CASE 
-                WHEN {{0}} = '{pos_label}' 
-                    THEN - LOG({{1}}::float + 1e-90) 
-                ELSE - LOG(1 - {{1}}::float + 1e-90) 
-            END)"""
-    return _compute_metric_query(
-        metric, y_true, y_score, input_relation, "Computing the Log Loss."
-    )
-
+if TYPE_CHECKING:
+    from verticapy.machine_learning.vertica.base import VerticaModel
 
 """
 Confusion Matrix Functions.
@@ -164,8 +67,49 @@ def _compute_tn_fn_fp_tp(
     tuple
         tn, fn, fp, tp
     """
-    res = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    return res[0][0], res[1][0], res[0][1], res[1][1]
+    cm = confusion_matrix(y_true, y_score, input_relation, pos_label)
+    return cm[0][0], cm[1][0], cm[0][1], cm[1][1]
+
+
+def _compute_classes_tn_fn_fp_tp(
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: list,
+) -> list[tuple]:
+    """
+    A helper function that  computes the confusion matrix 
+    for  the specified 'pos_label' class and returns  its 
+    values as a tuple of the following: 
+    true negatives, false negatives, false positives, and 
+    true positives.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation  to use for scoring. This  relation can be a 
+        view,  table, or a  customized relation (if an  alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    labels: list
+        List of the response column categories.
+
+    Returns
+    -------
+    list of tuple
+        tn, fn, fp, tp for each class
+    """
+    cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
+    n, m = cm.shape
+    res = []
+    for i in range(m):
+        tp = cm[i][i]
+        tn = np.diagonal(cm).sum() - cm[i][i]
+        fp = cm[:, i].sum() - cm[i][i]
+        fn = cm.sum() - tp - tn - fp
+        res += [(tn, fn, fp, tp)]
+    return res
 
 
 @check_minimum_version
@@ -223,7 +167,7 @@ def confusion_matrix(
 @check_minimum_version
 @save_verticapy_logs
 def multilabel_confusion_matrix(
-    y_true: str, y_score: str, input_relation: SQLRelation, labels: list,
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: ArrayLike,
 ) -> TableSample:
     """
     Computes the Multi Label Confusion Matrix.
@@ -239,8 +183,8 @@ def multilabel_confusion_matrix(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
-    labels: list
-        List of the response column categories.
+    labels: ArrayLike
+        List   of   the  response  column  categories.
 
     Returns
     -------
@@ -274,9 +218,120 @@ Confusion Matrix Metrics.
 """
 
 
+def _compute_final_score(
+    metric: Callable,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
+) -> float:
+    """
+    Computes the final score by using the different results
+    of the multi-confusion matrix.
+    """
+    if pos_label == None and isinstance(labels, type(None)):
+        pos_label = 1
+    if pos_label == None:
+        confusion_list = _compute_classes_tn_fn_fp_tp(
+            y_true, y_score, input_relation, labels
+        )
+        if average == "weighted":
+            score = sum(
+                [(args[1] + args[3]) * metric(*args) for args in confusion_list]
+            )
+            total = sum([(args[1] + args[3]) for args in confusion_list])
+            return score / total
+        elif average == "macro":
+            return np.mean([metric(*args) for args in confusion_list])
+        elif average == "micro":
+            tn = sum([args[0] for args in confusion_list])
+            fn = sum([args[1] for args in confusion_list])
+            fp = sum([args[2] for args in confusion_list])
+            tp = sum([args[3] for args in confusion_list])
+            return metric(tn, fn, fp, tp)
+        else:
+            raise ValueError(
+                f"Wrong value for parameter 'average'. Expecting: micro|macro|weighted. Got {average}."
+            )
+    else:
+        return metric(
+            *_compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label=pos_label)
+        )
+
+
+def _accuracy_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    return (tp + tn) / (tp + tn + fn + fp)
+
+
+@save_verticapy_logs
+def accuracy_score(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
+) -> float:
+    """
+    Computes the Accuracy Score.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation  to  use  for  scoring.  This  relation 
+        can  be a view, table, or a customized  relation 
+        (if an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        Label to use to identify the positive class. If 
+        pos_label is NULL then the global accuracy will 
+        be computed.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(
+        _accuracy_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
+    return tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
+
+
 @save_verticapy_logs
 def critical_success_index(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Critical Success Index.
@@ -292,6 +347,17 @@ def critical_success_index(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -302,14 +368,36 @@ def critical_success_index(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
-    return csi
+    return _compute_final_score(
+        _critical_success_index,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _f1_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    recall = tp / (tp + fn) if (tp + fn != 0) else 0
+    precision = tp / (tp + fp) if (tp + fp != 0) else 0
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall != 0)
+        else 0
+    )
+    return f1
 
 
 @save_verticapy_logs
 def f1_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the F1 Score.
@@ -325,6 +413,17 @@ def f1_score(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -335,20 +434,31 @@ def f1_score(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    recall = tp / (tp + fn) if (tp + fn != 0) else 0
-    precision = tp / (tp + fp) if (tp + fp != 0) else 0
-    f1 = (
-        2 * (precision * recall) / (precision + recall)
-        if (precision + recall != 0)
-        else 0
+    return _compute_final_score(
+        _f1_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
     )
-    return f1
+
+
+def _informedness(tn: int, fn: int, fp: int, tp: int) -> float:
+    tpr = tp / (tp + fn) if (tp + fn != 0) else 0
+    tnr = tn / (tn + fp) if (tn + fp != 0) else 0
+    return tpr + tnr - 1
 
 
 @save_verticapy_logs
 def informedness(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Informedness.
@@ -364,6 +474,17 @@ def informedness(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -374,15 +495,31 @@ def informedness(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    tpr = tp / (tp + fn) if (tp + fn != 0) else 0
-    tnr = tn / (tn + fp) if (tn + fp != 0) else 0
-    return tpr + tnr - 1
+    return _compute_final_score(
+        _informedness,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _markedness(tn: int, fn: int, fp: int, tp: int) -> float:
+    ppv = tp / (tp + fp) if (tp + fp != 0) else 0
+    npv = tn / (tn + fn) if (tn + fn != 0) else 0
+    return ppv + npv - 1
 
 
 @save_verticapy_logs
 def markedness(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Markedness.
@@ -398,6 +535,17 @@ def markedness(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -408,15 +556,33 @@ def markedness(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    ppv = tp / (tp + fp) if (tp + fp != 0) else 0
-    npv = tn / (tn + fn) if (tn + fn != 0) else 0
-    return ppv + npv - 1
+    return _compute_final_score(
+        _markedness,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _matthews_corrcoef(tn: int, fn: int, fp: int, tp: int) -> float:
+    return (
+        (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+        if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
+        else 0
+    )
 
 
 @save_verticapy_logs
 def matthews_corrcoef(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Matthews Correlation Coefficient.
@@ -432,6 +598,17 @@ def matthews_corrcoef(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -442,18 +619,29 @@ def matthews_corrcoef(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    mcc = (
-        (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
-        if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
-        else 0
+    return _compute_final_score(
+        _matthews_corrcoef,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
     )
-    return mcc
+
+
+def _negative_predictive_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    return tn / (tn + fn) if (tn + fn != 0) else 0
 
 
 @save_verticapy_logs
 def negative_predictive_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Negative Predictive Score.
@@ -469,6 +657,17 @@ def negative_predictive_score(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -479,14 +678,29 @@ def negative_predictive_score(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    npv = tn / (tn + fn) if (tn + fn != 0) else 0
-    return npv
+    return _compute_final_score(
+        _negative_predictive_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _precision_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    return tp / (tp + fp) if (tp + fp != 0) else 0
 
 
 @save_verticapy_logs
 def precision_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Precision Score.
@@ -502,6 +716,17 @@ def precision_score(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -512,14 +737,29 @@ def precision_score(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    precision = tp / (tp + fp) if (tp + fp != 0) else 0
-    return precision
+    return _compute_final_score(
+        _precision_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _recall_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    return tp / (tp + fn) if (tp + fn != 0) else 0
 
 
 @save_verticapy_logs
 def recall_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Recall Score.
@@ -535,6 +775,17 @@ def recall_score(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -545,14 +796,29 @@ def recall_score(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    recall = tp / (tp + fn) if (tp + fn != 0) else 0
-    return recall
+    return _compute_final_score(
+        _recall_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _specificity_score(tn: int, fn: int, fp: int, tp: int) -> float:
+    return tn / (tn + fp) if (tn + fp != 0) else 0
 
 
 @save_verticapy_logs
 def specificity_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
 ) -> float:
     """
     Computes the Specificity Score.
@@ -568,6 +834,17 @@ def specificity_score(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -578,9 +855,15 @@ def specificity_score(
     float
         score.
     """
-    tn, fn, fp, tp = _compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
-    tnr = tn / (tn + fp) if (tn + fp != 0) else 0
-    return tnr
+    return _compute_final_score(
+        _specificity_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
 
 
 """
@@ -671,11 +954,49 @@ def _compute_function_metrics(
 
 
 @save_verticapy_logs
+def _compute_multiclass_metric(
+    metric: Callable,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    nbins: int = 10000,
+) -> float:
+    """
+    Computes the Multiclass metric.
+    """
+    if average == "weighted":
+        confusion_list = _compute_classes_tn_fn_fp_tp(
+            y_true, y_score[1], input_relation, labels
+        )
+        weights = [args[1] + args[3] for args in confusion_list]
+    else:
+        # micro is not feasible using AUC.
+        weights = [1.0 for args in labels]
+    nbins_kw = {"nbins": nbins} if nbins != None else {}
+    scores = [
+        weights[i]
+        * metric(
+            y_true,
+            y_score[0].format(labels[i]),
+            input_relation,
+            pos_label=labels[i],
+            **nbins_kw,
+        )
+        for i in range(len(labels))
+    ]
+    return sum(scores) / sum(weights)
+
+
+@save_verticapy_logs
 def best_cutoff(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -712,19 +1033,30 @@ def best_cutoff(
     float
         score.
     """
-    threshold, false_positive, true_positive = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="roc",
-    )
-    l = [abs(y - x) for x, y in zip(false_positive, true_positive)]
-    best_threshold_arg = max(zip(l, range(len(l))))[1]
-    best = max(threshold[best_threshold_arg], 0.001)
-    best = min(best, 0.999)
-    return best
+    if pos_label != None or isinstance(labels, type(None)):
+        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        threshold, false_positive, true_positive = _compute_function_metrics(
+            y_true=y_true,
+            y_score=y_s,
+            input_relation=input_relation,
+            pos_label=pos_label,
+            nbins=nbins,
+            fun_sql_name="roc",
+        )
+        l = [abs(y - x) for x, y in zip(false_positive, true_positive)]
+        best_threshold_arg = max(zip(l, range(len(l))))[1]
+        best = max(threshold[best_threshold_arg], 0.001)
+        return min(best, 0.999)
+    else:
+        return _compute_multiclass_metric(
+            metric=best_cutoff,
+            y_true=y_true,
+            y_score=y_score,
+            input_relation=input_relation,
+            average=average,
+            labels=labels,
+            nbins=nbins,
+        )
 
 
 @save_verticapy_logs
@@ -732,7 +1064,9 @@ def roc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -749,6 +1083,17 @@ def roc_auc(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -769,15 +1114,27 @@ def roc_auc(
     float
         score.
 	"""
-    threshold, false_positive, true_positive = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="roc",
-    )
-    return _compute_area(true_positive, false_positive)
+    if pos_label != None or isinstance(labels, type(None)):
+        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        threshold, false_positive, true_positive = _compute_function_metrics(
+            y_true=y_true,
+            y_score=y_s,
+            input_relation=input_relation,
+            pos_label=pos_label,
+            nbins=nbins,
+            fun_sql_name="roc",
+        )
+        return _compute_area(true_positive, false_positive)
+    else:
+        return _compute_multiclass_metric(
+            metric=roc_auc,
+            y_true=y_true,
+            y_score=y_score,
+            input_relation=input_relation,
+            average=average,
+            labels=labels,
+            nbins=nbins,
+        )
 
 
 @save_verticapy_logs
@@ -785,7 +1142,9 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -803,6 +1162,17 @@ def prc_auc(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -823,15 +1193,97 @@ def prc_auc(
     float
         score.
     """
-    threshold, recall, precision = _compute_function_metrics(
-        y_true=y_true,
-        y_score=y_score,
-        input_relation=input_relation,
-        pos_label=pos_label,
-        nbins=nbins,
-        fun_sql_name="prc",
-    )
-    return _compute_area(precision, recall)
+    if pos_label != None or isinstance(labels, type(None)):
+        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        threshold, recall, precision = _compute_function_metrics(
+            y_true=y_true,
+            y_score=y_s,
+            input_relation=input_relation,
+            pos_label=pos_label,
+            nbins=nbins,
+            fun_sql_name="prc",
+        )
+        return _compute_area(precision, recall)
+    else:
+        return _compute_multiclass_metric(
+            metric=prc_auc,
+            y_true=y_true,
+            y_score=y_score,
+            input_relation=input_relation,
+            average=average,
+            labels=labels,
+            nbins=nbins,
+        )
+
+
+# Logloss Metric.
+
+
+@save_verticapy_logs
+def log_loss(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: PythonScalar = 1,
+) -> float:
+    """
+    Computes the Log Loss.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction Probability.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a 
+        view, table, or a customized relation (if an  alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The  method  used  to  compute  the final score for
+        multiclass-classification.
+            micro    : positive    and    negative   values 
+                       globally.
+            macro    : average   of   the   score  of  each 
+                       class.
+            weighted : weighted  average  of  the score  of 
+                       each class.
+    labels: ArrayLike, optional
+        List   of    the    response   column    categories.
+    pos_label: PythonScalar, optional
+        To compute the log loss,  one of the response column 
+        classes  must  be  the  positive one.  The parameter 
+        'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    if pos_label != None or isinstance(labels, type(None)):
+        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        metric = f"""
+            AVG(CASE 
+                    WHEN {{0}} = '{pos_label}' 
+                        THEN - LOG({{1}}::float + 1e-90) 
+                    ELSE - LOG(1 - {{1}}::float + 1e-90) 
+                END)"""
+        return _compute_metric_query(
+            metric, y_true, y_s, input_relation, "Computing the Log Loss."
+        )
+    else:
+        return _compute_multiclass_metric(
+            metric=log_loss,
+            y_true=y_true,
+            y_score=y_score,
+            input_relation=input_relation,
+            average=average,
+            labels=labels,
+            nbins=None,
+        )
 
 
 """
@@ -844,9 +1296,10 @@ def classification_report(
     y_true: str = "",
     y_score: list = [],
     input_relation: SQLRelation = "",
-    labels: list = [],
-    cutoff: Union[PythonNumber, list] = [],
-    estimator=None,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    cutoff: Union[None, PythonNumber, ArrayLike] = [],
+    estimator: Optional["VerticaModel"] = None,
     nbins: int = 10000,
 ) -> TableSample:
     """
@@ -866,13 +1319,22 @@ def classification_report(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
-    labels: list, optional
+    average: str, optional
+        The  method  used  to  compute the final score 
+        for multiclass-classification.
+            micro    : positive  and  negative  values 
+                       globally.
+            macro    : average of the  score  of  each 
+                       class.
+            weighted : weighted  average  of the score
+                       of each class.
+    labels: ArrayLike, optional
     	List of the response column categories to use.
-    cutoff: PythonNumber / list, optional
+    cutoff: PythonNumber / ArrayLike, optional
     	Cutoff  for which the tested category will  be 
         accepted as prediction. 
-    	For  multiclass classification, the list  will 
-        represent the classes  threshold. If it is 
+    	For  multiclass classification, the array will 
+        represent  the  classes  threshold. If  it  is 
         empty, the best cutoff will be used.
     estimator: object, optional
     	Estimator to use to compute the classification 
@@ -899,7 +1361,7 @@ def classification_report(
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
     else:
-        labels = [1] if not (labels) else labels
+        labels = [1] if isinstance(labels, type(None)) else labels
         num_classes = len(labels) + 1
     values = {
         "index": [
@@ -939,37 +1401,20 @@ def classification_report(
             y_p = y_score[1]
             y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
-        tn = matrix[0][0]
-        fn = matrix[1][0]
-        fp = matrix[0][1]
-        tp = matrix[1][1]
-        ppv = tp / (tp + fp) if (tp + fp != 0) else 0  # precision
-        tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
-        tnr = tn / (tn + fp) if (tn + fp != 0) else 0  # specificity
-        npv = tn / (tn + fn) if (tn + fn != 0) else 0  # negative predictive score
-        f1 = 2 * (tpr * ppv) / (tpr + ppv) if (tpr + ppv != 0) else 0  # f1
-        csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0  # csi
-        bm = tpr + tnr - 1  # informedness
-        mk = ppv + npv - 1  # markedness
-        mcc = (
-            (tp * tn - fp * fn)
-            / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
-            if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
-            else 0
-        )  # matthews corr coef
-        accuracy = (tp + tn) / (tp + tn + fp + fn)
         if estimator:
-            auc_score, logloss, prc_auc_score = (
-                estimator.score(pos_label=pos_label, method="auc", nbins=nbins),
-                estimator.score(pos_label=pos_label, method="log_loss"),
-                estimator.score(pos_label=pos_label, method="prc_auc", nbins=nbins),
+            auc_score = estimator.score(pos_label=pos_label, method="auc", nbins=nbins)
+            prc_auc_score = estimator.score(
+                pos_label=pos_label, method="prc_auc", nbins=nbins
             )
+            logloss = estimator.score(pos_label=pos_label, method="log_loss")
         else:
-            auc_score = roc_auc(y_t, y_s, input_relation, 1)
-            prc_auc_score = prc_auc(y_t, y_s, input_relation, 1)
-            logloss = log_loss(y_t, y_s, input_relation, 1)
+            auc_score = roc_auc(y_t, y_s, input_relation, pos_label=1)
+            prc_auc_score = prc_auc(y_t, y_s, input_relation, pos_label=1)
+            logloss = log_loss(y_t, y_s, input_relation, pos_label=1)
             if not (cutoff):
-                current_cutoff = best_cutoff(y_t, y_s, input_relation, nbins=nbins,)
+                current_cutoff = best_cutoff(
+                    y_t, y_s, input_relation, nbins=nbins, pos_label=1
+                )
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
@@ -979,18 +1424,22 @@ def classification_report(
                 current_cutoff = cutoff
         if len(labels) == 1:
             pos_label = "value"
+        tn, tp = matrix[0][0], matrix[1][1]
+        fn, fp = matrix[1][0], matrix[0][1]
+        # tnr = _specificity_score(tn, fn, fp, tp)
+        # npv = _negative_predictive_score(tn, fn, fp, tp)
         values[pos_label] = [
             auc_score,
             prc_auc_score,
-            accuracy,
+            _accuracy_score(tn, fn, fp, tp),
             logloss,
-            ppv,
-            tpr,
-            f1,
-            mcc,
-            bm,
-            mk,
-            csi,
+            _precision_score(tn, fn, fp, tp),
+            _recall_score(tn, fn, fp, tp),
+            _f1_score(tn, fn, fp, tp),
+            _matthews_corrcoef(tn, fn, fp, tp),
+            _informedness(tn, fn, fp, tp),
+            _markedness(tn, fn, fp, tp),
+            _critical_success_index(tn, fn, fp, tp),
             current_cutoff,
         ]
     return TableSample(values)

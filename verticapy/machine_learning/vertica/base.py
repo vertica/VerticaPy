@@ -1177,7 +1177,7 @@ class BinaryClassifier(Classifier):
     # Model Evaluation Methods.
 
     def classification_report(
-        self, cutoff: PythonNumber = 0.5, nbins: int = 10000,
+        self, cutoff: PythonNumber = None, nbins: int = 10000,
     ) -> TableSample:
         """
         Computes a classification report using multiple metrics 
@@ -1202,7 +1202,7 @@ class BinaryClassifier(Classifier):
         TableSample
             report.
         """
-        if cutoff > 1 or cutoff < 0:
+        if not (isinstance(cutoff, (int, float))):
             cutoff = self.score(method="best_cutoff")
         return mt.classification_report(
             self.y,
@@ -1591,8 +1591,10 @@ class MulticlassClassifier(Classifier):
         """
         Checks if the pos_label is correct.
         """
-        if pos_label == None and self._is_binary_classifier:
+        if pos_label == None and self._is_binary_classifier():
             return 1
+        elif pos_label == None:
+            return None
         elif str(pos_label) not in [str(c) for c in self.classes_]:
             raise ParameterError(
                 "Parameter 'pos_label' must be one of the response column classes."
@@ -1632,7 +1634,7 @@ class MulticlassClassifier(Classifier):
     def deploySQL(
         self,
         pos_label: PythonScalar = None,
-        cutoff: PythonNumber = -1,
+        cutoff: PythonNumber = None,
         allSQL: bool = False,
         X: SQLColumns = [],
     ) -> SQLExpression:
@@ -1692,7 +1694,7 @@ class MulticlassClassifier(Classifier):
                     sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
-                if 0 <= cutoff <= 1:
+                if isinstance(cutoff, (int, float)) and 0.0 <= cutoff <= 1.0:
                     sql = f"""
                         (CASE 
                             WHEN {sql} >= {cutoff} 
@@ -1733,19 +1735,16 @@ class MulticlassClassifier(Classifier):
         return self.deploySQL(allSQL=True)[0].format(pos_label)
 
     def _get_y_score(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+        self,
+        pos_label: PythonScalar = None,
+        cutoff: PythonNumber = None,
+        allSQL: bool = False,
     ) -> str:
         """
         Returns  the input which represents the model's 
         scoring.
         """
-        return self.deploySQL(pos_label, cutoff)
-
-    def _compute_accuracy(self) -> float:
-        """
-        Computes the model accuracy.
-        """
-        return mt.accuracy_score(self.y, self.deploySQL(), self.test_relation)
+        return self.deploySQL(pos_label, cutoff, allSQL=allSQL)
 
     def classification_report(
         self,
@@ -1838,6 +1837,7 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        average: Literal["micro", "macro", "weighted"] = "weighted",
         pos_label: PythonScalar = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
@@ -1868,6 +1868,15 @@ class MulticlassClassifier(Classifier):
                 precision   : Precision = tp / (tp + fp)
                 recall      : Recall = tp / (tp + fn)
                 specificity : Specificity = tn / (tn + fp)
+        average: str, optional
+            The method used to  compute the final score for
+            multiclass-classification.
+                micro    : positive  and   negative  values 
+                           globally.
+                macro    : average  of  the  score of  each 
+                           class.
+                weighted : weighted average of the score of 
+                           each class.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 
@@ -1889,38 +1898,20 @@ class MulticlassClassifier(Classifier):
         float
             score.
         """
-        if (
-            method in ("accuracy", "acc")
-            and pos_label == None
-            and not (self._is_binary_classifier)
-        ):
-            return self._compute_accuracy()
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
         pos_label = self._check_pos_label(pos_label=pos_label)
         y_proba = self._get_y_proba(pos_label=pos_label)
-        y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
+        if method in ("auc", "prc_auc", "best_cutoff", "best_threshold", "logloss", "log_loss"):
+            y_score = self._get_y_score(allSQL=True)
+        else:
+            y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
         final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
-        kwargs = {}
-        if method in ("accuracy", "acc"):
-            args += [pos_label]
-        elif method in ("aic", "bic"):
+        kwargs = {"average": average, "pos_label": pos_label, "labels": self.classes_}
+        if method in ("aic", "bic"):
             args += [len(self.X)]
-        elif method in (
-            "auc",
-            "prc_auc",
-            "best_cutoff",
-            "best_threshold",
-            "log_loss",
-            "logloss",
-        ):
-            args = [
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                y_proba,
-                final_relation,
-            ]
-            if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
-                kwargs["nbins"] = nbins
+        elif method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+            kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
     # Prediction / Transformation Methods.
