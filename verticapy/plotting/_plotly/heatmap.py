@@ -78,9 +78,7 @@ class HeatMap(PlotlyBase):
         trace_params = {}
         data = np.transpose((self.data["X"]))
         if data.shape[1] == 1:
-            data = np.delete(data, -1, axis=0)
             self.init_style["width"] = 250
-            self.layout["y_labels"].pop(0)
         decimal_points = self._get_max_decimal_point(data)
         if decimal_points > 3:
             data = np.around(data.astype(np.float32), decimals=3)
@@ -89,7 +87,7 @@ class HeatMap(PlotlyBase):
         else:
             x = self.layout["x_labels"]
         if len(self.layout["y_labels"][0].split(";")) > 1:
-            y = self._convert_labels_for_heatmap(self.layout["y_labels"])
+            y = self._convert_labels_for_heatmap(self.layout["y_labels"])[::-1]
         else:
             y = self.layout["y_labels"]
         if self.layout["with_numbers"]:
@@ -109,7 +107,7 @@ class HeatMap(PlotlyBase):
             data,
             labels=dict(x=self.layout["columns"][0], y=self.layout["columns"][1]),
             x=x,
-            y=y[::-1],
+            y=y,
             aspect="auto",
             **params,
         )
