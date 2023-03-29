@@ -1894,11 +1894,11 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        average: Literal["micro", "macro", "weighted"] = "weighted",
+        average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
-    ) -> float:
+    ) -> Union[float, list[float]]:
         """
         Computes the model score.
 
@@ -1934,6 +1934,7 @@ class MulticlassClassifier(Classifier):
                            class.
                 weighted : weighted average of the score of 
                            each class.
+                scores   : scores  for   all  the  classes.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 

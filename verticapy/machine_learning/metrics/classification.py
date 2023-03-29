@@ -128,9 +128,9 @@ def _compute_classes_tn_fn_fp_tp(
 def _compute_final_score_from_cm(
     metric: Callable,
     cm: ArrayLike,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     multi: bool = False,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the final score by using the different results
     of the multi-confusion matrix.
@@ -146,14 +146,13 @@ def _compute_final_score_from_cm(
         elif average == "macro":
             return np.mean([metric(*args) for args in confusion_list])
         elif average == "micro":
-            tn = sum([args[0] for args in confusion_list])
-            fn = sum([args[1] for args in confusion_list])
-            fp = sum([args[2] for args in confusion_list])
-            tp = sum([args[3] for args in confusion_list])
-            return metric(tn, fn, fp, tp)
+            args = [sum([args[i] for args in confusion_list]) for i in range(4)]
+            return metric(*args)
+        elif average == "scores":
+            return [metric(*args) for args in confusion_list]
         else:
             raise ValueError(
-                f"Wrong value for parameter 'average'. Expecting: micro|macro|weighted. Got {average}."
+                f"Wrong value for parameter 'average'. Expecting: micro|macro|weighted|scores. Got {average}."
             )
     else:
         return metric(*_compute_tn_fn_fp_tp_from_cm(cm))
@@ -164,10 +163,10 @@ def _compute_final_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the final score by using the different results
     of the multi-confusion matrix.
@@ -186,7 +185,7 @@ def _compute_final_score(
 @save_verticapy_logs
 def confusion_matrix(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
-) -> TableSample:
+) -> np.ndarray:
     """
     Computes the Confusion Matrix.
 
@@ -209,7 +208,7 @@ def confusion_matrix(
 
     Returns
     -------
-    TableSample
+    Array
         confusion matrix.
     """
     if isinstance(input_relation, str):
@@ -238,7 +237,7 @@ def confusion_matrix(
 @save_verticapy_logs
 def multilabel_confusion_matrix(
     y_true: str, y_score: str, input_relation: SQLRelation, labels: ArrayLike,
-) -> TableSample:
+) -> np.ndarray:
     """
     Computes the Multi Label Confusion Matrix.
 
@@ -258,7 +257,7 @@ def multilabel_confusion_matrix(
 
     Returns
     -------
-    TableSample
+    Array
         confusion matrix.
     """
     if isinstance(input_relation, str):
@@ -297,10 +296,10 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Accuracy Score.
 
@@ -324,6 +323,7 @@ def accuracy_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -356,10 +356,10 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Critical Success Index.
 
@@ -383,6 +383,7 @@ def critical_success_index(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -422,10 +423,10 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the F1 Score.
 
@@ -449,6 +450,7 @@ def f1_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -483,10 +485,10 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Informedness.
 
@@ -510,6 +512,7 @@ def informedness(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -544,10 +547,10 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Markedness.
 
@@ -571,6 +574,7 @@ def markedness(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -607,10 +611,10 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Matthews Correlation Coefficient.
 
@@ -634,6 +638,7 @@ def matthews_corrcoef(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -666,10 +671,10 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Negative Predictive Score.
 
@@ -693,6 +698,7 @@ def negative_predictive_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -725,10 +731,10 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Precision Score.
 
@@ -752,6 +758,7 @@ def precision_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -784,10 +791,10 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Recall Score.
 
@@ -811,6 +818,7 @@ def recall_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -843,10 +851,10 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Specificity Score.
 
@@ -870,6 +878,7 @@ def specificity_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -924,7 +933,7 @@ def _compute_function_metrics(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     fun_sql_name: str = "",
-) -> list:
+) -> list[list]:
     """
     Returns the function metrics.
     """
@@ -986,10 +995,10 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Multiclass metric.
     """
@@ -1021,11 +1030,11 @@ def best_cutoff(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the ROC AUC (Area Under Curve).
 
@@ -1040,6 +1049,18 @@ def best_cutoff(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
@@ -1091,11 +1112,11 @@ def roc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the ROC AUC (Area Under Curve).
 
@@ -1119,6 +1140,7 @@ def roc_auc(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1169,11 +1191,11 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the area under the curve (AUC) of a 
     Precision-Recall (PRC) curve.
@@ -1198,6 +1220,7 @@ def prc_auc(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            scores   : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1251,10 +1274,10 @@ def log_loss(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: PythonScalar = 1,
-) -> float:
+) -> Union[float, list[float]]:
     """
     Computes the Log Loss.
 
@@ -1453,19 +1476,33 @@ def classification_report(
             "csi",
         ]
     values = {"index": metrics}
-    all_cm_metrics = []
-    for idx, pos_label in enumerate(labels):
+    if (cutoff == None) and num_classes > 2:
         if estimator:
-            cm = estimator.confusion_matrix(pos_label=pos_label, cutoff=cutoff)
+            cm = estimator.confusion_matrix()
         else:
-            y_s = y_score[0].format(pos_label)
-            y_p = y_score[1]
-            y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
-            cm = confusion_matrix(y_true, y_p, input_relation, pos_label=pos_label)
+            cm = multilabel_confusion_matrix(
+                y_true, y_score, input_relation, labels=labels
+            )
+        all_cm_metrics = _compute_classes_tn_fn_fp_tp_from_cm(cm)
+        is_multi = True
+    else:
+        all_cm_metrics = []
+        is_multi = False
+    for idx, pos_label in enumerate(labels):
+        if is_multi:
+            tn, fn, fp, tp = all_cm_metrics[idx]
+        else:
+            if estimator:
+                cm = estimator.confusion_matrix(pos_label=pos_label, cutoff=cutoff)
+            else:
+                y_s = y_score[0].format(pos_label)
+                y_p = y_score[1]
+                y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
+                cm = confusion_matrix(y_true, y_p, input_relation, pos_label=pos_label)
+            tn, tp = cm[0][0], cm[1][1]
+            fn, fp = cm[1][0], cm[0][1]
         if len(labels) == 1:
             pos_label = "value"
-        tn, tp = cm[0][0], cm[1][1]
-        fn, fp = cm[1][0], cm[0][1]
         values[pos_label] = []
         for m in metrics:
             if m in FUNCTIONS_CONFUSION_DICTIONNARY:
@@ -1487,7 +1524,8 @@ def classification_report(
                 raise ValueError(
                     f"Undefined Metric '{m}'. Must be in {possible_metrics}."
                 )
-        all_cm_metrics += [(tn, fn, fp, tp)]
+        if not (is_multi):
+            all_cm_metrics += [(tn, fn, fp, tp)]
     res = TableSample(values)
     if num_classes > 2:
         res_array = res.to_numpy()
