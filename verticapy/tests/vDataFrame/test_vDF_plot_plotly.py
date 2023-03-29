@@ -710,7 +710,7 @@ class TestVDFHeatMap:
             result.data[0]["z"].shape == expected_shape
         ), "Incorrect shape of output matrix"
 
-    def test_data_matrix_shape_for_pivot_table(self, load_plotly, iris_vd):
+    def test_data_matrix_shape_for_pivot_table(self, load_plotly, titanic_vd):
         # Arrange
         expected_shape = (3, 2)
         # Act
