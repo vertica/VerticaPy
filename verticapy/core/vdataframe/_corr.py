@@ -43,7 +43,7 @@ class vDFCorr:
     def _aggregate_matrix(
         self,
         method: str = "pearson",
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         mround: int = 3,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -518,7 +518,7 @@ class vDFCorr:
         self,
         focus: str,
         method: str = "pearson",
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         mround: int = 3,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -714,7 +714,7 @@ class vDFCorr:
     @save_verticapy_logs
     def corr(
         self,
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         method: Literal[
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
@@ -1009,7 +1009,7 @@ class vDFCorr:
     @save_verticapy_logs
     def cov(
         self,
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         focus: str = "",
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -1063,7 +1063,7 @@ class vDFCorr:
     @save_verticapy_logs
     def regr(
         self,
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         method: Literal[
             "avgx",
             "avgy",
@@ -1238,7 +1238,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: SQLColumns = None,
+        by: Optional[SQLColumns] = None,
         p: Union[int, list] = 12,
         unit: str = "rows",
         method: Literal[
@@ -1406,7 +1406,7 @@ class vDFCorr:
         self,
         column: str,
         ts: str,
-        by: SQLColumns = None,
+        by: Optional[SQLColumns] = None,
         p: Union[int, list] = 5,
         unit: str = "rows",
         method: Literal[
@@ -1601,7 +1601,7 @@ class vDFCorr:
     def iv_woe(
         self,
         y: str,
-        columns: SQLColumns = None,
+        columns: Optional[SQLColumns] = None,
         nbins: int = 10,
         show: bool = True,
         chart: Optional[PlottingObject] = None,

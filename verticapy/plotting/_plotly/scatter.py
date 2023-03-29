@@ -79,7 +79,7 @@ class ScatterPlot(PlotlyBase):
         """
         Draws a scatter plot using the Plotly API.
         """
-        fig_base=self._get_fig(fig)
+        fig_base = self._get_fig(fig)
         color_option = {}
         data = (
             np.column_stack((self.data["X"], self.data["c"]))

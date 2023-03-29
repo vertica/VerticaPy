@@ -52,7 +52,7 @@ def randomized_features_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
     comb_limit: int = 100,

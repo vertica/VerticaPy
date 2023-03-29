@@ -232,7 +232,7 @@ class AutoML(VerticaModel):
         estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
         metric: str = "auto",
         cv: int = 3,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         cutoff: float = -1,
         nbins: int = 100,
         lmax: int = 5,

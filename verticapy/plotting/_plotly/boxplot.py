@@ -79,7 +79,7 @@ class BoxPlot(PlotlyBase):
         """
         Draws a boxplot using the Plotly API.
         """
-        fig=self._get_fig(fig)
+        fig = self._get_fig(fig)
         if self.data["X"].shape[1] < 2:
             min_val = self.data["X"][0][0]
             q1 = self.data["X"][1][0]

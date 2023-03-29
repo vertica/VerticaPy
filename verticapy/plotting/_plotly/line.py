@@ -48,15 +48,11 @@ class LinePlot(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
-        fig_base=self._get_fig(fig)
+        fig_base = self._get_fig(fig)
         if "z" in self.data:
             self.init_style["markers"] = False
             self.init_style["color"] = "color"

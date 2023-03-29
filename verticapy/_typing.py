@@ -34,18 +34,17 @@ if TYPE_CHECKING:
 # Pythonic data types.
 
 ArrayLike = Annotated[Union[list, np.ndarray], "Array Like Structure"]
-PythonNumber = Annotated[Union[None, int, float, decimal.Decimal], "Python Numbers"]
+PythonNumber = Annotated[Union[int, float, decimal.Decimal], "Python Numbers"]
 PythonScalar = Annotated[
-    Union[None, bool, float, str, datetime.timedelta, datetime.datetime],
-    "Python Scalar",
+    Union[bool, float, str, datetime.timedelta, datetime.datetime], "Python Scalar",
 ]
-TimeInterval = Annotated[Union[None, str, datetime.timedelta], "Time Interval"]
-Datetime = Annotated[Union[None, str, datetime.datetime], ""]
+TimeInterval = Annotated[Union[str, datetime.timedelta], "Time Interval"]
+Datetime = Annotated[Union[str, datetime.datetime], ""]
 
 # SQL data types.
 
 SQLColumns = Annotated[
-    Union[None, str, list[str]], "STRING representing one column or a list of columns"
+    Union[str, list[str]], "STRING representing one column or a list of columns"
 ]
 SQLExpression = Annotated[Union[str, list[str], "StringSQL", list["StringSQL"]], ""]
 SQLRelation = Annotated[Union[str, "vDataFrame"], ""]

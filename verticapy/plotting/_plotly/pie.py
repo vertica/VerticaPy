@@ -61,7 +61,7 @@ class PieChart(PlotlyBase):
         """
         Draws a pie chart using the Plotly API.
         """
-        fig_base=self._get_fig(fig)
+        fig_base = self._get_fig(fig)
         labels = self.layout["labels"]
         if self.layout["pie_type"] == "donut":
             hole_fraction = 0.2

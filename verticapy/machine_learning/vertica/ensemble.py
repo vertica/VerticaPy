@@ -1178,7 +1178,7 @@ class IsolationForest(Clustering, Tree):
         self,
         X: SQLColumns = [],
         cutoff: PythonNumber = 0.7,
-        contamination: PythonNumber = None,
+        contamination: Optional[PythonNumber] = None,
         return_score: bool = False,
     ) -> str:
         """
@@ -1299,7 +1299,7 @@ class IsolationForest(Clustering, Tree):
         X: SQLColumns = [],
         name: str = "",
         cutoff: PythonNumber = 0.7,
-        contamination: PythonNumber = None,
+        contamination: Optional[PythonNumber] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """

@@ -461,7 +461,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_final_relation(self, pos_label: PythonScalar = None,) -> str:
+    def _get_final_relation(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the final relation used to do the predictions.
         """
@@ -472,14 +472,14 @@ class KNeighborsClassifier(MulticlassClassifier):
             WHERE predict_neighbors = '{pos_label}') 
             final_centroids_relation"""
 
-    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the input which represents the model's probabilities.
         """
         return "proba_predict"
 
     def _get_y_score(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+        self, pos_label: Optional[PythonScalar] = None, cutoff: PythonNumber = 0.5,
     ) -> str:
         """
         Returns the input which represents the model's scoring.
@@ -495,7 +495,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     def _confusion_matrix(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
+        self, pos_label: Optional[PythonScalar] = None, cutoff: PythonNumber = -1,
     ) -> TableSample:
         """
         Computes the model confusion matrix.
@@ -591,7 +591,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         vdf: SQLRelation,
         X: SQLColumns = [],
         name: str = "",
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
         **kwargs,
     ) -> vDataFrame:
@@ -660,7 +660,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     # Plotting Methods.
 
     def _get_plot_args(
-        self, pos_label: PythonScalar = None, method: Optional[str] = None
+        self, pos_label: Optional[PythonScalar] = None, method: Optional[str] = None
     ) -> list:
         """
         Returns the args used by plotting methods.
@@ -689,7 +689,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def _get_plot_kwargs(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         chart: Optional[PlottingObject] = None,
         method: Optional[str] = None,

@@ -1193,7 +1193,7 @@ class NearestCentroid(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the input which represents the model's 
         probabilities.

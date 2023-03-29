@@ -36,6 +36,13 @@ Confusion Matrix Functions.
 """
 
 
+def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
+    """
+    helper function to compute the final score.
+    """
+    return cm[0][0], cm[1][0], cm[0][1], cm[1][1]
+
+
 def _compute_tn_fn_fp_tp(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ) -> tuple:
@@ -68,7 +75,22 @@ def _compute_tn_fn_fp_tp(
         tn, fn, fp, tp
     """
     cm = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    return cm[0][0], cm[1][0], cm[0][1], cm[1][1]
+    return _compute_tn_fn_fp_tp_from_cm(cm)
+
+
+def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
+    """
+    helper function to compute the final score.
+    """
+    n, m = cm.shape
+    res = []
+    for i in range(m):
+        tp = cm[i][i]
+        tn = np.diagonal(cm).sum() - cm[i][i]
+        fp = cm[:, i].sum() - cm[i][i]
+        fn = cm.sum() - tp - tn - fp
+        res += [(tn, fn, fp, tp)]
+    return res
 
 
 def _compute_classes_tn_fn_fp_tp(
@@ -76,8 +98,7 @@ def _compute_classes_tn_fn_fp_tp(
 ) -> list[tuple]:
     """
     A helper function that  computes the confusion matrix 
-    for  the specified 'pos_label' class and returns  its 
-    values as a tuple of the following: 
+    and returns  its values  as a tuple of the following: 
     true negatives, false negatives, false positives, and 
     true positives.
 
@@ -101,15 +122,64 @@ def _compute_classes_tn_fn_fp_tp(
         tn, fn, fp, tp for each class
     """
     cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
-    n, m = cm.shape
-    res = []
-    for i in range(m):
-        tp = cm[i][i]
-        tn = np.diagonal(cm).sum() - cm[i][i]
-        fp = cm[:, i].sum() - cm[i][i]
-        fn = cm.sum() - tp - tn - fp
-        res += [(tn, fn, fp, tp)]
-    return res
+    return _compute_classes_tn_fn_fp_tp_from_cm(cm)
+
+
+def _compute_final_score_from_cm(
+    metric: Callable,
+    cm: ArrayLike,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    multi: bool = False,
+) -> float:
+    """
+    Computes the final score by using the different results
+    of the multi-confusion matrix.
+    """
+    if multi:
+        confusion_list = _compute_classes_tn_fn_fp_tp_from_cm(cm)
+        if average == "weighted":
+            score = sum(
+                [(args[1] + args[3]) * metric(*args) for args in confusion_list]
+            )
+            total = sum([(args[1] + args[3]) for args in confusion_list])
+            return score / total
+        elif average == "macro":
+            return np.mean([metric(*args) for args in confusion_list])
+        elif average == "micro":
+            tn = sum([args[0] for args in confusion_list])
+            fn = sum([args[1] for args in confusion_list])
+            fp = sum([args[2] for args in confusion_list])
+            tp = sum([args[3] for args in confusion_list])
+            return metric(tn, fn, fp, tp)
+        else:
+            raise ValueError(
+                f"Wrong value for parameter 'average'. Expecting: micro|macro|weighted. Got {average}."
+            )
+    else:
+        return metric(*_compute_tn_fn_fp_tp_from_cm(cm))
+
+
+def _compute_final_score(
+    metric: Callable,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> float:
+    """
+    Computes the final score by using the different results
+    of the multi-confusion matrix.
+    """
+    if pos_label == None and isinstance(labels, type(None)):
+        pos_label = 1
+    if pos_label == None:
+        cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
+        return _compute_final_score_from_cm(metric, cm, average=average, multi=True)
+    else:
+        cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
+        return _compute_final_score_from_cm(metric, cm, average=average, multi=False)
 
 
 @check_minimum_version
@@ -218,49 +288,6 @@ Confusion Matrix Metrics.
 """
 
 
-def _compute_final_score(
-    metric: Callable,
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted"] = "weighted",
-    labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
-) -> float:
-    """
-    Computes the final score by using the different results
-    of the multi-confusion matrix.
-    """
-    if pos_label == None and isinstance(labels, type(None)):
-        pos_label = 1
-    if pos_label == None:
-        confusion_list = _compute_classes_tn_fn_fp_tp(
-            y_true, y_score, input_relation, labels
-        )
-        if average == "weighted":
-            score = sum(
-                [(args[1] + args[3]) * metric(*args) for args in confusion_list]
-            )
-            total = sum([(args[1] + args[3]) for args in confusion_list])
-            return score / total
-        elif average == "macro":
-            return np.mean([metric(*args) for args in confusion_list])
-        elif average == "micro":
-            tn = sum([args[0] for args in confusion_list])
-            fn = sum([args[1] for args in confusion_list])
-            fp = sum([args[2] for args in confusion_list])
-            tp = sum([args[3] for args in confusion_list])
-            return metric(tn, fn, fp, tp)
-        else:
-            raise ValueError(
-                f"Wrong value for parameter 'average'. Expecting: micro|macro|weighted. Got {average}."
-            )
-    else:
-        return metric(
-            *_compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label=pos_label)
-        )
-
-
 def _accuracy_score(tn: int, fn: int, fp: int, tp: int) -> float:
     return (tp + tn) / (tp + tn + fn + fp)
 
@@ -272,7 +299,7 @@ def accuracy_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Accuracy Score.
@@ -331,7 +358,7 @@ def critical_success_index(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Critical Success Index.
@@ -397,7 +424,7 @@ def f1_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the F1 Score.
@@ -458,7 +485,7 @@ def informedness(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Informedness.
@@ -519,7 +546,7 @@ def markedness(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Markedness.
@@ -582,7 +609,7 @@ def matthews_corrcoef(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Matthews Correlation Coefficient.
@@ -641,7 +668,7 @@ def negative_predictive_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Negative Predictive Score.
@@ -700,7 +727,7 @@ def precision_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Precision Score.
@@ -759,7 +786,7 @@ def recall_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Recall Score.
@@ -818,7 +845,7 @@ def specificity_score(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
     Computes the Specificity Score.
@@ -996,7 +1023,7 @@ def best_cutoff(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -1066,7 +1093,7 @@ def roc_auc(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -1144,7 +1171,7 @@ def prc_auc(
     input_relation: SQLRelation,
     average: Literal["micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
 ) -> float:
     """
@@ -1289,18 +1316,47 @@ def log_loss(
 """
 Reports.
 """
+FUNCTIONS_CONFUSION_DICTIONNARY = {
+    "accuracy": _accuracy_score,
+    "acc": _accuracy_score,
+    "recall": _recall_score,
+    "tpr": _recall_score,
+    "precision": _precision_score,
+    "ppv": _precision_score,
+    "specificity": _specificity_score,
+    "tnr": _specificity_score,
+    "negative_predictive_value": _negative_predictive_score,
+    "npv": _negative_predictive_score,
+    "f1": _f1_score,
+    "mcc": _matthews_corrcoef,
+    "bm": _informedness,
+    "informedness": _informedness,
+    "mk": _markedness,
+    "markedness": _markedness,
+    "csi": _critical_success_index,
+    "critical_success_index": _critical_success_index,
+}
+
+FUNCTIONS_OTHER_METRICS_DICTIONNARY = {
+    "auc": roc_auc,
+    "prc_auc": prc_auc,
+    "best_cutoff": best_cutoff,
+    "best_threshold": best_cutoff,
+    "log_loss": log_loss,
+    "logloss": log_loss,
+}
 
 
 @save_verticapy_logs
 def classification_report(
-    y_true: str = "",
-    y_score: list = [],
-    input_relation: SQLRelation = "",
-    average: Literal["micro", "macro", "weighted"] = "weighted",
+    y_true: Optional[str] = None,
+    y_score: Optional[list] = None,
+    input_relation: Optional[SQLRelation] = None,
+    metrics: Optional[list] = None,
     labels: Optional[ArrayLike] = None,
-    cutoff: Union[None, PythonNumber, ArrayLike] = [],
-    estimator: Optional["VerticaModel"] = None,
+    cutoff: Optional[PythonNumber] = None,
     nbins: int = 10000,
+    estimator: Optional["VerticaModel"] = None,
 ) -> TableSample:
     """
     Computes  a classification  report using  multiple 
@@ -1319,6 +1375,28 @@ def classification_report(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    metrics: list, optional
+        List of the metric to use to compute the final 
+        report.
+            accuracy    : Accuracy
+            aic         : Akaike’s  Information  Criterion
+            auc         : Area Under the Curve (ROC)
+            best_cutoff : Cutoff  which optimised the  ROC 
+                          Curve prediction.
+            bic         : Bayesian  Information  Criterion
+            bm          : Informedness = tpr + tnr - 1
+            csi         : Critical Success Index 
+                          = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness = ppv + npv - 1
+            npv         : Negative Predictive Value 
+                          = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision = tp / (tp + fp)
+            recall      : Recall = tp / (tp + fn)
+            specificity : Specificity = tn / (tn + fp)
     average: str, optional
         The  method  used  to  compute the final score 
         for multiclass-classification.
@@ -1330,15 +1408,9 @@ def classification_report(
                        of each class.
     labels: ArrayLike, optional
     	List of the response column categories to use.
-    cutoff: PythonNumber / ArrayLike, optional
+    cutoff: PythonNumber, optional
     	Cutoff  for which the tested category will  be 
-        accepted as prediction. 
-    	For  multiclass classification, the array will 
-        represent  the  classes  threshold. If  it  is 
-        empty, the best cutoff will be used.
-    estimator: object, optional
-    	Estimator to use to compute the classification 
-        report.
+        accepted as prediction.
     nbins: int, optional
         [Used to compute ROC AUC, PRC AUC and the best 
         cutoff]
@@ -1351,6 +1423,9 @@ def classification_report(
         decrease  performance.  The  maximum value  is 
         999,999.  If negative,  the  maximum value  is 
         used.
+    estimator: object, optional
+        Estimator to use to compute the classification 
+        report.
 
     Returns
     -------
@@ -1363,83 +1438,74 @@ def classification_report(
     else:
         labels = [1] if isinstance(labels, type(None)) else labels
         num_classes = len(labels) + 1
-    values = {
-        "index": [
+    if isinstance(metrics, type(None)):
+        metrics = [
             "auc",
             "prc_auc",
             "accuracy",
             "log_loss",
             "precision",
             "recall",
-            "f1_score",
+            "f1",
             "mcc",
             "informedness",
             "markedness",
             "csi",
-            "cutoff",
         ]
-    }
+    values = {"index": metrics}
+    all_cm_metrics = []
     for idx, pos_label in enumerate(labels):
         if estimator:
-            if not (cutoff):
-                current_cutoff = estimator.score(
-                    method="best_cutoff", pos_label=pos_label, nbins=nbins
-                )
-            elif isinstance(cutoff, Iterable):
-                if len(cutoff) == 1:
-                    current_cutoff = cutoff[0]
-                else:
-                    current_cutoff = cutoff[idx]
-            else:
-                current_cutoff = cutoff
-            try:
-                matrix = estimator.confusion_matrix(pos_label, current_cutoff)
-            except:
-                matrix = estimator.confusion_matrix(pos_label)
+            cm = estimator.confusion_matrix(pos_label=pos_label, cutoff=cutoff)
         else:
             y_s = y_score[0].format(pos_label)
             y_p = y_score[1]
             y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
-            matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
-        if estimator:
-            auc_score = estimator.score(pos_label=pos_label, method="auc", nbins=nbins)
-            prc_auc_score = estimator.score(
-                pos_label=pos_label, method="prc_auc", nbins=nbins
-            )
-            logloss = estimator.score(pos_label=pos_label, method="log_loss")
-        else:
-            auc_score = roc_auc(y_t, y_s, input_relation, pos_label=1)
-            prc_auc_score = prc_auc(y_t, y_s, input_relation, pos_label=1)
-            logloss = log_loss(y_t, y_s, input_relation, pos_label=1)
-            if not (cutoff):
-                current_cutoff = best_cutoff(
-                    y_t, y_s, input_relation, nbins=nbins, pos_label=1
-                )
-            elif isinstance(cutoff, Iterable):
-                if len(cutoff) == 1:
-                    current_cutoff = cutoff[0]
-                else:
-                    current_cutoff = cutoff[idx]
-            else:
-                current_cutoff = cutoff
+            cm = confusion_matrix(y_true, y_p, input_relation, pos_label=pos_label)
         if len(labels) == 1:
             pos_label = "value"
-        tn, tp = matrix[0][0], matrix[1][1]
-        fn, fp = matrix[1][0], matrix[0][1]
-        # tnr = _specificity_score(tn, fn, fp, tp)
-        # npv = _negative_predictive_score(tn, fn, fp, tp)
-        values[pos_label] = [
-            auc_score,
-            prc_auc_score,
-            _accuracy_score(tn, fn, fp, tp),
-            logloss,
-            _precision_score(tn, fn, fp, tp),
-            _recall_score(tn, fn, fp, tp),
-            _f1_score(tn, fn, fp, tp),
-            _matthews_corrcoef(tn, fn, fp, tp),
-            _informedness(tn, fn, fp, tp),
-            _markedness(tn, fn, fp, tp),
-            _critical_success_index(tn, fn, fp, tp),
-            current_cutoff,
-        ]
-    return TableSample(values)
+        tn, tp = cm[0][0], cm[1][1]
+        fn, fp = cm[1][0], cm[0][1]
+        values[pos_label] = []
+        for m in metrics:
+            if m in FUNCTIONS_CONFUSION_DICTIONNARY:
+                fun = FUNCTIONS_CONFUSION_DICTIONNARY[m]
+                values[pos_label] += [fun(tn, fn, fp, tp)]
+            elif m in FUNCTIONS_OTHER_METRICS_DICTIONNARY:
+                if estimator:
+                    values[pos_label] += [
+                        estimator.score(pos_label=pos_label, method=m, nbins=nbins)
+                    ]
+                else:
+                    fun = FUNCTIONS_OTHER_METRICS_DICTIONNARY[m]
+                    values[pos_label] += [fun(y_t, y_s, input_relation, pos_label=1)]
+            else:
+                possible_metrics = list(FUNCTIONS_CONFUSION_DICTIONNARY) + list(
+                    FUNCTIONS_OTHER_METRICS_DICTIONNARY
+                )
+                possible_metrics = "|".join(possible_metrics)
+                raise ValueError(
+                    f"Undefined Metric '{m}'. Must be in {possible_metrics}."
+                )
+        all_cm_metrics += [(tn, fn, fp, tp)]
+    res = TableSample(values)
+    if num_classes > 2:
+        res_array = res.to_numpy()
+        n, m = res_array.shape
+        avg_macro, avg_micro, avg_weighted = [], [], []
+        for i in range(n):
+            avg_macro += [np.mean(res_array[i])]
+            weights = np.array([args[3] + args[1] for args in all_cm_metrics])
+            avg_weighted += [(res_array[i] * weights).sum() / weights.sum()]
+        res.values["avg_macro"] = avg_macro
+        res.values["avg_weighted"] = avg_weighted
+        args = [sum([args[i] for args in all_cm_metrics]) for i in range(4)]
+        avg_micro = []
+        for m in metrics:
+            if m in FUNCTIONS_CONFUSION_DICTIONNARY:
+                fun = FUNCTIONS_CONFUSION_DICTIONNARY[m]
+                avg_micro += [fun(*args)]
+            else:
+                avg_micro += [None]
+        res.values["avg_micro"] = avg_micro
+    return res.transpose()

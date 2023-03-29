@@ -61,4 +61,3 @@ class PlotlyBase(PlottingBase):
             return fig
         else:
             return go.Figure()
-

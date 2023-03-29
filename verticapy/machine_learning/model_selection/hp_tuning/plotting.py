@@ -44,7 +44,7 @@ def validation_curve(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     std_coeff: float = 1,
     chart: Optional[PlottingObject] = None,

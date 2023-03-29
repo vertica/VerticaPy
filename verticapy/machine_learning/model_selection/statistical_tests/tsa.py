@@ -678,7 +678,7 @@ def seasonal_decompose(
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
-    rule: TimeInterval = None,
+    rule: Optional[TimeInterval] = None,
     mult: bool = False,
     two_sided: bool = False,
 ) -> vDataFrame:

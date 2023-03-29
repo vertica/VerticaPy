@@ -56,7 +56,7 @@ class HorizontalBarChart(PlotlyBase):
         """
         Draws a horizontal bar chart using the Plotly API.
         """
-        fig_base=self._get_fig(fig)
+        fig_base = self._get_fig(fig)
         fig = px.bar(y=self.layout["labels"], x=self.data["y"], orientation="h")
         if self.data["is_categorical"]:
             fig.update_yaxes(type="category")
