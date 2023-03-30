@@ -757,3 +757,84 @@ class TestVDFHeatMap:
             result.layout["width"] == custom_width
             and result.layout["height"] == custom_height
         )
+
+
+class testVDFlineplot:
+    def test_properties_output_type(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_simple(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_x_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert (
+            result.layout["xaxis"]["title"]["text"] == "time"
+        ), "X axis title incorrect"
+
+    def test_properties_y_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        # Assert - checking if correct object created
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "number"
+        ), "Y axis title incorrect"
+
+    def test_data_count_of_all_values(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        assert (
+            result.data[0]["x"].shape + result.data[1]["x"].shape
+            == amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')").shape()[0]
+        ), "The total values in the plot are not equal to the values in the dataframe."
+
+    def test_data_spot_check(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        assert (
+            amazon_vd["date"][random.randint(0, len(amazon_vd))] in result.data[0]["x"]
+        ), "One date that exists in the data does not exist in the plot"
+
+    def test_additional_options_custom_width(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state", width=400)
+        # Assert - checking if correct object created
+        assert result.layout["width"] == 400, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", by="state", width=600, height=600)
+        # Assert - checking if correct object created
+        assert result.layout["height"] == "time", "Custom height not working"
+
+    def test_additional_options_marker_off(self, load_plotly, amazon_vd):
+        # Arrange
+        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        # Act
+        result = amazon_vd["number"].plot(ts="date", markers=False)
+        # Assert - checking if correct object created
+        assert result.data["mode"] == "lines", "Markers not turned off"
