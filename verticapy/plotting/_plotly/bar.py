@@ -45,7 +45,7 @@ class BarChart(PlotlyBase):
         self.init_layout_style = {
             "yaxis_title": self.layout["method"],
             "xaxis_title": self.layout["column"],
-            "width": 100 * len(self.layout["labels"]),
+            "width": 100+100 * len(self.layout["labels"]),
             "height": 500,
         }
         return None

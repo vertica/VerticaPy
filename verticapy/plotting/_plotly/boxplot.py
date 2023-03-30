@@ -25,7 +25,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class BoxPlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -79,7 +78,7 @@ class BoxPlot(PlotlyBase):
         """
         Draws a boxplot using the Plotly API.
         """
-        fig=self._get_fig(fig)
+        fig = self._get_fig(fig)
         if self.data["X"].shape[1] < 2:
             min_val = self.data["X"][0][0]
             q1 = self.data["X"][1][0]
@@ -93,9 +92,10 @@ class BoxPlot(PlotlyBase):
                 points_dic = dict(x=self.data["X"][2], boxpoints=False)
             fig.add_trace(
                 go.Box(
-                    name=self.layout["labels"][0], hovertemplate="%{x}", **points_dic,
+                    name=self.layout["labels"][0],
+                    hovertemplate="%{x}",
+                    **points_dic,
                 ),
-                **style_kwargs,
             )
             fig.update_traces(
                 q1=[q1],
@@ -106,7 +106,9 @@ class BoxPlot(PlotlyBase):
                 orientation="h",
             )
             fig.update_layout(
-                yaxis=dict(showticklabels=False,),
+                yaxis=dict(
+                    showticklabels=False,
+                ),
                 xaxis=dict(title=self.layout["labels"][0]),
             )
             bins = [
@@ -130,7 +132,7 @@ class BoxPlot(PlotlyBase):
                     0, bins[i], bins[i + 1], values[i], labels[i], orientation="h"
                 )
                 fig.add_traces(fig_add.data)
-            fig.update_layout(barmode="relative")
+            fig.update_layout(barmode="relative", **style_kwargs)
         else:
             for I in range(self.data["X"].shape[1]):
                 I = [I]
@@ -198,14 +200,14 @@ class BoxPlot(PlotlyBase):
                         orientation="v",
                     )
                     fig.add_traces(fig_add.data)
-                fig.update_layout(barmode="relative")
                 fig.update_layout(
+                    barmode="relative",
                     yaxis=dict(title=self.layout["y_label"]),
                     xaxis=dict(title=self.layout["x_label"]),
+                    **style_kwargs,
                 )
         return fig
 
 
 class BarChart2D(PlotlyBase):
-
     ...

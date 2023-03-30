@@ -25,7 +25,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class LinePlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -56,7 +55,7 @@ class LinePlot(PlotlyBase):
         """
         Draws a time series plot using the plotly API.
         """
-        fig_base=self._get_fig(fig)
+        fig_base = self._get_fig(fig)
         if "z" in self.data:
             self.init_style["markers"] = False
             self.init_style["color"] = "color"
