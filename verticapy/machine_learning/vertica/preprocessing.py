@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from abc import abstractmethod
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
@@ -188,7 +188,7 @@ class Preprocessing(Unsupervised):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         key_columns: SQLColumns = [],
         exclude_columns: SQLColumns = [],
     ) -> str:
@@ -218,7 +218,7 @@ class Preprocessing(Unsupervised):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
@@ -261,7 +261,7 @@ class Preprocessing(Unsupervised):
         self,
         key_columns: SQLColumns = [],
         exclude_columns: SQLColumns = [],
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns  the SQL code needed to deploy the  inverse 
@@ -289,7 +289,7 @@ class Preprocessing(Unsupervised):
             key_columns = [key_columns]
         if isinstance(exclude_columns, str):
             exclude_columns = [exclude_columns]
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -315,7 +315,9 @@ class Preprocessing(Unsupervised):
 
     # Prediction / Transformation Methods.
 
-    def transform(self, vdf: SQLRelation = None, X: SQLColumns = []) -> vDataFrame:
+    def transform(
+        self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
+    ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
 
@@ -334,12 +336,12 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if not (vdf):
             vdf = self.input_relation
-        if not (X):
-            X = self.X
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = vdf._format_colnames(X)
@@ -350,7 +352,9 @@ class Preprocessing(Unsupervised):
         main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
-    def inverse_transform(self, vdf: SQLRelation, X: SQLColumns = []) -> vDataFrame:
+    def inverse_transform(
+        self, vdf: SQLRelation, X: Optional[SQLColumns] = None
+    ) -> vDataFrame:
         """
         Applies the Inverse Model on a vDataFrame.
 
@@ -560,7 +564,7 @@ class CountVectorizer(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
+    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
         """
     	Trains the model.
 
@@ -579,11 +583,11 @@ class CountVectorizer(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            if not (X):
+            if isinstance(X, type(None)):
                 X = input_relation.get_columns()
             self.input_relation = input_relation._genSQL()
         else:
-            if not (X):
+            if isinstance(X, type(None)):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = [quote_ident(elem) for elem in X]

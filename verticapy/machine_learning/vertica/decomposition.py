@@ -39,7 +39,7 @@ class Decomposition(Preprocessing):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
         key_columns: SQLColumns = [],
@@ -79,7 +79,7 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
@@ -105,7 +105,7 @@ class Decomposition(Preprocessing):
 
     def score(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         input_relation: str = "",
         metric: Literal["avg", "median"] = "avg",
         p: int = 2,
@@ -141,7 +141,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, str):
             X = [X]
-        if not (X):
+        elif isinstance(X, type(None)):
             X = self.X
         if not (input_relation):
             input_relation = self.input_relation
@@ -197,7 +197,7 @@ class Decomposition(Preprocessing):
     def transform(
         self,
         vdf: SQLRelation = None,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
     ) -> vDataFrame:
@@ -228,12 +228,12 @@ class Decomposition(Preprocessing):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if not (vdf):
             vdf = self.input_relation
-        if not (X):
-            X = self.X
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = vdf._format_colnames(X)

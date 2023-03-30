@@ -152,7 +152,7 @@ class AutoClustering(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
+    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
         """
         Trains the model.
 

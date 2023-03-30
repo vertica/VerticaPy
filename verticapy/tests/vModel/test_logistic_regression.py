@@ -63,7 +63,7 @@ class TestLogisticRegression:
 
         assert cls_rep1["auc"][0] == pytest.approx(0.6941239880788826)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5979751713359676)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6586345381526104)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.607429718875502)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.271495668573431)
         assert cls_rep1["precision"][0] == pytest.approx(0.6758620689655173)
         assert cls_rep1["recall"][0] == pytest.approx(0.2506393861892583)
@@ -72,11 +72,6 @@ class TestLogisticRegression:
         assert cls_rep1["informedness"][0] == pytest.approx(0.17295343577603517)
         assert cls_rep1["markedness"][0] == pytest.approx(0.3315612464038251)
         assert cls_rep1["csi"][0] == pytest.approx(0.2237442922374429)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
-
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()

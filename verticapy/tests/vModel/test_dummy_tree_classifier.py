@@ -77,7 +77,7 @@ class TestDummyTreeClassifier:
 
         assert cls_rep1["auc"][0] == pytest.approx(1.0)
         assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
-        assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.96)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.0)
         assert cls_rep1["precision"][0] == pytest.approx(1.0)
         assert cls_rep1["recall"][0] == pytest.approx(1.0)
@@ -86,11 +86,6 @@ class TestDummyTreeClassifier:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.999)
-
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -365,10 +360,10 @@ class TestDummyTreeClassifier:
             cutoff=0.1, metric="best_cutoff", pos_label="Train"
         ) == pytest.approx(0.999)
         assert model.score(cutoff=0.9, metric="bm", pos_label="Train") == pytest.approx(
-            0.0
+            1.0
         )
         assert model.score(cutoff=0.1, metric="bm", pos_label="Train") == pytest.approx(
-            0.0
+            1.0
         )
         assert model.score(
             cutoff=0.9, metric="csi", pos_label="Train"

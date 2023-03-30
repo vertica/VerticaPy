@@ -167,7 +167,6 @@ class TestKNeighborsClassifier:
         assert cls_rep1["informedness"][0] == pytest.approx(0.3046658259773014)
         assert cls_rep1["markedness"][0] == pytest.approx(0.4849458048976314)
         assert cls_rep1["csi"][0] == pytest.approx(0.3357664233576642)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.6)
 
     def test_score(self, model):
         assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(

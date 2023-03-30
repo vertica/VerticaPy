@@ -140,7 +140,7 @@ class KNeighborsRegressor(Regressor):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         key_columns: SQLColumns = [],
     ) -> str:
@@ -216,7 +216,7 @@ class KNeighborsRegressor(Regressor):
     def _predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         inplace: bool = True,
         **kwargs,
@@ -364,7 +364,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         predict: bool = False,
         key_columns: SQLColumns = [],
@@ -524,7 +524,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         cutoff: PythonNumber = 0.5,
         inplace: bool = True,
@@ -589,7 +589,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
@@ -932,7 +932,7 @@ class KernelDensity(Regressor, Tree):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
+    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
         """
         Trains the model.
 
@@ -1227,7 +1227,7 @@ class LocalOutlierFactor(VerticaModel):
     def fit(
         self,
         input_relation: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         key_columns: SQLColumns = [],
         index: str = "",
     ) -> None:

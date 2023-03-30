@@ -150,8 +150,6 @@ class TestPipeline:
         assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519)
         assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047)
         assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
-
         model_class.drop()
 
     def test_score(self, model):

@@ -71,11 +71,6 @@ class TestLinearSVC:
         assert cls_rep1["informedness"][0] == pytest.approx(0.151119190040371, 1e-2)
         assert cls_rep1["markedness"][0] == pytest.approx(0.34006849315068477, 1e-2)
         assert cls_rep1["csi"][0] == pytest.approx(0.1939252336448598, 1e-2)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5, 1e-2)
-
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2, 1e-2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()

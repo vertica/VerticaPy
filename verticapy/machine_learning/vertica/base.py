@@ -478,7 +478,7 @@ class VerticaModel(PlottingUtils):
 
     # I/O Methods.
 
-    def deploySQL(self, X: SQLColumns = []) -> str:
+    def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
@@ -496,7 +496,11 @@ class VerticaModel(PlottingUtils):
         if self._vertica_predict_sql:
             if isinstance(X, str):
                 X = [X]
-            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
+            X = (
+                self.X
+                if isinstance(X, type(None))
+                else [quote_ident(predictor) for predictor in X]
+            )
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
                                             USING PARAMETERS 
@@ -1339,9 +1343,9 @@ class BinaryClassifier(Classifier):
             args2 = self.deploySQL(cutoff=cutoff)
         args = [self.y, args2, self.test_relation]
         kwargs = {}
-        if metric in ("accuracy", "acc"):
+        if metric in mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY:
             kwargs["pos_label"] = 1
-        elif metric in ("aic", "bic"):
+        if metric in ("aic", "bic"):
             args += [len(self.X)]
         elif metric in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
@@ -1352,7 +1356,7 @@ class BinaryClassifier(Classifier):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         cutoff: PythonNumber = 0.5,
         inplace: bool = True,
@@ -1386,7 +1390,9 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if not (0 <= cutoff <= 1):
             raise ValueError(
@@ -1408,7 +1414,7 @@ class BinaryClassifier(Classifier):
     def predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
@@ -1444,12 +1450,15 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
-        assert pos_label in [1, 0, "0", "1", None], ParameterError(
-            "Incorrect parameter 'pos_label'.\nThe class label "
-            "can only be 1 or 0 in case of Binary Classification."
-        )
+        if pos_label not in [1, 0, "0", "1", None]:
+            raise ValueError(
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "can only be 1 or 0 in case of Binary Classification."
+            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X]
@@ -2002,7 +2011,7 @@ class MulticlassClassifier(Classifier):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
@@ -2044,7 +2053,7 @@ class MulticlassClassifier(Classifier):
             )
 
         # Inititalization
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -2082,7 +2091,7 @@ class MulticlassClassifier(Classifier):
     def predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
@@ -2122,7 +2131,7 @@ class MulticlassClassifier(Classifier):
                 vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
             )
         # Inititalization
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -2462,13 +2471,7 @@ class Regressor(Supervised):
             test_relation = self.map
         else:
             test_relation = self.test_relation
-        if isinstance(metrics, type(None)) or isinstance(
-            metrics, (str, list, np.ndarray)
-        ):
-            return mt.regression_report(
-                self.y, prediction, test_relation, metrics=metrics, k=len(self.X)
-            )
-        elif metrics == "anova":
+        if metrics == "anova":
             return mt.anova_table(self.y, prediction, test_relation, len(self.X))
         elif metrics == "details":
             vdf = vDataFrame(f"SELECT {self.y} FROM {self.input_relation}")
@@ -2510,6 +2513,12 @@ class Regressor(Supervised):
                         jb,
                     ],
                 }
+            )
+        elif isinstance(metrics, type(None)) or isinstance(
+            metrics, (str, list, np.ndarray)
+        ):
+            return mt.regression_report(
+                self.y, prediction, test_relation, metrics=metrics, k=len(self.X)
             )
 
     report = regression_report
@@ -2575,7 +2584,7 @@ class Regressor(Supervised):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         inplace: bool = True,
     ) -> vDataFrame:
@@ -2607,7 +2616,7 @@ class Regressor(Supervised):
 		"""
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         if isinstance(X, str):
             X = [X]
@@ -2629,7 +2638,9 @@ class Unsupervised(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> Optional[str]:
+    def fit(
+        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None
+    ) -> Optional[str]:
         """
     	Trains the model.
 
@@ -2646,7 +2657,9 @@ class Unsupervised(VerticaModel):
     	str
     		model's summary.
 		"""
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if conf.get_option("overwrite_model"):
             self.drop()

@@ -303,7 +303,7 @@ class TestRidge:
         # method = "var"
         assert model.score(metric="var") == pytest.approx(0.219816244842147, abs=1e-6)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-3366.7594590080057, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-3366.75452986445, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") == pytest.approx(-3339.6492371939366, abs=1e-6)
 

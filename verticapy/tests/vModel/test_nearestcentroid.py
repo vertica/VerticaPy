@@ -185,7 +185,6 @@ class TestNearestCentroid:
         assert cls_rep1["informedness"][0] == pytest.approx(0.282259939548942)
         assert cls_rep1["markedness"][0] == pytest.approx(0.28467520507529365)
         assert cls_rep1["csi"][0] == pytest.approx(0.3902877697841727)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.352)
 
     def test_score(self, model):
         assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(

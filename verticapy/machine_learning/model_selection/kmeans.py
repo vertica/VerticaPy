@@ -34,7 +34,7 @@ from verticapy.plotting._utils import PlottingUtils
 @save_verticapy_logs
 def best_k(
     input_relation: SQLRelation,
-    X: SQLColumns = [],
+    X: Optional[SQLColumns] = None,
     n_cluster: Union[tuple, list] = (1, 100),
     init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,
@@ -138,7 +138,7 @@ def best_k(
 @save_verticapy_logs
 def elbow(
     input_relation: SQLRelation,
-    X: SQLColumns = [],
+    X: Optional[SQLColumns] = None,
     n_cluster: Union[tuple, list] = (1, 15),
     init: Literal["kmeanspp", "random", None] = None,
     max_iter: int = 50,

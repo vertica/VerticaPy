@@ -290,7 +290,7 @@ class AutoML(VerticaModel):
 
     # I/O Methods.
 
-    def deploySQL(self, X: SQLColumns = []) -> str:
+    def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
@@ -316,7 +316,9 @@ class AutoML(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = [], y: str = "") -> None:
+    def fit(
+        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None, y: str = ""
+    ) -> None:
         """
         Trains the model.
 
@@ -333,7 +335,7 @@ class AutoML(VerticaModel):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        if not (X):
+        if isinstance(X, type(None)):
             if not (y):
                 exclude_columns = []
             else:
