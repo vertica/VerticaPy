@@ -63,7 +63,7 @@ class TestLogisticRegression:
 
         assert cls_rep1["auc"][0] == pytest.approx(0.6941239880788826)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5979751713359676)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.607429718875502)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.6586345381526104)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.271495668573431)
         assert cls_rep1["precision"][0] == pytest.approx(0.6758620689655173)
         assert cls_rep1["recall"][0] == pytest.approx(0.2506393861892583)

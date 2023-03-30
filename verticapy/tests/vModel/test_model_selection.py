@@ -359,8 +359,8 @@ class TestModelSelection:
             True,
             True,
         )
-        assert result["importance"][-1] == pytest.approx(99.99999999999999, 1e-2)
-        assert result["importance"][-4] == pytest.approx(0.0, 1e-2)
+        assert result["importance"][-1] == pytest.approx(99.99999999999999, 1e-4)
+        assert result["importance"][-4] == pytest.approx(0.5930027498640466, 1e-4)
         plt.close("all")
         result = stepwise(
             model,

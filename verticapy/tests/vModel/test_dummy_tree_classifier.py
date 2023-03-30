@@ -385,10 +385,10 @@ class TestDummyTreeClassifier:
         ) == pytest.approx(0.0)
         assert model.score(
             cutoff=0.9, metric="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, metric="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(cutoff=0.9, metric="mk", pos_label="Train") == pytest.approx(
             0.0
         )

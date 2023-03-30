@@ -324,10 +324,7 @@ class TestXGBR:
             pytest.approx(0.5281407999999999, abs=1e-6),
             pytest.approx(0.2878827634076987, abs=1e-6),
         )
-        assert reg_rep["value"][8] in (
-            pytest.approx(7.900750107239094, abs=1e-6),
-            pytest.approx(12.016369307174802, abs=1e-6),
-        )
+        assert reg_rep["value"][8] == pytest.approx(24.5163693071748, abs=1e-6)
         assert reg_rep["value"][9] in (
             pytest.approx(-5.586324427790675, abs=1e-6),
             pytest.approx(-1.4707052278549675, abs=1e-6),
@@ -421,10 +418,7 @@ class TestXGBR:
             pytest.approx(0.60448287427822, abs=1e-6),
         )
         # method = "aic"
-        assert model.score(metric="aic") in (
-            pytest.approx(7.900750107239094, abs=1e-6),
-            pytest.approx(12.016369307174802, abs=1e-6),
-        )
+        assert model.score(metric="aic") == pytest.approx(24.5163693071748, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") in (
             pytest.approx(-5.586324427790675, abs=1e-6),

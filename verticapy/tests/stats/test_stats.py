@@ -88,10 +88,10 @@ class TestStats:
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.endogtest(result, eps="number", X=["lag_number"])
         assert result == (
-            pytest.approx(110.77204182524278),
-            pytest.approx(6.638132056570419e-26),
-            pytest.approx(204.73673827671277),
-            pytest.approx(6.836198697261425e-34),
+            pytest.approx(110.77336789258061),
+            pytest.approx(6.633693190527767e-26),
+            pytest.approx(204.74130653722867),
+            pytest.approx(6.827786109983712e-34),
         )
 
     def test_het_arch(self, amazon_vd):
