@@ -19,8 +19,8 @@ from verticapy.plotting._plotly.pie import PieChart, NestedPieChart
 from verticapy.plotting._plotly.barh import HorizontalBarChart
 from verticapy.plotting._plotly.scatter import ScatterPlot
 from verticapy.plotting._plotly.boxplot import BoxPlot
+from verticapy.plotting._plotly.heatmap import HeatMap
 from verticapy.plotting._plotly.base import PlotlyBase
-from verticapy.plotting._plotly.line import LinePlot
 
 import plotly.io as pio
 import plotly.graph_objects as go

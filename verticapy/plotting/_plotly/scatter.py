@@ -32,7 +32,6 @@ class ScatterMatrix(PlotlyBase):
 
 
 class ScatterPlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -75,7 +74,11 @@ class ScatterPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a scatter plot using the Plotly API.
         """
@@ -92,14 +95,17 @@ class ScatterPlot(PlotlyBase):
             if self.layout["c"] is not None
             else column_names
         )
-        df = pd.DataFrame(data=data, columns=columns,)
+        df = pd.DataFrame(
+            data=data,
+            columns=columns,
+        )
         if self.layout["c"]:
             color_option["color"] = self.layout["c"]
         if self.data["X"].shape[1] < 3:
             fig = px.scatter(
                 df, x=column_names[0], y=column_names[1], **color_option, **style_kwargs
             )
-            fig.update_layout(**self.init_style)
+            fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         elif self.data["X"].shape[1] == 3:
             fig = px.scatter_3d(
                 df,

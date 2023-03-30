@@ -25,7 +25,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class LinePlot(PlotlyBase):
-
     # Properties.
 
     @property
