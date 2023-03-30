@@ -52,6 +52,7 @@ def randomized_features_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,

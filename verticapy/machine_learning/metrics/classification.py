@@ -1469,7 +1469,7 @@ def classification_report(
             "log_loss",
             "precision",
             "recall",
-            "f1",
+            "f1_score",
             "mcc",
             "informedness",
             "markedness",

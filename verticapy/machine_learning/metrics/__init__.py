@@ -75,6 +75,7 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "log_loss": log_loss,
     "logloss": log_loss,
     "f1": f1_score,
+    "f1_score": f1_score,
     "mcc": matthews_corrcoef,
     "bm": informedness,
     "informedness": informedness,

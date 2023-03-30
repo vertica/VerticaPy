@@ -308,6 +308,12 @@ class VerticaModel(PlottingUtils):
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
+    def _is_binary_classifier(self) -> Literal[False]:
+        """
+        Returns True if the model is a Binary Classifier.
+        """
+        return False
+
     # Parameters Methods.
 
     @staticmethod
@@ -1130,6 +1136,14 @@ class BinaryClassifier(Classifier):
     def classes_(self) -> np.ndarray:
         return np.array([0, 1])
 
+    # Attributes Methods.
+
+    def _is_binary_classifier(self) -> Literal[True]:
+        """
+        Returns True if the model is a Binary Classifier.
+        """
+        return True
+
     # I/O Methods.
 
     def deploySQL(
@@ -1165,7 +1179,7 @@ class BinaryClassifier(Classifier):
             model_name = '{self.model_name}',
             type = 'probability',
             match_by_pos = 'true')"""
-        if cutoff <= 1 and cutoff >= 0:
+        if not (isinstance(cutoff, type(None))) and (0 <= cutoff <= 1):
             sql = f"""
                 (CASE 
                     WHEN {sql} >= {cutoff} 

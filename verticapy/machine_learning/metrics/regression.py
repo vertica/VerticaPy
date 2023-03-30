@@ -538,6 +538,7 @@ def regression_report(
     result = _executeSQL(
         query, title="Computing the Regression Report.", method="fetchrow"
     )
+    result = list(np.array(result).astype(float))
     if return_scalar:
         return result[0]
     else:

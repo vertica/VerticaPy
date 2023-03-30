@@ -55,10 +55,7 @@ class PieChart(PlotlyBase):
     # Draw
 
     def draw(
-        self,
-        fig: Optional[Figure] = None,
-        exploded: bool = False,
-        **style_kwargs,
+        self, fig: Optional[Figure] = None, exploded: bool = False, **style_kwargs,
     ) -> Figure:
         """
         Draws a pie chart using the Plotly API.
@@ -119,11 +116,7 @@ class NestedPieChart(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a sunburst/nested pie chart using the plotly API.
         """
