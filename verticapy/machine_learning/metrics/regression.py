@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 from typing import Optional, Union
+import numpy as np
 from scipy.stats import f
 
 from verticapy._typing import PythonNumber, SQLRelation
