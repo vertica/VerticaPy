@@ -78,13 +78,6 @@ def titanic_vd():
 
 
 @pytest.fixture(scope="module")
-def amazon_vd():
-    amazon = load_amazon()
-    yield amazon
-    drop(name="public.amazon")
-
-
-@pytest.fixture(scope="module")
 def iris_vd():
     iris = load_iris()
     yield iris
@@ -315,7 +308,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -339,7 +338,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -427,7 +432,6 @@ class TestVDFScatterPlot:
         ), "A random sample datapoint was not plotted"
 
 
-# change q1 and then check label
 class TestVDFBoxPlot:
     def test_properties_output_type(self, load_plotly, dummy_dist_vd):
         # Arrange
@@ -631,6 +635,128 @@ class TestVDFBoxPlot:
         assert dummy_dist_vd.max()["max"][0] == max(
             result.data[0]["x"][0]
         ), "Maximum value not in plot"
+
+
+class TestVDFHeatMap:
+    def test_properties_output_type(self, load_plotly, iris_vd):
+        # Arrange
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_pivot_table(self, load_plotly, titanic_vd):
+        # Arrange
+        # Act
+        result = titanic_vd.pivot_table(["survived", "pclass"])
+        # Assert - checking if correct object created
+        assert (
+            type(result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated for pivot table"
+
+    def test_properties_output_type_for_corr(self, load_plotly, titanic_vd):
+        # Arrange
+        # Act
+        result = titanic_vd.corr(method="spearman")
+        # Assert - checking if correct object created
+        assert (
+            type(result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated for corr() plot"
+
+    def test_properties_xaxis_title(self, load_plotly, iris_vd):
+        # Arrange
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        # Assert
+        assert (
+            result.layout["xaxis"]["title"]["text"] == "PetalLengthCm"
+        ), "X-axis title issue"
+
+    def test_properties_yaxis_title(self, load_plotly, iris_vd):
+        # Arrange
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        # Assert
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "SepalLengthCm"
+        ), "Y-axis title issue"
+
+    # ToDo Remove double quotes after the labels are fixed
+    def test_properties_yaxis_labels_for_categorical_data(
+        self, load_plotly, titanic_vd
+    ):
+        # Arrange
+        expected_labels = (
+            '"survived"',
+            '"pclass"',
+            '"fare"',
+            '"parch"',
+            '"age"',
+            '"sibsp"',
+            '"body"',
+        )
+        # Act
+        result = titanic_vd.corr(method="pearson", focus="survived")
+        # Assert
+        assert result.data[0]["y"] == expected_labels, "Y-axis labels incorrect"
+
+    def test_data_matrix_shape(self, load_plotly, iris_vd):
+        # Arrange
+        expected_shape = (9, 6)
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        # Assert
+        assert (
+            result.data[0]["z"].shape == expected_shape
+        ), "Incorrect shape of output matrix"
+
+    def test_data_matrix_shape_for_pivot_table(self, load_plotly, titanic_vd):
+        # Arrange
+        expected_shape = (3, 2)
+        # Act
+        result = titanic_vd.pivot_table(["survived", "pclass"])
+        # Assert
+        assert (
+            result.data[0]["z"].shape == expected_shape
+        ), "Incorrect shape of output matrix"
+
+    def test_data_x_range(self, load_plotly, iris_vd):
+        # Arrange
+        upper_bound = iris_vd["PetalLengthCm"].max()
+        lower_bound = iris_vd["PetalLengthCm"].min()
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        x_array = np.array(result.data[0]["x"], dtype=float)
+        # Assert
+        assert np.all(
+            (x_array[1:] >= lower_bound) & (x_array[:-1] <= upper_bound)
+        ), "X-axis Values outside of data range"
+
+    def test_data_y_range(self, load_plotly, iris_vd):
+        # Arrange
+        upper_bound = iris_vd["SepalLengthCm"].max()
+        lower_bound = iris_vd["SepalLengthCm"].min()
+        # Act
+        result = iris_vd.heatmap(["PetalLengthCm", "SepalLengthCm"])
+        y_array = np.array(result.data[0]["y"], dtype=float)
+        # Assert
+        assert np.all(
+            (y_array[:-1] >= lower_bound) & (y_array[1:] <= upper_bound)
+        ), "X-axis Values outside of data range"
+
+    def test_additional_options_custom_width_height(self, load_plotly, iris_vd):
+        # Arrange
+        custom_width = 400
+        custom_height = 700
+        # Act
+        result = iris_vd.heatmap(
+            ["PetalLengthCm", "SepalLengthCm"], width=custom_width, height=custom_height
+        )
+        # Assert
+        assert (
+            result.layout["width"] == custom_width
+            and result.layout["height"] == custom_height
+        )
 
 
 class testVDFlineplot:
