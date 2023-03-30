@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, datetime
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
 from verticapy._typing import TimeInterval, SQLColumns, SQLRelation
