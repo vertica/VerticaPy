@@ -479,7 +479,10 @@ class KNeighborsClassifier(MulticlassClassifier):
         return "proba_predict"
 
     def _get_y_score(
-        self, pos_label: Optional[PythonScalar] = None, cutoff: PythonNumber = 0.5,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: PythonNumber = 0.5,
+        allSQL: bool = False,
     ) -> str:
         """
         Returns the input which represents the model's scoring.
@@ -535,10 +538,11 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         if isinstance(X, str):
             X = [X]
-        assert 0 <= cutoff <= 1, ParameterError(
-            "Incorrect parameter 'cutoff'.\nThe cutoff "
-            "must be between 0 and 1, inclusive."
-        )
+        if not (isinstance(cutoff, type(None))) and not (0 <= cutoff <= 1):
+            ValueError(
+                "Incorrect parameter 'cutoff'.\nThe cutoff "
+                "must be between 0 and 1, inclusive."
+            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X

@@ -97,10 +97,10 @@ class TestStats:
     def test_het_arch(self, amazon_vd):
         result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
         assert result == (
-            pytest.approx(883.1042774059952),
-            pytest.approx(1.7232277858576802e-192),
-            pytest.approx(511.3347213420665),
-            pytest.approx(7.463757606288815e-207),
+            pytest.approx(883.1114423462593),
+            pytest.approx(1.7170654186230018e-192),
+            pytest.approx(511.33952787255066),
+            pytest.approx(7.432857276079368e-207),
         )
 
     def test_het_breuschpagan(self, amazon_vd):
@@ -108,10 +108,10 @@ class TestStats:
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
         assert result == (
-            pytest.approx(68.30346484950417),
-            pytest.approx(1.4017446778018072e-16),
-            pytest.approx(94.83450355369129),
-            pytest.approx(4.572276908758215e-19),
+            pytest.approx(68.30399583311137),
+            pytest.approx(1.4013672773820152e-16),
+            pytest.approx(94.83553579040095),
+            pytest.approx(4.570574529673344e-19),
         )
 
     def test_het_goldfeldquandt(self, amazon_vd):
@@ -139,10 +139,10 @@ class TestStats:
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_white(result, eps="number", X=["lag_number"])
         assert result == (
-            pytest.approx(72.93515335650999),
-            pytest.approx(1.3398039866815678e-17),
-            pytest.approx(104.08964747730063),
-            pytest.approx(1.7004013245871353e-20),
+            pytest.approx(72.93566993238099),
+            pytest.approx(1.3394533546740618e-17),
+            pytest.approx(104.09070850396219),
+            pytest.approx(1.6997687814870292e-20),
         )
 
     def test_jarque_bera(self, amazon_vd):

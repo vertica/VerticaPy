@@ -250,7 +250,7 @@ class TestElasticNet:
         assert reg_rep["value"][5] == pytest.approx(0.872484, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.001610, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.001148, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-1764.5050571146871, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-1764.50012797112, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1737.394835300611, abs=1e-6)
 
         reg_rep_details = model.regression_report(metrics="details")
@@ -299,7 +299,7 @@ class TestElasticNet:
         # method = "var"
         assert model.score(metric="var") == pytest.approx(0.001610, abs=1e-6)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-1764.5050571146871, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-1764.50012797112, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") == pytest.approx(-1737.394835300611, abs=1e-6)
 

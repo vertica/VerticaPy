@@ -75,6 +75,8 @@ def cross_validate(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             best_cutoff : Cutoff which optimised the ROC 
                           Curve prediction.
             bm          : Informedness 
@@ -302,6 +304,8 @@ def learning_curve(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 

@@ -83,6 +83,8 @@ def randomized_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
@@ -214,6 +216,8 @@ def grid_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
@@ -494,6 +498,8 @@ def bayesian_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
@@ -764,6 +770,8 @@ def enet_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 

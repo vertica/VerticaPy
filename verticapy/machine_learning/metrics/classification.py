@@ -345,6 +345,66 @@ def accuracy_score(
     )
 
 
+def _balanced_accuracy(tn: int, fn: int, fp: int, tp: int) -> float:
+    return (_recall_score(tn, fn, fp, tp) + _specificity_score(tn, fn, fp, tp)) / 2
+
+
+@save_verticapy_logs
+def balanced_accuracy(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Balanced Accuracy.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(
+        _balanced_accuracy,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
 def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
     return tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
 
@@ -473,9 +533,7 @@ def f1_score(
 
 
 def _informedness(tn: int, fn: int, fp: int, tp: int) -> float:
-    tpr = tp / (tp + fn) if (tp + fn != 0) else 0
-    tnr = tn / (tn + fp) if (tn + fp != 0) else 0
-    return tpr + tnr - 1
+    return _recall_score(tn, fn, fp, tp) + _specificity_score(tn, fn, fp, tp) - 1
 
 
 @save_verticapy_logs
@@ -1346,6 +1404,8 @@ Reports.
 FUNCTIONS_CONFUSION_DICTIONNARY = {
     "accuracy": _accuracy_score,
     "acc": _accuracy_score,
+    "balanced_accuracy": _balanced_accuracy,
+    "ba": _balanced_accuracy,
     "recall": _recall_score,
     "tpr": _recall_score,
     "precision": _precision_score,
@@ -1409,6 +1469,8 @@ def classification_report(
             accuracy    : Accuracy
             aic         : Akaike’s  Information  Criterion
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             best_cutoff : Cutoff  which optimised the  ROC 
                           Curve prediction.
             bic         : Bayesian  Information  Criterion

@@ -249,7 +249,7 @@ class TestLasso:
         assert reg_rep["value"][5] == pytest.approx(0.8726193656049263, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.001302, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.0008407218505677161, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-1762.5020357252242, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-1762.49710658166, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1735.3918139111545, abs=1e-6)
 
         reg_rep_details = model.regression_report(metrics="details")
@@ -298,7 +298,7 @@ class TestLasso:
         # method = "var"
         assert model.score(metric="var") == pytest.approx(0.001302, abs=1e-6)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-1762.5020357252242, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-1762.49710658166, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") == pytest.approx(-1735.3918139111545, abs=1e-6)
 

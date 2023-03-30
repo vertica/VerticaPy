@@ -92,6 +92,8 @@ class AutoML(VerticaModel):
             accuracy    : Accuracy
             auc         : Area Under the Curve 
                           (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 

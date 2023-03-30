@@ -1201,7 +1201,7 @@ class BinaryClassifier(Classifier):
         metrics: Union[
             None, str, list[Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)]]
         ] = None,
-        cutoff: Optional[PythonNumber] = None,
+        cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
     ) -> Union[float, TableSample]:
         """
@@ -1216,6 +1216,8 @@ class BinaryClassifier(Classifier):
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
@@ -1294,6 +1296,8 @@ class BinaryClassifier(Classifier):
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
@@ -1343,7 +1347,9 @@ class BinaryClassifier(Classifier):
             args2 = self.deploySQL(cutoff=cutoff)
         args = [self.y, args2, self.test_relation]
         kwargs = {}
-        if metric in mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY:
+        if metric in mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY and (
+            metric not in ("aic", "bic")
+        ):
             kwargs["pos_label"] = 1
         if metric in ("aic", "bic"):
             args += [len(self.X)]
@@ -1824,6 +1830,8 @@ class MulticlassClassifier(Classifier):
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
@@ -1936,6 +1944,8 @@ class MulticlassClassifier(Classifier):
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
@@ -1999,7 +2009,9 @@ class MulticlassClassifier(Classifier):
             y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
         final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
-        kwargs = {"average": average, "pos_label": pos_label, "labels": self.classes_}
+        kwargs = {"average": average, "labels": self.classes_}
+        if metric not in ("aic", "bic"):
+            kwargs["pos_label"] = pos_label
         if metric in ("aic", "bic"):
             args += [len(self.X)]
         elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):

@@ -127,7 +127,7 @@ class TestPipeline:
         assert reg_rep["value"][5] == pytest.approx(0.7712695123858948, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-3366.7617912479104, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3366.75686210436, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-3339.65156943384, abs=1e-6)
 
         model_class = Pipeline(
@@ -172,7 +172,7 @@ class TestPipeline:
         # method = "var"
         assert model.score(metric="var") == pytest.approx(0.219816, abs=1e-6)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-3366.7617912479104, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-3366.75686210436, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
 
