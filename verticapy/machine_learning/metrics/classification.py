@@ -1461,10 +1461,6 @@ def classification_report(
     else:
         labels = [1] if isinstance(labels, type(None)) else labels
         num_classes = len(labels) + 1
-    if len(labels) == 1:
-        key = "value"
-    else:
-        key = pos_label
     if isinstance(metrics, type(None)):
         metrics = [
             "auc",
@@ -1505,6 +1501,10 @@ def classification_report(
                 cm = confusion_matrix(y_true, y_p, input_relation, pos_label=pos_label)
             tn, tp = cm[0][0], cm[1][1]
             fn, fp = cm[1][0], cm[0][1]
+        if len(labels) == 1:
+            key = "value"
+        else:
+            key = pos_label
         values[key] = []
         for m in metrics:
             if m in FUNCTIONS_CONFUSION_DICTIONNARY:
