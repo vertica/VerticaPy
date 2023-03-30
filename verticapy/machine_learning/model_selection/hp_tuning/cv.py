@@ -299,12 +299,12 @@ def grid_search_cv(
                 input_relation,
                 X,
                 y,
-                metric,
-                cv,
-                pos_label,
-                cutoff,
-                True,
-                training_score,
+                metrics=metric,
+                cv=cv,
+                pos_label=pos_label,
+                cutoff=cutoff,
+                show_time=True,
+                training_score=training_score,
                 tqdm=False,
             )
             if training_score:

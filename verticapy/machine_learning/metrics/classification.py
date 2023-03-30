@@ -1325,8 +1325,8 @@ def log_loss(
                 FROM {input_relation} 
                 WHERE {y_true} IS NOT NULL 
                   AND {y_s} IS NOT NULL;""",
-            title=title,
-            method=method,
+            title="Computing log loss.",
+            method="fetchfirstelem",
         )
     else:
         return _compute_multiclass_metric(
@@ -1355,6 +1355,7 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "negative_predictive_value": _negative_predictive_score,
     "npv": _negative_predictive_score,
     "f1": _f1_score,
+    "f1_score": _f1_score,
     "mcc": _matthews_corrcoef,
     "bm": _informedness,
     "informedness": _informedness,
@@ -1460,6 +1461,10 @@ def classification_report(
     else:
         labels = [1] if isinstance(labels, type(None)) else labels
         num_classes = len(labels) + 1
+    if len(labels) == 1:
+        key = "value"
+    else:
+        key = pos_label
     if isinstance(metrics, type(None)):
         metrics = [
             "auc",
@@ -1500,21 +1505,19 @@ def classification_report(
                 cm = confusion_matrix(y_true, y_p, input_relation, pos_label=pos_label)
             tn, tp = cm[0][0], cm[1][1]
             fn, fp = cm[1][0], cm[0][1]
-        if len(labels) == 1:
-            pos_label = "value"
-        values[pos_label] = []
+        values[key] = []
         for m in metrics:
             if m in FUNCTIONS_CONFUSION_DICTIONNARY:
                 fun = FUNCTIONS_CONFUSION_DICTIONNARY[m]
-                values[pos_label] += [fun(tn, fn, fp, tp)]
+                values[key] += [fun(tn, fn, fp, tp)]
             elif m in FUNCTIONS_OTHER_METRICS_DICTIONNARY:
                 if estimator:
-                    values[pos_label] += [
+                    values[key] += [
                         estimator.score(pos_label=pos_label, metric=m, nbins=nbins)
                     ]
                 else:
                     fun = FUNCTIONS_OTHER_METRICS_DICTIONNARY[m]
-                    values[pos_label] += [fun(y_t, y_s, input_relation, pos_label=1)]
+                    values[key] += [fun(y_t, y_s, input_relation, pos_label=1)]
             else:
                 possible_metrics = list(FUNCTIONS_CONFUSION_DICTIONNARY) + list(
                     FUNCTIONS_OTHER_METRICS_DICTIONNARY
@@ -1551,4 +1554,4 @@ def classification_report(
         n, m = res_array.shape
         if n == 1 and m == 1:
             return float(res_array[0][0])
-    return res.transpose()
+    return res
