@@ -382,7 +382,7 @@ class TestXGBR:
         )
         # method = "mae"
         assert model.score(metric="mae") in (
-            pytest.approx(0.36864, abs=1e-6),
+            pytest.approx(0.5527125, abs=1e-6),
             pytest.approx(0.454394259259259, abs=1e-6),
         )
         # method = "median"

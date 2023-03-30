@@ -32,8 +32,9 @@ SQL Metrics.
 FUNCTIONS_REGRESSION_SQL_DICTIONNARY = {
     "explained_variance": "1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true})",
     "max_error": "MAX(ABS({y_true} - {y_score}))::float",
-    "mae": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
+    "median": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
     "median_absolute_error": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
+    "mae": "AVG(ABS({y_true} - {y_score}))",
     "mean_absolute_error": "AVG(ABS({y_true} - {y_score}))",
     "mse": "AVG(POW({y_true} - {y_score}, 2))",
     "mean_squared_error": "AVG(POW({y_true} - {y_score}, 2))",

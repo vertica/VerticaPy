@@ -225,7 +225,7 @@ class TestLinearRegression:
         )
 
     def test_regression_report(self, model):
-        reg_rep = model.regression_report(metrics="metrics")
+        reg_rep = model.regression_report()
 
         assert reg_rep["index"] == [
             "explained_variance",

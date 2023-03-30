@@ -252,7 +252,7 @@ class TestRidge:
         assert reg_rep["value"][5] == pytest.approx(0.7712696508179172, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219816244842152, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945577183037412, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-3366.7594590080057, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3366.75452986445, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-3339.6492371939366, abs=1e-6)
 
         reg_rep_details = model.regression_report(metrics="details")

@@ -2657,9 +2657,7 @@ class Unsupervised(VerticaModel):
     	str
     		model's summary.
 		"""
-        if isinstance(X, type(None)):
-            X = self.X
-        elif isinstance(X, str):
+        if isinstance(X, str):
             X = [X]
         if conf.get_option("overwrite_model"):
             self.drop()
@@ -2705,14 +2703,14 @@ class Unsupervised(VerticaModel):
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
-            if not (X) and (self._model_type == "KPrototypes"):
+            if isinstance(X, type(None)) and (self._model_type == "KPrototypes"):
                 X = input_relation.get_columns()
-            elif not (X):
+            elif isinstance(X, type(None)):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
             relation = input_relation
-            if not (X):
+            if isinstance(X, type(None)):
                 X = vDataFrame(input_relation).numcol()
         self.X = [quote_ident(column) for column in X]
         parameters = self._get_vertica_param_dict()

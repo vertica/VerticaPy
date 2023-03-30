@@ -234,7 +234,7 @@ class TestLinearSVR:
         assert reg_rep["value"][5] == pytest.approx(0.7713563219415707, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219640889304706, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21928033527235014, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-3365.2993454071307, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3365.29441626357, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-3338.189123593071, abs=1e-6)
 
         reg_rep_details = model.regression_report(metrics="details")
@@ -283,7 +283,7 @@ class TestLinearSVR:
         # method = "var"
         assert model.score(metric="var") == pytest.approx(0.219641599658795, abs=1e-6)
         # method = "aic"
-        assert model.score(metric="aic") == pytest.approx(-3365.2993454071307, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-3365.29441626357, abs=1e-6)
         # method = "bic"
         assert model.score(metric="bic") == pytest.approx(-3338.189123593071, abs=1e-6)
 

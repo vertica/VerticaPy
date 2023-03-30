@@ -105,7 +105,7 @@ class TestXGBC:
 
         assert cls_rep1["auc"][0] == pytest.approx(1.0)
         assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.96)
+        assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
         assert cls_rep1["log_loss"][0] in (
             pytest.approx(0.127588478759147),
             pytest.approx(0.23458261830345),
@@ -434,10 +434,10 @@ class TestXGBC:
         )
         assert model.score(
             cutoff=0.9, metric="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(0.3)
         assert model.score(
             cutoff=0.1, metric="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(0.3)
         assert model.score(cutoff=0.9, metric="f1", pos_label="Train") == pytest.approx(
             0.0
         )

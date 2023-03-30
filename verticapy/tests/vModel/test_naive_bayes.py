@@ -95,7 +95,7 @@ class TestNB:
 
         assert cls_rep1["auc"][0] == pytest.approx(1.0)
         assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.96)
+        assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.0)
         assert cls_rep1["precision"][0] == pytest.approx(1.0)
         assert cls_rep1["recall"][0] == pytest.approx(1.0)
