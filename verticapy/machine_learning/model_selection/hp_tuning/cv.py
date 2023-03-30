@@ -54,6 +54,7 @@ def randomized_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     nbins: int = 1000,
@@ -112,6 +113,15 @@ def randomized_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -148,13 +158,14 @@ def randomized_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        average=average,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
     )
 
 
@@ -172,10 +183,11 @@ def grid_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
-    skip_error: bool = True,
+    skip_error: Union[bool, Literal["no_print"]] = True,
     print_info: bool = True,
     **kwargs,
 ) -> TableSample:
@@ -232,6 +244,15 @@ def grid_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to  be considered as positive 
         (classification only).
@@ -301,6 +322,7 @@ def grid_search_cv(
                 y,
                 metrics=metric,
                 cv=cv,
+                average=average,
                 pos_label=pos_label,
                 cutoff=cutoff,
                 show_time=True,
@@ -563,13 +585,13 @@ def bayesian_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
         final_print="no_print",
     )
     if "enet" not in kwargs:
@@ -675,13 +697,13 @@ def bayesian_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
         final_print="no_print",
     )
     for elem in result.values:
@@ -826,11 +848,11 @@ def enet_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        None,
-        cutoff,
-        param_grid,
+        metric=metric,
+        cv=cv,
+        pos_label=None,
+        cutoff=cutoff,
+        param_grid=param_grid,
         random_grid=False,
         bayesian_nbins=1000,
         print_info=print_info,

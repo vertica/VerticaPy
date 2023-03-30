@@ -44,6 +44,7 @@ def validation_curve(
     y: str,
     metric: str = "auto",
     cv: int = 3,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     std_coeff: float = 1,
@@ -104,6 +105,15 @@ def validation_curve(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -136,13 +146,14 @@ def validation_curve(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        False,
-        False,
+        metric=metric,
+        cv=cv,
+        average=average,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error=False,
+        print_info=False,
     )
     gs_result_final = [
         (

@@ -112,6 +112,15 @@ def randomized_features_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be  considered as positive 
         (classification only).
@@ -174,12 +183,13 @@ def randomized_features_search_cv(
                     input_relation,
                     config,
                     y,
-                    metric,
-                    cv,
-                    pos_label,
-                    cutoff,
-                    True,
-                    training_score,
+                    metrics=metric,
+                    cv=cv,
+                    average=average,
+                    pos_label=pos_label,
+                    cutoff=cutoff,
+                    show_time=True,
+                    training_score=True,
                     tqdm=False,
                 )
                 if training_score:

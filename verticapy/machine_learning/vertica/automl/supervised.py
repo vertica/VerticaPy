@@ -531,13 +531,13 @@ class AutoML(VerticaModel):
                 input_relation,
                 X,
                 y,
-                self.parameters["metric"],
-                self.parameters["cv"],
-                self.parameters["pos_label"],
-                self.parameters["cutoff"],
-                True,
-                "no_print",
-                self.parameters["print_info"],
+                metric=self.parameters["metric"],
+                cv=self.parameters["cv"],
+                pos_label=self.parameters["pos_label"],
+                cutoff=self.parameters["cutoff"],
+                training_score=True,
+                skip_error="no_print",
+                print_info=self.parameters["print_info"],
             )
             if (
                 gs["parameters"] != []
