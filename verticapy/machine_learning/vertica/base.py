@@ -1180,10 +1180,12 @@ class BinaryClassifier(Classifier):
 
     def classification_report(
         self,
-        metrics: Optional[list],
+        metrics: Union[
+            None, str, list[Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)]]
+        ] = None,
         cutoff: Optional[PythonNumber] = None,
         nbins: int = 10000,
-    ) -> TableSample:
+    ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple metrics 
         to evaluate the model  (AUC, accuracy, PRC AUC, F1...). 
@@ -1260,7 +1262,7 @@ class BinaryClassifier(Classifier):
 
     def score(
         self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
     ) -> float:
@@ -1269,8 +1271,8 @@ class BinaryClassifier(Classifier):
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
@@ -1307,8 +1309,8 @@ class BinaryClassifier(Classifier):
         float
             score
         """
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if method in (
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
+        if metric in (
             "log_loss",
             "logloss",
             "aic",
@@ -1323,11 +1325,11 @@ class BinaryClassifier(Classifier):
             args2 = self.deploySQL(cutoff=cutoff)
         args = [self.y, args2, self.test_relation]
         kwargs = {}
-        if method in ("accuracy", "acc"):
+        if metric in ("accuracy", "acc"):
             kwargs["pos_label"] = 1
-        elif method in ("aic", "bic"):
+        elif metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+        elif metric in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
@@ -1777,11 +1779,13 @@ class MulticlassClassifier(Classifier):
 
     def classification_report(
         self,
-        metrics: Optional[list] = None,
+        metrics: Union[
+            None, str, list[Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)]]
+        ] = None,
         cutoff: PythonNumber = None,
         labels: Union[None, str, list[str]] = None,
         nbins: int = 10000,
-    ) -> TableSample:
+    ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple metrics
         to evaluate the model  (AUC, accuracy, PRC AUC, F1...). 
@@ -1893,7 +1897,7 @@ class MulticlassClassifier(Classifier):
 
     def score(
         self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
         average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
@@ -1904,8 +1908,8 @@ class MulticlassClassifier(Classifier):
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
@@ -1956,10 +1960,10 @@ class MulticlassClassifier(Classifier):
         float
             score.
         """
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         pos_label = self._check_pos_label(pos_label=pos_label)
         y_proba = self._get_y_proba(pos_label=pos_label)
-        if method in (
+        if metric in (
             "auc",
             "prc_auc",
             "best_cutoff",
@@ -1973,9 +1977,9 @@ class MulticlassClassifier(Classifier):
         final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
         kwargs = {"average": average, "pos_label": pos_label, "labels": self.classes_}
-        if method in ("aic", "bic"):
+        if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+        elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
@@ -2395,29 +2399,47 @@ class Regressor(Supervised):
     # Model Evaluation Methods.
 
     def regression_report(
-        self, method: Literal["anova", "metrics", "details"] = "metrics"
-    ) -> TableSample:
+        self,
+        metrics: Union[
+            str,
+            Literal[None, "anova", "details"],
+            list[Literal[tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)]],
+        ] = None,
+    ) -> Union[float, TableSample]:
         """
         Computes a regression report using multiple metrics to 
         evaluate the model (r2, mse, max error...). 
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the regression report.
+        metrics: str, optional
+            The metrics to use to compute the regression report.
+                None    : Computes the model different metrics.
                 anova   : Computes the model ANOVA table.
                 details : Computes the model details.
-                metrics : Computes the model different metrics.
+            It can also be a list of different metrics among the
+            following:
+                aic    : Akaike’s Information Criterion
+                bic    : Bayesian Information Criterion
+                max    : Max Error
+                mae    : Mean Absolute Error
+                median : Median Absolute Error
+                mse    : Mean Squared Error
+                msle   : Mean Squared Log Error
+                qe     : quantile  error,  the quantile must be
+                         included in the name. Example:
+                         qe50.1% will return the quantile error 
+                         using q=0.501.
+                r2     : R squared coefficient
+                r2a    : R2 adjusted
+                rmse   : Root Mean Squared Error
+                var    : Explained Variance 
 
         Returns
         -------
         TableSample
             report.
         """
-        if method in ("anova", "details") and self._model_type in ("KernelDensity",):
-            raise ModelError(
-                f"'{method}' method is not available for {self._model_type} models."
-            )
         prediction = self.deploySQL()
         if self._model_type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
@@ -2426,17 +2448,21 @@ class Regressor(Supervised):
             test_relation = self.map
         else:
             test_relation = self.test_relation
-        if method == "metrics":
-            return mt.regression_report(self.y, prediction, test_relation, len(self.X))
-        elif method == "anova":
+        if isinstance(metrics, type(None)) or isinstance(
+            metrics, (str, list, np.ndarray)
+        ):
+            return mt.regression_report(
+                self.y, prediction, test_relation, metrics=metrics, k=len(self.X)
+            )
+        elif metrics == "anova":
             return mt.anova_table(self.y, prediction, test_relation, len(self.X))
-        elif method == "details":
+        elif metrics == "details":
             vdf = vDataFrame(f"SELECT {self.y} FROM {self.input_relation}")
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
             skew = vdf[self.y].skew()
             jb = vdf[self.y].agg(["jb"])[self.y][0]
-            R2 = self.score()
+            R2 = self.score(metric="r2")
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
             anova_T = mt.anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
@@ -2476,9 +2502,9 @@ class Regressor(Supervised):
 
     def score(
         self,
-        method: Literal[
+        metric: Literal[
             tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
-            + ("r2a", "r2adj", "r2adjusted", "rmse")
+            + ("r2a", "r2_adj", "rsquared_adj", "r2adj", "r2adjusted", "rmse")
         ] = "r2",
     ) -> float:
         """
@@ -2486,8 +2512,8 @@ class Regressor(Supervised):
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 aic    : Akaike’s Information Criterion
                 bic    : Bayesian Information Criterion
                 max    : Max Error
@@ -2506,15 +2532,15 @@ class Regressor(Supervised):
             score.
         """
         # Initialization
-        method = str(method).lower()
-        if method in ["r2adj", "r2adjusted"]:
-            method = "r2a"
+        metric = str(metric).lower()
+        if metric in ["r2adj", "r2adjusted"]:
+            metric = "r2a"
         adj, root = False, False
-        if method in ("r2a", "r2adj", "r2adjusted"):
-            method, adj = "r2", True
-        elif method == "rmse":
-            method, root = "mse", True
-        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+        if metric in ("r2a", "r2adj", "r2adjusted", "r2_adj", "rsquared_adj"):
+            metric, adj = "r2", True
+        elif metric == "rmse":
+            metric, root = "mse", True
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[metric]
 
         # Scoring
         if self._model_type == "KNeighborsRegressor":
@@ -2524,7 +2550,7 @@ class Regressor(Supervised):
         else:
             test_relation, prediction = self.test_relation, self.deploySQL()
         arg = [self.y, prediction, test_relation]
-        if method in ("aic", "bic") or adj:
+        if metric in ("aic", "bic") or adj:
             arg += [len(self.X)]
         if root or adj:
             arg += [True]

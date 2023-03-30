@@ -413,7 +413,7 @@ def stepwise(
         X_current = [elem for elem in X]
         estimator.drop()
         estimator.fit(input_relation, X, y)
-        current_score = estimator.score(criterion)
+        current_score = estimator.score(metric=criterion)
         res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
@@ -428,7 +428,7 @@ def stepwise(
             if len(X_test) != 0:
                 estimator.drop()
                 estimator.fit(input_relation, X_test, y)
-                test_score = estimator.score(criterion)
+                test_score = estimator.score(metric=criterion)
             else:
                 test_score = aic_bic(y, str(avg), input_relation, 0)[k]
             score_diff = test_score - current_score
@@ -461,7 +461,7 @@ def stepwise(
             X_test = [elem for elem in X_current] + [X[idx]]
             estimator.drop()
             estimator.fit(input_relation, X_test, y)
-            test_score = estimator.score(criterion)
+            test_score = estimator.score(metric=criterion)
             score_diff = current_score - test_score
             if current_score - test_score > criterion_threshold:
                 sign = "+"

@@ -207,7 +207,7 @@ class TestKMeans:
             ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         )
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
 
     def test_get_voronoi_plot(self, iris_vd):

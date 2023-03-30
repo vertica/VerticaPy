@@ -26,8 +26,6 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.machine_learning.metrics.regression import _compute_metric_query
-
 if TYPE_CHECKING:
     from verticapy.machine_learning.vertica.base import VerticaModel
 
@@ -1315,14 +1313,20 @@ def log_loss(
     """
     if pos_label != None or isinstance(labels, type(None)):
         y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
-        metric = f"""
-            AVG(CASE 
-                    WHEN {{0}} = '{pos_label}' 
-                        THEN - LOG({{1}}::float + 1e-90) 
-                    ELSE - LOG(1 - {{1}}::float + 1e-90) 
-                END)"""
-        return _compute_metric_query(
-            metric, y_true, y_s, input_relation, "Computing the Log Loss."
+        return _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('learn.metrics.logloss')*/ 
+                    AVG(CASE 
+                            WHEN {y_true} = '{pos_label}' 
+                            THEN - LOG({y_s}::float + 1e-90) 
+                            ELSE - LOG(1 - {y_s}::float + 1e-90) 
+                        END) 
+                FROM {input_relation} 
+                WHERE {y_true} IS NOT NULL 
+                  AND {y_s} IS NOT NULL;""",
+            title=title,
+            method=method,
         )
     else:
         return _compute_multiclass_metric(
@@ -1375,12 +1379,12 @@ def classification_report(
     y_true: Optional[str] = None,
     y_score: Optional[list] = None,
     input_relation: Optional[SQLRelation] = None,
-    metrics: Optional[list] = None,
+    metrics: Union[None, str, list[str]] = None,
     labels: Optional[ArrayLike] = None,
     cutoff: Optional[PythonNumber] = None,
     nbins: int = 10000,
     estimator: Optional["VerticaModel"] = None,
-) -> TableSample:
+) -> Union[float, TableSample]:
     """
     Computes  a classification  report using  multiple 
     metrics  (AUC, accuracy, PRC AUC, F1...).  It will 
@@ -1399,7 +1403,7 @@ def classification_report(
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     metrics: list, optional
-        List of the metric to use to compute the final 
+        List of the metrics to use to compute the final 
         report.
             accuracy    : Accuracy
             aic         : Akaike’s  Information  Criterion
@@ -1420,15 +1424,6 @@ def classification_report(
             precision   : Precision = tp / (tp + fp)
             recall      : Recall = tp / (tp + fn)
             specificity : Specificity = tn / (tn + fp)
-    average: str, optional
-        The  method  used  to  compute the final score 
-        for multiclass-classification.
-            micro    : positive  and  negative  values 
-                       globally.
-            macro    : average of the  score  of  each 
-                       class.
-            weighted : weighted  average  of the score
-                       of each class.
     labels: ArrayLike, optional
     	List of the response column categories to use.
     cutoff: PythonNumber, optional
@@ -1455,6 +1450,10 @@ def classification_report(
     TableSample
      	report.
 	"""
+    return_scalar = False
+    if isinstance(metrics, str):
+        metrics = [metrics]
+        return_scalar = True
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
@@ -1511,7 +1510,7 @@ def classification_report(
             elif m in FUNCTIONS_OTHER_METRICS_DICTIONNARY:
                 if estimator:
                     values[pos_label] += [
-                        estimator.score(pos_label=pos_label, method=m, nbins=nbins)
+                        estimator.score(pos_label=pos_label, metric=m, nbins=nbins)
                     ]
                 else:
                     fun = FUNCTIONS_OTHER_METRICS_DICTIONNARY[m]
@@ -1528,6 +1527,7 @@ def classification_report(
             all_cm_metrics += [(tn, fn, fp, tp)]
     res = TableSample(values)
     if num_classes > 2:
+        return_scalar = False
         res_array = res.to_numpy()
         n, m = res_array.shape
         avg_macro, avg_micro, avg_weighted = [], [], []
@@ -1546,4 +1546,9 @@ def classification_report(
             else:
                 avg_micro += [None]
         res.values["avg_micro"] = avg_micro
+    if return_scalar:
+        res_array = res.to_numpy()
+        n, m = res_array.shape
+        if n == 1 and m == 1:
+            return float(res_array[0][0])
     return res.transpose()

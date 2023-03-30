@@ -708,11 +708,11 @@ class vDFMachineLearning:
 
     @save_verticapy_logs
     def score(
-        self, y_true: str, y_score: str, method: Literal[tuple(FUNCTIONS_DICTIONNARY)],
+        self, y_true: str, y_score: str, metric: Literal[tuple(FUNCTIONS_DICTIONNARY)],
     ) -> float:
         """
         Computes the score using the input columns and the 
-        input method.
+        input metric.
 
         Parameters
         ----------
@@ -720,8 +720,8 @@ class vDFMachineLearning:
             Response column.
         y_score: str
             Prediction.
-        method: str
-            The method to use to compute the score.
+        metric: str
+            The metric to use to compute the score.
                 --- For Classification ---
                 accuracy    : Accuracy
                 auc         : Area Under the Curve 
@@ -769,7 +769,7 @@ class vDFMachineLearning:
         """
         y_true, y_score = self._format_colnames(y_true, y_score)
         args = [y_true, y_score, self._genSQL()]
-        return FUNCTIONS_DICTIONNARY[method](*args)
+        return FUNCTIONS_DICTIONNARY[metric](*args)
 
     @save_verticapy_logs
     def sessionize(

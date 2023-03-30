@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLRelation
@@ -237,14 +237,14 @@ class Pipeline:
         else:
             return self.steps[-1][1].classification_report()
 
-    def score(self, method: str = "") -> float:
+    def score(self, metric: Optional[str] = None) -> float:
         """
         Computes the model score.
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
             Depends  on  the  final estimator  type 
             (classification or regression).
 
@@ -253,12 +253,12 @@ class Pipeline:
         float
             score.
         """
-        if not (method):
+        if isinstance(metric, type(None)):
             if isinstance(self.steps[-1][1], Regressor):
-                method = "r2"
+                metric = "r2"
             else:
-                method = "accuracy"
-        return self.steps[-1][1].score(method)
+                metric = "accuracy"
+        return self.steps[-1][1].score(metric=metric)
 
     # Prediction / Transformation Methods.
 

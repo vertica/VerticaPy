@@ -88,7 +88,7 @@ class TestKNeighborsRegressor:
         )
 
     def test_regression_report(self, model):
-        reg_rep = model.regression_report("metrics")
+        reg_rep = model.regression_report(metrics="metrics")
 
         assert reg_rep["index"] == [
             "explained_variance",
@@ -113,7 +113,7 @@ class TestKNeighborsRegressor:
         assert reg_rep["value"][8] == pytest.approx(-1807.5457125099035, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1792.8586642855382, abs=1e-6)
 
-        reg_rep_details = model.regression_report("details")
+        reg_rep_details = model.regression_report(metrics="details")
         assert reg_rep_details["value"][2:] == [
             1234.0,
             2,
@@ -126,7 +126,7 @@ class TestKNeighborsRegressor:
             pytest.approx(212.604974886025),
         ]
 
-        reg_rep_anova = model.regression_report("anova")
+        reg_rep_anova = model.regression_report(metrics="anova")
         assert reg_rep_anova["SS"] == [
             pytest.approx(77.894016064257),
             pytest.approx(161.24),
@@ -139,29 +139,29 @@ class TestKNeighborsRegressor:
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(1.0, abs=1e-6)
+        assert model.score(metric="max") == pytest.approx(1.0, abs=1e-6)
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0.319076305220884, abs=1e-6)
+        assert model.score(metric="mae") == pytest.approx(0.319076305220884, abs=1e-6)
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.2, abs=1e-6)
+        assert model.score(metric="median") == pytest.approx(0.2, abs=1e-6)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.161887550200803, abs=1e-6)
+        assert model.score(metric="mse") == pytest.approx(0.161887550200803, abs=1e-6)
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(
+        assert model.score(metric="rmse") == pytest.approx(
             0.40235251981415876, abs=1e-6
         )
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(0.0148862189812457, abs=1e-6)
+        assert model.score(metric="msle") == pytest.approx(0.0148862189812457, abs=1e-6)
         # method = "r2"
         assert model.score() == pytest.approx(0.321109086681745, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(0.3197417333820103, abs=1e-6)
+        assert model.score(metric="r2a") == pytest.approx(0.3197417333820103, abs=1e-6)
         # method = "var"
-        assert model.score(method="var") == pytest.approx(0.32196148887151, abs=1e-6)
+        assert model.score(metric="var") == pytest.approx(0.32196148887151, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-1807.5457125099035, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-1807.5457125099035, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(-1792.8586642855369, abs=1e-6)
+        assert model.score(metric="bic") == pytest.approx(-1792.8586642855369, abs=1e-6)
 
     def test_set_params(self, model):
         model.set_params({"p": 1})

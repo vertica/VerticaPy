@@ -253,7 +253,7 @@ class TestElasticNet:
         assert reg_rep["value"][8] == pytest.approx(-1764.5050571146871, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1737.394835300611, abs=1e-6)
 
-        reg_rep_details = model.regression_report("details")
+        reg_rep_details = model.regression_report(metrics="details")
         assert reg_rep_details["value"][2:] == [
             6497.0,
             3,
@@ -266,7 +266,7 @@ class TestElasticNet:
             pytest.approx(53.1115447611131),
         ]
 
-        reg_rep_anova = model.regression_report("anova")
+        reg_rep_anova = model.regression_report(metrics="anova")
         assert reg_rep_anova["SS"] == [
             pytest.approx(4.83725377631033),
             pytest.approx(4945.71023360928),
@@ -279,29 +279,29 @@ class TestElasticNet:
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(3.192849, abs=1e-6)
+        assert model.score(metric="max") == pytest.approx(3.192849, abs=1e-6)
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0.684299, abs=1e-6)
+        assert model.score(metric="mae") == pytest.approx(0.684299, abs=1e-6)
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.788321, abs=1e-6)
+        assert model.score(metric="median") == pytest.approx(0.788321, abs=1e-6)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.761229, abs=1e-6)
+        assert model.score(metric="mse") == pytest.approx(0.761229, abs=1e-6)
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(0.8724848619460168, abs=1e-6)
+        assert model.score(metric="rmse") == pytest.approx(0.8724848619460168, abs=1e-6)
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(0.003171, abs=1e-6)
+        assert model.score(metric="msle") == pytest.approx(0.003171, abs=1e-6)
         # method = "r2"
-        assert model.score(method="r2") == pytest.approx(0.001610, abs=1e-6)
+        assert model.score(metric="r2") == pytest.approx(0.001610, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(
+        assert model.score(metric="r2a") == pytest.approx(
             0.001148714605947454, abs=1e-6
         )
         # method = "var"
-        assert model.score(method="var") == pytest.approx(0.001610, abs=1e-6)
+        assert model.score(metric="var") == pytest.approx(0.001610, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-1764.5050571146871, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-1764.5050571146871, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(-1737.394835300611, abs=1e-6)
+        assert model.score(metric="bic") == pytest.approx(-1737.394835300611, abs=1e-6)
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})

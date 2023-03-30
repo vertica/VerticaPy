@@ -254,18 +254,18 @@ class TestRFC:
         model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
         )
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
@@ -381,79 +381,79 @@ class TestRFC:
         plt.close("all")
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="auc", pos_label="Train"
+            cutoff=0.9, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="auc", pos_label="Train"
+            cutoff=0.1, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="best_cutoff", pos_label="Train"
+            cutoff=0.9, metric="best_cutoff", pos_label="Train"
         ) == pytest.approx(0.999)
         assert model.score(
-            cutoff=0.1, method="best_cutoff", pos_label="Train"
+            cutoff=0.1, metric="best_cutoff", pos_label="Train"
         ) == pytest.approx(0.999)
-        assert model.score(cutoff=0.9, method="bm", pos_label="Train") == pytest.approx(
+        assert model.score(cutoff=0.9, metric="bm", pos_label="Train") == pytest.approx(
             0.0
         )
-        assert model.score(cutoff=0.1, method="bm", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(
-            cutoff=0.9, method="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.1, method="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="f1", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(cutoff=0.1, method="f1", pos_label="Train") == pytest.approx(
+        assert model.score(cutoff=0.1, metric="bm", pos_label="Train") == pytest.approx(
             0.0
         )
         assert model.score(
-            cutoff=0.9, method="logloss", pos_label="Train"
+            cutoff=0.9, metric="csi", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="logloss", pos_label="Train"
+            cutoff=0.1, metric="csi", pos_label="Train"
         ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.9, method="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.1, method="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="mk", pos_label="Train") == pytest.approx(
+        assert model.score(cutoff=0.9, metric="f1", pos_label="Train") == pytest.approx(
             0.0
         )
-        assert model.score(cutoff=0.1, method="mk", pos_label="Train") == pytest.approx(
+        assert model.score(cutoff=0.1, metric="f1", pos_label="Train") == pytest.approx(
             0.0
         )
         assert model.score(
-            cutoff=0.9, method="npv", pos_label="Train"
+            cutoff=0.9, metric="logloss", pos_label="Train"
+        ) == pytest.approx(0.0)
+        assert model.score(
+            cutoff=0.1, metric="logloss", pos_label="Train"
+        ) == pytest.approx(0.0)
+        assert model.score(
+            cutoff=0.9, metric="mcc", pos_label="Train"
+        ) == pytest.approx(0.0)
+        assert model.score(
+            cutoff=0.1, metric="mcc", pos_label="Train"
+        ) == pytest.approx(0.0)
+        assert model.score(cutoff=0.9, metric="mk", pos_label="Train") == pytest.approx(
+            0.0
+        )
+        assert model.score(cutoff=0.1, metric="mk", pos_label="Train") == pytest.approx(
+            0.0
+        )
+        assert model.score(
+            cutoff=0.9, metric="npv", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="npv", pos_label="Train"
+            cutoff=0.1, metric="npv", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="prc_auc", pos_label="Train"
+            cutoff=0.9, metric="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="prc_auc", pos_label="Train"
+            cutoff=0.1, metric="prc_auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="precision", pos_label="Train"
+            cutoff=0.9, metric="precision", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="precision", pos_label="Train"
+            cutoff=0.1, metric="precision", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.9, method="specificity", pos_label="Train"
+            cutoff=0.9, metric="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="specificity", pos_label="Train"
+            cutoff=0.1, metric="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
 
     def test_set_params(self, model):

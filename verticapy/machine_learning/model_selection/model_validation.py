@@ -46,7 +46,7 @@ def cross_validate(
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
-    metric: Union[str, list[str]] = "all",
+    metric: Union[None, str, list[str]] = None,
     cv: int = 3,
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
@@ -67,11 +67,10 @@ def cross_validate(
     	List   of  the  predictor   columns.
     y: str
     	Response Column.
-    metric: str / list, optional
-        Metric used to do the model evaluation. It can also 
-        be a list of metrics.
-            all: The  model will  compute all the  possible 
-                 metrics.
+    metrics: str / list, optional
+        Metrics used to do the model evaluation. It can also 
+        be a list of metrics. If empty most of the estimator
+        metrics are computed.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
@@ -197,7 +196,7 @@ def cross_validate(
         )
         total_time += [time.time() - start_time]
         if estimator._model_subcategory == "REGRESSOR":
-            if metric == "all":
+            if isinstance(metric, type(None)):
                 result[f"{i + 1}-fold"] = estimator.regression_report().values["value"]
                 if training_score:
                     estimator.test_relation = estimator.input_relation
@@ -205,15 +204,17 @@ def cross_validate(
                         f"{i + 1}-fold"
                     ] = estimator.regression_report().values["value"]
             elif isinstance(metric, str):
-                result[f"{i + 1}-fold"] = [estimator.score(metric)]
+                result[f"{i + 1}-fold"] = [estimator.score(metric=metric)]
                 if training_score:
                     estimator.test_relation = estimator.input_relation
-                    result_train[f"{i + 1}-fold"] = [estimator.score(metric)]
+                    result_train[f"{i + 1}-fold"] = [estimator.score(metric=metric)]
             else:
-                result[f"{i + 1}-fold"] = [estimator.score(m) for m in metric]
+                result[f"{i + 1}-fold"] = [estimator.score(metric=m) for m in metric]
                 if training_score:
                     estimator.test_relation = estimator.input_relation
-                    result_train[f"{i + 1}-fold"] = [estimator.score(m) for m in metric]
+                    result_train[f"{i + 1}-fold"] = [
+                        estimator.score(metric=m) for m in metric
+                    ]
         else:
             if (len(estimator.classes_) > 2) and (pos_label not in estimator.classes_):
                 raise ParameterError(
@@ -225,7 +226,7 @@ def cross_validate(
             ):
                 pos_label = estimator.classes_[1]
             try:
-                if metric == "all":
+                if isinstance(metric, type(None)):
                     result[f"{i + 1}-fold"] = estimator.classification_report(
                         labels=[pos_label], cutoff=cutoff
                     ).values["value"][0:-1]
@@ -237,22 +238,28 @@ def cross_validate(
 
                 elif isinstance(metric, str):
                     result[f"{i + 1}-fold"] = [
-                        estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
+                        estimator.score(
+                            metric=metric, pos_label=pos_label, cutoff=cutoff
+                        )
                     ]
                     if training_score:
                         estimator.test_relation = estimator.input_relation
                         result_train[f"{i + 1}-fold"] = [
-                            estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
+                            estimator.score(
+                                metric=metric, pos_label=pos_label, cutoff=cutoff
+                            )
                         ]
                 else:
                     result[f"{i + 1}-fold"] = [
-                        estimator.score(m, pos_label=pos_label, cutoff=cutoff)
+                        estimator.score(metric=m, pos_label=pos_label, cutoff=cutoff)
                         for m in metric
                     ]
                     if training_score:
                         estimator.test_relation = estimator.input_relation
                         result_train[f"{i + 1}-fold"] = [
-                            estimator.score(m, pos_label=pos_label, cutoff=cutoff)
+                            estimator.score(
+                                metric=m, pos_label=pos_label, cutoff=cutoff
+                            )
                             for m in metric
                         ]
             except:
@@ -266,20 +273,22 @@ def cross_validate(
                             cutoff=cutoff
                         ).values["value"][0:-1]
                 elif isinstance(metric, str):
-                    result[f"{i + 1}-fold"] = [estimator.score(metric, cutoff=cutoff)]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = [
-                            estimator.score(metric, cutoff=cutoff)
-                        ]
-                else:
                     result[f"{i + 1}-fold"] = [
-                        estimator.score(m, cutoff=cutoff) for m in metric
+                        estimator.score(metric=metric, cutoff=cutoff)
                     ]
                     if training_score:
                         estimator.test_relation = estimator.input_relation
                         result_train[f"{i + 1}-fold"] = [
-                            estimator.score(m, cutoff=cutoff) for m in metric
+                            estimator.score(metric=metric, cutoff=cutoff)
+                        ]
+                else:
+                    result[f"{i + 1}-fold"] = [
+                        estimator.score(metric=m, cutoff=cutoff) for m in metric
+                    ]
+                    if training_score:
+                        estimator.test_relation = estimator.input_relation
+                        result_train[f"{i + 1}-fold"] = [
+                            estimator.score(metric=m, cutoff=cutoff) for m in metric
                         ]
         try:
             estimator.drop()

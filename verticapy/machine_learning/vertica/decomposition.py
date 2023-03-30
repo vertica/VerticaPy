@@ -107,7 +107,7 @@ class Decomposition(Preprocessing):
         self,
         X: SQLColumns = [],
         input_relation: str = "",
-        method: Literal["avg", "median"] = "avg",
+        metric: Literal["avg", "median"] = "avg",
         p: int = 2,
     ) -> TableSample:
         """
@@ -125,8 +125,8 @@ class Decomposition(Preprocessing):
         input_relation: str, optional
             Input  Relation.  If  empty,  the model input 
             relation will be used.
-        method: str, optional
-            Distance Method used to do the scoring.
+        metric: str, optional
+            Distance metric used to do the scoring.
                 avg    : The average is used as 
                          aggregation.
                 median : The median  is used as 
@@ -145,9 +145,9 @@ class Decomposition(Preprocessing):
             X = self.X
         if not (input_relation):
             input_relation = self.input_relation
-        method = str(method).upper()
-        if method == "MEDIAN":
-            method = "APPROXIMATE_MEDIAN"
+        metric = str(metric).upper()
+        if metric == "MEDIAN":
+            metric = "APPROXIMATE_MEDIAN"
         if self._model_type in ("PCA", "SVD"):
             n_components = self.parameters["n_components"]
             if not (n_components):
@@ -180,7 +180,7 @@ class Decomposition(Preprocessing):
                     num_components = {n_components}) OVER () 
             FROM ({query}) y"""
         p_distances = [
-            f"""{method}(POWER(ABS(POWER({X[idx]}, {p}) 
+            f"""{metric}(POWER(ABS(POWER({X[idx]}, {p}) 
                          - POWER(col_init{idx}, {p})), {1 / p})) 
                          AS {X[idx]}"""
             for idx in range(len(X))

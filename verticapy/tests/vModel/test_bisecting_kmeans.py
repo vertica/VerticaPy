@@ -247,5 +247,5 @@ class TestBisectingKMeans:
         vdf = vDataFrame("public.bsk_data")
         vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)

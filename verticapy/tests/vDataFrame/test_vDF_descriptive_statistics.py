@@ -898,11 +898,11 @@ class TestvDFDescriptiveStat:
         model.predict_proba(titanic_vd, name="survived_pred", pos_label=1)
 
         # Computing AUC
-        auc = titanic_vd.score(y_true="survived", y_score="survived_pred", method="auc")
+        auc = titanic_vd.score(y_true="survived", y_score="survived_pred", metric="auc")
         assert auc == pytest.approx(0.7051784997146537)
 
         # Computing MSE
-        mse = titanic_vd.score(y_true="survived", y_score="survived_pred", method="mse")
+        mse = titanic_vd.score(y_true="survived", y_score="survived_pred", metric="mse")
         assert mse == pytest.approx(0.228082579110535)
 
         # dropping the created model
