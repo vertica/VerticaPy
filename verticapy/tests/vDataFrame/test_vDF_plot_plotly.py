@@ -759,7 +759,7 @@ class TestVDFHeatMap:
         )
 
 
-class testVDFlineplot:
+class testVDFLinePlot:
     def test_properties_output_type(self, load_plotly, amazon_vd):
         # Arrange
         amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
@@ -838,3 +838,102 @@ class testVDFlineplot:
         result = amazon_vd["number"].plot(ts="date", markers=False)
         # Assert - checking if correct object created
         assert result.data["mode"] == "lines", "Markers not turned off"
+
+
+class testVDFContourPlot:
+    def test_properties_output_type(self, load_plotly, dummy_vd):
+        # Arrange
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func)
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_x_axis_title(self, load_plotly, dummy_vd):
+        # Arrange
+        # Arrange
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func)
+        # Assert
+        assert result.layout["xaxis"]["title"]["text"] == "0", "X axis title incorrect"
+
+    def test_properties_y_axis_title(self, load_plotly, dummy_vd):
+        # Arrange
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func)
+        # Assert
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "binary"
+        ), "Y axis title incorrect"
+
+    def test_data_count_xaxis_default_bins(self, load_plotly, dummy_vd):
+        # Arrange
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func)
+        # Assert
+        assert result.data[0]["x"].shape[0] == 100, "The default bins are not 100."
+
+    def test_data_count_xaxis_custom_bins(self, load_plotly, dummy_vd):
+        # Arrange
+        custom_bins = 1000
+
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(columns=["0", "binary"], nbins=custom_bins, func=func)
+        # Assert
+        assert (
+            result.data[0]["x"].shape[0] == custom_bins
+        ), "The custom bins option is not working."
+
+    def test_data_x_axis_range(self, load_plotly, dummy_vd):
+        # Arrange
+        x_min = dummy_vd["0"].min()
+        x_max = dummy_vd["0"].max()
+        custom_bins = 1000
+
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(columns=["0", "binary"], func=func)
+        assert (
+            result.data[0]["x"].min() == x_min and result.data[0]["x"].max() == x_max
+        ), "The range in data is not consistent with plot"
+
+    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+        # Arrange
+        custom_width = 700
+
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func, width=custom_width)
+        # Assert
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+        #
+        custom_height = 700
+
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd.contour(["0", "binary"], func, height=custom_height)
+        # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
+

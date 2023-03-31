@@ -20,6 +20,7 @@ from verticapy.plotting._plotly.barh import HorizontalBarChart
 from verticapy.plotting._plotly.scatter import ScatterPlot
 from verticapy.plotting._plotly.boxplot import BoxPlot
 from verticapy.plotting._plotly.heatmap import HeatMap
+from verticapy.plotting._plotly.contour_plot import ContourPlot
 from verticapy.plotting._plotly.base import PlotlyBase
 
 import plotly.io as pio
