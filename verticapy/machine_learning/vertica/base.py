@@ -1234,6 +1234,7 @@ class BinaryClassifier(Classifier):
                               = tpr / fpr
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 
@@ -1322,6 +1323,7 @@ class BinaryClassifier(Classifier):
                               = tpr / fpr
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 
@@ -1864,6 +1866,7 @@ class MulticlassClassifier(Classifier):
                               = tpr / fpr
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 
@@ -1986,6 +1989,7 @@ class MulticlassClassifier(Classifier):
                               = tpr / fpr
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 

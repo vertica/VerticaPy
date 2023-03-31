@@ -91,6 +91,7 @@ def validation_curve(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1

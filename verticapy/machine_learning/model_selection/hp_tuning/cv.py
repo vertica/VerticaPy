@@ -99,6 +99,7 @@ def randomized_search_cv(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -240,6 +241,7 @@ def grid_search_cv(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -530,6 +532,7 @@ def bayesian_search_cv(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1

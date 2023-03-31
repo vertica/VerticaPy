@@ -84,9 +84,9 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
     res = []
     for i in range(m):
         tp = cm[i][i]
-        tn = np.diagonal(cm).sum() - cm[i][i]
-        fn = cm[:, i].sum() - cm[i][i]
-        fp = cm.sum() - tp - tn - fn
+        fp = cm[:, i].sum() - cm[i][i]
+        fn = cm[i, :].sum() - cm[i][i]
+        tn = cm.sum() - fp - fn - tp
         res += [(tn, fn, fp, tp)]
     return res
 
@@ -431,6 +431,62 @@ def critical_success_index(
         score.
     """
     return _compute_final_score(_critical_success_index, **locals(),)
+
+
+def _diagnostic_odds_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
+    lrp, lrn = (
+        _positive_likelihood_ratio(**locals()),
+        _negative_likelihood_ratio(**locals()),
+    )
+    return lrp / lrn if lrn != 0.0 else np.inf
+
+
+@save_verticapy_logs
+def diagnostic_odds_ratio(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Positive Likelihood ratio.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_diagnostic_odds_ratio, **locals(),)
 
 
 def _f1_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1552,6 +1608,8 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "lr+": _positive_likelihood_ratio,
     "negative_likelihood_ratio": _negative_likelihood_ratio,
     "lr-": _negative_likelihood_ratio,
+    "diagnostic_odds_ratio": _diagnostic_odds_ratio,
+    "dor": _diagnostic_odds_ratio,
     "mcc": _matthews_corrcoef,
     "bm": _informedness,
     "informedness": _informedness,
@@ -1621,6 +1679,7 @@ def classification_report(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness = ppv + npv - 1
             npv         : Negative Predictive Value 

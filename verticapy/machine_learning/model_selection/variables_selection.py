@@ -99,6 +99,7 @@ def randomized_features_search_cv(
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
