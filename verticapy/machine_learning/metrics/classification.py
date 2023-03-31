@@ -209,10 +209,6 @@ def confusion_matrix(
     Array
         confusion matrix.
     """
-    if isinstance(input_relation, str):
-        relation = input_relation
-    else:
-        relation = input_relation._genSQL()
     res = _executeSQL(
         query=f"""
         SELECT 
@@ -224,7 +220,7 @@ def confusion_matrix(
                        1, NULL, NULL, 0) AS obs, 
                 DECODE({y_score}, '{pos_label}', 
                        1, NULL, NULL, 0) AS response 
-             FROM {relation}) VERTICAPY_SUBTABLE;""",
+             FROM {input_relation}) VERTICAPY_SUBTABLE;""",
         title="Computing Confusion matrix.",
         method="fetchall",
     )
@@ -258,10 +254,6 @@ def multilabel_confusion_matrix(
     Array
         confusion matrix.
     """
-    if isinstance(input_relation, str):
-        relation = input_relation
-    else:
-        relation = input_relation._genSQL()
     num_classes = str(len(labels))
     query = f"""
         SELECT 
@@ -273,7 +265,7 @@ def multilabel_confusion_matrix(
     query += f") AS obs, DECODE({y_score}"
     for idx, l in enumerate(labels):
         query += f", '{l}', {idx}"
-    query += f") AS response FROM {relation}) VERTICAPY_SUBTABLE;"
+    query += f") AS response FROM {input_relation}) VERTICAPY_SUBTABLE;"
     res = _executeSQL(
         query=query, title="Computing Confusion Matrix.", method="fetchall",
     )
@@ -334,19 +326,11 @@ def accuracy_score(
     float
         score.
     """
-    return _compute_final_score(
-        _accuracy_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_accuracy_score, **locals(),)
 
 
 def _balanced_accuracy(tn: int, fn: int, fp: int, tp: int) -> float:
-    return (_recall_score(tn, fn, fp, tp) + _specificity_score(tn, fn, fp, tp)) / 2
+    return (_recall_score(**locals()) + _specificity_score(**locals())) / 2
 
 
 @save_verticapy_logs
@@ -394,15 +378,7 @@ def balanced_accuracy(
     float
         score.
     """
-    return _compute_final_score(
-        _balanced_accuracy,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_balanced_accuracy, **locals(),)
 
 
 def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -454,26 +430,12 @@ def critical_success_index(
     float
         score.
     """
-    return _compute_final_score(
-        _critical_success_index,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_critical_success_index, **locals(),)
 
 
 def _f1_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    recall = _recall_score(tn, fn, fp, tp)
-    precision = _precision_score(tn, fn, fp, tp)
-    f1 = (
-        2 * (precision * recall) / (precision + recall)
-        if (precision + recall != 0)
-        else 0.0
-    )
-    return f1
+    p, r = _precision_score(**locals()), _recall_score(**locals())
+    return 2 * (p * r) / (p + r) if (p + r != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -521,19 +483,63 @@ def f1_score(
     float
         score.
     """
-    return _compute_final_score(
-        _f1_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_f1_score, **locals(),)
+
+
+def _false_negative_rate(tn: int, fn: int, fp: int, tp: int) -> float:
+    return 1 - _recall_score(**locals())
+
+
+@save_verticapy_logs
+def false_negative_rate(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the False Negative Rate.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_false_negative_rate, **locals())
 
 
 def _false_positive_rate(tn: int, fn: int, fp: int, tp: int) -> float:
-    return fn / (fn + tp) if (fn + tp != 0) else 0.0
+    return 1 - _specificity_score(**locals())
 
 
 @save_verticapy_logs
@@ -581,19 +587,11 @@ def false_positive_rate(
     float
         score.
     """
-    return _compute_final_score(
-        _false_positive_rate,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_false_positive_rate, **locals(),)
 
 
 def _informedness(tn: int, fn: int, fp: int, tp: int) -> float:
-    return _recall_score(tn, fn, fp, tp) + _specificity_score(tn, fn, fp, tp) - 1
+    return _recall_score(**locals()) + _specificity_score(**locals()) - 1
 
 
 @save_verticapy_logs
@@ -641,15 +639,7 @@ def informedness(
     float
         score.
     """
-    return _compute_final_score(
-        _informedness,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_informedness, **locals(),)
 
 
 def _markedness(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -703,15 +693,7 @@ def markedness(
     float
         score.
     """
-    return _compute_final_score(
-        _markedness,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_markedness, **locals(),)
 
 
 def _matthews_corrcoef(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -767,15 +749,7 @@ def matthews_corrcoef(
     float
         score.
     """
-    return _compute_final_score(
-        _matthews_corrcoef,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_matthews_corrcoef, **locals(),)
 
 
 def _negative_predictive_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -827,19 +801,63 @@ def negative_predictive_score(
     float
         score.
     """
-    return _compute_final_score(
-        _negative_predictive_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_negative_predictive_score, **locals(),)
+
+
+def _negative_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
+    return _false_negative_rate(**locals()) / _specificity_score(**locals())
+
+
+@save_verticapy_logs
+def negative_likelihood_ratio(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Positive Likelihood ratio.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_negative_likelihood_ratio, **locals(),)
 
 
 def _positive_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
-    return _recall_score(tn, fn, fp, tp) / _false_positive_rate(tn, fn, fp, tp)
+    return _recall_score(**locals()) / _false_positive_rate(**locals())
 
 
 @save_verticapy_logs
@@ -887,15 +905,7 @@ def positive_likelihood_ratio(
     float
         score.
     """
-    return _compute_final_score(
-        _positive_likelihood_ratio,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_positive_likelihood_ratio, **locals(),)
 
 
 def _precision_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -947,15 +957,7 @@ def precision_score(
     float
         score.
     """
-    return _compute_final_score(
-        _precision_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_precision_score, **locals(),)
 
 
 def _recall_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1007,15 +1009,7 @@ def recall_score(
     float
         score.
     """
-    return _compute_final_score(
-        _recall_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_recall_score, **locals(),)
 
 
 def _specificity_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1067,15 +1061,7 @@ def specificity_score(
     float
         score.
     """
-    return _compute_final_score(
-        _specificity_score,
-        y_true,
-        y_score,
-        input_relation,
-        average=average,
-        labels=labels,
-        pos_label=pos_label,
-    )
+    return _compute_final_score(_specificity_score, **locals(),)
 
 
 """
@@ -1121,10 +1107,6 @@ def _compute_function_metrics(
         label = f"{fun_sql_name}_curve"
     if nbins < 0:
         nbins = 999999
-    if isinstance(input_relation, str):
-        table = input_relation
-    else:
-        table = input_relation._genSQL()
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
     elif fun_sql_name == "prc":
@@ -1148,7 +1130,7 @@ def _compute_function_metrics(
                         WHEN {y_true} = '{pos_label}' 
                         THEN 1 ELSE 0 END) AS obs, 
                     {y_score}::float AS prob 
-                 FROM {table}) AS prediction_output) x""",
+                 FROM {input_relation}) AS prediction_output) x""",
         title=f"Computing the {label.upper()}.",
         method="fetchall",
     )
@@ -1562,10 +1544,14 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "npv": _negative_predictive_score,
     "f1": _f1_score,
     "f1_score": _f1_score,
+    "false_negative_rate": _false_negative_rate,
+    "fnr": _false_negative_rate,
     "false_positive_rate": _false_positive_rate,
     "fpr": _false_positive_rate,
     "positive_likelihood_ratio": _positive_likelihood_ratio,
     "lr+": _positive_likelihood_ratio,
+    "negative_likelihood_ratio": _negative_likelihood_ratio,
+    "lr-": _negative_likelihood_ratio,
     "mcc": _matthews_corrcoef,
     "bm": _informedness,
     "informedness": _informedness,
@@ -1628,10 +1614,13 @@ def classification_report(
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
             f1          : F1 Score
+            fnr         : False Negative Rate = fn / (fn + tp)
             fpr         : False Positive Rate = fp / (fp + tn)
             logloss     : Log Loss
-            lr+         : positive_likelihood_ratio
+            lr+         : Positive Likelihood Ratio
                           = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness = ppv + npv - 1
             npv         : Negative Predictive Value 

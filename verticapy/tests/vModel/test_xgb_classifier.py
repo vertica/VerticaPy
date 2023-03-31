@@ -462,7 +462,7 @@ class TestXGBC:
             -0.30000000000000004
         )
         assert model.score(cutoff=0.1, metric="mk", pos_label="Train") == pytest.approx(
-            -0.30000000000000004
+            -0.7
         )
         assert model.score(
             cutoff=0.9, metric="npv", pos_label="Train"

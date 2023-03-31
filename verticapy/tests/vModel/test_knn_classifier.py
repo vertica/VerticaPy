@@ -157,7 +157,7 @@ class TestKNeighborsClassifier:
         cls_rep1 = model.classification_report().transpose()
 
         assert cls_rep1["auc"][0] == pytest.approx(0.696400048039392)
-        assert cls_rep1["prc_auc"][0] == pytest.approx(0.7776321621297582)
+        assert cls_rep1["prc_auc"][0] == pytest.approx(0.7591081348272292)
         assert cls_rep1["accuracy"][0] == pytest.approx(0.6658506731946144)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.248241359319007)
         assert cls_rep1["precision"][0] == pytest.approx(0.8679245283018868)
@@ -183,7 +183,7 @@ class TestKNeighborsClassifier:
         assert model.score(metric="mcc") == pytest.approx(0.40382652359985155)
         assert model.score(metric="mk") == pytest.approx(0.41516247778624016)
         assert model.score(metric="npv") == pytest.approx(0.6811881188118812)
-        assert model.score(metric="prc_auc") == pytest.approx(0.7776321621297582)
+        assert model.score(metric="prc_auc") == pytest.approx(0.7591081348272292)
         assert model.score(metric="precision") == pytest.approx(0.7339743589743589)
         assert model.score(metric="specificity") == pytest.approx(0.8056206088992974)
 

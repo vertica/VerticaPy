@@ -90,11 +90,15 @@ def randomized_features_search_cv(
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
             f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
             fpr         : False Positive Rate 
                           = fp / (fp + tn)
             logloss     : Log Loss
-            lr+         : positive_likelihood_ratio
+            lr+         : Positive Likelihood Ratio
                           = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1

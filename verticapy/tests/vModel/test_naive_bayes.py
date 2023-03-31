@@ -457,7 +457,7 @@ class TestNB:
         ) == pytest.approx(0.9767441860465116)
         assert model.score(
             cutoff=0.9, metric="specificity", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+        ) == pytest.approx(0.99)
 
     def test_set_params(self, model):
         model.set_params({"alpha": 0.5})
