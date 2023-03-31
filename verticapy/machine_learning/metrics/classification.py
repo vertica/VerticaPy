@@ -989,7 +989,7 @@ def _compute_function_metrics(
     pos_label: PythonScalar = 1,
     nbins: int = 30,
     fun_sql_name: str = "",
-) -> list[list]:
+) -> list[list[float]]:
     """
     Returns the function metrics.
     """
@@ -1138,7 +1138,13 @@ def best_cutoff(
         score.
     """
     if pos_label != None or isinstance(labels, type(None)):
-        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        if isinstance(y_score, str):
+            y_s = y_score
+        elif (len(y_score) == 2) and ("{}" in y_score[0]):
+            y_s = y_score[0].format(pos_label)
+        else:
+            idx = list(labels).index(pos_label)
+            y_s = y_score[idx]
         threshold, false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
             y_score=y_s,
@@ -1220,7 +1226,13 @@ def roc_auc(
         score.
 	"""
     if pos_label != None or isinstance(labels, type(None)):
-        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        if isinstance(y_score, str):
+            y_s = y_score
+        elif (len(y_score) == 2) and ("{}" in y_score[0]):
+            y_s = y_score[0].format(pos_label)
+        else:
+            idx = list(labels).index(pos_label)
+            y_s = y_score[idx]
         threshold, false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
             y_score=y_s,
@@ -1300,7 +1312,13 @@ def prc_auc(
         score.
     """
     if pos_label != None or isinstance(labels, type(None)):
-        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        if isinstance(y_score, str):
+            y_s = y_score
+        elif (len(y_score) == 2) and ("{}" in y_score[0]):
+            y_s = y_score[0].format(pos_label)
+        else:
+            idx = list(labels).index(pos_label)
+            y_s = y_score[idx]
         threshold, recall, precision = _compute_function_metrics(
             y_true=y_true,
             y_score=y_s,

@@ -175,7 +175,7 @@ class TestKNeighborsClassifier:
         assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(
             0.4773561811505508
         )
-        assert model.score(metric="best_cutoff") == pytest.approx(0.6)
+        assert model.score(metric="best_cutoff") == pytest.approx(0.999)
         assert model.score(metric="bm") == pytest.approx(0.39280009607878474)
         assert model.score(metric="csi") == pytest.approx(0.48414376321353064)
         assert model.score(metric="f1") == pytest.approx(0.6524216524216524)

@@ -90,7 +90,7 @@ def aic_bic(
     res = regression_report(
         y_true, y_score, input_relation, metrics=["aic", "bic"], k=k
     )
-    return tupel(res["value"])
+    return tuple(res["value"])
 
 
 def aic_score(

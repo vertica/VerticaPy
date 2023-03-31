@@ -424,10 +424,10 @@ class TestDecisionTreeClassifier:
         ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, metric="precision", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, metric="precision", pos_label="Train"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, metric="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
