@@ -937,3 +937,79 @@ class testVDFContourPlot:
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
 
+
+class testVDFDensityPlot:
+    def test_properties_output_type(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["0"].density()
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["0"].density(by="binary")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    # ToDO - Change below after quotation bug fixed
+    def test_properties_x_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["0"].density()
+        # Assert -
+        assert (
+            result.layout["xaxis"]["title"]["text"] == '"0"'
+        ), "X axis title incorrect"
+
+    def test_properties_y_axis_title(self, load_plotly, amazon_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["0"].density()
+        # Assert
+        assert (
+            result.layout["yaxis"]["title"]["text"] == "density"
+        ), "Y axis title incorrect"
+
+    def test_properties_multiple_plots_produced_for_multiplot(
+        self, load_plotly, amazon_vd
+    ):
+        # Arrange
+        number_of_plots = 2
+        # Act
+        result = dummy_vd["0"].density(by="binary")
+        # Assert
+        assert (
+            len(result.data) == number_of_plots
+        ), "Two plots not produced for two classes"
+
+    def test_data_x_axis_range(self, load_plotly, dummy_vd):
+        # Arrange
+        x_min = dummy_vd["0"].min()
+        x_max = dummy_vd["0"].max()
+
+        def func(a, b):
+            return b
+
+        # Act
+        result = dummy_vd["0"].density()
+        assert (
+            result.data[0]["x"].min() == x_min and result.data[0]["x"].max() == x_max
+        ), "The range in data is not consistent with plot"
+
+    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = dummy_vd["0"].density(width=custom_width)
+        # Assert
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+        # rrange
+        custom_height = 700
+        # Act
+        result = dummy_vd["0"].density(height=custom_height)
+        # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
