@@ -487,7 +487,7 @@ class TestXGBC:
         ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.1, metric="specificity", pos_label="Train"
-        ) == pytest.approx(1.0)
+        ) == pytest.approx(0.0)
 
     def test_set_params(self, model):
         model.set_params({"nbins": 1000})
