@@ -242,14 +242,14 @@ def cross_validate(
     if training_score:
         result_train["avg"], result_train["std"] = [], []
     for item in total:
-        result["avg"] += [np.mean(np.array(item).astype(float))]
-        result["std"] += [np.std(np.array(item).astype(float))]
+        result["avg"] += [np.nanmean(np.array(item).astype(float))]
+        result["std"] += [np.nanstd(np.array(item).astype(float))]
     if training_score:
         for item in total_train:
-            result_train["avg"] += [np.mean(np.array(item).astype(float))]
-            result_train["std"] += [np.std(np.array(item).astype(float))]
+            result_train["avg"] += [np.nanmean(np.array(item).astype(float))]
+            result_train["std"] += [np.nanstd(np.array(item).astype(float))]
 
-    total_time = list(total_time) + [np.mean(total_time), np.std(total_time)]
+    total_time = list(total_time) + [np.nanmean(total_time), np.nanstd(total_time)]
     result = TableSample(values=result).transpose()
     if show_time:
         result.values["time"] = total_time
