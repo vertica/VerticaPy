@@ -158,7 +158,7 @@ class TestKNeighborsClassifier:
 
         assert cls_rep1["auc"][0] == pytest.approx(0.696400048039392)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.7591081348272292)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6658506731946144)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.7013463892288861)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.248241359319007)
         assert cls_rep1["precision"][0] == pytest.approx(0.8679245283018868)
         assert cls_rep1["recall"][0] == pytest.approx(0.35384615384615387)

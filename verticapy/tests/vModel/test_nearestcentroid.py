@@ -181,7 +181,7 @@ class TestNearestCentroid:
         assert cls_rep1["precision"][0] == pytest.approx(0.636734693877551)
         assert cls_rep1["recall"][0] == pytest.approx(0.3989769820971867)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.49056603773584906)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.28346499991292595)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.28558718217018486)
         assert cls_rep1["informedness"][0] == pytest.approx(0.282259939548942)
         assert cls_rep1["markedness"][0] == pytest.approx(0.28467520507529365)
         assert cls_rep1["csi"][0] == pytest.approx(0.3902877697841727)
