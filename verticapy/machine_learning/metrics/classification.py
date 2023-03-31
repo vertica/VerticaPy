@@ -1388,7 +1388,13 @@ def log_loss(
         score.
     """
     if pos_label != None or isinstance(labels, type(None)):
-        y_s = y_score if isinstance(y_score, str) else y_score[0].format(pos_label)
+        if isinstance(y_score, str):
+            y_s = y_score
+        elif (len(y_score) == 2) and ("{}" in y_score[0]):
+            y_s = y_score[0].format(pos_label)
+        else:
+            idx = list(labels).index(pos_label)
+            y_s = y_score[idx]
         return _executeSQL(
             query=f"""
                 SELECT 
