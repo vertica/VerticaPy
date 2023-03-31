@@ -406,7 +406,7 @@ def balanced_accuracy(
 
 
 def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
-    return tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
+    return tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -466,12 +466,12 @@ def critical_success_index(
 
 
 def _f1_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    recall = tp / (tp + fn) if (tp + fn != 0) else 0
-    precision = tp / (tp + fp) if (tp + fp != 0) else 0
+    recall = _recall_score(tn, fn, fp, tp)
+    precision = _precision_score(tn, fn, fp, tp)
     f1 = (
         2 * (precision * recall) / (precision + recall)
         if (precision + recall != 0)
-        else 0
+        else 0.0
     )
     return f1
 
@@ -523,6 +523,66 @@ def f1_score(
     """
     return _compute_final_score(
         _f1_score,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
+def _false_positive_rate(tn: int, fn: int, fp: int, tp: int) -> float:
+    return fn / (fn + tp) if (fn + tp != 0) else 0.0
+
+
+@save_verticapy_logs
+def false_positive_rate(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the False Positive Rate.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(
+        _false_positive_rate,
         y_true,
         y_score,
         input_relation,
@@ -593,8 +653,8 @@ def informedness(
 
 
 def _markedness(tn: int, fn: int, fp: int, tp: int) -> float:
-    ppv = tp / (tp + fp) if (tp + fp != 0) else 0
-    npv = tn / (tn + fn) if (tn + fn != 0) else 0
+    ppv = tp / (tp + fp) if (tp + fp != 0) else 0.0
+    npv = tn / (tn + fn) if (tn + fn != 0) else 0.0
     return ppv + npv - 1
 
 
@@ -658,7 +718,7 @@ def _matthews_corrcoef(tn: int, fn: int, fp: int, tp: int) -> float:
     return (
         (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
         if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
-        else 0
+        else 0.0
     )
 
 
@@ -719,7 +779,7 @@ def matthews_corrcoef(
 
 
 def _negative_predictive_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    return tn / (tn + fn) if (tn + fn != 0) else 0
+    return tn / (tn + fn) if (tn + fn != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -778,8 +838,68 @@ def negative_predictive_score(
     )
 
 
+def _positive_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
+    return _recall_score(tn, fn, fp, tp) / _false_positive_rate(tn, fn, fp, tp)
+
+
+@save_verticapy_logs
+def positive_likelihood_ratio(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Positive Likelihood ratio.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(
+        _positive_likelihood_ratio,
+        y_true,
+        y_score,
+        input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+    )
+
+
 def _precision_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    return tp / (tp + fp) if (tp + fp != 0) else 0
+    return tp / (tp + fp) if (tp + fp != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -839,7 +959,7 @@ def precision_score(
 
 
 def _recall_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    return tp / (tp + fn) if (tp + fn != 0) else 0
+    return tp / (tp + fn) if (tp + fn != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -899,7 +1019,7 @@ def recall_score(
 
 
 def _specificity_score(tn: int, fn: int, fp: int, tp: int) -> float:
-    return tn / (tn + fp) if (tn + fp != 0) else 0
+    return tn / (tn + fp) if (tn + fp != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -986,13 +1106,15 @@ def _compute_function_metrics(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: PythonScalar = 1,
+    pos_label: PythonScalar = None,
     nbins: int = 30,
     fun_sql_name: str = "",
 ) -> list[list[float]]:
     """
     Returns the function metrics.
     """
+    if isinstance(pos_label, type(None)):
+        pos_label = 1
     if fun_sql_name == "lift_table":
         label = "lift_curve"
     else:
@@ -1440,6 +1562,10 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "npv": _negative_predictive_score,
     "f1": _f1_score,
     "f1_score": _f1_score,
+    "false_positive_rate": _false_positive_rate,
+    "fpr": _false_positive_rate,
+    "positive_likelihood_ratio": _positive_likelihood_ratio,
+    "lr+": _positive_likelihood_ratio,
     "mcc": _matthews_corrcoef,
     "bm": _informedness,
     "informedness": _informedness,
@@ -1501,8 +1627,11 @@ def classification_report(
             bm          : Informedness = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fpr         : False Positive Rate = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : positive_likelihood_ratio
+                          = tpr / fpr
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness = ppv + npv - 1
             npv         : Negative Predictive Value 

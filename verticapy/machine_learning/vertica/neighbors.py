@@ -360,7 +360,6 @@ class KNeighborsClassifier(MulticlassClassifier):
         else:
             return cutoff
 
-
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -511,7 +510,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     def _confusion_matrix(
-        self, pos_label: Optional[PythonScalar] = None, cutoff: Optional[PythonNumber] = None,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
     ) -> TableSample:
         """
         Computes the model confusion matrix.
