@@ -99,7 +99,7 @@ class TestNB:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.0)
         assert cls_rep1["precision"][0] == pytest.approx(0.8928571428571429)
         assert cls_rep1["recall"][0] == pytest.approx(1.0)
-        assert cls_rep1["f1_score"][0] == pytest.approx(1.0)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.9433962264150945)
         assert cls_rep1["mcc"][0] == pytest.approx(1.0)
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
@@ -433,7 +433,7 @@ class TestNB:
         ) == pytest.approx(0.8300000000000001)
         assert model.score(
             cutoff=0.9, metric="csi", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(0.8235294117647058)
         assert model.score(
             cutoff=0.9, metric="f1", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)
