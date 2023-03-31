@@ -54,6 +54,14 @@ def dummy_dist_vd():
     median = 50
     q1 = 40
     q3 = 60
+    percentage_A = 0.4
+    percentage_B = 0.3
+    percentage_C = 1 - (percentage_A + percentage_B)
+    categories = ["A", "B", "C"]
+    category_array = np.random.choice(
+        categories, size=N, p=[percentage_A, percentage_B, percentage_C]
+    )
+    category_array = category_array.reshape(len(category_array), 1)
     zeros_array = np.zeros(int(N * (1 - ones_percentage)))
     ones_array = np.ones(int(N * ones_percentage))
     result_array = np.concatenate((zeros_array, ones_array))
@@ -62,7 +70,7 @@ def dummy_dist_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     data = data.reshape(len(data), 1)
-    cols_combined = np.concatenate((data, result_array), axis=1)
+    cols_combined = np.concatenate((data, result_array, category_array), axis=1)
     data_all = pd.DataFrame(cols_combined)
     dummy = verticapy.vDataFrame(data_all)
     dummy["1"].rename("binary")
