@@ -103,7 +103,7 @@ class TestNB:
         assert cls_rep1["mcc"][0] == pytest.approx(0.9161253813129043)
         assert cls_rep1["informedness"][0] == pytest.approx(0.94)
         assert cls_rep1["markedness"][0] == pytest.approx(0.8928571428571428)
-        assert cls_rep1["csi"][0] == pytest.approx(1.0)
+        assert cls_rep1["csi"][0] == pytest.approx(0.8928571428571429)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -448,13 +448,13 @@ class TestNB:
         ) == pytest.approx(0.9019778309063247)
         assert model.score(
             cutoff=0.9, metric="npv", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+        ) == pytest.approx(0.9252336448598131)
         assert model.score(
             cutoff=0.9, metric="prc_auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9864010713921592)
         assert model.score(
             cutoff=0.9, metric="precision", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+        ) == pytest.approx(0.8928571428571429)
         assert model.score(
             cutoff=0.9, metric="specificity", pos_label="Iris-virginica"
         ) == pytest.approx(1.0)

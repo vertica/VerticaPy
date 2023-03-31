@@ -349,6 +349,18 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         return False
 
+    def _check_cutoff(self, cutoff: Optional[PythonNumber] = None):
+        if isinstance(cutoff, type(None)):
+            return 1.0 / len(self.classes_)
+        elif not (0 <= cutoff <= 1):
+            ValueError(
+                "Incorrect parameter 'cutoff'.\nThe cutoff "
+                "must be between 0 and 1, inclusive."
+            )
+        else:
+            return cutoff
+
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -481,12 +493,13 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _get_y_score(
         self,
         pos_label: Optional[PythonScalar] = None,
-        cutoff: PythonNumber = 0.5,
+        cutoff: Optional[PythonNumber] = None,
         allSQL: bool = False,
     ) -> str:
         """
         Returns the input which represents the model's scoring.
         """
+        cutoff = self._check_cutoff(cutoff=cutoff)
         return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
 
     def _compute_accuracy(self) -> float:
@@ -498,7 +511,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     def _confusion_matrix(
-        self, pos_label: Optional[PythonScalar] = None, cutoff: PythonNumber = -1,
+        self, pos_label: Optional[PythonScalar] = None, cutoff: Optional[PythonNumber] = None,
     ) -> TableSample:
         """
         Computes the model confusion matrix.
@@ -514,6 +527,7 @@ class KNeighborsClassifier(MulticlassClassifier):
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
         else:
+            cutoff = self._check_cutoff(cutoff=cutoff)
             pos_label = self._check_pos_label(pos_label=pos_label)
             input_relation = (
                 self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
@@ -529,20 +543,16 @@ class KNeighborsClassifier(MulticlassClassifier):
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
         name: str = "",
-        cutoff: PythonNumber = 0.5,
+        cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
         **kwargs,
     ) -> vDataFrame:
         """
         Predicts using the input relation.
         """
+        cutoff = self._check_cutoff(cutoff=cutoff)
         if isinstance(X, str):
             X = [X]
-        if not (isinstance(cutoff, type(None))) and not (0 <= cutoff <= 1):
-            ValueError(
-                "Incorrect parameter 'cutoff'.\nThe cutoff "
-                "must be between 0 and 1, inclusive."
-            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
