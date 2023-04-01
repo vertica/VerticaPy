@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, re, time, warnings
-from typing import Union
+from typing import Any, Optional, Union
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
@@ -32,14 +32,14 @@ from verticapy.sql.flex import isvmap
 
 
 class vDFSystem:
-    def __format__(self, format_spec) -> str:
+    def __format__(self, format_spec: Any) -> str:
         return format(self._genSQL(), format_spec)
 
-    def _add_to_history(self, message: str):
+    def _add_to_history(self, message: str) -> "vDataFrame":
         """
-    VERTICAPY stores the user modification and help the user to look at 
-    what he/she did. This method is to use to add a customized message in the 
-    vDataFrame history attribute.
+        VERTICAPY stores the user modification and help the user to 
+        look  at what  he/she did.  This method is to use  to add a 
+        customized message in the vDataFrame history attribute.
         """
         self._vars["history"] += ["{" + time.strftime("%c") + "}" + " " + message]
         return self
@@ -49,34 +49,34 @@ class vDFSystem:
         split: bool = False,
         transformations: dict = {},
         force_columns: SQLColumns = [],
-    ):
+    ) -> str:
         """
-    Method to use to generate the SQL final relation. It will look at all 
-    transformations to build a nested query where each transformation will 
-    be associated to a specific floor.
+        Method to use  to generate the SQL final relation. It will 
+        look at all transformations  to build a nested query where 
+        each transformation will be associated to a specific floor.
 
-    Parameters
-    ----------
-    split: bool, optional
-        Adds a split column __verticapy_split__ in the relation 
-        which can be to use to downsample the data.
-    transformations: dict, optional
-        Dictionary of columns and their respective transformation. It 
-        will be to use to test if an expression is correct and can be 
-        added it in the final relation.
-    force_columns: SQLColumns, optional
-        Columns to use to generate the final relation.
+        Parameters
+        ----------
+        split: bool, optional
+            Adds a split  column __verticapy_split__  in the relation 
+            which can be to use to downsample the data.
+        transformations: dict, optional
+            Dictionary of columns and their respective transformation. 
+            It will be to use to test if an expression is correct and 
+            can be added it in the final relation.
+        force_columns: SQLColumns, optional
+            Columns to use to generate the final relation.
 
-    Returns
-    -------
-    str
-        The SQL final relation.
+        Returns
+        -------
+        str
+            The SQL final relation.
         """
         # The First step is to find the Max Floor
         all_imputations_grammar = []
-        force_columns_copy = [col for col in force_columns]
+        force_columns_copy = copy.deepcopy(force_columns)
         if not (force_columns):
-            force_columns = [col for col in self._vars["columns"]]
+            force_columns = copy.deepcopy(self._vars["columns"])
         for column in force_columns:
             all_imputations_grammar += [
                 [transformation[0] for transformation in self[column]._transf]
@@ -130,6 +130,8 @@ class vDFSystem:
                 elif values[j] != "___VERTICAPY_UNDEFINED___":
                     values_str = values[j].replace("{}", columns[j])
                     values[j] = f"{values_str} AS {columns[j]}"
+            if len(values) == 0:
+                print("hello")
             table = f"SELECT {', '.join(values)} FROM ({table}) VERTICAPY_SUBTABLE"
             if len(all_where) > i - 1:
                 table += all_where[i - 1]
@@ -171,8 +173,7 @@ class vDFSystem:
                 FROM {table}) VERTICAPY_SUBTABLE"""
         main_relation = self._vars["main_relation"]
         all_main_relation = f"(SELECT * FROM {main_relation}) VERTICAPY_SUBTABLE"
-        table = table.replace(all_main_relation, main_relation)
-        return table
+        return table.replace(all_main_relation, main_relation)
 
     def _get_catalog_value(
         self,
@@ -180,11 +181,11 @@ class vDFSystem:
         key: str = "",
         method: str = "",
         columns: SQLColumns = [],
-    ):
+    ) -> Optional[str]:
         """
-    VERTICAPY stores the already computed aggregations to avoid useless 
-    computations. This method returns the stored aggregation if it was already 
-    computed.
+        VERTICAPY  stores  the  already  computed aggregations to  avoid 
+        useless computations. This method returns the stored aggregation 
+        if it was already computed.
         """
         if not (conf.get_option("cache")):
             return "VERTICAPY_NOT_PRECOMPUTED"
@@ -219,9 +220,9 @@ class vDFSystem:
             return "VERTICAPY_NOT_PRECOMPUTED"
         return result
 
-    def _get_last_order_by(self):
+    def _get_last_order_by(self) -> str:
         """
-    Returns the last column used to sort the data.
+        Returns the last column used to sort the data.
         """
         max_pos, order_by = 0, ""
         columns_tmp = [elem for elem in self.get_columns()]
@@ -231,9 +232,9 @@ class vDFSystem:
             order_by = self._vars["order_by"][max_pos]
         return order_by
 
-    def _get_sort_syntax(self, columns: SQLColumns):
+    def _get_sort_syntax(self, columns: SQLColumns) -> str:
         """
-    Returns the SQL syntax to use to sort the input columns.
+        Returns the SQL syntax to use to sort the input columns.
         """
         if not (columns):
             return ""
@@ -260,10 +261,11 @@ class vDFSystem:
         columns: SQLColumns = [],
         matrix: str = "",
         column: str = "",
-    ):
+    ) -> None:
         """
-    VERTICAPY stores the already computed aggregations to avoid useless 
-    computations. This method stores the input aggregation in the vDataColumn catalog.
+        VERTICAPY stores the already computed aggregations to 
+        avoid useless  computations.  This  method stores the 
+        input aggregation in the vDataColumn catalog.
         """
         columns = self._format_colnames(columns)
         agg_dict = {
@@ -317,72 +319,68 @@ class vDFSystem:
                         if val != val:
                             val = None
                         self[column]._catalog[key] = val
+        return None
 
-    def current_relation(self, reindent: bool = True):
+    def current_relation(self, reindent: bool = True) -> str:
         """
-    Returns the current vDataFrame relation.
+        Returns the current vDataFrame relation.
 
-    Parameters
-    ----------
-    reindent: bool, optional
-        Reindent the text to be more readable. 
+        Parameters
+        ----------
+        reindent: bool, optional
+            Reindent the text to be more readable. 
 
-    Returns
-    -------
-    str
-        The formatted current vDataFrame relation.
+        Returns
+        -------
+        str
+            The formatted current vDataFrame relation.
         """
         if reindent:
             return indentSQL(self._genSQL())
         else:
             return self._genSQL()
 
-    def del_catalog(self):
+    def del_catalog(self) -> "vDataFrame":
         """
-    Deletes the current vDataFrame catalog.
+        Deletes the current vDataFrame catalog.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         self._update_catalog(erase=True)
         return self
 
-    def empty(self):
+    def empty(self) -> bool:
         """
-    Returns True if the vDataFrame is empty.
+        Returns True if the vDataFrame is empty.
 
-    Returns
-    -------
-    bool
-        True if the vDataFrame has no vDataColumns.
+        Returns
+        -------
+        bool
+            True if the vDataFrame has no vDataColumns.
         """
         return not (self.get_columns())
 
     @save_verticapy_logs
-    def expected_store_usage(self, unit: str = "b"):
+    def expected_store_usage(self, unit: str = "b") -> TableSample:
         """
-    Returns the vDataFrame expected store usage. 
+        Returns the vDataFrame expected store usage. 
 
-    Parameters
-    ----------
-    unit: str, optional
-        unit used for the computation
-        b : byte
-        kb: kilo byte
-        gb: giga byte
-        tb: tera byte
+        Parameters
+        ----------
+        unit: str, optional
+            unit used for the computation
+            b : byte
+            kb: kilo byte
+            gb: giga byte
+            tb: tera byte
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.memory_usage : Returns the vDataFrame memory usage.
+        Returns
+        -------
+        TableSample
+            result.
         """
         if unit.lower() == "kb":
             div_unit = 1024
@@ -480,20 +478,21 @@ class vDFSystem:
         return TableSample(values=values).transpose()
 
     @save_verticapy_logs
-    def explain(self, digraph: bool = False):
+    def explain(self, digraph: bool = False) -> str:
         """
-    Provides information on how Vertica is computing the current vDataFrame
-    relation.
+        Provides information on how Vertica is computing the current 
+        vDataFrame relation.
 
-    Parameters
-    ----------
-    digraph: bool, optional
-        If set to True, returns only the digraph of the explain plan.
+        Parameters
+        ----------
+        digraph: bool, optional
+            If set to True,  returns only the digraph of the explain 
+            plan.
 
-    Returns
-    -------
-    str
-        explain plan
+        Returns
+        -------
+        str
+            explain plan
         """
         result = _executeSQL(
             query=f"""
@@ -516,14 +515,15 @@ class vDFSystem:
             result = "digraph G {" + result.split("digraph G {")[1]
         return result
 
-    def info(self):
+    def info(self) -> str:
         """
-    Displays information about the different vDataFrame transformations.
+        Displays information about the different vDataFrame 
+        transformations.
 
-    Returns
-    -------
-    str
-        information on the vDataFrame modifications
+        Returns
+        -------
+        str
+            information on the vDataFrame modifications
         """
         if len(self._vars["history"]) == 0:
             result = "The vDataFrame was never modified."
@@ -537,19 +537,14 @@ class vDFSystem:
         return result
 
     @save_verticapy_logs
-    def memory_usage(self):
+    def memory_usage(self) -> TableSample:
         """
-    Returns the vDataFrame memory usage. 
+        Returns the vDataFrame memory usage. 
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.expected_store_usage : Returns the expected store usage.
+        Returns
+        -------
+        TableSample
+            result.
         """
         total = sum([sys.getsizeof(elem) for elem in self._vars]) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
@@ -563,21 +558,21 @@ class vDFSystem:
         return TableSample(values=values)
 
     @save_verticapy_logs
-    def swap(self, column1: Union[int, str], column2: Union[int, str]):
+    def swap(self, column1: Union[int, str], column2: Union[int, str]) -> "vDataFrame":
         """
-    Swap the two input vDataColumns.
+        Swap the two input vDataColumns.
 
-    Parameters
-    ----------
-    column1: str / int
-        The first vDataColumn or its index to swap.
-    column2: str / int
-        The second vDataColumn or its index to swap.
+        Parameters
+        ----------
+        column1: str / int
+            The first vDataColumn or its index to swap.
+        column2: str / int
+            The second vDataColumn or its index to swap.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(column1, int):
             assert column1 < self.shape()[1], ParameterError(
@@ -611,32 +606,28 @@ class vDCSystem:
     def __format__(self, format_spec) -> str:
         return format(self._alias, format_spec)
 
-    def add_copy(self, name: str):
+    def add_copy(self, name: str) -> "vDataFrame":
         """
-    Adds a copy vDataColumn to the parent vDataFrame.
+        Adds a copy vDataColumn to the parent vDataFrame.
 
-    Parameters
-    ----------
-    name: str
-        Name of the copy.
+        Parameters
+        ----------
+        name: str
+            Name of the copy.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.eval : Evaluates a customized expression.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
+        if name == "":
+            raise ValueError("The parameter 'name' must not be empty")
+        elif self._parent._is_colname_in(name):
+            raise ValueError(
+                f"A vDataColumn has already the alias {name}.\nBy changing "
+                "the parameter 'name', you'll be able to solve this issue."
+            )
         name = quote_ident(name.replace('"', "_"))
-        assert name.replace('"', ""), EmptyParameter(
-            "The parameter 'name' must not be empty"
-        )
-        assert not (self._parent._is_colname_in(name)), NameError(
-            f"A vDataColumn has already the alias {name}.\nBy changing "
-            "the parameter 'name', you'll be able to solve this issue."
-        )
         new_vDataColumn = self._parent._new_vdatacolumn(
             name,
             parent=self._parent,
@@ -653,18 +644,14 @@ class vDCSystem:
         return self._parent
 
     @save_verticapy_logs
-    def memory_usage(self):
+    def memory_usage(self) -> float:
         """
-    Returns the vDataColumn memory usage. 
+        Returns the vDataColumn memory usage. 
 
-    Returns
-    -------
-    float
-        vDataColumn memory usage (byte)
-
-    See Also
-    --------
-    vDataFrame.memory_usage : Returns the vDataFrame memory usage.
+        Returns
+        -------
+        float
+            vDataColumn memory usage (byte)
         """
         total = (
             sys.getsizeof(self)
@@ -677,18 +664,14 @@ class vDCSystem:
         return total
 
     @save_verticapy_logs
-    def store_usage(self):
+    def store_usage(self) -> int:
         """
-    Returns the vDataColumn expected store usage (unit: b).
+        Returns the vDataColumn expected store usage (unit: b).
 
-    Returns
-    -------
-    int
-        vDataColumn expected store usage.
-
-    See Also
-    --------
-    vDataFrame.expected_store_usage : Returns the vDataFrame expected store usage.
+        Returns
+        -------
+        int
+            vDataColumn expected store usage.
         """
         pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -710,37 +693,35 @@ class vDCSystem:
         )
         return store_usage
 
-    def rename(self, new_name: str):
+    def rename(self, new_name: str) -> "vDataFrame":
         """
-    Renames the vDataColumn by dropping the current vDataColumn and creating a copy with 
-    the specified name.
+        Renames the vDataColumn by dropping the current vDataColumn 
+        and creating a copy with the specified name.
 
-    \u26A0 Warning : SQL code generation will be slower if the vDataFrame has been 
-                     transformed multiple times, so it's better practice to use 
-                     this method when first preparing your data.
+        \u26A0 Warning : SQL code generation  will be slower if the 
+                         vDataFrame  has been transformed  multiple 
+                         times, so it's better practice to use this 
+                         method when first preparing your data.
 
-    Parameters
-    ----------
-    new_name: str
-        The new vDataColumn alias.
+        Parameters
+        ----------
+        new_name: str
+            The new vDataColumn alias.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.add_copy : Creates a copy of the vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         old_name = quote_ident(self._alias)
-        new_name = new_name.replace('"', "")
-        assert not (self._parent._is_colname_in(new_name)), NameError(
-            f"A vDataColumn has already the alias {new_name}.\n"
-            "By changing the parameter 'new_name', you'll "
-            "be able to solve this issue."
-        )
-        self.add_copy(new_name)
+        new_name = quote_ident(new_name)[1:-1]
+        if self._parent._is_colname_in(new_name):
+            raise NameError(
+                f"A vDataColumn has already the alias {new_name}.\n"
+                "By changing the parameter 'new_name', you'll "
+                "be able to solve this issue."
+            )
+        self._parent.eval(name=new_name, expr=old_name)
         parent = self.drop(add_history=False)
         parent._add_to_history(
             f"[Rename]: The vDataColumn {old_name} was renamed '{new_name}'."
