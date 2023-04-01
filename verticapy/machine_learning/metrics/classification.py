@@ -451,7 +451,7 @@ def diagnostic_odds_ratio(
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
     """
-    Computes the Positive Likelihood ratio.
+    Computes the Diagnostic odds ratio.
 
     Parameters
     ----------
@@ -644,6 +644,162 @@ def false_positive_rate(
         score.
     """
     return _compute_final_score(_false_positive_rate, **locals(),)
+
+
+def _false_discovery_rate(tn: int, fn: int, fp: int, tp: int) -> float:
+    return 1 - _precision_score(**locals())
+
+
+@save_verticapy_logs
+def false_discovery_rate(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the False Discovery Rate.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_false_discovery_rate, **locals(),)
+
+
+def _false_omission_rate(tn: int, fn: int, fp: int, tp: int) -> float:
+    return 1 - _negative_predictive_score(**locals())
+
+
+@save_verticapy_logs
+def false_omission_rate(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the False Omission Rate.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_false_omission_rate, **locals(),)
+
+
+def _fowlkes_mallows_index(tn: int, fn: int, fp: int, tp: int) -> float:
+    return np.sqrt(_precision_score(**locals()) * _recall_score(**locals()))
+
+
+@save_verticapy_logs
+def fowlkes_mallows_index(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Fowlkes–Mallows index.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_fowlkes_mallows_index, **locals(),)
 
 
 def _informedness(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -913,7 +1069,8 @@ def negative_likelihood_ratio(
 
 
 def _positive_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
-    return _recall_score(**locals()) / _false_positive_rate(**locals())
+    tpr, fpr = _recall_score(**locals()), _false_positive_rate(**locals())
+    return tpr / fpr if fpr != 0 else 0.0
 
 
 @save_verticapy_logs
@@ -1014,6 +1171,107 @@ def precision_score(
         score.
     """
     return _compute_final_score(_precision_score, **locals(),)
+
+
+@save_verticapy_logs
+def prevalence_threshold(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Prevalence.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_prevalence, **locals(),)
+
+
+def _prevalence_threshold(tn: int, fn: int, fp: int, tp: int) -> float:
+    fpr, tpr = _false_positive_rate(**locals()), np.sqrt(_recall_score(**locals()))
+    return np.sqrt(fpr) / (tpr + fpr) if ((tpr + fpr) != 0) else 0.0
+
+
+@save_verticapy_logs
+def prevalence_threshold(
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> Union[float, list[float]]:
+    """
+    Computes the Prevalence Threshold.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
+            scores   : scores  for   all  the  classes.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    return _compute_final_score(_prevalence_threshold, **locals(),)
 
 
 def _recall_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1604,6 +1862,10 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "fnr": _false_negative_rate,
     "false_positive_rate": _false_positive_rate,
     "fpr": _false_positive_rate,
+    "false_discovery_rate": _false_discovery_rate,
+    "fdr": _false_discovery_rate,
+    "false_omission_rate": _false_omission_rate,
+    "for": _false_omission_rate,
     "positive_likelihood_ratio": _positive_likelihood_ratio,
     "lr+": _positive_likelihood_ratio,
     "negative_likelihood_ratio": _negative_likelihood_ratio,
@@ -1615,8 +1877,13 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
     "informedness": _informedness,
     "mk": _markedness,
     "markedness": _markedness,
+    "ts": _critical_success_index,
     "csi": _critical_success_index,
     "critical_success_index": _critical_success_index,
+    "fowlkes_mallows_index": _fowlkes_mallows_index,
+    "fm": _fowlkes_mallows_index,
+    "prevalence_threshold": _prevalence_threshold,
+    "pt": _prevalence_threshold,
 }
 
 FUNCTIONS_OTHER_METRICS_DICTIONNARY = {
@@ -1672,7 +1939,11 @@ def classification_report(
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
             f1          : F1 Score
+            fdr         : False Discovery Rate = 1 - ppv
+            fm          : Fowlkes–Mallows index
+                          = sqrt(ppv * tpr)
             fnr         : False Negative Rate = fn / (fn + tp)
+            for         : False Omission Rate = 1 - npv
             fpr         : False Positive Rate = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -1686,6 +1957,8 @@ def classification_report(
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
             precision   : Precision = tp / (tp + fp)
+            pt          : Prevalence Threshold
+                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
             recall      : Recall = tp / (tp + fn)
             specificity : Specificity = tn / (tn + fp)
     labels: ArrayLike, optional
