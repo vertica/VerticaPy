@@ -54,6 +54,14 @@ def dummy_dist_vd():
     median = 50
     q1 = 40
     q3 = 60
+    percentage_A = 0.4
+    percentage_B = 0.3
+    percentage_C = 1 - (percentage_A + percentage_B)
+    categories = ["A", "B", "C"]
+    category_array = np.random.choice(
+        categories, size=N, p=[percentage_A, percentage_B, percentage_C]
+    )
+    category_array = category_array.reshape(len(category_array), 1)
     zeros_array = np.zeros(int(N * (1 - ones_percentage)))
     ones_array = np.ones(int(N * ones_percentage))
     result_array = np.concatenate((zeros_array, ones_array))
@@ -62,7 +70,7 @@ def dummy_dist_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     data = data.reshape(len(data), 1)
-    cols_combined = np.concatenate((data, result_array), axis=1)
+    cols_combined = np.concatenate((data, result_array, category_array), axis=1)
     data_all = pd.DataFrame(cols_combined)
     dummy = verticapy.vDataFrame(data_all)
     dummy["1"].rename("binary")
@@ -1011,5 +1019,76 @@ class testVDFDensityPlot:
         custom_height = 700
         # Act
         result = dummy_vd["0"].density(height=custom_height)
+        # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
+
+
+class testVDFSpiderPlot:
+    def test_properties_output_type(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["cats"].spider()
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_vd):
+        # Arrange
+        # Act
+        result = dummy_vd["cats"].spider(by="binary")
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_title(self, load_plotly, dummy_vd):
+        # Arrange
+        column_name = "cats"
+        # Act
+        result = dummy_vd[column_name].spider()
+        # Assert -
+        assert result.layout["title"]["text"] == column_name, "Title incorrect"
+
+    def test_properties_method_title_at_bottom(self, load_plotly, dummy_vd):
+        # Arrange
+        method_text = "(Method: Density)"
+        # Act
+        result = dummy_vd[column_name].spider()
+        # Assert -
+        assert (
+            result.layout["annotations"]["text"] == method_text
+        ), "Method title incorrect"
+
+    def test_properties_multiple_plots_produced_for_multiplot(
+        self, load_plotly, amazon_vd
+    ):
+        # Arrange
+        number_of_plots = 2
+        # Act
+        result = dummy_vd["cats"].spider(by="binary")
+        # Assert
+        assert (
+            len(result.data) == number_of_plots
+        ), "Two traces not produced for two classes of binary"
+
+    def test_data_all_categories(self, load_plotly, dummy_vd):
+        # Arrange
+        no_of_category = dummy_vd["cats"].nunique()
+        # Act
+        result = dummy_vd["cats"].density()
+        assert (
+            result.data[0]["r"].shape[0] == no_of_category
+        ), "The number of categories in the data differ from the plot"
+
+    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = dummy_vd["cats"].spider(width=custom_width)
+        # Assert
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+        # rrange
+        custom_height = 700
+        # Act
+        result = dummy_vd["cats"].spider(height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
