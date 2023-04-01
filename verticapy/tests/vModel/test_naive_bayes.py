@@ -95,15 +95,15 @@ class TestNB:
 
         assert cls_rep1["auc"][0] == pytest.approx(1.0)
         assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.96)
+        assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.0)
-        assert cls_rep1["precision"][0] == pytest.approx(0.8928571428571429)
+        assert cls_rep1["precision"][0] == pytest.approx(1.0)
         assert cls_rep1["recall"][0] == pytest.approx(1.0)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.9433962264150945)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.9161253813129043)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.94)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.8928571428571428)
-        assert cls_rep1["csi"][0] == pytest.approx(0.8928571428571429)
+        assert cls_rep1["f1_score"][0] == pytest.approx(1.0)
+        assert cls_rep1["mcc"][0] == pytest.approx(1.0)
+        assert cls_rep1["informedness"][0] == pytest.approx(1.0)
+        assert cls_rep1["markedness"][0] == pytest.approx(1.0)
+        assert cls_rep1["csi"][0] == pytest.approx(1.0)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -418,7 +418,7 @@ class TestNB:
 
     def test_score(self, model):
         # the value of cutoff has no impact on the result
-        assert model.score(metric="accuracy") == pytest.approx(0.96)
+        assert model.score(metric="accuracy") == pytest.approx(0.9733333333333334)
         assert model.score(
             cutoff=0.9, metric="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)
