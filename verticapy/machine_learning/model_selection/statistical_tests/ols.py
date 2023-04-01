@@ -69,11 +69,11 @@ def het_breuschpagan(
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
     try:
         model.fit(vdf_copy, X, "v_eps2")
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     except:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_copy, X, "v_eps2")
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     finally:
         model.drop()
     n = vdf.shape()[0]
@@ -132,7 +132,7 @@ def het_goldfeldquandt(
         for vdf_tmp in input_relation:
             model.drop()
             model.fit(vdf_tmp, X, y)
-            mse += [model.score(method="mse")]
+            mse += [model.score(metric="mse")]
             model.drop()
         return mse
 
@@ -215,11 +215,11 @@ def het_white(
     model = LinearRegression(name)
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     except:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_white, variables_names, "v_eps2")
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     finally:
         model.drop()
     n = vdf.shape()[0]
@@ -272,11 +272,11 @@ def endogtest(
     model = LinearRegression(name)
     try:
         model.fit(vdf, X, eps)
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     except:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf, X, eps)
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     finally:
         model.drop()
     n = vdf.shape()[0]
@@ -340,11 +340,11 @@ def variance_inflation_factor(
         model = LinearRegression(name)
         try:
             model.fit(vdf, X_r, y_r)
-            R2 = model.score("r2")
+            R2 = model.score(metric="r2")
         except:
             model.set_params({"solver": "bfgs"})
             model.fit(vdf, X_r, y_r)
-            R2 = model.score("r2")
+            R2 = model.score(metric="r2")
         finally:
             model.drop()
         if 1 - R2 != 0:

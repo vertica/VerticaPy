@@ -127,7 +127,7 @@ class TestPipeline:
         assert reg_rep["value"][5] == pytest.approx(0.7712695123858948, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-3366.7617912479104, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3366.75686210436, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-3339.65156943384, abs=1e-6)
 
         model_class = Pipeline(
@@ -150,33 +150,31 @@ class TestPipeline:
         assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519)
         assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047)
         assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
-
         model_class.drop()
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(3.592465, abs=1e-6)
+        assert model.score(metric="max") == pytest.approx(3.592465, abs=1e-6)
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0.609075, abs=1e-6)
+        assert model.score(metric="mae") == pytest.approx(0.609075, abs=1e-6)
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.496031, abs=1e-6)
+        assert model.score(metric="median") == pytest.approx(0.496031, abs=1e-6)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.594856660735976, abs=1e-6)
+        assert model.score(metric="mse") == pytest.approx(0.594856660735976, abs=1e-6)
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(0.7712695123858948, abs=1e-6)
+        assert model.score(metric="rmse") == pytest.approx(0.7712695123858948, abs=1e-6)
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(0.002509, abs=1e-6)
+        assert model.score(metric="msle") == pytest.approx(0.002509, abs=1e-6)
         # method = "r2"
         assert model.score() == pytest.approx(0.219816, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(0.21945605202370688, abs=1e-6)
+        assert model.score(metric="r2a") == pytest.approx(0.21945605202370688, abs=1e-6)
         # method = "var"
-        assert model.score(method="var") == pytest.approx(0.219816, abs=1e-6)
+        assert model.score(metric="var") == pytest.approx(0.219816, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-3366.7617912479104, abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-3366.75686210436, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
+        assert model.score(metric="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
 
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(

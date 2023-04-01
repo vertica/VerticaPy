@@ -74,11 +74,7 @@ class ScatterPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a scatter plot using the Plotly API.
         """
@@ -95,10 +91,7 @@ class ScatterPlot(PlotlyBase):
             if self.layout["c"] is not None
             else column_names
         )
-        df = pd.DataFrame(
-            data=data,
-            columns=columns,
-        )
+        df = pd.DataFrame(data=data, columns=columns,)
         if self.layout["c"]:
             color_option["color"] = self.layout["c"]
         if self.data["X"].shape[1] < 3:

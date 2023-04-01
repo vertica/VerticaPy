@@ -92,9 +92,7 @@ class BoxPlot(PlotlyBase):
                 points_dic = dict(x=self.data["X"][2], boxpoints=False)
             fig.add_trace(
                 go.Box(
-                    name=self.layout["labels"][0],
-                    hovertemplate="%{x}",
-                    **points_dic,
+                    name=self.layout["labels"][0], hovertemplate="%{x}", **points_dic,
                 ),
             )
             fig.update_traces(
@@ -106,9 +104,7 @@ class BoxPlot(PlotlyBase):
                 orientation="h",
             )
             fig.update_layout(
-                yaxis=dict(
-                    showticklabels=False,
-                ),
+                yaxis=dict(showticklabels=False,),
                 xaxis=dict(title=self.layout["labels"][0]),
             )
             bins = [

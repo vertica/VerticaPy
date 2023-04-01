@@ -39,7 +39,7 @@ class Decomposition(Preprocessing):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
         key_columns: SQLColumns = [],
@@ -79,7 +79,7 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
@@ -105,9 +105,9 @@ class Decomposition(Preprocessing):
 
     def score(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         input_relation: str = "",
-        method: Literal["avg", "median"] = "avg",
+        metric: Literal["avg", "median"] = "avg",
         p: int = 2,
     ) -> TableSample:
         """
@@ -125,8 +125,8 @@ class Decomposition(Preprocessing):
         input_relation: str, optional
             Input  Relation.  If  empty,  the model input 
             relation will be used.
-        method: str, optional
-            Distance Method used to do the scoring.
+        metric: str, optional
+            Distance metric used to do the scoring.
                 avg    : The average is used as 
                          aggregation.
                 median : The median  is used as 
@@ -141,13 +141,13 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, str):
             X = [X]
-        if not (X):
+        elif isinstance(X, type(None)):
             X = self.X
         if not (input_relation):
             input_relation = self.input_relation
-        method = str(method).upper()
-        if method == "MEDIAN":
-            method = "APPROXIMATE_MEDIAN"
+        metric = str(metric).upper()
+        if metric == "MEDIAN":
+            metric = "APPROXIMATE_MEDIAN"
         if self._model_type in ("PCA", "SVD"):
             n_components = self.parameters["n_components"]
             if not (n_components):
@@ -180,7 +180,7 @@ class Decomposition(Preprocessing):
                     num_components = {n_components}) OVER () 
             FROM ({query}) y"""
         p_distances = [
-            f"""{method}(POWER(ABS(POWER({X[idx]}, {p}) 
+            f"""{metric}(POWER(ABS(POWER({X[idx]}, {p}) 
                          - POWER(col_init{idx}, {p})), {1 / p})) 
                          AS {X[idx]}"""
             for idx in range(len(X))
@@ -197,7 +197,7 @@ class Decomposition(Preprocessing):
     def transform(
         self,
         vdf: SQLRelation = None,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
     ) -> vDataFrame:
@@ -228,12 +228,12 @@ class Decomposition(Preprocessing):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if not (vdf):
             vdf = self.input_relation
-        if not (X):
-            X = self.X
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = vdf._format_colnames(X)

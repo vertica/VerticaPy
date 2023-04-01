@@ -1176,9 +1176,9 @@ class IsolationForest(Clustering, Tree):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         cutoff: PythonNumber = 0.7,
-        contamination: PythonNumber = None,
+        contamination: Optional[PythonNumber] = None,
         return_score: bool = False,
     ) -> str:
         """
@@ -1212,7 +1212,7 @@ class IsolationForest(Clustering, Tree):
         """
         if isinstance(X, str):
             X = [X]
-        X = self.X if not (X) else [quote_ident(elem) for elem in X]
+        X = self.X if isinstance(X, type(None)) else [quote_ident(elem) for elem in X]
         if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
@@ -1296,10 +1296,10 @@ class IsolationForest(Clustering, Tree):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         cutoff: PythonNumber = 0.7,
-        contamination: PythonNumber = None,
+        contamination: Optional[PythonNumber] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """

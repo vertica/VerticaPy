@@ -72,11 +72,6 @@ class TestLogisticRegression:
         assert cls_rep1["informedness"][0] == pytest.approx(0.17295343577603517)
         assert cls_rep1["markedness"][0] == pytest.approx(0.3315612464038251)
         assert cls_rep1["csi"][0] == pytest.approx(0.2237442922374429)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
-
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -208,14 +203,14 @@ class TestLogisticRegression:
         model.predict(vdf, name="prediction_vertica_sql", cutoff=0.5)
         model.predict_proba(vdf, pos_label=0, name="prediction_proba_vertica_sql_0")
         model.predict_proba(vdf, pos_label=1, name="prediction_proba_vertica_sql_1")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
@@ -341,74 +336,74 @@ class TestLogisticRegression:
         plt.close("all")
 
     def test_score(self, model):
-        assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="accuracy") == pytest.approx(
             0.6295180722891566
         )
-        assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="accuracy") == pytest.approx(
             0.4929718875502008
         )
-        assert model.score(cutoff=0.7, method="auc") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="auc") == pytest.approx(
             0.6941239880788826
         )
-        assert model.score(cutoff=0.3, method="auc") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="auc") == pytest.approx(
             0.6941239880788826
         )
-        assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.3602)
-        assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.3602)
-        assert model.score(cutoff=0.7, method="bm") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="best_cutoff") == pytest.approx(0.3602)
+        assert model.score(cutoff=0.3, metric="best_cutoff") == pytest.approx(0.3602)
+        assert model.score(cutoff=0.7, metric="bm") == pytest.approx(
             0.07164507197057768
         )
-        assert model.score(cutoff=0.3, method="bm") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="bm") == pytest.approx(
             0.13453108156665472
         )
-        assert model.score(cutoff=0.7, method="csi") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="csi") == pytest.approx(
             0.09558823529411764
         )
-        assert model.score(cutoff=0.3, method="csi") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="csi") == pytest.approx(
             0.41415313225058004
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="f1") == pytest.approx(
             0.17449664429530198
         )
-        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5857260049220673)
-        assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="f1") == pytest.approx(0.5857260049220673)
+        assert model.score(cutoff=0.7, metric="logloss") == pytest.approx(
             0.271495668573431
         )
-        assert model.score(cutoff=0.3, method="logloss") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="logloss") == pytest.approx(
             0.271495668573431
         )
-        assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="mcc") == pytest.approx(
             0.15187785294188016
         )
-        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="mcc") == pytest.approx(
             0.17543607019922353
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="mk") == pytest.approx(
             0.32196048632218854
         )
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="mk") == pytest.approx(
             0.22877846790890288
         )
-        assert model.score(cutoff=0.7, method="npv") == pytest.approx(0.625531914893617)
-        assert model.score(cutoff=0.3, method="npv") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="npv") == pytest.approx(0.625531914893617)
+        assert model.score(cutoff=0.3, metric="npv") == pytest.approx(
             0.7976190476190477
         )
-        assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="prc_auc") == pytest.approx(
             0.5979751713359676
         )
-        assert model.score(cutoff=0.3, method="prc_auc") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="prc_auc") == pytest.approx(
             0.5979751713359676
         )
-        assert model.score(cutoff=0.7, method="precision") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="precision") == pytest.approx(
             0.6964285714285714
         )
-        assert model.score(cutoff=0.3, method="precision") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="precision") == pytest.approx(
             0.4311594202898551
         )
-        assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
+        assert model.score(cutoff=0.7, metric="specificity") == pytest.approx(
             0.971900826446281
         )
-        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
+        assert model.score(cutoff=0.3, metric="specificity") == pytest.approx(
             0.22148760330578512
         )
 

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random, statistics, time
+import copy, random, statistics, time
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
@@ -46,9 +46,10 @@ def cross_validate(
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
-    metric: Union[str, list[str]] = "all",
+    metrics: Union[None, str, list[str]] = None,
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     show_time: bool = True,
     training_score: bool = False,
@@ -67,22 +68,32 @@ def cross_validate(
     	List   of  the  predictor   columns.
     y: str
     	Response Column.
-    metric: str / list, optional
-        Metric used to do the model evaluation. It can also 
-        be a list of metrics.
-            all: The  model will  compute all the  possible 
-                 metrics.
+    metrics: str / list, optional
+        Metrics used to do the model evaluation. It can also 
+        be a list of metrics. If empty most of the estimator
+        metrics are computed.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             best_cutoff : Cutoff which optimised the ROC 
                           Curve prediction.
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -96,19 +107,33 @@ def cross_validate(
             specificity : Specificity 
                           = tn / (tn + fp)
         For Regression:
-            aic    : Akaike’s information criterion
-            bic    : Bayesian information criterion
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
+            aic    : Akaike’s Information Criterion
+            bic    : Bayesian Information Criterion
+            max    : Max Error
+            mae    : Mean Absolute Error
+            median : Median Absolute Error
+            mse    : Mean Squared Error
+            msle   : Mean Squared Log Error
+            qe     : quantile  error,  the quantile must be
+                     included in the name. Example:
+                     qe50.1% will return the quantile error 
+                     using q=0.501.
+            r2     : R squared coefficient
             r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+            rmse   : Root Mean Squared Error
+            var    : Explained Variance
+
     cv: int, optional
     	Number of folds.
+    average: str, optional
+            The method used to  compute the final score for
+            multiclass-classification.
+                micro    : positive  and   negative  values 
+                           globally.
+                macro    : average  of  the  score of  each 
+                           class.
+                weighted : weighted average of the score of 
+                           each class.
     pos_label: PythonScalar, optional
     	The main class to be considered as positive 
         (classification only).
@@ -163,12 +188,12 @@ def cross_validate(
         raise Exception(
             "Cross Validation is only possible for Regressors and Classifiers"
         )
-    if metric == "all":
+    if isinstance(metrics, type(None)):
         final_metrics = all_metrics
-    elif isinstance(metric, str):
-        final_metrics = [metric]
+    elif isinstance(metrics, str):
+        final_metrics = [metrics]
     else:
-        final_metrics = metric
+        final_metrics = copy.deepcopy(metrics)
     result = {"index": final_metrics}
     if training_score:
         result_train = {"index": final_metrics}
@@ -180,10 +205,7 @@ def cross_validate(
     else:
         loop = range(cv)
     for i in loop:
-        try:
-            estimator.drop()
-        except:
-            pass
+        estimator.drop()
         random_state = conf.get_option("random_state")
         random_state = (
             random.randint(-10e6, 10e6) if not (random_state) else random_state + i
@@ -192,101 +214,23 @@ def cross_validate(
             test_size=float(1 / cv), order_by=[X[0]], random_state=random_state
         )
         start_time = time.time()
-        estimator.fit(
-            train, X, y, test,
-        )
+        estimator.fit(train, X, y, test)
         total_time += [time.time() - start_time]
-        if estimator._model_subcategory == "REGRESSOR":
-            if metric == "all":
-                result[f"{i + 1}-fold"] = estimator.regression_report().values["value"]
-                if training_score:
-                    estimator.test_relation = estimator.input_relation
-                    result_train[
-                        f"{i + 1}-fold"
-                    ] = estimator.regression_report().values["value"]
-            elif isinstance(metric, str):
-                result[f"{i + 1}-fold"] = [estimator.score(metric)]
-                if training_score:
-                    estimator.test_relation = estimator.input_relation
-                    result_train[f"{i + 1}-fold"] = [estimator.score(metric)]
-            else:
-                result[f"{i + 1}-fold"] = [estimator.score(m) for m in metric]
-                if training_score:
-                    estimator.test_relation = estimator.input_relation
-                    result_train[f"{i + 1}-fold"] = [estimator.score(m) for m in metric]
-        else:
-            if (len(estimator.classes_) > 2) and (pos_label not in estimator.classes_):
-                raise ParameterError(
-                    "'pos_label' must be in the estimator classes, "
-                    "it must be the main class to study for the Cross Validation"
-                )
-            elif (len(estimator.classes_) == 2) and (
-                pos_label not in estimator.classes_
-            ):
-                pos_label = estimator.classes_[1]
-            try:
-                if metric == "all":
-                    result[f"{i + 1}-fold"] = estimator.classification_report(
-                        labels=[pos_label], cutoff=cutoff
-                    ).values["value"][0:-1]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = estimator.classification_report(
-                            labels=[pos_label], cutoff=cutoff
-                        ).values["value"][0:-1]
-
-                elif isinstance(metric, str):
-                    result[f"{i + 1}-fold"] = [
-                        estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
-                    ]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = [
-                            estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
-                        ]
-                else:
-                    result[f"{i + 1}-fold"] = [
-                        estimator.score(m, pos_label=pos_label, cutoff=cutoff)
-                        for m in metric
-                    ]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = [
-                            estimator.score(m, pos_label=pos_label, cutoff=cutoff)
-                            for m in metric
-                        ]
-            except:
-                if metric == "all":
-                    result[f"{i + 1}-fold"] = estimator.classification_report(
-                        cutoff=cutoff
-                    ).values["value"][0:-1]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = estimator.classification_report(
-                            cutoff=cutoff
-                        ).values["value"][0:-1]
-                elif isinstance(metric, str):
-                    result[f"{i + 1}-fold"] = [estimator.score(metric, cutoff=cutoff)]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = [
-                            estimator.score(metric, cutoff=cutoff)
-                        ]
-                else:
-                    result[f"{i + 1}-fold"] = [
-                        estimator.score(m, cutoff=cutoff) for m in metric
-                    ]
-                    if training_score:
-                        estimator.test_relation = estimator.input_relation
-                        result_train[f"{i + 1}-fold"] = [
-                            estimator.score(m, cutoff=cutoff) for m in metric
-                        ]
-        try:
-            estimator.drop()
-        except:
-            pass
+        fun = estimator.report
+        kwargs = {"metrics": final_metrics}
+        key = "value"
+        if estimator._model_subcategory == "CLASSIFIER" and not (
+            estimator._is_binary_classifier()
+        ):
+            key = f"avg_{average}"
+        result[f"{i + 1}-fold"] = fun(**kwargs)[key]
+        if training_score:
+            estimator.test_relation = estimator.input_relation
+            result_train[f"{i + 1}-fold"] = fun(**kwargs)[key]
+        estimator.drop()
     n = len(final_metrics)
     total = [[] for item in range(n)]
+    total_time = np.array(total_time).astype(float)
     for i in range(cv):
         for k in range(n):
             total[k] += [result[f"{i + 1}-fold"][k]]
@@ -299,16 +243,14 @@ def cross_validate(
     if training_score:
         result_train["avg"], result_train["std"] = [], []
     for item in total:
-        result["avg"] += [statistics.mean([float(elem) for elem in item])]
-        result["std"] += [statistics.stdev([float(elem) for elem in item])]
+        result["avg"] += [np.nanmean(np.array(item).astype(float))]
+        result["std"] += [np.nanstd(np.array(item).astype(float))]
     if training_score:
         for item in total_train:
-            result_train["avg"] += [statistics.mean([float(elem) for elem in item])]
-            result_train["std"] += [statistics.stdev([float(elem) for elem in item])]
-    total_time += [
-        statistics.mean([float(elem) for elem in total_time]),
-        statistics.stdev([float(elem) for elem in total_time]),
-    ]
+            result_train["avg"] += [np.nanmean(np.array(item).astype(float))]
+            result_train["std"] += [np.nanstd(np.array(item).astype(float))]
+
+    total_time = list(total_time) + [np.nanmean(total_time), np.nanstd(total_time)]
     result = TableSample(values=result).transpose()
     if show_time:
         result.values["time"] = total_time
@@ -332,7 +274,8 @@ def learning_curve(
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
     chart: Optional[PlottingObject] = None,
@@ -370,12 +313,23 @@ def learning_curve(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -400,6 +354,15 @@ def learning_curve(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -441,12 +404,13 @@ def learning_curve(
             relation,
             X,
             y,
-            metric,
-            cv,
-            pos_label,
-            cutoff,
-            True,
-            True,
+            metrics=metric,
+            cv=cv,
+            average=average,
+            pos_label=pos_label,
+            cutoff=cutoff,
+            show_time=True,
+            training_score=True,
             tqdm=False,
         )
         lc_result_final += [

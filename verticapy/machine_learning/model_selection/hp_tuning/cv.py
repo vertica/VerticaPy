@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
 from tqdm.auto import tqdm
 import numpy as np
@@ -54,7 +54,8 @@ def randomized_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     nbins: int = 1000,
     lmax: int = 4,
@@ -82,12 +83,23 @@ def randomized_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -112,6 +124,15 @@ def randomized_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -148,13 +169,14 @@ def randomized_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        average=average,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
     )
 
 
@@ -172,10 +194,11 @@ def grid_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
-    skip_error: bool = True,
+    skip_error: Union[bool, Literal["no_print"]] = True,
     print_info: bool = True,
     **kwargs,
 ) -> TableSample:
@@ -202,12 +225,23 @@ def grid_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -232,6 +266,15 @@ def grid_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to  be considered as positive 
         (classification only).
@@ -299,12 +342,13 @@ def grid_search_cv(
                 input_relation,
                 X,
                 y,
-                metric,
-                cv,
-                pos_label,
-                cutoff,
-                True,
-                training_score,
+                metrics=metric,
+                cv=cv,
+                average=average,
+                pos_label=pos_label,
+                cutoff=cutoff,
+                show_time=True,
+                training_score=training_score,
                 tqdm=False,
             )
             if training_score:
@@ -437,7 +481,7 @@ def bayesian_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     param_grid: Union[dict, list] = {},
     random_nbins: int = 16,
@@ -472,12 +516,23 @@ def bayesian_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -563,13 +618,13 @@ def bayesian_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
         final_print="no_print",
     )
     if "enet" not in kwargs:
@@ -675,13 +730,13 @@ def bayesian_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        "no_print",
-        print_info,
+        metric=metric,
+        cv=cv,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error="no_print",
+        print_info=print_info,
         final_print="no_print",
     )
     for elem in result.values:
@@ -742,12 +797,22 @@ def enet_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -826,11 +891,11 @@ def enet_search_cv(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        None,
-        cutoff,
-        param_grid,
+        metric=metric,
+        cv=cv,
+        pos_label=None,
+        cutoff=cutoff,
+        param_grid=param_grid,
         random_grid=False,
         bayesian_nbins=1000,
         print_info=print_info,

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
@@ -152,7 +152,7 @@ class AutoClustering(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
+    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
         """
         Trains the model.
 

@@ -52,7 +52,8 @@ def randomized_features_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
     comb_limit: int = 100,
@@ -82,12 +83,23 @@ def randomized_features_search_cv(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -112,6 +124,15 @@ def randomized_features_search_cv(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be  considered as positive 
         (classification only).
@@ -174,12 +195,13 @@ def randomized_features_search_cv(
                     input_relation,
                     config,
                     y,
-                    metric,
-                    cv,
-                    pos_label,
-                    cutoff,
-                    True,
-                    training_score,
+                    metrics=metric,
+                    cv=cv,
+                    average=average,
+                    pos_label=pos_label,
+                    cutoff=cutoff,
+                    show_time=True,
+                    training_score=True,
                     tqdm=False,
                 )
                 if training_score:
@@ -413,7 +435,7 @@ def stepwise(
         X_current = [elem for elem in X]
         estimator.drop()
         estimator.fit(input_relation, X, y)
-        current_score = estimator.score(criterion)
+        current_score = estimator.score(metric=criterion)
         res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
@@ -428,7 +450,7 @@ def stepwise(
             if len(X_test) != 0:
                 estimator.drop()
                 estimator.fit(input_relation, X_test, y)
-                test_score = estimator.score(criterion)
+                test_score = estimator.score(metric=criterion)
             else:
                 test_score = aic_bic(y, str(avg), input_relation, 0)[k]
             score_diff = test_score - current_score
@@ -461,7 +483,7 @@ def stepwise(
             X_test = [elem for elem in X_current] + [X[idx]]
             estimator.drop()
             estimator.fit(input_relation, X_test, y)
-            test_score = estimator.score(criterion)
+            test_score = estimator.score(metric=criterion)
             score_diff = current_score - test_score
             if current_score - test_score > criterion_threshold:
                 sign = "+"

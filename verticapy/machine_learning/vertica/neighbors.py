@@ -140,7 +140,7 @@ class KNeighborsRegressor(Regressor):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         key_columns: SQLColumns = [],
     ) -> str:
@@ -216,7 +216,7 @@ class KNeighborsRegressor(Regressor):
     def _predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         inplace: bool = True,
         **kwargs,
@@ -349,6 +349,17 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         return False
 
+    def _check_cutoff(self, cutoff: Optional[PythonNumber] = None):
+        if isinstance(cutoff, type(None)):
+            return 1.0 / len(self.classes_)
+        elif not (0 <= cutoff <= 1):
+            ValueError(
+                "Incorrect parameter 'cutoff'.\nThe cutoff "
+                "must be between 0 and 1, inclusive."
+            )
+        else:
+            return cutoff
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -364,7 +375,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def deploySQL(
         self,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         predict: bool = False,
         key_columns: SQLColumns = [],
@@ -461,7 +472,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_final_relation(self, pos_label: PythonScalar = None,) -> str:
+    def _get_final_relation(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the final relation used to do the predictions.
         """
@@ -472,18 +483,22 @@ class KNeighborsClassifier(MulticlassClassifier):
             WHERE predict_neighbors = '{pos_label}') 
             final_centroids_relation"""
 
-    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the input which represents the model's probabilities.
         """
         return "proba_predict"
 
     def _get_y_score(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
+        allSQL: bool = False,
     ) -> str:
         """
         Returns the input which represents the model's scoring.
         """
+        cutoff = self._check_cutoff(cutoff=cutoff)
         return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
 
     def _compute_accuracy(self) -> float:
@@ -495,7 +510,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     def _confusion_matrix(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
     ) -> TableSample:
         """
         Computes the model confusion matrix.
@@ -511,6 +528,7 @@ class KNeighborsClassifier(MulticlassClassifier):
                 self.y, "predict_neighbors", input_relation, self.classes_
             )
         else:
+            cutoff = self._check_cutoff(cutoff=cutoff)
             pos_label = self._check_pos_label(pos_label=pos_label)
             input_relation = (
                 self.deploySQL() + f" WHERE predict_neighbors = '{pos_label}'"
@@ -524,21 +542,18 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
-        cutoff: PythonNumber = 0.5,
+        cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
         **kwargs,
     ) -> vDataFrame:
         """
         Predicts using the input relation.
         """
+        cutoff = self._check_cutoff(cutoff=cutoff)
         if isinstance(X, str):
             X = [X]
-        assert 0 <= cutoff <= 1, ParameterError(
-            "Incorrect parameter 'cutoff'.\nThe cutoff "
-            "must be between 0 and 1, inclusive."
-        )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
@@ -554,7 +569,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
-        if self._is_binary_classifier:
+        if self._is_binary_classifier():
             table = self.deploySQL(
                 X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
             )
@@ -589,9 +604,9 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
         **kwargs,
     ) -> vDataFrame:
@@ -660,7 +675,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     # Plotting Methods.
 
     def _get_plot_args(
-        self, pos_label: PythonScalar = None, method: Optional[str] = None
+        self, pos_label: Optional[PythonScalar] = None, method: Optional[str] = None
     ) -> list:
         """
         Returns the args used by plotting methods.
@@ -689,7 +704,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     def _get_plot_kwargs(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         chart: Optional[PlottingObject] = None,
         method: Optional[str] = None,
@@ -932,7 +947,7 @@ class KernelDensity(Regressor, Tree):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> None:
+    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
         """
         Trains the model.
 
@@ -1227,7 +1242,7 @@ class LocalOutlierFactor(VerticaModel):
     def fit(
         self,
         input_relation: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         key_columns: SQLColumns = [],
         index: str = "",
     ) -> None:

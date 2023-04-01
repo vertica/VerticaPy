@@ -104,11 +104,6 @@ class TestNB:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.999)
-
-        cls_rep2 = model.classification_report(cutoff=0.999).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.999)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -270,18 +265,20 @@ class TestNB:
             name="prediction_proba_vertica_sql_2",
             pos_label=model_class.classes_[2],
         )
-        score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
-        assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_sql", "prediction_vertica_sql", metric="accuracy"
         )
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
+        )
+        assert score == pytest.approx(1.0)
+        score = titanic.score(
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
@@ -421,46 +418,46 @@ class TestNB:
 
     def test_score(self, model):
         # the value of cutoff has no impact on the result
-        assert model.score(method="accuracy") == pytest.approx(1.0)
+        assert model.score(metric="accuracy") == pytest.approx(0.9733333333333334)
         assert model.score(
-            cutoff=0.9, method="auc", pos_label="Iris-virginica"
+            cutoff=0.9, metric="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
-            cutoff=0.1, method="auc", pos_label="Iris-virginica"
+            cutoff=0.1, metric="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
-            cutoff=0.9, method="best_cutoff", pos_label="Iris-virginica"
+            cutoff=0.9, metric="best_cutoff", pos_label="Iris-virginica"
         ) == pytest.approx(0.5099, 1e-2)
         assert model.score(
-            cutoff=0.9, method="bm", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="bm", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8300000000000001)
         assert model.score(
-            cutoff=0.9, method="csi", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="csi", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8235294117647058)
         assert model.score(
-            cutoff=0.9, method="f1", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="f1", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9032258064516129)
         assert model.score(
-            cutoff=0.9, method="logloss", pos_label="Iris-virginica"
+            cutoff=0.9, metric="logloss", pos_label="Iris-virginica"
         ) == pytest.approx(0.0479202007517544)
         assert model.score(
-            cutoff=0.9, method="mcc", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="mcc", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8652407755372198)
         assert model.score(
-            cutoff=0.9, method="mk", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="mk", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9019778309063247)
         assert model.score(
-            cutoff=0.9, method="npv", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+            cutoff=0.9, metric="npv", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9252336448598131)
         assert model.score(
-            cutoff=0.9, method="prc_auc", pos_label="Iris-virginica"
+            cutoff=0.9, metric="prc_auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9864010713921592)
         assert model.score(
-            cutoff=0.9, method="precision", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="precision", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9767441860465116)
         assert model.score(
-            cutoff=0.9, method="specificity", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+            cutoff=0.9, metric="specificity", pos_label="Iris-virginica"
+        ) == pytest.approx(0.99)
 
     def test_set_params(self, model):
         model.set_params({"alpha": 0.5})

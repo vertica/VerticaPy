@@ -1226,8 +1226,8 @@ class PlottingBase:
         vdf: "vDataFrame",
         order_by: str,
         columns: SQLColumns,
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
+        order_by_start: Optional[PythonScalar] = None,
+        order_by_end: Optional[PythonScalar] = None,
         limit: int = -1,
         limit_over: int = -1,
     ) -> None:
@@ -1284,8 +1284,8 @@ class PlottingBase:
         order_by: str,
         columns: SQLColumns,
         q: tuple = (0.25, 0.75),
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
+        order_by_start: Optional[PythonScalar] = None,
+        order_by_end: Optional[PythonScalar] = None,
     ) -> None:
         if isinstance(columns, str):
             columns = [columns]
@@ -1324,8 +1324,8 @@ class PlottingBase:
         column: str,
         method: str = "sum",
         q: tuple = (0.25, 0.75),
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
+        order_by_start: Optional[PythonScalar] = None,
+        order_by_end: Optional[PythonScalar] = None,
     ) -> None:
         order_by, column = vdf._format_colnames(order_by, column)
         try:
@@ -1368,8 +1368,8 @@ class PlottingBase:
         columns: SQLColumns,
         by: Optional[str] = None,
         catcol: Optional[str] = None,
-        order_by_start: PythonScalar = None,
-        order_by_end: PythonScalar = None,
+        order_by_start: Optional[PythonScalar] = None,
+        order_by_end: Optional[PythonScalar] = None,
         limit_over: int = 10,
         limit: int = 1000000,
         lim_labels: int = 6,

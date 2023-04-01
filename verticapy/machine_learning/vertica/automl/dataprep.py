@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, datetime
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
 from verticapy._typing import TimeInterval, SQLColumns, SQLRelation
@@ -194,7 +194,7 @@ class AutoDataPrep(VerticaModel):
     def fit(
         self,
         input_relation: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         ts: str = "",
         by: SQLColumns = [],
     ) -> None:
@@ -227,7 +227,7 @@ class AutoDataPrep(VerticaModel):
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation.copy()
-        if not (X):
+        if isinstance(X, type(None)):
             X = vdf.get_columns()
         if isinstance(by, str):
             by = [by]

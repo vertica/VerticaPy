@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
 
@@ -44,7 +44,8 @@ def validation_curve(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: PythonScalar = None,
+    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     std_coeff: float = 1,
     chart: Optional[PlottingObject] = None,
@@ -74,12 +75,23 @@ def validation_curve(
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -104,6 +116,15 @@ def validation_curve(
             var    : Explained variance
     cv: int, optional
         Number of folds.
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            weighted : weighted average of the score of 
+                       each class.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -136,13 +157,14 @@ def validation_curve(
         input_relation,
         X,
         y,
-        metric,
-        cv,
-        pos_label,
-        cutoff,
-        True,
-        False,
-        False,
+        metric=metric,
+        cv=cv,
+        average=average,
+        pos_label=pos_label,
+        cutoff=cutoff,
+        training_score=True,
+        skip_error=False,
+        print_info=False,
     )
     gs_result_final = [
         (

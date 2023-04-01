@@ -316,13 +316,7 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -346,13 +340,7 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         assert (
             len(
                 set(

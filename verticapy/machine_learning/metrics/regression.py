@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math
-from typing import Union
+import copy
+from typing import Optional, Union
 import numpy as np
 from scipy.stats import f
 
@@ -26,65 +26,33 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 """
-Special Functions.
+SQL Metrics.
 """
 
-
-def _compute_metric_query(
-    metric: str,
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    title: str = "",
-    fetchfirstelem: bool = True,
-) -> Union[float, tuple]:
-    """
-    A  helper  function  that uses  a  specified  metric  to 
-    generate and score a query.
-
-    Parameters
-    ----------
-    metric: str
-        The metric to use in the query.
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation  to use for scoring.  This relation can  be 
-        a view, table, or a customized relation (if an alias 
-        is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    title: str, optional
-        Title of the query.
-    fetchfirstelem: bool, optional
-        If  set to True,  this function returns one  element. 
-        Otherwise, this function returns a tuple.
-
-    Returns
-    -------
-    float or tuple of floats.
-        score(s)
-    """
-    if isinstance(input_relation, str):
-        relation = input_relation
-    else:
-        relation = input_relation._genSQL()
-    if fetchfirstelem:
-        method = "fetchfirstelem"
-    else:
-        method = "fetchrow"
-    return _executeSQL(
-        query=f"""
-            SELECT 
-                /*+LABEL('learn.metrics._compute_metric_query')*/ 
-                {metric.format(y_true, y_score)} 
-            FROM {relation} 
-            WHERE {y_true} IS NOT NULL 
-              AND {y_score} IS NOT NULL;""",
-        title=title,
-        method=method,
-    )
+FUNCTIONS_REGRESSION_SQL_DICTIONNARY = {
+    "explained_variance": "1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true})",
+    "max_error": "MAX(ABS({y_true} - {y_score}))::float",
+    "median": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
+    "median_absolute_error": "APPROXIMATE_MEDIAN(ABS({y_true} - {y_score}))",
+    "mae": "AVG(ABS({y_true} - {y_score}))",
+    "mean_absolute_error": "AVG(ABS({y_true} - {y_score}))",
+    "mse": "AVG(POW({y_true} - {y_score}, 2))",
+    "mean_squared_error": "AVG(POW({y_true} - {y_score}, 2))",
+    "rmse": "SQRT(AVG(POW({y_true} - {y_score}, 2)))",
+    "root_mean_squared_error": "SQRT(AVG(POW({y_true} - {y_score}, 2)))",
+    "mean_squared_log_error": "AVG(POW(LOG({y_true} + 1) - LOG({y_score} + 1), 2))",
+    "msle": "AVG(POW(LOG({y_true} + 1) - LOG({y_score} + 1), 2))",
+    "quantile_error": "APPROXIMATE_PERCENTILE(ABS({y_true} - {y_score}) USING PARAMETERS percentile = {q})",
+    "qe": "APPROXIMATE_PERCENTILE(ABS({y_true} - {y_score}) USING PARAMETERS percentile = {q})",
+    "r2": "1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))",
+    "rsquared": "1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2)))",
+    "r2_adj": "1 - ((1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2))))) * (MAX(_verticapy_cnt_y_true) - 1) / (MAX(_verticapy_cnt_y_true) - {k} - 1))",
+    "rsquared_adj": "1 - ((1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2))))) * (MAX(_verticapy_cnt_y_true) - 1) / (MAX(_verticapy_cnt_y_true) - {k} - 1))",
+    "r2adj": "1 - ((1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2))))) * (MAX(_verticapy_cnt_y_true) - 1) / (MAX(_verticapy_cnt_y_true) - {k} - 1))",
+    "r2adjusted": "1 - ((1 - (1 - (SUM(POWER({y_true} - {y_score}, 2))) / (SUM(POWER({y_true} - _verticapy_avg_y_true, 2))))) * (MAX(_verticapy_cnt_y_true) - 1) / (MAX(_verticapy_cnt_y_true) - {k} - 1))",
+    "aic": "MAX(_verticapy_cnt_y_true) * LN(MAX(_verticapy_mse)) + 2 * ({k} + 1) + (POWER(2 * ({k} + 1), 2) + 2 * ({k} + 1)) / (MAX(_verticapy_cnt_y_true) - {k} - 2)",
+    "bic": "MAX(_verticapy_cnt_y_true) * LN(MAX(_verticapy_mse)) + ({k} + 1) * LN(MAX(_verticapy_cnt_y_true))",
+}
 
 
 """
@@ -119,24 +87,10 @@ def aic_bic(
     tuple of floats
         (AIC, BIC)
     """
-    rss, n = _compute_metric_query(
-        "SUM(POWER({0} - {1}, 2)), COUNT(*)",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the RSS Score.",
-        False,
+    res = regression_report(
+        y_true, y_score, input_relation, metrics=["aic", "bic"], k=k
     )
-    if rss > 0:
-        result = (
-            n * math.log(rss / n)
-            + 2 * (k + 1)
-            + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
-            n * math.log(rss / n) + (k + 1) * math.log(n),
-        )
-    else:
-        result = -float("inf"), -float("inf")
-    return result
+    return tuple(res["value"])
 
 
 def aic_score(
@@ -145,9 +99,7 @@ def aic_score(
     """
     Returns the AIC score.
     """
-    return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
-        0
-    ]
+    return regression_report(y_true, y_score, input_relation, metrics="aic", k=k)
 
 
 def bic_score(
@@ -156,9 +108,7 @@ def bic_score(
     """
     Returns the BIC score.
     """
-    return aic_bic(y_true=y_true, y_score=y_score, input_relation=input_relation, k=k)[
-        1
-    ]
+    return regression_report(y_true, y_score, input_relation, metrics="bic", k=k)
 
 
 @save_verticapy_logs
@@ -183,12 +133,8 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
     float
     	score.
 	"""
-    return _compute_metric_query(
-        "1 - VARIANCE({1} - {0}) / VARIANCE({0})",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Explained Variance.",
+    return regression_report(
+        y_true, y_score, input_relation, metrics="explained_variance"
     )
 
 
@@ -214,13 +160,7 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
     float
         score.
     """
-    return _compute_metric_query(
-        "MAX(ABS({0} - {1}))::FLOAT",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Max Error.",
-    )
+    return regression_report(y_true, y_score, input_relation, metrics="max_error")
 
 
 @save_verticapy_logs
@@ -247,13 +187,7 @@ def mean_absolute_error(
     float
         score.
 	"""
-    return _compute_metric_query(
-        "AVG(ABS({0} - {1}))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Mean Absolute Error.",
-    )
+    return regression_report(y_true, y_score, input_relation, metrics="mae")
 
 
 @save_verticapy_logs
@@ -280,12 +214,9 @@ def mean_squared_error(
     float
         score.
     """
-    res = _compute_metric_query(
-        "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.",
+    return regression_report(
+        y_true, y_score, input_relation, metrics="rmse" if root else "mse"
     )
-    if root:
-        return math.sqrt(res)
-    return res
 
 
 @save_verticapy_logs
@@ -312,13 +243,7 @@ def mean_squared_log_error(
     float
         score.
     """
-    return _compute_metric_query(
-        "AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Mean Squared Log Error.",
-    )
+    return regression_report(y_true, y_score, input_relation, metrics="msle")
 
 
 @save_verticapy_logs
@@ -345,26 +270,20 @@ def median_absolute_error(
     float
         score.
     """
-    return _compute_metric_query(
-        "APPROXIMATE_MEDIAN(ABS({0} - {1}))",
-        y_true,
-        y_score,
-        input_relation,
-        "Computing the Median Absolute Error.",
+    return regression_report(
+        y_true, y_score, input_relation, metrics="median_absolute_error"
     )
 
 
 @save_verticapy_logs
 def quantile_error(
-    q: PythonNumber, y_true: str, y_score: str, input_relation: SQLRelation,
+    y_true: str, y_score: str, input_relation: SQLRelation, q: PythonNumber,
 ) -> float:
     """
     Computes the input Quantile of the Error.
 
     Parameters
     ----------
-    q: PythonNumber
-        Input Quantile.
     y_true: str
         Response column.
     y_score: str
@@ -374,17 +293,15 @@ def quantile_error(
         view, table,  or a customized relation (if an alias 
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    q: PythonNumber
+        Input Quantile.
 
     Returns
     -------
     float
         score.
     """
-    metric = f"""APPROXIMATE_PERCENTILE(ABS({{0}} - {{1}}) 
-                        USING PARAMETERS percentile = {q})"""
-    return _compute_metric_query(
-        metric, y_true, y_score, input_relation, "Computing the Quantile Error."
-    )
+    return regression_report(y_true, y_score, input_relation, metrics=f"qe{100 * q}%")
 
 
 @save_verticapy_logs
@@ -420,29 +337,11 @@ def r2_score(
     float
     	score.
 	"""
-    if isinstance(input_relation, str):
-        relation = input_relation
+    if adj:
+        kwargs = {"metrics": "r2_adj", "k": k}
     else:
-        relation = input_relation._genSQL()
-    result = _compute_metric_query(
-        "RSQUARED({0}, {1}) OVER()",
-        y_true,
-        y_score,
-        relation,
-        "Computing the R2 Score.",
-    )
-    if adj and k > 0:
-        n = _executeSQL(
-            query=f"""
-                SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) 
-                FROM {relation} 
-                WHERE {y_true} IS NOT NULL 
-                  AND {y_score} IS NOT NULL;""",
-            title="Computing the table number of elements.",
-            method="fetchfirstelem",
-        )
-        result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
-    return result
+        kwargs = {"metrics": "r2"}
+    return regression_report(y_true, y_score, input_relation, **kwargs)
 
 
 """
@@ -524,8 +423,12 @@ def anova_table(
 
 @save_verticapy_logs
 def regression_report(
-    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-) -> TableSample:
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    metrics: Union[None, str, list[str]] = None,
+    k: int = 1,
+) -> Union[float, TableSample]:
     """
     Computes a regression report using multiple metrics (r2, 
     mse, max error...). 
@@ -541,33 +444,40 @@ def regression_report(
         view, table,  or a customized relation (if an alias 
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    metrics: list, optional
+        List of the metrics to use to compute the final 
+        report.
+            aic    : Akaike’s Information Criterion
+            bic    : Bayesian Information Criterion
+            max    : Max Error
+            mae    : Mean Absolute Error
+            median : Median Absolute Error
+            mse    : Mean Squared Error
+            msle   : Mean Squared Log Error
+            r2     : R squared coefficient
+            r2a    : R2 adjusted
+            qe     : quantile error, the quantile must be
+                     included in the name. Example:
+                        qe50.1% will  return the quantile 
+                        error using q=0.501.
+            rmse   : Root Mean Squared Error
+            var    : Explained Variance 
     k: int, optional
         Number  of predictors. Used  to compute the adjusted 
         R2.
+
 
     Returns
     -------
     TableSample
      	report.
 	"""
-    if isinstance(input_relation, str):
-        relation = input_relation
-    else:
-        relation = input_relation._genSQL()
-    query = f"""
-        SELECT /*+LABEL('learn.metrics.regression_report')*/
-            1 - VARIANCE({y_true} - {y_score}) / VARIANCE({y_true}), 
-            MAX(ABS({y_true} - {y_score})),
-            APPROXIMATE_MEDIAN(ABS({y_true} - {y_score})), 
-            AVG(ABS({y_true} - {y_score})),
-            AVG(POW({y_true} - {y_score}, 2)), 
-            COUNT(*) 
-        FROM {relation} 
-        WHERE {y_true} IS NOT NULL 
-          AND {y_score} IS NOT NULL;"""
-    r2 = r2_score(y_true, y_score, input_relation)
-    values = {
-        "index": [
+    return_scalar = False
+    if isinstance(metrics, str):
+        metrics = [metrics]
+        return_scalar = True
+    if isinstance(metrics, type(None)):
+        selected_metrics = [
             "explained_variance",
             "max_error",
             "median_absolute_error",
@@ -579,30 +489,59 @@ def regression_report(
             "aic",
             "bic",
         ]
-    }
+    else:
+        selected_metrics = copy.deepcopy(metrics)
+    q_metrics, q_subquery = [], []
+    cnt_in, mse_in, avg_in = False, False, False
+    for m in selected_metrics:
+        if m in ("r2_adj", "aic", "bic") and not (cnt_in):
+            q_subquery += [f"COUNT({y_true}) OVER() AS _verticapy_cnt_y_true"]
+            cnt_in = True
+        if m in ("aic", "bic") and not (mse_in):
+            mse = mean_squared_error(y_true, y_score, input_relation)
+            q_subquery += [f"{mse} AS _verticapy_mse"]
+            mse_in = True
+        if m in ("r2", "r2_adj") and not (avg_in):
+            q_subquery += [f"AVG({y_true}) OVER() AS _verticapy_avg_y_true"]
+            avg_in = True
+    if len(q_subquery) > 0:
+        relation = f"""
+            (SELECT
+                *,
+                {', '.join(q_subquery)}
+            FROM {input_relation}) VERTICAPY_SUBTABLE"""
+    else:
+        relation = input_relation
+    metrics_sql = []
+    for m in selected_metrics:
+        if m[0] == "q":
+            if m[0:2] == "qe":
+                q = float(m[2:-1]) / 100
+            else:
+                q = float(m[14:-1]) / 100
+            metrics_sql += [
+                FUNCTIONS_REGRESSION_SQL_DICTIONNARY["qe"].format(
+                    y_true=y_true, y_score=y_score, q=q
+                )
+            ]
+        elif m in ("mse", "mean_squared_error") and mse_in:
+            metrics_sql += [str(mse)]
+        else:
+            metrics_sql += [
+                FUNCTIONS_REGRESSION_SQL_DICTIONNARY[m].format(
+                    y_true=y_true, y_score=y_score, k=k
+                )
+            ]
+    query = f"""
+        SELECT {', '.join(metrics_sql)} 
+        FROM {relation} 
+        WHERE {y_true} IS NOT NULL 
+          AND {y_score} IS NOT NULL;"""
     result = _executeSQL(
         query, title="Computing the Regression Report.", method="fetchrow"
     )
-    n = result[5]
-    if result[4] > 0:
-        aic, bic = (
-            n * math.log(result[4])
-            + 2 * (k + 1)
-            + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
-            n * math.log(result[4]) + (k + 1) * math.log(n),
-        )
+    result = list(np.array(result).astype(float))
+    if return_scalar:
+        return result[0]
     else:
-        aic, bic = -np.inf, -np.inf
-    values["value"] = [
-        result[0],
-        result[1],
-        result[2],
-        result[3],
-        result[4],
-        math.sqrt(result[4]),
-        r2,
-        1 - ((1 - r2) * (n - 1) / (n - k - 1)),
-        aic,
-        bic,
-    ]
-    return TableSample(values)
+        return TableSample({"index": selected_metrics, "value": result})

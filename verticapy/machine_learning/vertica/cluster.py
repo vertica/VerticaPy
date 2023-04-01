@@ -65,7 +65,7 @@ class Clustering(Unsupervised):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         inplace: bool = True,
     ) -> vDataFrame:
@@ -95,7 +95,9 @@ class Clustering(Unsupervised):
         vDataFrame
             the input object.
         """
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -862,7 +864,7 @@ class DBSCAN(VerticaModel):
     def fit(
         self,
         input_relation: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         key_columns: SQLColumns = [],
         index: str = "",
     ) -> None:
@@ -895,11 +897,11 @@ class DBSCAN(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            if not (X):
+            if isinstance(X, type(None)):
                 X = input_relation.numcol()
             input_relation = input_relation._genSQL()
         else:
-            if not (X):
+            if isinstance(X, type(None)):
                 X = vDataFrame(input_relation).numcol()
         X = [quote_ident(column) for column in X]
         self.X = X
@@ -1193,7 +1195,7 @@ class NearestCentroid(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the input which represents the model's 
         probabilities.

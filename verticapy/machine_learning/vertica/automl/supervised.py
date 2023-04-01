@@ -92,12 +92,23 @@ class AutoML(VerticaModel):
             accuracy    : Accuracy
             auc         : Area Under the Curve 
                           (ROC)
+            ba          : Balanced Accuracy
+                          = (tpr + tnr) / 2
             bm          : Informedness 
                           = tpr + tnr - 1
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
-            f1          : F1 Score 
+            f1          : F1 Score
+            fnr         : False Negative Rate 
+                          = fn / (fn + tp)
+            fpr         : False Positive Rate 
+                          = fp / (fp + tn)
             logloss     : Log Loss
+            lr+         : Positive Likelihood Ratio
+                          = tpr / fpr
+            lr-         : Negative Likelihood Ratio
+                          = fnr / tnr
+            dor         : Diagnostic Odds Ratio
             mcc         : Matthews Correlation Coefficient 
             mk          : Markedness 
                           = ppv + npv - 1
@@ -232,7 +243,7 @@ class AutoML(VerticaModel):
         estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
         metric: str = "auto",
         cv: int = 3,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         cutoff: float = -1,
         nbins: int = 100,
         lmax: int = 5,
@@ -290,7 +301,7 @@ class AutoML(VerticaModel):
 
     # I/O Methods.
 
-    def deploySQL(self, X: SQLColumns = []) -> str:
+    def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
@@ -316,7 +327,9 @@ class AutoML(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = [], y: str = "") -> None:
+    def fit(
+        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None, y: str = ""
+    ) -> None:
         """
         Trains the model.
 
@@ -333,7 +346,7 @@ class AutoML(VerticaModel):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        if not (X):
+        if isinstance(X, type(None)):
             if not (y):
                 exclude_columns = []
             else:
@@ -531,13 +544,13 @@ class AutoML(VerticaModel):
                 input_relation,
                 X,
                 y,
-                self.parameters["metric"],
-                self.parameters["cv"],
-                self.parameters["pos_label"],
-                self.parameters["cutoff"],
-                True,
-                "no_print",
-                self.parameters["print_info"],
+                metric=self.parameters["metric"],
+                cv=self.parameters["cv"],
+                pos_label=self.parameters["pos_label"],
+                cutoff=self.parameters["cutoff"],
+                training_score=True,
+                skip_error="no_print",
+                print_info=self.parameters["print_info"],
             )
             if (
                 gs["parameters"] != []

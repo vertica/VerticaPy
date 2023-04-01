@@ -129,16 +129,18 @@ class TestNearestCentroid:
         titanic = model.predict_proba(
             titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1],
         )
-        score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = titanic.score(
+            "prediction_sql", "prediction_vertica_sql", metric="accuracy"
+        )
         print(titanic[["prediction_sql", "prediction_vertica_sql"]])
         print(titanic.current_relation())
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
@@ -174,35 +176,34 @@ class TestNearestCentroid:
 
         assert cls_rep1["auc"][0] == pytest.approx(0.6325400012682033)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5442487908406839)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6596385542168675)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.6746987951807228)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.282873255537287)
-        assert cls_rep1["precision"][0] == pytest.approx(0.5680628272251309)
-        assert cls_rep1["recall"][0] == pytest.approx(0.5549872122762148)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.5614489003880982)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.28346499991292595)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.282259939548942)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.28467520507529365)
-        assert cls_rep1["csi"][0] == pytest.approx(0.3902877697841727)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.352)
+        assert cls_rep1["precision"][0] == pytest.approx(0.636734693877551)
+        assert cls_rep1["recall"][0] == pytest.approx(0.3989769820971867)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.49056603773584906)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.28558718217018486)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.25186954408065776)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.32381858202668545)
+        assert cls_rep1["csi"][0] == pytest.approx(0.325)
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(
             0.607429718875502
         )
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(
             0.39558232931726905
         )
-        assert model.score(method="best_cutoff") == pytest.approx(0.352)
-        assert model.score(method="bm") == pytest.approx(0.25186954408065776)
-        assert model.score(method="csi") == pytest.approx(0.325)
-        assert model.score(method="f1") == pytest.approx(0.49056603773584906)
-        assert model.score(method="logloss") == pytest.approx(0.282873255537287)
-        assert model.score(method="mcc") == pytest.approx(0.28558718217018486)
-        assert model.score(method="mk") == pytest.approx(0.32381858202668545)
-        assert model.score(method="npv") == pytest.approx(0.6870838881491345)
-        assert model.score(method="prc_auc") == pytest.approx(0.5442487908406839)
-        assert model.score(method="precision") == pytest.approx(0.636734693877551)
-        assert model.score(method="specificity") == pytest.approx(0.8528925619834711)
+        assert model.score(metric="best_cutoff") == pytest.approx(0.352)
+        assert model.score(metric="bm") == pytest.approx(0.25186954408065776)
+        assert model.score(metric="csi") == pytest.approx(0.325)
+        assert model.score(metric="f1") == pytest.approx(0.49056603773584906)
+        assert model.score(metric="logloss") == pytest.approx(0.282873255537287)
+        assert model.score(metric="mcc") == pytest.approx(0.28558718217018486)
+        assert model.score(metric="mk") == pytest.approx(0.32381858202668545)
+        assert model.score(metric="npv") == pytest.approx(0.6870838881491345)
+        assert model.score(metric="prc_auc") == pytest.approx(0.5442487908406839)
+        assert model.score(metric="precision") == pytest.approx(0.636734693877551)
+        assert model.score(metric="specificity") == pytest.approx(0.8528925619834711)
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
@@ -224,7 +225,7 @@ class TestNearestCentroid:
         model_test = NearestCentroid("nc_from_vDF",)
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(
+        assert model_test.score(cutoff=0.9, metric="accuracy") == pytest.approx(
             0.6078234704112337
         )
         model_test.drop()

@@ -308,6 +308,12 @@ class VerticaModel(PlottingUtils):
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
+    def _is_binary_classifier(self) -> Literal[False]:
+        """
+        Returns True if the model is a Binary Classifier.
+        """
+        return False
+
     # Parameters Methods.
 
     @staticmethod
@@ -472,7 +478,7 @@ class VerticaModel(PlottingUtils):
 
     # I/O Methods.
 
-    def deploySQL(self, X: SQLColumns = []) -> str:
+    def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
         Returns the SQL code needed to deploy the model. 
 
@@ -490,7 +496,11 @@ class VerticaModel(PlottingUtils):
         if self._vertica_predict_sql:
             if isinstance(X, str):
                 X = [X]
-            X = self.X if not (X) else [quote_ident(predictor) for predictor in X]
+            X = (
+                self.X
+                if isinstance(X, type(None))
+                else [quote_ident(predictor) for predictor in X]
+            )
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
                                             USING PARAMETERS 
@@ -1130,28 +1140,38 @@ class BinaryClassifier(Classifier):
     def classes_(self) -> np.ndarray:
         return np.array([0, 1])
 
+    # Attributes Methods.
+
+    def _is_binary_classifier(self) -> Literal[True]:
+        """
+        Returns True if the model is a Binary Classifier.
+        """
+        return True
+
     # I/O Methods.
 
-    def deploySQL(self, cutoff: PythonNumber = -1, X: SQLColumns = []) -> str:
+    def deploySQL(
+        self, X: Optional[SQLColumns] = None, cutoff: Optional[PythonNumber] = None
+    ) -> str:
         """
     	Returns  the  SQL code  needed to deploy  the  model. 
 
     	Parameters
     	----------
+        X: SQLColumns, optional
+            List of the  columns used to deploy the model. If 
+            empty, the model predictors will be used.
     	cutoff: PythonNumber, optional
     		Probability cutoff. If this number is not between 
             0 and 1,  the method will return the  probability 
             to be of class 1.
-    	X: SQLColumns, optional
-    		List of the  columns used to deploy the model. If 
-            empty, the model predictors will be used.
 
     	Returns
     	-------
     	str
     		the SQL code needed to deploy the model.
 		"""
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1163,7 +1183,7 @@ class BinaryClassifier(Classifier):
             model_name = '{self.model_name}',
             type = 'probability',
             match_by_pos = 'true')"""
-        if cutoff <= 1 and cutoff >= 0:
+        if not (isinstance(cutoff, type(None))) and (0 <= cutoff <= 1):
             sql = f"""
                 (CASE 
                     WHEN {sql} >= {cutoff} 
@@ -1177,14 +1197,52 @@ class BinaryClassifier(Classifier):
     # Model Evaluation Methods.
 
     def classification_report(
-        self, cutoff: PythonNumber = 0.5, nbins: int = 10000,
-    ) -> TableSample:
+        self,
+        metrics: Union[
+            None, str, list[Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)]]
+        ] = None,
+        cutoff: PythonNumber = 0.5,
+        nbins: int = 10000,
+    ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple metrics 
         to evaluate the model  (AUC, accuracy, PRC AUC, F1...). 
 
         Parameters
         ----------
+        metrics: list, optional
+            List  of the  metrics  to use to compute the  final 
+            report.
+                accuracy    : Accuracy
+                aic         : Akaike’s  Information  Criterion
+                auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
+                best_cutoff : Cutoff  which optimised the  ROC 
+                              Curve prediction.
+                bic         : Bayesian  Information  Criterion
+                bm          : Informedness = tpr + tnr - 1
+                csi         : Critical Success Index 
+                              = tp / (tp + fn + fp)
+                f1          : F1 Score
+                fnr         : False Negative Rate 
+                              = fn / (fn + tp)
+                fpr         : False Positive Rate 
+                              = fp / (fp + tn)
+                logloss     : Log Loss
+                lr+         : Positive Likelihood Ratio
+                              = tpr / fpr
+                lr-         : Negative Likelihood Ratio
+                              = fnr / tnr
+                dor         : Diagnostic Odds Ratio
+                mcc         : Matthews Correlation Coefficient 
+                mk          : Markedness = ppv + npv - 1
+                npv         : Negative Predictive Value 
+                              = tn / (tn + fn)
+                prc_auc     : Area Under the Curve (PRC)
+                precision   : Precision = tp / (tp + fp)
+                recall      : Recall = tp / (tp + fn)
+                specificity : Specificity = tn / (tn + fp)
         cutoff: PythonNumber, optional
             Probability cutoff.
         nbins: int, optional
@@ -1202,12 +1260,11 @@ class BinaryClassifier(Classifier):
         TableSample
             report.
         """
-        if cutoff > 1 or cutoff < 0:
-            cutoff = self.score(method="best_cutoff")
         return mt.classification_report(
             self.y,
-            [self.deploySQL(), self.deploySQL(cutoff)],
+            [self.deploySQL(), self.deploySQL(cutoff=cutoff)],
             self.test_relation,
+            metrics=metrics,
             cutoff=cutoff,
             nbins=nbins,
         )
@@ -1228,11 +1285,13 @@ class BinaryClassifier(Classifier):
         TableSample
             confusion matrix.
         """
-        return mt.confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
+        return mt.confusion_matrix(
+            self.y, self.deploySQL(cutoff=cutoff), self.test_relation,
+        )
 
     def score(
         self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
     ) -> float:
@@ -1241,19 +1300,30 @@ class BinaryClassifier(Classifier):
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
                 csi         : Critical Success Index 
                               = tp / (tp + fn + fp)
-                f1          : F1 Score 
+                f1          : F1 Score
+                fnr         : False Negative Rate 
+                              = fn / (fn + tp)
+                fpr         : False Positive Rate 
+                              = fp / (fp + tn)
                 logloss     : Log Loss
+                lr+         : Positive Likelihood Ratio
+                              = tpr / fpr
+                lr-         : Negative Likelihood Ratio
+                              = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 
@@ -1279,8 +1349,8 @@ class BinaryClassifier(Classifier):
         float
             score
         """
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
-        if method in (
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
+        if metric in (
             "log_loss",
             "logloss",
             "aic",
@@ -1292,14 +1362,16 @@ class BinaryClassifier(Classifier):
         ):
             args2 = self.deploySQL()
         else:
-            args2 = self.deploySQL(cutoff)
+            args2 = self.deploySQL(cutoff=cutoff)
         args = [self.y, args2, self.test_relation]
         kwargs = {}
-        if method in ("accuracy", "acc"):
+        if metric in mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY and (
+            metric not in ("aic", "bic")
+        ):
             kwargs["pos_label"] = 1
-        elif method in ("aic", "bic"):
+        if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif method in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+        elif metric in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
@@ -1308,7 +1380,7 @@ class BinaryClassifier(Classifier):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         cutoff: PythonNumber = 0.5,
         inplace: bool = True,
@@ -1342,12 +1414,15 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
-        assert 0 <= cutoff <= 1, ParameterError(
-            "Incorrect parameter 'cutoff'.\nThe cutoff "
-            "must be between 0 and 1, inclusive."
-        )
+        if not (0 <= cutoff <= 1):
+            raise ValueError(
+                "Incorrect parameter 'cutoff'.\nThe cutoff "
+                "must be between 0 and 1, inclusive."
+            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X]
@@ -1358,14 +1433,14 @@ class BinaryClassifier(Classifier):
         vdf_return = vdf if inplace else vdf.copy()
 
         # Result
-        return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, X=X))
+        return vdf_return.eval(name, self.deploySQL(X=X, cutoff=cutoff))
 
     def predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -1399,12 +1474,15 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, str):
+        if isinstance(X, type(None)):
+            X = self.X
+        elif isinstance(X, str):
             X = [X]
-        assert pos_label in [1, 0, "0", "1", None], ParameterError(
-            "Incorrect parameter 'pos_label'.\nThe class label "
-            "can only be 1 or 0 in case of Binary Classification."
-        )
+        if pos_label not in [1, 0, "0", "1", None]:
+            raise ValueError(
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "can only be 1 or 0 in case of Binary Classification."
+            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = [quote_ident(elem) for elem in X]
@@ -1591,8 +1669,10 @@ class MulticlassClassifier(Classifier):
         """
         Checks if the pos_label is correct.
         """
-        if pos_label == None and self._is_binary_classifier:
+        if pos_label == None and self._is_binary_classifier():
             return 1
+        elif pos_label == None:
+            return None
         elif str(pos_label) not in [str(c) for c in self.classes_]:
             raise ParameterError(
                 "Parameter 'pos_label' must be one of the response column classes."
@@ -1631,16 +1711,19 @@ class MulticlassClassifier(Classifier):
 
     def deploySQL(
         self,
-        pos_label: PythonScalar = None,
-        cutoff: PythonNumber = -1,
+        X: Optional[SQLColumns] = None,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
         allSQL: bool = False,
-        X: SQLColumns = [],
     ) -> SQLExpression:
         """
         Returns the SQL code needed to deploy the model. 
 
         Parameters
         ----------
+        X: SQLColumns, optional
+            List of the columns used to deploy the model. 
+            If empty, the model predictors will be used.
         pos_label: PythonScalar, optional
             Label to consider as positive. All the other 
             classes  will be  merged and  considered  as 
@@ -1654,16 +1737,13 @@ class MulticlassClassifier(Classifier):
             If set to True, the output will be a list of
             the different SQL codes needed to deploy the 
             different categories score.
-        X: SQLColumns, optional
-            List of the columns used to deploy the model. 
-            If empty, the model predictors will be used.
 
         Returns
         -------
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1692,7 +1772,7 @@ class MulticlassClassifier(Classifier):
                     sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
-                if 0 <= cutoff <= 1:
+                if isinstance(cutoff, (int, float)) and 0.0 <= cutoff <= 1.0:
                     sql = f"""
                         (CASE 
                             WHEN {sql} >= {cutoff} 
@@ -1718,14 +1798,14 @@ class MulticlassClassifier(Classifier):
 
     # Model Evaluation Methods.
 
-    def _get_final_relation(self, pos_label: PythonScalar = None,) -> str:
+    def _get_final_relation(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns  the  final  relation  used to do  the 
         predictions.
         """
         return self.test_relation
 
-    def _get_y_proba(self, pos_label: PythonScalar = None,) -> str:
+    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
         Returns the input which represents the  model's 
         probabilities.
@@ -1733,26 +1813,26 @@ class MulticlassClassifier(Classifier):
         return self.deploySQL(allSQL=True)[0].format(pos_label)
 
     def _get_y_score(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = 0.5,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
+        allSQL: bool = False,
     ) -> str:
         """
         Returns  the input which represents the model's 
         scoring.
         """
-        return self.deploySQL(pos_label, cutoff)
-
-    def _compute_accuracy(self) -> float:
-        """
-        Computes the model accuracy.
-        """
-        return mt.accuracy_score(self.y, self.deploySQL(), self.test_relation)
+        return self.deploySQL(pos_label=pos_label, cutoff=cutoff, allSQL=allSQL)
 
     def classification_report(
         self,
-        cutoff: Union[PythonNumber, list] = [],
-        labels: Union[str, list[str]] = [],
+        metrics: Union[
+            None, str, list[Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)]]
+        ] = None,
+        cutoff: PythonNumber = None,
+        labels: Union[None, str, list[str]] = None,
         nbins: int = 10000,
-    ) -> TableSample:
+    ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple metrics
         to evaluate the model  (AUC, accuracy, PRC AUC, F1...). 
@@ -1762,13 +1842,47 @@ class MulticlassClassifier(Classifier):
 
         Parameters
         ----------
-        cutoff: PythonNumber / list, optional
+        metrics: list, optional
+            List of  the metrics  to use to compute the  final 
+            report.
+                accuracy    : Accuracy
+                aic         : Akaike’s  Information  Criterion
+                auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
+                best_cutoff : Cutoff  which optimised the  ROC 
+                              Curve prediction.
+                bic         : Bayesian  Information  Criterion
+                bm          : Informedness = tpr + tnr - 1
+                csi         : Critical Success Index 
+                              = tp / (tp + fn + fp)
+                f1          : F1 Score
+                fnr         : False Negative Rate 
+                              = fn / (fn + tp)
+                fpr         : False Positive Rate 
+                              = fp / (fp + tn)
+                logloss     : Log Loss
+                lr+         : Positive Likelihood Ratio
+                              = tpr / fpr
+                lr-         : Negative Likelihood Ratio
+                              = fnr / tnr
+                dor         : Diagnostic Odds Ratio
+                mcc         : Matthews Correlation Coefficient 
+                mk          : Markedness = ppv + npv - 1
+                npv         : Negative Predictive Value 
+                              = tn / (tn + fn)
+                prc_auc     : Area Under the Curve (PRC)
+                precision   : Precision = tp / (tp + fp)
+                recall      : Recall = tp / (tp + fn)
+                specificity : Specificity = tn / (tn + fp)
+        cutoff: PythonNumber, optional
             Cutoff for which the tested category will be  accepted
             as a prediction.  For multiclass  classification, each 
             tested category becomes  the positives  and the others 
-            are merged into the negatives. The list will represent 
-            the classes threshold. If it is empty, the best cutoff 
-            will be used.
+            are  merged  into  the   negatives.  The  cutoff  will 
+            represent  the  classes  threshold.  If  it  is  empty, 
+            the  regular  cutoff (1 / number of classes)  will  be 
+            used.
         labels: str / list, optional
             List  of the  different  labels to be used during  the 
             computation.
@@ -1788,18 +1902,20 @@ class MulticlassClassifier(Classifier):
         TableSample
             report.
         """
-        if not (labels):
+        if isinstance(labels, type(None)):
             labels = self.classes_
         elif isinstance(labels, str):
             labels = [labels]
         return mt.classification_report(
-            cutoff=cutoff, estimator=self, labels=labels, nbins=nbins,
+            estimator=self, metrics=metrics, labels=labels, cutoff=cutoff, nbins=nbins,
         )
 
     report = classification_report
 
     def confusion_matrix(
-        self, pos_label: PythonScalar = None, cutoff: PythonNumber = -1,
+        self,
+        pos_label: Optional[PythonScalar] = None,
+        cutoff: Optional[PythonNumber] = None,
     ) -> TableSample:
         """
         Computes the model confusion matrix.
@@ -1809,11 +1925,11 @@ class MulticlassClassifier(Classifier):
         pos_label: PythonScalar, optional
             Label  to consider  as positive.  All the other  classes 
             will be merged and considered as negative for multiclass 
-            classification.
+            classification.  If  the 'pos_label' is not defined, the 
+            entire confusion matrix will be drawn.
         cutoff: PythonNumber, optional
             Cutoff for which the tested category will be accepted as 
-            a prediction.  If the cutoff is not between 0 and 1, the 
-            entire confusion matrix will be drawn.
+            a prediction. It is only used if 'pos_label' is defined.
 
         Returns
         -------
@@ -1828,38 +1944,52 @@ class MulticlassClassifier(Classifier):
             )
         else:
             pos_label = self._check_pos_label(pos_label=pos_label)
+            if cutoff == None:
+                cutoff = 1.0 / len(self.classes_)
             return mt.confusion_matrix(
                 self.y,
-                self.deploySQL(pos_label, cutoff),
+                self.deploySQL(pos_label=pos_label, cutoff=cutoff),
                 self.test_relation,
                 pos_label=pos_label,
             )
 
     def score(
         self,
-        method: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        pos_label: PythonScalar = None,
+        metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
+        average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+        pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
-    ) -> float:
+    ) -> Union[float, list[float]]:
         """
         Computes the model score.
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
+                ba          : Balanced Accuracy
+                              = (tpr + tnr) / 2
                 best_cutoff : Cutoff  which optimised the  ROC 
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
                 csi         : Critical Success Index 
                               = tp / (tp + fn + fp)
-                f1          : F1 Score 
+                f1          : F1 Score
+                fnr         : False Negative Rate 
+                              = fn / (fn + tp)
+                fpr         : False Positive Rate 
+                              = fp / (fp + tn)
                 logloss     : Log Loss
+                lr+         : Positive Likelihood Ratio
+                              = tpr / fpr
+                lr-         : Negative Likelihood Ratio
+                              = fnr / tnr
+                dor         : Diagnostic Odds Ratio
                 mcc         : Matthews Correlation Coefficient 
                 mk          : Markedness = ppv + npv - 1
                 npv         : Negative Predictive Value 
@@ -1868,6 +1998,16 @@ class MulticlassClassifier(Classifier):
                 precision   : Precision = tp / (tp + fp)
                 recall      : Recall = tp / (tp + fn)
                 specificity : Specificity = tn / (tn + fp)
+        average: str, optional
+            The method used to  compute the final score for
+            multiclass-classification.
+                micro    : positive  and   negative  values 
+                           globally.
+                macro    : average  of  the  score of  each 
+                           class.
+                weighted : weighted average of the score of 
+                           each class.
+                scores   : scores  for   all  the  classes.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 
@@ -1889,38 +2029,29 @@ class MulticlassClassifier(Classifier):
         float
             score.
         """
-        if (
-            method in ("accuracy", "acc")
-            and pos_label == None
-            and not (self._is_binary_classifier)
-        ):
-            return self._compute_accuracy()
-        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[method]
+        fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         pos_label = self._check_pos_label(pos_label=pos_label)
         y_proba = self._get_y_proba(pos_label=pos_label)
-        y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
-        final_relation = self._get_final_relation(pos_label=pos_label)
-        args = [self.y, y_score, final_relation]
-        kwargs = {}
-        if method in ("accuracy", "acc"):
-            args += [pos_label]
-        elif method in ("aic", "bic"):
-            args += [len(self.X)]
-        elif method in (
+        if metric in (
             "auc",
             "prc_auc",
             "best_cutoff",
             "best_threshold",
-            "log_loss",
             "logloss",
+            "log_loss",
         ):
-            args = [
-                f"DECODE({self.y}, '{pos_label}', 1, 0)",
-                y_proba,
-                final_relation,
-            ]
-            if method in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
-                kwargs["nbins"] = nbins
+            y_score = self._get_y_score(allSQL=True)
+        else:
+            y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
+        final_relation = self._get_final_relation(pos_label=pos_label)
+        args = [self.y, y_score, final_relation]
+        kwargs = {"average": average, "labels": self.classes_}
+        if metric not in ("aic", "bic"):
+            kwargs["pos_label"] = pos_label
+        if metric in ("aic", "bic"):
+            args += [len(self.X)]
+        elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+            kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
     # Prediction / Transformation Methods.
@@ -1928,9 +2059,9 @@ class MulticlassClassifier(Classifier):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
-        cutoff: PythonNumber = 0.5,
+        cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -1970,7 +2101,7 @@ class MulticlassClassifier(Classifier):
             )
 
         # Inititalization
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1978,10 +2109,13 @@ class MulticlassClassifier(Classifier):
             X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self._model_type, self.model_name])
-        assert 0 <= cutoff <= 1, ParameterError(
-            "Incorrect parameter 'cutoff'.\nThe cutoff "
-            "must be between 0 and 1, inclusive."
-        )
+        if cutoff == None:
+            cutoff = 1.0 / len(self.classes_)
+        elif not (0 <= cutoff <= 1):
+            raise ValueError(
+                "Incorrect parameter 'cutoff'.\nThe cutoff "
+                "must be between 0 and 1, inclusive."
+            )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
 
@@ -1999,15 +2133,15 @@ class MulticlassClassifier(Classifier):
 
         # Result
         return vdf_return.eval(
-            name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X)
+            name, self.deploySQL(X=X, pos_label=pos_label, cutoff=cutoff)
         )
 
     def predict_proba(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -2045,7 +2179,7 @@ class MulticlassClassifier(Classifier):
                 vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
             )
         # Inititalization
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -2068,9 +2202,9 @@ class MulticlassClassifier(Classifier):
         if pos_label == None:
             for c in self.classes_:
                 name_tmp = gen_name([name, c])
-                vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=-1, X=X))
+                vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=None, X=X))
         else:
-            vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=-1, X=X))
+            vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=None, X=X))
 
         return vdf_return
 
@@ -2089,7 +2223,7 @@ class MulticlassClassifier(Classifier):
             return self.deploySQL(allSQL=True)[0].format(pos_label)
 
     def _get_plot_args(
-        self, pos_label: PythonScalar = None, method: Optional[str] = None
+        self, pos_label: Optional[PythonScalar] = None, method: Optional[str] = None
     ) -> list:
         """
         Returns the args used by plotting methods.
@@ -2111,7 +2245,7 @@ class MulticlassClassifier(Classifier):
 
     def _get_plot_kwargs(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         chart: Optional[PlottingObject] = None,
         method: Optional[str] = None,
@@ -2129,7 +2263,7 @@ class MulticlassClassifier(Classifier):
 
     def contour(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 100,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -2168,7 +2302,7 @@ class MulticlassClassifier(Classifier):
 
     def cutoff_curve(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -2209,7 +2343,7 @@ class MulticlassClassifier(Classifier):
 
     def lift_chart(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 1000,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -2250,7 +2384,7 @@ class MulticlassClassifier(Classifier):
 
     def prc_curve(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -2291,7 +2425,7 @@ class MulticlassClassifier(Classifier):
 
     def roc_curve(
         self,
-        pos_label: PythonScalar = None,
+        pos_label: Optional[PythonScalar] = None,
         nbins: int = 30,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -2336,29 +2470,47 @@ class Regressor(Supervised):
     # Model Evaluation Methods.
 
     def regression_report(
-        self, method: Literal["anova", "metrics", "details"] = "metrics"
-    ) -> TableSample:
+        self,
+        metrics: Union[
+            str,
+            Literal[None, "anova", "details"],
+            list[Literal[tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)]],
+        ] = None,
+    ) -> Union[float, TableSample]:
         """
         Computes a regression report using multiple metrics to 
         evaluate the model (r2, mse, max error...). 
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the regression report.
+        metrics: str, optional
+            The metrics to use to compute the regression report.
+                None    : Computes the model different metrics.
                 anova   : Computes the model ANOVA table.
                 details : Computes the model details.
-                metrics : Computes the model different metrics.
+            It can also be a list of different metrics among the
+            following:
+                aic    : Akaike’s Information Criterion
+                bic    : Bayesian Information Criterion
+                max    : Max Error
+                mae    : Mean Absolute Error
+                median : Median Absolute Error
+                mse    : Mean Squared Error
+                msle   : Mean Squared Log Error
+                qe     : quantile  error,  the quantile must be
+                         included in the name. Example:
+                         qe50.1% will return the quantile error 
+                         using q=0.501.
+                r2     : R squared coefficient
+                r2a    : R2 adjusted
+                rmse   : Root Mean Squared Error
+                var    : Explained Variance 
 
         Returns
         -------
         TableSample
             report.
         """
-        if method in ("anova", "details") and self._model_type in ("KernelDensity",):
-            raise ModelError(
-                f"'{method}' method is not available for {self._model_type} models."
-            )
         prediction = self.deploySQL()
         if self._model_type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
@@ -2367,17 +2519,15 @@ class Regressor(Supervised):
             test_relation = self.map
         else:
             test_relation = self.test_relation
-        if method == "metrics":
-            return mt.regression_report(self.y, prediction, test_relation, len(self.X))
-        elif method == "anova":
+        if metrics == "anova":
             return mt.anova_table(self.y, prediction, test_relation, len(self.X))
-        elif method == "details":
+        elif metrics == "details":
             vdf = vDataFrame(f"SELECT {self.y} FROM {self.input_relation}")
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
             skew = vdf[self.y].skew()
             jb = vdf[self.y].agg(["jb"])[self.y][0]
-            R2 = self.score()
+            R2 = self.score(metric="r2")
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
             anova_T = mt.anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
@@ -2412,14 +2562,20 @@ class Regressor(Supervised):
                     ],
                 }
             )
+        elif isinstance(metrics, type(None)) or isinstance(
+            metrics, (str, list, np.ndarray)
+        ):
+            return mt.regression_report(
+                self.y, prediction, test_relation, metrics=metrics, k=len(self.X)
+            )
 
     report = regression_report
 
     def score(
         self,
-        method: Literal[
+        metric: Literal[
             tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
-            + ("r2a", "r2adj", "r2adjusted", "rmse")
+            + ("r2a", "r2_adj", "rsquared_adj", "r2adj", "r2adjusted", "rmse")
         ] = "r2",
     ) -> float:
         """
@@ -2427,8 +2583,8 @@ class Regressor(Supervised):
 
         Parameters
         ----------
-        method: str, optional
-            The method to use to compute the score.
+        metric: str, optional
+            The metric to use to compute the score.
                 aic    : Akaike’s Information Criterion
                 bic    : Bayesian Information Criterion
                 max    : Max Error
@@ -2447,15 +2603,15 @@ class Regressor(Supervised):
             score.
         """
         # Initialization
-        method = str(method).lower()
-        if method in ["r2adj", "r2adjusted"]:
-            method = "r2a"
+        metric = str(metric).lower()
+        if metric in ["r2adj", "r2adjusted"]:
+            metric = "r2a"
         adj, root = False, False
-        if method in ("r2a", "r2adj", "r2adjusted"):
-            method, adj = "r2", True
-        elif method == "rmse":
-            method, root = "mse", True
-        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[method]
+        if metric in ("r2a", "r2adj", "r2adjusted", "r2_adj", "rsquared_adj"):
+            metric, adj = "r2", True
+        elif metric == "rmse":
+            metric, root = "mse", True
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[metric]
 
         # Scoring
         if self._model_type == "KNeighborsRegressor":
@@ -2465,7 +2621,7 @@ class Regressor(Supervised):
         else:
             test_relation, prediction = self.test_relation, self.deploySQL()
         arg = [self.y, prediction, test_relation]
-        if method in ("aic", "bic") or adj:
+        if metric in ("aic", "bic") or adj:
             arg += [len(self.X)]
         if root or adj:
             arg += [True]
@@ -2476,7 +2632,7 @@ class Regressor(Supervised):
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns = [],
+        X: Optional[SQLColumns] = None,
         name: str = "",
         inplace: bool = True,
     ) -> vDataFrame:
@@ -2508,7 +2664,7 @@ class Regressor(Supervised):
 		"""
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
-        if not (X):
+        if isinstance(X, type(None)):
             X = self.X
         if isinstance(X, str):
             X = [X]
@@ -2530,7 +2686,9 @@ class Unsupervised(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: SQLColumns = []) -> Optional[str]:
+    def fit(
+        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None
+    ) -> Optional[str]:
         """
     	Trains the model.
 
@@ -2593,14 +2751,14 @@ class Unsupervised(VerticaModel):
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
-            if not (X) and (self._model_type == "KPrototypes"):
+            if isinstance(X, type(None)) and (self._model_type == "KPrototypes"):
                 X = input_relation.get_columns()
-            elif not (X):
+            elif isinstance(X, type(None)):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
             relation = input_relation
-            if not (X):
+            if isinstance(X, type(None)):
                 X = vDataFrame(input_relation).numcol()
         self.X = [quote_ident(column) for column in X]
         parameters = self._get_vertica_param_dict()

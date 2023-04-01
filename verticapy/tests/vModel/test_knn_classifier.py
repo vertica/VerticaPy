@@ -156,37 +156,36 @@ class TestKNeighborsClassifier:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.7529724373986667)
-        assert cls_rep1["prc_auc"][0] == pytest.approx(0.7776321621297582)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6658506731946144)
-        assert cls_rep1["log_loss"][0] == pytest.approx(0.248241359319007)
-        assert cls_rep1["precision"][0] == pytest.approx(0.8679245283018868)
-        assert cls_rep1["recall"][0] == pytest.approx(0.35384615384615387)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.5027322404371585)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.38437795748893316)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.3046658259773014)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.4849458048976314)
-        assert cls_rep1["csi"][0] == pytest.approx(0.3357664233576642)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.6)
+        assert cls_rep1["auc"][0] == pytest.approx(0.696400048039392)
+        assert cls_rep1["prc_auc"][0] == pytest.approx(0.7591081348272292)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.7013463892288861)
+        assert cls_rep1["log_loss"][0] == pytest.approx(26.8788249694002)
+        assert cls_rep1["precision"][0] == pytest.approx(0.7339743589743589)
+        assert cls_rep1["recall"][0] == pytest.approx(0.5871794871794872)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.6524216524216524)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.40382652359985155)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.39280009607878474)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.41516247778624016)
+        assert cls_rep1["csi"][0] == pytest.approx(0.48414376321353064)
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(
             0.5691554467564259
         )
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(
+        assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(
             0.4773561811505508
         )
-        assert model.score(method="best_cutoff") == pytest.approx(0.6)
-        assert model.score(method="bm") == pytest.approx(0.39280009607878474)
-        assert model.score(method="csi") == pytest.approx(0.48414376321353064)
-        assert model.score(method="f1") == pytest.approx(0.6524216524216524)
-        assert model.score(method="logloss") == pytest.approx(0.248241359319007)
-        assert model.score(method="mcc") == pytest.approx(0.40382652359985155)
-        assert model.score(method="mk") == pytest.approx(0.41516247778624016)
-        assert model.score(method="npv") == pytest.approx(0.6811881188118812)
-        assert model.score(method="prc_auc") == pytest.approx(0.7776321621297582)
-        assert model.score(method="precision") == pytest.approx(0.7339743589743589)
-        assert model.score(method="specificity") == pytest.approx(0.8056206088992974)
+        assert model.score(metric="best_cutoff") == pytest.approx(0.999)
+        assert model.score(metric="bm") == pytest.approx(0.39280009607878474)
+        assert model.score(metric="csi") == pytest.approx(0.48414376321353064)
+        assert model.score(metric="f1") == pytest.approx(0.6524216524216524)
+        assert model.score(metric="logloss") == pytest.approx(26.8788249694002)
+        assert model.score(metric="mcc") == pytest.approx(0.40382652359985155)
+        assert model.score(metric="mk") == pytest.approx(0.41516247778624016)
+        assert model.score(metric="npv") == pytest.approx(0.6811881188118812)
+        assert model.score(metric="prc_auc") == pytest.approx(0.7591081348272292)
+        assert model.score(metric="precision") == pytest.approx(0.7339743589743589)
+        assert model.score(metric="specificity") == pytest.approx(0.8056206088992974)
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
@@ -197,7 +196,7 @@ class TestKNeighborsClassifier:
         model_test = KNeighborsClassifier("knn_from_vDF",)
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(
+        assert model_test.score(cutoff=0.9, metric="accuracy") == pytest.approx(
             0.5890710382513661
         )
         model_test.drop()

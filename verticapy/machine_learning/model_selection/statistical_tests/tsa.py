@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime
-from typing import Union
+from typing import Optional, Union
 import numpy as np
 from scipy.stats import chi2, norm, f
 
@@ -463,8 +463,8 @@ def cochrane_orcutt(
     model_tmp.drop()
     model_tmp.fit(vdf, X, y)
     model_tmp.pho_ = pho
-    model_tmp.anova_table_ = model.regression_report("anova")
-    model_tmp.r2_ = model.score("r2")
+    model_tmp.anova_table_ = model.regression_report(metrics="anova")
+    model_tmp.r2_ = model.score(metric="r2")
     if drop_tmp_model:
         model_tmp.drop()
     return model_tmp
@@ -648,11 +648,11 @@ def het_arch(
     model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     except:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_lags, X_names[1:], X_names[0])
-        R2 = model.score("r2")
+        R2 = model.score(metric="r2")
     finally:
         model.drop()
     n = vdf.shape()[0]
@@ -678,7 +678,7 @@ def seasonal_decompose(
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
-    rule: TimeInterval = None,
+    rule: Optional[TimeInterval] = None,
     mult: bool = False,
     two_sided: bool = False,
 ) -> vDataFrame:

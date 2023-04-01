@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, random, warnings
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
 
 import verticapy._config.config as conf
@@ -124,8 +124,8 @@ class vDFFilter:
     def between(
         self,
         column: str,
-        start: PythonScalar = None,
-        end: PythonScalar = None,
+        start: Optional[PythonScalar] = None,
+        end: Optional[PythonScalar] = None,
         inplace: bool = True,
     ):
         """
@@ -178,8 +178,8 @@ class vDFFilter:
     def between_time(
         self,
         ts: str,
-        start_time: TimeInterval = None,
-        end_time: TimeInterval = None,
+        start_time: Optional[TimeInterval] = None,
+        end_time: Optional[TimeInterval] = None,
         inplace: bool = True,
     ):
         """
@@ -548,7 +548,7 @@ class vDFFilter:
     @save_verticapy_logs
     def sample(
         self,
-        n: PythonNumber = None,
+        n: Optional[PythonNumber] = None,
         x: float = None,
         method: Literal["random", "systematic", "stratified"] = "random",
         by: SQLColumns = [],
