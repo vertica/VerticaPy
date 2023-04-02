@@ -271,7 +271,6 @@ class vDFRead:
             sql_push_ext=self._vars["sql_push_ext"],
             symbol=self._vars["symbol"],
         )
-        return result
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
@@ -283,7 +282,7 @@ class vDFRead:
             if not ("percent" in self[column]._catalog):
                 all_percent = False
         all_percent = (all_percent or (conf.get_option("percent_bar") == True)) and (
-            conf.get_option("percent_bar") != False
+            conf.get_option("percent_bar")
         )
         if all_percent:
             percent = self.aggregate(["percent"], columns).transpose().values
