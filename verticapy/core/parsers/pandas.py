@@ -18,9 +18,9 @@ import os, csv
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._format import format_schema_table
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -109,36 +109,45 @@ def read_pandas(
         tmp_name = ""
     sep = "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else ""
     path = f"{temp_path}{sep}{name}.csv"
+    clear = False
     try:
         # Adding the quotes to STR pandas columns in order
         # to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
-        str_cols = []
+        str_cols, null_columns = [], []
         for c in df.columns:
-            if df[c].dtype == object and isinstance(
-                df[c].loc[df[c].first_valid_index()], str
+            if (isinstance(df[c].first_valid_index(), type(None))):
+                null_columns += [c]
+            elif (
+                df[c].dtype == object
+                and isinstance(df[c].loc[df[c].first_valid_index()], str)
             ):
                 str_cols += [c]
-        if str_cols:
+        if len(df.columns) == len(null_columns):
+            names = ", ".join([f"NULL AS {quote_ident(col)}" for col in df.columns])
+            q = " UNION ALL ".join([f"(SELECT {names})" for i in range(len(df))])
+            return vDataFrame(q)
+        if len(str_cols) > 0 or len(null_columns) > 0:
             tmp_df = df.copy()
             for c in str_cols:
                 tmp_df[c] = '"' + tmp_df[c].str.replace('"', '""') + '"'
+            for c in null_columns:
+                tmp_df[c] = '""'
             clear = True
         else:
             tmp_df = df
-            clear = False
         tmp_df.to_csv(
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027",
         )
-        if str_cols:
+
+        if len(str_cols) > 0 or len(null_columns) > 0:
             # to_csv is adding an undesired special character
             # we remove it
             with open(path, "r") as f:
                 filedata = f.read()
-            filedata = filedata.replace(",", ",")
+            filedata = filedata.replace(",", ",").replace('""', "")
             with open(path, "w") as f:
                 f.write(filedata)
-
         if insert:
             input_relation = format_schema_table(schema, name)
             tmp_df_columns_str = ", ".join(
@@ -156,8 +165,6 @@ def read_pandas(
                     SKIP 1;""",
                 title="Inserting the pandas.DataFrame.",
             )
-            from verticapy.core.vdataframe.base import vDataFrame
-
             vdf = vDataFrame(name, schema=schema)
         elif tmp_name:
             vdf = read_csv(
@@ -179,7 +186,10 @@ def read_pandas(
                 escape="\027",
             )
     finally:
-        os.remove(path)
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
         if clear:
             del tmp_df
     return vdf
