@@ -14,8 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Optional, Union
 from collections.abc import Iterable
+
+from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
@@ -126,24 +128,36 @@ class vDFRead:
             limit = conf.get_option("max_rows")
             conf.set_option("sql_on", False)
             try:
-                result = TableSample().read_sql(f"{query} LIMIT {limit}")
-            except:
-                result = TableSample().read_sql(query)
+                res = TableSample().read_sql(f"{query} LIMIT {limit}")
+            except QueryError:
+                res = TableSample().read_sql(query)
             finally:
                 conf.set_option("sql_on", sql_on_init)
             if conf.get_option("count_on"):
-                result.count = self.shape()[0]
+                res.count = self.shape()[0]
             else:
-                result.count = -1
+                res.count = -1
             if conf.get_option("percent_bar"):
                 percent = self.agg(["percent"]).transpose().values
-                for column in result.values:
-                    result.dtype[column] = self[column].ctype()
-                    result.percent[column] = percent[self._format_colnames(column)][0]
+                for column in res.values:
+                    res.dtype[column] = self[column].ctype()
+                    res.percent[column] = percent[self._format_colnames(column)][0]
+            return res
         max_rows = self._vars["max_rows"]
         if max_rows <= 0:
             max_rows = conf.get_option("max_rows")
-        return self.head(limit=max_rows)
+        max_cols = conf.get_option("max_columns")
+        colums = self.get_columns()
+        n = len(colums)
+        cols = None
+        if n > max_cols:
+            if n % 2 == 0:
+                s = int(max_cols/2)
+                cols = colums[:s+1] + colums[-s:]
+            else:
+                s = int((max_cols+1)/2)
+                cols = colums[:s] + colums[-s:]
+        return self.iloc(limit=max_rows, columns=cols)
 
     def idisplay(self):
         """This method displays the interactive table. It is used when 
@@ -204,7 +218,7 @@ class vDFRead:
         """
         return self.iloc(limit=limit, offset=0)
 
-    def iloc(self, limit: int = 5, offset: int = 0, columns: SQLColumns = []):
+    def iloc(self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None):
         """
     Returns a part of the vDataFrame (delimited by an offset and a limit).
 
@@ -257,13 +271,13 @@ class vDFRead:
             sql_push_ext=self._vars["sql_push_ext"],
             symbol=self._vars["symbol"],
         )
+        return result
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
         elif conf.get_option("count_on"):
             result.count = self.shape()[0]
         result.offset = offset
-        columns = self.get_columns()
         all_percent = True
         for column in columns:
             if not ("percent" in self[column]._catalog):
