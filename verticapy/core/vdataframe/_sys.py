@@ -97,7 +97,7 @@ class vDFSystem:
         for i in range(0, len(self._vars["where"])):
             all_where[where_positions[i]] += [self._vars["where"][i][0]]
         all_where = [
-            " AND ".join([f"({elem})" for elem in condition]) for condition in all_where
+            " AND ".join([f"({c})" for c in condition]) for condition in all_where
         ]
         for i in range(len(all_where)):
             if all_where[i] != "":
@@ -112,9 +112,15 @@ class vDFSystem:
             ):
                 first_values[i] = f"{first_values[i]} AS {columns[i]}"
                 transformations_first_floor = True
-        if (transformations_first_floor) or (
-            self._vars["allcols_ind"] != len(first_values)
-        ):
+        all_undefined = True
+        for v in first_values:
+            if v != "___VERTICAPY_UNDEFINED___":
+                all_undefined = False
+                break
+        if (
+            (transformations_first_floor)
+            or (self._vars["allcols_ind"] != len(first_values))
+        ) and not (all_undefined):
             table = f"""
                 SELECT 
                     {', '.join(first_values)} 
@@ -130,8 +136,6 @@ class vDFSystem:
                 elif values[j] != "___VERTICAPY_UNDEFINED___":
                     values_str = values[j].replace("{}", columns[j])
                     values[j] = f"{values_str} AS {columns[j]}"
-            if len(values) == 0:
-                print("hello")
             table = f"SELECT {', '.join(values)} FROM ({table}) VERTICAPY_SUBTABLE"
             if len(all_where) > i - 1:
                 table += all_where[i - 1]

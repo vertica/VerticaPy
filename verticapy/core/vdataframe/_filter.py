@@ -14,9 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, random, warnings
+import copy, datetime, random, warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
+
+from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import (
@@ -696,7 +698,7 @@ class vDCFilter:
         """
         try:
             parent = self._parent
-            force_columns = [column for column in self._parent._vars["columns"]]
+            force_columns = copy.deepcopy(self._parent._vars["columns"])
             force_columns.remove(self._alias)
             _executeSQL(
                 query=f"""
@@ -710,7 +712,7 @@ class vDCFilter:
             )
             self._parent._vars["columns"].remove(self._alias)
             delattr(self._parent, self._alias)
-        except:
+        except QueryError:
             self._parent._vars["exclude_columns"] += [self._alias]
         if add_history:
             self._parent._add_to_history(

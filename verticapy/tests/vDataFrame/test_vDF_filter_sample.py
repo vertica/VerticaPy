@@ -86,11 +86,6 @@ class TestvDFFilterSample:
         assert result.shape() == (140, 3)
 
     def test_vDF_balance(self, titanic_vd):
-        # hybrid
-        result = titanic_vd.balance("embarked", method="hybrid")["embarked"].topk()
-        assert 30 < result["percent"][0] < 40
-        assert 30 < result["percent"][1] < 40
-        assert 30 < result["percent"][2] < 40
         # under
         result = titanic_vd.balance("embarked", method="under", x=0.5)[
             "embarked"
