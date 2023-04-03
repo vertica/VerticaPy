@@ -48,6 +48,25 @@ def dummy_vd():
 
 
 @pytest.fixture(scope="module")
+def dummy_date_vd():
+    N = 100
+    years = [1910, 1920, 1930, 1940, 1950]
+    median = 500
+    q1 = 200
+    q3 = 800
+    std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
+    data = np.random.normal(median, std, N)
+    dummy = pd.DataFrame(
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
+    )
+    dummy = verticapy.vDataFrame(dummy)
+    yield dummy
+
+
+@pytest.fixture(scope="module")
 def dummy_dist_vd():
     N = 1000
     ones_percentage = 0.4
@@ -316,7 +335,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -340,7 +365,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -1078,5 +1109,78 @@ class testVDFSpiderPlot:
         custom_height = 700
         # Act
         result = dummy_vd["cats"].spider(height=custom_height)
+        # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
+
+
+class testVDFRangeCurve:
+    def test_properties_output_type(self, load_plotly, dummy_date_vd):
+        # Arrange
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date", plot_median=True)
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_xaxis(self, load_plotly, dummy_date_vd):
+        # Arrange
+        column_name = "date"
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts=column_name, plot_median=True)
+        # Assert -
+        assert (
+            result.layout["xaxis"]["title"]["text"] == column_name
+        ), "X axis label incorrect"
+
+    def test_properties_xaxis(self, load_plotly, dummy_date_vd):
+        # Arrange
+        column_name = "value"
+        # Act
+        result = dummy_date_vd[column_name].range_plot(ts="date", plot_median=True)
+        # Assert -
+        assert (
+            result.layout["yaxis"]["title"]["text"] == column_name
+        ), "Y axis label incorrect"
+
+    def test_data_x_axis(self, load_plotly, dummy_date_vd):
+        # Arrange
+        test_set = set([1910, 1920, 1930, 1940, 1950])
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date")
+        assert set(result.data[0]["y"]).issubset(
+            test_set
+        ), "There is descripancy between x axis values for the bounds"
+
+    def test_data_x_axis(self, load_plotly, dummy_date_vd):
+        # Arrange
+        test_set = set([1910, 1920, 1930, 1940, 1950])
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date")
+        assert set(result.data[1]["y"]).issubset(
+            test_set
+        ), "There is descripancy between x axis values for the median"
+
+    def test_additional_options_turn_off_median(self, load_plotly, dummy_date_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date", plot_median=True)
+        # Assert
+        assert (
+            len(result.data) == 1
+        ), "Median is still showing even after it is turned off"
+
+    def test_additional_options_custom_width(self, load_plotly, dummy_date_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date", width=custom_width)
+        # Assert
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_date_vd):
+        # rrange
+        custom_height = 700
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date", height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
