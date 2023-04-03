@@ -339,9 +339,11 @@ class vDataFrame(
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
+            return None
 
+    @classmethod
     def _from_object(
-        self,
+        cls,
         object_: Union[np.ndarray, list, TableSample, dict],
         columns: SQLColumns = [],
     ) -> None:
@@ -384,9 +386,10 @@ class vDataFrame(
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
-        return self.__init__(tb.to_sql())
+        return cls(input_relation=tb.to_sql())
 
-    def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
+    @classmethod
+    def _from_pandas(cls, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
@@ -398,7 +401,7 @@ class vDataFrame(
 
         args = object_[usecols] if usecols else object_
         vdf = read_pandas(args)
-        return self.__init__(input_relation=vdf._vars["main_relation"])
+        return cls(input_relation=vdf._vars["main_relation"])
 
 
 ##
@@ -459,7 +462,7 @@ Attributes
         return "vDataColumn"
 
     def __init__(
-        self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
+        self, alias: str, transformations: list = [], parent: Optional[vDataFrame] = None, catalog: dict = {},
     ) -> None:
         self._parent = parent
         self._alias = alias
@@ -488,3 +491,4 @@ Attributes
         if self._init_transf == "___VERTICAPY_UNDEFINED___":
             self._init_transf = self._alias
         self._init = True
+        return None

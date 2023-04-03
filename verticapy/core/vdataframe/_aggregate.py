@@ -655,9 +655,12 @@ class vDFAgg:
                         POWER(10, SUM(LOG(ABS({column}{cast}))))"""
 
                 elif fun.lower() in ("percent", "count_percent"):
-                    expr = (
-                        f"ROUND(COUNT({column}) / { self.shape()[0]} * 100, 3)::float"
-                    )
+                    if self.shape()[0] == 0:
+                        expr = "100.0"
+                    else:
+                        expr = (
+                            f"ROUND(COUNT({column}) / {self.shape()[0]} * 100, 3)::float"
+                        )
 
                 elif "{}" not in fun:
                     expr = f"{fun.upper()}({column}{cast})"

@@ -139,9 +139,13 @@ class vDFRead:
                 res.count = -1
             if conf.get_option("percent_bar"):
                 percent = self.agg(["percent"]).transpose().values
+                cnt = self.shape()[0]
                 for column in res.values:
                     res.dtype[column] = self[column].ctype()
-                    res.percent[column] = percent[self._format_colnames(column)][0]
+                    if cnt == 0:
+                        res.percent[column] = 100.0
+                    else:
+                        res.percent[column] = percent[self._format_colnames(column)][0]
             return res
         max_rows = self._vars["max_rows"]
         if max_rows <= 0:
@@ -281,14 +285,14 @@ class vDFRead:
         for column in columns:
             if not ("percent" in self[column]._catalog):
                 all_percent = False
-        all_percent = (all_percent or (conf.get_option("percent_bar") == True)) and (
-            conf.get_option("percent_bar")
-        )
+        all_percent = (all_percent) or (conf.get_option("percent_bar"))
         if all_percent:
             percent = self.aggregate(["percent"], columns).transpose().values
         for column in result.values:
             result.dtype[column] = self[column].ctype()
-            if all_percent:
+            if result.count == 0:
+                result.percent[column] = 100.0
+            elif all_percent:
                 result.percent[column] = percent[self._format_colnames(column)][0]
         return result
 
