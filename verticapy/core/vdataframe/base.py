@@ -341,9 +341,8 @@ class vDataFrame(
                 new_vDataColumn._init = False
             return None
 
-    @classmethod
     def _from_object(
-        cls,
+        self,
         object_: Union[np.ndarray, list, TableSample, dict],
         columns: SQLColumns = [],
     ) -> None:
@@ -386,10 +385,9 @@ class vDataFrame(
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
-        return cls(input_relation=tb.to_sql())
+        return self.__init__(input_relation=tb.to_sql())
 
-    @classmethod
-    def _from_pandas(cls, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
+    def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
@@ -401,7 +399,7 @@ class vDataFrame(
 
         args = object_[usecols] if usecols else object_
         vdf = read_pandas(args)
-        return cls(input_relation=vdf._vars["main_relation"])
+        return self.__init__(input_relation=vdf._vars["main_relation"])
 
 
 ##

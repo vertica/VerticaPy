@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math
 from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
@@ -910,7 +909,7 @@ def markedness(
 
 def _matthews_corrcoef(tn: int, fn: int, fp: int, tp: int) -> float:
     return (
-        (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+        (tp * tn - fp * fn) / np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
         if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
         else 0.0
     )
