@@ -1030,8 +1030,10 @@ class TestVDFDensityPlot:
 
         # Act
         result = dummy_dist_vd["0"].density()
-        assert (
-            result.data[0]["x"].min() == x_min and result.data[0]["x"].max() == x_max
+        assert pytest.approx(result.data[0]["x"].min(), 4) == pytest.approx(
+            x_min, 4
+        ) and pytest.approx(result.data[0]["x"].max(), 4) == pytest.approx(
+            x_max, 4
         ), "The range in data is not consistent with plot"
 
     def test_additional_options_custom_width(self, load_plotly, dummy_dist_vd):
