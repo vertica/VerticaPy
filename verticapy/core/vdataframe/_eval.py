@@ -17,10 +17,12 @@ permissions and limitations under the License.
 import re
 from typing import Union
 
+from vertica_python.errors import QueryError
+
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
-from verticapy.errors import QueryError
+from verticapy.errors import QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -87,8 +89,8 @@ class vDFEval:
         try:
             query = f"SELECT {expr} AS {name} FROM {self._genSQL()} LIMIT 0"
             ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
-        except:
-            raise QueryError(
+        except QueryError:
+            raise vQueryError(
                 f"The expression '{expr}' seems to be incorrect.\nBy "
                 "turning on the SQL with the 'set_option' function, "
                 "you'll print the SQL code generation and probably "

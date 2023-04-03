@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, warnings
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 import pandas as pd
@@ -339,6 +339,7 @@ class vDataFrame(
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
+            return None
 
     def _from_object(
         self,
@@ -384,7 +385,7 @@ class vDataFrame(
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
-        return self.__init__(tb.to_sql())
+        return self.__init__(input_relation=tb.to_sql())
 
     def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
         """
@@ -459,7 +460,7 @@ Attributes
         return "vDataColumn"
 
     def __init__(
-        self, alias: str, transformations: list = [], parent=None, catalog: dict = {},
+        self, alias: str, transformations: list = [], parent: Optional[vDataFrame] = None, catalog: dict = {},
     ) -> None:
         self._parent = parent
         self._alias = alias
@@ -488,3 +489,4 @@ Attributes
         if self._init_transf == "___VERTICAPY_UNDEFINED___":
             self._init_transf = self._alias
         self._init = True
+        return None

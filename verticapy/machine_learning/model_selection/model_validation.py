@@ -84,8 +84,12 @@ def cross_validate(
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
             f1          : F1 Score
+            fdr         : False Discovery Rate = 1 - ppv
+            fm          : Fowlkes–Mallows index
+                          = sqrt(ppv * tpr)
             fnr         : False Negative Rate 
                           = fn / (fn + tp)
+            for         : False Omission Rate = 1 - npv
             fpr         : False Positive Rate 
                           = fp / (fp + tn)
             logloss     : Log Loss
@@ -102,6 +106,8 @@ def cross_validate(
             prc_auc     : Area Under the Curve (PRC)
             precision   : Precision     
                           = tp / (tp + fp)
+            pt          : Prevalence Threshold
+                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
             recall      : Recall 
                           = tp / (tp + fn)
             specificity : Specificity 
@@ -320,8 +326,12 @@ def learning_curve(
             csi         : Critical Success Index 
                           = tp / (tp + fn + fp)
             f1          : F1 Score
+            fdr         : False Discovery Rate = 1 - ppv
+            fm          : Fowlkes–Mallows index
+                          = sqrt(ppv * tpr)
             fnr         : False Negative Rate 
                           = fn / (fn + tp)
+            for         : False Omission Rate = 1 - npv
             fpr         : False Positive Rate 
                           = fp / (fp + tn)
             logloss     : Log Loss
@@ -338,6 +348,8 @@ def learning_curve(
             prc_auc     : Area Under the Curve (PRC)
             precision   : Precision 
                           = tp / (tp + fp)
+            pt          : Prevalence Threshold
+                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
             recall      : Recall 
                           = tp / (tp + fn)
             specificity : Specificity 

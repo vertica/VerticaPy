@@ -505,7 +505,7 @@ def read_csv(
             and ingest_local
         ):
             f = open(path_first_file_in_folder, "r")
-            path_test = path_first_file_in_folder.split(".")[-2] + "_verticapy_copy.csv"
+            path_test = path_first_file_in_folder[:-4] + "_verticapy_copy.csv"
             f2 = open(path_test, "w")
             for i in range(parse_nrows + int(header)):
                 line = f.readline()

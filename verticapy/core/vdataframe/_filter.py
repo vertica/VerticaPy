@@ -14,9 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, random, warnings
-from typing import Literal, Optional, Union
+import copy, datetime, random, warnings
+from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
+
+from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import (
@@ -31,33 +33,31 @@ from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 
 class vDFFilter:
     @save_verticapy_logs
-    def at_time(self, ts: str, time: TimeInterval):
+    def at_time(self, ts: str, time: TimeInterval) -> "vDataFrame":
         """
-    Filters the vDataFrame by only keeping the records at the input time.
+        Filters the vDataFrame  by only keeping the records at the 
+        input time.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...)
-    time: TimeInterval
-        Input Time. For example, time = '12:00' will filter the data when time('ts') 
-        is equal to 12:00.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series) vDataColumn to use to filter the data. 
+            The vDataColumn type must be date like (date, datetime, 
+            timestamp...)
+        time: TimeInterval
+            Input Time. For example, time = '12:00' will filter the 
+            data when time('ts') is equal to 12:00.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.between_time : Filters the data between two time ranges.
-    vDataFrame.first        : Filters the data by only keeping the first records.
-    vDataFrame.filter       : Filters the data using the input expression.
-    vDataFrame.last         : Filters the data by only keeping the last records.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         self.filter(f"{self._format_colnames(ts)}::time = '{time}'")
         return self
@@ -66,57 +66,68 @@ class vDFFilter:
     def balance(
         self,
         column: str,
-        method: Literal["hybrid", "over", "under"] = "hybrid",
+        method: Literal["over", "under"] = "under",
         x: float = 0.5,
         order_by: SQLColumns = [],
-    ):
+    ) -> "vDataFrame":
         """
-    Balances the dataset using the input method.
+        Balances the dataset using the input method.
 
-    \u26A0 Warning : If the data is not sorted, the generated SQL code may
-                     differ between attempts.
+        \u26A0 Warning : If the data is not sorted, the generated 
+                         SQL code may differ between attempts.
 
-    Parameters
-    ----------
-    column: str
-        Column used to compute the different categories.
-    method: str, optional
-        The method with which to sample the data
-            hybrid : hybrid sampling
-            over   : oversampling
-            under  : undersampling
-    x: float, optional
-        The desired ratio between the majority class and minority classes.
-        Only used when method is 'over' or 'under'.
-    order_by: SQLColumns, optional
-        vDataColumns used to sort the data.
+        Parameters
+        ----------
+        column: str
+            Column used to compute the different categories.
+        method: str, optional
+            The method with which to sample the data
+                over   : oversampling
+                under  : undersampling
+        x: float, optional
+            The desired ratio between the majority class and minority 
+            classes.
+        order_by: SQLColumns, optional
+            vDataColumns used to sort the data.
 
-    Returns
-    -------
-    vDataFrame
-        balanced vDataFrame
+        Returns
+        -------
+        vDataFrame
+            balanced vDataFrame
         """
+        if not (0 <= x <= 1):
+            raise ValueError("Parameter 'x' must be between 0 and 1")
         column, order_by = self._format_colnames(column, order_by)
         if isinstance(order_by, str):
             order_by = [order_by]
-        assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
         topk = self[column].topk()
-        last_count, last_elem, n = (
-            topk["count"][-1],
-            topk["index"][-1],
-            len(topk["index"]),
-        )
-        if method == "over":
-            last_count = last_count * x
-        elif method == "under":
-            last_count = last_count / x
-        vdf = self.search(f"{column} = '{last_elem}'")
-        for i in range(n - 1):
-            vdf = vdf.append(
-                self.search(f"{column} = '{topk['index'][i]}'").sample(
-                    n=int(last_count)
+        min_cnt = topk["count"][-1]
+        min_class = topk["index"][-1]
+        max_cnt = topk["count"][0]
+        max_class = topk["index"][0]
+        n = len(topk["index"])
+        if method == "under":
+            vdf = self.search(f"{column} = '{min_class}'")
+            for i in range(n - 1):
+                cnt = int(max(topk["count"][i] * (1.0 - x), min_cnt))
+                vdf = vdf.append(
+                    self.search(f"{column} = '{topk['index'][i]}'").sample(n=cnt)
                 )
-            )
+        elif method == "over":
+            vdf = self.copy()
+            for i in range(1, n):
+                cnt_i, cnt = topk["count"][i], 0
+                limit = int(max_cnt * x) - cnt_i
+                while cnt <= limit:
+                    vdf_i = self.search(f"{column} = '{topk['index'][i]}'")
+                    if cnt + cnt_i > limit:
+                        vdf = vdf.append(vdf_i.sample(n=limit - cnt))
+                        break
+                    else:
+                        vdf = vdf.append(vdf_i)
+                    cnt += cnt_i
+        else:
+            raise ValueError(f"Unrecognized method: '{method}'.")
         vdf.sort(order_by)
         return vdf
 
@@ -127,7 +138,7 @@ class vDFFilter:
         start: Optional[PythonScalar] = None,
         end: Optional[PythonScalar] = None,
         inplace: bool = True,
-    ):
+    ) -> "vDataFrame":
         """
         Filters the vDataFrame by only keeping the records between two 
         input elements.
@@ -150,18 +161,6 @@ class vDFFilter:
         -------
         vDataFrame
             self
-
-        See Also
-        --------
-        vDataFrame.at_time      : Filters   the data at the  input  time.
-        vDataFrame.between_time : Filters the vDataFrame by  only keeping 
-                                  the  records  between two  input  times.
-        vDataFrame.first        : Filters  the  data by only keeping  the 
-                                  first records.
-        vDataFrame.filter       : Filters   the  data  using   the  input 
-                                  expression.
-        vDataFrame.last         : Filters  the  data  by only keeping the 
-                                  last records.
         """
         if start != None and end != None:
             condition = f"BETWEEN '{start}' AND '{end}'"
@@ -181,7 +180,7 @@ class vDFFilter:
         start_time: Optional[TimeInterval] = None,
         end_time: Optional[TimeInterval] = None,
         inplace: bool = True,
-    ):
+    ) -> "vDataFrame":
         """
         Filters the vDataFrame by only keeping the records between two 
         input times.
@@ -206,17 +205,6 @@ class vDFFilter:
         -------
         vDataFrame
             self
-
-        See Also
-        --------
-        vDataFrame.at_time : Filters  the   data   at  the  input  time.
-        vDataFrame.between : Filters  the  vDataFrame  by  only  keeping 
-                             the  records  between two  input  elements.
-        vDataFrame.first   : Filters the data by only keeping the  first 
-                             records.
-        vDataFrame.filter  : Filters the data using the input expression.
-        vDataFrame.last    : Filters  the data  by only keeping the  last 
-                             records.
         """
         if start_time != None and end_time != None:
             condition = f"BETWEEN '{start_time}' AND '{end_time}'"
@@ -232,22 +220,24 @@ class vDFFilter:
         return filter_function(f"{self._format_colnames(ts)}::time {condition}",)
 
     @save_verticapy_logs
-    def drop(self, columns: SQLColumns = []):
+    def drop(self, columns: SQLColumns = []) -> "vDataFrame":
         """
-    Drops the input vDataColumns from the vDataFrame. Dropping vDataColumns means 
-    not selecting them in the final SQL code generation.
-    Be Careful when using this method. It can make the vDataFrame structure 
-    heavier if some other vDataColumns are computed using the dropped vDataColumns.
+        Drops  the input vDataColumns  from the vDataFrame.  Dropping 
+        vDataColumns  means not selecting them  in the final SQL code 
+        generation.
+        Be Careful when using this method. It can make the vDataFrame 
+        structure  heavier if some  other  vDataColumns are  computed 
+        using the dropped vDataColumns.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -257,25 +247,28 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def drop_duplicates(self, columns: SQLColumns = []):
+    def drop_duplicates(self, columns: SQLColumns = []) -> "vDataFrame":
         """
-    Filters the duplicated using a partition by the input vDataColumns.
+        Filters the duplicated using a partition by the input
+        vDataColumns.
 
-    \u26A0 Warning : Dropping duplicates will make the vDataFrame structure 
-                     heavier. It is recommended to always check the current structure 
-                     using the 'current_relation' method and to save it using the 
-                     'to_db' method with the parameters 'inplace = True' and 
-                     'relation_type = table'
+        \u26A0 Warning : Dropping  duplicates  will make the  vDataFrame 
+                         structure heavier.  It is recommended to always 
+                         check   the   current   structure   using   the 
+                         'current_relation'  method and to save it using 
+                         the 'to_db' method with the parameters 'inplace 
+                         = True' and 'relation_type = table'
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all vDataColumns will be selected.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of  the vDataColumns names.  If empty,  all 
+            vDataColumns will be selected.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -300,23 +293,21 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def dropna(self, columns: SQLColumns = []):
+    def dropna(self, columns: SQLColumns = []) -> "vDataFrame":
         """
-    Filters the vDataFrame where the input vDataColumns are missing.
+        Filters the vDataFrame where the input vDataColumns are 
+        missing.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all vDataColumns will be selected.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of  the vDataColumns  names. If  empty,  all 
+            vDataColumns will be selected.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.filter: Filters the data using the input expression.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -339,30 +330,24 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def filter(self, conditions: Union[list, str] = [], *args, **kwargs):
+    def filter(
+        self, conditions: Union[list, str] = [], *args, **kwargs
+    ) -> "vDataFrame":
         """
-    Filters the vDataFrame using the input expressions.
+        Filters  the vDataFrame using the  input  expressions.
 
-    Parameters
-    ---------- 
-    conditions: SQLExpression, optional
-        List of expressions. For example to keep only the records where the 
-        vDataColumn 'column' is greater than 5 and lesser than 10 you can write 
-        ['"column" > 5', '"column" < 10'].
+        Parameters
+        ---------- 
+        conditions: SQLExpression, optional
+            List of expressions. For example to keep only the 
+            records where the vDataColumn 'column' is greater 
+            than 5 and lesser than 10 you can write 
+            ['"column" > 5', '"column" < 10'].
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.at_time      : Filters the data at the input time.
-    vDataFrame.between_time : Filters the data between two time ranges.
-    vDataFrame.first        : Filters the data by only keeping the first records.
-    vDataFrame.last         : Filters the data by only keeping the last records.
-    vDataFrame.search       : Searches the elements which matches with the input 
-        conditions.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
@@ -431,30 +416,25 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def first(self, ts: str, offset: str):
+    def first(self, ts: str, offset: str) -> "vDataFrame":
         """
-    Filters the vDataFrame by only keeping the first records.
+        Filters the vDataFrame by only keeping the first records.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...)
-    offset: str
-        Interval offset. For example, to filter and keep only the first 6 months of
-        records, offset should be set to '6 months'.
+        Parameters
+        ----------
+        ts: str
+            TS  (Time Series)  vDataColumn  to use to filter the 
+            data. The vDataColumn  type  must be date like (date, 
+            datetime, timestamp...)
+        offset: str
+            Interval offset. For example, to filter and keep only 
+            the first  6 months of records,  offset should be set 
+            to '6 months'.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.at_time      : Filters the data at the input time.
-    vDataFrame.between_time : Filters the data between two time ranges.
-    vDataFrame.filter       : Filters the data using the input expression.
-    vDataFrame.last         : Filters the data by only keeping the last records.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         ts = self._format_colnames(ts)
         first_date = _executeSQL(
@@ -472,23 +452,25 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def isin(self, val: dict):
+    def isin(self, val: dict) -> "vDataFrame":
         """
-    Looks if some specific records are in the vDataFrame and it returns the new 
-    vDataFrame of the search.
+        Looks if some specific records are in the vDataFrame and 
+        it returns the new vDataFrame of the search.
 
-    Parameters
-    ----------
-    val: dict
-        Dictionary of the different records. Each key of the dictionary must 
-        represent a vDataColumn. For example, to check if Badr Ouali and 
-        Fouad Teban are in the vDataFrame. You can write the following dict:
-        {"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}
+        Parameters
+        ----------
+        val: dict
+            Dictionary of the different records. Each key of the 
+            dictionary must represent a vDataColumn. For example, 
+            to check  if Badr Ouali and Fouad Teban  are in  the 
+            vDataFrame. You can write the following dict:
+            {"name": ["Teban", "Ouali"], 
+             "surname": ["Fouad", "Badr"]}
 
-    Returns
-    -------
-    vDataFrame
-        The vDataFrame of the search.
+        Returns
+        -------
+        vDataFrame
+            The vDataFrame of the search.
         """
         val = self._format_colnames(val)
         n = len(val[list(val.keys())[0]])
@@ -505,30 +487,25 @@ class vDFFilter:
         return self.search(" OR ".join(result))
 
     @save_verticapy_logs
-    def last(self, ts: str, offset: str):
+    def last(self, ts: str, offset: str) -> "vDataFrame":
         """
-    Filters the vDataFrame by only keeping the last records.
+        Filters the vDataFrame by only keeping the last records.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to filter the data. The vDataColumn type must be
-        date like (date, datetime, timestamp...)
-    offset: str
-        Interval offset. For example, to filter and keep only the last 6 months of
-        records, offset should be set to '6 months'.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series)  vDataColumn to use to filter the 
+            data. The vDataColumn type must be date like (date, 
+            datetime, timestamp...)
+        offset: str
+            Interval  offset.  For example, to filter and  keep 
+            only the last 6 months of records, offset should be 
+            set to '6 months'.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.at_time      : Filters the data at the input time.
-    vDataFrame.between_time : Filters the data between two time ranges.
-    vDataFrame.first        : Filters the data by only keeping the first records.
-    vDataFrame.filter       : Filters the data using the input expression.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         ts = self._format_colnames(ts)
         last_date = _executeSQL(
@@ -552,32 +529,35 @@ class vDFFilter:
         x: float = None,
         method: Literal["random", "systematic", "stratified"] = "random",
         by: SQLColumns = [],
-    ):
+    ) -> "vDataFrame":
         """
-    Downsamples the input vDataFrame.
+        Downsamples the input vDataFrame.
 
-    \u26A0 Warning : The result may be inconsistent between attempts at SQL
-                     code generation if the data is not ordered.
+        \u26A0 Warning : The result may be inconsistent between 
+                         attempts at SQL code generation if the 
+                         data is not ordered.
 
-    Parameters
-     ----------
-     n: PythonNumber, optional
-        Approximate number of element to consider in the sample.
-     x: float, optional
-        The sample size. For example it has to be equal to 0.33 to downsample to 
-        approximatively 33% of the relation.
-    method: str, optional
-        The Sample method.
-            random     : random sampling.
-            systematic : systematic sampling.
-            stratified : stratified sampling.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
+        Parameters
+         ----------
+         n: PythonNumber, optional
+            Approximate  number  of element to consider in  the 
+            sample.
+         x: float, optional
+            The sample size.  For example it has to be equal to 
+            0.33  to downsample to  approximatively 33% of  the 
+            relation.
+        method: str, optional
+            The Sample method.
+                random     : random sampling.
+                systematic : systematic sampling.
+                stratified : stratified sampling.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
 
-    Returns
-    -------
-    vDataFrame
-        sample vDataFrame
+        Returns
+        -------
+        vDataFrame
+            sample vDataFrame
         """
         if x == 1:
             return self.copy()
@@ -646,34 +626,35 @@ class vDFFilter:
         usecols: SQLColumns = [],
         expr: SQLExpression = [],
         order_by: Union[str, dict, list] = [],
-    ):
+    ) -> "vDataFrame":
         """
-    Searches the elements which matches with the input conditions.
-    
-    Parameters
-    ----------
-    conditions: SQLExpression, optional
-        Filters of the search. It can be a list of conditions or an expression.
-    usecols: SQLColumns, optional
-        vDataColumns to select from the final vDataFrame relation. If empty, all
-        vDataColumns will be selected.
-    expr: SQLExpression, optional
-        List of customized expressions in pure SQL.
-        For example: 'column1 * column2 AS my_name'.
-    order_by: str / dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+        Searches the elements which matches with the input 
+        conditions.
+        
+        Parameters
+        ----------
+        conditions: SQLExpression, optional
+            Filters  of  the  search.  It can be a list  of
+            conditions or an expression.
+        usecols: SQLColumns, optional
+            vDataColumns   to    select   from  the   final
+            vDataFrame relation. If empty, all vDataColumns
+            will be selected.
+        expr: SQLExpression, optional
+            List  of  customized  expressions  in  pure SQL.
+            For example: 'column1 * column2 AS my_name'.
+        order_by: str / dict / list, optional
+            List of the vDataColumns to use to sort the data 
+            using  asc  order or  dictionary  of all sorting 
+            methods.  For  example,  to  sort  by  "column1"
+            ASC and "column2" DESC, write 
+            {"column1": "asc", 
+             "column2": "desc"}
 
-    Returns
-    -------
-    vDataFrame
-        vDataFrame of the search
-
-    See Also
-    --------
-    vDataFrame.filter : Filters the vDataFrame using the input expressions.
-    vDataFrame.select : Returns a copy of the vDataFrame with only the selected vDataColumns.
+        Returns
+        -------
+        vDataFrame
+            vDataFrame of the search
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -695,31 +676,29 @@ class vDFFilter:
 
 class vDCFilter:
     @save_verticapy_logs
-    def drop(self, add_history: bool = True):
+    def drop(self, add_history: bool = True) -> "vDataFrame":
         """
-    Drops the vDataColumn from the vDataFrame. Dropping a vDataColumn means simply
-    not selecting it in the final generated SQL code.
-    
-    Note: Dropping a vDataColumn can make the vDataFrame "heavier" if it is used
-    to compute other vDataColumns.
+        Drops the  vDataColumn from the vDataFrame. Dropping a 
+        vDataColumn means simply not selecting it in the final 
+        generated SQL code.
+        
+        Note:  Dropping a vDataColumn  can make the vDataFrame 
+        "heavier" if it is  used to compute other vDataColumns.
 
-    Parameters
-    ----------
-    add_history: bool, optional
-        If set to True, the information will be stored in the vDataFrame history.
+        Parameters
+        ----------
+        add_history: bool, optional
+            If set to True,  the information will be stored in 
+            the vDataFrame history.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.drop: Drops the input vDataColumns from the vDataFrame.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         try:
             parent = self._parent
-            force_columns = [column for column in self._parent._vars["columns"]]
+            force_columns = copy.deepcopy(self._parent._vars["columns"])
             force_columns.remove(self._alias)
             _executeSQL(
                 query=f"""
@@ -733,7 +712,7 @@ class vDCFilter:
             )
             self._parent._vars["columns"].remove(self._alias)
             delattr(self._parent, self._alias)
-        except:
+        except QueryError:
             self._parent._vars["exclude_columns"] += [self._alias]
         if add_history:
             self._parent._add_to_history(
@@ -747,32 +726,28 @@ class vDCFilter:
         threshold: PythonNumber = 4.0,
         use_threshold: bool = True,
         alpha: PythonNumber = 0.05,
-    ):
+    ) -> "vDataFrame":
         """
-    Drops outliers in the vDataColumn.
+        Drops outliers in the vDataColumn.
 
-    Parameters
-    ----------
-    threshold: PythonNumber, optional
-        Uses the Gaussian distribution to identify outliers. After normalizing 
-        the data (Z-Score), if the absolute value of the record is greater than 
-        the threshold, it will be considered as an outlier.
-    use_threshold: bool, optional
-        Uses the threshold instead of the 'alpha' parameter.
-    alpha: PythonNumber, optional
-        Number representing the outliers threshold. Values lesser than 
-        quantile(alpha) or greater than quantile(1-alpha) will be dropped.
+        Parameters
+        ----------
+        threshold: PythonNumber, optional
+            Uses the  Gaussian distribution  to identify outliers. 
+            After normalizing the data (Z-Score), if the absolute 
+            value of the record is greater than the threshold, it 
+            will be considered as an outlier.
+        use_threshold: bool, optional
+            Uses  the threshold instead of the  'alpha' parameter.
+        alpha: PythonNumber, optional
+            Number  representing  the outliers threshold.  Values 
+            lesser   than   quantile(alpha)   or   greater   than 
+            quantile(1-alpha) will be dropped.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.fill_outliers : Fills the outliers in the vDataColumn.
-    vDataFrame.outliers      : Adds a new vDataColumn labeled with 0 and 1 
-        (1 meaning global outlier).
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -791,18 +766,14 @@ class vDCFilter:
         return self._parent
 
     @save_verticapy_logs
-    def dropna(self):
+    def dropna(self) -> "vDataFrame":
         """
-    Filters the vDataFrame where the vDataColumn is missing.
+        Filters the vDataFrame where the vDataColumn is missing.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.filter: Filters the data using the input expression.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         self._parent.filter(f"{self._alias} IS NOT NULL")
         return self._parent
@@ -812,25 +783,22 @@ class vDCFilter:
         self,
         val: Union[str, int, float, datetime.datetime, datetime.date, list],
         *args,
-    ):
+    ) -> "vDataFrame":
         """
-    Looks if some specific records are in the vDataColumn and it returns the new 
-    vDataFrame of the search.
+        Looks if some specific records are in the vDataColumn and it 
+        returns the new vDataFrame of the search.
 
-    Parameters
-    ----------
-    val: str / PythonNumber / date / list
-        List of the different records. For example, to check if Badr and Fouad  
-        are in the vDataColumn. You can write the following list: ["Fouad", "Badr"]
+        Parameters
+        ----------
+        val: str / PythonNumber / date / list
+            List of the different  records. For example, to check if 
+            Badr and Fouad are in the vDataColumn. You can write the 
+            following list: ["Fouad", "Badr"]
 
-    Returns
-    -------
-    vDataFrame
-        The vDataFrame of the search.
-
-    See Also
-    --------
-    vDataFrame.isin : Looks if some specific records are in the vDataFrame.
+        Returns
+        -------
+        vDataFrame
+            The vDataFrame of the search.
         """
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
