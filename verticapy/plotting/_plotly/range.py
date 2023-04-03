@@ -80,7 +80,7 @@ class RangeCurve(PlotlyBase):
         fig = self._get_fig(fig)
         fig.add_trace(
             go.Scatter(
-                x=np.hstack((self.data["x"], self.data["x"][::-1])),  # x+x_rev,
+                x=np.hstack((self.data["x"], self.data["x"][::-1])),
                 y=np.hstack((self.data["Y"][:, 0], self.data["Y"][:, 2][::-1])),
                 fill="toself",
                 showlegend=False,

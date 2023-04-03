@@ -90,9 +90,8 @@ def dummy_dist_vd():
     data = np.random.normal(median, std, N)
     data = data.reshape(len(data), 1)
     cols_combined = np.concatenate((data, result_array, category_array), axis=1)
-    data_all = pd.DataFrame(cols_combined)
+    data_all = pd.DataFrame(cols_combined, columns=["0", "binary", "cats"])
     dummy = verticapy.vDataFrame(data_all)
-    dummy["1"].rename("binary")
     dummy["binary"].astype("int")
     yield dummy
 
@@ -109,6 +108,13 @@ def iris_vd():
     iris = load_iris()
     yield iris
     drop(name="public.iris")
+
+
+@pytest.fixture(scope="module")
+def amazon_vd():
+    amazon = load_amazon()
+    yield amazon
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
@@ -786,7 +792,8 @@ class TestVDFHeatMap:
         )
 
 
-class testVDFLinePlot:
+@pytest.mark.skip(reason="Line Plot needs to be updated first")
+class TestVDFLinePlot:
     def test_properties_output_type(self, load_plotly, amazon_vd):
         # Arrange
         amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
@@ -867,51 +874,51 @@ class testVDFLinePlot:
         assert result.data["mode"] == "lines", "Markers not turned off"
 
 
-class testVDFContourPlot:
-    def test_properties_output_type(self, load_plotly, dummy_vd):
+class TestVDFContourPlot:
+    def test_properties_output_type(self, load_plotly, dummy_dist_vd):
         # Arrange
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func)
+        result = dummy_dist_vd.contour(["0", "binary"], func)
         # Assert - checking if correct object created
-        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+        assert type(result) == plotly.graph_objs._figure.Figure, "Wrong object created"
 
-    def test_properties_x_axis_title(self, load_plotly, dummy_vd):
+    def test_properties_x_axis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Arrange
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func)
+        result = dummy_dist_vd.contour(["0", "binary"], func)
         # Assert
         assert result.layout["xaxis"]["title"]["text"] == "0", "X axis title incorrect"
 
-    def test_properties_y_axis_title(self, load_plotly, dummy_vd):
+    def test_properties_y_axis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func)
+        result = dummy_dist_vd.contour(["0", "binary"], func)
         # Assert
         assert (
             result.layout["yaxis"]["title"]["text"] == "binary"
         ), "Y axis title incorrect"
 
-    def test_data_count_xaxis_default_bins(self, load_plotly, dummy_vd):
+    def test_data_count_xaxis_default_bins(self, load_plotly, dummy_dist_vd):
         # Arrange
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func)
+        result = dummy_dist_vd.contour(["0", "binary"], func)
         # Assert
         assert result.data[0]["x"].shape[0] == 100, "The default bins are not 100."
 
-    def test_data_count_xaxis_custom_bins(self, load_plotly, dummy_vd):
+    def test_data_count_xaxis_custom_bins(self, load_plotly, dummy_dist_vd):
         # Arrange
         custom_bins = 1000
 
@@ -919,28 +926,30 @@ class testVDFContourPlot:
             return b
 
         # Act
-        result = dummy_vd.contour(columns=["0", "binary"], nbins=custom_bins, func=func)
+        result = dummy_dist_vd.contour(
+            columns=["0", "binary"], nbins=custom_bins, func=func
+        )
         # Assert
         assert (
             result.data[0]["x"].shape[0] == custom_bins
         ), "The custom bins option is not working."
 
-    def test_data_x_axis_range(self, load_plotly, dummy_vd):
+    def test_data_x_axis_range(self, load_plotly, dummy_dist_vd):
         # Arrange
-        x_min = dummy_vd["0"].min()
-        x_max = dummy_vd["0"].max()
+        x_min = dummy_dist_vd["0"].min()
+        x_max = dummy_dist_vd["0"].max()
         custom_bins = 1000
 
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd.contour(columns=["0", "binary"], func=func)
+        result = dummy_dist_vd.contour(columns=["0", "binary"], func=func)
         assert (
             result.data[0]["x"].min() == x_min and result.data[0]["x"].max() == x_max
         ), "The range in data is not consistent with plot"
 
-    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_width(self, load_plotly, dummy_dist_vd):
         # Arrange
         custom_width = 700
 
@@ -948,11 +957,11 @@ class testVDFContourPlot:
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func, width=custom_width)
+        result = dummy_dist_vd.contour(["0", "binary"], func, width=custom_width)
         # Assert
         assert result.layout["width"] == custom_width, "Custom width not working"
 
-    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_height(self, load_plotly, dummy_dist_vd):
         #
         custom_height = 700
 
@@ -960,160 +969,160 @@ class testVDFContourPlot:
             return b
 
         # Act
-        result = dummy_vd.contour(["0", "binary"], func, height=custom_height)
+        result = dummy_dist_vd.contour(["0", "binary"], func, height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
 
 
-class testVDFDensityPlot:
-    def test_properties_output_type(self, load_plotly, dummy_vd):
+class TestVDFDensityPlot:
+    def test_properties_output_type(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["0"].density()
+        result = dummy_dist_vd["0"].density()
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
-    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_vd):
+    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["0"].density(by="binary")
+        result = dummy_dist_vd["0"].density(by="binary")
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
     # ToDO - Change below after quotation bug fixed
-    def test_properties_x_axis_title(self, load_plotly, amazon_vd):
+    def test_properties_x_axis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["0"].density()
+        result = dummy_dist_vd["0"].density()
         # Assert -
         assert (
             result.layout["xaxis"]["title"]["text"] == '"0"'
         ), "X axis title incorrect"
 
-    def test_properties_y_axis_title(self, load_plotly, amazon_vd):
+    def test_properties_y_axis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["0"].density()
+        result = dummy_dist_vd["0"].density()
         # Assert
         assert (
             result.layout["yaxis"]["title"]["text"] == "density"
         ), "Y axis title incorrect"
 
     def test_properties_multiple_plots_produced_for_multiplot(
-        self, load_plotly, amazon_vd
+        self, load_plotly, dummy_dist_vd
     ):
         # Arrange
         number_of_plots = 2
         # Act
-        result = dummy_vd["0"].density(by="binary")
+        result = dummy_dist_vd["0"].density(by="binary")
         # Assert
         assert (
             len(result.data) == number_of_plots
         ), "Two plots not produced for two classes"
 
-    def test_data_x_axis_range(self, load_plotly, dummy_vd):
+    def test_data_x_axis_range(self, load_plotly, dummy_dist_vd):
         # Arrange
-        x_min = dummy_vd["0"].min()
-        x_max = dummy_vd["0"].max()
+        x_min = dummy_dist_vd["0"].min()
+        x_max = dummy_dist_vd["0"].max()
 
         def func(a, b):
             return b
 
         # Act
-        result = dummy_vd["0"].density()
+        result = dummy_dist_vd["0"].density()
         assert (
             result.data[0]["x"].min() == x_min and result.data[0]["x"].max() == x_max
         ), "The range in data is not consistent with plot"
 
-    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_width(self, load_plotly, dummy_dist_vd):
         # Arrange
         custom_width = 700
         # Act
-        result = dummy_vd["0"].density(width=custom_width)
+        result = dummy_dist_vd["0"].density(width=custom_width)
         # Assert
         assert result.layout["width"] == custom_width, "Custom width not working"
 
-    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_height(self, load_plotly, dummy_dist_vd):
         # rrange
         custom_height = 700
         # Act
-        result = dummy_vd["0"].density(height=custom_height)
+        result = dummy_dist_vd["0"].density(height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
 
 
-class testVDFSpiderPlot:
-    def test_properties_output_type(self, load_plotly, dummy_vd):
+class TestVDFSpiderPlot:
+    def test_properties_output_type(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["cats"].spider()
+        result = dummy_dist_vd["cats"].spider()
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
-    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_vd):
+    def test_properties_output_type_for_multiplot(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
-        result = dummy_vd["cats"].spider(by="binary")
+        result = dummy_dist_vd["cats"].spider(by="binary")
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
-    def test_properties_title(self, load_plotly, dummy_vd):
+    def test_properties_title(self, load_plotly, dummy_dist_vd):
         # Arrange
         column_name = "cats"
         # Act
-        result = dummy_vd[column_name].spider()
+        result = dummy_dist_vd[column_name].spider()
         # Assert -
         assert result.layout["title"]["text"] == column_name, "Title incorrect"
 
-    def test_properties_method_title_at_bottom(self, load_plotly, dummy_vd):
+    def test_properties_method_title_at_bottom(self, load_plotly, dummy_dist_vd):
         # Arrange
         method_text = "(Method: Density)"
         # Act
-        result = dummy_vd[column_name].spider()
+        result = dummy_dist_vd["cats"].spider()
         # Assert -
         assert (
-            result.layout["annotations"]["text"] == method_text
+            result.layout["annotations"][0]["text"] == method_text
         ), "Method title incorrect"
 
     def test_properties_multiple_plots_produced_for_multiplot(
-        self, load_plotly, amazon_vd
+        self, load_plotly, dummy_dist_vd
     ):
         # Arrange
         number_of_plots = 2
         # Act
-        result = dummy_vd["cats"].spider(by="binary")
+        result = dummy_dist_vd["cats"].spider(by="binary")
         # Assert
         assert (
             len(result.data) == number_of_plots
         ), "Two traces not produced for two classes of binary"
 
-    def test_data_all_categories(self, load_plotly, dummy_vd):
+    def test_data_all_categories(self, load_plotly, dummy_dist_vd):
         # Arrange
-        no_of_category = dummy_vd["cats"].nunique()
+        no_of_category = dummy_dist_vd["cats"].nunique()
         # Act
-        result = dummy_vd["cats"].density()
+        result = dummy_dist_vd["cats"].spider()
         assert (
             result.data[0]["r"].shape[0] == no_of_category
         ), "The number of categories in the data differ from the plot"
 
-    def test_additional_options_custom_width(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_width(self, load_plotly, dummy_dist_vd):
         # Arrange
         custom_width = 700
         # Act
-        result = dummy_vd["cats"].spider(width=custom_width)
+        result = dummy_dist_vd["cats"].spider(width=custom_width)
         # Assert
         assert result.layout["width"] == custom_width, "Custom width not working"
 
-    def test_additional_options_custom_height(self, load_plotly, dummy_vd):
+    def test_additional_options_custom_height(self, load_plotly, dummy_dist_vd):
         # rrange
         custom_height = 700
         # Act
-        result = dummy_vd["cats"].spider(height=custom_height)
+        result = dummy_dist_vd["cats"].spider(height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
 
 
-class testVDFRangeCurve:
+class TestVDFRangeCurve:
     def test_properties_output_type(self, load_plotly, dummy_date_vd):
         # Arrange
         # Act
@@ -1146,27 +1155,35 @@ class testVDFRangeCurve:
         test_set = set([1910, 1920, 1930, 1940, 1950])
         # Act
         result = dummy_date_vd["value"].range_plot(ts="date")
-        assert set(result.data[0]["y"]).issubset(
+        assert set(result.data[0]["x"]).issubset(
             test_set
         ), "There is descripancy between x axis values for the bounds"
 
-    def test_data_x_axis(self, load_plotly, dummy_date_vd):
+    def test_data_x_axis_for_median(self, load_plotly, dummy_date_vd):
         # Arrange
         test_set = set([1910, 1920, 1930, 1940, 1950])
         # Act
-        result = dummy_date_vd["value"].range_plot(ts="date")
-        assert set(result.data[1]["y"]).issubset(
+        result = dummy_date_vd["value"].range_plot(ts="date", plot_median=True)
+        assert set(result.data[1]["x"]).issubset(
             test_set
         ), "There is descripancy between x axis values for the median"
 
     def test_additional_options_turn_off_median(self, load_plotly, dummy_date_vd):
         # Arrange
-        custom_width = 700
+        # Act
+        result = dummy_date_vd["value"].range_plot(ts="date", plot_median=False)
+        # Assert
+        assert (
+            len(result.data) == 1
+        ), "Median is still showing even after it is turned off"
+
+    def test_additional_options_turn_on_median(self, load_plotly, dummy_date_vd):
+        # Arrange
         # Act
         result = dummy_date_vd["value"].range_plot(ts="date", plot_median=True)
         # Assert
         assert (
-            len(result.data) == 1
+            len(result.data) > 1
         ), "Median is still showing even after it is turned off"
 
     def test_additional_options_custom_width(self, load_plotly, dummy_date_vd):
