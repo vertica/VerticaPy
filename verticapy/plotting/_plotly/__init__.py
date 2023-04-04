@@ -24,6 +24,7 @@ from verticapy.plotting._plotly.contour_plot import ContourPlot
 from verticapy.plotting._plotly.density import DensityPlot, MultiDensityPlot
 from verticapy.plotting._plotly.spider import SpiderChart
 from verticapy.plotting._plotly.range import RangeCurve
+from verticapy.plotting._plotly.line import LinePlot, MultiLinePlot
 from verticapy.plotting._plotly.base import PlotlyBase
 
 import plotly.io as pio
