@@ -17,6 +17,8 @@ permissions and limitations under the License.
 from typing import Literal, TYPE_CHECKING
 import numpy as np
 
+from verticapy._typing import ColorType
+
 from verticapy.core.tablesample.base import TableSample
 
 if TYPE_CHECKING:
@@ -129,6 +131,96 @@ class PlottingBaseSQL:
         }
         return None
 
+    def _compute_aggregate_sql(self, query: str) -> None:
+        tbs = TableSample().read_sql(query)
+        columns = tbs.get_columns()
+        X = tbs.to_numpy()
+        self.data = {"X": X}
+        self.layout = {
+            "columns": columns,
+            "method": columns[-1],
+            "method_of": columns[-1],
+            "of": None,
+            "of_cat": None,
+            "aggregate": columns[-1],
+            "aggregate_fun": np.sum,
+            "is_standard": False,
+        }
+        return None
+
+    def _compute_contour_grid_sql(self, query: str) -> None:
+        vdf = self._get_vdataframe_from_query(query=query)
+        columns = vdf.numcol()
+        self._compute_contour_grid(
+            vdf=vdf, columns=columns[0:2], func=columns[2], func_name=None
+        )
+        return None
+
+    # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
+
+    def _sample_sql(
+        self, query: str, kind: Literal["scatter", "bubble"] = "scatter",
+    ) -> None:
+        tbs = TableSample().read_sql(query)
+        columns = tbs.get_columns()
+        X = tbs.to_numpy()
+        if tbs.category(column=columns[-1]) in ("text", "int", "bool"):
+            has_category = True
+            c_name = columns[-1]
+            c = X[:, -1]
+            Xi = X[:, :-1].astype(float)
+        else:
+            has_category = False
+            c_name = None
+            c = None
+            Xi = X.astype(float)
+        if kind == "bubble":
+            has_size = True
+            idx = -2 if has_category else -1
+            s_name = columns[idx]
+            s = Xi[:, -1]
+            Xi = Xi[:, :-1]
+        else:
+            has_size = False
+            s_name = None
+            s = None
+        self.data = {"X": Xi, "s": s, "c": c}
+        self.layout = {
+            "columns": columns,
+            "size": s_name,
+            "c": c_name,
+            "has_category": has_category,
+            "has_cmap": False,
+            "has_size": has_size,
+        }
+        return None
+
+    def _compute_outliers_params_sql(
+        self,
+        query: str,
+        color: ColorType = "orange",
+        outliers_color: ColorType = "black",
+        inliers_color: ColorType = "white",
+        inliers_border_color: ColorType = "red",
+    ) -> None:
+        vdf = self._get_vdataframe_from_query(query=query)
+        columns = vdf.numcol()
+        self._compute_outliers_params(vdf=vdf, columns=columns)
+        self.layout = {
+            **self.layout,
+            "color": color,
+            "outliers_color": outliers_color,
+            "inliers_color": inliers_color,
+            "inliers_border_color": inliers_border_color,
+        }
+        return None
+
+    def _compute_scatter_matrix_sql(self, query: str) -> None:
+        vdf = self._get_vdataframe_from_query(query=query)
+        columns = vdf.numcol()
+        self._compute_scatter_matrix(vdf=vdf, columns=columns)
+        return None
+
     # TIME SERIES: LINE / RANGE
 
     def _filter_line_sql(
@@ -179,44 +271,5 @@ class PlottingBaseSQL:
             "columns": [columns[i] for i in range(1, n, 3)],
             "order_by": order_by,
             "order_by_cat": tbs.category(column=order_by),
-        }
-        return None
-
-    # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
-
-    def _sample_sql(
-        self, query: str, kind: Literal["scatter", "bubble"] = "scatter",
-    ) -> None:
-        tbs = TableSample().read_sql(query)
-        columns = tbs.get_columns()
-        X = tbs.to_numpy()
-        if tbs.category(column=columns[-1]) in ("text", "int", "bool"):
-            has_category = True
-            c_name = columns[-1]
-            c = X[:, -1]
-            Xi = X[:, :-1].astype(float)
-        else:
-            has_category = False
-            c_name = None
-            c = None
-            Xi = X.astype(float)
-        if kind == "bubble":
-            has_size = True
-            idx = -2 if has_category else -1
-            s_name = columns[idx]
-            s = Xi[:, -1]
-            Xi = Xi[:, :-1]
-        else:
-            has_size = False
-            s_name = None
-            s = None
-        self.data = {"X": Xi, "s": s, "c": c}
-        self.layout = {
-            "columns": columns,
-            "size": s_name,
-            "c": c_name,
-            "has_category": has_category,
-            "has_cmap": False,
-            "has_size": has_size,
         }
         return None
