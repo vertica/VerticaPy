@@ -460,7 +460,11 @@ Attributes
         return "vDataColumn"
 
     def __init__(
-        self, alias: str, transformations: list = [], parent: Optional[vDataFrame] = None, catalog: dict = {},
+        self,
+        alias: str,
+        transformations: list = [],
+        parent: Optional[vDataFrame] = None,
+        catalog: dict = {},
     ) -> None:
         self._parent = parent
         self._alias = alias

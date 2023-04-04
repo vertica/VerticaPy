@@ -156,10 +156,10 @@ class vDFRead:
         cols = None
         if n > max_cols:
             if n % 2 == 0:
-                s = int(max_cols/2)
-                cols = colums[:s+1] + colums[-s:]
+                s = int(max_cols / 2)
+                cols = colums[: s + 1] + colums[-s:]
             else:
-                s = int((max_cols+1)/2)
+                s = int((max_cols + 1) / 2)
                 cols = colums[:s] + colums[-s:]
         return self.iloc(limit=max_rows, columns=cols)
 
@@ -222,7 +222,9 @@ class vDFRead:
         """
         return self.iloc(limit=limit, offset=0)
 
-    def iloc(self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None):
+    def iloc(
+        self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
+    ):
         """
     Returns a part of the vDataFrame (delimited by an offset and a limit).
 

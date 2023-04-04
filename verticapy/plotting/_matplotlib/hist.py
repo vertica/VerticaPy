@@ -63,7 +63,10 @@ class Histogram(MatplotlibBase):
         ax.set_ylabel(self.layout["method_of"])
         if len(self.layout["columns"]) == 1:
             ax.set_xlabel(self.layout["columns"][0])
-        ax.legend(title=self.layout["by"], loc="center left", bbox_to_anchor=[1, 0.5])
+        else:
+            ax.legend(
+                title=self.layout["by"], loc="center left", bbox_to_anchor=[1, 0.5]
+            )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax

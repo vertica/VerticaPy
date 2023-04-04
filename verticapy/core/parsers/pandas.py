@@ -116,11 +116,10 @@ def read_pandas(
         # Not putting them can lead to wrong data ingestion.
         str_cols, null_columns = [], []
         for c in df.columns:
-            if (isinstance(df[c].first_valid_index(), type(None))):
+            if isinstance(df[c].first_valid_index(), type(None)):
                 null_columns += [c]
-            elif (
-                df[c].dtype == object
-                and isinstance(df[c].loc[df[c].first_valid_index()], str)
+            elif df[c].dtype == object and isinstance(
+                df[c].loc[df[c].first_valid_index()], str
             ):
                 str_cols += [c]
         if len(df.columns) == len(null_columns):
