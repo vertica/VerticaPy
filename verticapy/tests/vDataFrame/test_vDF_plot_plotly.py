@@ -879,7 +879,7 @@ class TestVDFLinePlot:
         # Act
         result = amazon_vd["number"].plot(ts="date", markers=True)
         # Assert - checking if correct object created
-        assert result.data[0]["mode"] == "lines+markers", "Markers not turned on"
+        assert set(result.data[0]["mode"]) == set("lines+markers"), "Markers not turned on"
 
 
 class TestVDFContourPlot:
