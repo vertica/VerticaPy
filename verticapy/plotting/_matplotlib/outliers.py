@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random
 from typing import Literal, Optional
 import numpy as np
 
@@ -75,21 +74,18 @@ class OutliersPlot(ScatterPlot):
         """
         Draws an outliers contour plot using the Matplotlib API.
         """
-        min0, max0 = self.data["min"][0], self.data["max"][0]
-        avg0, std0 = self.data["avg"][0], self.data["std"][0]
-        th = self.data["th"]
         if not (cmap):
             cmap = self.get_cmap(color=self.get_colors(idx=2))
-        x_grid = np.linspace(min0, max0, 1000)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=False, grid=False, style_kwargs=style_kwargs
         )
+        th = self.data["th"]
+        X = self.data["map"]["X"]
+        Y = self.data["map"]["Y"]
+        Z = self.data["map"]["Z"]
+        zvals = self.data["map"]["zvals"]
         if len(self.layout["columns"]) == 1:
-            y_grid = np.linspace(-1, 1, 1000)
-            X, Y = np.meshgrid(x_grid, y_grid)
-            Z = (X - avg0) / std0
             cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
-            zvals = [-th * std0 + avg0, th * std0 + avg0]
             ax.fill_between(zvals, [-1, -1], [1, 1], facecolor=self.layout["color"])
             for x0 in zvals:
                 ax.plot([x0, x0], [-1, 1], color=self.layout["inliers_border_color"])
@@ -98,22 +94,7 @@ class OutliersPlot(ScatterPlot):
             ax.set_xlabel(self.layout["columns"][0])
             ax.set_yticks([], [])
             ax.set_ylim(-1, 1)
-            x = self.data["X"][:, 0]
-            zs = abs(x - avg0) / std0
-            for x0, c in [
-                (x[abs(zs) <= th], self.layout["inliers_color"]),
-                (x[abs(zs) > th], self.layout["outliers_color"]),
-            ]:
-                y0 = np.array([2 * (random.random() - 0.5) for i in range(len(x0))])
-                ax.scatter(
-                    x0, y0, color=c, **{**self.init_style, **style_kwargs,},
-                )
         elif len(self.layout["columns"]) == 2:
-            min1, max1 = self.data["min"][1], self.data["max"][1]
-            avg1, std1 = self.data["avg"][1], self.data["std"][1]
-            y_grid = np.linspace(min1, max1, 1000)
-            X, Y = np.meshgrid(x_grid, y_grid)
-            Z = np.sqrt(((X - avg0) / std0) ** 2 + ((Y - avg1) / std1) ** 2)
             ax.contourf(X, Y, Z, colors=self.layout["color"])
             ax.contour(
                 X,
@@ -126,27 +107,13 @@ class OutliersPlot(ScatterPlot):
             cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
             ax.set_xlabel(self.layout["columns"][0])
             ax.set_ylabel(self.layout["columns"][1])
-            x = self.data["X"][:, 0]
-            y = self.data["X"][:, 1]
-            X = [
-                self.data["X"][
-                    (abs(x - avg0) / std0 <= th) & (abs(y - avg1) / std1 <= th)
-                ]
-            ]
-            X += [
-                self.data["X"][
-                    (abs(x - avg0) / std0 > th) | (abs(y - avg1) / std1 > th)
-                ]
-            ]
-            for i, c in enumerate(
-                [self.layout["inliers_color"], self.layout["outliers_color"]]
-            ):
-                ax.scatter(
-                    X[i][:, 0],
-                    X[i][:, 1],
-                    color=c,
-                    **{**self.init_style, **style_kwargs,},
-                )
+        for x, c in [
+            (self.data["inliers"], self.layout["inliers_color"]),
+            (self.data["outliers"], self.layout["outliers_color"]),
+        ]:
+            ax.scatter(
+                x[:, 0], x[:, 1], color=c, **{**self.init_style, **style_kwargs,},
+            )
         fig.colorbar(cp).set_label("ZSCORE")
         args = [[0], [0]]
         ax.legend(

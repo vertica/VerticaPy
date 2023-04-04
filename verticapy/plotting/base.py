@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, math
+import copy, math, random
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 
@@ -1209,6 +1209,61 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
         }
+        min0, max0 = self.data["min"][0], self.data["max"][0]
+        avg0, std0 = self.data["avg"][0], self.data["std"][0]
+        x_grid = np.linspace(min0, max0, 1000)
+        if len(self.layout["columns"]) == 1:
+            zvals = [-threshold * std0 + avg0, threshold * std0 + avg0]
+            avg1, std1 = 0, 1
+            y_grid = np.linspace(-1, 1, 1000)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = (X - avg0) / std0
+            x = self.data["X"][:, 0]
+            zs = abs(x - avg0) / std0
+            inliers = x[abs(zs) <= threshold]
+            n = len(inliers)
+            inliers = np.column_stack(
+                (inliers, [2 * (random.random() - 0.5) for i in range(n)])
+            )
+            outliers = x[abs(zs) > threshold]
+            n = len(outliers)
+            outliers = np.column_stack(
+                (outliers, [2 * (random.random() - 0.5) for i in range(n)])
+            )
+        else:
+            zvals = None
+            min1, max1 = self.data["min"][1], self.data["max"][1]
+            avg1, std1 = self.data["avg"][1], self.data["std"][1]
+            y_grid = np.linspace(min1, max1, 1000)
+            X, Y = np.meshgrid(x_grid, y_grid)
+            Z = np.sqrt(((X - avg0) / std0) ** 2 + ((Y - avg1) / std1) ** 2)
+            x = self.data["X"][:, 0]
+            y = self.data["X"][:, 1]
+            inliers = self.data["X"][
+                (abs(x - avg0) / std0 <= threshold)
+                & (abs(y - avg1) / std1 <= threshold)
+            ]
+            outliers = self.data["X"][
+                (abs(x - avg0) / std0 > threshold) | (abs(y - avg1) / std1 > threshold)
+            ]
+        a = threshold * std0
+        b = threshold * std1
+        outliers_circle = [
+            [
+                avg0 + a * np.cos(2 * np.pi * x / 1000),
+                avg1 + b * np.sin(2 * np.pi * x / 1000),
+            ]
+            for x in range(-1000, 1000, 1)
+        ]
+        self.data["map"] = {
+            "X": X,
+            "Y": Y,
+            "Z": Z,
+            "zvals": zvals,
+            "outliers_circle": np.array(outliers_circle),
+        }
+        self.data["inliers"] = np.array(inliers)
+        self.data["outliers"] = np.array(outliers)
         return None
 
     def _compute_scatter_matrix(

@@ -14,9 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random
 from typing import Literal, Optional
-import numpy as np
 
 from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
@@ -105,38 +103,22 @@ class OutliersPlot(HighchartsBase):
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        min0, max0 = self.data["min"][0], self.data["max"][0]
-        avg0, std0 = self.data["avg"][0], self.data["std"][0]
-        if len(self.layout["columns"]) == 1:
-            avg1, std1 = 0, 1
-        else:
-            avg1, std1 = self.data["avg"][1], self.data["std"][1]
-        th = self.data["th"]
-        a = th * std0
-        b = th * std1
-        data_circle = [
-            [
-                avg0 + a * np.cos(2 * np.pi * x / 1000),
-                avg1 + b * np.sin(2 * np.pi * x / 1000),
-            ]
-            for x in range(-1000, 1000, 1)
-        ]
-        x = self.data["X"][:, 0]
-        if len(self.layout["columns"]) == 1:
-            zs = abs(x - avg0) / std0
-            data_0 = [[xi, 2 * (random.random() - 0.5)] for xi in x[abs(zs) <= th]]
-            data_1 = [[xi, 2 * (random.random() - 0.5)] for xi in x[abs(zs) > th]]
-        else:
-            y = self.data["X"][:, 1]
-            inliers_cond = (abs(x - avg0) / std0 <= th) & (abs(y - avg1) / std1 <= th)
-            outliers_cond = (abs(x - avg0) / std0 > th) | (abs(y - avg1) / std1 > th)
-            data_0 = np.column_stack((x[inliers_cond], y[inliers_cond])).tolist()
-            data_1 = np.column_stack((x[outliers_cond], y[outliers_cond])).tolist()
         chart.add_data_set(
-            data_circle, "spline", name="Outliers Border", **self.init_style_circle
+            self.data["map"]["outliers_circle"].tolist(),
+            "spline",
+            name="Outliers Border",
+            **self.init_style_circle
         )
         chart.add_data_set(
-            data_1, "scatter", name="Outliers", **self.init_style_outliers
+            self.data["outliers"].tolist(),
+            "scatter",
+            name="Outliers",
+            **self.init_style_outliers
         )
-        chart.add_data_set(data_0, "scatter", name="Inliers", **self.init_style_inliers)
+        chart.add_data_set(
+            self.data["inliers"].tolist(),
+            "scatter",
+            name="Inliers",
+            **self.init_style_inliers
+        )
         return chart
