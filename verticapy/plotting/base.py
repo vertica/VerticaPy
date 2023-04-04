@@ -76,15 +76,16 @@ class PlottingBase(PlottingBaseSQL):
                 "1D": self._compute_plot_params_sql,
                 "2D": self._compute_pivot_table_sql,
                 "aggregate": self._compute_aggregate_sql,
-                # "candle": self._compute_candle_aggregate_sql,
-                # "contour": self._compute_contour_grid_sql,
-                # "describe": self._compute_statistics_sql,
+                "candle": self._compute_candle_aggregate_sql,
+                # "contour": self._compute_contour_grid_sql, NOT POSSIBLE
+                "describe": self._compute_statistics_sql,
                 "hist": self._compute_hists_params_sql,
                 "line": self._filter_line_sql,
+                # "line_bubble": self._filter_line_animated_scatter_sql, TOO MUCH COMPLEX
                 "matrix": self._compute_scatter_matrix_sql,
                 "outliers": self._compute_outliers_params_sql,
                 "range": self._compute_range_sql,
-                # "rollup": self._compute_rollup_sql,
+                "rollup": self._compute_rollup_sql,
                 "sample": self._sample_sql,
             }
             functions[self._compute_method](*args, **kwds)

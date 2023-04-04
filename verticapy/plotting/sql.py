@@ -98,6 +98,18 @@ class PlottingBaseSQL:
             "has_category": False,
         }
 
+    # BOXPLOTS
+
+    def _compute_statistics_sql(self, query: str) -> None:
+        vdf = self._get_vdataframe_from_query(query=query)
+        numcols = vdf.numcol()
+        catcols = vdf.catcol()
+        by = None
+        if len(numcols) == 1 and len(catcols) == 1:
+            by = catcols[0]
+        self._compute_statistics(vdf=vdf, columns=numcols, by=by)
+        return None
+
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 
     def _compute_pivot_table_sql(self, query: str, stacked: bool = False) -> None:
@@ -271,5 +283,57 @@ class PlottingBaseSQL:
             "columns": [columns[i] for i in range(1, n, 3)],
             "order_by": order_by,
             "order_by_cat": tbs.category(column=order_by),
+        }
+        return None
+
+    def _compute_candle_aggregate_sql(self, query: str) -> None:
+        tbs = TableSample().read_sql(query)
+        columns = tbs.get_columns()
+        order_by = columns[0]
+        column = columns[1]
+        agg = columns[-1]
+        X = tbs.to_numpy()
+        self.data = {"x": X[:, 0], "Y": X[:, 1:5], "z": X[:, 5], "q": None}
+        self.layout = {
+            "column": column,
+            "order_by": order_by,
+            "method": agg,
+            "method_of": agg,
+            "aggregate": agg,
+            "aggregate_fun": None,
+            "is_standard": False,
+        }
+        return None
+
+    # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
+
+    def _compute_rollup_sql(self, query: str) -> None:
+        tbs = TableSample().read_sql(query)
+        columns = tbs.get_columns()
+        agg = columns[-1]
+        columns = columns[:-1]
+        n = len(columns)
+        X = tbs.to_numpy()
+        groups = []
+        for i in range(n, 0, -1):
+            Xf = np.column_stack((X[:, :i], X[:, n]))
+            if i <= n - 1:
+                Xf = Xf[(X[:, i:] == None).any(axis=1)]
+            Xf = Xf[np.logical_not((Xf == None).any(axis=1))]
+            m = Xf.shape[1]
+            for j in range(m):
+                Xf = Xf[Xf[:, j].argsort()]
+            Xf = Xf.T
+            groups += [Xf]
+        self.data = {"groups": np.array(groups, dtype=object)}
+        self.layout = {
+            "columns": columns,
+            "method": agg,
+            "method_of": agg,
+            "of": None,
+            "of_cat": None,
+            "aggregate": agg,
+            "aggregate_fun": None,
+            "is_standard": False,
         }
         return None
