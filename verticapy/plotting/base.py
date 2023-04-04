@@ -30,6 +30,8 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.plotting.sql import PlottingBaseSQL
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
@@ -37,7 +39,7 @@ if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 
-class PlottingBase:
+class PlottingBase(PlottingBaseSQL):
 
     # Properties.
 
@@ -69,7 +71,24 @@ class PlottingBase:
             del kwds["misc_layout"]
         else:
             misc_layout = {}
-        if "data" not in kwds or "layout" not in kwds:
+        if "query" in kwds:
+            functions = {
+                "1D": self._compute_plot_params_sql,
+                "2D": self._compute_pivot_table_sql,
+                # "aggregate": self._compute_aggregate_sql,
+                # "candle": self._compute_candle_aggregate_sql,
+                # "contour": self._compute_contour_grid_sql,
+                # "describe": self._compute_statistics_sql,
+                "hist": self._compute_hists_params_sql,
+                "line": self._filter_line_sql,
+                # "matrix": self._compute_scatter_matrix_sql,
+                # "outliers": self._compute_outliers_params_sql,
+                "range": self._compute_range_sql,
+                # "rollup": self._compute_rollup_sql,
+                "sample": self._sample_sql,
+            }
+            functions[self._compute_method](*args, **kwds)
+        elif "data" not in kwds or "layout" not in kwds:
             functions = {
                 "1D": self._compute_plot_params,
                 "2D": self._compute_pivot_table,

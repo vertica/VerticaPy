@@ -658,9 +658,7 @@ class vDFAgg:
                     if self.shape()[0] == 0:
                         expr = "100.0"
                     else:
-                        expr = (
-                            f"ROUND(COUNT({column}) / {self.shape()[0]} * 100, 3)::float"
-                        )
+                        expr = f"ROUND(COUNT({column}) / {self.shape()[0]} * 100, 3)::float"
 
                 elif "{}" not in fun:
                     expr = f"{fun.upper()}({column}{cast})"

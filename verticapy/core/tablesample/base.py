@@ -304,6 +304,22 @@ class TableSample:
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
+    def category(self, column: str):
+        x = np.array(self[column])
+        val = None
+        for xi in x:
+            if isinstance(xi, (str, np.str_)):
+                return "text"
+            elif isinstance(xi, (bool, np.bool_)):
+                return "bool"
+            elif isinstance(xi, (int, np.int_)):
+                return "int"
+            elif isinstance(xi, (float, np.float_)):
+                return "float"
+            elif isinstance(xi, (datetime.datetime, datetime.date)):
+                return "date"
+        return "undefined"
+
     def decimal_to_float(self) -> "TableSample":
         """
         Converts all the TableSample's decimals to floats.
@@ -319,6 +335,17 @@ class TableSample:
                     if isinstance(self.values[elem][i], decimal.Decimal):
                         self.values[elem][i] = float(self.values[elem][i])
         return self
+
+    def get_columns(self):
+        """
+        Returns the TableSample columns.
+
+        Returns
+        -------
+        list
+            columns.
+        """
+        return list(self.values)
 
     def merge(self, tbs: "TableSample") -> "TableSample":
         """
@@ -471,7 +498,7 @@ class TableSample:
         tuple
             (number of columns, number of rows)
         """
-        cols = [col for col in self.values]
+        cols = list(self.values)
         n, m = len(cols), len(self.values[cols[0]])
         return (n, m)
 
