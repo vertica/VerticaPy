@@ -792,7 +792,6 @@ class TestVDFHeatMap:
         )
 
 
-@pytest.mark.skip(reason="Line Plot needs to be updated first")
 class TestVDFLinePlot:
     def test_properties_output_type(self, load_plotly, amazon_vd):
         # Arrange
@@ -802,7 +801,16 @@ class TestVDFLinePlot:
         # Assert - checking if correct object created
         assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
 
-    def test_properties_output_type_for_simple(self, load_plotly, amazon_vd):
+    def test_properties_output_type_for_vDataFrame(self, load_plotly, amazon_vd):
+        # Arrange
+        # Act
+        result = amazon_vd.plot(ts="date", columns=["number"])
+        # Assert - checking if correct object created
+        assert (
+            type(result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated for vDataFrame"
+
+    def test_properties_output_type_for_one_trace(self, load_plotly, amazon_vd):
         # Arrange
         amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
         # Act
@@ -836,7 +844,7 @@ class TestVDFLinePlot:
         # Act
         result = amazon_vd["number"].plot(ts="date", by="state")
         assert (
-            result.data[0]["x"].shape + result.data[1]["x"].shape
+            result.data[0]["x"].shape[0] + result.data[1]["x"].shape[0]
             == amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')").shape()[0]
         ), "The total values in the plot are not equal to the values in the dataframe."
 
@@ -859,19 +867,19 @@ class TestVDFLinePlot:
 
     def test_additional_options_custom_height(self, load_plotly, amazon_vd):
         # Arrange
-        amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
+        custom_height = 600
         # Act
-        result = amazon_vd["number"].plot(ts="date", by="state", width=600, height=600)
+        result = amazon_vd["number"].plot(ts="date", width=600, height=custom_height)
         # Assert - checking if correct object created
-        assert result.layout["height"] == "time", "Custom height not working"
+        assert result.layout["height"] == custom_height, "Custom height not working"
 
-    def test_additional_options_marker_off(self, load_plotly, amazon_vd):
+    def test_additional_options_marker_on(self, load_plotly, amazon_vd):
         # Arrange
         amazon_vd.filter("state IN ('AMAZONAS', 'BAHIA')")
         # Act
-        result = amazon_vd["number"].plot(ts="date", markers=False)
+        result = amazon_vd["number"].plot(ts="date", markers=True)
         # Assert - checking if correct object created
-        assert result.data["mode"] == "lines", "Markers not turned off"
+        assert result.data[0]["mode"] == "lines+markers", "Markers not turned on"
 
 
 class TestVDFContourPlot:

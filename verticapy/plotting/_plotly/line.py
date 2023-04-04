@@ -52,7 +52,7 @@ class LinePlot(PlotlyBase):
         self,
         fig: Optional[Figure] = None,
         step: bool = False,
-        marker: bool = False,
+        markers: bool = False,
         **style_kwargs,
     ) -> Figure:
         """
@@ -60,8 +60,8 @@ class LinePlot(PlotlyBase):
         """
         fig_base = self._get_fig(fig)
         add_params = {}
+        add_params["markers"] = markers
         if "z" in self.data:
-            add_params["markers"] = marker
             add_params["color"] = "color"
             data_args = dict(
                 data=(
