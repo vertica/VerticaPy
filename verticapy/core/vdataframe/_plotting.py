@@ -645,6 +645,7 @@ class vDFPlot(PlottingUtils):
             class_name="RangeCurve",
             chart=chart,
             matplotlib_kwargs={"plot_median": plot_median,},
+            plotly_kwargs={"plot_median": plot_median,},
             style_kwargs=style_kwargs,
         )
         return vpy_plt.RangeCurve(
