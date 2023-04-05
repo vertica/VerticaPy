@@ -123,12 +123,20 @@ class OutliersPlot(PlotlyBase):
                     [threshold / z_max, "yellow"],
                     [1, "red"],
                 ]
+            if self.data["map"]["Z"].shape[0] > 100:
+                coarse_factor = 10
+            else:
+                coarse_factor = 1
+            z_reshaped = self.data["map"]["Z"].reshape(
+                (100, coarse_factor, 100, coarse_factor)
+            )
+            z_coarse = np.mean(z_reshaped, axis=(1, 3))
             fig.add_trace(
                 go.Contour(
-                    z=self.data["map"]["Z"],
-                    dx=delta_x,
+                    z=z_coarse,
+                    dx=delta_x * coarse_factor,
                     x0=self.data["map"]["X"][0][0],
-                    dy=delta_y,
+                    dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
                     colorscale=colorscale,
                     contours=dict(
@@ -139,10 +147,10 @@ class OutliersPlot(PlotlyBase):
             )
             fig.add_trace(
                 go.Contour(
-                    z=self.data["map"]["Z"],
-                    dx=delta_x,
+                    z=z_coarse,
+                    dx=delta_x * coarse_factor,
                     x0=self.data["map"]["X"][0][0],
-                    dy=delta_y,
+                    dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
                     colorscale=[[0, "blue"], [1, "blue"]],
                     contours_coloring="lines",
