@@ -1198,3 +1198,92 @@ class TestVDFRangeCurve:
         result = dummy_date_vd["value"].range_plot(ts="date", height=custom_height)
         # Assert
         assert result.layout["height"] == custom_height, "Custom height not working"
+
+
+class TestVDFOutliersPlot:
+    def test_properties_output_type_for_1d(self, load_plotly, titanic_vd):
+        # Arrange
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age"])
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_output_type_for_2d(self, load_plotly, titanic_vd):
+        # Arrange
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", "fare"])
+        # Assert - checking if correct object created
+        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+
+    def test_properties_xaxis_for_1d(self, load_plotly, titanic_vd):
+        # Arrange
+        column_name = "age"
+        # Act
+        result = titanic_vd.outliers_plot(columns=[column_name])
+        # Assert -
+        assert result.data[1]["x"][0] == column_name, "X axis label incorrect"
+
+    def test_properties_xaxis_for_2d(self, load_plotly, titanic_vd):
+        # Arrange
+        column_name = "age"
+        # Act
+        result = titanic_vd.outliers_plot(columns=[column_name, "fare"])
+        # Assert -
+        assert (
+            result.layout["xaxis"]["title"]["text"] == column_name
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_for_2d(self, load_plotly, titanic_vd):
+        # Arrange
+        column_name = "fare"
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", column_name])
+        # Assert -
+        assert (
+            result.layout["yaxis"]["title"]["text"] == column_name
+        ), "X axis label incorrect"
+
+    def test_data_all_scatter_points_for_1d(self, load_plotly, titanic_vd):
+        # Arrange
+        total_points = len(titanic_vd["age"])
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age"], max_nb_points=10000)
+        assert (
+            result.data[0]["y"].shape[0] + result.data[1]["y"].shape[0] == total_points
+        ), "All points are not plotted for 1d plot"
+
+    def test_data_all_scatter_points_for_2d(self, load_plotly, titanic_vd):
+        # Arrange
+        total_points = len(titanic_vd["age"])
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", "fare"], max_nb_points=10000)
+        assert result.data[-1]["y"].shape[0] + result.data[-2]["y"].shape[
+            0
+        ] == pytest.approx(
+            total_points, abs=1
+        ), "All points are not plotted for 2d plot"
+
+    def test_data_all_sinformation_plotted_for_2d(self, load_plotly, titanic_vd):
+        # Arrange
+        total_elements = 4
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", "fare"])
+        assert (
+            len(result.data) == total_elements
+        ), "The total number of elements plotted is not correct"
+
+    def test_additional_options_custom_width(self, load_plotly, titanic_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", "fare"], width=custom_width)
+        # Assert
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 700
+        # Act
+        result = titanic_vd.outliers_plot(columns=["age", "fare"], height=custom_height)
+        # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
