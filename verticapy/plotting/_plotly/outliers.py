@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+from verticapy._typing import ArrayLike
 
 import pandas as pd
 import numpy as np
@@ -26,7 +27,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class OutliersPlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -48,7 +48,7 @@ class OutliersPlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = { }
+        self.init_style = {}
         return None
 
     # Draw.
@@ -56,6 +56,7 @@ class OutliersPlot(PlotlyBase):
     def draw(
         self,
         fig: Optional[Figure] = None,
+        colorscale: Optional[ArrayLike] = None,
         **style_kwargs,
     ) -> Figure:
         """
@@ -63,40 +64,102 @@ class OutliersPlot(PlotlyBase):
         """
         fig = self._get_fig(fig)
         if len(self.layout["columns"]) == 1:
-            X1 = self.data['inliers'][:,0].flatten().tolist()
-            X2 = self.data['outliers'][:,0].flatten().tolist()
+            X1 = self.data["inliers"][:, 0].flatten().tolist()
+            X2 = self.data["outliers"][:, 0].flatten().tolist()
             cat_X1 = ["inliers"] * len(X1)
             cat_X2 = ["outliers"] * len(X2)
-            x_axis=["age"]*(len(X1)+len(X2))
-            df = pd.DataFrame({self.layout['columns'][0]: X1 + X2, "category": cat_X1 + cat_X2,"x_axis":x_axis})
-            fig_scatter = px.strip(df, x="x_axis", y=self.layout['columns'][0], color="category",stripmode="overlay")
-            fig_scatter.update_layout(xaxis={'visible': False})
+            x_axis = ["age"] * (len(X1) + len(X2))
+            df = pd.DataFrame(
+                {
+                    self.layout["columns"][0]: X1 + X2,
+                    "category": cat_X1 + cat_X2,
+                    "x_axis": x_axis,
+                }
+            )
+            fig_scatter = px.strip(
+                df,
+                x="x_axis",
+                y=self.layout["columns"][0],
+                color="category",
+                stripmode="overlay",
+            )
+            fig_scatter.update_layout(xaxis={"visible": False})
         elif len(self.layout["columns"]) == 2:
-            X1 = self.data['inliers'][:,0].flatten().tolist()
-            X2 = self.data['outliers'][:,0].flatten().tolist()
-            Y1 = self.data['inliers'][:,1].flatten().tolist()
-            Y2 = self.data['outliers'][:,1].flatten().tolist()
-            delta_x=self.data['map']['X'][0][1]-self.data['map']['X'][0][0]
-            delta_y=self.data['map']['Y'][1][0]-self.data['map']['Y'][0][1]
+            X1 = self.data["inliers"][:, 0].flatten().tolist()
+            X2 = self.data["outliers"][:, 0].flatten().tolist()
+            Y1 = self.data["inliers"][:, 1].flatten().tolist()
+            Y2 = self.data["outliers"][:, 1].flatten().tolist()
+            delta_x = self.data["map"]["X"][0][1] - self.data["map"]["X"][0][0]
+            delta_y = self.data["map"]["Y"][1][0] - self.data["map"]["Y"][0][1]
             cat_X1 = ["inliers"] * len(X1)
             cat_X2 = ["outliers"] * len(X2)
-            x_axis=["age"]*(len(X1)+len(X2))
-            df = pd.DataFrame({self.layout['columns'][0]: X1, "category": cat_X1,self.layout['columns'][1]:Y1})
-            df2 = pd.DataFrame({self.layout['columns'][0]: X2, "category": cat_X2,self.layout['columns'][1]:Y2})
+            x_axis = ["age"] * (len(X1) + len(X2))
+            df = pd.DataFrame(
+                {
+                    self.layout["columns"][0]: X1,
+                    "category": cat_X1,
+                    self.layout["columns"][1]: Y1,
+                }
+            )
+            df2 = pd.DataFrame(
+                {
+                    self.layout["columns"][0]: X2,
+                    "category": cat_X2,
+                    self.layout["columns"][1]: Y2,
+                }
+            )
             concatenated_df = pd.concat([df, df2], ignore_index=True)
-            fig_scatter = px.scatter(concatenated_df, x="age", y="fare", color="category")
+            fig_scatter = px.scatter(
+                concatenated_df, x="age", y="fare", color="category"
+            )
+
+            z_min = self.data["map"]["Z"].min()
+            z_max = self.data["map"]["Z"].max()
+            threshold = self.data["th"]
+            mid = (threshold + z_max) / 2
+            if not colorscale:
+                colorscale = [
+                    [0, "rgb(51, 255, 51)"],
+                    [threshold / z_max, "yellow"],
+                    [1, "red"],
+                ]
             fig.add_trace(
                 go.Contour(
                     z=self.data["map"]["Z"],
                     dx=delta_x,
-                    x0=self.data['map']['X'][0][0],
+                    x0=self.data["map"]["X"][0][0],
                     dy=delta_y,
-                    y0=self.data['map']['Y'][0][0],
-                    )
-                        )
+                    y0=self.data["map"]["Y"][0][0],
+                    colorscale=colorscale,
+                    contours=dict(
+                        start=threshold,
+                        end=z_max,
+                    ),
+                )
+            )
+            fig.add_trace(
+                go.Contour(
+                    z=self.data["map"]["Z"],
+                    dx=delta_x,
+                    x0=self.data["map"]["X"][0][0],
+                    dy=delta_y,
+                    y0=self.data["map"]["Y"][0][0],
+                    colorscale=[[0, "blue"], [1, "blue"]],
+                    contours_coloring="lines",
+                    line_width=2,
+                    contours=dict(
+                        start=threshold,
+                        end=threshold,
+                    ),
+                )
+            )
         for i in range(len(fig_scatter.data)):
             fig.add_trace(fig_scatter.data[i])
-
-        fig.update_layout(width=500,height=500)
+            fig.update_layout(
+                legend=dict(
+                    orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5
+                )
+            )
+        fig.update_layout(width=500, height=500)
 
         return fig
