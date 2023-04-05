@@ -93,7 +93,6 @@ class OutliersPlot(PlotlyBase):
             delta_y = self.data["map"]["Y"][1][0] - self.data["map"]["Y"][0][1]
             cat_X1 = ["inliers"] * len(X1)
             cat_X2 = ["outliers"] * len(X2)
-            x_axis = ["age"] * (len(X1) + len(X2))
             df = pd.DataFrame(
                 {
                     self.layout["columns"][0]: X1,
@@ -110,7 +109,10 @@ class OutliersPlot(PlotlyBase):
             )
             concatenated_df = pd.concat([df, df2], ignore_index=True)
             fig_scatter = px.scatter(
-                concatenated_df, x="age", y="fare", color="category"
+                concatenated_df,
+                x=self.layout["columns"][0],
+                y=self.layout["columns"][1],
+                color="category",
             )
 
             z_min = self.data["map"]["Z"].min()
