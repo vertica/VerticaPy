@@ -158,7 +158,7 @@ class NestedPieChart(HighchartsBase):
             for i, c in enumerate(uniques):
                 data += [
                     {
-                        "name": self.layout["columns"][0] + "=" + c,
+                        "name": self.layout["columns"][0] + "=" + str(c),
                         "y": y[i],
                         "color": self.get_colors(idx=i),
                     }

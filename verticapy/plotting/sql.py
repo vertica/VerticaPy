@@ -37,20 +37,28 @@ class PlottingBaseSQL:
     def _compute_plot_params_sql(self, query: str, bargap: float = 0.06) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
-        by = columns[0]
-        agg = columns[1]
         X = tbs.to_numpy()
-        n = tbs.shape()[1]
+        m, n = tbs.shape()
+        if m == 1:
+            by = ""
+            agg = columns[0]
+            y = X[:, 0].astype(float).tolist()
+            labels = [str(i) for i in range(len(y))]
+        else:
+            by = columns[0]
+            agg = columns[1]
+            labels = X[:, 0].tolist()
+            y = X[:, 1].astype(float).tolist()
         self.data = {
             "x": [0.4 * i + 0.2 for i in range(n)],
-            "y": X[:, 1].astype(float).tolist(),
+            "y": y,
             "width": None,
             "adj_width": 0.4 * (1 - bargap),
             "bargap": bargap,
             "is_categorical": True,
         }
         self.layout = {
-            "labels": X[:, 0].tolist(),
+            "labels": labels,
             "column": by,
             "method": agg,
             "method_of": agg,
@@ -117,13 +125,26 @@ class PlottingBaseSQL:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
         X = tbs.to_numpy()
-        x_labels = list(np.unique(X[:, 0]).astype(str))
-        y_labels = list(np.unique(X[:, 1]).astype(str))
-        Xf = np.array([[np.nan for i in y_labels] for j in x_labels])
-        for ci, cj, val in X:
-            i = x_labels.index(str(ci))
-            j = y_labels.index(str(cj))
-            Xf[i][j] = val
+        m, n = tbs.shape()
+        if m == 1:
+            agg = ""
+            x_labels = [str(i) for i in range(n)]
+            y_labels = [""]
+            Xf = X
+        elif m == 2:
+            agg = columns[1]
+            x_labels = list(np.unique(X[:, 0]).astype(str))
+            y_labels = [""]
+            Xf = X
+        else:
+            agg = columns[2]
+            x_labels = list(np.unique(X[:, 0]).astype(str))
+            y_labels = list(np.unique(X[:, 1]).astype(str))
+            Xf = np.array([[np.nan for i in y_labels] for j in x_labels])
+            for ci, cj, val in X:
+                i = x_labels.index(str(ci))
+                j = y_labels.index(str(cj))
+                Xf[i][j] = val
         self.data = {
             "X": Xf.astype(float),
         }
@@ -133,11 +154,11 @@ class PlottingBaseSQL:
             "vmax": None,
             "vmin": None,
             "columns": columns[0:2],
-            "method": columns[2],
-            "method_of": columns[2],
+            "method": agg,
+            "method_of": agg,
             "of": None,
             "of_cat": None,
-            "aggregate": columns[2],
+            "aggregate": agg,
             "aggregate_fun": None,
             "is_standard": False,
             "mround": 10,
@@ -181,9 +202,9 @@ class PlottingBaseSQL:
         X = tbs.to_numpy()
         if tbs.category(column=columns[-1]) in ("text", "int", "bool"):
             has_category = True
-            idx = -1
+            idx -= 1
             c_name = columns[-1]
-            c = X[:, -1]
+            c = X[:, -1].astype(str)
             Xi = X[:, :-1].astype(float)
         else:
             has_category = False
@@ -192,7 +213,7 @@ class PlottingBaseSQL:
             Xi = X.astype(float)
         if kind == "bubble":
             has_size = True
-            idx = -2
+            idx -= 1
             s_name = columns[idx]
             s = Xi[:, -1]
             Xi = Xi[:, :-1]

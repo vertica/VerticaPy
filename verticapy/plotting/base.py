@@ -725,7 +725,7 @@ class PlottingBase(PlottingBaseSQL):
                     f"{columns[k]} < {X[:, i][0]} OR {columns[k]} > {X[:, i][-1]}"
                 )
                 try:
-                    fliers += [f.sample(n=max_nb_fliers).to_numpy()[:, 0]]
+                    fliers += [f.sample(n=max_nb_fliers).to_numpy()[:, 0].astype(float)]
                 except ZeroDivisionError:
                     fliers += [np.array([])]
             else:
@@ -738,6 +738,7 @@ class PlottingBase(PlottingBaseSQL):
             "whis": whis,
             "q": q,
         }
+        return None
 
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 

@@ -50,7 +50,6 @@ CLASS_NAME_MAP = {
     "bubble": "ScatterPlot",
     "candlestick": "CandleStick",
     "cramer": None,
-    "fstacked_bar": "BarChart2D",
     "fstacked_barh": "HorizontalBarChart2D",
     "drilldown_bar": "DrillDownBarChart",
     "drilldown_barh": "DrillDownHorizontalBarChart",
@@ -122,10 +121,66 @@ def chartSQL(query: str, kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",) -> ...:
     """
     from verticapy.core.vdataframe.base import vDataFrame
 
-    if kind in ["biserial", "cramer", "kendall", "pearson", "spearman", "spearmand"]:
-        return vDataFrame(input_relation=query).corr(method=kind)
-    elif kind == "auto":
-        ...
+    if kind in [
+        "auto",
+        "bar",
+        "barh",
+        "biserial",
+        "cramer",
+        "donut",
+        "line",
+        "kendall",
+        "pearson",
+        "pie",
+        "rose",
+        "spearman",
+        "spearmand",
+        "spline",
+        "step",
+    ]:
+        vdf = vDataFrame(input_relation=query)
+        cols = vdf.get_columns()
+        if kind == "auto":
+            if len(cols) == 1:
+                if vdf[cols[0]].isnum():
+                    return vdf[cols[0]].boxplot()
+                else:
+                    return vdf[cols[0]].pie()
+            elif len(cols) > 1 and vdf[cols[0]].isdate():
+                kind = "line"
+            elif len(cols) == 2 and vdf[cols[0]].isnum() and vdf[cols[1]].isnum():
+                kind = "hist"
+            elif len(cols) == 2 and vdf[cols[1]].isnum():
+                kind = "barh"
+            elif (
+                len(cols) == 3
+                and not (vdf[cols[0]].isnum())
+                and not (vdf[cols[1]].isnum())
+                and vdf[cols[2]].isnum()
+            ):
+                kind = "barh2D"
+            elif len(cols) > 4:
+                return vdf.boxplot()
+            else:
+                kind = "scatter"
+        elif kind in [
+            "biserial",
+            "cramer",
+            "kendall",
+            "pearson",
+            "spearman",
+            "spearmand",
+        ]:
+            return vdf.corr(method=kind)
+        elif kind in ["line", "spline", "step"]:
+            if len(cols) > 3 or ((len(cols) == 3) and (vdf[cols[2]].isnum())):
+                kind = "multi_" + kind
+        elif kind in ["bar", "barh"]:
+            if len(cols) > 2:
+                kind = kind + "2D"
+        elif kind in ["donut", "pie", "rose"]:
+            if len(cols) > 2:
+                kind = "nested_pie"
     class_name = CLASS_NAME_MAP[kind]
     vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(class_name=class_name)
     graph = getattr(vpy_plt, class_name)
