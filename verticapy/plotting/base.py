@@ -223,9 +223,8 @@ class PlottingBase(PlottingBaseSQL):
         kwargs["color"] = self._get_final_color(style_kwargs=style_kwargs, idx=idx,)
         return kwargs
 
-    @staticmethod
     def get_colors(
-        d: Optional[dict] = {}, idx: Optional[int] = None
+        self, d: Optional[dict] = {}, idx: Optional[int] = None
     ) -> Union[list, str]:
         if "color" in d:
             if isinstance(d["color"], str):
@@ -246,7 +245,7 @@ class PlottingBase(PlottingBaseSQL):
             else:
                 return conf.get_option("colors")
         else:
-            colors = get_colors()
+            colors = self.get_colors()
             return colors[idx % len(colors)]
 
     def get_cmap(
