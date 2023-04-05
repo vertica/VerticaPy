@@ -48,7 +48,7 @@ class OutliersPlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {}
+        self.init_style = {"width": 500, "height": 500}
         return None
 
     # Draw.
@@ -161,13 +161,15 @@ class OutliersPlot(PlotlyBase):
                     ),
                 )
             )
+            fig.update_xaxes(title_text=self.layout["columns"][0])
+            fig.update_yaxes(title_text=self.layout["columns"][1])
         for i in range(len(fig_scatter.data)):
             fig.add_trace(fig_scatter.data[i])
             fig.update_layout(
                 legend=dict(
-                    orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5
+                    orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5
                 )
             )
-        fig.update_layout(width=500, height=500)
+        fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
 
         return fig
