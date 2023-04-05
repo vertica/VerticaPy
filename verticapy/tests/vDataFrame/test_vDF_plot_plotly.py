@@ -869,7 +869,6 @@ class TestVDFLinePlot:
         ), "Markers not turned on"
 
 
-
 class TestVDFContourPlot:
     def test_properties_output_type(self, load_plotly, dummy_dist_vd):
         # Arrange
