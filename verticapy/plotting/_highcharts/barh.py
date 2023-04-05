@@ -165,10 +165,12 @@ class HorizontalBarChart2D(HighchartsBase):
                 X = np.transpose(X)
                 y_labels = self.layout["x_labels"]
             for idx, label in enumerate(y_labels):
-                chart.add_data_set(list(lookup[idx] * X[:, idx]), "bar", name=label)
+                chart.add_data_set(
+                    list(lookup[idx] * X[:, idx]), "bar", name=str(label)
+                )
         else:
             for idx, label in enumerate(self.layout["y_labels"]):
-                chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
+                chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=str(label))
             if self.layout["kind"] == "stacked":
                 chart.set_dict_options(self.init_style_stacked)
             elif self.layout["kind"] == "fully_stacked":

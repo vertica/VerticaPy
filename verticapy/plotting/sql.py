@@ -37,21 +37,28 @@ class PlottingBaseSQL:
     def _compute_plot_params_sql(self, query: str, bargap: float = 0.06) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
-        by = columns[0]
-        agg = columns[1]
         X = tbs.to_numpy()
-        n, m = tbs.shape()
-        dt = int if tbs.category(column=columns[1]) == "int" else float
+        m, n = tbs.shape()
+        if m == 1:
+            by = ""
+            agg = columns[0]
+            y = X[:, 0].astype(float).tolist()
+            labels = [str(i) for i in range(len(y))]
+        else:
+            by = columns[0]
+            agg = columns[1]
+            labels = X[:, 0].tolist()
+            y = X[:, 1].astype(float).tolist()
         self.data = {
             "x": [0.4 * i + 0.2 for i in range(n)],
-            "y": X[:, 1].astype(dt),
+            "y": y,
             "width": None,
             "adj_width": 0.4 * (1 - bargap),
             "bargap": bargap,
             "is_categorical": True,
         }
         self.layout = {
-            "labels": X[:, 0],
+            "labels": labels,
             "column": by,
             "method": agg,
             "method_of": agg,
@@ -71,12 +78,14 @@ class PlottingBaseSQL:
         by = columns[0]
         agg = columns[1]
         X = tbs.to_numpy()
-        n, m = tbs.shape()
         dt = int if tbs.category(column=columns[1]) == "int" else float
+        x, y = X[:, 0], X[:, 1].astype(dt)
+        y = y[x != None]
+        x = x[x != None]
         self.data = {
             by: {
-                "x": X[:, 0],
-                "y": X[:, 1].astype(dt),
+                "x": x,
+                "y": y,
                 "width": None,
                 "adj_width": 1.0,
                 "bargap": 1.0,
@@ -112,17 +121,30 @@ class PlottingBaseSQL:
 
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 
-    def _compute_pivot_table_sql(self, query: str, stacked: bool = False) -> None:
+    def _compute_pivot_table_sql(self, query: str) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
         X = tbs.to_numpy()
-        x_labels = list(np.unique(X[:, 0]))
-        y_labels = list(np.unique(X[:, 1]))
-        Xf = np.array([[np.nan for i in y_labels] for j in x_labels])
-        for ci, cj, val in X:
-            i = x_labels.index(ci)
-            j = y_labels.index(cj)
-            Xf[i][j] = val
+        m, n = tbs.shape()
+        if m == 1:
+            agg = ""
+            x_labels = [str(i) for i in range(n)]
+            y_labels = [""]
+            Xf = X
+        elif m == 2:
+            agg = columns[1]
+            x_labels = list(np.unique(X[:, 0]).astype(str))
+            y_labels = [""]
+            Xf = X
+        else:
+            agg = columns[2]
+            x_labels = list(np.unique(X[:, 0]).astype(str))
+            y_labels = list(np.unique(X[:, 1]).astype(str))
+            Xf = np.array([[np.nan for i in y_labels] for j in x_labels])
+            for ci, cj, val in X:
+                i = x_labels.index(str(ci))
+                j = y_labels.index(str(cj))
+                Xf[i][j] = val
         self.data = {
             "X": Xf.astype(float),
         }
@@ -132,14 +154,15 @@ class PlottingBaseSQL:
             "vmax": None,
             "vmin": None,
             "columns": columns[0:2],
-            "method": columns[2],
-            "method_of": columns[2],
+            "method": agg,
+            "method_of": agg,
             "of": None,
             "of_cat": None,
-            "aggregate": columns[2],
+            "aggregate": agg,
             "aggregate_fun": None,
             "is_standard": False,
-            "stacked": stacked,
+            "mround": 10,
+            "with_numbers": True,
         }
         return None
 
@@ -175,11 +198,13 @@ class PlottingBaseSQL:
     ) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
+        idx = len(columns)
         X = tbs.to_numpy()
         if tbs.category(column=columns[-1]) in ("text", "int", "bool"):
             has_category = True
+            idx -= 1
             c_name = columns[-1]
-            c = X[:, -1]
+            c = X[:, -1].astype(str)
             Xi = X[:, :-1].astype(float)
         else:
             has_category = False
@@ -188,7 +213,7 @@ class PlottingBaseSQL:
             Xi = X.astype(float)
         if kind == "bubble":
             has_size = True
-            idx = -2 if has_category else -1
+            idx -= 1
             s_name = columns[idx]
             s = Xi[:, -1]
             Xi = Xi[:, :-1]
@@ -198,7 +223,7 @@ class PlottingBaseSQL:
             s = None
         self.data = {"X": Xi, "s": s, "c": c}
         self.layout = {
-            "columns": columns,
+            "columns": columns[:idx],
             "size": s_name,
             "c": c_name,
             "has_category": has_category,
@@ -250,7 +275,7 @@ class PlottingBaseSQL:
         self.data = {
             "x": X[:, 0],
         }
-        if tbs.category(column=columns[-1]) in ("text", "int", "bool"):
+        if tbs.category(column=columns[-1]) in ("text", "bool"):
             self.data["Y"] = X[:, 1:-1]
             self.data["z"] = X[:, -1]
             has_category = True

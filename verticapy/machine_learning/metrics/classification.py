@@ -37,7 +37,7 @@ def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
     """
     helper function to compute the final score.
     """
-    return cm[0][0], cm[1][0], cm[0][1], cm[1][1]
+    return round(cm[0][0]), round(cm[1][0]), round(cm[0][1]), round(cm[1][1])
 
 
 def _compute_tn_fn_fp_tp(
@@ -86,7 +86,7 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
         fp = cm[:, i].sum() - cm[i][i]
         fn = cm[i, :].sum() - cm[i][i]
         tn = cm.sum() - fp - fn - tp
-        res += [(tn, fn, fp, tp)]
+        res += [(round(tn), round(fn), round(fp), round(tp))]
     return res
 
 

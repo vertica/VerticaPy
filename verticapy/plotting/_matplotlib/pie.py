@@ -83,7 +83,7 @@ class PieChart(MatplotlibBase):
 
     def draw(
         self,
-        pie_type: Literal["auto", "donut", "rose"] = "auto",
+        kind: Literal["auto", "donut", "rose"] = "auto",
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:
@@ -113,7 +113,7 @@ class PieChart(MatplotlibBase):
             else:
                 category = None
             autopct = self._make_autopct(self.data["y"], category)
-        if pie_type != "rose":
+        if kind != "rose":
             ax, fig, style_kwargs = self._get_ax_fig(
                 ax,
                 size=(8, 6),
@@ -121,7 +121,7 @@ class PieChart(MatplotlibBase):
                 grid=False,
                 style_kwargs=style_kwargs,
             )
-            if pie_type == "donut":
+            if kind == "donut":
                 kwargs = {**self.init_style_donut, "autopct": autopct}
             else:
                 kwargs = {

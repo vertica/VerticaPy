@@ -29,7 +29,7 @@ from vertica_highcharts.highstock.highstock import Highstock
 import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_amazon
-from verticapy.jupyter.extensions.hchart_magic import hchart_magic as hchart
+from verticapy.jupyter.extensions.chart_magic import chart_magic as hchart
 
 set_option("print_info", False)
 

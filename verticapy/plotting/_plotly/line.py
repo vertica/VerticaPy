@@ -115,11 +115,7 @@ class MultiLinePlot(PlotlyBase):
         self.init_style = {"width": 800, "height": 450}
         return None
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
