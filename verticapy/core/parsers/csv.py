@@ -371,6 +371,8 @@ def read_csv(
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
     if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=basename)
+    elif not (table_name):
+        table_name = basename
     assert not (temporary_table) or not (temporary_local_table), ParameterError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
         "set to True."

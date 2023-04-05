@@ -44,7 +44,6 @@ from verticapy.machine_learning.metrics.classification import (
     specificity_score,
 )
 from verticapy.machine_learning.metrics.regression import (
-    aic_bic,
     aic_score,
     bic_score,
     anova_table,

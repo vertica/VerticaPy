@@ -60,39 +60,6 @@ General Metrics.
 """
 
 
-@save_verticapy_logs
-def aic_bic(
-    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
-) -> tuple[float, float]:
-    """
-    Computes the AIC (Akaike’s Information Criterion) & BIC 
-    (Bayesian Information Criterion).
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    k: int, optional
-        Number of predictors.
-
-    Returns
-    -------
-    tuple of floats
-        (AIC, BIC)
-    """
-    res = regression_report(
-        y_true, y_score, input_relation, metrics=["aic", "bic"], k=k
-    )
-    return tuple(res["value"])
-
-
 def aic_score(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ) -> float:

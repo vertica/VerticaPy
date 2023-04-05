@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import connect
 from verticapy.connection.utils import get_confparser, get_connection_file

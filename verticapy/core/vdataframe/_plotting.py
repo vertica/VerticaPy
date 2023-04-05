@@ -19,7 +19,6 @@ from typing import Callable, Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
@@ -2096,7 +2095,7 @@ class vDCPlot:
                 kwargs["cmap"] = PlottingBase().get_cmap(idx=0)
         else:
             if not ("color" in kwargs):
-                kwargs["color"] = get_colors(idx=0)
+                kwargs["color"] = PlottingBase().get_colors(idx=0)
         if not ("legend" in kwargs):
             kwargs["legend"] = True
         if not ("figsize" in kwargs):

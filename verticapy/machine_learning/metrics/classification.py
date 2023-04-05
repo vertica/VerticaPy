@@ -223,7 +223,7 @@ def confusion_matrix(
         title="Computing Confusion matrix.",
         method="fetchall",
     )
-    return np.array([x[1:-1] for x in res])
+    return np.round(np.array([x[1:-1] for x in res])).astype(int)
 
 
 @check_minimum_version
@@ -268,7 +268,7 @@ def multilabel_confusion_matrix(
     res = _executeSQL(
         query=query, title="Computing Confusion Matrix.", method="fetchall",
     )
-    return np.array([x[1:-1] for x in res])
+    return np.round(np.array([x[1:-1] for x in res])).astype(int)
 
 
 """
@@ -2076,7 +2076,6 @@ def classification_report(
         res.values["avg_macro"] = avg_macro
         res.values["avg_weighted"] = avg_weighted
         args = [sum([args[i] for args in all_cm_metrics]) for i in range(4)]
-        avg_micro = []
         for m in metrics:
             if m in FUNCTIONS_CONFUSION_DICTIONNARY:
                 fun = FUNCTIONS_CONFUSION_DICTIONNARY[m]
