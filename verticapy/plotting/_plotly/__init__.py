@@ -30,5 +30,5 @@ from verticapy.plotting._plotly.base import PlotlyBase
 import plotly.io as pio
 import plotly.graph_objects as go
 
-pio.templates["VerticaPy"] = go.layout.Template(layout_colorway=PlotlyBase.get_colors())
+pio.templates["VerticaPy"] = go.layout.Template(layout_colorway=PlotlyBase().get_colors())
 pio.templates.default = "VerticaPy"
