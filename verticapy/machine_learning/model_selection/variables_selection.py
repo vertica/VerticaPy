@@ -36,7 +36,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.plotting._utils import PlottingUtils
 
-from verticapy.machine_learning.metrics import aic_bic
+from verticapy.machine_learning.metrics import aic_score, bic_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.machine_learning.vertica.base import VerticaModel
@@ -414,7 +414,7 @@ def stepwise(
         method="fetchfirstelem",
         print_time_sql=False,
     )
-    k = 0 if criterion == "aic" else 1
+    fun = aic_score if criterion == "aic" else bic_score
     if x_order == "random":
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
@@ -438,7 +438,7 @@ def stepwise(
         loop = range(len(X))
     model_id = 0
     if direction == "backward":
-        X_current = [elem for elem in X]
+        X_current = copy.deepcopy(X)
         estimator.drop()
         estimator.fit(input_relation, X, y)
         current_score = estimator.score(metric=criterion)
@@ -451,20 +451,20 @@ def stepwise(
                 )
             if current_step >= max_steps:
                 break
-            X_test = [elem for elem in X_current]
+            X_test = copy.deepcopy(X_current)
             X_test.remove(X[idx])
             if len(X_test) != 0:
                 estimator.drop()
                 estimator.fit(input_relation, X_test, y)
                 test_score = estimator.score(metric=criterion)
             else:
-                test_score = aic_bic(y, str(avg), input_relation, 0)[k]
+                test_score = fun(y, str(avg), input_relation, 0)
             score_diff = test_score - current_score
             if test_score - current_score < criterion_threshold:
                 sign = "-"
                 model_id += 1
                 current_score = test_score
-                X_current = [elem for elem in X_test]
+                X_current.remove(X[idx])
                 if print_info:
                     print(
                         f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: "
@@ -476,7 +476,7 @@ def stepwise(
             current_step += 1
     else:
         X_current = []
-        current_score = aic_bic(y, str(avg), input_relation, 0)[k]
+        current_score = fun(y, str(avg), input_relation, 0)
         res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
@@ -486,7 +486,7 @@ def stepwise(
                 )
             if current_step >= max_steps:
                 break
-            X_test = [elem for elem in X_current] + [X[idx]]
+            X_test = copy.deepcopy(X_current) + [X[idx]]
             estimator.drop()
             estimator.fit(input_relation, X_test, y)
             test_score = estimator.score(metric=criterion)
@@ -495,7 +495,7 @@ def stepwise(
                 sign = "+"
                 model_id += 1
                 current_score = test_score
-                X_current = [x for x in X_test]
+                X_current += [X[idx]]
                 if print_info:
                     print(
                         f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}:"
@@ -515,7 +515,11 @@ def stepwise(
     for idx, x in enumerate(features):
         features[idx] = [item.replace('"', "") for item in x]
     importance = [x[5] if (x[5]) and x[5] > 0 else 0 for x in res]
-    importance = [100 * x / sum(importance) for x in importance]
+    sum_importance = sum(importance)
+    if sum_importance == 0:
+        importance = [100.0 / len(importance) for x in importance]
+    else:
+        importance = [100 * x / sum(importance) for x in importance]
     res = TableSample(
         {
             "index": [x[4] for x in res],
@@ -526,9 +530,8 @@ def stepwise(
             "importance": importance,
         }
     )
-    estimator.drop()
-    if not (drop_final_estimator):
-        estimator.fit(input_relation, X_current, y)
+    if (drop_final_estimator):
+        estimator.drop()
     res.best_list_ = X_current
     if show:
         vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(

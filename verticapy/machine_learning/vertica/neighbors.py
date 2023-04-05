@@ -21,7 +21,6 @@ import numpy as np
 
 from vertica_python.errors import QueryError
 
-from verticapy._config.colors import get_colors
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
