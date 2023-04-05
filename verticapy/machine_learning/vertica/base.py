@@ -2069,9 +2069,9 @@ class MulticlassClassifier(Classifier):
             y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
         final_relation = self._get_final_relation(pos_label=pos_label)
         args = [self.y, y_score, final_relation]
-        kwargs = {"average": average, "labels": self.classes_}
+        kwargs = {}
         if metric not in ("aic", "bic"):
-            kwargs["pos_label"] = pos_label
+            kwargs = {"average": average, "labels": self.classes_, "pos_label": pos_label}
         if metric in ("aic", "bic"):
             args += [len(self.X)]
         elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
