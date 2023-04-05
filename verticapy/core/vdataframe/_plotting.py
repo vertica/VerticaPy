@@ -188,7 +188,7 @@ class vDFPlot(PlottingUtils):
                 of=of,
                 h=h,
                 max_cardinality=max_cardinality,
-                misc_layout={"stacked": (kind.lower() == "stacked")},
+                misc_layout={"kind": kind},
             ).draw(**kwargs)
 
     @save_verticapy_logs
@@ -1565,7 +1565,7 @@ class vDCPlot:
         of: Optional[str] = None,
         max_cardinality: int = 6,
         h: PythonNumber = 0,
-        pie_type: Literal["auto", "donut", "rose", "3d"] = "auto",
+        kind: Literal["auto", "donut", "rose", "3d"] = "auto",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1596,7 +1596,7 @@ class vDCPlot:
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized 
             h will be computed.
-        pie_type: str, optional
+        kind: str, optional
             The type of pie chart.
                 auto   : Regular pie chart.
                 donut  : Donut chart.
@@ -1625,7 +1625,7 @@ class vDCPlot:
             max_cardinality=max_cardinality,
             h=h,
             pie=True,
-            misc_layout={"pie_type": pie_type},
+            misc_layout={"kind": kind},
         ).draw(**kwargs)
 
     @save_verticapy_logs

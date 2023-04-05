@@ -613,7 +613,7 @@ class TestvDFPlot:
         plt.close("all")
         # testing vDataFrame[].pie - donut
         result = titanic_vd["sex"].pie(
-            method="sum", of="survived", pie_type="donut", colors=["b", "r"]
+            method="sum", of="survived", kind="donut", colors=["b", "r"]
         )
         assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
         assert int(
@@ -621,7 +621,7 @@ class TestvDFPlot:
         ) == pytest.approx(302)
         plt.close("all")
         # testing vDataFrame[].pie - rose
-        result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="rose")
+        result = titanic_vd["sex"].pie(method="sum", of="survived", kind="rose")
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
 

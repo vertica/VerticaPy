@@ -148,7 +148,7 @@ class LinePlot(HighchartsBase):
                 x = self._to_datetime(self.data["x"][self.data["z"] == c])
                 y = self.data["Y"][:, 0][self.data["z"] == c]
                 data = np.column_stack((x, y)).tolist()
-                chart.add_data_set(data, kind, c, **step_kwargs)
+                chart.add_data_set(data, kind, str(c), **step_kwargs)
         else:
             x = self._to_datetime(self.data["x"])
             y = self.data["Y"][:, 0]

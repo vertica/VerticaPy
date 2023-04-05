@@ -53,7 +53,7 @@ from verticapy.plotting._matplotlib.acf import ACFPlot, ACFPACFPlot
 from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D
 from verticapy.plotting._matplotlib.barh import HorizontalBarChart, HorizontalBarChart2D
 from verticapy.plotting._matplotlib.boxplot import BoxPlot
-from verticapy.plotting._matplotlib.contour_plot import ContourPlot
+from verticapy.plotting._matplotlib.contour import ContourPlot
 from verticapy.plotting._matplotlib.density import (
     DensityPlot,
     DensityPlot2D,

@@ -78,6 +78,6 @@ class SpiderChart(HighchartsBase):
         chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):
             chart.add_data_set(
-                list(self.data["X"][:, idx]), name=label, pointPlacement="on"
+                list(self.data["X"][:, idx]), name=str(label), pointPlacement="on"
             )
         return chart
