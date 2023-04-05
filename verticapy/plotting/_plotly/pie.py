@@ -62,7 +62,7 @@ class PieChart(PlotlyBase):
         """
         fig_base = self._get_fig(fig)
         labels = self.layout["labels"]
-        if self.layout["pie_type"] == "donut":
+        if self.layout["kind"] == "donut":
             hole_fraction = 0.2
         else:
             hole_fraction = 0

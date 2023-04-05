@@ -124,7 +124,7 @@ class BarChart2D(MatplotlibBase):
                 **self.init_style,
             }
             params = self._update_dict(params, style_kwargs, i)
-            if self.layout["stacked"]:
+            if self.layout["kind"] == "stacked":
                 if i == 0:
                     bottom = np.array([0.0 for j in range(m)])
                 else:
@@ -134,7 +134,7 @@ class BarChart2D(MatplotlibBase):
                 params["x"] = [j + i * self.init_style["width"] / n for j in range(m)]
                 params["width"] = self.init_style["width"] / n
             ax.bar(**params)
-        if self.layout["stacked"]:
+        if self.layout["kind"] == "stacked":
             xticks = [j for j in range(m)]
         else:
             xticks = [

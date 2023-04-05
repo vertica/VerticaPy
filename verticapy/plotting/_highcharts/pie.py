@@ -61,13 +61,13 @@ class PieChart(HighchartsBase):
             "tooltip": {},
             "colors": self.get_colors(),
         }
-        if self.layout["pie_type"] == "donut":
+        if self.layout["kind"] == "donut":
             self.init_style = {
                 **self.init_style,
                 "chart": {"type": "pie"},
                 "plotOptions": {"pie": {"innerSize": 100, "depth": 45}},
             }
-        elif self.layout["pie_type"] == "rose":
+        elif self.layout["kind"] == "rose":
             self.init_style = {
                 **self.init_style,
                 "plotOptions": {"pie": {"startAngle": -90, "endAngle": 90}},
@@ -91,13 +91,15 @@ class PieChart(HighchartsBase):
         for idx, y in enumerate(self.data["y"]):
             data += [
                 {
-                    "name": self.layout["column"] + "=" + self.layout["labels"][idx],
+                    "name": self.layout["column"]
+                    + "="
+                    + str(self.layout["labels"][idx]),
                     "y": y,
                 }
             ]
         data[-1] = {**data[-1], "sliced": True, "selected": True}
         chart.add_data_set(data, "pie", self.layout["method_of"])
-        if self.layout["pie_type"] == "3d":
+        if self.layout["kind"] == "3d":
             chart.set_dict_options(self.init_style_3d)
             chart.add_JSsource("https://code.highcharts.com/6/highcharts-3d.js")
         return chart

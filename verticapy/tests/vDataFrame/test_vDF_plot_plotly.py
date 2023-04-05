@@ -57,10 +57,7 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {
-            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
-            "value": list(data),
-        }
+        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -193,7 +190,7 @@ class TestvDFPlotPlotly:
 
         ## Testing Additional Options
         ### check hole option
-        result = dummy_vd["check 1"].pie(pie_type="donut")
+        result = dummy_vd["check 1"].pie(kind="donut")
         assert result.data[0]["hole"] == 0.2
         ### check exploded option
         result = dummy_vd["check 1"].pie(exploded=True)
@@ -341,13 +338,7 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -371,13 +362,7 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         assert (
             len(
                 set(
@@ -879,7 +864,9 @@ class TestVDFLinePlot:
         # Act
         result = amazon_vd["number"].plot(ts="date", markers=True)
         # Assert - checking if correct object created
-        assert set(result.data[0]["mode"]) == set("lines+markers"), "Markers not turned on"
+        assert set(result.data[0]["mode"]) == set(
+            "lines+markers"
+        ), "Markers not turned on"
 
 
 

@@ -20,7 +20,7 @@ from verticapy.plotting._plotly.barh import HorizontalBarChart
 from verticapy.plotting._plotly.scatter import ScatterPlot
 from verticapy.plotting._plotly.boxplot import BoxPlot
 from verticapy.plotting._plotly.heatmap import HeatMap
-from verticapy.plotting._plotly.contour_plot import ContourPlot
+from verticapy.plotting._plotly.contour import ContourPlot
 from verticapy.plotting._plotly.density import DensityPlot, MultiDensityPlot
 from verticapy.plotting._plotly.spider import SpiderChart
 from verticapy.plotting._plotly.range import RangeCurve

@@ -34,152 +34,107 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.jupyter.extensions._utils import get_magic_options
 
+from verticapy.plotting._utils import PlottingUtils
 
-def hchartSQL(
-    query: str,
-    kind: Literal[
+CLASS_NAME_MAP = {
+    "auto": None,
+    "area": "MultiLinePlot",
+    "area_percent": "MultiLinePlot",
+    "area_stacked": "MultiLinePlot",
+    "bar": "BarChart",
+    "bar2D": "BarChart2D",
+    "barh": "HorizontalBarChart",
+    "barh2D": "HorizontalBarChart2D",
+    "biserial": None,
+    "boxplot": "BoxPlot",
+    "bubble": "ScatterPlot",
+    "candlestick": "CandleStick",
+    "cramer": None,
+    "fstacked_bar": "BarChart2D",
+    "fstacked_barh": "HorizontalBarChart2D",
+    "drilldown_bar": "DrillDownBarChart",
+    "drilldown_barh": "DrillDownHorizontalBarChart",
+    "donut": "PieChart",
+    "heatmap": "HeatMap",
+    "hist": "Histogram",
+    "kendall": None,
+    "line": "LinePlot",
+    "multi_area": "MultiLinePlot",
+    "multi_line": "MultiLinePlot",
+    "multi_spline": "MultiLinePlot",
+    "multi_step": "MultiLinePlot",
+    "negative_bar": "HorizontalBarChart2D",
+    "nested_pie": "NestedPieChart",
+    "outliers": "OutliersPlot",
+    "pearson": None,
+    "pie": "PieChart",
+    "rose": "PieChart",
+    "scatter": "ScatterPlot",
+    "scatter_matrix": "ScatterMatrix",
+    "spearman": None,
+    "spearmand": None,
+    "spider": "SpiderChart",
+    "spline": "LinePlot",
+    "stacked_bar": "BarChart2D",
+    "stacked_barh": "HorizontalBarChart2D",
+    "step": "LinePlot",
+}
+
+
+def get_kind_option(kind: Literal[tuple(CLASS_NAME_MAP)] = "auto"):
+    kind_option = {}
+    other_params = {}
+    if kind in [
         "area",
-        "area_range",
-        "area_ts",
-        "bar",
-        "biserial",
-        "boxplot",
+        "area_percent",
+        "area_stacked",
         "bubble",
-        "candlestick",
-        "cramer",
         "donut",
-        "donut3d",
-        "heatmap",
-        "hist",
-        "kendall",
         "line",
-        "multi_area",
-        "multi_line",
-        "multi_spline",
-        "negative_bar",
-        "pearson",
-        "pie",
-        "pie3d",
-        "pie_half",
-        "scatter",
-        "spearman",
-        "spearmand",
-        "spider",
+        "rose",
         "spline",
-        "stacked_bar",
-        "stacked_hist",
-    ] = "auto",
-    width: int = 600,
-    height: int = 400,
-    options: dict = {},
-) -> Union[Highstock, Highchart]:
+        "step",
+    ]:
+        kind_option["kind"] = kind
+        if kind == "bubble":
+            other_params["kind"] = "bubble"
+    elif kind in ["area"]:
+        kind_option["kind"] = "area_stacked"
+    elif kind in ["multi_area", "multi_line", "multi_spline", "multi_step"]:
+        kind_option["kind"] = kind[6:]
+    elif kind == "negative_bar":
+        kind_option["kind"] = "density"
+        kind_option["method"] = "density"
+    elif kind in ["fstacked_bar", "fstacked_barh"]:
+        kind_option["kind"] = "fully_stacked"
+    elif kind in ["stacked_bar", "stacked_barh"]:
+        kind_option["kind"] = "stacked"
+    elif kind in ["bar2D", "barh2D", "pie"]:
+        kind_option["kind"] = "regular"
+    return {"misc_layout": kind_option, **other_params}
+
+
+def chartSQL(query: str, kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",) -> ...:
     """
     Helper Function:
     Draws a custom High Chart graphic using the 
     input SQL query.
     """
-
     from verticapy.core.vdataframe.base import vDataFrame
 
-    aggregate, stock = False, False
-    data = _executeSQL(
-        query=f"""
-            SELECT 
-                /*+LABEL('highchart.hchartSQL')*/ * 
-            FROM ({query}) VERTICAPY_SUBTABLE LIMIT 0""",
-        method="fetchall",
-        print_time_sql=False,
-    )
-    names = [desc[0] for desc in current_cursor().description]
-    vdf = vDataFrame(query)
-    allnum = vdf.numcol()
-    if kind == "auto":
-        if len(names) == 1:
-            kind = "pie"
-        elif (len(names) == len(allnum)) and (len(names) < 5):
-            kind = "scatter"
-        elif len(names) == 2:
-            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
-                kind = "line"
-            else:
-                kind = "bar"
-        elif len(names) == 3:
-            if vdf[names[0]].isdate() and vdf[names[1]].isnum():
-                kind = "line"
-            elif vdf[names[2]].isnum():
-                kind = "hist"
-            else:
-                kind = "boxplot"
-        else:
-            kind = "boxplot"
-    if kind in (
-        "pearson",
-        "kendall",
-        "cramer",
-        "biserial",
-        "spearman",
-        "spearmand",
-        "boxplot",
-    ):
-        x, y, z, c = allnum, None, None, None
-    elif kind == "scatter":
-        if len(names) < 2:
-            raise ValueError("Scatter Plots need at least 2 columns.")
-        x, y, z, c = names[0], names[1], None, None
-        if len(names) == 3 and len(allnum) == 3:
-            z = names[2]
-        elif len(names) == 3:
-            c = names[2]
-        elif len(names) > 3:
-            z, c = names[2], names[3]
-    elif kind == "bubble":
-        if len(names) < 3:
-            raise ValueError("Bubble Plots need at least 3 columns.")
-        x, y, z, c = names[0], names[1], names[2], None
-        if len(names) > 3:
-            c = names[3]
-    elif kind in (
-        "area",
-        "area_ts",
-        "spline",
-        "line",
-        "area_range",
-        "spider",
-        "candlestick",
-    ):
-        if vdf[names[0]].isdate():
-            stock = True
-        if len(names) < 2:
-            raise ValueError(f"{kind} Plots need at least 2 columns.")
-        x, y, z, c = names[0], names[1:], None, None
-        if kind == "candlestick":
-            aggregate = True
-    else:
-        if len(names) == 1:
-            aggregate = True
-            x, y, z, c = names[0], "COUNT(*) AS cnt", None, None
-        else:
-            x, y, z, c = names[0], names[1], None, None
-        if len(names) > 2:
-            z = names[2]
-    return vdf.hchart(
-        x=x,
-        y=y,
-        z=z,
-        c=c,
-        aggregate=aggregate,
-        kind=kind,
-        width=width,
-        height=height,
-        options=options,
-        max_cardinality=100,
-        stock=stock,
-    )
+    if kind in ["biserial", "cramer", "kendall", "pearson", "spearman", "spearmand"]:
+        return vDataFrame(input_relation=query).corr(method=kind)
+    elif kind == "auto":
+        ...
+    class_name = CLASS_NAME_MAP[kind]
+    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(class_name=class_name)
+    graph = getattr(vpy_plt, class_name)
+    return graph(query=query, **get_kind_option(kind)).draw(**kwargs)
 
 
 @save_verticapy_logs
 @needs_local_scope
-def hchart_magic(
+def chart_magic(
     line: str, cell: str = "", local_ns: Optional[dict] = None
 ) -> Union[Highstock, Highchart]:
     """
@@ -280,7 +235,7 @@ def hchart_magic(
 
     # Drawing the graphic
     start_time = time.time()
-    chart = hchartSQL(query, options["-k"])
+    chart = chartSQL(query, options["-k"])
 
     # Exporting the result
     if "-o" in options:
@@ -294,6 +249,8 @@ def hchart_magic(
 
 
 def load_ipython_extension(ipython) -> None:
-    ipython.register_magic_function(hchart_magic, "cell", "hchart")
-    ipython.register_magic_function(hchart_magic, "line", "hchart")
+    ipython.register_magic_function(chart_magic, "cell", "chart")
+    ipython.register_magic_function(chart_magic, "line", "chart")
+    ipython.register_magic_function(chart_magic, "cell", "plot")
+    ipython.register_magic_function(chart_magic, "line", "plot")
     return None

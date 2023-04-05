@@ -138,7 +138,7 @@ class ScatterPlot(HighchartsBase):
                 if self.layout["has_size"]:
                     data = np.column_stack((data, self.data["s"][self.data["c"] == c]))
                 data = data.tolist()
-                chart.add_data_set(data, kind, c)
+                chart.add_data_set(data, kind, str(c))
         else:
             data = self.data["X"]
             if self.layout["has_size"]:

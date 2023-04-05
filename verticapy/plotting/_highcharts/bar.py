@@ -116,8 +116,8 @@ class BarChart2D(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         for idx, label in enumerate(self.layout["y_labels"]):
-            chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=label)
-        if self.layout["stacked"]:
+            chart.add_data_set(list(self.data["X"][:, idx]), "bar", name=str(label))
+        if self.layout["kind"] == "stacked":
             chart.set_dict_options(self.init_style_stacked)
         return chart
 
