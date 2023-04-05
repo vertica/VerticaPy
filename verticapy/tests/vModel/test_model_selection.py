@@ -132,7 +132,7 @@ class TestModelSelection:
         result = bayesian_search_cv(
             model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", lmax=4
         )
-        assert len(result["parameters"]) == 14
+        assert 12 <= len(result["parameters"]) == 14
 
     def test_randomized_features_search_cv(self, titanic_vd):
         model = LogisticRegression("Logit_fs_test")
