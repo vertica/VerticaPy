@@ -458,7 +458,7 @@ def stepwise(
                 estimator.fit(input_relation, X_test, y)
                 test_score = estimator.score(metric=criterion)
             else:
-                test_score = fun(y, str(avg), input_relation, 0)[k]
+                test_score = fun(y, str(avg), input_relation, 0)
             score_diff = test_score - current_score
             if test_score - current_score < criterion_threshold:
                 sign = "-"
@@ -476,7 +476,7 @@ def stepwise(
             current_step += 1
     else:
         X_current = []
-        current_score = fun(y, str(avg), input_relation, 0)[k]
+        current_score = fun(y, str(avg), input_relation, 0)
         res += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
