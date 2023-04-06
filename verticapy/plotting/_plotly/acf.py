@@ -80,25 +80,10 @@ class ACFPlot(PlotlyBase):
         Y = self.data["y"]
         Z = self.data["z"]
         fig = self._get_fig(fig)
+        scatter_params = {}
+
         fig.add_scatter(
-            x=np.arange(len(Y)),
-            y=Y,
-            mode="markers",
-            marker_color="orange",
-            marker_size=12,
-            hovertemplate="ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
-        )
-        for i in range(len(Y)):
-            fig.add_shape(
-                type="line",
-                x0=X[i],
-                x1=X[i],
-                y0=0,
-                y1=Y[i],
-                line=dict(color="black", width=2),
-            )
-        fig.add_scatter(
-            x=np.arange(len(Z)),
+            x=X,
             y=Z,
             mode="lines",
             marker_color="red",
@@ -106,7 +91,7 @@ class ACFPlot(PlotlyBase):
             hoverinfo="none",
         )
         fig.add_scatter(
-            x=np.arange(len(Z)),
+            x=X,
             y=-Z,
             mode="lines",
             marker_color="red",
@@ -114,32 +99,32 @@ class ACFPlot(PlotlyBase):
             hovertemplate="Confidence <br><b>lag</b>: %{x}<br><b>value</b>: %{customdata:.3f}<br><extra></extra>",
             customdata=np.abs(-Z),
         )
+        if self.layout["kind"] == "line":
+            scatter_params["mode"] = "lines+markers"
+            scatter_params["fill"] = "none"
+        else:
+            scatter_params["mode"] = "markers"
+            scatter_params["marker_color"] = "orange"
+            scatter_params["marker_size"] = 12
 
+            for i in range(len(Y)):
+                fig.add_shape(
+                    type="line",
+                    x0=X[i],
+                    x1=X[i],
+                    y0=0,
+                    y1=Y[i],
+                    line=dict(color="black", width=2),
+                )
+        fig.add_scatter(
+            x=X,
+            y=Y,
+            **scatter_params,
+            hovertemplate="ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
+        )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
 
 
 class ACFPACFPlot(ACFPlot):
-    # Properties.
-
-    @property
-    def _kind(self) -> Literal["acf_pacf"]:
-        return "acf_pacf"
-
-    # Styling Methods.
-
-    def _init_style(self) -> None:
-        self.init_style = {}
-        return None
-
-    # Draw.
-
-    def draw(
-        self,
-        **style_kwargs,
-    ) -> Figure:
-        """
-        Draws an ACF-PACF Time Series plot using the Plotly API.
-        """
-
-        return self.data, self.layout
+    ...
