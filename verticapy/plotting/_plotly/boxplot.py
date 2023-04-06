@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
+
+from verticapy._typing import ArrayLike
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -46,7 +48,13 @@ class BoxPlot(PlotlyBase):
         return None
 
     def _create_bar_info(
-        self, y_value, base, bar, labl_value, labl, orientation
+        self,
+        y_value: str,
+        base: Union[int, float],
+        bar: Union[int, float],
+        labl_value: str,
+        labl: str,
+        orientation: Literal["h", "v"],
     ) -> Figure:
         data = [[y_value, bar - base, base]]
         df = pd.DataFrame(data, columns=["Y", "bar", "base"])
@@ -59,7 +67,9 @@ class BoxPlot(PlotlyBase):
         ).update_traces(opacity=0.00, hovertemplate=f"{labl}:{labl_value}")
         return fig
 
-    def _create_dataframe_for_outliers(self, fliers, traces):
+    def _create_dataframe_for_outliers(
+        self, fliers: list, traces: ArrayLike
+    ) -> pd.DataFrame:
         a = []
         b = []
         c = []
@@ -92,7 +102,9 @@ class BoxPlot(PlotlyBase):
                 points_dic = dict(x=self.data["X"][2], boxpoints=False)
             fig.add_trace(
                 go.Box(
-                    name=self.layout["labels"][0], hovertemplate="%{x}", **points_dic,
+                    name=self.layout["labels"][0],
+                    hovertemplate="%{x}",
+                    **points_dic,
                 ),
             )
             fig.update_traces(
@@ -104,7 +116,9 @@ class BoxPlot(PlotlyBase):
                 orientation="h",
             )
             fig.update_layout(
-                yaxis=dict(showticklabels=False,),
+                yaxis=dict(
+                    showticklabels=False,
+                ),
                 xaxis=dict(title=self.layout["labels"][0]),
             )
             bins = [

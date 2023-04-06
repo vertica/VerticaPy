@@ -57,7 +57,10 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -91,6 +94,18 @@ def dummy_dist_vd():
     dummy = verticapy.vDataFrame(data_all)
     dummy["binary"].astype("int")
     yield dummy
+
+
+@pytest.fixture(scope="module")
+def acf_plot_result(load_plotly, amazon_vd):
+    return amazon_vd.acf(
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -338,7 +353,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -362,7 +383,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -1286,4 +1313,106 @@ class TestVDFOutliersPlot:
         # Act
         result = titanic_vd.outliers_plot(columns=["age", "fare"], height=custom_height)
         # Assert
+        assert result.layout["height"] == custom_height, "Custom height not working"
+
+
+class TestVDFACFPlot:
+    def test_properties_output_type_for(self, acf_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(acf_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, acf_plot_result):
+        # Arrange
+        test_title = "Lag"
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            acf_plot_result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_scatter_points_and_confidence(self, acf_plot_result):
+        # Arrange
+        total_elements = 3
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            len(acf_plot_result.data) == total_elements
+        ), "Some elements of plot are missing"
+
+    def test_properties_vertical_lines_for_custom_lag(self, load_plotly, amazon_vd):
+        # Arrange
+        lag_number = 24
+        # Act
+        result = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=lag_number - 1,
+            by=["state"],
+            unit="month",
+            method="spearman",
+        )
+        # Assert - checking if correct object created
+        assert (
+            len(result.layout["shapes"]) == lag_number
+        ), "Number of vertical lines inconsistent"
+
+    def test_properties_mode_lines(self, load_plotly, amazon_vd):
+        # Arrange
+        mode = "lines+markers"
+        # Act
+        result = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=12,
+            by=["state"],
+            unit="month",
+            method="spearman",
+            kind="line",
+        )
+        # Assert - checking if correct object created
+        assert result.data[-1]["mode"] == mode, "Number of vertical lines inconsistent"
+
+    def test_data_all_scatter_points(self, acf_plot_result):
+        # Arrange
+        lag_number = 13
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            len(acf_plot_result.data[0]["x"]) == lag_number
+        ), "Number of lag points inconsistent"
+
+    def test_additional_options_custom_width(self, load_plotly, amazon_vd):
+        # Arrange
+        custom_width = 700
+        # Act
+        result = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=12,
+            by=["state"],
+            unit="month",
+            method="spearman",
+            width=custom_width,
+        )
+        # Assert - checking if correct object created
+        assert result.layout["width"] == custom_width, "Custom width not working"
+
+    def test_additional_options_custom_height(self, load_plotly, amazon_vd):
+        # rrange
+        custom_height = 700
+        # Act
+        result = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=12,
+            by=["state"],
+            unit="month",
+            method="spearman",
+            height=custom_height,
+        )
+        # Assert - checking if correct object created
         assert result.layout["height"] == custom_height, "Custom height not working"

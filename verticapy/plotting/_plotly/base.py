@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from verticapy.plotting.base import PlottingBase
+from verticapy._typing import ArrayLike
 
 from plotly.graph_objs._figure import Figure
 import plotly.graph_objects as go
@@ -23,7 +26,9 @@ import numpy as np
 
 class PlotlyBase(PlottingBase):
     @staticmethod
-    def _convert_labels_and_get_counts(pivot_array):
+    def _convert_labels_and_get_counts(
+        pivot_array: ArrayLike,
+    ) -> tuple[list, list, list, list]:
         pivot_array = np.where(pivot_array == None, "NULL", pivot_array)
         pivot_array = pivot_array.astype("<U21")
         pivot_array = pivot_array.astype(str)
@@ -57,14 +62,14 @@ class PlotlyBase(PlottingBase):
         return ids, labels, parents, values
 
     @staticmethod
-    def _get_fig(fig) -> Figure:
+    def _get_fig(fig: Optional[Figure] = None) -> Figure:
         if fig:
             return fig
         else:
             return go.Figure()
 
     @staticmethod
-    def _convert_labels_for_heatmap(lst):
+    def _convert_labels_for_heatmap(lst: list) -> list:
         result = []
         for item in lst:
             # Remove the brackets and split the string by semicolon
@@ -76,7 +81,7 @@ class PlotlyBase(PlottingBase):
         return result
 
     @staticmethod
-    def _get_max_decimal_point(arr):
+    def _get_max_decimal_point(arr: ArrayLike) -> int:
         max_decimals = 0
         for i in range(arr.shape[0]):
             for j in range(arr.shape[1]):
