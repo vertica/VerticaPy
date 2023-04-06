@@ -65,11 +65,6 @@ def insert_into(
     -------
     int
         The number of rows ingested.
-
-    See Also
-    --------
-    read_pandas : Ingests a pandas DataFrame 
-                  into the Vertica database.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")

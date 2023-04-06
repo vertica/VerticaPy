@@ -88,13 +88,6 @@ def read_pandas(
     -------
     vDataFrame
         vDataFrame of the new relation.
-
-    See Also
-    --------
-    read_csv  : Ingests a  CSV file into the Vertica 
-                database.
-    read_json : Ingests a JSON file into the Vertica 
-                database.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")

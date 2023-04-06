@@ -130,10 +130,6 @@ def read_avro(
     -------
     vDataFrame
         The vDataFrame of the relation.
-
-    See Also
-    --------
-    read_json : Ingests a JSON file into the Vertica database.
     """
     return read_json(
         path=path,
