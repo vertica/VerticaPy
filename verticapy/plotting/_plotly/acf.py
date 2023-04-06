@@ -1,0 +1,145 @@
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+from typing import Literal, Optional
+
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.graph_objs._figure import Figure
+
+from verticapy.plotting._plotly.base import PlotlyBase
+
+
+class ACFPlot(PlotlyBase):
+    # Properties.
+
+    @property
+    def _category(self) -> Literal["plot"]:
+        return "plot"
+
+    @property
+    def _kind(self) -> Literal["acf"]:
+        return "acf"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {
+            "height": 400,
+            "width": 1100,
+            "xaxis_title": "Lag",
+            "yaxis_title": "Value",
+            "showlegend": False,
+            "xaxis": dict(
+                showline=True,
+                linewidth=1,
+                linecolor="black",
+                mirror=True,
+                zeroline=True,
+                dtick=1,
+                range=[-0.5, self.data["x"][-1] + 0.5],
+            ),
+            "yaxis": dict(
+                showline=True,
+                linewidth=1,
+                linecolor="black",
+                mirror=True,
+                zeroline=True,
+                tickmode="linear",
+                tick0=-0.2,
+                dtick=0.2,
+            ),
+        }
+        return None
+
+    # Draw.
+
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
+        """
+        Draws an ACF Time Series plot using the Plotly API.
+        """
+        X = self.data["x"]
+        Y = self.data["y"]
+        Z = self.data["z"]
+        fig = self._get_fig(fig)
+        fig.add_scatter(
+            x=np.arange(len(Y)),
+            y=Y,
+            mode="markers",
+            marker_color="orange",
+            marker_size=12,
+            hovertemplate="ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
+        )
+        for i in range(len(Y)):
+            fig.add_shape(
+                type="line",
+                x0=X[i],
+                x1=X[i],
+                y0=0,
+                y1=Y[i],
+                line=dict(color="black", width=2),
+            )
+        fig.add_scatter(
+            x=np.arange(len(Z)),
+            y=Z,
+            mode="lines",
+            marker_color="red",
+            fill="tonexty",
+            hoverinfo="none",
+        )
+        fig.add_scatter(
+            x=np.arange(len(Z)),
+            y=-Z,
+            mode="lines",
+            marker_color="red",
+            fill="tonexty",
+            hovertemplate="Confidence <br><b>lag</b>: %{x}<br><b>value</b>: %{customdata:.3f}<br><extra></extra>",
+            customdata=np.abs(-Z),
+        )
+
+        fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
+        return fig
+
+
+class ACFPACFPlot(ACFPlot):
+    # Properties.
+
+    @property
+    def _kind(self) -> Literal["acf_pacf"]:
+        return "acf_pacf"
+
+    # Styling Methods.
+
+    def _init_style(self) -> None:
+        self.init_style = {}
+        return None
+
+    # Draw.
+
+    def draw(
+        self,
+        **style_kwargs,
+    ) -> Figure:
+        """
+        Draws an ACF-PACF Time Series plot using the Plotly API.
+        """
+
+        return self.data, self.layout
