@@ -504,7 +504,7 @@ class CountVectorizer(VerticaModel):
         self.vocabulary_ = self._compute_vocabulary()
         return None
 
-    def _compute_stop_words(self):
+    def _compute_stop_words(self) -> np.ndarray:
         """
         Computes the CountVectorizer Stop Words. It will 
         affect the result to  the stop_words_ attribute.

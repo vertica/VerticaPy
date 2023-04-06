@@ -179,11 +179,11 @@ class vDataFrame(
         return "vDataFrame"
 
     @staticmethod
-    def _new_vdatacolumn(*args, **kwargs):
+    def _new_vdatacolumn(*args, **kwargs) -> "vDataColumn":
         return vDataColumn(*args, **kwargs)
 
     @classmethod
-    def _new_vdataframe(cls, *args, **kwargs):
+    def _new_vdataframe(cls, *args, **kwargs) -> "vDataFrame":
         return cls(*args, **kwargs)
 
     @save_verticapy_logs

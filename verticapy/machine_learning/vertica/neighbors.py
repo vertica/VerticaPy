@@ -348,7 +348,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         return False
 
-    def _check_cutoff(self, cutoff: Optional[PythonNumber] = None):
+    def _check_cutoff(
+        self, cutoff: Optional[PythonNumber] = None
+    ) -> Optional[PythonNumber]:
         if isinstance(cutoff, type(None)):
             return 1.0 / len(self.classes_)
         elif not (0 <= cutoff <= 1):
@@ -1032,7 +1034,7 @@ class KernelDensity(Regressor, Tree):
 
     # Plotting Methods.
 
-    def _compute_plot_params(self,):
+    def _compute_plot_params(self) -> tuple[dict, dict]:
         if len(self.X) == 1:
             if self._verticapy_store:
                 query = f"""

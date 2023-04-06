@@ -163,11 +163,6 @@ def pcsv(
     -------
     dict
         dictionary containing each column and its type.
-
-    See Also
-    --------
-    read_csv  : Ingests a CSV  file into the Vertica database.
-    read_json : Ingests a JSON file into the Vertica database.
     """
     if record_terminator == "\n":
         record_terminator = "\\n"
@@ -351,10 +346,6 @@ def read_csv(
     -------
     vDataFrame
     	The vDataFrame of the relation.
-
-    See Also
-    --------
-    read_json : Ingests a JSON file into the Vertica database.
 	"""
     if schema:
         temporary_local_table = False

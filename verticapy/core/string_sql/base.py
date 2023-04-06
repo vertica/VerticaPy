@@ -129,7 +129,7 @@ class StringSQL:
     def _distinct(self) -> "StringSQL":
         return StringSQL(f"DISTINCT ({self._init_transf})", self.category())
 
-    def _over(self, by: SQLColumns = [], order_by: SQLColumns = []):
+    def _over(self, by: SQLColumns = [], order_by: SQLColumns = []) -> "StringSQL":
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):

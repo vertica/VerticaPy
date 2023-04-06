@@ -23,6 +23,7 @@ from IPython.display import display, HTML
 from vertica_highcharts import Highstock, Highchart
 
 import verticapy._config.config as conf
+from verticapy._typing import PlottingObject
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy._utils._sql._sys import _executeSQL
@@ -80,7 +81,7 @@ CLASS_NAME_MAP = {
 }
 
 
-def get_kind_option(kind: Literal[tuple(CLASS_NAME_MAP)] = "auto"):
+def get_kind_option(kind: Literal[tuple(CLASS_NAME_MAP)] = "auto") -> dict:
     kind_option = {}
     other_params = {}
     if kind in [
@@ -113,7 +114,9 @@ def get_kind_option(kind: Literal[tuple(CLASS_NAME_MAP)] = "auto"):
     return {"misc_layout": kind_option, **other_params}
 
 
-def chartSQL(query: str, kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",) -> ...:
+def chartSQL(
+    query: str, kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",
+) -> PlottingObject:
     """
     Helper Function:
     Draws a custom High Chart graphic using the 

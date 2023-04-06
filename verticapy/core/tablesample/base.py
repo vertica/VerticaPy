@@ -304,7 +304,11 @@ class TableSample:
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    def category(self, column: str):
+    def category(
+        self, column: str
+    ) -> Literal[
+        "bool", "date", "float", "int", "undefined", "text",
+    ]:
         x = np.array(self[column])
         val = None
         for xi in x:
@@ -336,7 +340,7 @@ class TableSample:
                         self.values[elem][i] = float(self.values[elem][i])
         return self
 
-    def get_columns(self):
+    def get_columns(self) -> list[str]:
         """
         Returns the TableSample columns.
 
@@ -451,11 +455,6 @@ class TableSample:
         -------
         TableSample
             Result of the query.
-
-        See Also
-        --------
-        TableSample : Object in memory created for rendering 
-                      purposes.
         """
         query = clean_query(query)
         if conf.get_option("sql_on"):
@@ -604,13 +603,6 @@ class TableSample:
      	-------
      	pandas.DataFrame
      		pandas DataFrame of the TableSample.
-
-    	See Also
-    	--------
-    	TableSample.to_sql : Generates   the   SQL   query 
-                             associated to the TableSample.
-    	TableSample.to_vdf : Converts  the TableSample  to 
-                             vDataFrame.
 		"""
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
@@ -626,13 +618,6 @@ class TableSample:
         -------
         str
             SQL query associated to the TableSample.
-
-        See Also
-        --------
-        TableSample.to_pandas : Converts the TableSample to a 
-                                pandas DataFrame.
-        TableSample.to_vdf    : Converts the TableSample to a 
-                                vDataFrame.
         """
         sql = []
         n = len(self.values[list(self.values.keys())[0]])
@@ -654,13 +639,6 @@ class TableSample:
      	-------
      	vDataFrame
      		vDataFrame of the TableSample.
-
-    	See Also
-    	--------
-    	TableSample.to_pandas : Converts the TableSample to a 
-                                pandas DataFrame.
-    	TableSample.to_sql    : Generates   the   SQL   query 
-                                associated to the TableSample.
 		"""
         from verticapy.core.vdataframe.base import vDataFrame
 

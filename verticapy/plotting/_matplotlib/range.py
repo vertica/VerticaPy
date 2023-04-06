@@ -50,7 +50,7 @@ class RangeCurve(MatplotlibBase):
         }
         return None
 
-    def _get_final_color(self, style_kwargs: dict, idx: int):
+    def _get_final_color(self, style_kwargs: dict, idx: int) -> dict:
         kwargs = {"color": self.get_colors(d=style_kwargs, idx=idx)}
         return self._update_dict(kwargs, style_kwargs, idx)
 

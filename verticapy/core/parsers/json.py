@@ -52,13 +52,6 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     dict
         dictionary  containing  for each  column  its 
         SQL type.
-
-    See Also
-    --------
-    read_csv  : Ingests a CSV  file into the Vertica 
-                database.
-    read_json : Ingests a JSON file into the Vertica 
-                database.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     _executeSQL(
@@ -233,10 +226,6 @@ def read_json(
     -------
     vDataFrame
     	The vDataFrame of the relation.
-
-    See Also
-    --------
-    read_csv : Ingests a CSV file into the Vertica database.
 	"""
     if use_complex_dt:
         if new_name:

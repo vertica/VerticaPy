@@ -39,13 +39,11 @@ if conf._get_import_success("jupyter"):
 
 
 class vDFRead:
-    def __iter__(self):
+    def __iter__(self) -> tuple:
         columns = self.get_columns()
         return (col for col in columns)
 
-    def __getitem__(self, index):
-        from verticapy.core.vdataframe.base import vDataColumn
-
+    def __getitem__(self, index) -> Any:
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
                 "vDataFrame doesn't allow slicing having steps different than 1."
@@ -94,7 +92,7 @@ class vDFRead:
 
         elif isinstance(index, (str, StringSQL)):
             is_sql = False
-            if isinstance(index, vDataColumn):
+            if hasattr(index, "_object_type") and index._object_type == "vDataColumn":
                 index = index._alias
             elif isinstance(index, StringSQL):
                 index = str(index)
@@ -117,13 +115,13 @@ class vDFRead:
         else:
             return getattr(self, index)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self._repr_object().__repr__()
 
-    def _repr_html_(self, interactive: bool = False):
+    def _repr_html_(self, interactive: bool = False) -> str:
         return self._repr_object()._repr_html_(interactive)
 
-    def _repr_object(self, interactive: bool = False):
+    def _repr_object(self, interactive: bool = False) -> TableSample:
         if self._vars["sql_magic_result"]:
             self._vars["sql_magic_result"] = False
             query = extract_subquery(self._genSQL())
@@ -167,14 +165,14 @@ class vDFRead:
                 cols = colums[:s] + colums[-s:]
         return self.iloc(limit=max_rows, columns=cols)
 
-    def idisplay(self):
+    def idisplay(self) -> None:
         """
         This  method  displays  the interactive  table. It is used  when 
         you don't want to activate interactive table for all vDataFrames.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
-    def get_columns(self, exclude_columns: SQLColumns = []) -> list:
+    def get_columns(self, exclude_columns: SQLColumns = []) -> list[str]:
         """
         Returns the vDataFrame vDataColumns.
 
@@ -573,7 +571,7 @@ class vDCRead:
         )
 
     @save_verticapy_logs
-    def nsmallest(self, n: int = 10):
+    def nsmallest(self, n: int = 10) -> TableSample:
         """
         Returns the n smallest elements in the vDataColumn.
 
