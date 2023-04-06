@@ -19,7 +19,7 @@ from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, TimeInterval, SQLColumns
+from verticapy._typing import PythonNumber, PythonScalar, TimeInterval, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
