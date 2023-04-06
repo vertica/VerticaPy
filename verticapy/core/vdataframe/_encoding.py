@@ -25,6 +25,8 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+from verticapy.core.string_sql.base import StringSQL
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
