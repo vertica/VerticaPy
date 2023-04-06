@@ -122,8 +122,6 @@ def chartSQL(
     Draws a custom High Chart graphic using the 
     input SQL query.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     if kind in [
         "auto",
         "bar",
