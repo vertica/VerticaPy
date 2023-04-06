@@ -18,13 +18,15 @@ from typing import TYPE_CHECKING
 
 from verticapy._typing import SQLColumns
 
+from verticapy.core.tablesample.base import TableSample
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
 def aggregate_parallel_block(
     vdf: "vDataFrame", func: list, columns: SQLColumns, ncols_block: int, i: int
-):
+) -> TableSample:
     return vdf.aggregate(
         func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
     )
@@ -37,7 +39,7 @@ def describe_parallel_block(
     unique: bool,
     ncols_block: int,
     i: int,
-):
+) -> TableSample:
     return vdf.describe(
         method=method,
         columns=columns[i : i + ncols_block],

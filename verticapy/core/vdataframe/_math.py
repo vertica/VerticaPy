@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from typing import Literal, Union
+from typing import Literal, Union, TYPE_CHECKING
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
@@ -26,64 +26,62 @@ from verticapy.errors import MissingColumn, ParameterError, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
+
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.functions.conditional import decode
 
 
 class vDFMath:
-    def __abs__(self):
+    def __abs__(self) -> "vDataFrame":
         return self.copy().abs()
 
-    def __ceil__(self, n):
+    def __ceil__(self, n: int) -> "vDataFrame":
         vdf = self.copy()
         columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="ceil", x=n)
+        for col in columns:
+            if vdf[col].category() == "float":
+                vdf[col].apply_fun(func="ceil", x=n)
         return vdf
 
-    def __floor__(self, n):
+    def __floor__(self, n: int) -> "vDataFrame":
         vdf = self.copy()
         columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="floor", x=n)
+        for col in columns:
+            if vdf[col].category() == "float":
+                vdf[col].apply_fun(func="floor", x=n)
         return vdf
 
-    def __len__(self):
+    def __len__(self) -> int:
         return int(self.shape()[0])
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return self.shape()[0] > 0 and not (self.empty())
 
-    def __round__(self, n):
+    def __round__(self, n: int) -> "vDataFrame":
         vdf = self.copy()
         columns = vdf.numcol()
-        for elem in columns:
-            if vdf[elem].category() == "float":
-                vdf[elem].apply_fun(func="round", x=n)
+        for col in columns:
+            if vdf[col].category() == "float":
+                vdf[col].apply_fun(func="round", x=n)
         return vdf
 
     @save_verticapy_logs
-    def abs(self, columns: SQLColumns = []):
+    def abs(self, columns: SQLColumns = []) -> "vDataFrame":
         """
-    Applies the absolute value function to all input vDataColumns. 
+        Applies the absolute value function to all input vDataColumns. 
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will 
-        be used.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the vDataColumns names. If empty, all  numerical 
+            vDataColumns will be used.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.apply    : Applies functions to the input vDataColumns.
-    vDataFrame.applymap : Applies a function to all vDataColumns.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -105,85 +103,82 @@ class vDFMath:
         offset: int = 1,
         x_smoothing: float = 0.5,
         add_count: bool = True,
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by using an advanced analytical 
-    function on one or two specific vDataColumns.
+        Adds a new vDataColumn to the vDataFrame by using an advanced 
+        analytical function on one or two specific vDataColumns.
 
-    \u26A0 Warning : Some analytical functions can make the vDataFrame 
-                     structure more resource intensive. It is best to check 
-                     the structure of the vDataFrame using the 'current_relation' 
-                     method and to save it using the 'to_db' method with 
-                     the parameters 'inplace = True' and 
-                     'relation_type = table'
+        \u26A0 Warning : Some analytical  functions can make the vDataFrame 
+                         structure  more resource intensive. It is best  to 
+                         check  the structure of  the vDataFrame using  the 
+                         'current_relation' method and to save it using the 
+                         'to_db' method with the parameters 'inplace = True' 
+                         and 'relation_type = table'
 
-    Parameters
-    ----------
-    func: str
-        Function to apply.
-            aad          : average absolute deviation
-            beta         : Beta Coefficient between 2 vDataColumns
-            count        : number of non-missing elements
-            corr         : Pearson's correlation between 2 vDataColumns
-            cov          : covariance between 2 vDataColumns
-            dense_rank   : dense rank
-            ema          : exponential moving average
-            first_value  : first non null lead
-            iqr          : interquartile range
-            kurtosis     : kurtosis
-            jb           : Jarque-Bera index 
-            lead         : next element
-            lag          : previous element
-            last_value   : first non null lag
-            mad          : median absolute deviation
-            max          : maximum
-            mean         : average
-            median       : median
-            min          : minimum
-            mode         : most occurent element
-            q%           : q quantile (ex: 50% for the median)
-            pct_change   : ratio between the current value and the previous one
-            percent_rank : percent rank
-            prod         : product
-            range        : difference between the max and the min
-            rank         : rank
-            row_number   : row number
-            sem          : standard error of the mean
-            skewness     : skewness
-            sum          : sum
-            std          : standard deviation
-            unique       : cardinality (count distinct)
-            var          : variance
-                Other analytical functions could work if it is part of 
-                the DB version you are using.
-    columns: SQLColumns, optional
-        Input vDataColumns. It can be a list of one or two elements.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty a default name based on the other
-        parameters will be generated.
-    offset: int, optional
-        Lead/Lag offset if parameter 'func' is the function 'lead'/'lag'.
-    x_smoothing: float, optional
-        The smoothing parameter of the 'ema' if the function is 'ema'. It must be in [0;1]
-    add_count: bool, optional
-        If the function is the 'mode' and this parameter is True then another column will 
-        be added to the vDataFrame with the mode number of occurences.
+        Parameters
+        ----------
+        func: str
+            Function to apply.
+                aad          : average absolute deviation
+                beta         : Beta Coefficient between 2 vDataColumns
+                count        : number of non-missing elements
+                corr         : Pearson's correlation between 2 vDataColumns
+                cov          : covariance between 2 vDataColumns
+                dense_rank   : dense rank
+                ema          : exponential moving average
+                first_value  : first non null lead
+                iqr          : interquartile range
+                kurtosis     : kurtosis
+                jb           : Jarque-Bera index 
+                lead         : next element
+                lag          : previous element
+                last_value   : first non null lag
+                mad          : median absolute deviation
+                max          : maximum
+                mean         : average
+                median       : median
+                min          : minimum
+                mode         : most occurent element
+                q%           : q quantile (ex: 50% for the median)
+                pct_change   : ratio between the current value and the previous one
+                percent_rank : percent rank
+                prod         : product
+                range        : difference between the max and the min
+                rank         : rank
+                row_number   : row number
+                sem          : standard error of the mean
+                skewness     : skewness
+                sum          : sum
+                std          : standard deviation
+                unique       : cardinality (count distinct)
+                var          : variance
+            Other analytical functions could work if it is part of the DB 
+            version you are using.
+        columns: SQLColumns, optional
+            Input vDataColumns. It can be a list of one or two elements.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List of the vDataColumns to use to sort the data using asc order or
+            dictionary of all sorting methods. For example, to sort by "column1"
+            ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of  the new vDataColumn.  If empty a default name based on the 
+            other parameters will be generated.
+        offset: int, optional
+            Lead/Lag  offset  if parameter  'func' is the function  'lead'/'lag'.
+        x_smoothing: float, optional
+            The  smoothing parameter of the 'ema' if the  function is 'ema'. It 
+            must be in [0;1]
+        add_count: bool, optional
+            If the function is the 'mode' and this parameter is True then another 
+            column  will  be added  to the  vDataFrame  with  the mode number  of 
+            occurences.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.eval    : Evaluates a customized expression.
-    vDataFrame.rolling : Computes a customized moving window.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(by, str):
             by = [by]
@@ -464,28 +459,23 @@ class vDFMath:
         return self
 
     @save_verticapy_logs
-    def apply(self, func: dict):
+    def apply(self, func: dict) -> "vDataFrame":
         """
-    Applies each function of the dictionary to the input vDataColumns.
+        Applies each function of the dictionary to the input vDataColumns.
 
-    Parameters
-     ----------
-     func: dict
-        Dictionary of functions.
-        The dictionary must be like the following: 
-        {column1: func1, ..., columnk: funck}. Each function variable must
-        be composed of two flower brackets {}. For example to apply the 
-        function: x -> x^2 + 2 use "POWER({}, 2) + 2".
+        Parameters
+         ----------
+         func: dict
+            Dictionary of functions.
+            The dictionary must be like the following: 
+            {column1: func1, ..., columnk: funck}. Each function variable 
+            must be  composed of two  flower brackets {}. For example  to 
+            apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
 
-     Returns
-     -------
-     vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.applymap : Applies a function to all vDataColumns.
-    vDataFrame.eval     : Evaluates a customized expression.
+         Returns
+         -------
+         vDataFrame
+            self
         """
         func = self._format_colnames(func)
         for column in func:
@@ -493,27 +483,26 @@ class vDFMath:
         return self
 
     @save_verticapy_logs
-    def applymap(self, func: str, numeric_only: bool = True):
+    def applymap(self, func: str, numeric_only: bool = True) -> "vDataFrame":
         """
-    Applies a function to all vDataColumns. 
+        Applies a function to all vDataColumns. 
 
-    Parameters
-    ----------
-    func: str
-        The function.
-        The function variable must be composed of two flower brackets {}. 
-        For example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
-    numeric_only: bool, optional
-        If set to True, only the numerical columns will be used.
+        Parameters
+        ----------
+        func: str
+            The function.
+            The function variable must be composed of two flower 
+            brackets {}. 
+            For example to  apply the function: x -> x^2 + 2 use 
+            "POWER({}, 2) + 2".
+        numeric_only: bool, optional
+            If set to True,  only the  numerical columns will be 
+            used.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.apply : Applies functions to the input vDataColumns.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         function = {}
         columns = self.numcol() if numeric_only else self.get_columns()
@@ -523,78 +512,42 @@ class vDFMath:
             )
         return self.apply(function)
 
-    @save_verticapy_logs
-    def case_when(self, name: str, *args):
-        """
-    Creates a new feature by evaluating some conditions.
-    
-    Parameters
-    ----------
-    name: str
-        Name of the new feature.
-    args: object
-        Infinite Number of Expressions.
-        The expression generated will look like:
-        even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... ELSE args[n] END
-
-    Returns
-    -------
-    vDataFrame
-        self
-    
-    See Also
-    --------
-    vDataFrame[].decode : Encodes the vDataColumn using a User Defined Encoding.
-    vDataFrame.eval : Evaluates a customized expression.
-        """
-        from verticapy.sql.functions import case_when
-
-        return self.eval(name=name, expr=case_when(*args))
-
 
 class vDCMath:
-    def __len__(self):
+    def __len__(self) -> int:
         return int(self.count())
 
-    def __nonzero__(self):
+    def __nonzero__(self) -> bool:
         return self.count() > 0
 
     @save_verticapy_logs
-    def abs(self):
+    def abs(self) -> "vDataFrame":
         """
-    Applies the absolute value function to the input vDataColumn. 
+        Applies the absolute value function to the input vDataColumn. 
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         return self.apply(func="ABS({})")
 
     @save_verticapy_logs
-    def add(self, x: PythonNumber):
+    def add(self, x: PythonNumber) -> "vDataFrame":
         """
-    Adds the input element to the vDataColumn.
+        Adds the input element to the vDataColumn.
 
-    Parameters
-    ----------
-    x: float
-        If the vDataColumn type is date like (date, datetime ...), the parameter 'x' 
-        will represent the number of seconds, otherwise it will represent a number.
+        Parameters
+        ----------
+        x: float
+            If the vDataColumn type is date like (date, datetime ...), 
+            the parameter  'x' will represent the  number  of seconds, 
+            otherwise it will represent a number.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, {x}, {{}})")
@@ -602,29 +555,25 @@ class vDCMath:
             return self.apply(func=f"{{}} + ({x})")
 
     @save_verticapy_logs
-    def apply(self, func: Union[str, StringSQL], copy_name: str = ""):
+    def apply(self, func: Union[str, StringSQL], copy_name: str = "") -> "vDataFrame":
         """
-    Applies a function to the vDataColumn.
+        Applies a function to the vDataColumn.
 
-    Parameters
-    ----------
-    func: str,
-        Function in pure SQL used to transform the vDataColumn.
-        The function variable must be composed of two flower brackets {}. For 
-        example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
-    copy_name: str, optional
-        If not empty, a copy will be created using the input Name.
+        Parameters
+        ----------
+        func: str,
+            Function in pure SQL used to transform the vDataColumn.
+            The  function variable must be composed of two  flower 
+            brackets {}. For example to apply the function: 
+            x -> x^2 + 2 use "POWER({}, 2) + 2".
+        copy_name: str, optional
+            If  not empty, a copy will be created using the  input 
+            Name.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.apply    : Applies functions to the input vDataColumns.
-    vDataFrame.applymap : Applies a function to all the vDataColumns.
-    vDataFrame.eval     : Evaluates a customized expression.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if isinstance(func, StringSQL):
             func = str(func)
@@ -717,59 +666,58 @@ class vDCMath:
             "tanh",
         ],
         x: PythonScalar = 2,
-    ):
+    ) -> "vDataFrame":
         """
-    Applies a default function to the vDataColumn.
+        Applies a default function to the vDataColumn.
 
-    Parameters
-    ----------
-    func: str
-        Function to use to transform the vDataColumn.
-            abs          : absolute value
-            acos         : trigonometric inverse cosine
-            asin         : trigonometric inverse sine
-            atan         : trigonometric inverse tangent
-            avg / mean   : average
-            cbrt         : cube root
-            ceil         : value up to the next whole number
-            contain      : checks if 'x' is in the collection
-            count        : number of non-null elements
-            cos          : trigonometric cosine
-            cosh         : hyperbolic cosine
-            cot          : trigonometric cotangent
-            dim          : dimension (only for arrays)
-            exp          : exponential function
-            find         : returns the ordinal position of a specified element 
-                           in an array (only for arrays)
-            floor        : value down to the next whole number
-            len / length : length
-            ln           : natural logarithm
-            log          : logarithm
-            log10        : base 10 logarithm
-            max          : maximum
-            min          : minimum
-            mod          : remainder of a division operation
-            pow          : number raised to the power of another number
-            round        : rounds a value to a specified number of decimal places
-            sign         : arithmetic sign
-            sin          : trigonometric sine
-            sinh         : hyperbolic sine
-            sqrt         : arithmetic square root
-            sum          : sum
-            tan          : trigonometric tangent
-            tanh         : hyperbolic tangent
-    x: PythonScalar, optional
-        If the function has two arguments (example, power or mod), 'x' represents 
-        the second argument.
+        Parameters
+        ----------
+        func: str
+            Function to use to transform the vDataColumn.
+                abs          : absolute value
+                acos         : trigonometric inverse cosine
+                asin         : trigonometric inverse sine
+                atan         : trigonometric inverse tangent
+                avg / mean   : average
+                cbrt         : cube root
+                ceil         : value up to the next whole number
+                contain      : checks if 'x' is in the collection
+                count        : number of non-null elements
+                cos          : trigonometric cosine
+                cosh         : hyperbolic cosine
+                cot          : trigonometric cotangent
+                dim          : dimension (only for arrays)
+                exp          : exponential function
+                find         : returns the ordinal position of a 
+                               specified element in an array (only 
+                               for arrays)
+                floor        : value down to the next whole number
+                len / length : length
+                ln           : natural logarithm
+                log          : logarithm
+                log10        : base 10 logarithm
+                max          : maximum
+                min          : minimum
+                mod          : remainder of a division operation
+                pow          : number raised to the power of another 
+                               number
+                round        : rounds a value to a specified number of 
+                               decimal places
+                sign         : arithmetic sign
+                sin          : trigonometric sine
+                sinh         : hyperbolic sine
+                sqrt         : arithmetic square root
+                sum          : sum
+                tan          : trigonometric tangent
+                tanh         : hyperbolic tangent
+        x: PythonScalar, optional
+            If the function has two arguments (example, power or mod), 
+            'x' represents the second argument.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if func == "mean":
             func = "avg"
@@ -805,88 +753,56 @@ class vDCMath:
         return self.apply(func=expr)
 
     @save_verticapy_logs
-    def date_part(self, field: str):
+    def date_part(self, field: str) -> "vDataFrame":
         """
-    Extracts a specific TS field from the vDataColumn (only if the vDataColumn type is 
-    date like). The vDataColumn will be transformed.
+        Extracts a specific TS field  from the vDataColumn (only if 
+        the vDataColumn type is date like). The vDataColumn will be 
+        transformed.
 
-    Parameters
-    ----------
-    field: str
-        The field to extract. It must be one of the following: 
-        CENTURY / DAY / DECADE / DOQ / DOW / DOY / EPOCH / HOUR / ISODOW / ISOWEEK /
-        ISOYEAR / MICROSECONDS / MILLENNIUM / MILLISECONDS / MINUTE / MONTH / QUARTER / 
-        SECOND / TIME ZONE / TIMEZONE_HOUR / TIMEZONE_MINUTE / WEEK / YEAR
+        Parameters
+        ----------
+        field: str
+            The field to extract. It must be one of the following: 
+            CENTURY / DAY / DECADE / DOQ  / DOW / DOY / EPOCH / HOUR 
+            / ISODOW / ISOWEEK / ISOYEAR / MICROSECONDS / MILLENNIUM 
+            / MILLISECONDS  /  MINUTE  /  MONTH  / QUARTER /  SECOND 
+            / TIME ZONE  /  TIMEZONE_HOUR /  TIMEZONE_MINUTE /  WEEK 
+            / YEAR
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].slice : Slices the vDataColumn using a time series rule.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         return self.apply(func=f"DATE_PART('{field}', {{}})")
 
     @save_verticapy_logs
-    def decode(self, *args):
+    def div(self, x: PythonNumber) -> "vDataFrame":
         """
-    Encodes the vDataColumn using a user-defined encoding.
+        Divides the vDataColumn by the input element.
 
-    Parameters
-    ----------
-    args: object
-        Any amount of expressions.
-        The expression generated will look like:
-        even: CASE ... WHEN vDataColumn = args[2 * i] THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN vDataColumn = args[2 * i] THEN args[2 * i + 1] ... ELSE args[n] END
+        Parameters
+        ----------
+        x: PythonNumber
+            Input number.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.case_when      : Creates a new feature by evaluating some conditions.
-    vDataFrame[].discretize   : Discretizes the vDataColumn.
-    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
-    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
-    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
-        """
-        return self.apply(func=decode(StringSQL("{}"), *args))
-
-    @save_verticapy_logs
-    def div(self, x: PythonNumber):
-        """
-    Divides the vDataColumn by the input element.
-
-    Parameters
-    ----------
-    x: PythonNumber
-        Input number.
-
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func=f"{{}} / ({x})")
 
-    def get_len(self):
+    def get_len(self) -> "vDataColumn":
         """
-    Returns a new vDataColumn that represents the length of each element.
+        Returns a new vDataColumn that represents the length of 
+        each element.
 
-    Returns
-    -------
-    vDataColumn
-        vDataColumn that includes the length of each element.
+        Returns
+        -------
+        vDataColumn
+            vDataColumn that includes the length of each element.
         """
         cat = self.category()
         if cat == "vmap":
@@ -907,49 +823,45 @@ class vDCMath:
         return vcol
 
     @save_verticapy_logs
-    def round(self, n: int):
+    def round(self, n: int) -> "vDataFrame":
         """
-    Rounds the vDataColumn by keeping only the input number of digits after the comma.
+        Rounds the vDataColumn by keeping only the input number 
+        of digits after the comma.
 
-    Parameters
-    ----------
-    n: int
-        Number of digits to keep after the comma.
+        Parameters
+        ----------
+        n: int
+            Number of digits to keep after the comma.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         return self.apply(func=f"ROUND({{}}, {n})")
 
     @save_verticapy_logs
-    def slice(self, length: int, unit: str = "second", start: bool = True):
+    def slice(
+        self, length: int, unit: str = "second", start: bool = True
+    ) -> "vDataFrame":
         """
-    Slices and transforms the vDataColumn using a time series rule.
+        Slices and transforms the vDataColumn using a time series 
+        rule.
 
-    Parameters
-    ----------
-    length: int
-        Slice size.
-    unit: str, optional
-        Slice size unit. For example, it can be 'minute' 'hour'...
-    start: bool, optional
-        If set to True, the record will be sliced using the floor of the slicing
-        instead of the ceiling.
+        Parameters
+        ----------
+        length: int
+            Slice size.
+        unit: str, optional
+            Slice size unit. For example, it can be 'minute' 'hour'...
+        start: bool, optional
+            If set to True, the record will be sliced using the floor 
+            of the slicing instead of the ceiling.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].date_part : Extracts a specific TS field from the vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         start_or_end = "START" if (start) else "END"
         unit = unit.upper()
@@ -958,24 +870,21 @@ class vDCMath:
         )
 
     @save_verticapy_logs
-    def sub(self, x: PythonNumber):
+    def sub(self, x: PythonNumber) -> "vDataFrame":
         """
-    Subtracts the input element from the vDataColumn.
+        Subtracts the input element from the vDataColumn.
 
-    Parameters
-    ----------
-    x: PythonNumber
-        If the vDataColumn type is date like (date, datetime ...), the parameter 'x' 
-        will represent the number of seconds, otherwise it will represent a number.
+        Parameters
+        ----------
+        x: PythonNumber
+            If the vDataColumn type is date like (date, datetime ...), 
+            the parameter 'x' will  represent  the number of seconds, 
+            otherwise it will represent a number.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, -({x}), {{}})")

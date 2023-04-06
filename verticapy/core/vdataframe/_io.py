@@ -24,7 +24,7 @@ import pandas as pd
 pickle.DEFAULT_PROTOCOL = 4
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLExpression
+from verticapy._typing import SQLColumns, SQLExpression, TYPE_CHECKING
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -34,60 +34,55 @@ from verticapy.errors import ParameterError, ParsingError
 
 from verticapy.core.tablesample.base import TableSample
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 if conf._get_import_success("geopandas"):
     from geopandas import GeoDataFrame
     from shapely import wkt
 
 
 class vDFInOut:
-    def copy(self):
+    def copy(self) -> "vDataFrame":
         """
-    Returns a deep copy of the vDataFrame.
+        Returns a deep copy of the vDataFrame.
 
-    Returns
-    -------
-    vDataFrame
-        The copy of the vDataFrame.
+        Returns
+        -------
+        vDataFrame
+            The copy of the vDataFrame.
         """
         return copy.deepcopy(self)
 
     @save_verticapy_logs
-    def load(self, offset: int = -1):
+    def load(self, offset: int = -1) -> "vDataFrame":
         """
-    Loads a previous structure of the vDataFrame. 
+        Loads a previous structure of the vDataFrame. 
 
-    Parameters
-    ----------
-    offset: int, optional
-        offset of the saving. Example: -1 to load the last saving.
+        Parameters
+        ----------
+        offset: int, optional
+            offset of the saving. Example: -1 to load the last saving.
 
-    Returns
-    -------
-    vDataFrame
-        vDataFrame of the loading.
-
-    See Also
-    --------
-    vDataFrame.save : Saves the current vDataFrame structure.
+        Returns
+        -------
+        vDataFrame
+            vDataFrame of the loading.
         """
         save = self._vars["saving"][offset]
         vdf = pickle.loads(save)
         return vdf
 
     @save_verticapy_logs
-    def save(self):
+    def save(self) -> "vDataFrame":
         """
-    Saves the current structure of the vDataFrame. 
-    This function is useful for loading previous transformations.
+        Saves the current structure of the vDataFrame. 
+        This function is useful for loading previous transformations.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.load : Loads a saving.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         vdf = self.copy()
         self._vars["saving"] += [pickle.dumps(vdf)]
@@ -105,49 +100,48 @@ class vDFInOut:
         new_header: list = [],
         order_by: Union[str, list, dict] = [],
         n_files: int = 1,
-    ):
+    ) -> Union[None, str, list[str]]:
         """
-    Creates a CSV file or folder of CSV files of the current vDataFrame 
-    relation.
+        Creates  a CSV  file  or  folder of CSV files of  the  current 
+        vDataFrame relation.
 
-    Parameters
-    ----------
-    path: str, optional
-        File/Folder system path. Be careful: if a CSV file with the same name 
-        exists, it will over-write it.
-    sep: str, optional
-        Column separator.
-    na_rep: str, optional
-        Missing values representation.
-    quotechar: str, optional
-        Char which will enclose the str values.
-    usecols: SQLColumns, optional
-        vDataColumns to select from the final vDataFrame relation. If empty, all
-        vDataColumns will be selected.
-    header: bool, optional
-        If set to False, no header will be written in the CSV file.
-    new_header: list, optional
-        List of columns to use to replace vDataColumns name in the CSV.
-    order_by: str / dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    n_files: int, optional
-        Integer greater than or equal to 1, the number of CSV files to generate.
-        If n_files is greater than 1, you must also set order_by to sort the data,
-        ideally with a column with unique values (e.g. ID).
-        Greater values of n_files decrease memory usage, but increase execution 
-        time.
+        Parameters
+        ----------
+        path: str, optional
+            File/Folder system path.  Be  careful:  if a CSV file with 
+            the same name exists, it will over-write it.
+        sep: str, optional
+            Column separator.
+        na_rep: str, optional
+            Missing values representation.
+        quotechar: str, optional
+            Char which will enclose the str values.
+        usecols: SQLColumns, optional
+            vDataColumns to select  from the final vDataFrame relation. 
+            If empty, all vDataColumns will be selected.
+        header: bool, optional
+            If set to False, no header will be written in the CSV file.
+        new_header: list, optional
+            List of columns to use to replace vDataColumns name in the 
+            CSV.
+        order_by: str / dict / list, optional
+            List of the vDataColumns to use to sort  the data using asc 
+            order or dictionary of all sorting methods. For example, to 
+            sort by "column1" ASC and "column2" DESC, write:
+            {"column1": "asc", "column2": "desc"}
+        n_files: int, optional
+            Integer  greater than or equal to 1,  the number of CSV files 
+            to generate.  If n_files is greater than 1, you must also set 
+            order_by to sort the data,  ideally with a column with unique 
+            values (e.g. ID).
+            Greater values of n_files decrease memory usage, but increase 
+            execution time.
 
-    Returns
-    -------
-    str or list
-        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
-
-    See Also
-    --------
-    vDataFrame.to_db   : Saves the vDataFrame current relation to the Vertica database.
-    vDataFrame.to_json : Creates a JSON file of the current vDataFrame relation.
+        Returns
+        -------
+        str or list
+            JSON str or list (n_files>1) if 'path' is not defined; 
+            otherwise, nothing.
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -242,6 +236,7 @@ class vDFInOut:
                 return csv_files[0]
             else:
                 return csv_files
+        return None
 
     @save_verticapy_logs
     def to_db(
@@ -254,46 +249,44 @@ class vDFInOut:
         inplace: bool = False,
         db_filter: SQLExpression = "",
         nb_split: int = 0,
-    ):
+    ) -> "vDataFrame":
         """
-    Saves the vDataFrame current relation to the Vertica database.
+        Saves the vDataFrame current relation to the Vertica database.
 
-    Parameters
-    ----------
-    name: str
-        Name of the relation. To save the relation in a specific schema you can
-        write '"my_schema"."my_relation"'. Use double quotes '"' to avoid errors
-        due to special characters.
-    usecols: SQLColumns, optional
-        vDataColumns to select from the final vDataFrame relation. If empty, all
-        vDataColumns will be selected.
-    relation_type: str, optional
-        Type of the relation.
-            view      : View
-            table     : Table
-            temporary : Temporary Table
-            local     : Local Temporary Table
-            insert    : Inserts into an existing table
-    inplace: bool, optional
-        If set to True, the vDataFrame will be replaced using the new relation.
-    db_filter: SQLExpression, optional
-        Filter used before creating the relation in the DB. It can be a list of
-        conditions or an expression. This parameter is very useful to create train 
-        and test sets on TS.
-    nb_split: int, optional
-        If this parameter is greater than 0, it will add to the final relation a
-        new column '_verticapy_split_' which will contain values in 
-        [0;nb_split - 1] where each category will represent 1 / nb_split
-        of the entire distribution. 
+        Parameters
+        ----------
+        name: str
+            Name of the relation.  To save the relation in a specific 
+            schema you can write '"my_schema"."my_relation"'. 
+            Use  double  quotes '"' to  avoid errors due  to  special 
+            characters.
+        usecols: SQLColumns, optional
+            vDataColumns to select from the final vDataFrame relation. 
+            If empty, all vDataColumns will be selected.
+        relation_type: str, optional
+            Type of the relation.
+                view      : View
+                table     : Table
+                temporary : Temporary Table
+                local     : Local Temporary Table
+                insert    : Inserts into an existing table
+        inplace: bool, optional
+            If set to True, the vDataFrame will be replaced using the 
+            new relation.
+        db_filter: SQLExpression, optional
+            Filter used before  creating the relation in the DB. It can 
+            be a list of conditions or an expression. This parameter is 
+            very useful to create train and test sets on TS.
+        nb_split: int, optional
+            If this parameter is greater than 0, it will add to the final 
+            relation a new column '_verticapy_split_'  which will contain 
+            values in [0;nb_split - 1] where each category will represent 
+            1 / nb_split of the entire distribution. 
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(usecols, str):
             usecols = [usecols]
@@ -382,22 +375,24 @@ class vDFInOut:
         return self
 
     @save_verticapy_logs
-    def to_geopandas(self, geometry: str):
+    def to_geopandas(self, geometry: str) -> "GeoDataFrame":
         """
-    Converts the vDataFrame to a Geopandas DataFrame.
+        Converts the vDataFrame to a Geopandas DataFrame.
 
-    \u26A0 Warning : The data will be loaded in memory.
+        \u26A0 Warning : The data will be loaded in memory.
 
-    Parameters
-    ----------
-    geometry: str
-        Geometry object used to create the GeoDataFrame.
-        It can also be a Geography object but it will be casted to Geometry.
+        Parameters
+        ----------
+        geometry: str
+            Geometry object used to create the GeoDataFrame.
+            It can also be a Geography object but it will be 
+            casted to Geometry.
 
-    Returns
-    -------
-    geopandas.GeoDataFrame
-        The geopandas.GeoDataFrame of the current vDataFrame relation.
+        Returns
+        -------
+        geopandas.GeoDataFrame
+            The geopandas.GeoDataFrame of the current vDataFrame 
+            relation.
         """
         if not (conf._get_import_success("geopandas")):
             raise ImportError(
@@ -432,38 +427,37 @@ class vDFInOut:
         usecols: SQLColumns = [],
         order_by: Union[str, list, dict] = [],
         n_files: int = 1,
-    ):
+    ) -> Union[None, str, list[str]]:
         """
-    Creates a JSON file or folder of JSON files of the current vDataFrame 
-    relation.
+        Creates  a JSON file or folder of JSON files of the  current 
+        vDataFrame relation.
 
-    Parameters
-    ----------
-    path: str, optional
-        File/Folder system path. Be careful: if a JSON file with the same name 
-        exists, it will over-write it.
-    usecols: SQLColumns, optional
-        vDataColumns to select from the final vDataFrame relation. If empty, all
-        vDataColumns will be selected.
-    order_by: str / dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    n_files: int, optional
-        Integer greater than or equal to 1, the number of CSV files to generate.
-        If n_files is greater than 1, you must also set order_by to sort the data,
-        ideally with a column with unique values (e.g. ID).
-        Greater values of n_files decrease memory usage, but increase execution time.
+        Parameters
+        ----------
+        path: str, optional
+            File/Folder system path. Be careful: if a JSON file with 
+            the same name exists, it will over-write it.
+        usecols: SQLColumns, optional
+            vDataColumns to select from the final vDataFrame relation. 
+            If empty, all vDataColumns will be selected.
+        order_by: str / dict / list, optional
+            List of the vDataColumns to use to sort the data using asc 
+            order or dictionary  of all sorting  methods.  For example, 
+            to   sort   by   "column1"    ASC   and   "column2"   DESC, 
+            write: {"column1": "asc", "column2": "desc"}
+        n_files: int, optional
+            Integer  greater than or equal  to 1, the number of CSV files 
+            to generate.  If n_files is greater than 1, you must also set 
+            order_by to sort  the data, ideally with a column with unique 
+            values (e.g. ID).
+            Greater values of n_files decrease memory usage, but increase 
+            execution time.
 
-    Returns
-    -------
-    str or list
-        JSON str or list (n_files>1) if 'path' is not defined; otherwise, nothing
-
-    See Also
-    --------
-    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
-    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica database.
+        Returns
+        -------
+        str or list
+            JSON str or list (n_files>1) if 'path' is not defined; 
+            otherwise, nothing.
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -550,18 +544,18 @@ class vDFInOut:
                 return json_files
 
     @save_verticapy_logs
-    def to_list(self):
+    def to_list(self) -> list:
         """
-    Converts the vDataFrame to a Python list.
+        Converts the vDataFrame to a Python list.
 
-    \u26A0 Warning : The data will be loaded in memory.
+        \u26A0 Warning : The data will be loaded in memory.
 
-    Returns
-    -------
-    List
-        The list of the current vDataFrame relation.
+        Returns
+        -------
+        List
+            The list of the current vDataFrame relation.
         """
-        result = _executeSQL(
+        res = _executeSQL(
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_list')*/ * 
@@ -573,40 +567,40 @@ class vDFInOut:
             symbol=self._vars["symbol"],
         )
         final_result = []
-        for elem in result:
+        for row in res:
             final_result += [
                 [
                     float(item) if isinstance(item, decimal.Decimal) else item
-                    for item in elem
+                    for item in row
                 ]
             ]
         return final_result
 
     @save_verticapy_logs
-    def to_numpy(self):
+    def to_numpy(self) -> np.ndarray:
         """
-    Converts the vDataFrame to a Numpy array.
+        Converts the vDataFrame to a Numpy array.
 
-    \u26A0 Warning : The data will be loaded in memory.
+        \u26A0 Warning : The data will be loaded in memory.
 
-    Returns
-    -------
-    numpy.array
-        The numpy array of the current vDataFrame relation.
+        Returns
+        -------
+        numpy.array
+            The numpy array of the current vDataFrame relation.
         """
         return np.array(self.to_list())
 
     @save_verticapy_logs
-    def to_pandas(self):
+    def to_pandas(self) -> pd.DataFrame:
         """
-    Converts the vDataFrame to a pandas DataFrame.
+        Converts the vDataFrame to a pandas DataFrame.
 
-    \u26A0 Warning : The data will be loaded in memory.
+        \u26A0 Warning : The data will be loaded in memory.
 
-    Returns
-    -------
-    pandas.DataFrame
-        The pandas.DataFrame of the current vDataFrame relation.
+        Returns
+        -------
+        pandas.DataFrame
+            The pandas.DataFrame of the current vDataFrame relation.
         """
         data = _executeSQL(
             query=f"""
@@ -637,76 +631,79 @@ class vDFInOut:
         int96AsTimestamp: bool = True,
         by: SQLColumns = [],
         order_by: Union[str, list, dict] = [],
-    ):
+    ) -> TableSample:
         """
-    Exports a table, columns from a table, or query results to Parquet files.
-    You can partition data instead of or in addition to exporting the column data, 
-    which enables partition pruning and improves query performance. 
+        Exports  a  table, columns from a  table, or query results  to 
+        Parquet  files.  You  can  partition  data  instead  of or  in 
+        addition to exporting the column data, which enables partition 
+        pruning and improves query performance. 
 
-    Parameters
-    ----------
-    directory: str
-        The destination directory for the output file(s). The directory must not 
-        already exist, and the current user must have write permissions on it. 
-        The destination can be one of the following file systems: 
-            HDFS File System
-            S3 Object Store
-            Google Cloud Storage (GCS) Object Store
-            Azure Blob Storage Object Store
-            Linux file system (either an NFS mount or local storage on each node)
-    compression: str, optional
-        Column compression type, one the following:        
-            Snappy (default)
-            gzip
-            Brotli
-            zstd
-            Uncompressed
-    rowGroupSizeMB: int, optional
-        The uncompressed size, in MB, of exported row groups, an integer value in the range
-        [1, fileSizeMB]. If fileSizeMB is 0, the uncompressed size is unlimited.
-        Row groups in the exported files are smaller than this value because Parquet 
-        files are compressed on write. 
-        For best performance when exporting to HDFS, set this rowGroupSizeMB to be 
-        smaller than the HDFS block size.
-    fileSizeMB: int, optional
-        The maximum file size of a single output file. This fileSizeMB is a hint/ballpark 
-        and not a hard limit. 
-        A value of 0 indicates that the size of a single output file is unlimited.  
-        This parameter affects the size of individual output files, not the total output size. 
-        For smaller values, Vertica divides the output into more files; all data is still exported.
-    fileMode: int, optional
-        HDFS only: the permission to apply to all exported files. You can specify 
-        the value in octal (such as 755) or symbolic (such as rwxr-xr-x) modes. 
-        The value must be a string even when using octal mode.
-        Valid octal values are in the range [0,1777]. For details, see HDFS Permissions in the 
-        Apache Hadoop documentation.
-        If the destination is not HDFS, this parameter has no effect.
-    dirMode: int, optional
-        HDFS only: the permission to apply to all exported directories. Values follow 
-        the same rules as those for fileMode. Additionally, you must give the Vertica HDFS user full 
-        permissions: at least rwx------ (symbolic) or 700 (octal).
-        If the destination is not HDFS, this parameter has no effect.
-    int96AsTimestamp: bool, optional
-        Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
-        physical type (False).
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    order_by: str / dict / list, optional
-        If specified as a list: the list of vDataColumns useed to sort the data in ascending order.
-        If specified as a dictionary: a dictionary of all sorting methods.
-        For example, to sort by "column1" ASC and "column2" DESC: {"column1": "asc", "column2": "desc"}
+        Parameters
+        ----------
+        directory: str
+            The  destination  directory  for  the output file(s).  The 
+            directory must not already exist, and the current user must 
+            have write permissions on it. 
+            The destination can be one of the following file systems: 
+                HDFS File System
+                S3 Object Store
+                Google Cloud Storage (GCS) Object Store
+                Azure Blob Storage Object Store
+                Linux file system (either an NFS mount or local storage 
+                on each node)
+        compression: str, optional
+            Column compression type, one the following:        
+                Snappy (default)
+                gzip
+                Brotli
+                zstd
+                Uncompressed
+        rowGroupSizeMB: int, optional
+            The  uncompressed size,  in MB, of exported  row  groups, an 
+            integer value in the range [1, fileSizeMB]. If fileSizeMB is 
+            0, the uncompressed size is unlimited.
+            Row groups in the exported files are smaller than this value 
+            because Parquet files are compressed on write. 
+            For best performance when exporting to HDFS, set this 
+            rowGroupSizeMB to be smaller than the HDFS block size.
+        fileSizeMB: int, optional
+            The maximum file size of a single output file. This fileSizeMB 
+            is a hint/ballpark and not a hard limit. 
+            A value of 0 indicates that the size of a single output file is 
+            unlimited. This parameter affects the size of individual output 
+            files, not the total output size. 
+            For smaller values, Vertica divides the output into more files; 
+            all data is still exported.
+        fileMode: int, optional
+            HDFS only: the permission to apply to all exported files.  You 
+            can specify the value in octal (such as 755) or symbolic (such 
+            as rwxr-xr-x) modes. 
+            The value must be a string even when using octal mode.
+            Valid octal values are in the range [0,1777]. For details, see 
+            HDFS Permissions in the Apache Hadoop documentation.
+            If the destination is not HDFS, this parameter has no effect.
+        dirMode: int, optional
+            HDFS only:  the permission to apply to all exported  directories. 
+            Values follow the same rules as those for fileMode. Additionally, 
+            you must give the Vertica HDFS user full 
+            permissions: at least rwx------ (symbolic) or 700 (octal).
+            If the destination is not HDFS, this parameter has no effect.
+        int96AsTimestamp: bool, optional
+            Boolean, specifies whether to export timestamps as int96 physical 
+            type (True) or int64 physical type (False).
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        order_by: str / dict / list, optional
+            If specified as a list: the list of vDataColumns useed to sort the 
+            data in ascending order.
+            If specified as a dictionary:  a dictionary of all sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC: 
+            {"column1": "asc", "column2": "desc"}
 
-    Returns
-    -------
-    TableSample
-        An object containing the number of rows exported. For details, 
-        see utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
-    vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
-    vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
+        Returns
+        -------
+        TableSample
+            An object containing the number of rows exported.
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -738,20 +735,21 @@ class vDFInOut:
         return result
 
     @save_verticapy_logs
-    def to_pickle(self, name: str):
+    def to_pickle(self, name: str) -> "vDataFrame":
         """
-    Saves the vDataFrame to a Python pickle file.
+        Saves the vDataFrame to a Python pickle file.
 
-    Parameters
-    ----------
-    name: str
-        Name of the file. Be careful: if a file with the same name exists, it 
-        will over-write it.
+        Parameters
+        ----------
+        name: str
+            Name of the file. 
+            Be careful: if a file with the same name 
+            exists, it will over-write it.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         pickle.dump(self, open(name, "wb"))
         return self
@@ -771,31 +769,36 @@ class vDFInOut:
             "Multipolygon",
             "Multilinestring",
         ] = "Polygon",
-    ):
+    ) -> "vDataFrame":
         """
-    Creates a SHP file of the current vDataFrame relation. For the moment, 
-    files will be exported in the Vertica server.
+        Creates a SHP file of the current vDataFrame relation. 
+        For the moment, files will be exported in the Vertica 
+        server.
 
-    Parameters
-    ----------
-    name: str
-        Name of the SHP file.
-    path: str
-        Absolute path where the SHP file will be created.
-    usecols: list, optional
-        vDataColumns to select from the final vDataFrame relation. If empty, all
-        vDataColumns will be selected.
-    overwrite: bool, optional
-        If set to True, the function will overwrite the index if an index exists.
-    shape: str, optional
-        Must be one of the following spatial classes: 
-            Point, Polygon, Linestring, Multipoint, Multipolygon, Multilinestring. 
-        Polygons and Multipolygons always have a clockwise orientation.
+        Parameters
+        ----------
+        name: str
+            Name of the SHP file.
+        path: str
+            Absolute path where the SHP file will be created.
+        usecols: list, optional
+            vDataColumns  to select from the final  vDataFrame 
+            relation.  If  empty,  all  vDataColumns  will  be 
+            selected.
+        overwrite: bool, optional
+            If set to True,  the  function will  overwrite the 
+            index if an index exists.
+        shape: str, optional
+            Must be one of the following spatial classes: 
+                Point, Polygon, Linestring, Multipoint, 
+                Multipolygon, Multilinestring. 
+            Polygons and Multipolygons always have a clockwise 
+            orientation.
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(usecols, str):
             usecols = [usecols]

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Union
+from typing import Literal, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
@@ -25,10 +25,40 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
+from verticapy.core.string_sql.base import StringSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 
 
 class vDFEncode:
+    @save_verticapy_logs
+    def case_when(self, name: str, *args) -> "vDataFrame":
+        """
+        Creates a new feature by evaluating some conditions.
+        
+        Parameters
+        ----------
+        name: str
+            Name of the new feature.
+        args: object
+            Infinite Number of Expressions.
+            The expression generated will look like:
+            even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
+            odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... 
+                           ELSE args[n] END
+
+        Returns
+        -------
+        vDataFrame
+            self
+        """
+        from verticapy.sql.functions import case_when
+
+        return self.eval(name=name, expr=case_when(*args))
+
     @save_verticapy_logs
     def one_hot_encode(
         self,
@@ -37,39 +67,36 @@ class vDFEncode:
         prefix_sep: str = "_",
         drop_first: bool = True,
         use_numbers_as_suffix: bool = False,
-    ):
+    ) -> "vDataFrame":
         """
-    Encodes the vDataColumns using the One Hot Encoding algorithm.
+        Encodes the vDataColumns  using the One Hot Encoding 
+        algorithm.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns to use to train the One Hot Encoding model. If empty, 
-        only the vDataColumns having a cardinality lesser than 'max_cardinality' will 
-        be used.
-    max_cardinality: int, optional
-        Cardinality threshold to use to determine if the vDataColumn will be taken into
-        account during the encoding. This parameter is used only if the parameter 
-        'columns' is empty.
-    prefix_sep: str, optional
-        Prefix delimitor of the dummies names.
-    drop_first: bool, optional
-        Drops the first dummy to avoid the creation of correlated features.
-    use_numbers_as_suffix: bool, optional
-        Uses numbers as suffix instead of the vDataColumns categories.
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the vDataColumns  to use to train the  One 
+            Hot Encoding model. If empty, only the vDataColumns 
+            having  a cardinality  lesser than 'max_cardinality' 
+            will be used.
+        max_cardinality: int, optional
+            Cardinality  threshold  to  use  to  determine if  the 
+            vDataColumn  will  be taken  into  account during  the 
+            encoding. This parameter is used only if the parameter 
+            'columns' is empty.
+        prefix_sep: str, optional
+            Prefix delimitor of the dummies names.
+        drop_first: bool, optional
+            Drops  the  first  dummy  to  avoid  the  creation  of 
+            correlated features.
+        use_numbers_as_suffix: bool, optional
+            Uses  numbers  as suffix instead of  the  vDataColumns 
+            categories.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame[].decode       : Encodes the vDataColumn using a user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vDataColumn.
-    vDataFrame[].get_dummies  : Computes the vDataColumns result of One Hot Encoding.
-    vDataFrame[].label_encode : Encodes the vDataColumn using the Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vDataColumn using the Mean Encoding of a response.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -103,30 +130,28 @@ class vDCEncode:
         labels: list = [],
         include_lowest: bool = True,
         right: bool = True,
-    ):
+    ) -> "vDataFrame":
         """
-    Discretizes the vDataColumn using the input list. 
+        Discretizes the vDataColumn using the input list. 
 
-    Parameters
-    ----------
-    breaks: list
-        List of values used to cut the vDataColumn.
-    labels: list, optional
-        Labels used to name the new categories. If empty, names will be generated.
-    include_lowest: bool, optional
-        If set to True, the lowest element of the list will be included.
-    right: bool, optional
-        How the intervals should be closed. If set to True, the intervals will be
-        closed on the right.
+        Parameters
+        ----------
+        breaks: list
+            List of values used to cut the vDataColumn.
+        labels: list, optional
+            Labels used  to name the new categories.  If empty, 
+            names will be generated.
+        include_lowest: bool, optional
+            If  set to  True,  the lowest element of the  list 
+            will be included.
+        right: bool, optional
+            How the intervals should be closed. If set to True, 
+            the intervals will be closed on the right.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].apply : Applies a function to the input vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vDataColumns."
@@ -160,6 +185,31 @@ class vDCEncode:
         self.apply(func=expr)
 
     @save_verticapy_logs
+    def decode(self, *args) -> "vDataFrame":
+        """
+        Encodes the vDataColumn using a user-defined encoding.
+
+        Parameters
+        ----------
+        args: object
+            Any amount of expressions.
+            The expression generated will look like:
+            even: CASE ... WHEN vDataColumn = args[2 * i] 
+                           THEN args[2 * i + 1] ... END
+            odd : CASE ... WHEN vDataColumn = args[2 * i] 
+                           THEN args[2 * i + 1] ... 
+                           ELSE args[n] END
+
+        Returns
+        -------
+        vDataFrame
+            self._parent
+        """
+        from verticapy.sql.functions import decode
+
+        return self.apply(func=decode(StringSQL("{}"), *args))
+
+    @save_verticapy_logs
     def discretize(
         self,
         method: Literal["auto", "smart", "same_width", "same_freq", "topk"] = "auto",
@@ -170,55 +220,55 @@ class vDCEncode:
         RFmodel_params: dict = {},
         response: str = "",
         return_enum_trans: bool = False,
-    ):
+    ) -> "vDataFrame":
         """
-    Discretizes the vDataColumn using the input method.
+        Discretizes the vDataColumn using the input method.
 
-    Parameters
-    ----------
-    method: str, optional
-        The method to use to discretize the vDataColumn.
-            auto       : Uses method 'same_width' for numerical vDataColumns, cast 
-                the other types to varchar.
-            same_freq  : Computes bins with the same number of elements.
-            same_width : Computes regular width bins.
-            smart      : Uses the Random Forest on a response column to find the most 
-                relevant interval to use for the discretization.
-            topk       : Keeps the topk most frequent categories and merge the other 
-                into one unique category.
-    h: PythonNumber, optional
-        The interval size to convert to use to convert the vDataColumn. If this parameter 
-        is equal to 0, an optimised interval will be computed.
-    nbins: int, optional
-        Number of bins used for the discretization (must be > 1)
-    k: int, optional
-        The integer k of the 'topk' method.
-    new_category: str, optional
-        The name of the merging category when using the 'topk' method.
-    RFmodel_params: dict, optional
-        Dictionary of the Random Forest model parameters used to compute the best splits 
-        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
-        is numerical (except ints and bools), a RF Classifier otherwise.
-        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
-        20 trees and a maximum depth of 10.
-    response: str, optional
-        Response vDataColumn when method is set to 'smart'.
-    return_enum_trans: bool, optional
-        Returns the transformation instead of the vDataFrame parent and do not apply
-        it. This parameter is very useful for testing to be able to look at the final 
-        transformation.
+        Parameters
+        ----------
+        method: str, optional
+            The method to use to discretize the vDataColumn.
+                auto       : Uses method 'same_width' for numerical 
+                             vDataColumns, cast the  other types to 
+                             varchar.
+                same_freq  : Computes bins  with the same number of 
+                             elements.
+                same_width : Computes regular width bins.
+                smart      : Uses  the Random  Forest on a  response 
+                             column  to   find   the  most  relevant 
+                             interval to use for the discretization.
+                topk       : Keeps the topk most frequent categories 
+                             and  merge the  other  into one  unique 
+                             category.
+        h: PythonNumber, optional
+            The  interval  size  to  convert  to use  to  convert  the 
+            vDataColumn. If this parameter is equal to 0, an optimised 
+            interval will be computed.
+        nbins: int, optional
+            Number of bins  used for the discretization  (must be > 1)
+        k: int, optional
+            The integer k of the 'topk' method.
+        new_category: str, optional
+            The  name of the  merging  category when using the  'topk' 
+            method.
+        RFmodel_params: dict, optional
+            Dictionary  of the  Random Forest  model  parameters used  to 
+            compute the best splits when 'method' is set to 'smart'. 
+            A RF Regressor will  be trained if  the response is numerical 
+            (except ints and bools), a RF Classifier otherwise.
+            Example: Write {"n_estimators": 20, "max_depth": 10} to train 
+            a Random Forest with 20 trees and a maximum depth of 10.
+        response: str, optional
+            Response vDataColumn when method is set to 'smart'.
+        return_enum_trans: bool, optional
+            Returns  the transformation instead  of the vDataFrame  parent 
+            and do not apply it. This parameter is very useful for testing 
+            to be able to look at the final transformation.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].decode       : Encodes the vDataColumn with user defined Encoding.
-    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
-    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         from verticapy.machine_learning.vertica.ensemble import (
             RandomForestClassifier,
@@ -400,32 +450,27 @@ class vDCEncode:
         prefix_sep: str = "_",
         drop_first: bool = True,
         use_numbers_as_suffix: bool = False,
-    ):
+    ) -> "vDataFrame":
         """
-    Encodes the vDataColumn with the One-Hot Encoding algorithm.
+        Encodes the vDataColumn with  the One-Hot Encoding algorithm.
 
-    Parameters
-    ----------
-    prefix: str, optional
-        Prefix of the dummies.
-    prefix_sep: str, optional
-        Prefix delimitor of the dummies.
-    drop_first: bool, optional
-        Drops the first dummy to avoid the creation of correlated features.
-    use_numbers_as_suffix: bool, optional
-        Uses numbers as suffix instead of the vDataColumns categories.
+        Parameters
+        ----------
+        prefix: str, optional
+            Prefix of the dummies.
+        prefix_sep: str, optional
+            Prefix delimitor of the dummies.
+        drop_first: bool, optional
+            Drops the first dummy to avoid the creation of correlated 
+            features.
+        use_numbers_as_suffix: bool, optional
+            Uses  numbers  as  suffix  instead  of  the  vDataColumns 
+            categories.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].decode       : Encodes the vDataColumn with user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vDataColumn.
-    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
-    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
@@ -493,22 +538,15 @@ class vDCEncode:
     get_dummies = one_hot_encode
 
     @save_verticapy_logs
-    def label_encode(self):
+    def label_encode(self) -> "vDataFrame":
         """
-    Encodes the vDataColumn using a bijection from the different categories to
-    [0, n - 1] (n being the vDataColumn cardinality).
+        Encodes the  vDataColumn using  a bijection from the different 
+        categories to [0, n - 1] (n being the vDataColumn cardinality).
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].decode       : Encodes the vDataColumn with a user defined Encoding.
-    vDataFrame[].discretize   : Discretizes the vDataColumn.
-    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
-    vDataFrame[].mean_encode  : Encodes the vDataColumn using the mean encoding of a response.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if self.category() in ["date", "float"]:
             warning_message = (
@@ -535,27 +573,20 @@ class vDCEncode:
         return self._parent
 
     @save_verticapy_logs
-    def mean_encode(self, response: str):
+    def mean_encode(self, response: str) -> "vDataFrame":
         """
-    Encodes the vDataColumn using the average of the response partitioned by the 
-    different vDataColumn categories.
+        Encodes the vDataColumn using the average of the response 
+        partitioned by the different vDataColumn categories.
 
-    Parameters
-    ----------
-    response: str
-        Response vDataColumn.
+        Parameters
+        ----------
+        response: str
+            Response vDataColumn.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].decode       : Encodes the vDataColumn using a user-defined encoding.
-    vDataFrame[].discretize   : Discretizes the vDataColumn.
-    vDataFrame[].label_encode : Encodes the vDataColumn with Label Encoding.
-    vDataFrame[].get_dummies  : Encodes the vDataColumn with One-Hot Encoding.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         response = self._parent._format_colnames(response)
         assert self._parent[response].isnum(), TypeError(

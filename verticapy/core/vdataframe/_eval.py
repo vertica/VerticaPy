@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-from typing import Union
+from typing import Any, Union, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
 
@@ -26,23 +26,27 @@ from verticapy.errors import QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import isvmap
 
 
 class vDFEval:
-    def __setattr__(self, attr, val):
-        from verticapy.core.vdataframe.base import vDataColumn
+    def __setattr__(self, attr: str, val: Any) -> None:
 
-        if isinstance(val, (str, StringSQL, int, float)) and not isinstance(
-            val, vDataColumn
-        ):
+        obj_type = None
+        if hasattr(val, "_object_type"):
+            obj_type = val._object_type
+
+        if isinstance(val, (str, StringSQL, int, float)) and obj_type != "vDataColumn":
             val = str(val)
             if self._is_colname_in(attr):
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif isinstance(val, vDataColumn) and not (val._init):
+        elif obj_type == "vDataColumn" and not (val._init):
             final_trans, n = val._init_transf, len(val._transf)
             for i in range(1, n):
                 final_trans = val._transf[i][0].replace("{}", final_trans)
@@ -50,32 +54,32 @@ class vDFEval:
         else:
             self.__dict__[attr] = val
 
-    def __setitem__(self, index, val):
+        return None
+
+    def __setitem__(self, index: str, val: Any) -> None:
         setattr(self, index, val)
+        return None
 
     @save_verticapy_logs
-    def eval(self, name: str, expr: Union[str, StringSQL]):
+    def eval(self, name: str, expr: Union[str, StringSQL]) -> "vDataFrame":
         """
-    Evaluates a customized expression.
+        Evaluates a customized expression.
 
-    Parameters
-    ----------
-    name: str
-        Name of the new vDataColumn.
-    expr: str
-        Expression in pure SQL to use to compute the new feature.
-        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
-        'POWER("column", 2)' will work.
+        Parameters
+        ----------
+        name: str
+            Name of the new vDataColumn.
+        expr: str
+            Expression  in pure SQL to use to compute the new 
+            feature.
+            For example: 
+            'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
+            'POWER("column", 2)' will work.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(expr, StringSQL):
             expr = str(expr)
@@ -136,5 +140,6 @@ class vDFEval:
 
 
 class vDCEval:
-    def __setattr__(self, attr, val):
+    def __setattr__(self, attr: str, val: Any) -> None:
         self.__dict__[attr] = val
+        return None

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, re, time, warnings
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
@@ -27,6 +27,9 @@ from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.flex import isvmap
 
@@ -569,7 +572,7 @@ class vDFSystem:
         Parameters
         ----------
         column1: str / int
-            The first vDataColumn or its index to swap.
+            The first  vDataColumn or its index to swap.
         column2: str / int
             The second vDataColumn or its index to swap.
 

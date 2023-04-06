@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._cast import to_sql_dtype, to_category
@@ -26,44 +26,45 @@ from verticapy.errors import ConversionError
 
 from verticapy.core.tablesample.base import TableSample
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.flex import isvmap
 
 
 class vDFTyping:
     @save_verticapy_logs
-    def astype(self, dtype: dict):
+    def astype(self, dtype: dict) -> "vDataFrame":
         """
-    Converts the vDataColumns to the input types.
+        Converts the vDataColumns to the input types.
 
-    Parameters
-    ----------
-    dtype: dict
-        Dictionary of the different types. Each key of the dictionary must 
-        represent a vDataColumn. The dictionary must be similar to the 
-        following: {"column1": "type1", ... "columnk": "typek"}
+        Parameters
+        ----------
+        dtype: dict
+            Dictionary of the different types. Each key 
+            of   the   dictionary  must   represent   a 
+            vDataColumn. The dictionary must be similar 
+            to the following: 
+            {"column1": "type1", ... "columnk": "typek"}
 
-    Returns
-    -------
-    vDataFrame
-        self
+        Returns
+        -------
+        vDataFrame
+            self
         """
         for column in dtype:
             self[self._format_colnames(column)].astype(dtype=dtype[column])
         return self
 
     @save_verticapy_logs
-    def bool_to_int(self):
+    def bool_to_int(self) -> "vDataFrame":
         """
-    Converts all booleans vDataColumns to integers.
+        Converts all booleans vDataColumns to integers.
 
-    Returns
-    -------
-    vDataFrame
-        self
-    
-    See Also
-    --------
-    vDataFrame.astype : Converts the vDataColumns to the input types.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         columns = self.get_columns()
         for column in columns:
@@ -71,25 +72,20 @@ class vDFTyping:
                 self[column].astype("int")
         return self
 
-    def catcol(self, max_cardinality: int = 12):
+    def catcol(self, max_cardinality: int = 12) -> list:
         """
-    Returns the vDataFrame categorical vDataColumns.
-    
-    Parameters
-    ----------
-    max_cardinality: int, optional
-        Maximum number of unique values to consider integer vDataColumns as categorical.
+        Returns the vDataFrame categorical vDataColumns.
+        
+        Parameters
+        ----------
+        max_cardinality: int, optional
+            Maximum number of unique values to consider 
+            integer vDataColumns as categorical.
 
-    Returns
-    -------
-    List
-        List of the categorical vDataColumns names.
-    
-    See Also
-    --------
-    vDataFrame.get_columns : Returns a list of names of the vDataColumns in the vDataFrame.
-    vDataFrame.numcol      : Returns a list of names of the numerical vDataColumns in the 
-                             vDataFrame.
+        Returns
+        -------
+        List
+            List of the categorical vDataColumns names.
         """
         columns = []
         for column in self.get_columns():
@@ -113,20 +109,15 @@ class vDFTyping:
                 columns += [column]
         return columns
 
-    def datecol(self):
+    def datecol(self) -> list:
         """
-    Returns a list of the vDataColumns of type date in the vDataFrame.
+        Returns a list of the vDataColumns of type 
+        date in the vDataFrame.
 
-    Returns
-    -------
-    List
-        List of all vDataColumns of type date.
-
-    See Also
-    --------
-    vDataFrame.catcol : Returns a list of the categorical vDataColumns in the vDataFrame.
-    vDataFrame.numcol : Returns a list of names of the numerical vDataColumns in the 
-                        vDataFrame.
+        Returns
+        -------
+        List
+            List of all vDataColumns of type date.
         """
         columns = []
         cols = self.get_columns()
@@ -136,15 +127,14 @@ class vDFTyping:
         return columns
 
     @save_verticapy_logs
-    def dtypes(self):
+    def dtypes(self) -> TableSample:
         """
-    Returns the different vDataColumns types.
+        Returns the different vDataColumns types.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
+        Returns
+        -------
+        TableSample
+            result.
         """
         values = {"index": [], "dtype": []}
         for column in self.get_columns():
@@ -152,24 +142,21 @@ class vDFTyping:
             values["dtype"] += [self[column].ctype()]
         return TableSample(values)
 
-    def numcol(self, exclude_columns: SQLColumns = []):
+    def numcol(self, exclude_columns: SQLColumns = []) -> list:
         """
-    Returns a list of names of the numerical vDataColumns in the vDataFrame.
+        Returns a list of names of the numerical vDataColumns 
+        in the vDataFrame.
 
-    Parameters
-    ----------
-    exclude_columns: SQLColumns, optional
-        List of the vDataColumns names to exclude from the final list. 
+        Parameters
+        ----------
+        exclude_columns: SQLColumns, optional
+            List  of the  vDataColumns names to exclude  from 
+            the final list. 
 
-    Returns
-    -------
-    List
-        List of numerical vDataColumns names. 
-    
-    See Also
-    --------
-    vDataFrame.catcol      : Returns the categorical type vDataColumns in the vDataFrame.
-    vDataFrame.get_columns : Returns the vDataColumns of the vDataFrame.
+        Returns
+        -------
+        List
+            List of numerical vDataColumns names.
         """
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
         for column in cols:
@@ -180,28 +167,26 @@ class vDFTyping:
 
 class vDCTyping:
     @save_verticapy_logs
-    def astype(self, dtype: Union[str, type]):
+    def astype(self, dtype: Union[str, type]) -> "vDataFrame":
         """
-    Converts the vDataColumn to the input type.
+        Converts the vDataColumn to the input type.
 
-    Parameters
-    ----------
-    dtype: str or Python data type
-        New type. One of the following values:
-        'json': Converts to a JSON string.
-        'array': Converts to an array.
-        'vmap': Converts to a VMap. If converting a delimited string, you can 
-        add the header_names as follows: dtype = 'vmap(age,name,date)', where 
-        the header_names are age, name, and date.
+        Parameters
+        ----------
+        dtype: str or Python data type
+            New type. One of the following values:
+                'json' : Converts to a JSON string.
+                'array': Converts to an array.
+                'vmap' : Converts to a VMap.  If converting a 
+                         delimited  string,  you can add  the 
+                         header_names  as   follows:  dtype = 
+                         'vmap(age,name,date)',   where   the 
+                         header_names are age, name, and date.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.astype : Converts the vDataColumns to the input type.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         from verticapy.core.parsers.csv import guess_sep
 
@@ -300,102 +285,90 @@ class vDCTyping:
                 f"{e}\nThe vDataColumn {self._alias} can not be converted to {dtype}"
             )
 
-    def category(self):
+    def category(self) -> str:
         """
-    Returns the category of the vDataColumn. The category will be one of the following:
-    date / int / float / text / binary / spatial / uuid / undefined
+        Returns the category of the vDataColumn. The category 
+        will be one of the following:
+        date / int / float / text / binary / spatial / uuid 
+        / undefined
 
-    Returns
-    -------
-    str
-        vDataColumn category.
-
-    See Also
-    --------
-    vDataFrame[].ctype : Returns the vDataColumn database type.
+        Returns
+        -------
+        str
+            vDataColumn category.
         """
         return self._transf[-1][2]
 
-    def ctype(self):
+    def ctype(self) -> str:
         """
-    Returns the vDataColumn DB type.
+        Returns the vDataColumn DB type.
 
-    Returns
-    -------
-    str
-        vDataColumn DB type.
+        Returns
+        -------
+        str
+            vDataColumn DB type.
         """
         return self._transf[-1][1].lower()
 
     dtype = ctype
 
-    def isarray(self):
+    def isarray(self) -> bool:
         """
-    Returns True if the vDataColumn is an array, False otherwise.
+        Returns True if the vDataColumn is an array, 
+        False otherwise.
 
-    Returns
-    -------
-    bool
-        True if the vDataColumn is an array.
+        Returns
+        -------
+        bool
+            True if the vDataColumn is an array.
         """
         return self.ctype()[0:5].lower() == "array"
 
-    def isbool(self):
+    def isbool(self) -> bool:
         """
-    Returns True if the vDataColumn is boolean, False otherwise.
+        Returns True if the vDataColumn is boolean, 
+        False otherwise.
 
-    Returns
-    -------
-    bool
-        True if the vDataColumn is boolean.
-
-    See Also
-    --------
-    vDataFrame[].isdate : Returns True if the vDataColumn category is date.
-    vDataFrame[].isnum  : Returns True if the vDataColumn is numerical.
+        Returns
+        -------
+        bool
+            True if the vDataColumn is boolean.
         """
         return self.ctype()[0:4] == "bool"
 
-    def isdate(self):
+    def isdate(self) -> bool:
         """
-    Returns True if the vDataColumn category is date, False otherwise.
+        Returns True if the vDataColumn category is date, 
+        False otherwise.
 
-    Returns
-    -------
-    bool
-        True if the vDataColumn category is date.
-
-    See Also
-    --------
-    vDataFrame[].isbool : Returns True if the vDataColumn is boolean.
-    vDataFrame[].isnum  : Returns True if the vDataColumn is numerical.
+        Returns
+        -------
+        bool
+            True if the vDataColumn category is date.
         """
         return self.category() == "date"
 
-    def isnum(self):
+    def isnum(self) -> bool:
         """
-    Returns True if the vDataColumn is numerical, False otherwise.
+        Returns True if the vDataColumn is numerical, 
+        False otherwise.
 
-    Returns
-    -------
-    bool
-        True if the vDataColumn is numerical.
-
-    See Also
-    --------
-    vDataFrame[].isbool : Returns True if the vDataColumn is boolean.
-    vDataFrame[].isdate : Returns True if the vDataColumn category is date.
+        Returns
+        -------
+        bool
+            True if the vDataColumn is numerical.
         """
         return self.category() in ("float", "int")
 
-    def isvmap(self):
+    def isvmap(self) -> bool:
         """
-    Returns True if the vDataColumn category is VMap, False otherwise.
+        Returns True if the vDataColumn category is VMap, 
+        False otherwise.
 
-    Returns
-    -------
-    bool
-        True if the vDataColumn category is VMap.
+        Returns
+        -------
+        bool
+            True if the vDataColumn category is VMap.
         """
         return self.category() == "vmap" or isvmap(
             column=self._alias, expr=self._parent._genSQL()

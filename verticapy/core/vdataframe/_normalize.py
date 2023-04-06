@@ -15,12 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Union
+from typing import Literal, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFNorm:
@@ -29,34 +32,31 @@ class vDFNorm:
         self,
         columns: SQLColumns = [],
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-    ):
+    ) -> "vDataFrame":
         """
-    Normalizes the input vDataColumns using the input method.
+        Normalizes the input vDataColumns using the input method.
 
-    Parameters
-    ----------
-    columns: SQLColumns, optional
-        List of the vDataColumns names. If empty, all numerical vDataColumns will be 
-        used.
-    method: str, optional
-        Method to use to normalize.
-            zscore        : Normalization using the Z-Score (avg and std).
-                (x - avg) / std
-            robust_zscore : Normalization using the Robust Z-Score (median and mad).
-                (x - median) / (1.4826 * mad)
-            minmax        : Normalization using the MinMax (min and max).
-                (x - min) / (max - min)
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List  of the  vDataColumns names.  If empty, all numerical 
+            vDataColumns will be used.
+        method: str, optional
+            Method to use to normalize.
+                zscore        : Normalization  using the Z-Score  (avg 
+                                and std). 
+                                (x - avg) / std
+                robust_zscore : Normalization using the Robust Z-Score 
+                                (median and mad).
+                                (x - median) / (1.4826 * mad)
+                minmax        : Normalization  using  the  MinMax (min 
+                                and max).
+                                (x - min) / (max - min)
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.outliers    : Computes the vDataFrame Global Outliers.
-    vDataFrame[].normalize : Normalizes the vDataColumn. This method is more complete 
-        than the vDataFrame.normalize method by allowing more parameters.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -83,40 +83,41 @@ class vDCNorm:
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
         by: SQLColumns = [],
         return_trans: bool = False,
-    ):
+    ) -> "vDataFrame":
         """
-    Normalizes the input vDataColumns using the input method.
+        Normalizes the input vDataColumns using the input method.
 
-    Parameters
-    ----------
-    method: str, optional
-        Method to use to normalize.
-            zscore        : Normalization using the Z-Score (avg and std).
-                (x - avg) / std
-            robust_zscore : Normalization using the Robust Z-Score (median and mad).
-                (x - median) / (1.4826 * mad)
-            minmax        : Normalization using the MinMax (min and max).
-                (x - min) / (max - min)
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    return_trans: bool, optimal
-        If set to True, the method will return the transformation used instead of
-        the parent vDataFrame. This parameter is used for testing purpose.
+        Parameters
+        ----------
+        method: str, optional
+            Method to use to normalize.
+                zscore        : Normalization  using the Z-Score  (avg 
+                                and std). 
+                                (x - avg) / std
+                robust_zscore : Normalization using the Robust Z-Score 
+                                (median and mad).
+                                (x - median) / (1.4826 * mad)
+                minmax        : Normalization  using  the  MinMax (min 
+                                and max).
+                                (x - min) / (max - min)
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        return_trans: bool, optimal
+            If  set to True,  the method  will return the  transformation 
+            used instead of the parent vDataFrame. This parameter is used 
+            for testing purpose.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame.outliers : Computes the vDataFrame Global Outliers.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         if isinstance(by, str):
             by = [by]
         method = method.lower()
         by = self._parent._format_colnames(by)
         nullifzero, n = 1, len(by)
+
         if self.isbool():
 
             warning_message = "Normalize doesn't work on booleans"

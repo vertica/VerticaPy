@@ -16,10 +16,10 @@ permissions and limitations under the License.
 """
 import datetime, math, re, warnings
 from itertools import combinations_with_replacement
-from typing import Literal, Union
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, TimeInterval, SQLColumns
+from verticapy._typing import PythonNumber, PythonScalar, TimeInterval, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -31,6 +31,9 @@ from verticapy.errors import EmptyParameter, ParameterError, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import compute_vmap_keys, isvmap
@@ -38,40 +41,39 @@ from verticapy.sql.flex import compute_vmap_keys, isvmap
 
 class vDFFill:
     @save_verticapy_logs
-    def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
+    def fillna(
+        self, val: dict = {}, method: dict = {}, numeric_only: bool = False
+    ) -> "vDataFrame":
         """
-    Fills the vDataColumns missing elements using specific rules.
+        Fills the vDataColumns missing elements using specific rules.
 
-    Parameters
-    ----------
-    val: dict, optional
-        Dictionary of values. The dictionary must be similar to the following:
-        {"column1": val1 ..., "columnk": valk}. Each key of the dictionary must
-        be a vDataColumn. The missing values of the input vDataColumns will be replaced
-        by the input value.
-    method: dict, optional
-        Method to use to impute the missing values.
-            auto    : Mean for the numerical and Mode for the categorical vDataColumns.
-            mean    : Average.
-            median  : Median.
-            mode    : Mode (most occurent element).
-            0ifnull : 0 when the vDataColumn is null, 1 otherwise.
-                More Methods are available on the vDataFrame[].fillna method.
-    numeric_only: bool, optional
-        If parameters 'val' and 'method' are empty and 'numeric_only' is set
-        to True then all numerical vDataColumns will be imputed by their average.
-        If set to False, all categorical vDataColumns will be also imputed by their
-        mode.
+        Parameters
+        ----------
+        val: dict, optional
+            Dictionary of values. The dictionary must be similar to the 
+            following:
+            {"column1": val1 ..., "columnk": valk}.  Each  key  of  the 
+            dictionary must be a vDataColumn. The missing values of the 
+            input vDataColumns will be replaced by the input value.
+        method: dict, optional
+            Method to use to impute the missing values.
+                auto    : Mean for the numerical and Mode for the 
+                          categorical vDataColumns.
+                mean    : Average.
+                median  : Median.
+                mode    : Mode (most occurent element).
+                0ifnull : 0 when the vDataColumn is null, 1 otherwise.
+            More Methods are available on the vDataFrame[].fillna method.
+        numeric_only: bool, optional
+            If parameters 'val' and 'method' are empty and 'numeric_only' 
+            is  set  to True then  all numerical  vDataColumns  will  be 
+            imputed by their average.  If set to False, all  categorical 
+            vDataColumns will be also imputed by their mode.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame[].fillna : Fills the vDataColumn missing values. This method is more 
-        complete than the vDataFrame.fillna method by allowing more parameters.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
@@ -96,39 +98,37 @@ class vDFFill:
     @save_verticapy_logs
     def interpolate(
         self, ts: str, rule: TimeInterval, method: dict = {}, by: SQLColumns = [],
-    ):
+    ) -> "vDataFrame":
         """
-    Computes a regular time interval vDataFrame by interpolating the missing 
-    values using different techniques.
+        Computes a regular time interval vDataFrame by interpolating the 
+        missing values using different techniques.
 
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vDataColumn to use to order the data. The vDataColumn type 
-        must be date like (date, datetime, timestamp...)
-    rule: TimeInterval
-        Interval used to create the time slices. The final interpolation is 
-        divided by these intervals. For example, specifying '5 minutes' 
-        creates records separated by time intervals of '5 minutes' 
-    method: dict, optional
-        Dictionary, with the following format, of interpolation methods:
-        {"column1": "interpolation1" ..., "columnk": "interpolationk"}
-        Interpolation methods must be one of the following:
-            bfill  : Interpolates with the final value of the time slice.
-            ffill  : Interpolates with the first value of the time slice.
-            linear : Linear interpolation.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
+        Parameters
+        ----------
+        ts: str
+            TS (Time Series)  vDataColumn to use to order the  data. The 
+            vDataColumn   type  must  be   date  like  (date,   datetime, 
+            timestamp...)
+        rule: TimeInterval
+            Interval  used   to  create   the  time  slices.  The  final 
+            interpolation  is divided  by these intervals.  For  example, 
+            specifying  '5 minutes'  creates records separated  by  time 
+            intervals of '5 minutes' 
+        method: dict, optional
+            Dictionary,  with  the following  format,  of  interpolation 
+            methods:
+            {"column1": "interpolation1" ..., "columnk": "interpolationk"}
+            Interpolation methods must be one of the following:
+                bfill  : Interpolates with the final value of the time slice.
+                ffill  : Interpolates with the first value of the time slice.
+                linear : Linear interpolation.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
 
-    Returns
-    -------
-    vDataFrame
-        object result of the interpolation.
-
-    See Also
-    --------
-    vDataFrame[].fillna  : Fills the vDataColumn missing values.
-    vDataFrame[].slice   : Slices the vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            object result of the interpolation.
         """
         if isinstance(by, str):
             by = [by]
@@ -173,29 +173,26 @@ class vDCFill:
     @save_verticapy_logs
     def clip(
         self,
-        lower: Union[int, float, datetime.datetime, datetime.date] = None,
-        upper: Union[int, float, datetime.datetime, datetime.date] = None,
-    ):
+        lower: Optional[PythonScalar] = None,
+        upper: Optional[PythonScalar] = None,
+    ) -> "vDataFrame":
         """
-    Clips the vDataColumn by transforming the values lesser than the lower bound to 
-    the lower bound itself and the values higher than the upper bound to the upper 
-    bound itself.
+        Clips  the vDataColumn by  transforming the values lesser  than 
+        the lower bound to the lower bound itself and the values higher 
+        than the upper bound to the upper 
+        bound itself.
 
-    Parameters
-    ----------
-    lower: PythonNumber / date, optional
-        Lower bound.
-    upper: PythonNumber / date, optional
-        Upper bound.
+        Parameters
+        ----------
+        lower: PythonScalar, optional
+            Lower bound.
+        upper: PythonScalar, optional
+            Upper bound.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].fill_outliers : Fills the vDataColumn outliers using the input method.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         assert (lower != None) or (upper != None), ParameterError(
             "At least 'lower' or 'upper' must have a numerical value"
@@ -221,40 +218,37 @@ class vDCFill:
         threshold: PythonNumber = 4.0,
         use_threshold: bool = True,
         alpha: PythonNumber = 0.05,
-    ):
+    ) -> "vDataFrame":
         """
-    Fills the vDataColumns outliers using the input method.
+        Fills the vDataColumns outliers using the input method.
 
-    Parameters
+        Parameters
         ----------
         method: str, optional
             Method to use to fill the vDataColumn outliers.
-                mean      : Replaces the upper and lower outliers by their respective 
-                    average. 
-                null      : Replaces the outliers by the NULL value.
-                winsorize : Clips the vDataColumn using as lower bound quantile(alpha) and as 
-                    upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
-                    the lower and upper ZScores.
+                mean      : Replaces  the  upper and lower outliers  by 
+                            their respective average. 
+                null      : Replaces  the  outliers  by the NULL  value.
+                winsorize : Clips the vDataColumn  using as lower bound 
+                            quantile(alpha)   and   as   upper    bound 
+                            quantile(1-alpha) if 'use_threshold' is set 
+                            to False else the lower and upper ZScores.
         threshold: PythonNumber, optional
-            Uses the Gaussian distribution to define the outliers. After normalizing the 
-            data (Z-Score), if the absolute value of the record is greater than the 
-            threshold it will be considered as an outlier.
+            Uses the Gaussian distribution  to define the outliers. After 
+            normalizing the data (Z-Score),  if the absolute value of the 
+            record is greater than the threshold it will be considered as 
+            an outlier.
         use_threshold: bool, optional
             Uses the threshold instead of the 'alpha' parameter.
         alpha: PythonNumber, optional
-            Number representing the outliers threshold. Values lesser than quantile(alpha) 
-            or greater than quantile(1-alpha) will be filled.
+            Number representing the outliers threshold. Values lesser than 
+            quantile(alpha)  or  greater  than  quantile(1-alpha) will  be 
+            filled.
 
         Returns
         -------
         vDataFrame
             self._parent
-
-    See Also
-    --------
-    vDataFrame[].drop_outliers : Drops outliers in the vDataColumn.
-    vDataFrame.outliers      : Adds a new vDataColumn labeled with 0 and 1 
-        (1 meaning global outlier).
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -339,38 +333,39 @@ class vDCFill:
         expr: Union[str, StringSQL] = "",
         by: SQLColumns = [],
         order_by: SQLColumns = [],
-    ):
+    ) -> "vDataFrame":
         """
-    Fills missing elements in the vDataColumn with a user-specified rule.
+        Fills missing elements in the vDataColumn with a user-specified 
+        rule.
 
-    Parameters
-    ----------
-    val: PythonScalar / date, optional
-        Value to use to impute the vDataColumn.
-    method: dict, optional
-        Method to use to impute the missing values.
-            auto    : Mean for the numerical and Mode for the categorical vDataColumns.
-            bfill   : Back Propagation of the next element (Constant Interpolation).
-            ffill   : Propagation of the first element (Constant Interpolation).
-            mean    : Average.
-            median  : median.
-            mode    : mode (most occurent element).
-            0ifnull : 0 when the vDataColumn is null, 1 otherwise.
-    expr: str, optional
-        SQL string.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    order_by: SQLColumns, optional
-        List of the vDataColumns to use to sort the data when using TS methods.
+        Parameters
+        ----------
+        val: PythonScalar / date, optional
+            Value to use to impute the vDataColumn.
+        method: dict, optional
+            Method to use to impute the missing values.
+                auto    : Mean  for  the  numerical  and  Mode  for  the 
+                          categorical vDataColumns.
+                bfill   : Back Propagation of the next element (Constant 
+                          Interpolation).
+                ffill   : Propagation  of  the  first element  (Constant 
+                          Interpolation).
+                mean    : Average.
+                median  : median.
+                mode    : mode (most occurent element).
+                0ifnull : 0 when the vDataColumn is null, 1 otherwise.
+        expr: str, optional
+            SQL string.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        order_by: SQLColumns, optional
+            List of the vDataColumns to use to sort the data when using 
+            TS methods.
 
-    Returns
-    -------
-    vDataFrame
-        self._parent
-
-    See Also
-    --------
-    vDataFrame[].dropna : Drops the vDataColumn missing values.
+        Returns
+        -------
+        vDataFrame
+            self._parent
         """
         by, order_by = self._parent._format_colnames(by, order_by)
         if isinstance(by, str):

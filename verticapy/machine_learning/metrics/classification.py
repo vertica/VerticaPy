@@ -1405,7 +1405,7 @@ def _compute_function_metrics(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    pos_label: PythonScalar = None,
+    pos_label: Optional[PythonScalar] = None,
     nbins: int = 30,
     fun_sql_name: str = "",
 ) -> list[list[float]]:
