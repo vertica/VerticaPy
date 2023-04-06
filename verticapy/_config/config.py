@@ -221,7 +221,7 @@ register_option(Option("tqdm", True, "", bool_validator))
 register_option(
     Option(
         "plotting_lib",
-        "plotly",
+        "matplotlib",
         "",
         in_validator(["highcharts", "matplotlib", "plotly"]),
     )

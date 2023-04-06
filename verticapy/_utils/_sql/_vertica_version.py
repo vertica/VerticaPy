@@ -90,7 +90,7 @@ def check_minimum_version(func: Callable) -> Callable:
     return func_prec_check_minimum_version
 
 
-def vertica_version(condition: list = []) -> list[int]:
+def vertica_version(condition: list = []) -> tuple[int, int, int, int]:
     """
     Returns the Vertica Version.
 
@@ -103,9 +103,9 @@ def vertica_version(condition: list = []) -> list[int]:
 
     Returns
     -------
-    list
+    tuple
         List containing the version information.
-        [MAJOR, MINOR, PATCH, POST]
+        MAJOR, MINOR, PATCH, POST
     """
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
@@ -113,22 +113,22 @@ def vertica_version(condition: list = []) -> list[int]:
     current_version = current_cursor().fetchone()[0]
     current_version = current_version.split("Vertica Analytic Database v")[1]
     current_version = current_version.split(".")
-    result = []
+    res = []
     try:
-        result += [int(current_version[0])]
-        result += [int(current_version[1])]
-        result += [int(current_version[2].split("-")[0])]
-        result += [int(current_version[2].split("-")[1])]
+        res += [int(current_version[0])]
+        res += [int(current_version[1])]
+        res += [int(current_version[2].split("-")[0])]
+        res += [int(current_version[2].split("-")[1])]
     except:
         pass
     if condition:
-        if condition[0] < result[0]:
+        if condition[0] < res[0]:
             test = True
-        elif condition[0] == result[0]:
-            if condition[1] < result[1]:
+        elif condition[0] == res[0]:
+            if condition[1] < res[1]:
                 test = True
-            elif condition[1] == result[1]:
-                if condition[2] <= result[2]:
+            elif condition[1] == res[1]:
+                if condition[2] <= res[2]:
                     test = True
                 else:
                     test = False
@@ -137,7 +137,7 @@ def vertica_version(condition: list = []) -> list[int]:
         else:
             test = False
         if not (test):
-            v0, v1, v2 = result[0], result[1], str(result[2]).split("-")[0]
+            v0, v1, v2 = res[0], res[1], str(res[2]).split("-")[0]
             v = ".".join([str(c) for c in condition[:3]])
             raise VersionError(
                 (
@@ -146,4 +146,4 @@ def vertica_version(condition: list = []) -> list[int]:
                     f"version to at least {v} to get this functionality."
                 )
             )
-    return result
+    return tuple(res)

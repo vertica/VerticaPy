@@ -51,9 +51,9 @@ def read_dsn(section: str, dsn: str = "") -> dict:
     Parameters
     ----------
     section: str
-        Name of the section in the configuration file.
+        Name of the section in  the configuration file.
     dsn: str, optional
-        Path to the file  containing the  credentials. 
+        Path to the file  containing  the  credentials. 
         If empty, the VERTICAPY_CONNECTION environment 
         variable will be used.
 

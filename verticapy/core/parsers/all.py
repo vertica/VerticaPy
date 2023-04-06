@@ -49,9 +49,9 @@ def read_file(
     max_files: int = 100,
 ) -> vDataFrame:
     """
-    Inspects and ingests a file in CSV, Parquet, ORC, 
+    Inspects and ingests a  file in CSV, Parquet, ORC, 
     JSON, or Avro format.
-    This function uses the Vertica complex data type.
+    This function uses  the Vertica complex data type.
     For new table creation,  the file must be located 
     in the server.
 
@@ -106,9 +106,9 @@ def read_file(
     max_files: int, optional
         (JSON only.)  If  path  is a  glob, specifies  maximum 
         number of files in path to inspect. Use this parameter 
-        to increase the amount of data the function considers. 
+        to increase the amount of data  the function considers. 
         This can be beneficial  if you suspect variation among 
-        files.  Files  are  chosen  arbitrarily from the glob.
+        files.  Files  are  chosen  arbitrarily  from the glob.
         The default value is 100.
 
     Returns

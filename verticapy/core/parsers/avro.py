@@ -131,22 +131,4 @@ def read_avro(
     vDataFrame
         The vDataFrame of the relation.
     """
-    return read_json(
-        path=path,
-        schema=schema,
-        table_name=table_name,
-        usecols=usecols,
-        new_name=new_name,
-        insert=insert,
-        reject_on_materialized_type_error=reject_on_materialized_type_error,
-        flatten_maps=flatten_maps,
-        flatten_arrays=flatten_arrays,
-        temporary_table=temporary_table,
-        temporary_local_table=temporary_local_table,
-        gen_tmp_table_name=gen_tmp_table_name,
-        ingest_local=ingest_local,
-        genSQL=genSQL,
-        materialize=materialize,
-        use_complex_dt=use_complex_dt,
-        is_avro=True,
-    )
+    return read_json(**locals(), is_avro=True,)
