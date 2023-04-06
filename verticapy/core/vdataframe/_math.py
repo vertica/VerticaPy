@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from typing import Literal, Union
+from typing import Literal, Union, TYPE_CHECKING
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
