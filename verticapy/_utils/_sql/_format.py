@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLExpression
+from verticapy._typing import NoneType, SQLExpression
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
@@ -124,7 +124,7 @@ def format_magic(
         object_type == "StringSQL"
     ):
         val = x
-    elif isinstance(x, type(None)):
+    elif isinstance(x, NoneType):
         val = "NULL"
     elif isinstance(x, (int, float, np.int_)) or not (cast_float_int_to_str):
         x_str = str(x).replace("'", "''")
@@ -258,7 +258,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
             elif isinstance(val, pd.DataFrame):
                 val = read_pandas(val)._genSQL()
             elif isinstance(val, list):
-                val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
+                val = ", ".join(["NULL" if x is None else str(x) for x in val])
             query_tmp = query_tmp.replace(v, str(val))
     return query_tmp
 

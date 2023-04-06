@@ -24,6 +24,7 @@ from vertica_python.errors import QueryError
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    NoneType,
     PlottingObject,
     PythonNumber,
     PythonScalar,
@@ -351,7 +352,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     def _check_cutoff(
         self, cutoff: Optional[PythonNumber] = None
     ) -> Optional[PythonNumber]:
-        if isinstance(cutoff, type(None)):
+        if isinstance(cutoff, NoneType):
             return 1.0 / len(self.classes_)
         elif not (0 <= cutoff <= 1):
             ValueError(

@@ -32,8 +32,7 @@ from verticapy.core.tablesample.base import TableSample
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-    from verticapy.machine_learning.memmodel.tree import NonBinaryTree
-
+from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
 
 
@@ -178,7 +177,7 @@ class vDFMachineLearning:
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
         **kwargs,
-    ) -> "NonBinaryTree":
+    ) -> NonBinaryTree:
         """
         Returns a CHAID (Chi-square Automatic Interaction Detector) 
         tree. CHAID is a decision tree technique based on adjusted 
@@ -219,8 +218,6 @@ class vDFMachineLearning:
         NonBinaryTree
             An independent model containing the result.
         """
-        from verticapy.machine_learning.memmodel.tree import NonBinaryTree
-
         if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]

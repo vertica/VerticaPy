@@ -54,205 +54,8 @@ from verticapy.core.vdataframe._multiprocessing import (
 
 
 class vDFAgg:
-    @save_verticapy_logs
-    def groupby(
-        self,
-        columns: SQLColumns,
-        expr: SQLExpression = [],
-        rollup: Union[bool, list] = False,
-        having: str = "",
-    ) -> "vDataFrame":
-        """
-        Aggregates the vDataFrame by grouping the elements.
 
-        Parameters
-        ----------
-        columns: SQLColumns
-            List of the  vDataColumns used to group the elements 
-            or a customized expression. If rollup is set to True, 
-            this can be a list of tuples.
-        expr: SQLExpression, optional
-            List of  the different aggregations in pure SQL.  Aliases 
-            can be used.  For example, 'SUM(column)'  or  'AVG(column) 
-            AS my_new_alias' are  correct whereas 'AVG' is  incorrect. 
-            Aliases are recommended to keep the track of the features 
-            and to  prevent  ambiguous  names.  For example, the MODE 
-            function does  not exist,  but can be replicated by using 
-            the 'analytic' method and then grouping the result.
-        rollup: bool / list of bools, optional
-            If set to True, the rollup operator is used.
-            If set to a list of bools, the  rollup operator is used on 
-            the matching indexes and the length of 'rollup' must match 
-            the length of 'columns.'
-            For example, for columns = ['col1', ('col2', 'col3'), 'col4'] 
-            and rollup = [False, True, True], the rollup operator is used 
-            on the set ('col2', 'col3') and on 'col4'.
-        having: str, optional
-            Expression used to filter the result.
-
-        Returns
-        -------
-        vDataFrame
-            object result of the grouping.
-        """
-        if isinstance(columns, str):
-            columns = [columns]
-        if isinstance(expr, str):
-            expr = [expr]
-        assert not (isinstance(rollup, list)) or len(rollup) == len(
-            columns
-        ), ParameterError(
-            "If parameter 'rollup' is of type list, it should have "
-            "the same length as the 'columns' parameter."
-        )
-        columns_to_select = []
-        if rollup == True:
-            rollup_expr = "ROLLUP(" if rollup == True else ""
-        else:
-            rollup_expr = ""
-        for idx, elem in enumerate(columns):
-            if isinstance(elem, tuple) and rollup:
-                if rollup == True:
-                    rollup_expr += "("
-                elif rollup[idx] == True:
-                    rollup_expr += "ROLLUP("
-                elif not (isinstance(rollup[idx], bool)):
-                    raise ParameterError(
-                        "When parameter 'rollup' is not a boolean, it "
-                        "has to be a list of booleans."
-                    )
-                for item in elem:
-                    colname = self._format_colnames(item)
-                    if colname:
-                        rollup_expr += colname
-                        columns_to_select += [colname]
-                    else:
-                        rollup_expr += str(item)
-                        columns_to_select += [item]
-                    rollup_expr += ", "
-                rollup_expr = rollup_expr[:-2] + "), "
-            elif isinstance(elem, str):
-                colname = self._format_colnames(elem)
-                if colname:
-                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
-                        rollup_expr += "ROLLUP(" + colname + ")"
-                    else:
-                        rollup_expr += colname
-                    columns_to_select += [colname]
-                else:
-                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
-                        rollup_expr += "ROLLUP(" + str(elem) + ")"
-                    else:
-                        rollup_expr += str(elem)
-                    columns_to_select += [elem]
-                rollup_expr += ", "
-            else:
-                raise ParameterError(
-                    "Parameter 'columns' must be a string; list of strings "
-                    "or tuples (only when rollup is set to True)."
-                )
-        rollup_expr = rollup_expr[:-2]
-        if rollup == True:
-            rollup_expr += ")"
-        if having:
-            having = f" HAVING {having}"
-        columns_str = ", ".join(
-            [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
-        )
-        if not (rollup):
-            rollup_expr_str = ", ".join(
-                [
-                    str(i + 1)
-                    for i in range(len([str(elem) for elem in columns_to_select]))
-                ],
-            )
-        else:
-            rollup_expr_str = rollup_expr
-        query = f"""
-            SELECT 
-                {columns_str} 
-            FROM {self._genSQL()} 
-            GROUP BY {rollup_expr_str}{having}"""
-        if not (rollup):
-            rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
-        else:
-            rollup_expr_str = rollup_expr
-        return self._new_vdataframe(query)
-
-    @save_verticapy_logs
-    def duplicated(
-        self, columns: SQLColumns = [], count: bool = False, limit: int = 30
-    ) -> TableSample:
-        """
-        Returns the duplicated values.
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
-            will be selected.
-        count: bool, optional
-            If set to  True, the  method will also return the count of 
-            each duplicates.
-        limit: int, optional
-            The limited number of elements to be displayed.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        if not (columns):
-            columns = self.get_columns()
-        elif isinstance(columns, str):
-            columns = [columns]
-        columns = self._format_colnames(columns)
-        columns = ", ".join(columns)
-        main_table = f"""
-            (SELECT 
-                *, 
-                ROW_NUMBER() OVER (PARTITION BY {columns}) AS duplicated_index 
-             FROM {self._genSQL()}) duplicated_index_table 
-             WHERE duplicated_index > 1"""
-        if count:
-            total = _executeSQL(
-                query=f"""
-                    SELECT 
-                        /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
-                    FROM {main_table}""",
-                title="Computing the number of duplicates.",
-                method="fetchfirstelem",
-                sql_push_ext=self._vars["sql_push_ext"],
-                symbol=self._vars["symbol"],
-            )
-            return total
-        result = TableSample.read_sql(
-            query=f"""
-                SELECT 
-                    {columns},
-                    MAX(duplicated_index) AS occurrence 
-                FROM {main_table} 
-                GROUP BY {columns} 
-                ORDER BY occurrence DESC LIMIT {limit}""",
-            sql_push_ext=self._vars["sql_push_ext"],
-            symbol=self._vars["symbol"],
-        )
-        result.count = _executeSQL(
-            query=f"""
-                SELECT 
-                    /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
-                FROM 
-                    (SELECT 
-                        {columns}, 
-                        MAX(duplicated_index) AS occurrence 
-                     FROM {main_table} 
-                     GROUP BY {columns}) t""",
-            title="Computing the number of distinct duplicates.",
-            method="fetchfirstelem",
-            sql_push_ext=self._vars["sql_push_ext"],
-            symbol=self._vars["symbol"],
-        )
-        return result
+    # Main Aggregate Functions.
 
     @save_verticapy_logs
     def aggregate(
@@ -830,156 +633,6 @@ class vDFAgg:
     agg = aggregate
 
     @save_verticapy_logs
-    def aad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
-        """
-        Aggregates the vDataFrame using 'aad' 
-        (Average Absolute Deviation).
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
-        **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self.aggregate(func=["aad"], columns=columns, **agg_kwargs,)
-
-    @save_verticapy_logs
-    def all(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
-        """
-        Aggregates the vDataFrame using 'bool_and'.
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
-        **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
-            function.
-
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs,)
-
-    @save_verticapy_logs
-    def any(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
-        """
-        Aggregates the vDataFrame using 'bool_or'.
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
-        **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs,)
-
-    @save_verticapy_logs
-    def avg(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
-        """
-        Aggregates the vDataFrame using 'avg' 
-        (Average).
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
-        **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self.aggregate(func=["avg"], columns=columns, **agg_kwargs,)
-
-    mean = avg
-
-    @save_verticapy_logs
-    def count(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
-        """
-        Aggregates the  vDataFrame  using a  list of 'count' 
-        (Number of non-missing values).
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
-        **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self.aggregate(func=["count"], columns=columns, **agg_kwargs,)
-
-    @save_verticapy_logs
-    def count_percent(
-        self,
-        columns: SQLColumns = [],
-        sort_result: bool = True,
-        desc: bool = True,
-        **agg_kwargs,
-    ) -> TableSample:
-        """
-        Aggregates  the   vDataFrame  using  a  list  of  'count' 
-        (the   number   of  non-missing   values)  and   percent 
-        (the percent of non-missing values).
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of vDataColumn names. If empty, all vDataColumns 
-            will be used.
-        sort_result: bool, optional
-            If set to True, the result will be sorted.
-        desc: bool, optional
-            If  set  to  True and 'sort_result' is  set  to  True, 
-            the result will be sorted in descending order.
-        **agg_kwargs
-            Any  optional  parameter  to  pass  to  the Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        result = self.aggregate(
-            func=["count", "percent"], columns=columns, **agg_kwargs,
-        )
-        if sort_result:
-            result.sort("count", desc)
-        return result
-
-    @save_verticapy_logs
     def describe(
         self,
         method: Literal[
@@ -1381,6 +1034,244 @@ class vDFAgg:
         return result
 
     @save_verticapy_logs
+    def groupby(
+        self,
+        columns: SQLColumns,
+        expr: SQLExpression = [],
+        rollup: Union[bool, list] = False,
+        having: str = "",
+    ) -> "vDataFrame":
+        """
+        Aggregates the vDataFrame by grouping the elements.
+
+        Parameters
+        ----------
+        columns: SQLColumns
+            List  of the  vDataColumns  used  to group the elements  or a 
+            customized expression.  If rollup is set to True, this can be 
+            a list of tuples.
+        expr: SQLExpression, optional
+            List of  the  different  aggregations  in  pure SQL.  Aliases 
+            can  be  used.  For  example, 'SUM(column)'  or  'AVG(column) 
+            AS  my_new_alias'  are  correct  whereas 'AVG'  is  incorrect. 
+            Aliases  are recommended to keep the track  of  the  features 
+            and  to  prevent  ambiguous  names.  For  example,  the  MODE 
+            function  does  not exist,  but can  be replicated  by  using 
+            the 'analytic' method and then grouping the result.
+        rollup: bool / list of bools, optional
+            If set to True, the rollup operator is used.
+            If  set to a list of bools, the  rollup  operator is  used on 
+            the  matching indexes  and the  length of 'rollup' must match 
+            the length of 'columns.'
+            For example, for columns = ['col1', ('col2', 'col3'), 'col4'] 
+            and rollup = [False, True, True], the rollup operator is used 
+            on the set ('col2', 'col3') and on 'col4'.
+        having: str, optional
+            Expression used to filter the result.
+
+        Returns
+        -------
+        vDataFrame
+            object result of the grouping.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(expr, str):
+            expr = [expr]
+        assert not (isinstance(rollup, list)) or len(rollup) == len(
+            columns
+        ), ParameterError(
+            "If parameter 'rollup' is of type list, it should have "
+            "the same length as the 'columns' parameter."
+        )
+        columns_to_select = []
+        if rollup == True:
+            rollup_expr = "ROLLUP(" if rollup == True else ""
+        else:
+            rollup_expr = ""
+        for idx, elem in enumerate(columns):
+            if isinstance(elem, tuple) and rollup:
+                if rollup == True:
+                    rollup_expr += "("
+                elif rollup[idx] == True:
+                    rollup_expr += "ROLLUP("
+                elif not (isinstance(rollup[idx], bool)):
+                    raise ParameterError(
+                        "When parameter 'rollup' is not a boolean, it "
+                        "has to be a list of booleans."
+                    )
+                for item in elem:
+                    colname = self._format_colnames(item)
+                    if colname:
+                        rollup_expr += colname
+                        columns_to_select += [colname]
+                    else:
+                        rollup_expr += str(item)
+                        columns_to_select += [item]
+                    rollup_expr += ", "
+                rollup_expr = rollup_expr[:-2] + "), "
+            elif isinstance(elem, str):
+                colname = self._format_colnames(elem)
+                if colname:
+                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                        rollup_expr += "ROLLUP(" + colname + ")"
+                    else:
+                        rollup_expr += colname
+                    columns_to_select += [colname]
+                else:
+                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                        rollup_expr += "ROLLUP(" + str(elem) + ")"
+                    else:
+                        rollup_expr += str(elem)
+                    columns_to_select += [elem]
+                rollup_expr += ", "
+            else:
+                raise ParameterError(
+                    "Parameter 'columns' must be a string; list of strings "
+                    "or tuples (only when rollup is set to True)."
+                )
+        rollup_expr = rollup_expr[:-2]
+        if rollup == True:
+            rollup_expr += ")"
+        if having:
+            having = f" HAVING {having}"
+        columns_str = ", ".join(
+            [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
+        )
+        if not (rollup):
+            rollup_expr_str = ", ".join(
+                [
+                    str(i + 1)
+                    for i in range(len([str(elem) for elem in columns_to_select]))
+                ],
+            )
+        else:
+            rollup_expr_str = rollup_expr
+        query = f"""
+            SELECT 
+                {columns_str} 
+            FROM {self._genSQL()} 
+            GROUP BY {rollup_expr_str}{having}"""
+        if not (rollup):
+            rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
+        else:
+            rollup_expr_str = rollup_expr
+        return self._new_vdataframe(query)
+
+    # Single Aggregate Functions.
+
+    @save_verticapy_logs
+    def aad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+        """
+        Aggregates the vDataFrame using 'aad' 
+        (Average Absolute Deviation).
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the  vDataColumns names.  If empty, all 
+            vDataColumns will be used.
+        **agg_kwargs
+            Any optional parameter to pass to the Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self.aggregate(func=["aad"], columns=columns, **agg_kwargs,)
+
+    @save_verticapy_logs
+    def all(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
+        """
+        Aggregates the vDataFrame using 'bool_and'.
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the  vDataColumns names.  If empty, all 
+            vDataColumns will be used.
+        **agg_kwargs
+            Any optional parameter to pass to the Aggregate 
+            function.
+
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs,)
+
+    @save_verticapy_logs
+    def any(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
+        """
+        Aggregates the vDataFrame using 'bool_or'.
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the  vDataColumns names.  If empty, all 
+            vDataColumns will be used.
+        **agg_kwargs
+            Any optional parameter to pass to the Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs,)
+
+    @save_verticapy_logs
+    def avg(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+        """
+        Aggregates the vDataFrame using 'avg' 
+        (Average).
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the  vDataColumns names.  If empty, all 
+            vDataColumns will be used.
+        **agg_kwargs
+            Any optional parameter to pass to the Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self.aggregate(func=["avg"], columns=columns, **agg_kwargs,)
+
+    mean = avg
+
+    @save_verticapy_logs
+    def count(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+        """
+        Aggregates the  vDataFrame  using a  list of 'count' 
+        (Number of non-missing values).
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the  vDataColumns names.  If empty, all 
+            vDataColumns will be used.
+        **agg_kwargs
+            Any optional parameter to pass to the Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self.aggregate(func=["count"], columns=columns, **agg_kwargs,)
+
+    @save_verticapy_logs
     def kurtosis(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'kurtosis'.
@@ -1487,35 +1378,6 @@ class vDFAgg:
             result.
         """
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs,)
-
-    @save_verticapy_logs
-    def nunique(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
-    ) -> TableSample:
-        """
-        Aggregates the vDataFrame using 'unique' 
-        (cardinality).
-
-        Parameters
-        ----------
-        columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
-            will be used.
-        approx: bool, optional
-            If set to True, the  approximate cardinality  is  returned. 
-            By  setting  this  parameter   to  False,  the  function's 
-            performance can drastically decrease.
-        **agg_kwargs
-            Any   optional   parameter  to   pass   to  the  Aggregate 
-            function.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        func = ["approx_unique"] if approx else ["unique"]
-        return self.aggregate(func=func, columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
     def product(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
@@ -1697,8 +1559,208 @@ class vDFAgg:
 
     variance = var
 
+    # TOPK.
+
+    @save_verticapy_logs
+    def count_percent(
+        self,
+        columns: SQLColumns = [],
+        sort_result: bool = True,
+        desc: bool = True,
+        **agg_kwargs,
+    ) -> TableSample:
+        """
+        Aggregates  the   vDataFrame  using  a  list  of  'count' 
+        (the   number   of  non-missing   values)  and   percent 
+        (the percent of non-missing values).
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of vDataColumn names. If empty, all vDataColumns 
+            will be used.
+        sort_result: bool, optional
+            If set to True, the result will be sorted.
+        desc: bool, optional
+            If  set  to  True and 'sort_result' is  set  to  True, 
+            the result will be sorted in descending order.
+        **agg_kwargs
+            Any  optional  parameter  to  pass  to  the Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        result = self.aggregate(
+            func=["count", "percent"], columns=columns, **agg_kwargs,
+        )
+        if sort_result:
+            result.sort("count", desc)
+        return result
+
+    # Distincts.
+
+    @save_verticapy_logs
+    def nunique(
+        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
+    ) -> TableSample:
+        """
+        Aggregates the vDataFrame using 'unique' 
+        (cardinality).
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, all vDataColumns 
+            will be used.
+        approx: bool, optional
+            If set to True, the  approximate cardinality  is  returned. 
+            By  setting  this  parameter   to  False,  the  function's 
+            performance can drastically decrease.
+        **agg_kwargs
+            Any   optional   parameter  to   pass   to  the  Aggregate 
+            function.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        func = ["approx_unique"] if approx else ["unique"]
+        return self.aggregate(func=func, columns=columns, **agg_kwargs,)
+
+    # Deals with duplicates.
+
+    @save_verticapy_logs
+    def duplicated(
+        self, columns: SQLColumns = [], count: bool = False, limit: int = 30
+    ) -> TableSample:
+        """
+        Returns the duplicated values.
+
+        Parameters
+        ----------
+        columns: SQLColumns, optional
+            List of the vDataColumns names. If empty, all vDataColumns 
+            will be selected.
+        count: bool, optional
+            If set to  True, the  method will also return the count of 
+            each duplicates.
+        limit: int, optional
+            The limited number of elements to be displayed.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        if not (columns):
+            columns = self.get_columns()
+        elif isinstance(columns, str):
+            columns = [columns]
+        columns = self._format_colnames(columns)
+        columns = ", ".join(columns)
+        main_table = f"""
+            (SELECT 
+                *, 
+                ROW_NUMBER() OVER (PARTITION BY {columns}) AS duplicated_index 
+             FROM {self._genSQL()}) duplicated_index_table 
+             WHERE duplicated_index > 1"""
+        if count:
+            total = _executeSQL(
+                query=f"""
+                    SELECT 
+                        /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                    FROM {main_table}""",
+                title="Computing the number of duplicates.",
+                method="fetchfirstelem",
+                sql_push_ext=self._vars["sql_push_ext"],
+                symbol=self._vars["symbol"],
+            )
+            return total
+        result = TableSample.read_sql(
+            query=f"""
+                SELECT 
+                    {columns},
+                    MAX(duplicated_index) AS occurrence 
+                FROM {main_table} 
+                GROUP BY {columns} 
+                ORDER BY occurrence DESC LIMIT {limit}""",
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
+        )
+        result.count = _executeSQL(
+            query=f"""
+                SELECT 
+                    /*+LABEL('vDataframe.duplicated')*/ COUNT(*) 
+                FROM 
+                    (SELECT 
+                        {columns}, 
+                        MAX(duplicated_index) AS occurrence 
+                     FROM {main_table} 
+                     GROUP BY {columns}) t""",
+            title="Computing the number of distinct duplicates.",
+            method="fetchfirstelem",
+            sql_push_ext=self._vars["sql_push_ext"],
+            symbol=self._vars["symbol"],
+        )
+        return result
+
 
 class vDCAgg:
+
+    # Main Aggregate Functions.
+
+    @save_verticapy_logs
+    def aggregate(self, func: list) -> TableSample:
+        """
+        Aggregates the vDataColumn using the input functions.
+
+        Parameters
+        ----------
+        func: list
+            List of the different aggregation.
+                aad            : average absolute deviation
+                approx_unique  : approximative cardinality
+                count          : number of non-missing elements
+                cvar           : conditional value at risk
+                dtype          : vDataColumn type
+                iqr            : interquartile range
+                kurtosis       : kurtosis
+                jb             : Jarque-Bera index 
+                mad            : median absolute deviation
+                max            : maximum
+                mean           : average
+                median         : median
+                min            : minimum
+                mode           : most occurent element
+                percent        : percent of non-missing elements
+                q%             : q quantile (ex: 50% for the median)
+                prod           : product
+                range          : difference between the max and the min
+                sem            : standard error of the mean
+                skewness       : skewness
+                sum            : sum
+                std            : standard deviation
+                topk           : kth most occurent element 
+                                 (ex: top1 for the mode)
+                topk_percent   : kth most occurent element density
+                unique         : cardinality (count distinct)
+                var            : variance
+            Other aggregations could work if it is part of the DB 
+            version you are using.
+
+        Returns
+        -------
+        TableSample
+            result.
+        """
+        return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
+
+    agg = aggregate
+
     @save_verticapy_logs
     def describe(
         self,
@@ -1715,10 +1777,10 @@ class vDCAgg:
         ----------
         method: str, optional
             The describe method.
-                auto        : Sets the method to 'numerical' if 
-                              the   vDataColumn  is   numerical, 
+                auto        : Sets  the  method to  'numerical' if 
+                              the   vDataColumn    is    numerical, 
                               'categorical' otherwise.
-                categorical : Uses only categorical aggregations 
+                categorical : Uses  only categorical  aggregations 
                               during the computation.
                 cat_stats   : Computes  statistics  of a numerical 
                               column for each vDataColumn category. 
@@ -1727,10 +1789,10 @@ class vDCAgg:
                 numerical   : Uses  popular numerical aggregations 
                               during the computation.
         max_cardinality: int, optional
-            Cardinality threshold to use to determine if the 
+            Cardinality  threshold  to  use  to  determine  if the 
             vDataColumn will be considered as categorical.
         numcol: str, optional
-            Numerical  vDataColumn to use when the parameter 
+            Numerical  vDataColumn  to  use  when  the   parameter 
             method is set to 'cat_stats'.
 
         Returns
@@ -1873,6 +1935,8 @@ class vDCAgg:
                     values[elem][i] = float(values[elem][i])
         return TableSample(values)
 
+    # Single Aggregate Functions.
+
     @save_verticapy_logs
     def aad(self) -> float:
         """
@@ -1885,54 +1949,6 @@ class vDCAgg:
             aad
         """
         return self.aggregate(["aad"]).values[self._alias][0]
-
-    @save_verticapy_logs
-    def aggregate(self, func: list) -> TableSample:
-        """
-        Aggregates the vDataColumn using the input functions.
-
-        Parameters
-        ----------
-        func: list
-            List of the different aggregation.
-                aad            : average absolute deviation
-                approx_unique  : approximative cardinality
-                count          : number of non-missing elements
-                cvar           : conditional value at risk
-                dtype          : vDataColumn type
-                iqr            : interquartile range
-                kurtosis       : kurtosis
-                jb             : Jarque-Bera index 
-                mad            : median absolute deviation
-                max            : maximum
-                mean           : average
-                median         : median
-                min            : minimum
-                mode           : most occurent element
-                percent        : percent of non-missing elements
-                q%             : q quantile (ex: 50% for the median)
-                prod           : product
-                range          : difference between the max and the min
-                sem            : standard error of the mean
-                skewness       : skewness
-                sum            : sum
-                std            : standard deviation
-                topk           : kth most occurent element 
-                                 (ex: top1 for the mode)
-                topk_percent   : kth most occurent element density
-                unique         : cardinality (count distinct)
-                var            : variance
-            Other aggregations could work if it is part of the DB 
-            version you are using.
-
-        Returns
-        -------
-        TableSample
-            result.
-        """
-        return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
-
-    agg = aggregate
 
     @save_verticapy_logs
     def avg(self) -> float:
@@ -1960,46 +1976,6 @@ class vDCAgg:
             number of non-Missing elements.
         """
         return self.aggregate(["count"]).values[self._alias][0]
-
-    def distinct(self, **kwargs) -> list:
-        """
-        Returns the distinct categories of the vDataColumn.
-
-        Returns
-        -------
-        list
-            Distinct caterogies of the vDataColumn.
-        """
-        alias_sql_repr = to_varchar(self.category(), self._alias)
-        if "agg" not in kwargs:
-            query = f"""
-                SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ 
-                    {alias_sql_repr} AS {self._alias} 
-                FROM {self._parent._genSQL()} 
-                WHERE {self._alias} IS NOT NULL 
-                GROUP BY {self._alias} 
-                ORDER BY {self._alias}"""
-        else:
-            query = f"""
-                SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ {self._alias} 
-                FROM 
-                    (SELECT 
-                        {alias_sql_repr} AS {self._alias}, 
-                        {kwargs['agg']} AS verticapy_agg 
-                     FROM {self._parent._genSQL()} 
-                     WHERE {self._alias} IS NOT NULL 
-                     GROUP BY 1) x 
-                ORDER BY verticapy_agg DESC"""
-        query_result = _executeSQL(
-            query=query,
-            title=f"Computing the distinct categories of {self._alias}.",
-            method="fetchall",
-            sql_push_ext=self._parent._vars["sql_push_ext"],
-            symbol=self._parent._vars["symbol"],
-        )
-        return [item for sublist in query_result for item in sublist]
 
     @save_verticapy_logs
     def kurtosis(self) -> float:
@@ -2070,101 +2046,6 @@ class vDCAgg:
             minimum
         """
         return self.aggregate(["min"]).values[self._alias][0]
-
-    @save_verticapy_logs
-    def mode(self, dropna: bool = False, n: int = 1) -> PythonScalar:
-        """
-        Returns the nth most occurent element.
-
-        Parameters
-        ----------
-        dropna: bool, optional
-            If set to True, NULL values will not be considered 
-            during the computation.
-        n: int, optional
-            Integer  corresponding to the offset. For example, 
-            if n = 1 then this method will return the mode of 
-            the vDataColumn.
-
-        Returns
-        -------
-        PythonScalar
-            vDataColumn nth most occurent element.
-        """
-        if n == 1:
-            pre_comp = self._parent._get_catalog_value(self._alias, "top")
-            if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-                if not (dropna) and (pre_comp != None):
-                    return pre_comp
-        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
-        where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
-        result = _executeSQL(
-            f"""
-            SELECT 
-                /*+LABEL('vDataColumn.mode')*/ {self._alias} 
-            FROM (
-                SELECT 
-                    {self._alias}, 
-                    COUNT(*) AS _verticapy_cnt_ 
-                FROM {self._parent._genSQL()}
-                {where}GROUP BY {self._alias} 
-                ORDER BY _verticapy_cnt_ DESC 
-                LIMIT {n}) VERTICAPY_SUBTABLE 
-                ORDER BY _verticapy_cnt_ ASC 
-                LIMIT 1""",
-            title="Computing the mode.",
-            method="fetchall",
-            sql_push_ext=self._parent._vars["sql_push_ext"],
-            symbol=self._parent._vars["symbol"],
-        )
-        top = None if not (result) else result[0][0]
-        if not (dropna):
-            n = "" if (n == 1) else str(int(n))
-            if isinstance(top, decimal.Decimal):
-                top = float(top)
-            self._parent._update_catalog({"index": [f"top{n}"], self._alias: [top]})
-        return top
-
-    @save_verticapy_logs
-    def mul(self, x: PythonNumber) -> "vDataFrame":
-        """
-        Multiplies the vDataColumn by the input element.
-
-        Parameters
-        ----------
-        x: PythonNumber
-            Input number.
-
-        Returns
-        -------
-        vDataFrame
-            self._parent
-        """
-        return self.apply(func=f"{{}} * ({x})")
-
-    @save_verticapy_logs
-    def nunique(self, approx: bool = True) -> int:
-        """
-        Aggregates the vDataColumn using 'unique' 
-        (cardinality).
-
-        Parameters
-        ----------
-        approx: bool, optional
-            If  set  to  True,  the  approximate  cardinality 
-            is   returned.  By  setting  this  parameter   to 
-            False, the function's performance can drastically 
-            decrease.
-
-        Returns
-        -------
-        int
-            vDataColumn cardinality (or approximate cardinality).
-        """
-        if approx:
-            return self.aggregate(func=["approx_unique"]).values[self._alias][0]
-        else:
-            return self.aggregate(func=["unique"]).values[self._alias][0]
 
     @save_verticapy_logs
     def product(self) -> float:
@@ -2272,6 +2153,62 @@ class vDCAgg:
 
     variance = var
 
+    # TOPK.
+
+    @save_verticapy_logs
+    def mode(self, dropna: bool = False, n: int = 1) -> PythonScalar:
+        """
+        Returns the nth most occurent element.
+
+        Parameters
+        ----------
+        dropna: bool, optional
+            If set to True, NULL values will not be considered 
+            during the computation.
+        n: int, optional
+            Integer  corresponding to the offset. For  example, 
+            if n = 1 then this method  will return the mode of 
+            the vDataColumn.
+
+        Returns
+        -------
+        PythonScalar
+            vDataColumn nth most occurent element.
+        """
+        if n == 1:
+            pre_comp = self._parent._get_catalog_value(self._alias, "top")
+            if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
+                if not (dropna) and (pre_comp != None):
+                    return pre_comp
+        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
+        where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
+        result = _executeSQL(
+            f"""
+            SELECT 
+                /*+LABEL('vDataColumn.mode')*/ {self._alias} 
+            FROM (
+                SELECT 
+                    {self._alias}, 
+                    COUNT(*) AS _verticapy_cnt_ 
+                FROM {self._parent._genSQL()}
+                {where}GROUP BY {self._alias} 
+                ORDER BY _verticapy_cnt_ DESC 
+                LIMIT {n}) VERTICAPY_SUBTABLE 
+                ORDER BY _verticapy_cnt_ ASC 
+                LIMIT 1""",
+            title="Computing the mode.",
+            method="fetchall",
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
+        )
+        top = None if not (result) else result[0][0]
+        if not (dropna):
+            n = "" if (n == 1) else str(int(n))
+            if isinstance(top, decimal.Decimal):
+                top = float(top)
+            self._parent._update_catalog({"index": [f"top{n}"], self._alias: [top]})
+        return top
+
     @save_verticapy_logs
     def value_counts(self, k: int = 30) -> TableSample:
         """
@@ -2339,3 +2276,69 @@ class vDCAgg:
             "percent": [float(round(item[2], 3)) for item in result],
         }
         return TableSample(values)
+
+    # Distincts.
+
+    def distinct(self, **kwargs) -> list:
+        """
+        Returns the distinct categories of the vDataColumn.
+
+        Returns
+        -------
+        list
+            Distinct caterogies of the vDataColumn.
+        """
+        alias_sql_repr = to_varchar(self.category(), self._alias)
+        if "agg" not in kwargs:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vDataColumn.distinct')*/ 
+                    {alias_sql_repr} AS {self._alias} 
+                FROM {self._parent._genSQL()} 
+                WHERE {self._alias} IS NOT NULL 
+                GROUP BY {self._alias} 
+                ORDER BY {self._alias}"""
+        else:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vDataColumn.distinct')*/ {self._alias} 
+                FROM 
+                    (SELECT 
+                        {alias_sql_repr} AS {self._alias}, 
+                        {kwargs['agg']} AS verticapy_agg 
+                     FROM {self._parent._genSQL()} 
+                     WHERE {self._alias} IS NOT NULL 
+                     GROUP BY 1) x 
+                ORDER BY verticapy_agg DESC"""
+        query_result = _executeSQL(
+            query=query,
+            title=f"Computing the distinct categories of {self._alias}.",
+            method="fetchall",
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
+        )
+        return [item for sublist in query_result for item in sublist]
+
+    @save_verticapy_logs
+    def nunique(self, approx: bool = True) -> int:
+        """
+        Aggregates the vDataColumn using 'unique' 
+        (cardinality).
+
+        Parameters
+        ----------
+        approx: bool, optional
+            If  set  to  True,  the  approximate  cardinality 
+            is   returned.  By  setting  this  parameter   to 
+            False, the function's performance can drastically 
+            decrease.
+
+        Returns
+        -------
+        int
+            vDataColumn cardinality (or approximate cardinality).
+        """
+        if approx:
+            return self.aggregate(func=["approx_unique"]).values[self._alias][0]
+        else:
+            return self.aggregate(func=["unique"]).values[self._alias][0]

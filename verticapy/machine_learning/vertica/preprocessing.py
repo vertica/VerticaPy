@@ -19,7 +19,7 @@ from typing import Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLRelation
+from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation, clean_query
@@ -218,7 +218,7 @@ class Preprocessing(Unsupervised):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
@@ -289,7 +289,7 @@ class Preprocessing(Unsupervised):
             key_columns = [key_columns]
         if isinstance(exclude_columns, str):
             exclude_columns = [exclude_columns]
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -336,7 +336,7 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -583,11 +583,11 @@ class CountVectorizer(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            if isinstance(X, type(None)):
+            if isinstance(X, NoneType):
                 X = input_relation.get_columns()
             self.input_relation = input_relation._genSQL()
         else:
-            if isinstance(X, type(None)):
+            if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = [quote_ident(elem) for elem in X]

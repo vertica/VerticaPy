@@ -18,7 +18,7 @@ from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 
-from verticapy._typing import ArrayLike, PythonNumber, PythonScalar, SQLRelation
+from verticapy._typing import ArrayLike, NoneType, PythonNumber, PythonScalar, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -168,7 +168,7 @@ def _compute_final_score(
     Computes the final score by using the different results
     of the multi-confusion matrix.
     """
-    if pos_label == None and isinstance(labels, type(None)):
+    if pos_label == None and isinstance(labels, NoneType):
         pos_label = 1
     if pos_label == None:
         cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
@@ -1412,7 +1412,7 @@ def _compute_function_metrics(
     """
     Returns the function metrics.
     """
-    if isinstance(pos_label, type(None)):
+    if isinstance(pos_label, NoneType):
         pos_label = 1
     if fun_sql_name == "lift_table":
         label = "lift_curve"
@@ -1554,7 +1554,7 @@ def best_cutoff(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, type(None)):
+    if pos_label != None or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1642,7 +1642,7 @@ def roc_auc(
     float
         score.
 	"""
-    if pos_label != None or isinstance(labels, type(None)):
+    if pos_label != None or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1728,7 +1728,7 @@ def prc_auc(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, type(None)):
+    if pos_label != None or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1804,7 +1804,7 @@ def log_loss(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, type(None)):
+    if pos_label != None or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1994,9 +1994,9 @@ def classification_report(
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
     else:
-        labels = [1] if isinstance(labels, type(None)) else labels
+        labels = [1] if isinstance(labels, NoneType) else labels
         num_classes = len(labels) + 1
-    if isinstance(metrics, type(None)):
+    if isinstance(metrics, NoneType):
         metrics = [
             "auc",
             "prc_auc",

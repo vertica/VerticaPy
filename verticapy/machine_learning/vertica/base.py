@@ -23,6 +23,7 @@ import numpy as np
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    NoneType,
     PlottingObject,
     PythonNumber,
     PythonScalar,
@@ -498,7 +499,7 @@ class VerticaModel(PlottingUtils):
                 X = [X]
             X = (
                 self.X
-                if isinstance(X, type(None))
+                if isinstance(X, NoneType)
                 else [quote_ident(predictor) for predictor in X]
             )
             sql = f"""
@@ -1171,7 +1172,7 @@ class BinaryClassifier(Classifier):
     	str
     		the SQL code needed to deploy the model.
 		"""
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1183,7 +1184,7 @@ class BinaryClassifier(Classifier):
             model_name = '{self.model_name}',
             type = 'probability',
             match_by_pos = 'true')"""
-        if not (isinstance(cutoff, type(None))) and (0 <= cutoff <= 1):
+        if not (isinstance(cutoff, NoneType)) and (0 <= cutoff <= 1):
             sql = f"""
                 (CASE 
                     WHEN {sql} >= {cutoff} 
@@ -1426,7 +1427,7 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1486,7 +1487,7 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1755,7 +1756,7 @@ class MulticlassClassifier(Classifier):
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -1920,7 +1921,7 @@ class MulticlassClassifier(Classifier):
         TableSample
             report.
         """
-        if isinstance(labels, type(None)):
+        if isinstance(labels, NoneType):
             labels = self.classes_
         elif isinstance(labels, str):
             labels = [labels]
@@ -2129,7 +2130,7 @@ class MulticlassClassifier(Classifier):
             )
 
         # Inititalization
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -2207,7 +2208,7 @@ class MulticlassClassifier(Classifier):
                 vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
             )
         # Inititalization
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -2590,7 +2591,7 @@ class Regressor(Supervised):
                     ],
                 }
             )
-        elif isinstance(metrics, type(None)) or isinstance(
+        elif isinstance(metrics, NoneType) or isinstance(
             metrics, (str, list, np.ndarray)
         ):
             return mt.regression_report(
@@ -2692,7 +2693,7 @@ class Regressor(Supervised):
 		"""
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         if isinstance(X, str):
             X = [X]
@@ -2779,14 +2780,14 @@ class Unsupervised(VerticaModel):
                         FROM {self.input_relation}""",
                 title="Creating a temporary view to fit the model.",
             )
-            if isinstance(X, type(None)) and (self._model_type == "KPrototypes"):
+            if isinstance(X, NoneType) and (self._model_type == "KPrototypes"):
                 X = input_relation.get_columns()
-            elif isinstance(X, type(None)):
+            elif isinstance(X, NoneType):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
             relation = input_relation
-            if isinstance(X, type(None)):
+            if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
         self.X = [quote_ident(column) for column in X]
         parameters = self._get_vertica_param_dict()

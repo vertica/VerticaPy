@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.colors as plt_colors
 
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, PythonNumber, PythonScalar, SQLColumns
+from verticapy._typing import ArrayLike, NoneType, PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -191,7 +191,7 @@ class PlottingBase(PlottingBaseSQL):
     # Columns formatting methods.
 
     def _clean_quotes(self, columns: SQLColumns) -> SQLColumns:
-        if isinstance(columns, type(None)):
+        if isinstance(columns, NoneType):
             return None
         elif isinstance(columns, str):
             return quote_ident(columns)[1:-1]
@@ -1581,9 +1581,9 @@ class PlottingBase(PlottingBaseSQL):
             columns = [columns]
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         n = len(columns)
-        if isinstance(h, (int, float, type(None))):
+        if isinstance(h, (int, float, NoneType)):
             h = (h,) * n
-        if isinstance(max_cardinality, (int, float, type(None))):
+        if isinstance(max_cardinality, (int, float, NoneType)):
             if max_cardinality == None:
                 max_cardinality = (6,) * n
             else:

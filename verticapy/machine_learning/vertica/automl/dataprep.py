@@ -18,7 +18,7 @@ import copy, datetime
 from typing import Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import TimeInterval, SQLColumns, SQLRelation
+from verticapy._typing import NoneType, TimeInterval, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -227,7 +227,7 @@ class AutoDataPrep(VerticaModel):
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation.copy()
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = vdf.get_columns()
         if isinstance(by, str):
             by = [by]

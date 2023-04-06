@@ -18,6 +18,7 @@ import os, csv
 import pandas as pd
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_schema_table, quote_ident
@@ -109,7 +110,7 @@ def read_pandas(
         # Not putting them can lead to wrong data ingestion.
         str_cols, null_columns = [], []
         for c in df.columns:
-            if isinstance(df[c].first_valid_index(), type(None)):
+            if isinstance(df[c].first_valid_index(), NoneType):
                 null_columns += [c]
             elif df[c].dtype == object and isinstance(
                 df[c].loc[df[c].first_valid_index()], str

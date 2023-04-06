@@ -21,9 +21,9 @@ import numpy as np
 from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
-from verticapy._typing import PlottingObject, PythonScalar, SQLColumns, SQLRelation
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._typing import NoneType, PlottingObject, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -95,7 +95,7 @@ class Clustering(Unsupervised):
         vDataFrame
             the input object.
         """
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]
@@ -897,11 +897,11 @@ class DBSCAN(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            if isinstance(X, type(None)):
+            if isinstance(X, NoneType):
                 X = input_relation.numcol()
             input_relation = input_relation._genSQL()
         else:
-            if isinstance(X, type(None)):
+            if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
         X = [quote_ident(column) for column in X]
         self.X = X
