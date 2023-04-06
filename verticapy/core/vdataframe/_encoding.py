@@ -30,6 +30,31 @@ from verticapy.sql.drop import drop
 
 class vDFEncode:
     @save_verticapy_logs
+    def case_when(self, name: str, *args) -> "vDataFrame":
+        """
+        Creates a new feature by evaluating some conditions.
+        
+        Parameters
+        ----------
+        name: str
+            Name of the new feature.
+        args: object
+            Infinite Number of Expressions.
+            The expression generated will look like:
+            even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
+            odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... 
+                           ELSE args[n] END
+
+        Returns
+        -------
+        vDataFrame
+            self
+        """
+        from verticapy.sql.functions import case_when
+
+        return self.eval(name=name, expr=case_when(*args))
+
+    @save_verticapy_logs
     def one_hot_encode(
         self,
         columns: SQLColumns = [],
@@ -158,6 +183,29 @@ class vDCEncode:
             ]
         expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
         self.apply(func=expr)
+
+    @save_verticapy_logs
+    def decode(self, *args) -> "vDataFrame":
+        """
+        Encodes the vDataColumn using a user-defined encoding.
+
+        Parameters
+        ----------
+        args: object
+            Any amount of expressions.
+            The expression generated will look like:
+            even: CASE ... WHEN vDataColumn = args[2 * i] 
+                           THEN args[2 * i + 1] ... END
+            odd : CASE ... WHEN vDataColumn = args[2 * i] 
+                           THEN args[2 * i + 1] ... 
+                           ELSE args[n] END
+
+        Returns
+        -------
+        vDataFrame
+            self._parent
+        """
+        return self.apply(func=decode(StringSQL("{}"), *args))
 
     @save_verticapy_logs
     def discretize(

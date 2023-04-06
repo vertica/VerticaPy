@@ -428,27 +428,30 @@ class vDataColumn(
     StringSQL,
 ):
     """
-Python object which that stores all user transformations. If the vDataFrame
-represents the entire relation, a vDataColumn can be seen as one column of that
-relation. vDataColumns simplify several processes with its abstractions.
+    Python  object  which  that  stores all user  transformations. 
+    If   the  vDataFrame   represents  the  entire  relation,   a 
+    vDataColumn  can  be seen  as  one  column of  that  relation. 
+    vDataColumns simplify several processes with its abstractions.
 
-Parameters
-----------
-alias: str
-    vDataColumn alias.
-transformations: list, optional
-    List of the different transformations. Each transformation must be similar
-    to the following: (function, type, category)  
-parent: vDataFrame, optional
-    Parent of the vDataColumn. One vDataFrame can have multiple children vDataColumns 
-    whereas one vDataColumn can only have one parent.
-catalog: dict, optional
-    Catalog where each key corresponds to an aggregation. vDataColumns will memorize
-    the already computed aggregations to gain in performance. The catalog will
-    be updated when the parent vDataFrame is modified.
+    Parameters
+    ----------
+    alias: str
+        vDataColumn alias.
+    transformations: list, optional
+        List of the different  transformations. Each transformation 
+        must be similar to the following: (function, type, category)  
+    parent: vDataFrame, optional
+        Parent of the vDataColumn. One vDataFrame can have multiple 
+        children vDataColumns whereas one vDataColumn can only have 
+        one parent.
+    catalog: dict, optional
+        Catalog where each key corresponds to an aggregation. 
+        vDataColumns will memorize the already computed aggregations 
+        to gain in performance. The catalog will be updated when the 
+        parent vDataFrame is modified.
 
-Attributes
-----------
+    Attributes
+    ----------
     alias, str           : vDataColumn alias.
     catalog, dict        : Catalog of pre-computed aggregations.
     parent, vDataFrame   : Parent of the vDataColumn.

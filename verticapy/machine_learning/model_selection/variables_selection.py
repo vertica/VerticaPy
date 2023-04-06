@@ -530,7 +530,7 @@ def stepwise(
             "importance": importance,
         }
     )
-    if (drop_final_estimator):
+    if drop_final_estimator:
         estimator.drop()
     res.best_list_ = X_current
     if show:

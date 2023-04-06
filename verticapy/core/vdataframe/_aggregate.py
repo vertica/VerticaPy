@@ -19,7 +19,13 @@ from typing import Literal, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, PythonNumber, SQLColumns, SQLExpression
+from verticapy._typing import (
+    ArrayLike,
+    PythonNumber,
+    SQLColumns,
+    SQLExpression,
+    TYPE_CHECKING,
+)
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -36,6 +42,9 @@ from verticapy.errors import (
 )
 
 from verticapy.core.tablesample.base import TableSample
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.core.vdataframe._multiprocessing import (
     aggregate_parallel_block,

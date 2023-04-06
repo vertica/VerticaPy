@@ -779,18 +779,14 @@ class vDCFilter:
         return self._parent
 
     @save_verticapy_logs
-    def isin(
-        self,
-        val: Union[str, int, float, datetime.datetime, datetime.date, list],
-        *args,
-    ) -> "vDataFrame":
+    def isin(self, val: Union[PythonScalar, list], *args,) -> "vDataFrame":
         """
         Looks if some specific records are in the vDataColumn and it 
         returns the new vDataFrame of the search.
 
         Parameters
         ----------
-        val: str / PythonNumber / date / list
+        val: PythonScalar / list
             List of the different  records. For example, to check if 
             Badr and Fouad are in the vDataColumn. You can write the 
             following list: ["Fouad", "Badr"]

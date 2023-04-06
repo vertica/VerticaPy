@@ -141,10 +141,7 @@ class OutliersPlot(PlotlyBase):
                     dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
                     colorscale=colorscale,
-                    contours=dict(
-                        start=threshold,
-                        end=z_max,
-                    ),
+                    contours=dict(start=threshold, end=z_max,),
                 )
             )
             fig.add_trace(
@@ -157,10 +154,7 @@ class OutliersPlot(PlotlyBase):
                     colorscale=[[0, "blue"], [1, "blue"]],
                     contours_coloring="lines",
                     line_width=2,
-                    contours=dict(
-                        start=threshold,
-                        end=threshold,
-                    ),
+                    contours=dict(start=threshold, end=threshold,),
                 )
             )
             fig.update_xaxes(title_text=self.layout["columns"][0])

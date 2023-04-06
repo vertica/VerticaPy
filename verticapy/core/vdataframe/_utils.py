@@ -15,15 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._utils._sql._format import quote_ident
+from verticapy._typing import SQLExpression
 from verticapy.errors import MissingColumn, ParameterError
 
 
 class vDFUtils:
     @staticmethod
-    def _levenshtein(s: str, t: str):
+    def _levenshtein(s: str, t: str) -> int:
         rows = len(s) + 1
         cols = len(t) + 1
         dist = [[0 for x in range(cols)] for x in range(rows)]
@@ -50,32 +51,37 @@ class vDFUtils:
         columns: Union[str, list, dict] = [],
         expected_nb_of_cols: Union[int, list] = [],
         raise_error: bool = True,
-    ):
+    ) -> SQLExpression:
         """
-    Method used to format the input columns by using the vDataFrame columns' names.
+        Method used to format the input columns by using the 
+        vDataFrame columns' names.
 
-    Parameters
-    ----------
-    *args: str / list / dict, optional
-        List of columns' names to format. It allows to use as input multiple
-        objects and to get all of them formatted.
-        Example: self._format_colnames(x0, x1, x2) will return x0_f, x1_f, 
-        x2_f where xi_f represents xi correctly formatted.
-    columns: SQLColumns / dict, optional
-        List of columns' names to format.
-    expected_nb_of_cols: int | list
-        [Only used for the function first argument]
-        List of the expected number of columns.
-        Example: If expected_nb_of_cols is set to [2, 3], the parameters
-        'columns' or the first argument of args should have exactly 2 or
-        3 elements. Otherwise, the function will raise an error.
-    raise_error: bool, optional
-        If set to True and if there is an error, it will be raised.
+        Parameters
+        ----------
+        *args: str / list / dict, optional
+            List  of columns' names to format. It allows  to 
+            use as input multiple  objects and to get all of 
+            them formatted.
+            Example:  self._format_colnames(x0, x1, x2) will 
+            return x0_f, x1_f, x2_f where xi_f represents xi 
+            correctly formatted.
+        columns: SQLColumns / dict, optional
+            List of columns' names to format.
+        expected_nb_of_cols: int | list
+            [Only used for the function first argument]
+            List of the expected number of columns.
+            Example: If  expected_nb_of_cols is set to [2, 3], 
+            the parameters 'columns' or the first argument of 
+            args  should   have   exactly  2  or  3  elements. 
+            Otherwise, the function will raise an error.
+        raise_error: bool, optional
+            If  set to True and if there is an error, it will 
+            be raised.
 
-    Returns
-    -------
-    SQLExpression
-        Formatted columns' names.
+        Returns
+        -------
+        SQLExpression
+            Formatted columns' names.
         """
         if args:
             result = []
@@ -144,7 +150,9 @@ class vDFUtils:
         return result
 
     @staticmethod
-    def _get_match_index(x: str, col_list: list, str_check: bool = True):
+    def _get_match_index(
+        x: str, col_list: list, str_check: bool = True
+    ) -> Optional[int]:
         """
         Returns the matching index.
         """
@@ -155,21 +163,22 @@ class vDFUtils:
                 return idx
         return None
 
-    def _is_colname_in(self, column: str):
+    def _is_colname_in(self, column: str) -> bool:
         """
-    Method used to check if the input column name is used by the vDataFrame.
-    If not, the function raises an error.
+        Method used to check if the input column name is used by 
+        the vDataFrame.
+        If not, the function raises an error.
 
-    Parameters
-    ----------
-    column: str
-        Input column.
+        Parameters
+        ----------
+        column: str
+            Input column.
 
-    Returns
-    -------
-    bool
-        True if the column is used by the vDataFrame
-        False otherwise.
+        Returns
+        -------
+        bool
+            True if the column is used by the vDataFrame
+            False otherwise.
         """
         columns = self.get_columns()
         column = quote_ident(column).lower()

@@ -17,12 +17,15 @@ permissions and limitations under the License.
 import datetime, random
 from typing import Union
 
-from verticapy._typing import SQLColumns
+from verticapy._typing import SQLColumns, TYPE_CHECKING
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFRolling:
@@ -35,67 +38,68 @@ class vDFRolling:
         by: SQLColumns = [],
         order_by: Union[dict, list] = [],
         name: str = "",
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by using an advanced analytical window 
-    function on one or two specific vDataColumns.
+        Adds a new vDataColumn to the vDataFrame by using an 
+        advanced  analytical  window function on one or  two 
+        specific vDataColumns.
 
-    \u26A0 Warning : Some window functions can make the vDataFrame structure 
-                     heavier. It is recommended to always check the current structure 
-                     using the 'current_relation' method and to save it using the 
-                     'to_db' method with the parameters 'inplace = True' and 
-                     'relation_type = table'
+        \u26A0 Warning : Some   window  functions   can  make   the 
+                         vDataFrame   structure   heavier.  It   is 
+                         recommended  to  always check the  current 
+                         structure   using  the   'current_relation' 
+                         method  and to  save  it using the  'to_db' 
+                         method with the parameters 'inplace = True' 
+                         and 'relation_type = table'
 
-    Parameters
-    ----------
-    func: str
-        Function to use.
-            aad         : average absolute deviation
-            beta        : Beta Coefficient between 2 vDataColumns
-            count       : number of non-missing elements
-            corr        : Pearson correlation between 2 vDataColumns
-            cov         : covariance between 2 vDataColumns
-            kurtosis    : kurtosis
-            jb          : Jarque-Bera index
-            max         : maximum
-            mean        : average
-            min         : minimum
-            prod        : product
-            range       : difference between the max and the min
-            sem         : standard error of the mean
-            skewness    : skewness
-            sum         : sum
-            std         : standard deviation
-            var         : variance
-                Other window functions could work if it is part of 
-                the DB version you are using.
-    window: list / tuple
-        Window Frame Range.
-        If two integers, it will compute a Row Window, otherwise it will compute
-        a Time Window. For example, if set to (-5, 1), the moving windows will
-        take 5 rows preceding and one following. If set to ('- 5 minutes', '0 minutes'),
-        the moving window will take all elements of the last 5 minutes.
-    columns: SQLColumns
-        Input vDataColumns. It can be a list of one or two elements.
-    by: SQLColumns, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty, a default name will be generated.
+        Parameters
+        ----------
+        func: str
+            Function to use.
+                aad         : average absolute deviation
+                beta        : Beta Coefficient between 2 vDataColumns
+                count       : number of non-missing elements
+                corr        : Pearson correlation between 2 vDataColumns
+                cov         : covariance between 2 vDataColumns
+                kurtosis    : kurtosis
+                jb          : Jarque-Bera index
+                max         : maximum
+                mean        : average
+                min         : minimum
+                prod        : product
+                range       : difference between the max and the min
+                sem         : standard error of the mean
+                skewness    : skewness
+                sum         : sum
+                std         : standard deviation
+                var         : variance
+                    Other window functions could work if it is part of 
+                    the DB version you are using.
+        window: list / tuple
+            Window Frame Range.
+            If two integers,  it will compute a Row Window, otherwise 
+            it  will  compute a Time  Window. For example, if set  to 
+            (-5, 1),  the moving  windows will take 5 rows  preceding 
+            and one following. If set to ('- 5 minutes', '0 minutes'),
+            the  moving window  will take all elements of the last  5 
+            minutes.
+        columns: SQLColumns
+            Input vDataColumns. It can be a list of one or two elements.
+        by: SQLColumns, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List of  the vDataColumns to use to sort the data using asc 
+            order or dictionary of all sorting methods. For example, to 
+            sort by "column1" ASC and "column2" DESC, write:
+            {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of the new vDataColumn.  If empty, a default name will 
+            be generated.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.eval     : Evaluates a customized expression.
-    vDataFrame.analytic : Adds a new vDataColumn to the vDataFrame by using an advanced 
-        analytical function on a specific vDataColumn.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -249,32 +253,30 @@ class vDFRolling:
         by: list = [],
         order_by: Union[dict, list] = [],
         name: str = "",
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by computing the cumulative maximum of
-    the input vDataColumn.
+        Adds a new vDataColumn to the vDataFrame by computing the 
+        cumulative maximum of the input vDataColumn.
 
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn.
-    by: list, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty, a default name will be generated.
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn.
+        by: list, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List  of  the  vDataColumns to  use to sort the data  using 
+            asc  order  or  dictionary  of  all  sorting  methods.  For 
+            example, to sort by "column1" ASC and "column2" DESC, write: 
+            {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of the new vDataColumn.  If empty, a default name will 
+            be generated.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.rolling : Computes a customized moving window.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         return self.rolling(
             func="max",
@@ -292,32 +294,30 @@ class vDFRolling:
         by: list = [],
         order_by: Union[dict, list] = [],
         name: str = "",
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by computing the cumulative minimum of
-    the input vDataColumn.
+        Adds a new vDataColumn to the vDataFrame by computing the 
+        cumulative minimum of the input vDataColumn.
 
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn.
-    by: list, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty, a default name will be generated.
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn.
+        by: list, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List  of  the  vDataColumns to  use to sort the data  using 
+            asc  order  or  dictionary  of  all  sorting  methods.  For 
+            example, to sort by "column1" ASC and "column2" DESC, write: 
+            {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of the new vDataColumn.  If empty, a default name will 
+            be generated.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.rolling : Computes a customized moving window.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         return self.rolling(
             func="min",
@@ -335,32 +335,30 @@ class vDFRolling:
         by: list = [],
         order_by: Union[dict, list] = [],
         name: str = "",
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by computing the cumulative product of 
-    the input vDataColumn.
+        Adds a new vDataColumn to the vDataFrame by computing the 
+        cumulative product of the input vDataColumn.
 
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn.
-    by: list, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty, a default name will be generated.
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn.
+        by: list, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List  of  the  vDataColumns to  use to sort the data  using 
+            asc  order  or  dictionary  of  all  sorting  methods.  For 
+            example, to sort by "column1" ASC and "column2" DESC, write: 
+            {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of the new vDataColumn.  If empty, a default name will 
+            be generated.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.rolling : Computes a customized moving window.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         return self.rolling(
             func="prod",
@@ -378,32 +376,30 @@ class vDFRolling:
         by: list = [],
         order_by: Union[dict, list] = [],
         name: str = "",
-    ):
+    ) -> "vDataFrame":
         """
-    Adds a new vDataColumn to the vDataFrame by computing the cumulative sum of the 
-    input vDataColumn.
+        Adds a new vDataColumn to the vDataFrame by computing the 
+        cumulative sum of the input vDataColumn.
 
-    Parameters
-    ----------
-    column: str
-        Input vDataColumn.
-    by: list, optional
-        vDataColumns used in the partition.
-    order_by: dict / list, optional
-        List of the vDataColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    name: str, optional
-        Name of the new vDataColumn. If empty, a default name will be generated.
+        Parameters
+        ----------
+        column: str
+            Input vDataColumn.
+        by: list, optional
+            vDataColumns used in the partition.
+        order_by: dict / list, optional
+            List  of  the  vDataColumns to  use to sort the data  using 
+            asc  order  or  dictionary  of  all  sorting  methods.  For 
+            example, to sort by "column1" ASC and "column2" DESC, write: 
+            {"column1": "asc", "column2": "desc"}
+        name: str, optional
+            Name of the new vDataColumn.  If empty, a default name will 
+            be generated.
 
-    Returns
-    -------
-    vDataFrame
-        self
-
-    See Also
-    --------
-    vDataFrame.rolling : Computes a customized moving window.
+        Returns
+        -------
+        vDataFrame
+            self
         """
         return self.rolling(
             func="sum",

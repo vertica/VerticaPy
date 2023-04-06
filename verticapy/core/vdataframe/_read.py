@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union
+import copy
+from typing import Any, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
 
 from vertica_python.errors import QueryError
@@ -29,6 +30,9 @@ from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 if conf._get_import_success("jupyter"):
     from IPython.display import HTML, display
@@ -164,91 +168,78 @@ class vDFRead:
         return self.iloc(limit=max_rows, columns=cols)
 
     def idisplay(self):
-        """This method displays the interactive table. It is used when 
-        you don't want to activate interactive table for all vDataFrames."""
+        """
+        This  method  displays  the interactive  table. It is used  when 
+        you don't want to activate interactive table for all vDataFrames.
+        """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
-    def get_columns(self, exclude_columns: SQLColumns = []):
+    def get_columns(self, exclude_columns: SQLColumns = []) -> list:
         """
-    Returns the vDataFrame vDataColumns.
+        Returns the vDataFrame vDataColumns.
 
-    Parameters
-    ----------
-    exclude_columns: SQLColumns, optional
-        List of the vDataColumns names to exclude from the final list. 
+        Parameters
+        ----------
+        exclude_columns: SQLColumns, optional
+            List of the vDataColumns names to exclude from 
+            the final list. 
 
-    Returns
-    -------
-    List
-        List of all vDataFrame columns.
-
-    See Also
-    --------
-    vDataFrame.catcol  : Returns all categorical vDataFrame vDataColumns.
-    vDataFrame.datecol : Returns all vDataFrame vDataColumns of type date.
-    vDataFrame.numcol  : Returns all numerical vDataFrame vDataColumns.
+        Returns
+        -------
+        List
+            List of all vDataFrame columns.
         """
         # -#
         if isinstance(exclude_columns, str):
-            exclude_columns = [columns]
-        columns = [elem for elem in self._vars["columns"]]
-        result = []
-        exclude_columns = [elem for elem in exclude_columns]
-        exclude_columns += [elem for elem in self._vars["exclude_columns"]]
-        exclude_columns = [elem.replace('"', "").lower() for elem in exclude_columns]
-        for column in columns:
-            if column.replace('"', "").lower() not in exclude_columns:
-                result += [column]
-        return result
+            exclude_columns = [exclude_columns]
+        exclude_columns_ = [
+            c.replace('"', "").lower()
+            for c in exclude_columns + self._vars["exclude_columns"]
+        ]
+        res = []
+        for column in self._vars["columns"]:
+            if column.replace('"', "").lower() not in exclude_columns_:
+                res += [column]
+        return res
 
-    def head(self, limit: int = 5):
+    def head(self, limit: int = 5) -> TableSample:
         """
-    Returns the vDataFrame head.
+        Returns the vDataFrame head.
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.tail : Returns the vDataFrame tail.
+        Returns
+        -------
+        TableSample
+            result.
         """
         return self.iloc(limit=limit, offset=0)
 
     def iloc(
         self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
-    ):
+    ) -> TableSample:
         """
-    Returns a part of the vDataFrame (delimited by an offset and a limit).
+        Returns a part of the vDataFrame (delimited by an offset 
+        and a limit).
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
-    offset: int, optional
-        Number of elements to skip.
-    columns: SQLColumns, optional
-        A list containing the names of the vDataColumns to include in the result. 
-        If empty, all vDataColumns will be selected.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
+        offset: int, optional
+            Number of elements to skip.
+        columns: SQLColumns, optional
+            A list containing the names of the vDataColumns to 
+            include in the result.  If empty, all vDataColumns 
+            will be selected.
 
-
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.head : Returns the vDataFrame head.
-    vDataFrame.tail : Returns the vDataFrame tail.
+        Returns
+        -------
+        TableSample
+            result.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -298,14 +289,14 @@ class vDFRead:
                 result.percent[column] = percent[self._format_colnames(column)][0]
         return result
 
-    def shape(self):
+    def shape(self) -> tuple[int, int]:
         """
-    Returns the number of rows and columns of the vDataFrame.
+        Returns the number of rows and columns of the vDataFrame.
 
-    Returns
-    -------
-    tuple
-        (number of lines, number of columns)
+        Returns
+        -------
+        tuple
+            (number of lines, number of columns)
         """
         m = len(self.get_columns())
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
@@ -324,45 +315,38 @@ class vDFRead:
         )
         return (self._vars["count"], m)
 
-    def tail(self, limit: int = 5):
+    def tail(self, limit: int = 5) -> TableSample:
         """
-    Returns the tail of the vDataFrame.
+        Returns the tail of the vDataFrame.
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame.head : Returns the vDataFrame head.
+        Returns
+        -------
+        TableSample
+            result.
         """
         return self.iloc(limit=limit, offset=-1)
 
     @save_verticapy_logs
-    def select(self, columns: SQLColumns):
+    def select(self, columns: SQLColumns) -> "vDataFrame":
         """
-    Returns a copy of the vDataFrame with only the selected vDataColumns.
+        Returns a copy of the vDataFrame with only the selected 
+        vDataColumns.
 
-    Parameters
-    ----------
-    columns: SQLColumns
-        List of the vDataColumns to select. It can also be customized expressions.
+        Parameters
+        ----------
+        columns: SQLColumns
+            List of the vDataColumns to  select. It can also be 
+            customized expressions.
 
-    Returns
-    -------
-    vDataFrame
-        object with only the selected columns.
-
-    See Also
-    --------
-    vDataFrame.search : Searches the elements which matches with the input conditions.
+        Returns
+        -------
+        vDataFrame
+            object with only the selected columns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -389,7 +373,7 @@ class vDFRead:
 
 
 class vDCRead:
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Any:
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
                 "vDataColumn doesn't allow slicing having steps different than 1."
@@ -499,54 +483,44 @@ class vDCRead:
         else:
             return getattr(self, index)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.head(limit=conf.get_option("max_rows")).__repr__()
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         return self.head(limit=conf.get_option("max_rows"))._repr_html_()
 
-    def head(self, limit: int = 5):
+    def head(self, limit: int = 5) -> TableSample:
         """
-    Returns the head of the vDataColumn.
+        Returns the head of the vDataColumn.
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame[].tail : Returns the a part of the vDataColumn.
+        Returns
+        -------
+        TableSample
+            result.
         """
         return self.iloc(limit=limit)
 
-    def iloc(self, limit: int = 5, offset: int = 0):
+    def iloc(self, limit: int = 5, offset: int = 0) -> TableSample:
         """
-    Returns a part of the vDataColumn (delimited by an offset and a limit).
+        Returns a part of the vDataColumn (delimited by an offset 
+        and a limit).
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
-    offset: int, optional
-        Number of elements to skip.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
+        offset: int, optional
+            Number of elements to skip.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame[].head : Returns the head of the vDataColumn.
-    vDataFrame[].tail : Returns the tail of the vDataColumn.
+        Returns
+        -------
+        TableSample
+            result.
         """
         if offset < 0:
             offset = max(0, self._parent.shape()[0] - limit)
@@ -570,24 +544,19 @@ class vDCRead:
         return tail
 
     @save_verticapy_logs
-    def nlargest(self, n: int = 10):
+    def nlargest(self, n: int = 10) -> TableSample:
         """
-    Returns the n largest vDataColumn elements.
+        Returns the n largest vDataColumn elements.
 
-    Parameters
-    ----------
-    n: int, optional
-        Offset.
+        Parameters
+        ----------
+        n: int, optional
+            Offset.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame[].nsmallest : Returns the n smallest elements in the vDataColumn.
+        Returns
+        -------
+        TableSample
+            result.
         """
         query = f"""
             SELECT 
@@ -606,22 +575,17 @@ class vDCRead:
     @save_verticapy_logs
     def nsmallest(self, n: int = 10):
         """
-    Returns the n smallest elements in the vDataColumn.
+        Returns the n smallest elements in the vDataColumn.
 
-    Parameters
-    ----------
-    n: int, optional
-        Offset.
+        Parameters
+        ----------
+        n: int, optional
+            Offset.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame[].nlargest : Returns the n largest vDataColumn elements.
+        Returns
+        -------
+        TableSample
+            result.
         """
         return TableSample.read_sql(
             f"""
@@ -635,23 +599,18 @@ class vDCRead:
             symbol=self._parent._vars["symbol"],
         )
 
-    def tail(self, limit: int = 5):
+    def tail(self, limit: int = 5) -> TableSample:
         """
-    Returns the tail of the vDataColumn.
+        Returns the tail of the vDataColumn.
 
-    Parameters
-    ----------
-    limit: int, optional
-        Number of elements to display.
+        Parameters
+        ----------
+        limit: int, optional
+            Number of elements to display.
 
-    Returns
-    -------
-    TableSample
-        An object containing the result. For more information, see
-        utilities.TableSample.
-
-    See Also
-    --------
-    vDataFrame[].head : Returns the head of the vDataColumn.
+        Returns
+        -------
+        TableSample
+            result.
         """
         return self.iloc(limit=limit, offset=-1)

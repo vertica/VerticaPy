@@ -1341,7 +1341,7 @@ class vDCPlot:
         whis: float = 1.5,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
-    ):
+    ) -> PlottingObject:
         """
         Draws the box plot of the vDataColumn.
 
@@ -2062,7 +2062,7 @@ class vDCPlot:
     # Geospatial.
 
     @save_verticapy_logs
-    def geo_plot(self, *args, **kwargs):
+    def geo_plot(self, *args, **kwargs) -> PlottingObject:
         """
         Draws the Geospatial object.
 
