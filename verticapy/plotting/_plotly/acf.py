@@ -64,6 +64,15 @@ class ACFPlot(PlotlyBase):
                 dtick=0.2,
             ),
         }
+        self.init_confidence_style = {
+            "mode": "lines",
+            "marker_color": "red",
+        }
+        self.init_scatter_style = {
+            "marker_color": "orange",
+            "marker_size": 12,
+            "hovertemplate": "ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
+        }
         return None
 
     # Draw.
@@ -85,28 +94,21 @@ class ACFPlot(PlotlyBase):
         fig.add_scatter(
             x=X,
             y=Z,
-            mode="lines",
-            marker_color="red",
-            fill="tonexty",
+            **self.init_confidence_style,
             hoverinfo="none",
         )
         fig.add_scatter(
             x=X,
             y=-Z,
-            mode="lines",
-            marker_color="red",
+            **self.init_confidence_style,
             fill="tonexty",
             hovertemplate="Confidence <br><b>lag</b>: %{x}<br><b>value</b>: %{customdata:.3f}<br><extra></extra>",
             customdata=np.abs(-Z),
         )
         if self.layout["kind"] == "line":
-            scatter_params["mode"] = "lines+markers"
-            scatter_params["fill"] = "none"
+            scatter_mode = "lines+markers"
         else:
-            scatter_params["mode"] = "markers"
-            scatter_params["marker_color"] = "orange"
-            scatter_params["marker_size"] = 12
-
+            scatter_mode = "markers"
             for i in range(len(Y)):
                 fig.add_shape(
                     type="line",
@@ -119,8 +121,8 @@ class ACFPlot(PlotlyBase):
         fig.add_scatter(
             x=X,
             y=Y,
-            **scatter_params,
-            hovertemplate="ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
+            **self.init_scatter_style,
+            mode=scatter_mode,
         )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig

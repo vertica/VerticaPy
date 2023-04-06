@@ -97,6 +97,18 @@ def dummy_dist_vd():
 
 
 @pytest.fixture(scope="module")
+def acf_plot_result(load_plotly, amazon_vd):
+    return amazon_vd.acf(
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
+    )
+
+
+@pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
@@ -1305,55 +1317,35 @@ class TestVDFOutliersPlot:
 
 
 class TestVDFACFPlot:
-    def test_properties_output_type_for(self, load_plotly, amazon_vd):
+    def test_properties_output_type_for(self, acf_plot_result):
         # Arrange
         # Act
-        result = amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=48,
-            by=["state"],
-            unit="month",
-            method="spearman",
-        )
         # Assert - checking if correct object created
-        assert type(result) == plotly.graph_objs._figure.Figure, "wrong object crated"
+        assert (
+            type(acf_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, load_plotly, amazon_vd):
+    def test_properties_xaxis_label(self, acf_plot_result):
         # Arrange
         test_title = "Lag"
         # Act
-        result = amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=12,
-            by=["state"],
-            unit="month",
-            method="spearman",
-        )
         # Assert - checking if correct object created
         assert (
-            result.layout["xaxis"]["title"]["text"] == test_title
+            acf_plot_result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_scatter_points_and_confodence(self, load_plotly, amazon_vd):
+    def test_properties_scatter_points_and_confidence(self, acf_plot_result):
         # Arrange
         total_elements = 3
         # Act
-        result = amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=12,
-            by=["state"],
-            unit="month",
-            method="spearman",
-        )
         # Assert - checking if correct object created
-        assert len(result.data) == total_elements, "Some elements of plot are missing"
+        assert (
+            len(acf_plot_result.data) == total_elements
+        ), "Some elements of plot are missing"
 
-    def test_properties_vertical_lines(self, load_plotly, amazon_vd):
+    def test_properties_vertical_lines_for_custom_lag(self, load_plotly, amazon_vd):
         # Arrange
-        lag_number = 49
+        lag_number = 24
         # Act
         result = amazon_vd.acf(
             ts="date",
@@ -1368,7 +1360,7 @@ class TestVDFACFPlot:
             len(result.layout["shapes"]) == lag_number
         ), "Number of vertical lines inconsistent"
 
-    def test_properties_vertical_lines(self, load_plotly, amazon_vd):
+    def test_properties_mode_lines(self, load_plotly, amazon_vd):
         # Arrange
         mode = "lines+markers"
         # Act
@@ -1384,21 +1376,13 @@ class TestVDFACFPlot:
         # Assert - checking if correct object created
         assert result.data[-1]["mode"] == mode, "Number of vertical lines inconsistent"
 
-    def test_data_all_scatter_points(self, load_plotly, amazon_vd):
+    def test_data_all_scatter_points(self, acf_plot_result):
         # Arrange
-        lag_number = 30
+        lag_number = 13
         # Act
-        result = amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=lag_number - 1,
-            by=["state"],
-            unit="month",
-            method="spearman",
-        )
         # Assert - checking if correct object created
         assert (
-            len(result.data[0]["x"]) == lag_number
+            len(acf_plot_result.data[0]["x"]) == lag_number
         ), "Number of lag points inconsistent"
 
     def test_additional_options_custom_width(self, load_plotly, amazon_vd):
