@@ -830,9 +830,7 @@ class vDFAgg:
     agg = aggregate
 
     @save_verticapy_logs
-    def aad(
-        self, columns: SQLColumns = [], **agg_kwargs,
-    ):
+    def aad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'aad' 
         (Average Absolute Deviation).
@@ -1963,8 +1961,8 @@ class vDCAgg:
         """
         return self.aggregate(["count"]).values[self._alias][0]
 
-        def distinct(self, **kwargs) -> list:
-            """
+    def distinct(self, **kwargs) -> list:
+        """
         Returns the distinct categories of the vDataColumn.
 
         Returns
@@ -1972,7 +1970,6 @@ class vDCAgg:
         list
             Distinct caterogies of the vDataColumn.
         """
-
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
             query = f"""

@@ -304,7 +304,11 @@ class TableSample:
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    def category(self, column: str):
+    def category(
+        self, column: str
+    ) -> Literal[
+        "bool", "date", "float", "int", "undefined", "text",
+    ]:
         x = np.array(self[column])
         val = None
         for xi in x:
@@ -336,7 +340,7 @@ class TableSample:
                         self.values[elem][i] = float(self.values[elem][i])
         return self
 
-    def get_columns(self):
+    def get_columns(self) -> list[str]:
         """
         Returns the TableSample columns.
 

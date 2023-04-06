@@ -48,7 +48,7 @@ class LinePlot(HighchartsBase):
         else:
             return copy.deepcopy(x)
 
-    def _get_kind(self):
+    def _get_kind(self) -> tuple[str, dict]:
         if self.layout["kind"] in {"area_stacked", "area_percent"}:
             kind = "area"
             stacking = "normal" if self.layout["kind"] == "area_stacked" else "percent"

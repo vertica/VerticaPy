@@ -14,13 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Optional
+from typing import Any, Callable, Literal, Optional
 import numpy as np
 
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 from matplotlib.axes import Axes
+
+from verticapy._typing import ArrayLike
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
@@ -44,8 +46,8 @@ class PieChart(MatplotlibBase):
     # Formatting Methods.
 
     @staticmethod
-    def _make_autopct(values, category):
-        def my_autopct(pct):
+    def _make_autopct(values: ArrayLike, category: str) -> Callable:
+        def my_autopct(pct: Any) -> str:
             total = sum(values)
             val = float(pct) * float(total) / 100.0
             if category == "int":

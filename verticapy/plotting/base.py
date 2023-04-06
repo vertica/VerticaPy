@@ -375,7 +375,7 @@ class PlottingBase(PlottingBaseSQL):
 
     # Features Importance.
 
-    def _compute_importance(self):
+    def _compute_importance(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         coef_names = np.array(self.layout["columns"])
         importances = self.data["importance"].astype(float)
         signs = np.sign(importances)
