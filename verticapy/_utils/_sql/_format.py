@@ -254,7 +254,7 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
     elif isinstance(column, Iterable):
         return [quote_ident(x) for x in column]
     else:
-        return column
+        return str(column)
 
 
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:
