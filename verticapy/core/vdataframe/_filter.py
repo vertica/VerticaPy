@@ -31,7 +31,7 @@ from verticapy._typing import (
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -557,10 +557,10 @@ class vDFFilter:
         """
         if x == 1:
             return self.copy()
-        assert n != None or x != None, ParameterError(
+        assert n != None or x != None, ValueError(
             "One of the parameter 'n' or 'x' must not be empty."
         )
-        assert n == None or x == None, ParameterError(
+        assert n == None or x == None, ValueError(
             "One of the parameter 'n' or 'x' must be empty."
         )
         if n != None:
@@ -571,7 +571,7 @@ class vDFFilter:
             method = method.lower()
         if method in ("systematic", "random"):
             order_by = ""
-            assert not (by), ParameterError(
+            assert not (by), ValueError(
                 f"Parameter 'by' must be empty when using '{method}' sampling."
             )
         by = format_type(by, method=list)
@@ -580,7 +580,7 @@ class vDFFilter:
         name = f"__verticapy_random_{random_int}__"
         name2 = f"__verticapy_random_{random_int + 1}__"
         vdf = self.copy()
-        assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
+        assert 0 < x < 1, ValueError("Parameter 'x' must be between 0 and 1")
         if method == "random":
             random_state = conf.get_option("random_state")
             random_seed = random.randint(-10e6, 10e6)
@@ -595,7 +595,7 @@ class vDFFilter:
             conf.set_option("print_info", print_info_init)
             vdf._vars["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
-            assert method != "stratified" or (by), ParameterError(
+            assert method != "stratified" or (by), ValueError(
                 "Parameter 'by' must include at least one "
                 "column when using 'stratified' sampling."
             )

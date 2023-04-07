@@ -23,7 +23,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import extract_and_rename_subquery
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -184,7 +184,7 @@ class vDFJoinUnionSort:
             on = [on]
         # List with the operators
         if str(how).lower() == "natural" and (on or on_interpolate):
-            raise ParameterError(
+            raise ValueError(
                 "Natural Joins cannot be computed if any of "
                 "the parameters 'on' or 'on_interpolate' are "
                 "defined."

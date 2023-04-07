@@ -18,7 +18,6 @@ import os
 
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.utils import get_confparser
-from verticapy.errors import ParameterError
 
 
 def available_connections() -> list[str]:
@@ -95,7 +94,7 @@ def read_dsn(section: str, dsn: str = "") -> dict:
                 if os.getenv(option_val) != None:
                     conn_info[option_name] = os.getenv(option_val)
                 else:
-                    raise ParameterError(
+                    raise ValueError(
                         f"The '{option_name}' environment variable "
                         f"'{option_val}' does not exist and the 'env' "
                         "option is set to True.\nImpossible to set up "

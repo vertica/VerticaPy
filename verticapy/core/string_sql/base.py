@@ -18,7 +18,6 @@ from typing import Any, Iterable, Literal, Optional
 
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._format import format_magic, format_type
-from verticapy.errors import ParameterError
 
 
 class StringSQL:
@@ -97,7 +96,7 @@ class StringSQL:
         if (len(args) == 1) and (isinstance(args[0], list)):
             x = args[0]
         elif len(args) == 0:
-            ParameterError("Method 'in_' doesn't work with no parameters.")
+            ValueError("Method 'in_' doesn't work with no parameters.")
         else:
             x = [elem for elem in args]
         assert isinstance(x, Iterable) and not (
@@ -111,7 +110,7 @@ class StringSQL:
         if (len(args) == 1) and (isinstance(args[0], list)):
             x = args[0]
         elif len(args) == 0:
-            ParameterError("Method '_not_in' doesn't work with no parameters.")
+            ValueError("Method '_not_in' doesn't work with no parameters.")
         else:
             x = [elem for elem in args]
         if not (isinstance(x, Iterable)) or (isinstance(x, str)):

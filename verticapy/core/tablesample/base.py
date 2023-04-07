@@ -27,7 +27,7 @@ from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import ParameterError, MissingColumn
+from verticapy.errors import MissingColumn
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -292,11 +292,11 @@ class TableSample:
         TableSample
             self
         """
-        assert isinstance(tbs, TableSample), ParameterError(
+        assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be appended to another TableSample."
         )
         n1, n2 = self.shape()[0], tbs.shape()[0]
-        assert n1 == n2, ParameterError(
+        assert n1 == n2, ValueError(
             "The input and target TableSamples must have the same number of columns."
             f" Expected {n1}, Found {n2}."
         )
@@ -366,11 +366,11 @@ class TableSample:
         TableSample
             self.
         """
-        assert isinstance(tbs, TableSample), ParameterError(
+        assert isinstance(tbs, TableSample), ValueError(
             "TableSamples can only be merged with other TableSamples."
         )
         n1, n2 = self.shape()[1], tbs.shape()[1]
-        assert n1 == n2, ParameterError(
+        assert n1 == n2, ValueError(
             "The input and target TableSamples must have the same number of rows."
             f" Expected {n1}, Found {n2}."
         )

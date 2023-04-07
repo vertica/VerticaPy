@@ -31,7 +31,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -270,7 +270,7 @@ class AutoML(VerticaModel):
         print_info: bool = True,
     ) -> None:
         if optimized_grid not in [0, 1, 2]:
-            raise ParameterError("Optimized Grid must be an integer between 0 and 2.")
+            raise ValueError("Optimized Grid must be an integer between 0 and 2.")
         self.model_name = name
         self.parameters = {
             "estimator": estimator,
@@ -440,7 +440,7 @@ class AutoML(VerticaModel):
                         NearestCentroid(self.model_name),
                     ]
             else:
-                raise ParameterError(
+                raise ValueError(
                     f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {estimator_type}."
                 )
         elif isinstance(
@@ -485,7 +485,7 @@ class AutoML(VerticaModel):
                         LinearSVC,
                         LinearSVR,
                     ),
-                ), ParameterError(
+                ), ValueError(
                     f"estimator must be a list of VerticaPy estimators. Found {elem}."
                 )
         if self.parameters["estimator_type"] == "auto":
@@ -498,7 +498,7 @@ class AutoML(VerticaModel):
                 and elem._model_subcategory == "CLASSIFIER"
                 or self.parameters["estimator_type"] == "regressor"
                 and elem._model_subcategory == "REGRESSOR"
-            ), ParameterError(
+            ), ValueError(
                 f"Incorrect list for parameter 'estimator'. Expected type '{self.parameters['estimator_type']}', found type '{elem._model_subcategory}'."
             )
         if (

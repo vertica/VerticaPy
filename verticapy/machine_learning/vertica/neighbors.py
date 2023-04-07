@@ -40,7 +40,7 @@ from verticapy._utils._sql._format import (
     schema_relation,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -615,7 +615,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         # Inititalization
         X = format_type(X, method=list)
-        assert pos_label is None or pos_label in self.classes_, ParameterError(
+        assert pos_label is None or pos_label in self.classes_, ValueError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
                 f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
@@ -870,7 +870,7 @@ class KernelDensity(Regressor, Tree):
             )
 
         else:
-            raise ParameterError(
+            raise ValueError(
                 "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]."
             )
         if isinstance(x, (tuple)):

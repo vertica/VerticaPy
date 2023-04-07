@@ -40,7 +40,7 @@ from verticapy._utils._sql._format import (
 )
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection.global_connection import get_global_connection
-from verticapy.errors import QueryError, ParameterError
+from verticapy.errors import QueryError
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -103,23 +103,23 @@ def sql_magic(
 
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
-                        raise ParameterError("Duplicate option '-f'.")
+                        raise ValueError("Duplicate option '-f'.")
                     options["-f"] = options_dict[option]
                 elif option.lower() in ("-o", "--output"):
                     if "-o" in options:
-                        raise ParameterError("Duplicate option '-o'.")
+                        raise ValueError("Duplicate option '-o'.")
                     options["-o"] = options_dict[option]
                 elif option.lower() in ("-c", "--command"):
                     if "-c" in options:
-                        raise ParameterError("Duplicate option '-c'.")
+                        raise ValueError("Duplicate option '-c'.")
                     options["-c"] = options_dict[option]
                 elif option.lower() in ("-nrows",):
                     if "-nrows" in options:
-                        raise ParameterError("Duplicate option '-nrows'.")
+                        raise ValueError("Duplicate option '-nrows'.")
                     options["-nrows"] = int(options_dict[option])
                 elif option.lower() in ("-ncols",):
                     if "-ncols" in options:
-                        raise ParameterError("Duplicate option '-ncols'.")
+                        raise ValueError("Duplicate option '-ncols'.")
                     options["-ncols"] = int(options_dict[option])
 
             elif conf.get_option("print_info"):
@@ -130,13 +130,13 @@ def sql_magic(
                 warnings.warn(warning_message, Warning)
 
         if "-f" in options and "-c" in options:
-            raise ParameterError(
+            raise ValueError(
                 "Do not find which query to run: One of "
                 "the options '-f' and '-c' must be empty."
             )
 
         if cell and ("-f" in options or "-c" in options):
-            raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
+            raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
         if "-f" in options:
             f = open(options["-f"], "r")

@@ -27,7 +27,7 @@ from verticapy._utils._sql._format import (
     quote_ident,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ExtensionError, MissingRelation, ParameterError
+from verticapy.errors import ExtensionError, MissingRelation
 
 from verticapy.core.parsers._utils import extract_compression, get_first_file
 from verticapy.core.vdataframe.base import vDataFrame
@@ -313,7 +313,7 @@ def read_csv(
         table_name = gen_tmp_name(name=basename)
     elif not (table_name):
         table_name = basename
-    assert not (temporary_table) or not (temporary_local_table), ParameterError(
+    assert not (temporary_table) or not (temporary_local_table), ValueError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
         "set to True."
     )
@@ -365,15 +365,15 @@ def read_csv(
             and ingest_local
         ):
             if not (path_first_file_in_folder):
-                raise ParameterError("No CSV file detected in the folder.")
+                raise ValueError("No CSV file detected in the folder.")
             file_header = get_header_names(path_first_file_in_folder, sep)
         elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
-            raise ParameterError(
+            raise ValueError(
                 "The input file is compressed and parameters 'dtypes' and 'header_names'"
                 " are not defined. It is impossible to read the file's header."
             )
         elif not (header_names) and not (dtype) and not (ingest_local):
-            raise ParameterError(
+            raise ValueError(
                 "The input file is in the Vertica server and parameters 'dtypes' and "
                 "'header_names' are not defined. It is impossible to read the file's header."
             )

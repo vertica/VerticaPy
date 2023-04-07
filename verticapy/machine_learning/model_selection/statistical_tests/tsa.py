@@ -730,7 +730,7 @@ def seasonal_decompose(
         object containing 
         ts, column, TS seasonal part, TS trend, TS noise.
     """
-    assert period > 0 or polynomial_order > 0, ParameterError(
+    assert period > 0 or polynomial_order > 0, ValueError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
     if isinstance(input_relation, vDataFrame):

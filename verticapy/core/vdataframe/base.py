@@ -40,7 +40,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import (
     ConnectionError,
     MissingRelation,
-    ParameterError,
     QueryError,
 )
 
@@ -233,7 +232,7 @@ class vDataFrame(
 
             else:
 
-                raise ParameterError(
+                raise ValueError(
                     "Parameter 'input_relation' must be a nonempty str "
                     "when using external tables."
                 )
@@ -358,7 +357,7 @@ class vDataFrame(
                 object_ = np.array(object_)
 
             if len(object_.shape) != 2:
-                raise ParameterError(
+                raise ValueError(
                     "vDataFrames can only be created with two-dimensional objects."
                 )
 

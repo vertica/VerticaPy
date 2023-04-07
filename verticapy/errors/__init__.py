@@ -60,10 +60,6 @@ class OptionError(Exception):
     ...
 
 
-class ParameterError(Exception):
-    ...
-
-
 class ParsingError(Exception):
     ...
 

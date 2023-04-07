@@ -19,7 +19,7 @@ from typing import Optional, Union
 
 from verticapy._utils._sql._format import quote_ident
 from verticapy._typing import SQLExpression
-from verticapy.errors import MissingColumn, ParameterError
+from verticapy.errors import MissingColumn
 
 
 class vDFUtils:
@@ -144,7 +144,7 @@ class vDFUtils:
                 n = len(columns)
                 if n not in expected_nb_of_cols:
                     x = "|".join([str(nb) for nb in expected_nb_of_cols])
-                    raise ParameterError(
+                    raise ValueError(
                         f"The number of Virtual Columns expected is [{x}], found {n}."
                     )
         return result

@@ -23,7 +23,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -223,7 +223,7 @@ class AutoDataPrep(VerticaModel):
         current_print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         if (by) and not (ts):
-            raise ParameterError("Parameter 'by' must be empty if 'ts' is not defined.")
+            raise ValueError("Parameter 'by' must be empty if 'ts' is not defined.")
         if isinstance(input_relation, str):
             vdf = vDataFrame(input_relation)
         else:

@@ -31,7 +31,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -163,7 +163,7 @@ def cross_validate(
     if isinstance(input_relation, str):
         input_relation = vDataFrame(input_relation)
     if cv < 2:
-        raise ParameterError("Cross Validation is only possible with at least 2 folds")
+        raise ValueError("Cross Validation is only possible with at least 2 folds")
     if estimator._model_subcategory == "REGRESSOR":
         all_metrics = [
             "explained_variance",
@@ -397,7 +397,7 @@ def learning_curve(
         result of the learning curve.
     """
     for s in sizes:
-        assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
+        assert 0 < s <= 1, ValueError("Each size must be in ]0,1].")
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":

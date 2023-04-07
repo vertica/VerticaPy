@@ -1258,7 +1258,7 @@ class vDCPlot:
             pre_comp = self._parent._get_catalog_value(self._alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
-        assert self.isnum() or self.isdate(), ParameterError(
+        assert self.isnum() or self.isdate(), ValueError(
             "numh is only available on type numeric|date"
         )
         if self.isnum():

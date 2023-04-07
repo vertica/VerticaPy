@@ -41,7 +41,6 @@ from verticapy._utils._sql._vertica_version import (
 from verticapy.errors import (
     ConversionError,
     FunctionError,
-    ParameterError,
     ModelError,
     VersionError,
 )
@@ -1687,7 +1686,7 @@ class MulticlassClassifier(Classifier):
         elif pos_label == None:
             return None
         elif str(pos_label) not in [str(c) for c in self.classes_]:
-            raise ParameterError(
+            raise ValueError(
                 "Parameter 'pos_label' must be one of the response column classes."
             )
         return pos_label
@@ -2214,7 +2213,7 @@ class MulticlassClassifier(Classifier):
             X = [X]
         else:
             X = quote_ident(X)
-        assert pos_label is None or pos_label in self.classes_, ParameterError(
+        assert pos_label is None or pos_label in self.classes_, ValueError(
             "Incorrect parameter 'pos_label'.\nThe class label "
             f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
             f"Found '{pos_label}'."
@@ -2827,13 +2826,13 @@ class Unsupervised(VerticaModel):
             del parameters["init_method"]
             drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
-                raise ParameterError(
+                raise ValueError(
                     f"'init' must be a list of 'n_cluster' = {self.parameters['n_cluster']} points"
                 )
             else:
                 for item in self.parameters["init"]:
                     if len(X) != len(item):
-                        raise ParameterError(
+                        raise ValueError(
                             f"Each points of 'init' must be of size len(X) = {len(self.X)}"
                         )
                 query0 = []

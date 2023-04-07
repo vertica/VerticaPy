@@ -584,7 +584,7 @@ class vDFSystem:
             self
         """
         if isinstance(column1, int):
-            assert column1 < self.shape()[1], ParameterError(
+            assert column1 < self.shape()[1], ValueError(
                 "The parameter 'column1' is incorrect, it is greater or equal "
                 f"to the vDataFrame number of columns: {column1}>={self.shape()[1]}"
                 "\nWhen this parameter type is 'integer', it must represent the index "
@@ -592,7 +592,7 @@ class vDFSystem:
             )
             column1 = self.get_columns()[column1]
         if isinstance(column2, int):
-            assert column2 < self.shape()[1], ParameterError(
+            assert column2 < self.shape()[1], ValueError(
                 "The parameter 'column2' is incorrect, it is greater or equal "
                 f"to the vDataFrame number of columns: {column2}>={self.shape()[1]}"
                 "\nWhen this parameter type is 'integer', it must represent the "

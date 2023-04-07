@@ -24,7 +24,7 @@ from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelatio
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -317,7 +317,7 @@ def grid_search_cv(
         for param in param_grid:
             assert isinstance(param_grid[param], Iterable) and not (
                 isinstance(param_grid[param], str)
-            ), ParameterError(
+            ), ValueError(
                 "When of type dictionary, the parameter 'param_grid'"
                 " must be a dictionary where each value is a list of "
                 f"parameters, found {type(param_grid[param])} for "
@@ -326,7 +326,7 @@ def grid_search_cv(
         all_configuration = parameter_grid(param_grid)
     else:
         for idx, param in enumerate(param_grid):
-            assert isinstance(param, dict), ParameterError(
+            assert isinstance(param, dict), ValueError(
                 "When of type List, the parameter 'param_grid' must "
                 f"be a list of dictionaries, found {type(param)} for elem '{idx}'."
             )

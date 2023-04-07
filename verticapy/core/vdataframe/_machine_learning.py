@@ -25,7 +25,7 @@ from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -220,7 +220,7 @@ class vDFMachineLearning:
         if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]
-            assert 2 <= nbins <= 16, ParameterError(
+            assert 2 <= nbins <= 16, ValueError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )
             columns = self.chaid_columns(columns)
@@ -518,7 +518,7 @@ class vDFMachineLearning:
         """
         columns = format_type(columns, method=list)
         columns, response = self._format_colnames(columns, response)
-        assert 2 <= nbins <= 16, ParameterError(
+        assert 2 <= nbins <= 16, ValueError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
         columns = self.chaid_columns(columns)
@@ -684,7 +684,7 @@ class vDFMachineLearning:
             method == "count" or rating
         ), f"Method '{method}' can not be used if parameter 'rating' is empty."
         if rating:
-            assert isinstance(rating, str) or len(rating) == 3, ParameterError(
+            assert isinstance(rating, str) or len(rating) == 3, ValueError(
                 "Parameter 'rating' must be of type str or composed of "
                 "exactly 3 elements: (r_vdf, r_item_id, r_name)."
             )

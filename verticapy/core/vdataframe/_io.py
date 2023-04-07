@@ -30,7 +30,7 @@ from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-from verticapy.errors import ParameterError, ParsingError
+from verticapy.errors import ParsingError
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -145,9 +145,9 @@ class vDFInOut:
         """
         order_by, usecols = format_type(order_by, usecols, method=list)
         if n_files < 1:
-            raise ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+            raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
-            raise ParameterError(
+            raise ValueError(
                 "If you want to store the vDataFrame in many CSV files, "
                 "you have to sort your data by using at least one column. "
                 "If the column hasn't unique values, the final result can "
@@ -453,9 +453,9 @@ class vDFInOut:
         """
         order_by, usecols = format_type(order_by, usecols, method=list)
         if n_files < 1:
-            raise ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+            raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
-            raise ParameterError(
+            raise ValueError(
                 "If you want to store the vDataFrame in many JSON files, you "
                 "have to sort your data by using at least one column. If "
                 "the column hasn't unique values, the final result can not "
@@ -692,9 +692,9 @@ class vDFInOut:
         """
         order_by, by = format_type(order_by, by, method=list)
         if rowGroupSizeMB <= 0:
-            raise ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
+            raise ValueError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         if fileSizeMB <= 0:
-            raise ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
+            raise ValueError("Parameter 'fileSizeMB' must be greater than 0.")
         by = self._format_colnames(by)
         partition = ""
         if by:

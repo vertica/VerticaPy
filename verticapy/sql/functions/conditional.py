@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._utils._sql._format import format_magic
 from verticapy._typing import SQLExpression
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -45,7 +45,7 @@ def case_when(*args) -> StringSQL:
     """
     n = len(args)
     if n < 2:
-        raise ParameterError(
+        raise ValueError(
             "The number of arguments of the 'case_when' function must be strictly greater than 1."
         )
     category = to_dtype_category(args[1])
@@ -92,7 +92,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     """
     n = len(args)
     if n < 2:
-        raise ParameterError(
+        raise ValueError(
             "The number of arguments of the 'decode' function must be greater than 3."
         )
     category = to_dtype_category(args[1])

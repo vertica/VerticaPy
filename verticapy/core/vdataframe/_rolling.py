@@ -22,7 +22,7 @@ from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
-from verticapy.errors import ParameterError
+
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -103,7 +103,7 @@ class vDFRolling:
         """
         columns, by, order_by = format_type(columns, by, order_by, method=list)
         if len(window) != 2:
-            raise ParameterError("The window must be composed of exactly 2 elements.")
+            raise ValueError("The window must be composed of exactly 2 elements.")
         window = list(window)
         rule = [0, 0]
         unbounded, method = False, "rows"

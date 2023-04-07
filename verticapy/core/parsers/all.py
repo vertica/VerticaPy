@@ -25,7 +25,7 @@ from verticapy._utils._sql._format import (
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy.errors import ExtensionError, ParameterError
+from verticapy.errors import ExtensionError
 
 from verticapy.core.parsers._utils import extract_col_dt_from_query, extract_compression
 from verticapy.core.vdataframe.base import vDataFrame
@@ -116,7 +116,7 @@ def read_file(
     vDataFrame
         The vDataFrame of the relation.
     """
-    assert not (ingest_local) or insert, ParameterError(
+    assert not (ingest_local) or insert, ValueError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )
     file_format = path.split(".")[-1].lower()
@@ -142,7 +142,7 @@ def read_file(
         )
     if insert:
         if not (table_name):
-            raise ParameterError(
+            raise ValueError(
                 "Parameter 'table_name' must be defined when parameter 'insert' is set to True."
             )
         if not (schema) and temporary_local_table:

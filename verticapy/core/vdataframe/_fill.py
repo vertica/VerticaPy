@@ -20,7 +20,6 @@ from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import (
-    Optional,
     PythonNumber,
     PythonScalar,
     TimeInterval,
@@ -33,7 +32,7 @@ from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import EmptyParameter, ParameterError, QueryError
+from verticapy.errors import EmptyParameter, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -150,7 +149,7 @@ class vDFFill:
                 "pad",
                 "ffill",
                 "linear",
-            ), ParameterError(
+            ), ValueError(
                 "Each element of the 'method' dictionary must be "
                 "in bfill|backfill|pad|ffill|linear"
             )
@@ -203,7 +202,7 @@ class vDCFill:
         vDataFrame
             self._parent
         """
-        assert (lower != None) or (upper != None), ParameterError(
+        assert (lower != None) or (upper != None), ValueError(
             "At least 'lower' or 'upper' must have a numerical value"
         )
         lower_when = (
@@ -453,7 +452,7 @@ class vDCFill:
                     COALESCE({{}}, {fun}({{}}) 
                         OVER (PARTITION BY {', '.join(by)}))"""
         elif method in ("ffill", "pad", "bfill", "backfill"):
-            assert order_by, ParameterError(
+            assert order_by, ValueError(
                 "If the method is in ffill|pad|bfill|backfill then 'order_by'"
                 " must be a list of at least one element to use to order the data"
             )

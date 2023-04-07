@@ -25,7 +25,7 @@ from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -156,10 +156,10 @@ class vDCEncode:
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vDataColumns."
         )
-        assert len(breaks) >= 2, ParameterError(
+        assert len(breaks) >= 2, ValueError(
             "Length of parameter 'breaks' must be greater or equal to 2."
         )
-        assert len(breaks) == len(labels) + 1 or not (labels), ParameterError(
+        assert len(breaks) == len(labels) + 1 or not (labels), ValueError(
             "Length of parameter breaks must be equal to the length of parameter "
             "'labels' + 1 or parameter 'labels' must be empty."
         )
@@ -275,11 +275,11 @@ class vDCEncode:
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
-            assert nbins >= 2, ParameterError(
+            assert nbins >= 2, ValueError(
                 "Parameter 'nbins' must be greater or equals to 2 in case "
                 "of discretization using the method 'smart'."
             )
-            assert response, ParameterError(
+            assert response, ValueError(
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
@@ -329,7 +329,7 @@ class vDCEncode:
                 drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            assert k >= 2, ParameterError(
+            assert k >= 2, ValueError(
                 "Parameter 'k' must be greater or equals to 2 in "
                 "case of discretization using the method 'topk'"
             )
@@ -347,7 +347,7 @@ class vDCEncode:
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            assert nbins >= 2, ParameterError(
+            assert nbins >= 2, ValueError(
                 "Parameter 'nbins' must be greater or equals to 2 in case "
                 "of discretization using the method 'same_freq'"
             )

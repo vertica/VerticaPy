@@ -25,7 +25,7 @@ from verticapy._utils._sql._format import (
     clean_query,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ExtensionError, ParameterError, MissingRelation
+from verticapy.errors import ExtensionError, MissingRelation
 
 from verticapy.core.parsers._utils import extract_compression
 from verticapy.core.vdataframe.base import vDataFrame
@@ -229,7 +229,7 @@ def read_json(
 	"""
     if use_complex_dt:
         if new_name:
-            raise ParameterError(
+            raise ValueError(
                 "You cannot use the parameter 'new_name' with 'use_complex_dt'."
             )
         if is_avro:
@@ -258,7 +258,7 @@ def read_json(
         schema = "v_temp_schema"
     else:
         schema = "public"
-    assert not (temporary_table) or not (temporary_local_table), ParameterError(
+    assert not (temporary_table) or not (temporary_local_table), ValueError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True."
     )
     file_extension = path.split(".")[-1].lower()
@@ -335,7 +335,7 @@ def read_json(
         elif not (is_avro):
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
-            assert materialize, ParameterError(
+            assert materialize, ValueError(
                 "When using complex data types the table has to "
                 "be materialized. Set materialize to True"
             )

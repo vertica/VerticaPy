@@ -1077,7 +1077,7 @@ class vDFAgg:
             expr = [expr]
         assert not (isinstance(rollup, list)) or len(rollup) == len(
             columns
-        ), ParameterError(
+        ), ValueError(
             "If parameter 'rollup' is of type list, it should have "
             "the same length as the 'columns' parameter."
         )
@@ -1093,7 +1093,7 @@ class vDFAgg:
                 elif rollup[idx] == True:
                     rollup_expr += "ROLLUP("
                 elif not (isinstance(rollup[idx], bool)):
-                    raise ParameterError(
+                    raise ValueError(
                         "When parameter 'rollup' is not a boolean, it "
                         "has to be a list of booleans."
                     )
@@ -1123,7 +1123,7 @@ class vDFAgg:
                     columns_to_select += [elem]
                 rollup_expr += ", "
             else:
-                raise ParameterError(
+                raise ValueError(
                     "Parameter 'columns' must be a string; list of strings "
                     "or tuples (only when rollup is set to True)."
                 )
@@ -1802,7 +1802,7 @@ class vDCAgg:
         TableSample
             result.
         """
-        assert (method != "cat_stats") or (numcol), ParameterError(
+        assert (method != "cat_stats") or (numcol), ValueError(
             "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
         )
         distinct_count, is_numeric, is_date = (
@@ -2182,7 +2182,7 @@ class vDCAgg:
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
-        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
+        assert n >= 1, ValueError("Parameter 'n' must be greater or equal to 1")
         where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
         result = _executeSQL(
             f"""

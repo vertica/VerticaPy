@@ -24,7 +24,7 @@ from verticapy.connection.global_connection import (
 )
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
-from verticapy.errors import ConnectionError, ParameterError
+from verticapy.errors import ConnectionError
 
 """
 Connecting to the DB.
@@ -102,7 +102,7 @@ def set_connection(conn: Connection) -> None:
         res = conn.cursor().fetchone()[0]
         assert res == 1
     except:
-        ParameterError("The input connector is not working properly.")
+        ValueError("The input connector is not working properly.")
     gb_conn = get_global_connection()
     gb_conn._set_connection(conn)
     return None

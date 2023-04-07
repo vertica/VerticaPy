@@ -123,7 +123,7 @@ def intersect(
 
     else:
 
-        raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
+        raise ValueError("Either 'x' and 'y' or 'g' must not be empty.")
 
     query = f"""
         SELECT 

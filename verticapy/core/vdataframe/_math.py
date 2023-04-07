@@ -22,7 +22,7 @@ from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
-from verticapy.errors import MissingColumn, ParameterError, QueryError
+from verticapy.errors import MissingColumn, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -362,7 +362,7 @@ class vDFMath:
                 "last_value",
                 "pct_change",
             ):
-                raise ParameterError(
+                raise ValueError(
                     "The parameter 'columns' must be a vDataFrame column when "
                     f"using analytic method '{func}'"
                 )
@@ -374,7 +374,7 @@ class vDFMath:
                 "pct_change",
                 "exponential_moving_average",
             ):
-                raise ParameterError(
+                raise ValueError(
                     "The parameter 'columns' must be empty when using analytic"
                     f" method '{func}'"
                 )
