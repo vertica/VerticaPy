@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, json, os, uuid
-from typing import Any, TextIO
+from typing import Any, Optional, TextIO
 import numpy as np
 
 from verticapy._typing import ArrayLike
