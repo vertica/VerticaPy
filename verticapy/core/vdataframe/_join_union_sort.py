@@ -39,8 +39,8 @@ class vDFJoinUnionSort:
     def append(
         self,
         input_relation: SQLRelation,
-        expr1: SQLExpression = [],
-        expr2: SQLExpression = [],
+        expr1: Optional[SQLExpression] = None,
+        expr2: Optional[SQLExpression] = None,
         union_all: bool = True,
     ) -> "vDataFrame":
         """
@@ -73,11 +73,7 @@ class vDFJoinUnionSort:
         vDataFrame
            vDataFrame of the Union
         """
-        if isinstance(expr1, str):
-            expr1 = [expr1]
-        if isinstance(expr2, str):
-            expr2 = [expr2]
-        object_type = None
+        expr1, expr2 = format_type(expr1, expr2, dtype=list)
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"

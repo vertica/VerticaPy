@@ -200,11 +200,11 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
                 r = {}
             else:
                 r = None
-        elif isinstance(arg, str):
+        elif isinstance(arg, (float, int, str)):
             if dtype == list:
-                r = [copy.deepcopy(arg)]
+                r = [arg]
             else:
-                r = copy.deepcopy(arg)
+                r = arg
         else:
             r = copy.deepcopy(arg)
         res += [r]

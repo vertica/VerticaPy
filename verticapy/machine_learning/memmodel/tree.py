@@ -273,8 +273,8 @@ class Tree(InMemoryModel):
 
     def to_graphviz(
         self,
-        feature_names: ArrayLike = [],
-        classes_color: ArrayLike = [],
+        feature_names: Optional[ArrayLike] = None,
+        classes_color: Optional[ArrayLike] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
@@ -318,6 +318,9 @@ class Tree(InMemoryModel):
         str
             Graphviz code.
         """
+        feature_names, classes_color = format_type(
+            feature_names, classes_color, dtype=list
+        )
         node_style, arrow_style, leaf_style = format_type(
             node_style, arrow_style, leaf_style, dtype=dict
         )
@@ -634,8 +637,9 @@ class BinaryTreeClassifier(Tree):
         feature: ArrayLike,
         threshold: ArrayLike,
         value: ArrayLike,
-        classes: ArrayLike = [],
+        classes: Optional[ArrayLike] = None,
     ) -> None:
+        classes = format_type(classes, dtype=list)
         self.children_left_ = np.array(children_left)
         self.children_right_ = np.array(children_right)
         self.feature_ = np.array(feature)
@@ -688,7 +692,8 @@ class NonBinaryTree(Tree):
 
     # System & Special Methods.
 
-    def __init__(self, tree: dict, classes: ArrayLike = []) -> None:
+    def __init__(self, tree: dict, classes: Optional[ArrayLike] = None) -> None:
+        classes = format_type(classes, dtype=list)
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
         return None
@@ -918,7 +923,7 @@ class NonBinaryTree(Tree):
 
     def to_graphviz(
         self,
-        classes_color: ArrayLike = [],
+        classes_color: Optional[ArrayLike] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,

@@ -27,7 +27,7 @@ from verticapy.sdk.vertica.udf.utils import get_set_add_function
 def generate_lib_udf(
     udf_list: list,
     library_name: str,
-    include_dependencies: Union[str, list] = [],
+    include_dependencies: Union[None, str, list[str]] = None,
     file_path: str = "",
     create_file: bool = False,
 ) -> tuple[str, str]:
@@ -74,8 +74,7 @@ def generate_lib_udf(
     udx_str, sql
         UDF py file, str needed to install the library.
 	"""
-    if isinstance(include_dependencies, str):
-        include_dependencies = [include_dependencies]
+    include_dependencies = format_type(include_dependencies, dtype=list)
     if not (isinstance(include_dependencies, (list))):
         raise ValueError(
             "The parameter include_dependencies type must be <list>. "
