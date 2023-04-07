@@ -79,13 +79,13 @@ class Decomposition(Preprocessing):
         str
             the SQL code needed to deploy the model.
         """
-        X, exclude_columns, key_columns = format_type(
-            X, exclude_columns, key_columns, method=list
-        )
         if isinstance(X, NoneType):
             X = self.X
         else:
             X = quote_ident(X)
+        X, exclude_columns, key_columns = format_type(
+            X, exclude_columns, key_columns, method=list
+        )
         fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
                                             USING PARAMETERS

@@ -217,13 +217,13 @@ class Preprocessing(Unsupervised):
         str
             the SQL code needed to deploy the model.
         """
-        X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, method=list
-        )
         if isinstance(X, NoneType):
             X = self.X
         else:
             X = quote_ident(X)
+        X, key_columns, exclude_columns = format_type(
+            X, key_columns, exclude_columns, method=list
+        )
         if key_columns:
             key_columns = ", ".join(quote_ident(key_columns))
         if exclude_columns:
@@ -335,9 +335,9 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        X = format_type(X, method=list)
         if isinstance(X, NoneType):
             X = self.X
+        X = format_type(X, method=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
