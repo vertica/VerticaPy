@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._utils._object import _get_mllib
@@ -62,7 +62,7 @@ class vDFEncode:
     @save_verticapy_logs
     def one_hot_encode(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         max_cardinality: int = 12,
         prefix_sep: str = "_",
         drop_first: bool = True,
@@ -127,7 +127,7 @@ class vDCEncode:
     def cut(
         self,
         breaks: list,
-        labels: Optional[list] = None,
+        labels: list = [],
         include_lowest: bool = True,
         right: bool = True,
     ) -> "vDataFrame":

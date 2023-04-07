@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -32,9 +32,9 @@ class vDFPivot:
     @save_verticapy_logs
     def flat_vmap(
         self,
-        vmap_col: Optional[SQLExpression] = None,
+        vmap_col: SQLExpression = [],
         limit: int = 100,
-        exclude_columns: Optional[SQLColumns] = None,
+        exclude_columns: SQLColumns = [],
     ) -> "vDataFrame":
         """
         Flatten the selected VMap. A new vDataFrame is returned.
@@ -121,7 +121,7 @@ class vDFPivot:
     def narrow(
         self,
         index: SQLColumns,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         col_name: str = "column",
         val_name: str = "value",
     ) -> "vDataFrame":

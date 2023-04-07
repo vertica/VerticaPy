@@ -224,7 +224,7 @@ def plot_acf_pacf(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: Optional[SQLColumns] = None,
+    by: SQLColumns = [],
     p: Union[int, list] = 15,
     show: bool = True,
     **style_kwargs,

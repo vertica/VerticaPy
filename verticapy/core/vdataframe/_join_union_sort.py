@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns, SQLExpression, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
@@ -36,8 +36,8 @@ class vDFJoinUnionSort:
     def append(
         self,
         input_relation: SQLRelation,
-        expr1: Optional[SQLExpression] = None,
-        expr2: Optional[SQLExpression] = None,
+        expr1: SQLExpression = [],
+        expr2: SQLExpression = [],
         union_all: bool = True,
     ) -> "vDataFrame":
         """

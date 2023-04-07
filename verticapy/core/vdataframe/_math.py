@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
@@ -68,7 +68,7 @@ class vDFMath:
         return vdf
 
     @save_verticapy_logs
-    def abs(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
+    def abs(self, columns: SQLColumns = []) -> "vDataFrame":
         """
         Applies the absolute value function to all input vDataColumns. 
 
@@ -96,8 +96,8 @@ class vDFMath:
     def analytic(
         self,
         func: str,
-        columns: Optional[SQLColumns] = None,
-        by: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
+        by: SQLColumns = [],
         order_by: Union[dict, list] = [],
         name: str = "",
         offset: int = 1,

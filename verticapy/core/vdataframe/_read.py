@@ -172,7 +172,7 @@ class vDFRead:
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
-    def get_columns(self, exclude_columns: Optional[SQLColumns] = None) -> list[str]:
+    def get_columns(self, exclude_columns: SQLColumns = []) -> list[str]:
         """
         Returns the vDataFrame vDataColumns.
 

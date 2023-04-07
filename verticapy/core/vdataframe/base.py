@@ -191,7 +191,7 @@ class vDataFrame(
     def __init__(
         self,
         input_relation: Union[str, list, dict, pd.DataFrame, np.ndarray, TableSample],
-        usecols: Optional[SQLColumns] = None,
+        usecols: SQLColumns = [],
         schema: str = "",
         external: bool = False,
         symbol: str = "$",
@@ -345,7 +345,7 @@ class vDataFrame(
     def _from_object(
         self,
         object_: Union[np.ndarray, list, TableSample, dict],
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
     ) -> None:
         """
         Creates a vDataFrame from an input object.
@@ -388,7 +388,7 @@ class vDataFrame(
 
         return self.__init__(input_relation=tb.to_sql())
 
-    def _from_pandas(self, object_: pd.DataFrame, usecols: Optional[SQLColumns] = None,) -> None:
+    def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
@@ -462,7 +462,7 @@ class vDataColumn(
     def __init__(
         self,
         alias: str,
-        transformations: Optional[list] = None,
+        transformations: list = [],
         parent: Optional[vDataFrame] = None,
         catalog: dict = {},
     ) -> None:

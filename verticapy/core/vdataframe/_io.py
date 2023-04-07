@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, decimal, pickle, os
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 from collections.abc import Iterable
 import numpy as np
 
@@ -95,10 +95,10 @@ class vDFInOut:
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
-        usecols: Optional[SQLColumns] = None,
+        usecols: SQLColumns = [],
         header: bool = True,
-        new_header: Optional[list] = None,
-        order_by: Union[None, SQLExpression, dict] = None,
+        new_header: list = [],
+        order_by: Union[str, list, dict] = [],
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
         """
@@ -242,12 +242,12 @@ class vDFInOut:
     def to_db(
         self,
         name: str,
-        usecols: Optional[SQLColumns] = None,
+        usecols: SQLColumns = [],
         relation_type: Literal[
             "view", "temporary", "table", "local", "insert"
         ] = "view",
         inplace: bool = False,
-        db_filter: Optional[SQLExpression] = None,
+        db_filter: SQLExpression = "",
         nb_split: int = 0,
     ) -> "vDataFrame":
         """
@@ -424,8 +424,8 @@ class vDFInOut:
     def to_json(
         self,
         path: str = "",
-        usecols: Optional[SQLColumns] = None,
-        order_by: Union[None, SQLExpression, dict] = None,
+        usecols: SQLColumns = [],
+        order_by: Union[str, list, dict] = [],
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
         """
@@ -629,7 +629,7 @@ class vDFInOut:
         fileMode: str = "660",
         dirMode: str = "755",
         int96AsTimestamp: bool = True,
-        by: Optional[SQLColumns] = None,
+        by: SQLColumns = [],
         order_by: Union[str, list, dict] = [],
     ) -> TableSample:
         """
@@ -759,7 +759,7 @@ class vDFInOut:
         self,
         name: str,
         path: str,
-        usecols: Optional[SQLColumns] = None,
+        usecols: SQLColumns = [],
         overwrite: bool = True,
         shape: Literal[
             "Point",

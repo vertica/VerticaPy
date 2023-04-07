@@ -142,7 +142,7 @@ class KNeighborsRegressor(Regressor):
         self,
         X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
-        key_columns: Optional[SQLColumns] = None,
+        key_columns: SQLColumns = [],
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -380,7 +380,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         predict: bool = False,
-        key_columns: Optional[SQLColumns] = None,
+        key_columns: SQLColumns = [],
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -811,7 +811,7 @@ class KernelDensity(Regressor, Tree):
         max_depth: int = 5,
         min_samples_leaf: int = 1,
         nbins: int = 5,
-        xlim: Optional[list] = None,
+        xlim: list = [],
         **kwargs,
     ) -> None:
         self.model_name = name
@@ -1245,7 +1245,7 @@ class LocalOutlierFactor(VerticaModel):
         self,
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
-        key_columns: Optional[SQLColumns] = None,
+        key_columns: SQLColumns = [],
         index: str = "",
     ) -> None:
         """

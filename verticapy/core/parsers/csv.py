@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os, warnings
-from typing import Optional
 
 import verticapy._config.config as conf
 from verticapy._utils._parsers import get_header_names, guess_sep
@@ -42,7 +41,7 @@ def pcsv(
     path: str,
     sep: str = ",",
     header: bool = True,
-    header_names: Optional[list] = None,
+    header_names: list = [],
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
@@ -184,7 +183,7 @@ def read_csv(
     table_name: str = "",
     sep: str = "",
     header: bool = True,
-    header_names: Optional[list] = None,
+    header_names: list = [],
     dtype: dict = {},
     na_rep: str = "",
     quotechar: str = '"',

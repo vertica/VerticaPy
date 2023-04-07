@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import datetime, math, random, warnings
 from itertools import combinations_with_replacement
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 import numpy as np
 import scipy.stats as scipy_st
 
@@ -96,7 +96,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def cdt(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         max_cardinality: int = 20,
         nbins: int = 10,
         tcdt: bool = True,
@@ -356,7 +356,7 @@ class vDFMachineLearning:
 
     @save_verticapy_logs
     def chaid_columns(
-        self, columns: Optional[SQLColumns] = None, max_cardinality: int = 16
+        self, columns: SQLColumns = [], max_cardinality: int = 16
     ) -> list[str]:
         """
         Function used to simplify the code. It returns the columns 
@@ -414,7 +414,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def outliers(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         name: str = "distribution_outliers",
         threshold: float = 3.0,
         robust: bool = False,
@@ -473,7 +473,7 @@ class vDFMachineLearning:
     def pivot_table_chi2(
         self,
         response: str,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         nbins: int = 16,
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
@@ -581,7 +581,7 @@ class vDFMachineLearning:
         return TableSample(result)
 
     @save_verticapy_logs
-    def polynomial_comb(self, columns: Optional[SQLColumns] = None, r: int = 2) -> "vDataFrame":
+    def polynomial_comb(self, columns: SQLColumns = [], r: int = 2) -> "vDataFrame":
         """
         Returns a vDataFrame containing different product 
         combination  of   the  input  vDataColumns.  This 
@@ -817,7 +817,7 @@ class vDFMachineLearning:
     def sessionize(
         self,
         ts: str,
-        by: Optional[SQLColumns] = None,
+        by: SQLColumns = [],
         session_threshold: str = "30 minutes",
         name: str = "session_id",
     ) -> "vDataFrame":

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
@@ -30,7 +30,7 @@ class vDFNorm:
     @save_verticapy_logs
     def normalize(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ) -> "vDataFrame":
         """
@@ -81,7 +81,7 @@ class vDCNorm:
     def normalize(
         self,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-        by: Optional[SQLColumns] = None,
+        by: SQLColumns = [],
         return_trans: bool = False,
     ) -> "vDataFrame":
         """

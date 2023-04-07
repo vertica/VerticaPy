@@ -201,7 +201,7 @@ class AnimatedBubblePlot(AnimatedBase):
         self,
         lim_labels: int = 6,
         fixed_xy_lim: bool = False,
-        bbox: Optional[list] = None,
+        bbox: list = [],
         img: str = "",
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,

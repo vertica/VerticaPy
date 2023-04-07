@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
@@ -28,7 +28,7 @@ from verticapy.connection.connect import current_cursor
 def _executeSQL(
     query: str,
     title: str = "",
-    data: Optional[list] = None,
+    data: list = [],
     method: Literal[
         "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
     ] = "cursor",

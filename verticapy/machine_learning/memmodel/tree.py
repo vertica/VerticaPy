@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import copy, math
 from collections.abc import Iterable
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 import numpy as np
 
 import verticapy._config.config as conf
@@ -273,8 +273,8 @@ class Tree(InMemoryModel):
 
     def to_graphviz(
         self,
-        feature_names: Optional[ArrayLike] = None,
-        classes_color: Optional[ArrayLike] = None,
+        feature_names: ArrayLike = [],
+        classes_color: ArrayLike = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
@@ -631,7 +631,7 @@ class BinaryTreeClassifier(Tree):
         feature: ArrayLike,
         threshold: ArrayLike,
         value: ArrayLike,
-        classes: Optional[ArrayLike] = None,
+        classes: ArrayLike = [],
     ) -> None:
         self.children_left_ = np.array(children_left)
         self.children_right_ = np.array(children_right)
@@ -685,7 +685,7 @@ class NonBinaryTree(Tree):
 
     # System & Special Methods.
 
-    def __init__(self, tree: dict, classes: Optional[ArrayLike] = None) -> None:
+    def __init__(self, tree: dict, classes: ArrayLike = []) -> None:
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
         return None
@@ -834,7 +834,7 @@ class NonBinaryTree(Tree):
     def _to_graphviz_tree(
         self,
         tree: dict,
-        classes_color: Optional[list] = None,
+        classes_color: list = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
@@ -911,7 +911,7 @@ class NonBinaryTree(Tree):
 
     def to_graphviz(
         self,
-        classes_color: Optional[ArrayLike] = None,
+        classes_color: ArrayLike = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,

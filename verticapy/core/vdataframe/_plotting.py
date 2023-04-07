@@ -47,7 +47,7 @@ class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def boxplot(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         q: tuple[float, float] = (0.25, 0.75),
         max_nb_fliers: int = 30,
         whis: float = 1.5,
@@ -426,7 +426,7 @@ class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def density(
         self,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         bandwidth: float = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
@@ -531,7 +531,7 @@ class vDFPlot(PlottingUtils):
     def plot(
         self,
         ts: str,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
         kind: Literal[
@@ -945,7 +945,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         method: PlottingMethod = "count",
         of: Optional[str] = None,
-        bbox: Optional[list] = None,
+        bbox: list = [],
         img: str = "",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -1132,7 +1132,7 @@ class vDFPlot(PlottingUtils):
 
     @save_verticapy_logs
     def scatter_matrix(
-        self, columns: Optional[SQLColumns] = None, max_nb_points: int = 1000, **style_kwargs
+        self, columns: SQLColumns = [], max_nb_points: int = 1000, **style_kwargs
     ) -> PlottingObject:
         """
         Draws the scatter matrix of the vDataFrame.

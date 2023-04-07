@@ -231,7 +231,7 @@ class vDFAnimatedPlot(PlottingUtils):
     def animated_plot(
         self,
         ts: str,
-        columns: Optional[SQLColumns] = None,
+        columns: SQLColumns = [],
         by: Optional[str] = None,
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
@@ -341,7 +341,7 @@ class vDFAnimatedPlot(PlottingUtils):
         limit_over: int = 6,
         limit: int = 1000000,
         limit_labels: int = 6,
-        bbox: Optional[list] = None,
+        bbox: list = [],
         img: str = "",
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,

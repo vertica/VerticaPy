@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional
+from typing import Literal
 import numpy as np
 
 import verticapy._config.config as conf
@@ -172,7 +172,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     # System & Special Methods.
 
     def __init__(
-        self, trees: list[BinaryTreeClassifier], classes: Optional[ArrayLike] = None
+        self, trees: list[BinaryTreeClassifier], classes: ArrayLike = []
     ) -> None:
         self.trees_ = copy.deepcopy(trees)
         if len(classes) == 0:
@@ -359,7 +359,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         self,
         trees: list[BinaryTreeRegressor],
         logodds: ArrayLike,
-        classes: Optional[ArrayLike] = None,
+        classes: ArrayLike = [],
         learning_rate: float = 1.0,
     ) -> None:
         self.trees_ = copy.deepcopy(trees)

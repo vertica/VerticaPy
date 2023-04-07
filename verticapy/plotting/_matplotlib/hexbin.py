@@ -62,7 +62,7 @@ class HexbinMap(MatplotlibBase):
     # Draw.
 
     def draw(
-        self, bbox: Optional[list] = None, img: str = "", ax: Optional[Axes] = None, **style_kwargs,
+        self, bbox: list = [], img: str = "", ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws an hexbin plot using the Matplotlib API.
