@@ -1258,7 +1258,7 @@ class IsolationForest(Clustering, Tree):
     # Prediction / Transformation Methods.
 
     def decision_function(
-        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
+        self, vdf: SQLRelation, X: Optional[list] = None, name: str = "", inplace: bool = True,
     ) -> vDataFrame:
         """
         Returns  the  anomaly  score using the  input 

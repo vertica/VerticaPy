@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
+from typing import Optional
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -81,7 +82,7 @@ def read_json(
     path: str,
     schema: str = "",
     table_name: str = "",
-    usecols: list = [],
+    usecols: Optional[list] = None,
     new_name: dict = {},
     insert: bool = False,
     start_point: str = None,

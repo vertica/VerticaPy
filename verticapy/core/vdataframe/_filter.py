@@ -68,7 +68,7 @@ class vDFFilter:
         column: str,
         method: Literal["over", "under"] = "under",
         x: float = 0.5,
-        order_by: SQLColumns = [],
+        order_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Balances the dataset using the input method.
@@ -220,7 +220,7 @@ class vDFFilter:
         return filter_function(f"{self._format_colnames(ts)}::time {condition}",)
 
     @save_verticapy_logs
-    def drop(self, columns: SQLColumns = []) -> "vDataFrame":
+    def drop(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Drops  the input vDataColumns  from the vDataFrame.  Dropping 
         vDataColumns  means not selecting them  in the final SQL code 
@@ -247,7 +247,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def drop_duplicates(self, columns: SQLColumns = []) -> "vDataFrame":
+    def drop_duplicates(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Filters the duplicated using a partition by the input
         vDataColumns.
@@ -293,7 +293,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def dropna(self, columns: SQLColumns = []) -> "vDataFrame":
+    def dropna(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Filters the vDataFrame where the input vDataColumns are 
         missing.
@@ -331,7 +331,7 @@ class vDFFilter:
 
     @save_verticapy_logs
     def filter(
-        self, conditions: Union[list, str] = [], *args, **kwargs
+        self, conditions: Optional[SQLExpression] = None, *args, **kwargs
     ) -> "vDataFrame":
         """
         Filters  the vDataFrame using the  input  expressions.
@@ -528,7 +528,7 @@ class vDFFilter:
         n: Optional[PythonNumber] = None,
         x: float = None,
         method: Literal["random", "systematic", "stratified"] = "random",
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Downsamples the input vDataFrame.
@@ -622,9 +622,9 @@ class vDFFilter:
     @save_verticapy_logs
     def search(
         self,
-        conditions: SQLExpression = "",
-        usecols: SQLColumns = [],
-        expr: SQLExpression = [],
+        conditions: Optional[SQLExpression] = None,
+        usecols: Optional[SQLColumns] = None,
+        expr: Optional[SQLExpression] = None,
         order_by: Union[str, dict, list] = [],
     ) -> "vDataFrame":
         """

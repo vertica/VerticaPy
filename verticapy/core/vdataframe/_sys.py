@@ -51,7 +51,7 @@ class vDFSystem:
         self,
         split: bool = False,
         transformations: dict = {},
-        force_columns: SQLColumns = [],
+        force_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Method to use  to generate the SQL final relation. It will 
@@ -187,7 +187,7 @@ class vDFSystem:
         column: str = "",
         key: str = "",
         method: str = "",
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
     ) -> Optional[str]:
         """
         VERTICAPY  stores  the  already  computed aggregations to  avoid 
@@ -265,7 +265,7 @@ class vDFSystem:
         self,
         values: dict = {},
         erase: bool = False,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         matrix: str = "",
         column: str = "",
     ) -> None:

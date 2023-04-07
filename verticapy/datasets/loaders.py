@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os, vertica_python
+from typing import Optional
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
@@ -32,7 +33,7 @@ General Functions.
 
 
 def load_dataset(
-    schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = "",
+    schema: str, name: str, dtype: dict, copy_cols: Optional[list] = None, dataset_name: str = "",
 ) -> vDataFrame:
     """
     General Function to ingest a dataset.

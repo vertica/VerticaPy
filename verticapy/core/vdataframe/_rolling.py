@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, random
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._typing import SQLColumns, TYPE_CHECKING
 from verticapy._utils._gen import gen_name
@@ -35,7 +35,7 @@ class vDFRolling:
         func: str,
         window: Union[list, tuple],
         columns: SQLColumns,
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -250,7 +250,7 @@ class vDFRolling:
     def cummax(
         self,
         column: str,
-        by: list = [],
+        by: Optional[list] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -291,7 +291,7 @@ class vDFRolling:
     def cummin(
         self,
         column: str,
-        by: list = [],
+        by: Optional[list] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -332,7 +332,7 @@ class vDFRolling:
     def cumprod(
         self,
         column: str,
-        by: list = [],
+        by: Optional[list] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -373,7 +373,7 @@ class vDFRolling:
     def cumsum(
         self,
         column: str,
-        by: list = [],
+        by: Optional[list] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":

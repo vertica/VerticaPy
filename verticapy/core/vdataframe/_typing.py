@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, TYPE_CHECKING
+from typing import Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns
 from verticapy._utils._parsers import guess_sep
@@ -144,7 +144,7 @@ class vDFTyping:
             values["dtype"] += [self[column].ctype()]
         return TableSample(values)
 
-    def numcol(self, exclude_columns: SQLColumns = []) -> list:
+    def numcol(self, exclude_columns: Optional[SQLColumns] = None) -> list:
         """
         Returns a list of names of the numerical vDataColumns 
         in the vDataFrame.

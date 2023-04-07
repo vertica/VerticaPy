@@ -871,7 +871,7 @@ class DBSCAN(VerticaModel):
         self,
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
-        key_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
         index: str = "",
     ) -> None:
         """

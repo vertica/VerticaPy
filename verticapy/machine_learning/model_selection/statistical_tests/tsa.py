@@ -162,7 +162,7 @@ def adfuller(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     p: int = 1,
     with_trend: bool = False,
     regresults: bool = False,
@@ -472,7 +472,7 @@ def cochrane_orcutt(
 
 @save_verticapy_logs
 def durbin_watson(
-    input_relation: SQLRelation, eps: str, ts: str, by: SQLColumns = []
+    input_relation: SQLRelation, eps: str, ts: str, by: Optional[SQLColumns] = None
 ) -> float:
     """
     Durbin Watson test (residuals autocorrelation).
@@ -528,7 +528,7 @@ def ljungbox(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     p: int = 1,
     alpha: PythonNumber = 0.05,
     box_pierce: bool = False,
@@ -599,7 +599,7 @@ Time Series Tests: ARCH.
 
 @save_verticapy_logs
 def het_arch(
-    input_relation: SQLRelation, eps: str, ts: str, by: SQLColumns = [], p: int = 1
+    input_relation: SQLRelation, eps: str, ts: str, by: Optional[SQLColumns] = None, p: int = 1
 ) -> tuple[float, float, float, float]:
     """
     Engle’s Test for Autoregressive Conditional Heteroscedasticity 
@@ -674,7 +674,7 @@ def seasonal_decompose(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,

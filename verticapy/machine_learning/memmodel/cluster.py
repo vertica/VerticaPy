@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 from verticapy._typing import ArrayLike
@@ -52,7 +52,7 @@ class Clustering(InMemoryModel):
     # System & Special Methods.
 
     def __init__(
-        self, clusters: ArrayLike, p: int = 2, clusters_names: ArrayLike = []
+        self, clusters: ArrayLike, p: int = 2, clusters_names: Optional[ArrayLike] = None
     ) -> None:
         self.clusters_ = np.array(clusters)
         self.classes_ = np.array(clusters_names)
@@ -351,8 +351,8 @@ class BisectingKMeans(Clustering, Tree):
         clusters: ArrayLike,
         children_left: ArrayLike,
         children_right: ArrayLike,
-        cluster_size: ArrayLike = [],
-        cluster_score: ArrayLike = [],
+        cluster_size: Optional[ArrayLike] = None,
+        cluster_score: Optional[ArrayLike] = None,
         p: int = 2,
     ) -> None:
         self.clusters_ = np.array(clusters)
@@ -607,7 +607,7 @@ class KPrototypes(Clustering):
         clusters: ArrayLike,
         p: int = 2,
         gamma: float = 1.0,
-        is_categorical: ArrayLike = [],
+        is_categorical: Optional[ArrayLike] = None,
     ) -> None:
         self.clusters_ = np.array(clusters)
         self.p_ = p

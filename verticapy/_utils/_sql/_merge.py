@@ -14,10 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from verticapy._utils._sql._format import quote_ident
 
 
-def erase_prefix_in_name(name: str, prefix: list = []) -> str:
+def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
     """
     Excludes the input lists of prefixes from the 
     input name and returns it.
@@ -45,7 +47,7 @@ def erase_prefix_in_name(name: str, prefix: list = []) -> str:
     return new_name
 
 
-def erase_suffix_in_name(name: str, suffix: list = []) -> str:
+def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
     """
     Excludes the input lists of suffixes from the
     input name and returns it.
@@ -73,7 +75,7 @@ def erase_suffix_in_name(name: str, suffix: list = []) -> str:
     return new_name
 
 
-def erase_word_in_name(name: str, word: list = []) -> str:
+def erase_word_in_name(name: str, word: Optional[list] = None) -> str:
     """
     Excludes the input lists of words from the 
     input name and returns it.
@@ -101,9 +103,9 @@ def erase_word_in_name(name: str, word: list = []) -> str:
 
 def erase_in_name(
     name: str,
-    suffix: list = [],
-    prefix: list = [],
-    word: list = [],
+    suffix: Optional[list] = None,
+    prefix: Optional[list] = None,
+    word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> str:
     """
@@ -151,9 +153,9 @@ def erase_in_name(
 def is_similar_name(
     name1: str,
     name2: str,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> bool:
     """
@@ -200,9 +202,9 @@ def is_similar_name(
 def belong_to_group(
     name: str,
     group: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> bool:
     """
@@ -252,9 +254,9 @@ def belong_to_group(
 
 def group_similar_names(
     colnames: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> dict:
     """

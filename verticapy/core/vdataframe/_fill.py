@@ -97,7 +97,7 @@ class vDFFill:
 
     @save_verticapy_logs
     def interpolate(
-        self, ts: str, rule: TimeInterval, method: dict = {}, by: SQLColumns = [],
+        self, ts: str, rule: TimeInterval, method: dict = {}, by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Computes a regular time interval vDataFrame by interpolating the 
@@ -331,8 +331,8 @@ class vDCFill:
             "backfill",
         ] = "auto",
         expr: Union[str, StringSQL] = "",
-        by: SQLColumns = [],
-        order_by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
+        order_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Fills missing elements in the vDataColumn with a user-specified 

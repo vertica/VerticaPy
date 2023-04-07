@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings, vertica_python
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, format_schema_table
@@ -51,7 +51,7 @@ def get_data_types(
     column: str = "",
     table_name: str = "",
     schema: str = "public",
-    usecols: list = [],
+    usecols: Optional[list] = None,
 ) -> Union[tuple, list[tuple]]:
     """
     Returns customized relation columns and the 

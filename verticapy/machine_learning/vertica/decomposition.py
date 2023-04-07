@@ -48,8 +48,8 @@ class Decomposition(Preprocessing):
         X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 

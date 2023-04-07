@@ -263,7 +263,7 @@ class Pipeline:
     # Prediction / Transformation Methods.
 
     def predict(
-        self, vdf: SQLRelation = None, X: list = [], name: str = "estimator",
+        self, vdf: SQLRelation = None, X: Optional[list] = None, name: str = "estimator",
     ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
@@ -314,7 +314,7 @@ class Pipeline:
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
-    def transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
+    def transform(self, vdf: SQLRelation = None, X: Optional[list] = None) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
 
@@ -354,7 +354,7 @@ class Pipeline:
             X_all += X_new
         return current_vdf
 
-    def inverse_transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
+    def inverse_transform(self, vdf: SQLRelation = None, X: Optional[list] = None) -> vDataFrame:
         """
         Applies  the  inverse model transformation  on  a 
         vDataFrame.

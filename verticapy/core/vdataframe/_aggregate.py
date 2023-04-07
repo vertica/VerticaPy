@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import decimal, multiprocessing, warnings
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
@@ -61,7 +61,7 @@ class vDFAgg:
     def aggregate(
         self,
         func: SQLExpression,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         ncols_block: int = 20,
         processes: int = 1,
     ) -> TableSample:
@@ -638,7 +638,7 @@ class vDFAgg:
         method: Literal[
             "numerical", "categorical", "statistics", "length", "range", "all", "auto",
         ] = "auto",
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         unique: bool = False,
         ncols_block: int = 20,
         processes: int = 1,
@@ -1037,7 +1037,7 @@ class vDFAgg:
     def groupby(
         self,
         columns: SQLColumns,
-        expr: SQLExpression = [],
+        expr: Optional[SQLExpression] = None,
         rollup: Union[bool, list] = False,
         having: str = "",
     ) -> "vDataFrame":
@@ -1161,7 +1161,7 @@ class vDFAgg:
     # Single Aggregate Functions.
 
     @save_verticapy_logs
-    def aad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def aad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'aad' 
         (Average Absolute Deviation).
@@ -1226,7 +1226,7 @@ class vDFAgg:
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def avg(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def avg(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'avg' 
         (Average).
@@ -1250,7 +1250,7 @@ class vDFAgg:
     mean = avg
 
     @save_verticapy_logs
-    def count(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def count(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the  vDataFrame  using a  list of 'count' 
         (Number of non-missing values).
@@ -1272,7 +1272,7 @@ class vDFAgg:
         return self.aggregate(func=["count"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def kurtosis(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def kurtosis(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'kurtosis'.
 
@@ -1294,7 +1294,7 @@ class vDFAgg:
     kurt = kurtosis
 
     @save_verticapy_logs
-    def mad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def mad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'mad' 
         (Median Absolute Deviation).
@@ -1315,7 +1315,7 @@ class vDFAgg:
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def max(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def max(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'max' (Maximum).
 
@@ -1336,7 +1336,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def median(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
+        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'median'.
@@ -1360,7 +1360,7 @@ class vDFAgg:
         return self.quantile(0.5, columns=columns, approx=approx, **agg_kwargs,)
 
     @save_verticapy_logs
-    def min(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def min(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'min' (Minimum).
 
@@ -1380,7 +1380,7 @@ class vDFAgg:
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def product(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def product(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'product'.
 
@@ -1406,7 +1406,7 @@ class vDFAgg:
     def quantile(
         self,
         q: Union[PythonNumber, ArrayLike],
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         approx: bool = True,
         **agg_kwargs,
     ) -> TableSample:
@@ -1447,7 +1447,7 @@ class vDFAgg:
         )
 
     @save_verticapy_logs
-    def sem(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def sem(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'sem' 
         (Standard Error of the Mean).
@@ -1469,7 +1469,7 @@ class vDFAgg:
         return self.aggregate(func=["sem"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def skewness(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def skewness(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'skewness'.
 
@@ -1492,7 +1492,7 @@ class vDFAgg:
     skew = skewness
 
     @save_verticapy_logs
-    def std(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def std(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'std' 
         (Standard Deviation).
@@ -1516,7 +1516,7 @@ class vDFAgg:
     stddev = std
 
     @save_verticapy_logs
-    def sum(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def sum(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'sum'.
 
@@ -1537,7 +1537,7 @@ class vDFAgg:
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def var(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def var(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'variance'.
 
@@ -1564,7 +1564,7 @@ class vDFAgg:
     @save_verticapy_logs
     def count_percent(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         sort_result: bool = True,
         desc: bool = True,
         **agg_kwargs,
@@ -1604,7 +1604,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def nunique(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
+        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'unique' 
@@ -1635,7 +1635,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def duplicated(
-        self, columns: SQLColumns = [], count: bool = False, limit: int = 30
+        self, columns: Optional[SQLColumns] = None, count: bool = False, limit: int = 30
     ) -> TableSample:
         """
         Returns the duplicated values.

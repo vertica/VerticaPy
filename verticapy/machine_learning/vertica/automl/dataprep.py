@@ -196,7 +196,7 @@ class AutoDataPrep(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         ts: str = "",
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
     ) -> None:
         """
         Trains the model.

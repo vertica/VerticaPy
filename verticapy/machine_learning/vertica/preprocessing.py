@@ -123,7 +123,7 @@ class Preprocessing(Unsupervised):
 
     # I/O Methods.
 
-    def _get_names(self, inverse: bool = False, X: list = []) -> list[str]:
+    def _get_names(self, inverse: bool = False, X: Optional[list] = None) -> list[str]:
         """
         Returns the Transformation output names.
 
@@ -189,8 +189,8 @@ class Preprocessing(Unsupervised):
     def deploySQL(
         self,
         X: Optional[SQLColumns] = None,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -259,8 +259,8 @@ class Preprocessing(Unsupervised):
 
     def deployInverseSQL(
         self,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
         X: Optional[SQLColumns] = None,
     ) -> str:
         """

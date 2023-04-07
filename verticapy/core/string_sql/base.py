@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Iterable, Literal
+from typing import Any, Iterable, Literal, Optional
 
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._format import format_magic
@@ -129,7 +129,7 @@ class StringSQL:
     def _distinct(self) -> "StringSQL":
         return StringSQL(f"DISTINCT ({self._init_transf})", self.category())
 
-    def _over(self, by: SQLColumns = [], order_by: SQLColumns = []) -> "StringSQL":
+    def _over(self, by: Optional[SQLColumns] = None, order_by: Optional[SQLColumns] = None) -> "StringSQL":
         if isinstance(by, str):
             by = [by]
         if isinstance(order_by, str):

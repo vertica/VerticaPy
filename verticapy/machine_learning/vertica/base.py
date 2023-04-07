@@ -546,7 +546,7 @@ class VerticaModel(PlottingUtils):
 
     def to_sql(
         self,
-        X: list = [],
+        X: Optional[list] = None,
         return_proba: bool = False,
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
@@ -1047,7 +1047,7 @@ class Tree:
     def to_graphviz(
         self,
         tree_id: int = 0,
-        classes_color: list = [],
+        classes_color: Optional[list] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
