@@ -18,6 +18,7 @@ import math, warnings
 from typing import Literal, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
+from verticapy._utils._object import _get_mllib
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_varchar
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.drop import drop
+from verticapy.sql.functions import case_when, decode
 
 
 class vDFEncode:
@@ -55,8 +57,6 @@ class vDFEncode:
         vDataFrame
             self
         """
-        from verticapy.sql.functions import case_when
-
         return self.eval(name=name, expr=case_when(*args))
 
     @save_verticapy_logs
@@ -205,8 +205,6 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
-        from verticapy.sql.functions import decode
-
         return self.apply(func=decode(StringSQL("{}"), *args))
 
     @save_verticapy_logs
@@ -270,11 +268,7 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
-        from verticapy.machine_learning.vertica.ensemble import (
-            RandomForestClassifier,
-            RandomForestRegressor,
-        )
-
+        vml = _get_mllib()
         if self.isnum() and method == "smart":
             schema = conf.get_option("temp_schema")
             if not (schema):
@@ -294,9 +288,9 @@ class vDCEncode:
             self._parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
             if self._parent[response].category() == "float":
-                model = RandomForestRegressor(tmp_model_name)
+                model = vml.RandomForestRegressor(tmp_model_name)
             else:
-                model = RandomForestClassifier(tmp_model_name)
+                model = vml.RandomForestClassifier(tmp_model_name)
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()

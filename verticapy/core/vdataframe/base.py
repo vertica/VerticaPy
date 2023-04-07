@@ -23,6 +23,7 @@ import pandas as pd
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._typing import SQLColumns
+from verticapy._utils._object import _read_pandas
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_dql
@@ -391,14 +392,10 @@ class vDataFrame(
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
-
-        from verticapy.core.parsers.pandas import read_pandas
-
         if isinstance(usecols, str):
             usecols = [usecols]
-
         args = object_[usecols] if usecols else object_
-        vdf = read_pandas(args)
+        vdf = _read_pandas(args)
         return self.__init__(input_relation=vdf._vars["main_relation"])
 
 

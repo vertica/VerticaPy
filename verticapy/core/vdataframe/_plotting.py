@@ -20,6 +20,7 @@ from collections.abc import Iterable
 import numpy as np
 
 import verticapy._config.config as conf
+from verticapy._utils._object import _get_mllib
 from verticapy._typing import (
     ArrayLike,
     ColorType,
@@ -468,8 +469,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        from verticapy.machine_learning.vertica import KernelDensity
-
+        vml = _get_mllib()
         if isinstance(columns, str):
             columns = [columns]
         columns = self._format_colnames(columns)
@@ -486,7 +486,7 @@ class vDFPlot(PlottingUtils):
             xlim_ = [xlim]
         else:
             xlim_ = xlim
-        model = KernelDensity(
+        model = vml.KernelDensity(
             name=name,
             bandwidth=bandwidth,
             kernel=kernel,
@@ -1069,8 +1069,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        from verticapy.machine_learning.vertica.decomposition import PCA
-
+        vml = _get_mllib()
         if img and not (bbox) and len(columns) == 2:
             aggr = self.agg(columns=columns, func=["min", "max"])
             bbox = (
@@ -1085,7 +1084,7 @@ class vDFPlot(PlottingUtils):
             model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="pca_plot"
             )
-            model = PCA(model_name)
+            model = vml.PCA(model_name)
             model.drop()
             try:
                 model.fit(self, columns)
@@ -1819,15 +1818,14 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        from verticapy.machine_learning.vertica import KernelDensity
-
+        vml = _get_mllib()
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
         by = self._parent._format_colnames(by)
         if not xlim:
             xlim_ = [(self.min(), self.max())]
         else:
             xlim_ = [xlim]
-        model = KernelDensity(
+        model = vml.KernelDensity(
             name=name,
             bandwidth=bandwidth,
             kernel=kernel,

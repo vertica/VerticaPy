@@ -18,7 +18,13 @@ from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 
-from verticapy._typing import ArrayLike, NoneType, PythonNumber, PythonScalar, SQLRelation
+from verticapy._typing import (
+    ArrayLike,
+    NoneType,
+    PythonNumber,
+    PythonScalar,
+    SQLRelation,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version

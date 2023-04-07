@@ -21,7 +21,13 @@ import numpy as np
 import matplotlib.colors as plt_colors
 
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike, NoneType, PythonNumber, PythonScalar, SQLColumns
+from verticapy._typing import (
+    ArrayLike,
+    NoneType,
+    PythonNumber,
+    PythonScalar,
+    SQLColumns,
+)
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL

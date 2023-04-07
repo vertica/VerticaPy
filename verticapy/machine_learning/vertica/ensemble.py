@@ -20,7 +20,13 @@ import numpy as np
 
 from vertica_python.errors import MissingRelation, QueryError
 
-from verticapy._typing import PlottingObject, PythonNumber, NoneType, SQLColumns, SQLRelation
+from verticapy._typing import (
+    PlottingObject,
+    PythonNumber,
+    NoneType,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident

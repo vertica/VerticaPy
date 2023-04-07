@@ -17,7 +17,13 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 import numpy as np
 
-from verticapy._typing import NoneType, PlottingObject, PythonNumber, SQLColumns, SQLRelation
+from verticapy._typing import (
+    NoneType,
+    PlottingObject,
+    PythonNumber,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version

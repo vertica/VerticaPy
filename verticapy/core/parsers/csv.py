@@ -17,9 +17,15 @@ permissions and limitations under the License.
 import os, warnings
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._parsers import get_header_names, guess_sep
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._format import clean_query, format_schema_table, quote_ident
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import (
+    clean_query,
+    format_schema_table,
+    list_strip,
+    quote_ident,
+)
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError, MissingRelation, ParameterError
 
@@ -29,63 +35,6 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.flex import compute_flextable_keys
-
-
-def guess_sep(file_str: str) -> str:
-    """
-    Guess the file's separator.
-    """
-    sep = ","
-    max_occur = file_str.count(",")
-    for s in ("|", ";"):
-        total_occurences = file_str.count(s)
-        if total_occurences > max_occur:
-            max_occur = total_occurences
-            sep = s
-    return sep
-
-
-def list_strip(L: list) -> list:
-    """
-    Erases all the start / end spaces from the
-    input list.
-    """
-    return [val.strip() for val in L]
-
-
-def get_header_names(path: str, sep: str) -> list[str]:
-    """
-    Returns the input CSV file's header columns' 
-    names.
-    """
-    f = open(path, "r")
-    file_header = f.readline().replace("\n", "").replace('"', "")
-    if not (sep):
-        sep = guess_sep(file_header)
-    file_header = file_header.split(sep)
-    f.close()
-    for idx, col in enumerate(file_header):
-        if col == "":
-            if idx == 0:
-                position = "beginning"
-            elif idx == len(file_header) - 1:
-                position = "end"
-            else:
-                position = "middle"
-            file_header[idx] = f"col{idx}"
-            warning_message = (
-                f"An inconsistent name was found in the {position} of the "
-                "file header (isolated separator). It will be replaced "
-                f"by col{idx}."
-            )
-            if idx == 0:
-                warning_message += (
-                    "\nThis can happen when exporting a pandas DataFrame "
-                    "to CSV while retaining its indexes.\nTip: Use "
-                    "index=False when exporting with pandas.DataFrame.to_csv."
-                )
-            warnings.warn(warning_message, Warning)
-    return list_strip(file_header)
 
 
 def pcsv(
