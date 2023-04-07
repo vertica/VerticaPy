@@ -56,7 +56,7 @@ def load_dataset(
             else:
                 path += f"/data/{dataset_name}.csv"
                 if not (copy_cols):
-                    copy_cols = [quote_ident(col) for col in dtype]
+                    copy_cols = quote_ident(dtype)
                 query = f"""
                     COPY
                         {schema}.{name}({', '.join(copy_cols)})

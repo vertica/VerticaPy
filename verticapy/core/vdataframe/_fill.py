@@ -19,11 +19,17 @@ from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, PythonScalar, TimeInterval, SQLColumns
+from verticapy._typing import (
+    Optional,
+    PythonNumber,
+    PythonScalar,
+    TimeInterval,
+    SQLColumns,
+)
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
@@ -97,7 +103,11 @@ class vDFFill:
 
     @save_verticapy_logs
     def interpolate(
-        self, ts: str, rule: TimeInterval, method: dict = {}, by: SQLColumns = [],
+        self,
+        ts: str,
+        rule: TimeInterval,
+        method: dict = {},
+        by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Computes a regular time interval vDataFrame by interpolating the 
@@ -130,8 +140,7 @@ class vDFFill:
         vDataFrame
             object result of the interpolation.
         """
-        if isinstance(by, str):
-            by = [by]
+        by = format_type(by, method=list)
         method, ts, by = self._format_colnames(method, ts, by)
         all_elements = []
         for column in method:
@@ -154,12 +163,12 @@ class vDFFill:
             all_elements += [f"{func}({column}, '{interp}') AS {column}"]
         query = f"SELECT {{}} FROM {self._genSQL()}"
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
-        tmp_query += [quote_ident(column) for column in by]
+        tmp_query += quote_ident(by)
         tmp_query += all_elements
         query = query.format(", ".join(tmp_query))
         partition = ""
         if by:
-            partition = ", ".join([quote_ident(column) for column in by])
+            partition = ", ".join(quote_ident(by))
             partition = f"PARTITION BY {partition} "
         query += f""" 
             TIMESERIES slice_time AS '{rule}' 
@@ -331,8 +340,8 @@ class vDCFill:
             "backfill",
         ] = "auto",
         expr: Union[str, StringSQL] = "",
-        by: SQLColumns = [],
-        order_by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
+        order_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Fills missing elements in the vDataColumn with a user-specified 
@@ -367,12 +376,9 @@ class vDCFill:
         vDataFrame
             self._parent
         """
-        by, order_by = self._parent._format_colnames(by, order_by)
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(order_by, str):
-            order_by = [order_by]
         method = method.lower()
+        by, order_by = format_type(by, order_by, method=list)
+        by, order_by = self._parent._format_colnames(by, order_by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()

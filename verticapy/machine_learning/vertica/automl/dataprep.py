@@ -21,6 +21,7 @@ import verticapy._config.config as conf
 from verticapy._typing import NoneType, TimeInterval, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -196,7 +197,7 @@ class AutoDataPrep(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         ts: str = "",
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
     ) -> None:
         """
         Trains the model.
@@ -229,10 +230,7 @@ class AutoDataPrep(VerticaModel):
             vdf = input_relation.copy()
         if isinstance(X, NoneType):
             X = vdf.get_columns()
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(X, str):
-            X = [X]
+        X, by = format_type(X, by, method=list)
         if not (ts) and self.parameters["identify_ts"]:
             nb_date, nb_num, nb_others = 0, 0, 0
             for x in X:

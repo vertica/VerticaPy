@@ -20,6 +20,7 @@ import numpy as np
 
 from verticapy._typing import PlottingObject, PythonScalar, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -224,7 +225,7 @@ def plot_acf_pacf(
     vdf: vDataFrame,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     p: Union[int, list] = 15,
     show: bool = True,
     **style_kwargs,
@@ -262,8 +263,7 @@ def plot_acf_pacf(
     TableSample
         acf, pacf, confidence
     """
-    if isinstance(by, str):
-        by = [by]
+    by = format_type(by, method=list)
     by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)

@@ -22,7 +22,7 @@ from verticapy._typing import SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import indentSQL, quote_ident
+from verticapy._utils._sql._format import format_type, indentSQL, quote_ident
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -51,7 +51,7 @@ class vDFSystem:
         self,
         split: bool = False,
         transformations: dict = {},
-        force_columns: SQLColumns = [],
+        force_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Method to use  to generate the SQL final relation. It will 
@@ -77,8 +77,9 @@ class vDFSystem:
         """
         # The First step is to find the Max Floor
         all_imputations_grammar = []
+        force_columns = format_type(force_columns, method=list)
         force_columns_copy = copy.deepcopy(force_columns)
-        if not (force_columns):
+        if len(force_columns) == 0:
             force_columns = copy.deepcopy(self._vars["columns"])
         for column in force_columns:
             all_imputations_grammar += [
@@ -186,8 +187,8 @@ class vDFSystem:
         self,
         column: str = "",
         key: str = "",
-        method: str = "",
-        columns: SQLColumns = [],
+        method: Optional[str] = None,
+        columns: Optional[SQLColumns] = None,
     ) -> Optional[str]:
         """
         VERTICAPY  stores  the  already  computed aggregations to  avoid 
@@ -258,14 +259,14 @@ class vDFSystem:
                 else:
                     order_by += [f"{column_name} {columns[col].upper()}"]
         else:
-            order_by = [quote_ident(col) for col in columns]
+            order_by = quote_ident(columns)
         return f" ORDER BY {', '.join(order_by)}"
 
     def _update_catalog(
         self,
         values: dict = {},
         erase: bool = False,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         matrix: str = "",
         column: str = "",
     ) -> None:
@@ -274,6 +275,7 @@ class vDFSystem:
         avoid useless  computations.  This  method stores the 
         input aggregation in the vDataColumn catalog.
         """
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         agg_dict = {
             "cov": {},
@@ -310,7 +312,7 @@ class vDFSystem:
                         pass
                     self[column]._catalog[matrix][elem] = val
         else:
-            columns = [elem for elem in values]
+            columns = copy.deepcopy(values)
             columns.remove("index")
             for column in columns:
                 for i in range(len(values["index"])):

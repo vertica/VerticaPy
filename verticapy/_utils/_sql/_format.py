@@ -15,15 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-from typing import Any, Union
+from typing import Any, Literal, Optional, Union
 import numpy as np
 
 import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy._utils._object import _read_pandas
-from verticapy._typing import NoneType, SQLExpression
 from verticapy._utils._sql._cast import to_dtype_category
+from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
 
 
@@ -185,6 +185,35 @@ def indentSQL(query: str) -> str:
     return query_print
 
 
+def format_type(*args, method: Literal[NoneType, dict, list]) -> Any:
+    """
+    Format the input objects  by using the input type. It is
+    used to simplify the code as many functions are checking
+    types and instantiate the corresponding object.
+    """
+    res = []
+    for arg in args:
+        if isinstance(arg, NoneType):
+            if method == list:
+                r = []
+            elif method == dict:
+                r = {}
+            else:
+                r = None
+        elif isinstance(arg, str):
+            if method == list:
+                r = [arg]
+            else:
+                r = arg
+        else:
+            r = arg
+        res += [r]
+    if len(res) == 1:
+        return res[0]
+    else:
+        return tuple(res)
+
+
 def list_strip(L: list) -> list:
     """
     Erases all the start / end spaces from the
@@ -193,7 +222,7 @@ def list_strip(L: list) -> list:
     return [val.strip() for val in L]
 
 
-def quote_ident(column: str) -> str:
+def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns:
     """
     Returns the specified string argument in the format 
     that is required in  order to use that string as an 
@@ -209,14 +238,21 @@ def quote_ident(column: str) -> str:
     str
         Formatted column' name.
     """
-    tmp_column = str(column)
-    if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
-        tmp_column = tmp_column[1:-1]
-    temp_column_str = str(tmp_column).replace('"', '""')
-    temp_column_str = f'"{temp_column_str}"'
-    if temp_column_str == '""':
+    if isinstance(column, str):
+        tmp_column = str(column)
+        if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
+            tmp_column = tmp_column[1:-1]
+        temp_column_str = str(tmp_column).replace('"', '""')
+        temp_column_str = f'"{temp_column_str}"'
+        if temp_column_str == '""':
+            return ""
+        elif lower:
+            temp_column_str = temp_column_str.lower()
+        return temp_column_str
+    elif isinstance(column, NoneType):
         return ""
-    return temp_column_str
+    else:
+        return [quote_ident(x) for x in column]
 
 
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:

@@ -15,14 +15,15 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._utils._object import _get_mllib
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._object import _get_mllib
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -62,7 +63,7 @@ class vDFEncode:
     @save_verticapy_logs
     def one_hot_encode(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         max_cardinality: int = 12,
         prefix_sep: str = "_",
         drop_first: bool = True,
@@ -98,10 +99,9 @@ class vDFEncode:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
-        if not (columns):
+        if len(columns) == 0:
             columns = self.get_columns()
         cols_hand = True if (columns) else False
         for column in columns:

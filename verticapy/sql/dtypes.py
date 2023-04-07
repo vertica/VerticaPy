@@ -110,7 +110,7 @@ def get_data_types(
             elif usecols:
                 query = f"""
                     SELECT 
-                        {", ".join([quote_ident(column) for column in usecols])} 
+                        {", ".join(quote_ident(usecols))} 
                     FROM ({expr}) x 
                     LIMIT 0;"""
             else:

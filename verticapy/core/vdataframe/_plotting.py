@@ -33,6 +33,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
@@ -47,7 +48,7 @@ class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def boxplot(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         q: tuple[float, float] = (0.25, 0.75),
         max_nb_fliers: int = 30,
         whis: float = 1.5,
@@ -82,6 +83,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
+        columns = format_type(columns, method=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -426,7 +428,7 @@ class vDFPlot(PlottingUtils):
     @save_verticapy_logs
     def density(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         bandwidth: float = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         nbins: int = 50,
@@ -470,8 +472,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vml = _get_mllib()
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
@@ -531,7 +532,7 @@ class vDFPlot(PlottingUtils):
     def plot(
         self,
         ts: str,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
         kind: Literal[
@@ -579,6 +580,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
+        columns = format_type(columns, method=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="MultiLinePlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -1132,7 +1134,10 @@ class vDFPlot(PlottingUtils):
 
     @save_verticapy_logs
     def scatter_matrix(
-        self, columns: SQLColumns = [], max_nb_points: int = 1000, **style_kwargs
+        self,
+        columns: Optional[SQLColumns] = None,
+        max_nb_points: int = 1000,
+        **style_kwargs,
     ) -> PlottingObject:
         """
         Draws the scatter matrix of the vDataFrame.
@@ -1154,8 +1159,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="ScatterMatrix", style_kwargs=style_kwargs,

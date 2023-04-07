@@ -33,7 +33,12 @@ from verticapy._typing import (
 )
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
+from verticapy._utils._sql._format import (
+    clean_query,
+    format_type,
+    quote_ident,
+    schema_relation,
+)
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -142,7 +147,7 @@ class KNeighborsRegressor(Regressor):
         self,
         X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
-        key_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -162,11 +167,8 @@ class KNeighborsRegressor(Regressor):
         str
             the SQL code needed to deploy the model.
         """
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X, key_columns = format_type(X, key_columns, method=list)
+        X = quote_ident(X) if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
             if not (key_columns):
@@ -224,11 +226,10 @@ class KNeighborsRegressor(Regressor):
         """
         Predicts using the input relation.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = quote_ident(X) if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
             key_columns_arg = None
@@ -380,7 +381,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         X: Optional[SQLColumns] = None,
         test_relation: Optional[str] = None,
         predict: bool = False,
-        key_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -404,11 +405,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        X = [quote_ident(x) for x in X] if (X) else self.X
+        X, key_columns = format_type(X, key_columns, method=list)
+        X = [quote_ident(x) for x in X] if len(X) > 0 else self.X
         if not (test_relation):
             test_relation = self.test_relation
             if not (key_columns):
@@ -553,12 +551,11 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         Predicts using the input relation.
         """
+        X = format_type(X, method=list)
         cutoff = self._check_cutoff(cutoff=cutoff)
-        if isinstance(X, str):
-            X = [X]
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        X = quote_ident(X) if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
             key_columns_arg = None
@@ -617,8 +614,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         input relation.
         """
         # Inititalization
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
@@ -960,8 +956,7 @@ class KernelDensity(Regressor, Tree):
         X: list, optional
             List of the predictors.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -1245,7 +1240,7 @@ class LocalOutlierFactor(VerticaModel):
         self,
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
-        key_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
         index: str = "",
     ) -> None:
         """
@@ -1267,15 +1262,12 @@ class LocalOutlierFactor(VerticaModel):
             in the main table to avoid creating temporary 
             tables.
 		"""
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
+        X, key_columns = format_type(X, key_columns, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        self.key_columns = [quote_ident(column) for column in key_columns]
+        self.key_columns = quote_ident(key_columns)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation._genSQL()
             if not (X):
@@ -1284,7 +1276,7 @@ class LocalOutlierFactor(VerticaModel):
             self.input_relation = input_relation
             if not (X):
                 X = vDataFrame(input_relation).numcol()
-        X = [quote_ident(column) for column in X]
+        X = quote_ident(X)
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, decimal, pickle, os
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
 
@@ -26,7 +26,7 @@ pickle.DEFAULT_PROTOCOL = 4
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns, SQLExpression, TYPE_CHECKING
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
@@ -95,10 +95,10 @@ class vDFInOut:
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
-        usecols: SQLColumns = [],
+        usecols: Optional[SQLColumns] = None,
         header: bool = True,
         new_header: list = [],
-        order_by: Union[str, list, dict] = [],
+        order_by: Union[None, SQLColumns, dict] = None,
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
         """
@@ -143,10 +143,7 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        if isinstance(usecols, str):
-            usecols = [usecols]
+        order_by, usecols = format_type(order_by, usecols, method=list)
         if n_files < 1:
             raise ParameterError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
@@ -156,11 +153,7 @@ class vDFInOut:
                 "If the column hasn't unique values, the final result can "
                 "not be guaranteed."
             )
-        columns = (
-            self.get_columns()
-            if not (usecols)
-            else [quote_ident(column) for column in usecols]
-        )
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         for col in columns:
             if self[col].category() in ("vmap", "complex"):
                 raise TypeError(
@@ -242,7 +235,7 @@ class vDFInOut:
     def to_db(
         self,
         name: str,
-        usecols: SQLColumns = [],
+        usecols: Optional[SQLColumns] = None,
         relation_type: Literal[
             "view", "temporary", "table", "local", "insert"
         ] = "view",
@@ -288,9 +281,8 @@ class vDFInOut:
         vDataFrame
             self
         """
-        if isinstance(usecols, str):
-            usecols = [usecols]
         relation_type = relation_type.lower()
+        usecols = format_type(usecols, method=list)
         usecols = self._format_colnames(usecols)
         commit = (
             " ON COMMIT PRESERVE ROWS"
@@ -307,7 +299,7 @@ class vDFInOut:
         if not (usecols) and not (isflex):
             select = "*"
         elif usecols and not (isflex):
-            select = ", ".join([quote_ident(column) for column in usecols])
+            select = ", ".join(quote_ident(usecols))
         else:
             select = []
             for column in usecols:
@@ -318,7 +310,7 @@ class vDFInOut:
                     column += f"::{ctype}"
                 select += [column]
             select = ", ".join(select)
-        insert_usecols = ", ".join([quote_ident(column) for column in usecols])
+        insert_usecols = ", ".join(quote_ident(usecols))
         random_func = _current_random(nb_split)
         nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
@@ -424,8 +416,8 @@ class vDFInOut:
     def to_json(
         self,
         path: str = "",
-        usecols: SQLColumns = [],
-        order_by: Union[str, list, dict] = [],
+        usecols: Optional[SQLColumns] = None,
+        order_by: Union[None, SQLColumns, dict] = None,
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
         """
@@ -459,10 +451,7 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        if isinstance(usecols, str):
-            usecols = [usecols]
+        order_by, usecols = format_type(order_by, usecols, method=list)
         if n_files < 1:
             raise ParameterError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
@@ -472,11 +461,7 @@ class vDFInOut:
                 "the column hasn't unique values, the final result can not "
                 "be guaranteed."
             )
-        columns = (
-            self.get_columns()
-            if not (usecols)
-            else [quote_ident(column) for column in usecols]
-        )
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         transformations, is_complex_vmap = [], []
         for col in columns:
             if self[col].category() == "complex":
@@ -629,8 +614,8 @@ class vDFInOut:
         fileMode: str = "660",
         dirMode: str = "755",
         int96AsTimestamp: bool = True,
-        by: SQLColumns = [],
-        order_by: Union[str, list, dict] = [],
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, SQLColumns, dict] = None,
     ) -> TableSample:
         """
         Exports  a  table, columns from a  table, or query results  to 
@@ -705,10 +690,7 @@ class vDFInOut:
         TableSample
             An object containing the number of rows exported.
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        if isinstance(by, str):
-            by = [by]
+        order_by, by = format_type(order_by, by, method=list)
         if rowGroupSizeMB <= 0:
             raise ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         if fileSizeMB <= 0:
@@ -759,7 +741,7 @@ class vDFInOut:
         self,
         name: str,
         path: str,
-        usecols: SQLColumns = [],
+        usecols: Optional[SQLColumns] = None,
         overwrite: bool = True,
         shape: Literal[
             "Point",
@@ -800,19 +782,14 @@ class vDFInOut:
         vDataFrame
             self
         """
-        if isinstance(usecols, str):
-            usecols = [usecols]
+        usecols = format_type(usecols, method=list)
         query = f"""
             SELECT 
                 /*+LABEL('vDataframe.to_shp')*/ 
                 STV_SetExportShapefileDirectory(
                 USING PARAMETERS path = '{path}');"""
         _executeSQL(query=query, title="Setting SHP Export directory.")
-        columns = (
-            self.get_columns()
-            if not (usecols)
-            else [quote_ident(column) for column in usecols]
-        )
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         columns = ", ".join(columns)
         query = f"""
             SELECT 

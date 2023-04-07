@@ -29,7 +29,7 @@ from verticapy._typing import (
     TimeInterval,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ParameterError
 
@@ -68,7 +68,7 @@ class vDFFilter:
         column: str,
         method: Literal["over", "under"] = "under",
         x: float = 0.5,
-        order_by: SQLColumns = [],
+        order_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Balances the dataset using the input method.
@@ -97,9 +97,8 @@ class vDFFilter:
         """
         if not (0 <= x <= 1):
             raise ValueError("Parameter 'x' must be between 0 and 1")
+        order_by = format_type(order_by, method=list)
         column, order_by = self._format_colnames(column, order_by)
-        if isinstance(order_by, str):
-            order_by = [order_by]
         topk = self[column].topk()
         min_cnt = topk["count"][-1]
         min_class = topk["index"][-1]
@@ -220,7 +219,7 @@ class vDFFilter:
         return filter_function(f"{self._format_colnames(ts)}::time {condition}",)
 
     @save_verticapy_logs
-    def drop(self, columns: SQLColumns = []) -> "vDataFrame":
+    def drop(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Drops  the input vDataColumns  from the vDataFrame.  Dropping 
         vDataColumns  means not selecting them  in the final SQL code 
@@ -239,15 +238,14 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         for column in columns:
             self[column].drop()
         return self
 
     @save_verticapy_logs
-    def drop_duplicates(self, columns: SQLColumns = []) -> "vDataFrame":
+    def drop_duplicates(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Filters the duplicated using a partition by the input
         vDataColumns.
@@ -270,8 +268,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
@@ -293,7 +290,7 @@ class vDFFilter:
         return self
 
     @save_verticapy_logs
-    def dropna(self, columns: SQLColumns = []) -> "vDataFrame":
+    def dropna(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Filters the vDataFrame where the input vDataColumns are 
         missing.
@@ -309,11 +306,10 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        columns = (
-            self.get_columns() if not (columns) else self._format_colnames(columns)
-        )
+        columns = format_type(columns, method=list)
+        columns = self._format_colnames(columns)
+        if len(columns) == 0:
+            columns = self.get_columns()
         total = self.shape()[0]
         print_info = conf.get_option("print_info")
         for column in columns:
@@ -528,7 +524,7 @@ class vDFFilter:
         n: Optional[PythonNumber] = None,
         x: float = None,
         method: Literal["random", "systematic", "stratified"] = "random",
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Downsamples the input vDataFrame.
@@ -578,8 +574,7 @@ class vDFFilter:
             assert not (by), ParameterError(
                 f"Parameter 'by' must be empty when using '{method}' sampling."
             )
-        if isinstance(by, str):
-            by = [by]
+        by = format_type(by, method=list)
         by = self._format_colnames(by)
         random_int = random.randint(0, 10000000)
         name = f"__verticapy_random_{random_int}__"
@@ -623,7 +618,7 @@ class vDFFilter:
     def search(
         self,
         conditions: SQLExpression = "",
-        usecols: SQLColumns = [],
+        usecols: Optional[SQLColumns] = None,
         expr: SQLExpression = [],
         order_by: Union[str, dict, list] = [],
     ) -> "vDataFrame":
@@ -656,12 +651,7 @@ class vDFFilter:
         vDataFrame
             vDataFrame of the search
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        if isinstance(usecols, str):
-            usecols = [usecols]
-        if isinstance(expr, str):
-            expr = [expr]
+        order_by, usecols, expr = format_type(order_by, usecols, expr, method=list)
         if isinstance(conditions, Iterable) and not (isinstance(conditions, str)):
             conditions = " AND ".join([f"({elem})" for elem in conditions])
         if conditions:

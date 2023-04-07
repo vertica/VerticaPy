@@ -14,11 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union, TYPE_CHECKING
+from typing import Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy.errors import EmptyParameter
 
@@ -34,7 +34,7 @@ class vDFPivot:
         self,
         vmap_col: SQLExpression = [],
         limit: int = 100,
-        exclude_columns: SQLColumns = [],
+        exclude_columns: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Flatten the selected VMap. A new vDataFrame is returned.
@@ -67,10 +67,9 @@ class vDFPivot:
                     vmap_col += [col]
         if isinstance(vmap_col, str):
             vmap_col = [vmap_col]
-        exclude_columns_final, vmap_col_final = (
-            [quote_ident(col).lower() for col in exclude_columns],
-            [],
-        )
+        exclude_columns = format_type(exclude_columns, method=list)
+        exclude_columns_final = quote_ident(exclude_columns, lower=True)
+        vmap_col_final = []
         for col in vmap_col:
             if quote_ident(col).lower() not in exclude_columns_final:
                 vmap_col_final += [col]
@@ -121,7 +120,7 @@ class vDFPivot:
     def narrow(
         self,
         index: SQLColumns,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         col_name: str = "column",
         val_name: str = "value",
     ) -> "vDataFrame":
@@ -148,11 +147,8 @@ class vDFPivot:
         vDataFrame
             the narrow table object.
         """
+        index, columns = format_type(index, columns, method=list)
         index, columns = self._format_colnames(index, columns)
-        if isinstance(columns, str):
-            columns = [columns]
-        if isinstance(index, str):
-            index = [index]
         if not (columns):
             columns = self.numcol()
         for idx in index:

@@ -319,7 +319,7 @@ def gen_coalesce(group_dict: dict) -> str:
     """
     result = []
     for g in group_dict:
-        L = [quote_ident(elem) for elem in group_dict[g]]
+        L = quote_ident(group_dict[g])
         g_ident = quote_ident(g)
         if len(L) == 1:
             sql_tmp = quote_ident(group_dict[g][0])

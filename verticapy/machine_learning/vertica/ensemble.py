@@ -1218,7 +1218,7 @@ class IsolationForest(Clustering, Tree):
         """
         if isinstance(X, str):
             X = [X]
-        X = self.X if isinstance(X, NoneType) else [quote_ident(elem) for elem in X]
+        X = self.X if isinstance(X, NoneType) else quote_ident(X)
         if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "

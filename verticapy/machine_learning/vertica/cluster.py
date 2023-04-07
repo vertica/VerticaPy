@@ -30,7 +30,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import format_type, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.connection import current_cursor
@@ -103,11 +103,10 @@ class Clustering(Unsupervised):
         """
         if isinstance(X, NoneType):
             X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (name):
             name = (
                 self._model_type
@@ -871,7 +870,7 @@ class DBSCAN(VerticaModel):
         self,
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
-        key_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
         index: str = "",
     ) -> None:
         """
@@ -894,10 +893,7 @@ class DBSCAN(VerticaModel):
             in the main table to avoid creating temporary
             tables.
         """
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        if isinstance(X, str):
-            X = [X]
+        X, key_columns = format_type(X, key_columns, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -909,9 +905,9 @@ class DBSCAN(VerticaModel):
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
-        X = [quote_ident(column) for column in X]
+        X = quote_ident(X)
         self.X = X
-        self.key_columns = [quote_ident(column) for column in key_columns]
+        self.key_columns = quote_ident(key_columns)
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
         name_main = gen_tmp_name(name="main")

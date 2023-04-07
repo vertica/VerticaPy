@@ -683,7 +683,7 @@ class Supervised(VerticaModel):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        self.X = [quote_ident(column) for column in X]
+        self.X = quote_ident(X)
         self.y = quote_ident(y)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self._is_native:
@@ -1177,7 +1177,7 @@ class BinaryClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         sql = f"""
         {self._vertica_predict_sql}({', '.join(X)} 
             USING PARAMETERS
@@ -1438,7 +1438,7 @@ class BinaryClassifier(Classifier):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
@@ -1498,7 +1498,7 @@ class BinaryClassifier(Classifier):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
@@ -2135,7 +2135,7 @@ class MulticlassClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
         if cutoff == None:
@@ -2213,7 +2213,7 @@ class MulticlassClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         assert pos_label is None or pos_label in self.classes_, ParameterError(
             "Incorrect parameter 'pos_label'.\nThe class label "
             f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
@@ -2698,7 +2698,7 @@ class Regressor(Supervised):
         if isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
@@ -2789,7 +2789,7 @@ class Unsupervised(VerticaModel):
             relation = input_relation
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
-        self.X = [quote_ident(column) for column in X]
+        self.X = quote_ident(X)
         parameters = self._get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
