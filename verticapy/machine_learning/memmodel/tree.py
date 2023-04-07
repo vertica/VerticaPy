@@ -279,8 +279,8 @@ class Tree(InMemoryModel):
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "box", "style": "filled"},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
     ) -> str:
         """
         Returns the code for a Graphviz tree.
@@ -318,6 +318,9 @@ class Tree(InMemoryModel):
         str
             Graphviz code.
         """
+        node_style, arrow_style, leaf_style = format_type(
+            node_style, arrow_style, leaf_style, dtype=dict
+        )
         empty_color = False
         if len(classes_color) == 0:
             empty_color = True
@@ -838,14 +841,17 @@ class NonBinaryTree(Tree):
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        node_style: Optional[dict] = None,
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
         process: bool = True,
     ) -> str:
         """
         Returns the code for a Graphviz tree.
         """
+        node_style, arrow_style, leaf_style = format_type(
+            node_style, arrow_style, leaf_style, dtype=dict
+        )
         classes_color = format_type(classes_color, dtype=list)
         if process and len(classes_color) == 0:
             classes_color = self._default_colors()
@@ -916,9 +922,9 @@ class NonBinaryTree(Tree):
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        node_style: Optional[dict] = None,
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
     ) -> str:
         """
         Returns the code for a Graphviz tree.

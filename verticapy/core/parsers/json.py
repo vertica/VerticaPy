@@ -84,7 +84,7 @@ def read_json(
     schema: str = "",
     table_name: str = "",
     usecols: Optional[list] = None,
-    new_name: dict = {},
+    new_name: Optional[dict] = None,
     insert: bool = False,
     start_point: str = None,
     record_terminator: str = None,
@@ -229,6 +229,7 @@ def read_json(
     vDataFrame
     	The vDataFrame of the relation.
 	"""
+    new_name = format_type(new_name, dtype=dict)
     usecols = format_type(usecols, dtype=list)
     if use_complex_dt:
         if new_name:

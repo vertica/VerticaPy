@@ -19,7 +19,7 @@ from typing import Literal, Union
 import numpy as np
 
 from verticapy._typing import ArrayLike
-from verticapy._utils._sql._format import clean_query, format_magic
+from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 from verticapy.machine_learning.memmodel.tree import Tree
@@ -479,8 +479,8 @@ class BisectingKMeans(Clustering, Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "none"},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
     ) -> str:
         """
         Returns the code for a Graphviz tree.
@@ -513,6 +513,7 @@ class BisectingKMeans(Clustering, Tree):
         str
             Graphviz code.
         """
+        arrow_style, leaf_style = format_type(arrow_style, leaf_style, dtype=dict)
         if len(leaf_style) == 0:
             leaf_style = {"shape": "none"}
         n = len(self.children_left_)

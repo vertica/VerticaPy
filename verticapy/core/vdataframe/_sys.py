@@ -50,7 +50,7 @@ class vDFSystem:
     def _genSQL(
         self,
         split: bool = False,
-        transformations: dict = {},
+        transformations: Optional[dict] = None,
         force_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
@@ -77,6 +77,7 @@ class vDFSystem:
         """
         # The First step is to find the Max Floor
         all_imputations_grammar = []
+        transformations = format_type(transformations, dtype=dict)
         force_columns = format_type(force_columns, dtype=list)
         force_columns_copy = copy.deepcopy(force_columns)
         if len(force_columns) == 0:
@@ -264,7 +265,7 @@ class vDFSystem:
 
     def _update_catalog(
         self,
-        values: dict = {},
+        values: Optional[dict] = None,
         erase: bool = False,
         columns: Optional[SQLColumns] = None,
         matrix: str = "",
@@ -275,6 +276,7 @@ class vDFSystem:
         avoid useless  computations.  This  method stores the 
         input aggregation in the vDataColumn catalog.
         """
+        values = format_type(values, dtype=dict)
         columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         agg_dict = {

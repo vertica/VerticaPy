@@ -22,6 +22,7 @@ from matplotlib.pyplot import Figure
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._format import format_type
 from verticapy._typing import ArrayLike
 
 from verticapy.plotting.base import PlottingBase
@@ -35,8 +36,9 @@ class MatplotlibBase(PlottingBase):
         set_axis_below: bool = True,
         grid: Union[str, bool] = True,
         dim: int = 2,
-        style_kwargs: dict = {},
+        style_kwargs: Optional[dict] = None,
     ) -> tuple[Axes, Figure]:
+        style_kwargs = format_type(style_kwargs, dtype=dict)
         kwargs = copy.deepcopy(style_kwargs)
         if "figsize" in kwargs and isinstance(kwargs, tuple):
             size = kwargs["figsize"]

@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._format import format_type
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import current_cursor
 
@@ -25,7 +26,7 @@ from verticapy.connection.connect import current_cursor
 def save_to_query_profile(
     name: str,
     path: str = "",
-    json_dict: dict = {},
+    json_dict: Optional[dict] = None,
     query_label: str = "verticapy_json",
     return_query: bool = False,
     add_identifier: bool = True,
@@ -61,6 +62,7 @@ def save_to_query_profile(
     bool
         True if the operation succeeded, False otherwise.
     """
+    json_dict = format_type(json_dict, dtype=dict)
     value = conf.get_option("save_query_profile")
     if not (value):
         return False
@@ -69,9 +71,9 @@ def save_to_query_profile(
         def dict_to_json_string(
             name: str = "",
             path: str = "",
-            json_dict: dict = {},
+            json_dict: Optional[dict] = None,
             add_identifier: bool = False,
-        ):
+        ) -> str:
             gb_conn = get_global_connection()
 
             json = "{"

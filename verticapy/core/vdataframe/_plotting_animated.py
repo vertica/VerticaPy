@@ -45,7 +45,7 @@ class vDFAnimatedPlot(PlottingUtils):
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
-        date_style_dict: dict = {},
+        date_style_dict: Optional[dict] = None,
         interval: int = 300,
         repeat: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -100,8 +100,8 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
+        date_style_dict = format_type(date_style_dict, dtype=dict)
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedBarChart",
@@ -142,7 +142,7 @@ class vDFAnimatedPlot(PlottingUtils):
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
-        date_style_dict: dict = {},
+        date_style_dict: Optional[dict] = None,
         interval: int = 300,
         repeat: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -197,8 +197,8 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
+        date_style_dict = format_type(date_style_dict, dtype=dict)
         columns, ts, by = self._format_colnames(columns, ts, by)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedPieChart",
@@ -346,7 +346,7 @@ class vDFAnimatedPlot(PlottingUtils):
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
         date_f=None,
-        date_style_dict: dict = {},
+        date_style_dict: Optional[dict] = None,
         interval: int = 300,
         repeat: bool = True,
         chart: Optional[PlottingObject] = None,
@@ -412,6 +412,7 @@ class vDFAnimatedPlot(PlottingUtils):
             Plotting Object.
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
+        date_style_dict = format_type(date_style_dict, dtype=dict)
         if not (
             2 <= len(columns) <= 4
             and self[columns[0]].isnum()

@@ -47,7 +47,10 @@ from verticapy.sql.flex import compute_vmap_keys, isvmap
 class vDFFill:
     @save_verticapy_logs
     def fillna(
-        self, val: dict = {}, method: dict = {}, numeric_only: bool = False
+        self,
+        val: Optional[dict] = None,
+        method: Optional[dict] = None,
+        numeric_only: bool = False,
     ) -> "vDataFrame":
         """
         Fills the vDataColumns missing elements using specific rules.
@@ -80,6 +83,7 @@ class vDFFill:
         vDataFrame
             self
         """
+        val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         try:
@@ -105,7 +109,7 @@ class vDFFill:
         self,
         ts: str,
         rule: TimeInterval,
-        method: dict = {},
+        method: Optional[dict] = None,
         by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
