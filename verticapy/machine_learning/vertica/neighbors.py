@@ -202,7 +202,7 @@ class KNeighborsRegressor(Regressor):
                  FROM {self.input_relation} 
                  WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
         if key_columns:
-            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+            key_columns_str = ", " + ", ".join(quote_ident(key_columns))
         n_neighbors = self.parameters["n_neighbors"]
         sql = f"""
             (SELECT 
@@ -406,7 +406,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             the SQL code needed to deploy the model.
         """
         X, key_columns = format_type(X, key_columns, method=list)
-        X = [quote_ident(x) for x in X] if len(X) > 0 else self.X
+        X = quote_ident(X) if len(X) > 0 else self.X
         if not (test_relation):
             test_relation = self.test_relation
             if not (key_columns):
@@ -441,7 +441,7 @@ class KNeighborsClassifier(MulticlassClassifier):
                  WHERE {" AND ".join([f"{x} IS NOT NULL" for x in self.X])}) y"""
 
         if key_columns:
-            key_columns_str = ", " + ", ".join([quote_ident(x) for x in key_columns])
+            key_columns_str = ", " + ", ".join(quote_ident(key_columns))
 
         sql = f"""
             (SELECT 
@@ -624,7 +624,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(x) for x in X] if (X) else self.X
+        X = quote_ident(X) if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])

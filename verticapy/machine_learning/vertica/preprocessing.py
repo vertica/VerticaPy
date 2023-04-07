@@ -287,13 +287,13 @@ class Preprocessing(Unsupervised):
         str
             the SQL code needed to deploy the inverse model.
         """
-        X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, method=list
-        )
         if isinstance(X, NoneType):
             X = self.X
         else:
-            X = [quote_ident(x) for x in X]
+            X = quote_ident(X)
+        X, key_columns, exclude_columns = format_type(
+            X, key_columns, exclude_columns, method=list
+        )
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
                 "method 'deployInverseSQL' is not supported for OneHotEncoder models."

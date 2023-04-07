@@ -1759,7 +1759,7 @@ class MulticlassClassifier(Classifier):
             X = self.X
         elif isinstance(X, str):
             X = [X]
-        X = [quote_ident(x) for x in X]
+        X = quote_ident(X)
 
         if not (self._is_native):
             sql = self.to_memmodel().predict_proba_sql(X)
@@ -2743,7 +2743,7 @@ class Unsupervised(VerticaModel):
         if self._model_type in ("BisectingKMeans", "IsolationForest") and isinstance(
             conf.get_option("random_state"), int
         ):
-            X_str = ", ".join([quote_ident(x) for x in X])
+            X_str = ", ".join(quote_ident(X))
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
         if isinstance(input_relation, str) and self._model_type == "MCA":
             input_relation = vDataFrame(input_relation)
