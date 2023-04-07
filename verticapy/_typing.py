@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 # Pythonic data types.
 
 ArrayLike = Annotated[Union[list, np.ndarray], "Array Like Structure"]
+NoneType = type(None)
 PythonNumber = Annotated[Union[int, float, decimal.Decimal], "Python Numbers"]
 PythonScalar = Annotated[
     Union[bool, float, str, datetime.timedelta, datetime.datetime], "Python Scalar",

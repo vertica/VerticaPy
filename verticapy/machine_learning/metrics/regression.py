@@ -19,7 +19,7 @@ from typing import Optional, Union
 import numpy as np
 from scipy.stats import f
 
-from verticapy._typing import PythonNumber, SQLRelation
+from verticapy._typing import NoneType, PythonNumber, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -443,7 +443,7 @@ def regression_report(
     if isinstance(metrics, str):
         metrics = [metrics]
         return_scalar = True
-    if isinstance(metrics, type(None)):
+    if isinstance(metrics, NoneType):
         selected_metrics = [
             "explained_variance",
             "max_error",

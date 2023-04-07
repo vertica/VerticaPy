@@ -17,6 +17,7 @@ permissions and limitations under the License.
 from typing import Literal, TYPE_CHECKING
 import numpy as np
 
+from verticapy._utils._object import _get_vdf
 from verticapy._typing import ColorType
 
 from verticapy.core.tablesample.base import TableSample
@@ -28,9 +29,7 @@ if TYPE_CHECKING:
 class PlottingBaseSQL:
     @staticmethod
     def _get_vdataframe_from_query(query: str) -> "vDataFrame":
-        from verticapy.core.vdataframe.base import vDataFrame
-
-        return vDataFrame(input_relation=query)
+        return _get_vdf(input_relation=query)
 
     # 1D AGG Graphics: BAR / PIE ...
 

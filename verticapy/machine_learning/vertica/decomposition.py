@@ -17,7 +17,13 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 import numpy as np
 
-from verticapy._typing import PlottingObject, PythonNumber, SQLColumns, SQLRelation
+from verticapy._typing import (
+    NoneType,
+    PlottingObject,
+    PythonNumber,
+    SQLColumns,
+    SQLRelation,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -79,7 +85,7 @@ class Decomposition(Preprocessing):
             exclude_columns = [exclude_columns]
         if isinstance(X, str):
             X = [X]
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         else:
             X = [quote_ident(elem) for elem in X]
@@ -141,7 +147,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, str):
             X = [X]
-        elif isinstance(X, type(None)):
+        elif isinstance(X, NoneType):
             X = self.X
         if not (input_relation):
             input_relation = self.input_relation
@@ -228,7 +234,7 @@ class Decomposition(Preprocessing):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             X = self.X
         elif isinstance(X, str):
             X = [X]

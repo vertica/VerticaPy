@@ -22,6 +22,7 @@ import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import (
+    NoneType,
     PlottingObject,
     PythonNumber,
     PythonScalar,
@@ -194,7 +195,7 @@ def cross_validate(
         raise Exception(
             "Cross Validation is only possible for Regressors and Classifiers"
         )
-    if isinstance(metrics, type(None)):
+    if isinstance(metrics, NoneType):
         final_metrics = all_metrics
     elif isinstance(metrics, str):
         final_metrics = [metrics]

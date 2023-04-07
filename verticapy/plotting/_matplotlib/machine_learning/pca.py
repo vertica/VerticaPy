@@ -21,6 +21,8 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
+from verticapy._typing import NoneType
+
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -199,11 +201,11 @@ class PCAVarPlot(MatplotlibBase):
         )
         style_kwargs_updated["c"] = self.data["c"]
         if "color" in style_kwargs_updated and not (
-            isinstance(style_kwargs_updated, type(None))
+            isinstance(style_kwargs_updated, NoneType)
         ):
             del style_kwargs_updated["color"]
         if "colors" in style_kwargs_updated and not (
-            isinstance(style_kwargs_updated, type(None))
+            isinstance(style_kwargs_updated, NoneType)
         ):
             del style_kwargs_updated["colors"]
         if "cmap" not in style_kwargs_updated:

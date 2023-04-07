@@ -94,10 +94,8 @@ def compute_vmap_keys(
         List of virtual column names and their respective 
         frequencies.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
-
     vmap = quote_ident(vmap_col)
-    if isinstance(expr, vDataFrame):
+    if hasattr(expr, "_object_type") and (expr._object_type == "vDataFrame"):
         if not (expr[vmap_col].isvmap()):
             raise ParameterError(f"Virtual column {vmap_col} is not a VMAP.")
         expr = expr._genSQL()
@@ -170,10 +168,8 @@ def isvmap(expr: Union[str, StringSQL], column: str,) -> bool:
     bool
         True if the column is a VMap.
     """
-    from verticapy.vdataframe import vDataFrame
-
     column = quote_ident(column)
-    if isinstance(expr, vDataFrame):
+    if hasattr(expr, "_object_type") and (expr._object_type == "vDataFrame"):
         expr = expr._genSQL()
     try:
         res = _executeSQL(

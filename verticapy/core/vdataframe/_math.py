@@ -841,6 +841,23 @@ class vDCMath:
         return self.apply(func=f"ROUND({{}}, {n})")
 
     @save_verticapy_logs
+    def mul(self, x: PythonNumber) -> "vDataFrame":
+        """
+        Multiplies the vDataColumn by the input element.
+
+        Parameters
+        ----------
+        x: PythonNumber
+            Input number.
+
+        Returns
+        -------
+        vDataFrame
+            self._parent
+        """
+        return self.apply(func=f"{{}} * ({x})")
+
+    @save_verticapy_logs
     def slice(
         self, length: int, unit: str = "second", start: bool = True
     ) -> "vDataFrame":

@@ -20,7 +20,13 @@ from tqdm.auto import tqdm
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._typing import PlottingObject, PythonScalar, SQLRelation, SQLColumns
+from verticapy._typing import (
+    PlottingObject,
+    PythonScalar,
+    NoneType,
+    SQLRelation,
+    SQLColumns,
+)
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import schema_relation
@@ -352,7 +358,7 @@ class AutoML(VerticaModel):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        if isinstance(X, type(None)):
+        if isinstance(X, NoneType):
             if not (y):
                 exclude_columns = []
             else:

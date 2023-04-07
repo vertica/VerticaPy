@@ -23,6 +23,7 @@ import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
 import verticapy._config.config as conf
+from verticapy._utils._object import _get_mllib
 from verticapy._typing import PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -1493,8 +1494,7 @@ class vDFCorr:
         obj
             Plotting Object.
         """
-        from verticapy.machine_learning.vertica.linear_model import LinearRegression
-
+        vml = _get_mllib()
         if isinstance(by, str):
             by = [by]
         if isinstance(p, Iterable) and (len(p) == 1):
@@ -1535,7 +1535,7 @@ class vDFCorr:
                 _executeSQL(query, print_time_sql=False)
                 vdf = self._new_vdataframe(tmp_view_name)
                 drop(tmp_lr0_name, method="model")
-                model = LinearRegression(name=tmp_lr0_name, solver="Newton")
+                model = vml.LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -1543,7 +1543,7 @@ class vDFCorr:
                 )
                 model.predict(vdf, name="prediction_0")
                 drop(tmp_lr1_name, method="model")
-                model = LinearRegression(name=tmp_lr1_name, solver="Newton")
+                model = vml.LinearRegression(name=tmp_lr1_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],

@@ -21,7 +21,8 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLExpression
+from verticapy._utils._object import _read_pandas
+from verticapy._typing import NoneType, SQLExpression
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy.errors import ParsingError
 
@@ -124,7 +125,7 @@ def format_magic(
         object_type == "StringSQL"
     ):
         val = x
-    elif isinstance(x, type(None)):
+    elif isinstance(x, NoneType):
         val = "NULL"
     elif isinstance(x, (int, float, np.int_)) or not (cast_float_int_to_str):
         x_str = str(x).replace("'", "''")
@@ -184,6 +185,14 @@ def indentSQL(query: str) -> str:
     return query_print
 
 
+def list_strip(L: list) -> list:
+    """
+    Erases all the start / end spaces from the
+    input list.
+    """
+    return [val.strip() for val in L]
+
+
 def quote_ident(column: str) -> str:
     """
     Returns the specified string argument in the format 
@@ -216,9 +225,6 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     representations.  If they do not have one, they will
     be materialised by a temporary local table.
     """
-
-    from verticapy.core.parsers.pandas import read_pandas
-
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
         fail = True
@@ -256,9 +262,9 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
             elif object_type == "TableSample":
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = read_pandas(val)._genSQL()
+                val = _read_pandas(val)._genSQL()
             elif isinstance(val, list):
-                val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
+                val = ", ".join(["NULL" if x is None else str(x) for x in val])
             query_tmp = query_tmp.replace(v, str(val))
     return query_tmp
 

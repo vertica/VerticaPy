@@ -27,14 +27,11 @@ import re, time, warnings
 
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
 import verticapy._config.config as conf
-from verticapy.connection.global_connection import get_global_connection
+from verticapy._utils._object import _get_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._format import (
@@ -42,7 +39,11 @@ from verticapy._utils._sql._format import (
     replace_vars_in_query,
 )
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection.global_connection import get_global_connection
 from verticapy.errors import QueryError, ParameterError
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.jupyter.extensions._utils import get_magic_options
 
@@ -69,7 +70,6 @@ def sql_magic(
                      if  you want to export the  result of 
                      the query to  the CSV or JSON format.
     """
-    from verticapy.core.vdataframe.base import vDataFrame
 
     # We don't want to display the query/time twice if
     # the options are still on.
@@ -281,7 +281,7 @@ def sql_magic(
                 error = ""
 
                 try:
-                    result = vDataFrame(query, _is_sql_magic=True,)
+                    result = _get_vdf(query, _is_sql_magic=True,)
                     result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
@@ -319,7 +319,11 @@ def sql_magic(
 
         # Exporting the result
 
-        if isinstance(result, vDataFrame) and "-o" in options:
+        if (
+            hasattr(result, "_object_type")
+            and (result._object_type == "vDataFrame")
+            and ("-o" in options)
+        ):
 
             if options["-o"][-4:] == "json":
                 result.to_json(options["-o"])

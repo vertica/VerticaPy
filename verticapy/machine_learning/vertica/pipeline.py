@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLRelation
+from verticapy._typing import NoneType, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ParameterError, ModelError
 
@@ -253,7 +253,7 @@ class Pipeline:
         float
             score.
         """
-        if isinstance(metric, type(None)):
+        if isinstance(metric, NoneType):
             if isinstance(self.steps[-1][1], Regressor):
                 metric = "r2"
             else:

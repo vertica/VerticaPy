@@ -22,6 +22,7 @@ import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy._utils._display import print_table
+from verticapy._utils._object import _get_vdf
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -640,6 +641,4 @@ class TableSample:
      	vDataFrame
      		vDataFrame of the TableSample.
 		"""
-        from verticapy.core.vdataframe.base import vDataFrame
-
-        return vDataFrame(self.to_sql())
+        return _get_vdf(self.to_sql())

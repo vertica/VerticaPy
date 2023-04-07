@@ -43,7 +43,7 @@ class vDFRead:
         columns = self.get_columns()
         return (col for col in columns)
 
-    def __getitem__(self, index) -> Any:
+    def __getitem__(self, index: Any) -> Any:
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
                 "vDataFrame doesn't allow slicing having steps different than 1."
