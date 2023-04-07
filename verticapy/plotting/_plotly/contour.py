@@ -64,12 +64,26 @@ class ContourPlot(PlotlyBase):
             ),
         }
 
+    def _get_color_style(self, style_kwargs: dict) -> dict:
+        if "colorscale" not in style_kwargs:
+            return {
+                "colorscale": [
+                    [0, self.get_colors(idx=2)],
+                    [0.5, "#ffffff"],
+                    [1, self.get_colors(idx=0)],
+                ]
+            }
+        else:
+            return {"colorscale": style_kwargs["colorscale"]}
+            style_kwargs.pop("colorscale")
         return None
 
     # Draw.
 
     def draw(
-        self, fig: Optional[Figure] = None, colorscale: str = "plasma", **style_kwargs,
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
     ) -> Figure:
         """
         Draws a contour plot using the Plotly API.
@@ -82,11 +96,11 @@ class ContourPlot(PlotlyBase):
                 z=np.transpose(self.data["Z"]),
                 x=np.unique(self.data["X"]),
                 y=np.unique(self.data["Y"]),
-                colorscale=colorscale,
                 hovertemplate=f"{x_title}: "
                 "%{x:.2f} <br> "
                 f"{y_title}:"
                 " %{y:.2f} <extra></extra> <br> Color: %{z:.2f}",
+                **self._get_color_style(style_kwargs),
             )
         )
         fig.update_layout(width=500, height=500)
