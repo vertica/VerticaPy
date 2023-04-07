@@ -25,7 +25,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class HeatMap(PlotlyBase):
-
     # Properties.
 
     @property
@@ -61,6 +60,34 @@ class HeatMap(PlotlyBase):
             ),
         }
         return None
+
+    def _get_cmap_style(self, style_kwargs: dict) -> dict:
+        if (
+            "color_continuous_scale" not in style_kwargs
+            and "method" in self.layout
+            and (
+                self.layout["method"]
+                in (
+                    "pearson",
+                    "spearman",
+                    "spearmand",
+                    "kendall",
+                    "biserial",
+                )
+            )
+        ):
+            return {
+                "color_continuous_midpoint": 0,
+                "color_continuous_scale": [
+                    [0, self.get_colors()[1]],
+                    [0.5, "white"],
+                    [1, self.get_colors()[0]],
+                ],
+            }
+        elif "color_continuous_scale" not in style_kwargs:
+            return {"color_continuous_scale": [[0, "white"], [1, self.get_colors()[0]]]}
+        else:
+            return {}
 
     # Draw.
 
@@ -110,11 +137,14 @@ class HeatMap(PlotlyBase):
             y=y,
             aspect="auto",
             **params,
+            **self._get_cmap_style(style_kwargs=style_kwargs),
         )
         fig.update_xaxes(type="category")
         fig.update_yaxes(type="category")
         fig.layout.yaxis.automargin = True
         fig.layout.xaxis.automargin = True
-        fig.update_traces(**trace_params,)
+        fig.update_traces(
+            **trace_params,
+        )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
