@@ -99,7 +99,7 @@ class vDFEncode:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()
@@ -127,7 +127,7 @@ class vDCEncode:
     def cut(
         self,
         breaks: list,
-        labels: list = [],
+        labels: Optional[list] = None,
         include_lowest: bool = True,
         right: bool = True,
     ) -> "vDataFrame":
@@ -153,6 +153,7 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
+        labels = format_type(labels, dtype=list)
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vDataColumns."
         )

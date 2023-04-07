@@ -29,7 +29,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -1258,7 +1258,11 @@ class IsolationForest(Clustering, Tree):
     # Prediction / Transformation Methods.
 
     def decision_function(
-        self, vdf: SQLRelation, X: list = [], name: str = "", inplace: bool = True,
+        self,
+        vdf: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        name: str = "",
+        inplace: bool = True,
     ) -> vDataFrame:
         """
         Returns  the  anomaly  score using the  input 
@@ -1272,7 +1276,7 @@ class IsolationForest(Clustering, Tree):
             enclosed  with  an  alias.  For  example, 
             "(SELECT 1) x"   is   correct,    whereas 
             "(SELECT 1)" and "SELECT 1" are incorrect.
-        X: list, optional
+        X: SQLColumns, optional
             List of columns used to deploy the models. 
             If empty,  the model  predictors are used.
         name: str, optional

@@ -167,7 +167,7 @@ class KNeighborsRegressor(Regressor):
         str
             the SQL code needed to deploy the model.
         """
-        X, key_columns = format_type(X, key_columns, method=list)
+        X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X) if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
@@ -226,7 +226,7 @@ class KNeighborsRegressor(Regressor):
         """
         Predicts using the input relation.
         """
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = quote_ident(X) if (X) else self.X
@@ -405,7 +405,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        X, key_columns = format_type(X, key_columns, method=list)
+        X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X) if len(X) > 0 else self.X
         if not (test_relation):
             test_relation = self.test_relation
@@ -551,7 +551,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         Predicts using the input relation.
         """
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         cutoff = self._check_cutoff(cutoff=cutoff)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -614,7 +614,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         input relation.
         """
         # Inititalization
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         assert pos_label is None or pos_label in self.classes_, ValueError(
             (
                 "Incorrect parameter 'pos_label'.\nThe class label "
@@ -807,7 +807,7 @@ class KernelDensity(Regressor, Tree):
         max_depth: int = 5,
         min_samples_leaf: int = 1,
         nbins: int = 5,
-        xlim: list = [],
+        xlim: Optional[list] = None,
         **kwargs,
     ) -> None:
         self.model_name = name
@@ -819,7 +819,7 @@ class KernelDensity(Regressor, Tree):
             "max_leaf_nodes": int(max_leaf_nodes),
             "max_depth": int(max_depth),
             "min_samples_leaf": int(min_samples_leaf),
-            "xlim": xlim,
+            "xlim": format_type(xlim, dtype=list),
         }
         if "store" not in kwargs or kwargs["store"]:
             self._verticapy_store = True
@@ -956,7 +956,7 @@ class KernelDensity(Regressor, Tree):
         X: list, optional
             List of the predictors.
         """
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -1262,7 +1262,7 @@ class LocalOutlierFactor(VerticaModel):
             in the main table to avoid creating temporary 
             tables.
 		"""
-        X, key_columns = format_type(X, key_columns, method=list)
+        X, key_columns = format_type(X, key_columns, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:

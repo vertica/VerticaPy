@@ -144,7 +144,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if not (input_relation):
             input_relation = self.input_relation
         metric = str(metric).upper()
@@ -232,7 +232,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):

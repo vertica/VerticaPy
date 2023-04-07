@@ -293,7 +293,7 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns, ts, by = self._format_colnames(columns, ts, by)
         if by:
             if len(columns) != 1:
@@ -341,7 +341,7 @@ class vDFAnimatedPlot(PlottingUtils):
         limit_over: int = 6,
         limit: int = 1000000,
         limit_labels: int = 6,
-        bbox: list = [],
+        bbox: Optional[list] = None,
         img: str = "",
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
@@ -411,8 +411,7 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns, bbox = format_type(columns, bbox, dtype=list)
         if not (
             2 <= len(columns) <= 4
             and self[columns[0]].isnum()

@@ -67,7 +67,7 @@ class vDFPivot:
                     vmap_col += [col]
         if isinstance(vmap_col, str):
             vmap_col = [vmap_col]
-        exclude_columns = format_type(exclude_columns, method=list)
+        exclude_columns = format_type(exclude_columns, dtype=list)
         exclude_columns_final = quote_ident(exclude_columns, lower=True)
         vmap_col_final = []
         for col in vmap_col:
@@ -147,7 +147,7 @@ class vDFPivot:
         vDataFrame
             the narrow table object.
         """
-        index, columns = format_type(index, columns, method=list)
+        index, columns = format_type(index, columns, dtype=list)
         index, columns = self._format_colnames(index, columns)
         if not (columns):
             columns = self.numcol()

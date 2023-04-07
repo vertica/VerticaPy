@@ -101,7 +101,7 @@ class vDFRolling:
         vDataFrame
             self
         """
-        columns, by, order_by = format_type(columns, by, order_by, method=list)
+        columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         if len(window) != 2:
             raise ValueError("The window must be composed of exactly 2 elements.")
         window = list(window)
@@ -245,7 +245,7 @@ class vDFRolling:
     def cummax(
         self,
         column: str,
-        by: list = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -286,7 +286,7 @@ class vDFRolling:
     def cummin(
         self,
         column: str,
-        by: list = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -327,7 +327,7 @@ class vDFRolling:
     def cumprod(
         self,
         column: str,
-        by: list = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -368,7 +368,7 @@ class vDFRolling:
     def cumsum(
         self,
         column: str,
-        by: list = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":

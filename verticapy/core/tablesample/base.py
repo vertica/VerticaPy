@@ -101,7 +101,9 @@ class TableSample:
 
     def __getitem__(self, key: Any) -> list:
         for x in self.values:
-            if (quote_ident(key).lower() == quote_ident(x).lower()) or (str(x) == str(key)):
+            if (quote_ident(key).lower() == quote_ident(x).lower()) or (
+                str(x) == str(key)
+            ):
                 return self.values[x]
         raise KeyError(f"'{key}'")
 
