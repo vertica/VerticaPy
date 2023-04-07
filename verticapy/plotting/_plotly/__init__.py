@@ -28,7 +28,7 @@ from verticapy.plotting._plotly.line import LinePlot, MultiLinePlot
 from verticapy.plotting._plotly.outliers import OutliersPlot
 from verticapy.plotting._plotly.base import PlotlyBase
 
-from verticapy.plotting.plotly.machine_learning.elbow import ElbowCurve
+from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve
 
 import plotly.io as pio
 import plotly.graph_objects as go
