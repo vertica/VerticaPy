@@ -312,7 +312,7 @@ class vDFSystem:
                         pass
                     self[column]._catalog[matrix][elem] = val
         else:
-            columns = copy.deepcopy(values)
+            columns = list(values)
             columns.remove("index")
             for column in columns:
                 for i in range(len(values["index"])):

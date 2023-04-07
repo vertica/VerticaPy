@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-from typing import Any, Literal, Optional, Union
+from typing import Any, Iterable, Literal, Optional, Union
 import numpy as np
 
 import pandas as pd
@@ -251,8 +251,10 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
         return temp_column_str
     elif isinstance(column, NoneType):
         return ""
-    else:
+    elif isinstance(column, Iterable):
         return [quote_ident(x) for x in column]
+    else:
+        return str(x)
 
 
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:
