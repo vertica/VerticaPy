@@ -36,7 +36,7 @@ class vDFRolling:
         window: Union[list, tuple],
         columns: SQLColumns,
         by: Optional[SQLColumns] = None,
-        order_by: Union[None, dict, list] = None,
+        order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
         """
@@ -246,7 +246,7 @@ class vDFRolling:
         self,
         column: str,
         by: Optional[SQLColumns] = None,
-        order_by: Union[None, dict, list] = None,
+        order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
         """
@@ -287,7 +287,7 @@ class vDFRolling:
         self,
         column: str,
         by: Optional[SQLColumns] = None,
-        order_by: Union[None, dict, list] = None,
+        order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
         """
@@ -328,7 +328,7 @@ class vDFRolling:
         self,
         column: str,
         by: Optional[SQLColumns] = None,
-        order_by: Union[None, dict, list] = None,
+        order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
         """
@@ -369,7 +369,7 @@ class vDFRolling:
         self,
         column: str,
         by: Optional[SQLColumns] = None,
-        order_by: Union[None, dict, list] = None,
+        order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
         """

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 import numpy as np
 
 from verticapy._typing import ArrayLike
@@ -52,12 +52,8 @@ class Clustering(InMemoryModel):
     # System & Special Methods.
 
     def __init__(
-        self,
-        clusters: ArrayLike,
-        p: int = 2,
-        clusters_names: Optional[ArrayLike] = None,
+        self, clusters: ArrayLike, p: int = 2, clusters_names: ArrayLike = []
     ) -> None:
-        clusters_names = format_type(clusters_names, dtype=list)
         self.clusters_ = np.array(clusters)
         self.classes_ = np.array(clusters_names)
         self.p_ = p
@@ -355,13 +351,10 @@ class BisectingKMeans(Clustering, Tree):
         clusters: ArrayLike,
         children_left: ArrayLike,
         children_right: ArrayLike,
-        cluster_size: Optional[ArrayLike] = None,
-        cluster_score: Optional[ArrayLike] = None,
+        cluster_size: ArrayLike = [],
+        cluster_score: ArrayLike = [],
         p: int = 2,
     ) -> None:
-        cluster_size, cluster_score = format_type(
-            cluster_size, cluster_score, dtype=list
-        )
         self.clusters_ = np.array(clusters)
         self.children_left_ = np.array(children_left)
         self.children_right_ = np.array(children_right)
@@ -615,9 +608,8 @@ class KPrototypes(Clustering):
         clusters: ArrayLike,
         p: int = 2,
         gamma: float = 1.0,
-        is_categorical: Optional[ArrayLike] = None,
+        is_categorical: ArrayLike = [],
     ) -> None:
-        is_categorical = format_type(is_categorical, dtype=list)
         self.clusters_ = np.array(clusters)
         self.p_ = p
         self.gamma_ = gamma
