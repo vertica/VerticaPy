@@ -20,6 +20,8 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
 
+from verticapy._utils._sql._format import format_type
+
 from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
@@ -191,7 +193,7 @@ class AnimatedBarChart(AnimatedBase):
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
-        date_style_dict: dict = {},
+        date_style_dict: Optional[dict] = None,
         interval: int = 10,
         repeat: bool = True,
         ax: Optional[Axes] = None,
@@ -200,6 +202,7 @@ class AnimatedBarChart(AnimatedBase):
         """
         Draws an animated bar chart using the Matplotlib API.
         """
+        date_style_dict = format_type(date_style_dict, dtype=dict)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(9, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
         )

@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 
 from verticapy.sdk.vertica.udf.utils import get_set_add_function
 
@@ -26,7 +27,7 @@ from verticapy.sdk.vertica.udf.utils import get_set_add_function
 def generate_lib_udf(
     udf_list: list,
     library_name: str,
-    include_dependencies: Union[str, list] = [],
+    include_dependencies: Union[None, str, list[str]] = None,
     file_path: str = "",
     create_file: bool = False,
 ) -> tuple[str, str]:
@@ -73,8 +74,7 @@ def generate_lib_udf(
     udx_str, sql
         UDF py file, str needed to install the library.
 	"""
-    if isinstance(include_dependencies, str):
-        include_dependencies = [include_dependencies]
+    include_dependencies = format_type(include_dependencies, dtype=list)
     if not (isinstance(include_dependencies, (list))):
         raise ValueError(
             "The parameter include_dependencies type must be <list>. "
@@ -141,7 +141,7 @@ def generate_udf(
     function,
     arg_types: Union[list, dict],
     return_type: Union[type, dict],
-    parameters: dict = {},
+    parameters: Optional[dict] = None,
     new_name: str = "",
     library_name: str = "",
 ) -> tuple[str, str]:
@@ -149,6 +149,7 @@ def generate_udf(
     Generates the UDx Python code and the SQL
     statements needed to install it.
     """
+    parameters = format_type(parameters, dtype=dict)
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."

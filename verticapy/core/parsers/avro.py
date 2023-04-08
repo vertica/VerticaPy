@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from verticapy._utils._sql._collect import save_verticapy_logs
 
 from verticapy.core.parsers.json import read_json
@@ -25,8 +27,8 @@ def read_avro(
     path: str,
     schema: str = "",
     table_name: str = "",
-    usecols: list = [],
-    new_name: dict = {},
+    usecols: Optional[list] = None,
+    new_name: Optional[dict] = None,
     insert: bool = False,
     reject_on_materialized_type_error: bool = False,
     flatten_maps: bool = True,

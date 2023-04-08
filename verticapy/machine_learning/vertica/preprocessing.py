@@ -128,7 +128,9 @@ class Preprocessing(Unsupervised):
 
     # I/O Methods.
 
-    def _get_names(self, inverse: bool = False, X: list = []) -> list[str]:
+    def _get_names(
+        self, inverse: bool = False, X: Optional[SQLColumns] = None
+    ) -> SQLColumns:
         """
         Returns the Transformation output names.
 
@@ -147,8 +149,7 @@ class Preprocessing(Unsupervised):
         list
             names.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list)
         X = quote_ident(X)
         if not (X):
             X = self.X
@@ -222,7 +223,7 @@ class Preprocessing(Unsupervised):
         else:
             X = quote_ident(X)
         X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, method=list
+            X, key_columns, exclude_columns, dtype=list
         )
         if key_columns:
             key_columns = ", ".join(quote_ident(key_columns))
@@ -292,7 +293,7 @@ class Preprocessing(Unsupervised):
         else:
             X = quote_ident(X)
         X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, method=list
+            X, key_columns, exclude_columns, dtype=list
         )
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
@@ -337,7 +338,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
@@ -371,7 +372,7 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
@@ -573,7 +574,7 @@ class CountVectorizer(VerticaModel):
     		List of the predictors. If empty, all the 
             columns will be used.
 		"""
-        X = format_type(X, method=list)
+        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -858,7 +859,7 @@ class OneHotEncoder(Preprocessing):
     def __init__(
         self,
         name: str,
-        extra_levels: dict = {},
+        extra_levels: Optional[dict] = None,
         drop_first: bool = True,
         ignore_null: bool = True,
         separator: str = "_",
@@ -867,7 +868,7 @@ class OneHotEncoder(Preprocessing):
     ) -> None:
         self.model_name = name
         self.parameters = {
-            "extra_levels": extra_levels,
+            "extra_levels": format_type(extra_levels, dtype=dict),
             "drop_first": drop_first,
             "ignore_null": ignore_null,
             "separator": separator,

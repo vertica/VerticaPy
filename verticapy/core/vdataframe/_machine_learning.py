@@ -134,7 +134,7 @@ class vDFMachineLearning:
         vDataFrame
             the CDT relation.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         if len(columns) > 0:
             columns = self._format_colnames(columns)
         else:
@@ -375,7 +375,7 @@ class vDFMachineLearning:
         list
             columns picked by the CHAID algorithm.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns_tmp = columns.copy()
         if not (columns_tmp):
             columns_tmp = self.get_columns()
@@ -441,7 +441,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns) if (columns) else self.numcol()
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
@@ -516,7 +516,7 @@ class vDFMachineLearning:
         TableSample
             result.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns, response = self._format_colnames(columns, response)
         assert 2 <= nbins <= 16, ValueError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
@@ -600,7 +600,7 @@ class vDFMachineLearning:
         vDataFrame
             the Polynomial object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         if len(columns) == 0:
             numcol = self.numcol()
         else:
@@ -848,7 +848,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        by = format_type(by, method=list)
+        by = format_type(by, dtype=list)
         by, ts = self._format_colnames(by, ts)
         partition = ""
         if by:

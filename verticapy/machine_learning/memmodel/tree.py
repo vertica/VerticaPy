@@ -16,12 +16,12 @@ permissions and limitations under the License.
 """
 import copy, math
 from collections.abc import Iterable
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
-from verticapy._utils._sql._format import clean_query, format_magic
+from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 
@@ -273,14 +273,14 @@ class Tree(InMemoryModel):
 
     def to_graphviz(
         self,
-        feature_names: ArrayLike = [],
-        classes_color: ArrayLike = [],
+        feature_names: Optional[ArrayLike] = None,
+        classes_color: Optional[ArrayLike] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "box", "style": "filled"},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
     ) -> str:
         """
         Returns the code for a Graphviz tree.
@@ -318,6 +318,12 @@ class Tree(InMemoryModel):
         str
             Graphviz code.
         """
+        feature_names, classes_color = format_type(
+            feature_names, classes_color, dtype=list
+        )
+        node_style, arrow_style, leaf_style = format_type(
+            node_style, arrow_style, leaf_style, dtype=dict
+        )
         empty_color = False
         if len(classes_color) == 0:
             empty_color = True
@@ -631,8 +637,9 @@ class BinaryTreeClassifier(Tree):
         feature: ArrayLike,
         threshold: ArrayLike,
         value: ArrayLike,
-        classes: ArrayLike = [],
+        classes: Optional[ArrayLike] = None,
     ) -> None:
+        classes = format_type(classes, dtype=list)
         self.children_left_ = np.array(children_left)
         self.children_right_ = np.array(children_right)
         self.feature_ = np.array(feature)
@@ -685,7 +692,8 @@ class NonBinaryTree(Tree):
 
     # System & Special Methods.
 
-    def __init__(self, tree: dict, classes: ArrayLike = []) -> None:
+    def __init__(self, tree: dict, classes: Optional[ArrayLike] = None) -> None:
+        classes = format_type(classes, dtype=list)
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
         return None
@@ -834,18 +842,22 @@ class NonBinaryTree(Tree):
     def _to_graphviz_tree(
         self,
         tree: dict,
-        classes_color: list = [],
+        classes_color: Optional[list] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        node_style: Optional[dict] = None,
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
         process: bool = True,
     ) -> str:
         """
         Returns the code for a Graphviz tree.
         """
+        node_style, arrow_style, leaf_style = format_type(
+            node_style, arrow_style, leaf_style, dtype=dict
+        )
+        classes_color = format_type(classes_color, dtype=list)
         if process and len(classes_color) == 0:
             classes_color = self._default_colors()
         if tree["is_leaf"]:
@@ -911,13 +923,13 @@ class NonBinaryTree(Tree):
 
     def to_graphviz(
         self,
-        classes_color: ArrayLike = [],
+        classes_color: Optional[ArrayLike] = None,
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {},
-        arrow_style: dict = {},
-        leaf_style: dict = {},
+        node_style: Optional[dict] = None,
+        arrow_style: Optional[dict] = None,
+        leaf_style: Optional[dict] = None,
     ) -> str:
         """
         Returns the code for a Graphviz tree.

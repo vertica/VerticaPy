@@ -131,7 +131,7 @@ class StringSQL:
     def _over(
         self, by: Optional[SQLColumns] = None, order_by: Optional[SQLColumns] = None
     ) -> "StringSQL":
-        by, order_by = format_type(by, order_by, method=list)
+        by, order_by = format_type(by, order_by, dtype=list)
         by = ", ".join([str(elem) for elem in by])
         if by:
             by = f"PARTITION BY {by}"

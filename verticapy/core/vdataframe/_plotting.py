@@ -83,7 +83,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -472,7 +472,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vml = _get_mllib()
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
@@ -580,7 +580,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="MultiLinePlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -1159,7 +1159,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="ScatterMatrix", style_kwargs=style_kwargs,

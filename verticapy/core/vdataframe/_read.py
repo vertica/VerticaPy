@@ -192,7 +192,7 @@ class vDFRead:
         List
             List of all vDataFrame columns.
         """
-        exclude_columns = format_type(exclude_columns, method=list)
+        exclude_columns = format_type(exclude_columns, dtype=list)
         exclude_columns_ = [
             c.replace('"', "").lower()
             for c in exclude_columns + self._vars["exclude_columns"]
@@ -242,7 +242,7 @@ class vDFRead:
         TableSample
             result.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if offset < 0:
             offset = max(0, self.shape()[0] - limit)

@@ -83,7 +83,7 @@ class vDFMath:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self.numcol() if not (columns) else self._format_colnames(columns)
         func = {}
         for column in columns:
@@ -179,7 +179,7 @@ class vDFMath:
         vDataFrame
             self
         """
-        columns, by, order_by = format_type(columns, by, order_by, method=list)
+        columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []

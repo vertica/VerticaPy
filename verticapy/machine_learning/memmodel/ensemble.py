@@ -15,12 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal
+from typing import Literal, Optional
 import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
-from verticapy._utils._sql._format import clean_query
+from verticapy._utils._sql._format import clean_query, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel, MulticlassClassifier
 from verticapy.machine_learning.memmodel.tree import (
@@ -172,8 +172,9 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     # System & Special Methods.
 
     def __init__(
-        self, trees: list[BinaryTreeClassifier], classes: ArrayLike = []
+        self, trees: list[BinaryTreeClassifier], classes: Optional[ArrayLike] = None
     ) -> None:
+        classes = format_type(classes, dtype=list)
         self.trees_ = copy.deepcopy(trees)
         if len(classes) == 0:
             self.classes_ = copy.deepcopy(trees[0].classes_)
@@ -359,9 +360,10 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         self,
         trees: list[BinaryTreeRegressor],
         logodds: ArrayLike,
-        classes: ArrayLike = [],
+        classes: Optional[ArrayLike] = None,
         learning_rate: float = 1.0,
     ) -> None:
+        classes = format_type(classes, dtype=list)
         self.trees_ = copy.deepcopy(trees)
         self.logodds_ = np.array(logodds)
         if len(classes) == 0:

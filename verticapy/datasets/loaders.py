@@ -15,9 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os, vertica_python
+from typing import Optional
 
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -32,11 +33,17 @@ General Functions.
 
 
 def load_dataset(
-    schema: str, name: str, dtype: dict, copy_cols: list = [], dataset_name: str = "",
+    schema: str,
+    name: str,
+    dtype: dict,
+    copy_cols: Optional[list] = None,
+    dataset_name: str = "",
 ) -> vDataFrame:
     """
     General Function to ingest a dataset.
     """
+    copy_cols = format_type(copy_cols, dtype=list)
+
     try:
 
         vdf = vDataFrame(name, schema=schema)
@@ -55,7 +62,7 @@ def load_dataset(
                 query = f"COPY {schema}.{name} FROM {{}} PARSER FJsonParser();"
             else:
                 path += f"/data/{dataset_name}.csv"
-                if not (copy_cols):
+                if len(copy_cols) == 0:
                     copy_cols = quote_ident(dtype)
                 query = f"""
                     COPY

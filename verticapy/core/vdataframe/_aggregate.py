@@ -128,7 +128,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        columns, func = format_type(columns, func, method=list)
+        columns, func = format_type(columns, func, dtype=list)
         if len(columns) == 0:
             columns = self.get_columns()
             cat_agg = [
@@ -691,7 +691,7 @@ class vDFAgg:
         """
         if method == "auto":
             method = "numerical" if (len(self.numcol()) > 0) else "categorical"
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         for i in range(len(columns)):
             columns[i] = quote_ident(columns[i])
@@ -1659,7 +1659,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         if len(columns) == 0:
             columns = self.get_columns()
         columns = self._format_colnames(columns)
