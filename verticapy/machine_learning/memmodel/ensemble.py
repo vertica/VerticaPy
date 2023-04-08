@@ -174,7 +174,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     def __init__(
         self, trees: list[BinaryTreeClassifier], classes: Optional[ArrayLike] = None
     ) -> None:
-        classes = format_table(classes, dtype=list)
+        classes = format_type(classes, dtype=list)
         self.trees_ = copy.deepcopy(trees)
         if len(classes) == 0:
             self.classes_ = copy.deepcopy(trees[0].classes_)
@@ -363,7 +363,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         classes: Optional[ArrayLike] = None,
         learning_rate: float = 1.0,
     ) -> None:
-        classes = format_table(classes, dtype=list)
+        classes = format_type(classes, dtype=list)
         self.trees_ = copy.deepcopy(trees)
         self.logodds_ = np.array(logodds)
         if len(classes) == 0:
