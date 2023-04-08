@@ -185,7 +185,7 @@ def indentSQL(query: str) -> str:
     return query_print
 
 
-def format_type(*args, method: Literal[NoneType, dict, list]) -> Any:
+def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
     """
     Format the input objects  by using the input type. It is
     used to simplify the code as many functions are checking
@@ -194,14 +194,14 @@ def format_type(*args, method: Literal[NoneType, dict, list]) -> Any:
     res = []
     for arg in args:
         if isinstance(arg, NoneType):
-            if method == list:
+            if dtype == list:
                 r = []
-            elif method == dict:
+            elif dtype == dict:
                 r = {}
             else:
                 r = None
         elif isinstance(arg, str):
-            if method == list:
+            if dtype == list:
                 r = [arg]
             else:
                 r = arg
