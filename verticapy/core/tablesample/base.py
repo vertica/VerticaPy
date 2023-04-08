@@ -92,7 +92,7 @@ class TableSample:
         self.percent = format_type(percent, dtype=dict)
         self.max_columns = max_columns
         for column in values:
-            if column not in self.dtype:
+            if column not in dtype:
                 self.dtype[column] = "undefined"
         return None
 
