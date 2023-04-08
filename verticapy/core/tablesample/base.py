@@ -99,9 +99,9 @@ class TableSample:
     def __iter__(self) -> tuple:
         return (elem for elem in self.values)
 
-    def __getitem__(self, key: Any) -> list:
+    def __getitem__(self, key) -> list:
         for x in self.values:
-            if (quote_ident(key).lower() == quote_ident(x).lower()) or (str(x) == str(key)):
+            if quote_ident(key).lower() == quote_ident(x).lower():
                 return self.values[x]
         raise KeyError(f"'{key}'")
 
