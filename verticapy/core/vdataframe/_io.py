@@ -97,7 +97,7 @@ class vDFInOut:
         quotechar: str = '"',
         usecols: Optional[SQLColumns] = None,
         header: bool = True,
-        new_header: Optional[list] = None,
+        new_header: list = [],
         order_by: Union[None, SQLColumns, dict] = None,
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
@@ -143,9 +143,7 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        order_by, usecols, new_header = format_type(
-            order_by, usecols, new_header, dtype=list
-        )
+        order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
