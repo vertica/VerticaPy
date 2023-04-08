@@ -191,7 +191,7 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
     used to simplify the code as many functions are checking
     types and instantiate the corresponding object.
     """
-    res = []
+    res = ()
     for arg in args:
         if isinstance(arg, NoneType):
             if dtype == list:
@@ -207,11 +207,11 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
                 r = arg
         else:
             r = arg
-        res += [r]
+        res += (r,)
     if len(res) == 1:
         return res[0]
     else:
-        return tuple(res)
+        return res
 
 
 def list_strip(L: list) -> list:
