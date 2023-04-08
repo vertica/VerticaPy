@@ -174,7 +174,7 @@ class vDFMachineLearning:
         columns: SQLColumns,
         nbins: int = 4,
         method: Literal["smart", "same_width"] = "same_width",
-        RFmodel_params: dict = {},
+        RFmodel_params: Optional[dict] = None,
         **kwargs,
     ) -> NonBinaryTree:
         """
@@ -217,6 +217,7 @@ class vDFMachineLearning:
         NonBinaryTree
             An independent model containing the result.
         """
+        RFmodel_params = format_type(RFmodel_params, dtype=dict)
         if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]
@@ -475,7 +476,7 @@ class vDFMachineLearning:
         columns: Optional[SQLColumns] = None,
         nbins: int = 16,
         method: Literal["smart", "same_width"] = "same_width",
-        RFmodel_params: dict = {},
+        RFmodel_params: Optional[dict] = None,
     ) -> TableSample:
         """
         Returns the chi-square term using the pivot table of the 
@@ -516,6 +517,7 @@ class vDFMachineLearning:
         TableSample
             result.
         """
+        RFmodel_params = format_type(RFmodel_params, dtype=dict)
         columns = format_type(columns, dtype=list)
         columns, response = self._format_colnames(columns, response)
         assert 2 <= nbins <= 16, ValueError(
@@ -863,7 +865,7 @@ class vDFMachineLearning:
     def train_test_split(
         self,
         test_size: float = 0.33,
-        order_by: Union[str, list, dict] = {},
+        order_by: Union[None, str, list, dict] = None,
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
@@ -893,8 +895,7 @@ class vDFMachineLearning:
         tuple
             (train vDataFrame, test vDataFrame)
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
+        order_by = format_type(order_by, dtype=list)
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
             random_state = conf.get_option("random_state")

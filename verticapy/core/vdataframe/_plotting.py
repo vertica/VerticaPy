@@ -947,7 +947,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         method: PlottingMethod = "count",
         of: Optional[str] = None,
-        bbox: list = [],
+        bbox: Optional[list] = None,
         img: str = "",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -991,8 +991,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns, bbox = format_type(columns, bbox, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HexbinMap",
