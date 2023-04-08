@@ -99,7 +99,7 @@ class vDFEncode:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()

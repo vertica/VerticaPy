@@ -293,7 +293,7 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns, ts, by = self._format_colnames(columns, ts, by)
         if by:
             if len(columns) != 1:

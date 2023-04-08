@@ -143,7 +143,7 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        order_by, usecols = format_type(order_by, usecols, method=list)
+        order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
@@ -282,7 +282,7 @@ class vDFInOut:
             self
         """
         relation_type = relation_type.lower()
-        usecols = format_type(usecols, method=list)
+        usecols = format_type(usecols, dtype=list)
         usecols = self._format_colnames(usecols)
         commit = (
             " ON COMMIT PRESERVE ROWS"
@@ -451,7 +451,7 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        order_by, usecols = format_type(order_by, usecols, method=list)
+        order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):
@@ -690,7 +690,7 @@ class vDFInOut:
         TableSample
             An object containing the number of rows exported.
         """
-        order_by, by = format_type(order_by, by, method=list)
+        order_by, by = format_type(order_by, by, dtype=list)
         if rowGroupSizeMB <= 0:
             raise ValueError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         if fileSizeMB <= 0:
@@ -782,7 +782,7 @@ class vDFInOut:
         vDataFrame
             self
         """
-        usecols = format_type(usecols, method=list)
+        usecols = format_type(usecols, dtype=list)
         query = f"""
             SELECT 
                 /*+LABEL('vDataframe.to_shp')*/ 
