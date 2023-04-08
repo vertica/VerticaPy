@@ -97,7 +97,7 @@ class vDFFilter:
         """
         if not (0 <= x <= 1):
             raise ValueError("Parameter 'x' must be between 0 and 1")
-        order_by = format_type(order_by, method=list)
+        order_by = format_type(order_by, dtype=list)
         column, order_by = self._format_colnames(column, order_by)
         topk = self[column].topk()
         min_cnt = topk["count"][-1]
@@ -238,7 +238,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         for column in columns:
             self[column].drop()
@@ -268,7 +268,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
@@ -306,7 +306,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()
@@ -327,7 +327,7 @@ class vDFFilter:
 
     @save_verticapy_logs
     def filter(
-        self, conditions: Union[list, str] = [], *args, **kwargs
+        self, conditions: Optional[SQLExpression] = None, *args, **kwargs
     ) -> "vDataFrame":
         """
         Filters  the vDataFrame using the  input  expressions.
@@ -345,6 +345,7 @@ class vDFFilter:
         vDataFrame
             self
         """
+        conditions = format_type(conditions, dtype=list)
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
         if not (isinstance(conditions, str)) or (args):
@@ -574,7 +575,7 @@ class vDFFilter:
             assert not (by), ValueError(
                 f"Parameter 'by' must be empty when using '{method}' sampling."
             )
-        by = format_type(by, method=list)
+        by = format_type(by, dtype=list)
         by = self._format_colnames(by)
         random_int = random.randint(0, 10000000)
         name = f"__verticapy_random_{random_int}__"
@@ -619,7 +620,7 @@ class vDFFilter:
         self,
         conditions: SQLExpression = "",
         usecols: Optional[SQLColumns] = None,
-        expr: SQLExpression = [],
+        expr: Optional[SQLExpression] = None,
         order_by: Union[str, dict, list] = [],
     ) -> "vDataFrame":
         """
@@ -651,7 +652,7 @@ class vDFFilter:
         vDataFrame
             vDataFrame of the search
         """
-        order_by, usecols, expr = format_type(order_by, usecols, expr, method=list)
+        order_by, usecols, expr = format_type(order_by, usecols, expr, dtype=list)
         if isinstance(conditions, Iterable) and not (isinstance(conditions, str)):
             conditions = " AND ".join([f"({elem})" for elem in conditions])
         if conditions:

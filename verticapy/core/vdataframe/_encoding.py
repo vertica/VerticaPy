@@ -99,7 +99,7 @@ class vDFEncode:
         vDataFrame
             self
         """
-        columns = format_type(columns, method=list)
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()
@@ -127,7 +127,7 @@ class vDCEncode:
     def cut(
         self,
         breaks: list,
-        labels: list = [],
+        labels: Optional[list] = None,
         include_lowest: bool = True,
         right: bool = True,
     ) -> "vDataFrame":
@@ -153,6 +153,7 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
+        labels = format_type(labels, dtype=list)
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vDataColumns."
         )
@@ -215,7 +216,7 @@ class vDCEncode:
         nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
-        RFmodel_params: dict = {},
+        RFmodel_params: Optional[dict] = None,
         response: str = "",
         return_enum_trans: bool = False,
     ) -> "vDataFrame":
@@ -269,6 +270,7 @@ class vDCEncode:
             self._parent
         """
         vml = _get_mllib()
+        RFmodel_params = format_type(RFmodel_params, dtype=dict)
         if self.isnum() and method == "smart":
             schema = conf.get_option("temp_schema")
             if not (schema):

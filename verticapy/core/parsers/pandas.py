@@ -15,13 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os, csv
+from typing import Optional
 import pandas as pd
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_schema_table, quote_ident
+from verticapy._utils._sql._format import format_schema_table, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
 
@@ -34,7 +35,7 @@ def read_pandas(
     df: pd.DataFrame,
     name: str = "",
     schema: str = "",
-    dtype: dict = {},
+    dtype: Optional[dict] = None,
     parse_nrows: int = 10000,
     temp_path: str = "",
     insert: bool = False,
@@ -90,6 +91,7 @@ def read_pandas(
     vDataFrame
         vDataFrame of the new relation.
     """
+    dtype = format_type(dtype, dtype=dict)
     if not (schema):
         schema = conf.get_option("temp_schema")
     if insert and not (name):

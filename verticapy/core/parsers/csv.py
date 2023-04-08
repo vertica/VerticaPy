@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os, warnings
+from typing import Optional
 
 import verticapy._config.config as conf
 from verticapy._utils._parsers import get_header_names, guess_sep
@@ -23,6 +24,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
     format_schema_table,
+    format_type,
     list_strip,
     quote_ident,
 )
@@ -41,7 +43,7 @@ def pcsv(
     path: str,
     sep: str = ",",
     header: bool = True,
-    header_names: list = [],
+    header_names: Optional[list] = None,
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
@@ -113,6 +115,7 @@ def pcsv(
     dict
         dictionary containing each column and its type.
     """
+    header_names = format_type(header_names, dtype=list)
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -183,8 +186,8 @@ def read_csv(
     table_name: str = "",
     sep: str = "",
     header: bool = True,
-    header_names: list = [],
-    dtype: dict = {},
+    header_names: Optional[list] = None,
+    dtype: Optional[dict] = None,
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
@@ -296,6 +299,8 @@ def read_csv(
     vDataFrame
     	The vDataFrame of the relation.
 	"""
+    dtype = format_type(dtype, dtype=dict)
+    header_names = format_type(header_names, dtype=list)
     if schema:
         temporary_local_table = False
     elif temporary_local_table:

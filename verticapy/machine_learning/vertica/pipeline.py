@@ -17,7 +17,8 @@ permissions and limitations under the License.
 from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import NoneType, SQLRelation
+from verticapy._typing import NoneType, SQLColumns, SQLRelation
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ModelError
 
@@ -143,7 +144,7 @@ class Pipeline:
             params[step[0]] = step[1].get_params()
         return params
 
-    def set_params(self, parameters: dict[dict] = {}, **kwargs) -> None:
+    def set_params(self, parameters: Optional[dict[dict]] = None, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -158,6 +159,7 @@ class Pipeline:
             Example: set_params(pipeline1 = dict1, 
                                 pipeline2 = dict2)
         """
+        parameters = format_type(parameters, dtype=dict)
         for param in {**parameters, **kwargs}:
             for step in self.steps:
                 if param.lower() == step[0].lower():
@@ -263,7 +265,10 @@ class Pipeline:
     # Prediction / Transformation Methods.
 
     def predict(
-        self, vdf: SQLRelation = None, X: list = [], name: str = "estimator",
+        self,
+        vdf: SQLRelation = None,
+        X: Optional[SQLColumns] = None,
+        name: str = "estimator",
     ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
@@ -276,7 +281,7 @@ class Pipeline:
             it with an alias.  For example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: list, optional
+        X: SQLColumns, optional
             List of the input vDataColumns.
         name: str, optional
             Name of the added vDataColumn.
@@ -286,11 +291,8 @@ class Pipeline:
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
-            X = [X]
-        try:
-            self.steps[-1][1].predict
-        except:
+        X = format_type(X, dtype=list)
+        if not (hasattr(self.steps[-1][1], "predict")):
             raise ModelError(
                 "The last estimator of the Pipeline has no 'predict' method."
             )
@@ -314,7 +316,9 @@ class Pipeline:
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
-    def transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
+    def transform(
+        self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
+    ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
 
@@ -326,7 +330,7 @@ class Pipeline:
             it with an alias. For  example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: list, optional
+        X: SQLColumns, optional
             List of the input vDataColumns.
 
         Returns
@@ -334,11 +338,8 @@ class Pipeline:
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
-            X = [X]
-        try:
-            self.steps[-1][1].transform
-        except:
+        X = format_type(X, dtype=list)
+        if not (hasattr(self.steps[-1][1], "transform")):
             raise ModelError(
                 "The last estimator of the Pipeline has no 'transform' method."
             )
@@ -354,7 +355,9 @@ class Pipeline:
             X_all += X_new
         return current_vdf
 
-    def inverse_transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
+    def inverse_transform(
+        self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
+    ) -> vDataFrame:
         """
         Applies  the  inverse model transformation  on  a 
         vDataFrame.
@@ -367,7 +370,7 @@ class Pipeline:
             it with an alias. For  example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: list, optional
+        X: SQLColumns, optional
             List of the input vDataColumns.
 
         Returns
@@ -375,16 +378,13 @@ class Pipeline:
         vDataFrame
             object result of the model inverse transformation.
         """
-        if isinstance(X, str):
-            X = [X]
-        try:
-            for idx in range(len(self.steps)):
-                self.steps[idx][1].inverse_transform
-        except:
-            raise ModelError(
-                f"The estimator [{idx}] of the Pipeline has "
-                "no 'inverse_transform' method."
-            )
+        X = format_type(X, dtype=list)
+        for idx in range(len(self.steps)):
+            if not (hasattr(self.steps[idx][1], "inverse_transform")):
+                raise ModelError(
+                    f"The estimator [{idx}] of the Pipeline has "
+                    "no 'inverse_transform' method."
+                )
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
