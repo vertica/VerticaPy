@@ -15,16 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns, SQLExpression, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import (
-    extract_and_rename_subquery,
-    format_type,
-    quote_ident,
-)
+from verticapy._utils._sql._format import extract_and_rename_subquery
+from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import vertica_version
 
 
@@ -39,8 +36,8 @@ class vDFJoinUnionSort:
     def append(
         self,
         input_relation: SQLRelation,
-        expr1: Optional[SQLExpression] = None,
-        expr2: Optional[SQLExpression] = None,
+        expr1: SQLExpression = [],
+        expr2: SQLExpression = [],
         union_all: bool = True,
     ) -> "vDataFrame":
         """
@@ -73,7 +70,11 @@ class vDFJoinUnionSort:
         vDataFrame
            vDataFrame of the Union
         """
-        expr1, expr2 = format_type(expr1, expr2, dtype=list)
+        if isinstance(expr1, str):
+            expr1 = [expr1]
+        if isinstance(expr2, str):
+            expr2 = [expr2]
+        object_type = None
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
@@ -91,8 +92,8 @@ class vDFJoinUnionSort:
     def join(
         self,
         input_relation: SQLRelation,
-        on: Union[None, tuple, dict, list] = None,
-        on_interpolate: Optional[dict] = None,
+        on: Union[tuple, dict, list] = {},
+        on_interpolate: dict = {},
         how: Literal[
             "left", "right", "cross", "full", "natural", "self", "inner", None
         ] = "natural",
@@ -175,8 +176,10 @@ class vDFJoinUnionSort:
         vDataFrame
             object result of the join.
         """
-        on, on_interpolate = format_type(on, on_interpolate, dtype=dict)
-        expr1, expr2 = format_type(expr1, expr2, dtype=list)
+        if isinstance(expr1, str):
+            expr1 = [expr1]
+        if isinstance(expr2, str):
+            expr2 = [expr2]
         if isinstance(on, tuple):
             on = [on]
         # List with the operators

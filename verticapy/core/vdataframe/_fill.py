@@ -47,10 +47,7 @@ from verticapy.sql.flex import compute_vmap_keys, isvmap
 class vDFFill:
     @save_verticapy_logs
     def fillna(
-        self,
-        val: Optional[dict] = None,
-        method: Optional[dict] = None,
-        numeric_only: bool = False,
+        self, val: dict = {}, method: dict = {}, numeric_only: bool = False
     ) -> "vDataFrame":
         """
         Fills the vDataColumns missing elements using specific rules.
@@ -83,7 +80,6 @@ class vDFFill:
         vDataFrame
             self
         """
-        val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         try:
@@ -109,7 +105,7 @@ class vDFFill:
         self,
         ts: str,
         rule: TimeInterval,
-        method: Optional[dict] = None,
+        method: dict = {},
         by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
@@ -143,7 +139,7 @@ class vDFFill:
         vDataFrame
             object result of the interpolation.
         """
-        by = format_type(by, dtype=list)
+        by = format_type(by, method=list)
         method, ts, by = self._format_colnames(method, ts, by)
         all_elements = []
         for column in method:
@@ -380,7 +376,7 @@ class vDCFill:
             self._parent
         """
         method = method.lower()
-        by, order_by = format_type(by, order_by, dtype=list)
+        by, order_by = format_type(by, order_by, method=list)
         by, order_by = self._parent._format_colnames(by, order_by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"

@@ -84,7 +84,7 @@ class Decomposition(Preprocessing):
         else:
             X = quote_ident(X)
         X, exclude_columns, key_columns = format_type(
-            X, exclude_columns, key_columns, dtype=list
+            X, exclude_columns, key_columns, method=list
         )
         fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
@@ -144,7 +144,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if not (input_relation):
             input_relation = self.input_relation
         metric = str(metric).upper()
@@ -232,7 +232,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):

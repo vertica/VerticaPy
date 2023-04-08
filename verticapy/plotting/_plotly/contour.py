@@ -80,7 +80,11 @@ class ContourPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a contour plot using the Plotly API.
         """

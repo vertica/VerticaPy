@@ -83,7 +83,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -472,7 +472,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vml = _get_mllib()
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         if not (columns):
             columns = self.numcol()
@@ -580,7 +580,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="MultiLinePlot", chart=chart, style_kwargs=style_kwargs,
         )
@@ -947,7 +947,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         method: PlottingMethod = "count",
         of: Optional[str] = None,
-        bbox: Optional[list] = None,
+        bbox: list = [],
         img: str = "",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -991,7 +991,8 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns, bbox = format_type(columns, bbox, dtype=list)
+        if isinstance(columns, str):
+            columns = [columns]
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HexbinMap",
@@ -1158,7 +1159,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="ScatterMatrix", style_kwargs=style_kwargs,

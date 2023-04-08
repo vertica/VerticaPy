@@ -26,9 +26,7 @@ from verticapy.sdk.vertica.udf.gen import generate_lib_udf
 
 @save_verticapy_logs
 def import_lib_udf(
-    udf_list: list,
-    library_name: str,
-    include_dependencies: Union[None, str, list[str]] = None,
+    udf_list: list, library_name: str, include_dependencies: Union[str, list] = []
 ) -> bool:
     """
     Install a library of Python functions in Vertica. 

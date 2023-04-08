@@ -21,7 +21,6 @@ import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
-from verticapy._utils._sql._format import format_type
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -496,14 +495,14 @@ def bayesian_search_cv(
     cv: int = 3,
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
-    param_grid: Union[None, dict, list] = None,
+    param_grid: Union[dict, list] = {},
     random_nbins: int = 16,
     bayesian_nbins: int = None,
     random_grid: bool = False,
     lmax: int = 15,
     nrows: int = 100000,
     k_tops: int = 10,
-    RFmodel_params: Optional[dict] = None,
+    RFmodel_params: dict = {},
     print_info: bool = True,
     **kwargs,
 ) -> TableSample:
@@ -621,8 +620,8 @@ def bayesian_search_cv(
     TableSample
         result of the bayesian search.
     """
-    RFmodel_params, param_grid = format_type(RFmodel_params, param_grid, dtype=dict)
-    X = format_type(X, dtype=list)
+    if isinstance(X, str):
+        X = [X]
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
         print(

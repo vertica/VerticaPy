@@ -20,8 +20,6 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 
-from verticapy._utils._sql._format import format_type
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -64,16 +62,11 @@ class HexbinMap(MatplotlibBase):
     # Draw.
 
     def draw(
-        self,
-        bbox: Optional[list] = None,
-        img: str = "",
-        ax: Optional[Axes] = None,
-        **style_kwargs,
+        self, bbox: list = [], img: str = "", ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
         Draws an hexbin plot using the Matplotlib API.
         """
-        bbox = format_type(bbox, dtype=list)
         matrix = self.data["X"]
         matrix = matrix[(matrix != np.array(None)).all(axis=1)].astype(float)
         ax, fig, style_kwargs = self._get_ax_fig(

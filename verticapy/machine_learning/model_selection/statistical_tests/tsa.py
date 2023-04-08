@@ -198,7 +198,7 @@ def adfuller(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     ts, column, by = vdf._format_colnames(ts, column, by)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     relation_name = gen_tmp_name(
@@ -499,7 +499,7 @@ def durbin_watson(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)} " if (by) else ""
     by_select = (", " + ", ".join(by)) if (by) else ""
@@ -563,7 +563,7 @@ def ljungbox(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     column, ts, by = vdf._format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
@@ -631,7 +631,7 @@ def het_arch(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)}" if (by) else ""
     X = []
@@ -737,7 +737,7 @@ def seasonal_decompose(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     ts, column, by = vdf._format_colnames(ts, column, by)
     if rule:
         vdf = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)

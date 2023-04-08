@@ -128,7 +128,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        columns, func = format_type(columns, func, dtype=list)
+        columns, func = format_type(columns, func, method=list)
         if len(columns) == 0:
             columns = self.get_columns()
             cat_agg = [
@@ -691,7 +691,7 @@ class vDFAgg:
         """
         if method == "auto":
             method = "numerical" if (len(self.numcol()) > 0) else "categorical"
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         for i in range(len(columns)):
             columns[i] = quote_ident(columns[i])
@@ -1034,7 +1034,7 @@ class vDFAgg:
     def groupby(
         self,
         columns: SQLColumns,
-        expr: Optional[SQLExpression] = None,
+        expr: SQLExpression = [],
         rollup: Union[bool, list] = False,
         having: str = "",
     ) -> "vDataFrame":
@@ -1071,7 +1071,10 @@ class vDFAgg:
         vDataFrame
             object result of the grouping.
         """
-        columns, expr = format_type(columns, expr, dtype=list)
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(expr, str):
+            expr = [expr]
         assert not (isinstance(rollup, list)) or len(rollup) == len(
             columns
         ), ValueError(
@@ -1656,7 +1659,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         if len(columns) == 0:
             columns = self.get_columns()
         columns = self._format_colnames(columns)

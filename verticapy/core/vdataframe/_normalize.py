@@ -59,7 +59,7 @@ class vDFNorm:
         vDataFrame
             self
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         no_cols = len(columns) == 0
         columns = self.numcol() if not (columns) else self._format_colnames(columns)
         for column in columns:
@@ -113,7 +113,7 @@ class vDCNorm:
             self._parent
         """
         method = method.lower()
-        by = format_type(by, dtype=list)
+        by = format_type(by, method=list)
         by = self._parent._format_colnames(by)
         nullifzero, n = 1, len(by)
 

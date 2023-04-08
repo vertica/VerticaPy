@@ -103,7 +103,7 @@ class Clustering(Unsupervised):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = quote_ident(X)
@@ -698,8 +698,8 @@ class BisectingKMeans(KMeans, Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "none"},
-        arrow_style: Optional[dict] = None,
-        leaf_style: Optional[dict] = None,
+        arrow_style: dict = {},
+        leaf_style: dict = {},
     ) -> str:
         """
         Returns the code for a Graphviz tree.
@@ -893,7 +893,7 @@ class DBSCAN(VerticaModel):
             in the main table to avoid creating temporary
             tables.
         """
-        X, key_columns = format_type(X, key_columns, dtype=list)
+        X, key_columns = format_type(X, key_columns, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:

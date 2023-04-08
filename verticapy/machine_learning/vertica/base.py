@@ -32,12 +32,7 @@ from verticapy._typing import (
     SQLExpression,
 )
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql._format import (
-    clean_query,
-    format_type,
-    quote_ident,
-    schema_relation,
-)
+from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
@@ -400,15 +395,12 @@ class VerticaModel(PlottingUtils):
                 return key
         return param
 
-    def _get_verticapy_param_dict(
-        self, options: Optional[dict] = None, **kwargs
-    ) -> dict:
+    def _get_verticapy_param_dict(self, options: dict = {}, **kwargs) -> dict:
         """
         Takes as input a dictionary of Vertica options and 
         returns  the  associated  dictionary of  VerticaPy
         options.
         """
-        options = format_type(options, dtype=dict)
         parameters = {}
         map_dict = {**options, **kwargs}
         for param in map_dict:
@@ -432,7 +424,7 @@ class VerticaModel(PlottingUtils):
                 del parameters[p]
         return parameters
 
-    def set_params(self, parameters: Optional[dict] = None, **kwargs) -> None:
+    def set_params(self, parameters: dict = {}, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -444,7 +436,6 @@ class VerticaModel(PlottingUtils):
             New  parameters can  also be passed as  arguments
             Example: set_params(param1 = val1, param2 = val2)
         """
-        parameters = format_type(parameters, dtype=dict)
         all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy({**self.parameters, **kwargs})
         new_parameters_keys = list(new_parameters.keys())
@@ -554,7 +545,7 @@ class VerticaModel(PlottingUtils):
 
     def to_sql(
         self,
-        X: Optional[SQLColumns] = None,
+        X: list = [],
         return_proba: bool = False,
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
@@ -564,7 +555,7 @@ class VerticaModel(PlottingUtils):
 
         Parameters
         ----------
-        X: SQLColumns, optional
+        X: list, optional
             input predictors name.
         return_proba: bool, optional
             If  set to  True and  the  model is a  classifier,
@@ -580,8 +571,7 @@ class VerticaModel(PlottingUtils):
         SQLExpression
             SQL code.
         """
-        X = format_type(X, dtype=list)
-        if len(X) == 0:
+        if not X:
             X = self.X
         model = self.to_memmodel()
         if return_proba:
@@ -1056,13 +1046,13 @@ class Tree:
     def to_graphviz(
         self,
         tree_id: int = 0,
-        classes_color: Optional[list] = None,
+        classes_color: list = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "box", "style": "filled"},
-        arrow_style: Optional[dict] = None,
-        leaf_style: Optional[dict] = None,
+        arrow_style: dict = {},
+        leaf_style: dict = {},
     ) -> str:
         """
         Returns the code for a Graphviz tree.

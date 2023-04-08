@@ -134,7 +134,7 @@ class vDFMachineLearning:
         vDataFrame
             the CDT relation.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         if len(columns) > 0:
             columns = self._format_colnames(columns)
         else:
@@ -174,7 +174,7 @@ class vDFMachineLearning:
         columns: SQLColumns,
         nbins: int = 4,
         method: Literal["smart", "same_width"] = "same_width",
-        RFmodel_params: Optional[dict] = None,
+        RFmodel_params: dict = {},
         **kwargs,
     ) -> NonBinaryTree:
         """
@@ -217,7 +217,6 @@ class vDFMachineLearning:
         NonBinaryTree
             An independent model containing the result.
         """
-        RFmodel_params = format_type(RFmodel_params, dtype=dict)
         if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]
@@ -376,7 +375,7 @@ class vDFMachineLearning:
         list
             columns picked by the CHAID algorithm.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns_tmp = columns.copy()
         if not (columns_tmp):
             columns_tmp = self.get_columns()
@@ -442,7 +441,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns) if (columns) else self.numcol()
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
@@ -476,7 +475,7 @@ class vDFMachineLearning:
         columns: Optional[SQLColumns] = None,
         nbins: int = 16,
         method: Literal["smart", "same_width"] = "same_width",
-        RFmodel_params: Optional[dict] = None,
+        RFmodel_params: dict = {},
     ) -> TableSample:
         """
         Returns the chi-square term using the pivot table of the 
@@ -517,8 +516,7 @@ class vDFMachineLearning:
         TableSample
             result.
         """
-        RFmodel_params = format_type(RFmodel_params, dtype=dict)
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns, response = self._format_colnames(columns, response)
         assert 2 <= nbins <= 16, ValueError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
@@ -602,7 +600,7 @@ class vDFMachineLearning:
         vDataFrame
             the Polynomial object.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         if len(columns) == 0:
             numcol = self.numcol()
         else:
@@ -850,7 +848,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        by = format_type(by, dtype=list)
+        by = format_type(by, method=list)
         by, ts = self._format_colnames(by, ts)
         partition = ""
         if by:
@@ -865,7 +863,7 @@ class vDFMachineLearning:
     def train_test_split(
         self,
         test_size: float = 0.33,
-        order_by: Union[None, str, list, dict] = None,
+        order_by: Union[str, list, dict] = {},
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
@@ -895,7 +893,8 @@ class vDFMachineLearning:
         tuple
             (train vDataFrame, test vDataFrame)
         """
-        order_by = format_type(order_by, dtype=list)
+        if isinstance(order_by, str):
+            order_by = [order_by]
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
             random_state = conf.get_option("random_state")

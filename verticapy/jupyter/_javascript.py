@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, json, os, uuid
-from typing import Any, Optional, TextIO
+from typing import Any, TextIO
 import numpy as np
 
 from verticapy._typing import ArrayLike
@@ -79,13 +79,11 @@ Main Functions.
 """
 
 
-def beautiful_header(
-    header: str, dtype: Optional[dict] = None, percent: Optional[dict] = None,
-) -> str:
+def beautiful_header(header: str, dtype: dict = {}, percent: dict = {},) -> str:
     """
     Transforms the header columns according to the type.
     """
-    dtype, percent = format_type(dtype, percent, dtype=dict)
+
     n = len(header)
     for i in range(1, n):
         val = header[i]
@@ -148,12 +146,11 @@ def beautiful_header(
 
 
 def _table_header(
-    head: list, table_id: str, style: str, classes: str, dtype: Optional[dict] = None,
+    head: list, table_id: str, style: str, classes: str, dtype: dict = {},
 ) -> str:
     """
     Returns the HTML table header. Rows are not included.
     """
-    dtype = format_type(dtype, dtype=dict)
     head = beautiful_header(head, dtype=dtype,)
     thead = "<thead>"
     thead += "<tr>"
@@ -222,12 +219,12 @@ def datatables_repr(
     data_columns: ArrayLike,
     repeat_first_column: bool = False,
     offset: int = 0,
-    dtype: Optional[dict] = None,
+    dtype: dict = {},
 ) -> str:
     """
     Returns the HTML/javascript representation of the table.
     """
-    dtype = format_type(dtype, dtype=dict)
+
     if not (repeat_first_column):
         index_column = list(range(1 + offset, len(data_columns[0]) + offset))
         data_columns = [[""] + [i for i in index_column]] + data_columns

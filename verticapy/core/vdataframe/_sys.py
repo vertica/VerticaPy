@@ -77,7 +77,7 @@ class vDFSystem:
         """
         # The First step is to find the Max Floor
         all_imputations_grammar = []
-        force_columns = format_type(force_columns, dtype=list)
+        force_columns = format_type(force_columns, method=list)
         force_columns_copy = copy.deepcopy(force_columns)
         if len(force_columns) == 0:
             force_columns = copy.deepcopy(self._vars["columns"])
@@ -275,7 +275,7 @@ class vDFSystem:
         avoid useless  computations.  This  method stores the 
         input aggregation in the vDataColumn catalog.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         agg_dict = {
             "cov": {},

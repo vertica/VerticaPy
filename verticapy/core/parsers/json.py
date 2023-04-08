@@ -15,15 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
-from typing import Optional
 
 import verticapy._config.config as conf
-from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import (
     quote_ident,
     format_schema_table,
-    format_type,
     clean_query,
 )
 from verticapy._utils._sql._sys import _executeSQL
@@ -83,8 +81,8 @@ def read_json(
     path: str,
     schema: str = "",
     table_name: str = "",
-    usecols: Optional[list] = None,
-    new_name: Optional[dict] = None,
+    usecols: list = [],
+    new_name: dict = {},
     insert: bool = False,
     start_point: str = None,
     record_terminator: str = None,
@@ -229,8 +227,6 @@ def read_json(
     vDataFrame
     	The vDataFrame of the relation.
 	"""
-    new_name = format_type(new_name, dtype=dict)
-    usecols = format_type(usecols, dtype=list)
     if use_complex_dt:
         if new_name:
             raise ValueError(
