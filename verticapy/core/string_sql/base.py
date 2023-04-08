@@ -14,11 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Iterable, Literal
+from typing import Any, Iterable, Literal, Optional
 
 from verticapy._typing import SQLColumns
-from verticapy._utils._sql._format import format_magic
-from verticapy.errors import ParameterError
+from verticapy._utils._sql._format import format_magic, format_type
 
 
 class StringSQL:
@@ -97,7 +96,7 @@ class StringSQL:
         if (len(args) == 1) and (isinstance(args[0], list)):
             x = args[0]
         elif len(args) == 0:
-            ParameterError("Method 'in_' doesn't work with no parameters.")
+            ValueError("Method 'in_' doesn't work with no parameters.")
         else:
             x = [elem for elem in args]
         assert isinstance(x, Iterable) and not (
@@ -111,7 +110,7 @@ class StringSQL:
         if (len(args) == 1) and (isinstance(args[0], list)):
             x = args[0]
         elif len(args) == 0:
-            ParameterError("Method '_not_in' doesn't work with no parameters.")
+            ValueError("Method '_not_in' doesn't work with no parameters.")
         else:
             x = [elem for elem in args]
         if not (isinstance(x, Iterable)) or (isinstance(x, str)):
@@ -129,11 +128,10 @@ class StringSQL:
     def _distinct(self) -> "StringSQL":
         return StringSQL(f"DISTINCT ({self._init_transf})", self.category())
 
-    def _over(self, by: SQLColumns = [], order_by: SQLColumns = []) -> "StringSQL":
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(order_by, str):
-            order_by = [order_by]
+    def _over(
+        self, by: Optional[SQLColumns] = None, order_by: Optional[SQLColumns] = None
+    ) -> "StringSQL":
+        by, order_by = format_type(by, order_by, method=list)
         by = ", ".join([str(elem) for elem in by])
         if by:
             by = f"PARTITION BY {by}"

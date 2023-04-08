@@ -29,7 +29,7 @@ from verticapy._typing import (
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -402,7 +402,7 @@ def stepwise(
     """
     if isinstance(X, str):
         X = [X]
-    assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
+    assert len(X) >= 1, ValueError("Vector X must have at least one element.")
     if not (conf.get_option("overwrite_model")):
         estimator._is_already_stored(raise_error=True)
     res, current_step = [], 0

@@ -18,7 +18,7 @@ import datetime
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._vertica_version import check_minimum_version
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -122,7 +122,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
         else:
 
             ptype = features_ranges[param]["type"]
-            raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
+            raise ValueError(f"Parameter {param}: Type {ptype} is not supported.")
 
     query = f"""
         SELECT 
@@ -261,7 +261,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
 
         else:
             ptype = features_ranges[param]["type"]
-            raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
+            raise ValueError(f"Parameter {param}: Type {ptype} is not supported.")
 
     query = f"SELECT * FROM {' CROSS JOIN '.join(sql)}"
 

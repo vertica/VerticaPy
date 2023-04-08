@@ -32,6 +32,7 @@ from verticapy._utils._sql._format import (
     extract_precision_scale,
     extract_subquery,
     format_schema_table,
+    format_type,
     quote_ident,
     schema_relation,
 )
@@ -39,7 +40,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import (
     ConnectionError,
     MissingRelation,
-    ParameterError,
     QueryError,
 )
 
@@ -191,7 +191,7 @@ class vDataFrame(
     def __init__(
         self,
         input_relation: Union[str, list, dict, pd.DataFrame, np.ndarray, TableSample],
-        usecols: SQLColumns = [],
+        usecols: Optional[SQLColumns] = None,
         schema: str = "",
         external: bool = False,
         symbol: str = "$",
@@ -215,8 +215,7 @@ class vDataFrame(
             "where": [],
         }
         schema = quote_ident(schema)
-        if isinstance(usecols, str):
-            usecols = [usecols]
+        usecols = format_type(usecols, method=list)
 
         if external:
 
@@ -233,7 +232,7 @@ class vDataFrame(
 
             else:
 
-                raise ParameterError(
+                raise ValueError(
                     "Parameter 'input_relation' must be a nonempty str "
                     "when using external tables."
                 )
@@ -270,7 +269,7 @@ class vDataFrame(
 
                 # Filtering some columns
                 if usecols:
-                    usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
+                    usecols_tmp = ", ".join(quote_ident(usecols))
                     sql = f"SELECT {usecols_tmp} FROM ({sql}) VERTICAPY_SUBTABLE"
 
                 # Getting the main relation information
@@ -345,13 +344,12 @@ class vDataFrame(
     def _from_object(
         self,
         object_: Union[np.ndarray, list, TableSample, dict],
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
     ) -> None:
         """
         Creates a vDataFrame from an input object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
 
         if isinstance(object_, (list, np.ndarray)):
 
@@ -359,7 +357,7 @@ class vDataFrame(
                 object_ = np.array(object_)
 
             if len(object_.shape) != 2:
-                raise ParameterError(
+                raise ValueError(
                     "vDataFrames can only be created with two-dimensional objects."
                 )
 
@@ -379,7 +377,7 @@ class vDataFrame(
 
             tb = object_
 
-        if columns:
+        if len(columns) > 0:
 
             tb_final = {}
             for col in columns:
@@ -388,13 +386,14 @@ class vDataFrame(
 
         return self.__init__(input_relation=tb.to_sql())
 
-    def _from_pandas(self, object_: pd.DataFrame, usecols: SQLColumns = [],) -> None:
+    def _from_pandas(
+        self, object_: pd.DataFrame, usecols: Optional[SQLColumns] = None,
+    ) -> None:
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
-        if isinstance(usecols, str):
-            usecols = [usecols]
-        args = object_[usecols] if usecols else object_
+        usecols = format_type(usecols, method=list)
+        args = object_[usecols] if len(usecols) > 0 else object_
         vdf = _read_pandas(args)
         return self.__init__(input_relation=vdf._vars["main_relation"])
 

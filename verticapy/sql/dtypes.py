@@ -21,7 +21,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import quote_ident, format_schema_table
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-from verticapy.errors import ParameterError
+
 
 from verticapy.sql.drop import drop
 
@@ -87,13 +87,11 @@ def get_data_types(
         their respective type.
     """
     if not (expr) and not (table_name):
-        raise ParameterError(
+        raise ValueError(
             "Missing parameter: 'expr' and 'table_name' can not both be empty."
         )
     if (column) and (usecols):
-        raise ParameterError(
-            "Parameters 'column' and 'usecols' can not both be defined."
-        )
+        raise ValueError("Parameters 'column' and 'usecols' can not both be defined.")
     if (expr) and (table_name):
         warning_message = (
             "As parameter 'table_name' is defined, "
@@ -110,7 +108,7 @@ def get_data_types(
             elif usecols:
                 query = f"""
                     SELECT 
-                        {", ".join([quote_ident(column) for column in usecols])} 
+                        {", ".join(quote_ident(usecols))} 
                     FROM ({expr}) x 
                     LIMIT 0;"""
             else:

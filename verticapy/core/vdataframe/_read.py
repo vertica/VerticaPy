@@ -24,7 +24,12 @@ import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, extract_subquery, quote_ident
+from verticapy._utils._sql._format import (
+    clean_query,
+    extract_subquery,
+    format_type,
+    quote_ident,
+)
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
@@ -172,7 +177,7 @@ class vDFRead:
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
-    def get_columns(self, exclude_columns: SQLColumns = []) -> list[str]:
+    def get_columns(self, exclude_columns: Optional[SQLColumns] = None) -> list[str]:
         """
         Returns the vDataFrame vDataColumns.
 
@@ -187,9 +192,7 @@ class vDFRead:
         List
             List of all vDataFrame columns.
         """
-        # -#
-        if isinstance(exclude_columns, str):
-            exclude_columns = [exclude_columns]
+        exclude_columns = format_type(exclude_columns, method=list)
         exclude_columns_ = [
             c.replace('"', "").lower()
             for c in exclude_columns + self._vars["exclude_columns"]
@@ -239,12 +242,11 @@ class vDFRead:
         TableSample
             result.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
+        columns = self._format_colnames(columns)
         if offset < 0:
             offset = max(0, self.shape()[0] - limit)
-        columns = self._format_colnames(columns)
-        if not (columns):
+        if len(columns) == 0:
             columns = self.get_columns()
         all_columns = []
         for column in columns:

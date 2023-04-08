@@ -16,16 +16,16 @@ permissions and limitations under the License.
 """
 import datetime, math, random, warnings
 from itertools import combinations_with_replacement
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
 import scipy.stats as scipy_st
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -96,7 +96,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def cdt(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         max_cardinality: int = 20,
         nbins: int = 10,
         tcdt: bool = True,
@@ -134,9 +134,8 @@ class vDFMachineLearning:
         vDataFrame
             the CDT relation.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if columns:
+        columns = format_type(columns, method=list)
+        if len(columns) > 0:
             columns = self._format_colnames(columns)
         else:
             columns = self.get_columns()
@@ -221,7 +220,7 @@ class vDFMachineLearning:
         if "process" not in kwargs or kwargs["process"]:
             if isinstance(columns, str):
                 columns = [columns]
-            assert 2 <= nbins <= 16, ParameterError(
+            assert 2 <= nbins <= 16, ValueError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )
             columns = self.chaid_columns(columns)
@@ -356,7 +355,7 @@ class vDFMachineLearning:
 
     @save_verticapy_logs
     def chaid_columns(
-        self, columns: SQLColumns = [], max_cardinality: int = 16
+        self, columns: Optional[SQLColumns] = None, max_cardinality: int = 16
     ) -> list[str]:
         """
         Function used to simplify the code. It returns the columns 
@@ -376,6 +375,7 @@ class vDFMachineLearning:
         list
             columns picked by the CHAID algorithm.
         """
+        columns = format_type(columns, method=list)
         columns_tmp = columns.copy()
         if not (columns_tmp):
             columns_tmp = self.get_columns()
@@ -414,7 +414,7 @@ class vDFMachineLearning:
     @save_verticapy_logs
     def outliers(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         name: str = "distribution_outliers",
         threshold: float = 3.0,
         robust: bool = False,
@@ -441,8 +441,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns) if (columns) else self.numcol()
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
@@ -473,7 +472,7 @@ class vDFMachineLearning:
     def pivot_table_chi2(
         self,
         response: str,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         nbins: int = 16,
         method: Literal["smart", "same_width"] = "same_width",
         RFmodel_params: dict = {},
@@ -517,10 +516,9 @@ class vDFMachineLearning:
         TableSample
             result.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns, response = self._format_colnames(columns, response)
-        assert 2 <= nbins <= 16, ParameterError(
+        assert 2 <= nbins <= 16, ValueError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
         columns = self.chaid_columns(columns)
@@ -581,7 +579,9 @@ class vDFMachineLearning:
         return TableSample(result)
 
     @save_verticapy_logs
-    def polynomial_comb(self, columns: SQLColumns = [], r: int = 2) -> "vDataFrame":
+    def polynomial_comb(
+        self, columns: Optional[SQLColumns] = None, r: int = 2
+    ) -> "vDataFrame":
         """
         Returns a vDataFrame containing different product 
         combination  of   the  input  vDataColumns.  This 
@@ -600,9 +600,8 @@ class vDFMachineLearning:
         vDataFrame
             the Polynomial object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if not (columns):
+        columns = format_type(columns, method=list)
+        if len(columns) == 0:
             numcol = self.numcol()
         else:
             numcol = self._format_colnames(columns)
@@ -685,7 +684,7 @@ class vDFMachineLearning:
             method == "count" or rating
         ), f"Method '{method}' can not be used if parameter 'rating' is empty."
         if rating:
-            assert isinstance(rating, str) or len(rating) == 3, ParameterError(
+            assert isinstance(rating, str) or len(rating) == 3, ValueError(
                 "Parameter 'rating' must be of type str or composed of "
                 "exactly 3 elements: (r_vdf, r_item_id, r_name)."
             )
@@ -817,7 +816,7 @@ class vDFMachineLearning:
     def sessionize(
         self,
         ts: str,
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
         session_threshold: str = "30 minutes",
         name: str = "session_id",
     ) -> "vDataFrame":
@@ -849,8 +848,7 @@ class vDFMachineLearning:
         vDataFrame
             self
         """
-        if isinstance(by, str):
-            by = [by]
+        by = format_type(by, method=list)
         by, ts = self._format_colnames(by, ts)
         partition = ""
         if by:
@@ -919,7 +917,7 @@ class vDFMachineLearning:
         test_table = f"""
             SELECT * 
             FROM {self._genSQL()} 
-            WHERE {random_func} < {q}{order_by}"""
+            WHERE {random_func} <= {q}{order_by}"""
         train_table = f"""
             SELECT * 
             FROM {self._genSQL()} 

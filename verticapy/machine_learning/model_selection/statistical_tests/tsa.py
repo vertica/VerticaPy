@@ -23,7 +23,7 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns, SQLRelation, TimeInterval
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import schema_relation
+from verticapy._utils._sql._format import format_type, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
@@ -162,7 +162,7 @@ def adfuller(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     p: int = 1,
     with_trend: bool = False,
     regresults: bool = False,
@@ -198,8 +198,7 @@ def adfuller(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    if isinstance(by, str):
-        by = [by]
+    by = format_type(by, method=list)
     ts, column, by = vdf._format_colnames(ts, column, by)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     relation_name = gen_tmp_name(
@@ -472,7 +471,7 @@ def cochrane_orcutt(
 
 @save_verticapy_logs
 def durbin_watson(
-    input_relation: SQLRelation, eps: str, ts: str, by: SQLColumns = []
+    input_relation: SQLRelation, eps: str, ts: str, by: Optional[SQLColumns] = None
 ) -> float:
     """
     Durbin Watson test (residuals autocorrelation).
@@ -500,8 +499,7 @@ def durbin_watson(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    if isinstance(by, str):
-        by = [by]
+    by = format_type(by, method=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)} " if (by) else ""
     by_select = (", " + ", ".join(by)) if (by) else ""
@@ -528,7 +526,7 @@ def ljungbox(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     p: int = 1,
     alpha: PythonNumber = 0.05,
     box_pierce: bool = False,
@@ -565,8 +563,7 @@ def ljungbox(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    if isinstance(by, str):
-        by = [by]
+    by = format_type(by, method=list)
     column, ts, by = vdf._format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
@@ -599,7 +596,11 @@ Time Series Tests: ARCH.
 
 @save_verticapy_logs
 def het_arch(
-    input_relation: SQLRelation, eps: str, ts: str, by: SQLColumns = [], p: int = 1
+    input_relation: SQLRelation,
+    eps: str,
+    ts: str,
+    by: Optional[SQLColumns] = None,
+    p: int = 1,
 ) -> tuple[float, float, float, float]:
     """
     Engle’s Test for Autoregressive Conditional Heteroscedasticity 
@@ -630,8 +631,7 @@ def het_arch(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    if isinstance(by, str):
-        by = [by]
+    by = format_type(by, method=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)}" if (by) else ""
     X = []
@@ -674,7 +674,7 @@ def seasonal_decompose(
     input_relation: SQLRelation,
     column: str,
     ts: str,
-    by: SQLColumns = [],
+    by: Optional[SQLColumns] = None,
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
@@ -730,16 +730,15 @@ def seasonal_decompose(
         object containing 
         ts, column, TS seasonal part, TS trend, TS noise.
     """
-    assert period > 0 or polynomial_order > 0, ParameterError(
+    assert period > 0 or polynomial_order > 0, ValueError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    by = format_type(by, method=list)
     ts, column, by = vdf._format_colnames(ts, column, by)
-    if isinstance(by, str):
-        by = [by]
     if rule:
         vdf = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:

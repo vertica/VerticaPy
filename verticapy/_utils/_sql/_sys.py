@@ -47,7 +47,7 @@ def _executeSQL(
         query = symbol * 3 + query.replace(symbol * 3, "") + symbol * 3
 
     elif sql_push_ext and (symbol not in special_symbols):
-        raise ParameterError(f"Symbol '{symbol}' is not supported.")
+        raise ValueError(f"Symbol '{symbol}' is not supported.")
 
     query = replace_external_queries(query)
     query = clean_query(query)

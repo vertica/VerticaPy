@@ -15,16 +15,17 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._utils._object import _get_mllib
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._object import _get_mllib
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -62,7 +63,7 @@ class vDFEncode:
     @save_verticapy_logs
     def one_hot_encode(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         max_cardinality: int = 12,
         prefix_sep: str = "_",
         drop_first: bool = True,
@@ -98,10 +99,9 @@ class vDFEncode:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
-        if not (columns):
+        if len(columns) == 0:
             columns = self.get_columns()
         cols_hand = True if (columns) else False
         for column in columns:
@@ -156,10 +156,10 @@ class vDCEncode:
         assert self.isnum() or self.isdate(), TypeError(
             "cut only works on numerical / date-like vDataColumns."
         )
-        assert len(breaks) >= 2, ParameterError(
+        assert len(breaks) >= 2, ValueError(
             "Length of parameter 'breaks' must be greater or equal to 2."
         )
-        assert len(breaks) == len(labels) + 1 or not (labels), ParameterError(
+        assert len(breaks) == len(labels) + 1 or not (labels), ValueError(
             "Length of parameter breaks must be equal to the length of parameter "
             "'labels' + 1 or parameter 'labels' must be empty."
         )
@@ -275,11 +275,11 @@ class vDCEncode:
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
-            assert nbins >= 2, ParameterError(
+            assert nbins >= 2, ValueError(
                 "Parameter 'nbins' must be greater or equals to 2 in case "
                 "of discretization using the method 'smart'."
             )
-            assert response, ParameterError(
+            assert response, ValueError(
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
@@ -329,7 +329,7 @@ class vDCEncode:
                 drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            assert k >= 2, ParameterError(
+            assert k >= 2, ValueError(
                 "Parameter 'k' must be greater or equals to 2 in "
                 "case of discretization using the method 'topk'"
             )
@@ -347,7 +347,7 @@ class vDCEncode:
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            assert nbins >= 2, ParameterError(
+            assert nbins >= 2, ValueError(
                 "Parameter 'nbins' must be greater or equals to 2 in case "
                 "of discretization using the method 'same_freq'"
             )

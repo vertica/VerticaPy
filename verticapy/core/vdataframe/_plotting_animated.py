@@ -23,6 +23,7 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 
 from verticapy.plotting._utils import PlottingUtils
 
@@ -231,7 +232,7 @@ class vDFAnimatedPlot(PlottingUtils):
     def animated_plot(
         self,
         ts: str,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         by: Optional[str] = None,
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
@@ -292,8 +293,7 @@ class vDFAnimatedPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns, ts, by = self._format_colnames(columns, ts, by)
         if by:
             if len(columns) != 1:

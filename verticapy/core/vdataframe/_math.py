@@ -15,14 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
-from verticapy.errors import MissingColumn, ParameterError, QueryError
+from verticapy._utils._sql._format import format_type, quote_ident
+from verticapy.errors import MissingColumn, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -68,7 +68,7 @@ class vDFMath:
         return vdf
 
     @save_verticapy_logs
-    def abs(self, columns: SQLColumns = []) -> "vDataFrame":
+    def abs(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Applies the absolute value function to all input vDataColumns. 
 
@@ -83,8 +83,7 @@ class vDFMath:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, method=list)
         columns = self.numcol() if not (columns) else self._format_colnames(columns)
         func = {}
         for column in columns:
@@ -96,9 +95,9 @@ class vDFMath:
     def analytic(
         self,
         func: str,
-        columns: SQLColumns = [],
-        by: SQLColumns = [],
-        order_by: Union[dict, list] = [],
+        columns: Optional[SQLColumns] = None,
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, SQLColumns, dict] = None,
         name: str = "",
         offset: int = 1,
         x_smoothing: float = 0.5,
@@ -180,15 +179,7 @@ class vDFMath:
         vDataFrame
             self
         """
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(order_by, str):
-            order_by = [order_by]
-        if isinstance(columns, str):
-            if columns:
-                columns = [columns]
-            else:
-                columns = []
+        columns, by, order_by = format_type(columns, by, order_by, method=list)
         columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
@@ -371,7 +362,7 @@ class vDFMath:
                 "last_value",
                 "pct_change",
             ):
-                raise ParameterError(
+                raise ValueError(
                     "The parameter 'columns' must be a vDataFrame column when "
                     f"using analytic method '{func}'"
                 )
@@ -383,7 +374,7 @@ class vDFMath:
                 "pct_change",
                 "exponential_moving_average",
             ):
-                raise ParameterError(
+                raise ValueError(
                     "The parameter 'columns' must be empty when using analytic"
                     f" method '{func}'"
                 )

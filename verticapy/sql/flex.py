@@ -20,7 +20,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -97,7 +97,7 @@ def compute_vmap_keys(
     vmap = quote_ident(vmap_col)
     if hasattr(expr, "_object_type") and (expr._object_type == "vDataFrame"):
         if not (expr[vmap_col].isvmap()):
-            raise ParameterError(f"Virtual column {vmap_col} is not a VMAP.")
+            raise ValueError(f"Virtual column {vmap_col} is not a VMAP.")
         expr = expr._genSQL()
     return _executeSQL(
         query=f"""

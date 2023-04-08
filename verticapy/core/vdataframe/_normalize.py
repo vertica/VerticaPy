@@ -15,11 +15,12 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math, warnings
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ class vDFNorm:
     @save_verticapy_logs
     def normalize(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ) -> "vDataFrame":
         """
@@ -58,9 +59,8 @@ class vDFNorm:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        no_cols = True if not (columns) else False
+        columns = format_type(columns, method=list)
+        no_cols = len(columns) == 0
         columns = self.numcol() if not (columns) else self._format_colnames(columns)
         for column in columns:
             if self[column].isnum() and not (self[column].isbool()):
@@ -81,7 +81,7 @@ class vDCNorm:
     def normalize(
         self,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
         return_trans: bool = False,
     ) -> "vDataFrame":
         """
@@ -112,9 +112,8 @@ class vDCNorm:
         vDataFrame
             self._parent
         """
-        if isinstance(by, str):
-            by = [by]
         method = method.lower()
+        by = format_type(by, method=list)
         by = self._parent._format_colnames(by)
         nullifzero, n = 1, len(by)
 

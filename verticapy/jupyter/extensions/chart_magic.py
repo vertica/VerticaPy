@@ -28,7 +28,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection.connect import current_cursor
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -244,19 +244,19 @@ def chart_magic(
 
             if option.lower() in ("-f", "--file"):
                 if "-f" in options:
-                    raise ParameterError("Duplicate option '-f'.")
+                    raise ValueError("Duplicate option '-f'.")
                 options["-f"] = options_dict[option]
             elif option.lower() in ("-o", "--output"):
                 if "-o" in options:
-                    raise ParameterError("Duplicate option '-o'.")
+                    raise ValueError("Duplicate option '-o'.")
                 options["-o"] = options_dict[option]
             elif option.lower() in ("-c", "--command"):
                 if "-c" in options:
-                    raise ParameterError("Duplicate option '-c'.")
+                    raise ValueError("Duplicate option '-c'.")
                 options["-c"] = options_dict[option]
             elif option.lower() in ("-k", "--kind"):
                 if "-k" in options:
-                    raise ParameterError("Duplicate option '-k'.")
+                    raise ValueError("Duplicate option '-k'.")
                 options["-k"] = options_dict[option]
 
         elif conf.get_option("print_info"):
@@ -266,13 +266,13 @@ def chart_magic(
             warnings.warn(warning_message, Warning)
 
     if "-f" in options and "-c" in options:
-        raise ParameterError(
+        raise ValueError(
             "Could not find a query to run; the options"
             "'-f' and '-c' cannot be used together."
         )
 
     if cell and ("-f" in options or "-c" in options):
-        raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
+        raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
     if "-f" in options:
         f = open(options["-f"], "r")

@@ -20,7 +20,7 @@ import numpy as np
 
 from verticapy._typing import ArrayLike
 from verticapy._utils._sql._format import format_magic
-from verticapy.errors import ParameterError
+
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 

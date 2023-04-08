@@ -85,7 +85,7 @@ def insert_into(
         assert column_names, MissingRelation(
             f"The table {input_relation} does not exist."
         )
-    cols = [quote_ident(col) for col in column_names]
+    cols = quote_ident(column_names)
     if copy and not (genSQL):
         _executeSQL(
             query=f"""

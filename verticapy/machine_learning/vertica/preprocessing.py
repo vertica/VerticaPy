@@ -22,7 +22,12 @@ import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident, schema_relation, clean_query
+from verticapy._utils._sql._format import (
+    clean_query,
+    format_type,
+    quote_ident,
+    schema_relation,
+)
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
@@ -144,7 +149,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, str):
             X = [X]
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (X):
             X = self.X
         if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
@@ -189,8 +194,8 @@ class Preprocessing(Unsupervised):
     def deploySQL(
         self,
         X: Optional[SQLColumns] = None,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -212,20 +217,17 @@ class Preprocessing(Unsupervised):
         str
             the SQL code needed to deploy the model.
         """
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        if isinstance(exclude_columns, str):
-            exclude_columns = [exclude_columns]
-        if isinstance(X, str):
-            X = [X]
         if isinstance(X, NoneType):
             X = self.X
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
+        X, key_columns, exclude_columns = format_type(
+            X, key_columns, exclude_columns, method=list
+        )
         if key_columns:
-            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+            key_columns = ", ".join(quote_ident(key_columns))
         if exclude_columns:
-            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+            exclude_columns = ", ".join(quote_ident(exclude_columns))
         sql = f"""
             {self._vertica_transform_sql}({', '.join(X)} 
                USING PARAMETERS 
@@ -259,8 +261,8 @@ class Preprocessing(Unsupervised):
 
     def deployInverseSQL(
         self,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
         X: Optional[SQLColumns] = None,
     ) -> str:
         """
@@ -285,16 +287,13 @@ class Preprocessing(Unsupervised):
         str
             the SQL code needed to deploy the inverse model.
         """
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        if isinstance(exclude_columns, str):
-            exclude_columns = [exclude_columns]
         if isinstance(X, NoneType):
             X = self.X
-        elif isinstance(X, str):
-            X = [X]
         else:
-            X = [quote_ident(x) for x in X]
+            X = quote_ident(X)
+        X, key_columns, exclude_columns = format_type(
+            X, key_columns, exclude_columns, method=list
+        )
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
                 "method 'deployInverseSQL' is not supported for OneHotEncoder models."
@@ -338,8 +337,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, NoneType):
             X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
@@ -373,8 +371,7 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
@@ -576,8 +573,7 @@ class CountVectorizer(VerticaModel):
     		List of the predictors. If empty, all the 
             columns will be used.
 		"""
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -590,7 +586,7 @@ class CountVectorizer(VerticaModel):
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
-        self.X = [quote_ident(elem) for elem in X]
+        self.X = quote_ident(X)
         schema, relation = schema_relation(self.model_name)
         schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")

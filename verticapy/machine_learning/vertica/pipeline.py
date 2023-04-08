@@ -19,7 +19,7 @@ from typing import Any, Literal, Optional, Union
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy.errors import ParameterError, ModelError
+from verticapy.errors import ModelError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -84,12 +84,12 @@ class Pipeline:
         self.steps = []
         for idx, s in enumerate(steps):
             if len(s) != 2:
-                raise ParameterError(
+                raise ValueError(
                     "The steps of the Pipeline must be composed of 2 elements "
                     f"(name, transform). Found {len(s)}."
                 )
             elif not (isinstance(s[0], str)):
-                raise ParameterError(
+                raise ValueError(
                     "The steps 'name' of the Pipeline must be of "
                     f"type str. Found {type(s[0])}."
                 )
@@ -100,12 +100,12 @@ class Pipeline:
                     s[1].fit
                 except:
                     if idx < len(steps) - 1:
-                        raise ParameterError(
+                        raise ValueError(
                             "The estimators of the Pipeline must have a "
                             "'transform' and a 'fit' method."
                         )
                     else:
-                        raise ParameterError(
+                        raise ValueError(
                             "The last estimator of the Pipeline must have a "
                             "'fit' method."
                         )

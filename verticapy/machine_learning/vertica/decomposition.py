@@ -25,7 +25,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.tablesample.base import TableSample
@@ -48,8 +48,8 @@ class Decomposition(Preprocessing):
         X: Optional[SQLColumns] = None,
         n_components: int = 0,
         cutoff: PythonNumber = 1,
-        key_columns: SQLColumns = [],
-        exclude_columns: SQLColumns = [],
+        key_columns: Optional[SQLColumns] = None,
+        exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model. 
@@ -79,26 +79,23 @@ class Decomposition(Preprocessing):
         str
             the SQL code needed to deploy the model.
         """
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        if isinstance(exclude_columns, str):
-            exclude_columns = [exclude_columns]
-        if isinstance(X, str):
-            X = [X]
         if isinstance(X, NoneType):
             X = self.X
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
+        X, exclude_columns, key_columns = format_type(
+            X, exclude_columns, key_columns, method=list
+        )
         fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
                                             USING PARAMETERS
                                             model_name = '{self.model_name}',
                                             match_by_pos = 'true'"""
         if key_columns:
-            key_columns = ", ".join([quote_ident(col) for col in key_columns])
+            key_columns = ", ".join(quote_ident(key_columns))
             sql += f", key_columns = '{key_columns}'"
         if exclude_columns:
-            exclude_columns = ", ".join([quote_ident(col) for col in exclude_columns])
+            exclude_columns = ", ".join(quote_ident(exclude_columns))
             sql += f", exclude_columns = '{exclude_columns}'"
         if n_components:
             sql += f", num_components = {n_components}"
@@ -145,10 +142,9 @@ class Decomposition(Preprocessing):
         TableSample
             PCA scores.
         """
-        if isinstance(X, str):
-            X = [X]
-        elif isinstance(X, NoneType):
+        if isinstance(X, NoneType):
             X = self.X
+        X = format_type(X, method=list)
         if not (input_relation):
             input_relation = self.input_relation
         metric = str(metric).upper()
@@ -236,8 +232,7 @@ class Decomposition(Preprocessing):
         """
         if isinstance(X, NoneType):
             X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, method=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import decimal, multiprocessing, warnings
-from typing import Literal, Union
+from typing import Literal, Union, Optional
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
@@ -32,6 +32,7 @@ from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     format_magic,
+    format_type,
     quote_ident,
 )
 from verticapy._utils._sql._sys import _executeSQL
@@ -61,7 +62,7 @@ class vDFAgg:
     def aggregate(
         self,
         func: SQLExpression,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         ncols_block: int = 20,
         processes: int = 1,
     ) -> TableSample:
@@ -127,11 +128,8 @@ class vDFAgg:
         TableSample
             result.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if isinstance(func, str):
-            func = [func]
-        if not (columns):
+        columns, func = format_type(columns, func, method=list)
+        if len(columns) == 0:
             columns = self.get_columns()
             cat_agg = [
                 "count",
@@ -638,7 +636,7 @@ class vDFAgg:
         method: Literal[
             "numerical", "categorical", "statistics", "length", "range", "all", "auto",
         ] = "auto",
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         unique: bool = False,
         ncols_block: int = 20,
         processes: int = 1,
@@ -691,10 +689,9 @@ class vDFAgg:
         TableSample
             result.
         """
-        if isinstance(columns, str):
-            columns = [columns]
         if method == "auto":
-            method = "numerical" if (self.numcol()) else "categorical"
+            method = "numerical" if (len(self.numcol()) > 0) else "categorical"
+        columns = format_type(columns, method=list)
         columns = self._format_colnames(columns)
         for i in range(len(columns)):
             columns[i] = quote_ident(columns[i])
@@ -1026,7 +1023,7 @@ class vDFAgg:
             ).values["unique"]
 
         self._update_catalog(TableSample(values).transpose().values)
-        values["index"] = [quote_ident(elem) for elem in values["index"]]
+        values["index"] = quote_ident(values["index"])
         result = TableSample(values, percent=percent, dtype=dtype).decimal_to_float()
         if method == "all":
             result = result.transpose()
@@ -1080,7 +1077,7 @@ class vDFAgg:
             expr = [expr]
         assert not (isinstance(rollup, list)) or len(rollup) == len(
             columns
-        ), ParameterError(
+        ), ValueError(
             "If parameter 'rollup' is of type list, it should have "
             "the same length as the 'columns' parameter."
         )
@@ -1096,7 +1093,7 @@ class vDFAgg:
                 elif rollup[idx] == True:
                     rollup_expr += "ROLLUP("
                 elif not (isinstance(rollup[idx], bool)):
-                    raise ParameterError(
+                    raise ValueError(
                         "When parameter 'rollup' is not a boolean, it "
                         "has to be a list of booleans."
                     )
@@ -1126,7 +1123,7 @@ class vDFAgg:
                     columns_to_select += [elem]
                 rollup_expr += ", "
             else:
-                raise ParameterError(
+                raise ValueError(
                     "Parameter 'columns' must be a string; list of strings "
                     "or tuples (only when rollup is set to True)."
                 )
@@ -1161,7 +1158,7 @@ class vDFAgg:
     # Single Aggregate Functions.
 
     @save_verticapy_logs
-    def aad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def aad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'aad' 
         (Average Absolute Deviation).
@@ -1226,7 +1223,7 @@ class vDFAgg:
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def avg(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def avg(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'avg' 
         (Average).
@@ -1250,7 +1247,7 @@ class vDFAgg:
     mean = avg
 
     @save_verticapy_logs
-    def count(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def count(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the  vDataFrame  using a  list of 'count' 
         (Number of non-missing values).
@@ -1272,7 +1269,9 @@ class vDFAgg:
         return self.aggregate(func=["count"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def kurtosis(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def kurtosis(
+        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'kurtosis'.
 
@@ -1294,7 +1293,7 @@ class vDFAgg:
     kurt = kurtosis
 
     @save_verticapy_logs
-    def mad(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def mad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'mad' 
         (Median Absolute Deviation).
@@ -1315,7 +1314,7 @@ class vDFAgg:
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def max(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def max(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'max' (Maximum).
 
@@ -1336,7 +1335,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def median(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
+        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'median'.
@@ -1360,7 +1359,7 @@ class vDFAgg:
         return self.quantile(0.5, columns=columns, approx=approx, **agg_kwargs,)
 
     @save_verticapy_logs
-    def min(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def min(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'min' (Minimum).
 
@@ -1380,7 +1379,9 @@ class vDFAgg:
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def product(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def product(
+        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'product'.
 
@@ -1406,7 +1407,7 @@ class vDFAgg:
     def quantile(
         self,
         q: Union[PythonNumber, ArrayLike],
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         approx: bool = True,
         **agg_kwargs,
     ) -> TableSample:
@@ -1447,7 +1448,7 @@ class vDFAgg:
         )
 
     @save_verticapy_logs
-    def sem(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def sem(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'sem' 
         (Standard Error of the Mean).
@@ -1469,7 +1470,9 @@ class vDFAgg:
         return self.aggregate(func=["sem"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def skewness(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def skewness(
+        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'skewness'.
 
@@ -1492,7 +1495,7 @@ class vDFAgg:
     skew = skewness
 
     @save_verticapy_logs
-    def std(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def std(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'std' 
         (Standard Deviation).
@@ -1516,7 +1519,7 @@ class vDFAgg:
     stddev = std
 
     @save_verticapy_logs
-    def sum(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def sum(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'sum'.
 
@@ -1537,7 +1540,7 @@ class vDFAgg:
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs,)
 
     @save_verticapy_logs
-    def var(self, columns: SQLColumns = [], **agg_kwargs,) -> TableSample:
+    def var(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
         """
         Aggregates the vDataFrame using 'variance'.
 
@@ -1564,7 +1567,7 @@ class vDFAgg:
     @save_verticapy_logs
     def count_percent(
         self,
-        columns: SQLColumns = [],
+        columns: Optional[SQLColumns] = None,
         sort_result: bool = True,
         desc: bool = True,
         **agg_kwargs,
@@ -1604,7 +1607,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def nunique(
-        self, columns: SQLColumns = [], approx: bool = True, **agg_kwargs,
+        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'unique' 
@@ -1635,7 +1638,7 @@ class vDFAgg:
 
     @save_verticapy_logs
     def duplicated(
-        self, columns: SQLColumns = [], count: bool = False, limit: int = 30
+        self, columns: Optional[SQLColumns] = None, count: bool = False, limit: int = 30
     ) -> TableSample:
         """
         Returns the duplicated values.
@@ -1656,10 +1659,9 @@ class vDFAgg:
         TableSample
             result.
         """
-        if not (columns):
+        columns = format_type(columns, method=list)
+        if len(columns) == 0:
             columns = self.get_columns()
-        elif isinstance(columns, str):
-            columns = [columns]
         columns = self._format_colnames(columns)
         columns = ", ".join(columns)
         main_table = f"""
@@ -1800,7 +1802,7 @@ class vDCAgg:
         TableSample
             result.
         """
-        assert (method != "cat_stats") or (numcol), ParameterError(
+        assert (method != "cat_stats") or (numcol), ValueError(
             "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
         )
         distinct_count, is_numeric, is_date = (
@@ -2180,7 +2182,7 @@ class vDCAgg:
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
-        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
+        assert n >= 1, ValueError("Parameter 'n' must be greater or equal to 1")
         where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
         result = _executeSQL(
             f"""

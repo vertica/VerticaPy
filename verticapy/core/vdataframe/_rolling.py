@@ -15,14 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime, random
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._typing import SQLColumns, TYPE_CHECKING
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
-from verticapy.errors import ParameterError
+from verticapy._utils._sql._format import format_type, quote_ident
+
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -35,7 +35,7 @@ class vDFRolling:
         func: str,
         window: Union[list, tuple],
         columns: SQLColumns,
-        by: SQLColumns = [],
+        by: Optional[SQLColumns] = None,
         order_by: Union[dict, list] = [],
         name: str = "",
     ) -> "vDataFrame":
@@ -101,14 +101,9 @@ class vDFRolling:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
-        if isinstance(by, str):
-            by = [by]
-        if isinstance(order_by, str):
-            order_by = [order_by]
+        columns, by, order_by = format_type(columns, by, order_by, method=list)
         if len(window) != 2:
-            raise ParameterError("The window must be composed of exactly 2 elements.")
+            raise ValueError("The window must be composed of exactly 2 elements.")
         window = list(window)
         rule = [0, 0]
         unbounded, method = False, "rows"

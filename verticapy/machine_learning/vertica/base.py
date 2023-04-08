@@ -41,7 +41,6 @@ from verticapy._utils._sql._vertica_version import (
 from verticapy.errors import (
     ConversionError,
     FunctionError,
-    ParameterError,
     ModelError,
     VersionError,
 )
@@ -683,7 +682,7 @@ class Supervised(VerticaModel):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
-        self.X = [quote_ident(column) for column in X]
+        self.X = quote_ident(X)
         self.y = quote_ident(y)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self._is_native:
@@ -1177,7 +1176,7 @@ class BinaryClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         sql = f"""
         {self._vertica_predict_sql}({', '.join(X)} 
             USING PARAMETERS
@@ -1438,7 +1437,7 @@ class BinaryClassifier(Classifier):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
@@ -1498,7 +1497,7 @@ class BinaryClassifier(Classifier):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = [quote_ident(elem) for elem in X]
+        X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
 
@@ -1687,7 +1686,7 @@ class MulticlassClassifier(Classifier):
         elif pos_label == None:
             return None
         elif str(pos_label) not in [str(c) for c in self.classes_]:
-            raise ParameterError(
+            raise ValueError(
                 "Parameter 'pos_label' must be one of the response column classes."
             )
         return pos_label
@@ -1760,7 +1759,7 @@ class MulticlassClassifier(Classifier):
             X = self.X
         elif isinstance(X, str):
             X = [X]
-        X = [quote_ident(x) for x in X]
+        X = quote_ident(X)
 
         if not (self._is_native):
             sql = self.to_memmodel().predict_proba_sql(X)
@@ -2135,7 +2134,7 @@ class MulticlassClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
         if cutoff == None:
@@ -2213,8 +2212,8 @@ class MulticlassClassifier(Classifier):
         elif isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
-        assert pos_label is None or pos_label in self.classes_, ParameterError(
+            X = quote_ident(X)
+        assert pos_label is None or pos_label in self.classes_, ValueError(
             "Incorrect parameter 'pos_label'.\nThe class label "
             f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
             f"Found '{pos_label}'."
@@ -2698,7 +2697,7 @@ class Regressor(Supervised):
         if isinstance(X, str):
             X = [X]
         else:
-            X = [quote_ident(elem) for elem in X]
+            X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
@@ -2744,7 +2743,7 @@ class Unsupervised(VerticaModel):
         if self._model_type in ("BisectingKMeans", "IsolationForest") and isinstance(
             conf.get_option("random_state"), int
         ):
-            X_str = ", ".join([quote_ident(x) for x in X])
+            X_str = ", ".join(quote_ident(X))
             id_column = f", ROW_NUMBER() OVER (ORDER BY {X_str}) AS {id_column_name}"
         if isinstance(input_relation, str) and self._model_type == "MCA":
             input_relation = vDataFrame(input_relation)
@@ -2789,7 +2788,7 @@ class Unsupervised(VerticaModel):
             relation = input_relation
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
-        self.X = [quote_ident(column) for column in X]
+        self.X = quote_ident(X)
         parameters = self._get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
@@ -2827,13 +2826,13 @@ class Unsupervised(VerticaModel):
             del parameters["init_method"]
             drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
-                raise ParameterError(
+                raise ValueError(
                     f"'init' must be a list of 'n_cluster' = {self.parameters['n_cluster']} points"
                 )
             else:
                 for item in self.parameters["init"]:
                     if len(X) != len(item):
-                        raise ParameterError(
+                        raise ValueError(
                             f"Each points of 'init' must be of size len(X) = {len(self.X)}"
                         )
                 query0 = []

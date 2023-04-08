@@ -23,7 +23,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy.errors import ParameterError
+
 
 from verticapy.core.parsers.csv import read_csv
 from verticapy.core.vdataframe.base import vDataFrame
@@ -93,7 +93,7 @@ def read_pandas(
     if not (schema):
         schema = conf.get_option("temp_schema")
     if insert and not (name):
-        raise ParameterError(
+        raise ValueError(
             "Parameter 'name' can not be empty when "
             "parameter 'insert' is set to True."
         )

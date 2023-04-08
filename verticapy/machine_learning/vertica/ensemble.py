@@ -1218,14 +1218,14 @@ class IsolationForest(Clustering, Tree):
         """
         if isinstance(X, str):
             X = [X]
-        X = self.X if isinstance(X, NoneType) else [quote_ident(elem) for elem in X]
+        X = self.X if isinstance(X, NoneType) else quote_ident(X)
         if contamination and not (return_score):
-            assert 0 < contamination < 1, ParameterError(
+            assert 0 < contamination < 1, ValueError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
                 "'contamination' must be between 0.0 and 1.0, exclusive."
             )
         elif not (return_score):
-            assert 0 < cutoff < 1, ParameterError(
+            assert 0 < cutoff < 1, ValueError(
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
             )
