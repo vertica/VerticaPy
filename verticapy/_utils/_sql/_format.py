@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, re
+import re
 from typing import Any, Iterable, Literal, Optional, Union
 import numpy as np
 
@@ -206,7 +206,7 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
             else:
                 r = arg
         else:
-            r = copy.deepcopy(arg)
+            r = arg
         res += [r]
     if len(res) == 1:
         return res[0]
