@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, re
+import re
 from typing import Any, Iterable, Literal, Optional, Union
 import numpy as np
 
@@ -185,7 +185,7 @@ def indentSQL(query: str) -> str:
     return query_print
 
 
-def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
+def format_type(*args, method: Literal[NoneType, dict, list]) -> Any:
     """
     Format the input objects  by using the input type. It is
     used to simplify the code as many functions are checking
@@ -194,19 +194,19 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
     res = []
     for arg in args:
         if isinstance(arg, NoneType):
-            if dtype == list:
+            if method == list:
                 r = []
-            elif dtype == dict:
+            elif method == dict:
                 r = {}
             else:
                 r = None
         elif isinstance(arg, str):
-            if dtype == list:
-                r = [copy.deepcopy(arg)]
+            if method == list:
+                r = [arg]
             else:
-                r = copy.deepcopy(arg)
+                r = arg
         else:
-            r = copy.deepcopy(arg)
+            r = arg
         res += [r]
     if len(res) == 1:
         return res[0]

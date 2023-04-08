@@ -14,10 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Optional, Union
+from typing import Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_type, quote_ident
+from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -26,9 +26,7 @@ from verticapy.core.string_sql.base import StringSQL
 
 
 @save_verticapy_logs
-def compute_flextable_keys(
-    flex_name: str, usecols: Optional[list] = None
-) -> list[tuple]:
+def compute_flextable_keys(flex_name: str, usecols: list = []) -> list[tuple]:
     """
     Computes the flex table keys and returns the 
     predicted data types.
@@ -46,7 +44,6 @@ def compute_flextable_keys(
         List  of virtual column names and  their 
         respective data types.
     """
-    usecols = format_type(usecols, dtype=list)
     _executeSQL(
         query=f"""
             SELECT 

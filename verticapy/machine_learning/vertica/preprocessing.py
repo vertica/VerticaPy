@@ -128,9 +128,7 @@ class Preprocessing(Unsupervised):
 
     # I/O Methods.
 
-    def _get_names(
-        self, inverse: bool = False, X: Optional[SQLColumns] = None
-    ) -> SQLColumns:
+    def _get_names(self, inverse: bool = False, X: list = []) -> list[str]:
         """
         Returns the Transformation output names.
 
@@ -149,7 +147,8 @@ class Preprocessing(Unsupervised):
         list
             names.
         """
-        X = format_type(X, dtype=list)
+        if isinstance(X, str):
+            X = [X]
         X = quote_ident(X)
         if not (X):
             X = self.X
@@ -338,7 +337,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, NoneType):
             X = self.X
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
@@ -372,7 +371,7 @@ class Preprocessing(Unsupervised):
         vDataFrame
             object result of the model transformation.
         """
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
@@ -574,7 +573,7 @@ class CountVectorizer(VerticaModel):
     		List of the predictors. If empty, all the 
             columns will be used.
 		"""
-        X = format_type(X, dtype=list)
+        X = format_type(X, method=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:

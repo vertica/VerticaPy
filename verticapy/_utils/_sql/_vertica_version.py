@@ -15,9 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
-from verticapy._utils._sql._format import format_type
 from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
 
@@ -91,7 +90,7 @@ def check_minimum_version(func: Callable) -> Callable:
     return func_prec_check_minimum_version
 
 
-def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, int]:
+def vertica_version(condition: list = []) -> tuple[int, int, int, int]:
     """
     Returns the Vertica Version.
 
@@ -108,8 +107,7 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
         List containing the version information.
         MAJOR, MINOR, PATCH, POST
     """
-    condition = format_type(condition, dtype=list)
-    if len(condition) > 0:
+    if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     current_cursor().execute("SELECT /*+LABEL('_version')*/ version();")
     current_version = current_cursor().fetchone()[0]

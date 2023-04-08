@@ -15,20 +15,20 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import time
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._display import print_query, print_time
-from verticapy._utils._sql._format import clean_query, erase_label, format_type
+from verticapy._utils._sql._format import clean_query, erase_label
 from verticapy.connection.connect import current_cursor
 
 
 def _executeSQL(
     query: str,
     title: str = "",
-    data: Optional[list] = None,
+    data: list = [],
     method: Literal[
         "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
     ] = "cursor",
@@ -40,7 +40,6 @@ def _executeSQL(
     """
     Executes and returns the result of the input query.
     """
-    data = format_type(data, dtype=list)
     special_symbols = get_global_connection()._special_symbols
     # Cleaning the query
     if sql_push_ext and (symbol in special_symbols):

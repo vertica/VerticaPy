@@ -32,12 +32,7 @@ from verticapy._typing import (
     SQLExpression,
 )
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._sql._format import (
-    clean_query,
-    format_type,
-    quote_ident,
-    schema_relation,
-)
+from verticapy._utils._sql._format import clean_query, quote_ident, schema_relation
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
@@ -550,7 +545,7 @@ class VerticaModel(PlottingUtils):
 
     def to_sql(
         self,
-        X: Optional[SQLColumns] = None,
+        X: list = [],
         return_proba: bool = False,
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
@@ -560,7 +555,7 @@ class VerticaModel(PlottingUtils):
 
         Parameters
         ----------
-        X: SQLColumns, optional
+        X: list, optional
             input predictors name.
         return_proba: bool, optional
             If  set to  True and  the  model is a  classifier,
@@ -576,8 +571,7 @@ class VerticaModel(PlottingUtils):
         SQLExpression
             SQL code.
         """
-        X = format_type(X, dtype=list)
-        if len(X) == 0:
+        if not X:
             X = self.X
         model = self.to_memmodel()
         if return_proba:
@@ -1052,7 +1046,7 @@ class Tree:
     def to_graphviz(
         self,
         tree_id: int = 0,
-        classes_color: Optional[list] = None,
+        classes_color: list = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,

@@ -17,8 +17,7 @@ permissions and limitations under the License.
 from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
-from verticapy._typing import NoneType, SQLColumns, SQLRelation
-from verticapy._utils._sql._format import format_type
+from verticapy._typing import NoneType, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy.errors import ModelError
 
@@ -264,10 +263,7 @@ class Pipeline:
     # Prediction / Transformation Methods.
 
     def predict(
-        self,
-        vdf: SQLRelation = None,
-        X: Optional[SQLColumns] = None,
-        name: str = "estimator",
+        self, vdf: SQLRelation = None, X: list = [], name: str = "estimator",
     ) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
@@ -280,7 +276,7 @@ class Pipeline:
             it with an alias.  For example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: SQLColumns, optional
+        X: list, optional
             List of the input vDataColumns.
         name: str, optional
             Name of the added vDataColumn.
@@ -290,8 +286,11 @@ class Pipeline:
         vDataFrame
             object result of the model transformation.
         """
-        X = format_type(X, dtype=list)
-        if not (hasattr(self.steps[-1][1], "predict")):
+        if isinstance(X, str):
+            X = [X]
+        try:
+            self.steps[-1][1].predict
+        except:
             raise ModelError(
                 "The last estimator of the Pipeline has no 'predict' method."
             )
@@ -315,9 +314,7 @@ class Pipeline:
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
-    def transform(
-        self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
-    ) -> vDataFrame:
+    def transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
         """
         Applies the model on a vDataFrame.
 
@@ -329,7 +326,7 @@ class Pipeline:
             it with an alias. For  example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: SQLColumns, optional
+        X: list, optional
             List of the input vDataColumns.
 
         Returns
@@ -337,8 +334,11 @@ class Pipeline:
         vDataFrame
             object result of the model transformation.
         """
-        X = format_type(X, dtype=list)
-        if not (hasattr(self.steps[-1][1], "transform")):
+        if isinstance(X, str):
+            X = [X]
+        try:
+            self.steps[-1][1].transform
+        except:
             raise ModelError(
                 "The last estimator of the Pipeline has no 'transform' method."
             )
@@ -354,9 +354,7 @@ class Pipeline:
             X_all += X_new
         return current_vdf
 
-    def inverse_transform(
-        self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
-    ) -> vDataFrame:
+    def inverse_transform(self, vdf: SQLRelation = None, X: list = []) -> vDataFrame:
         """
         Applies  the  inverse model transformation  on  a 
         vDataFrame.
@@ -369,7 +367,7 @@ class Pipeline:
             it with an alias. For  example  "(SELECT 1) x" 
             is correct whereas "(SELECT 1)" and "SELECT 1" 
             are incorrect.
-        X: SQLColumns, optional
+        X: list, optional
             List of the input vDataColumns.
 
         Returns
@@ -377,13 +375,16 @@ class Pipeline:
         vDataFrame
             object result of the model inverse transformation.
         """
-        X = format_type(X, dtype=list)
-        for idx in range(len(self.steps)):
-            if not (hasattr(self.steps[idx][1], "inverse_transform")):
-                raise ModelError(
-                    f"The estimator [{idx}] of the Pipeline has "
-                    "no 'inverse_transform' method."
-                )
+        if isinstance(X, str):
+            X = [X]
+        try:
+            for idx in range(len(self.steps)):
+                self.steps[idx][1].inverse_transform
+        except:
+            raise ModelError(
+                f"The estimator [{idx}] of the Pipeline has "
+                "no 'inverse_transform' method."
+            )
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):

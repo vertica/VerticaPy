@@ -15,10 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings, vertica_python
-from typing import Optional, Union
+from typing import Union
 
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._format import format_type, format_schema_table, quote_ident
+from verticapy._utils._sql._format import quote_ident, format_schema_table
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection import current_cursor
 
@@ -51,7 +51,7 @@ def get_data_types(
     column: str = "",
     table_name: str = "",
     schema: str = "public",
-    usecols: Optional[list] = None,
+    usecols: list = [],
 ) -> Union[tuple, list[tuple]]:
     """
     Returns customized relation columns and the 
@@ -86,7 +86,6 @@ def get_data_types(
         The  list  of the  different columns  and 
         their respective type.
     """
-    usecols = format_type(usecols, dtype=list)
     if not (expr) and not (table_name):
         raise ValueError(
             "Missing parameter: 'expr' and 'table_name' can not both be empty."

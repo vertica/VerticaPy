@@ -215,7 +215,7 @@ class vDataFrame(
             "where": [],
         }
         schema = quote_ident(schema)
-        usecols = format_type(usecols, dtype=list)
+        usecols = format_type(usecols, method=list)
 
         if external:
 
@@ -349,7 +349,7 @@ class vDataFrame(
         """
         Creates a vDataFrame from an input object.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, method=list)
 
         if isinstance(object_, (list, np.ndarray)):
 
@@ -392,7 +392,7 @@ class vDataFrame(
         """
         Creates a vDataFrame from a pandas.DataFrame.
         """
-        usecols = format_type(usecols, dtype=list)
+        usecols = format_type(usecols, method=list)
         args = object_[usecols] if len(usecols) > 0 else object_
         vdf = _read_pandas(args)
         return self.__init__(input_relation=vdf._vars["main_relation"])
@@ -461,13 +461,13 @@ class vDataColumn(
     def __init__(
         self,
         alias: str,
-        transformations: Optional[list] = None,
+        transformations: list = [],
         parent: Optional[vDataFrame] = None,
         catalog: dict = {},
     ) -> None:
         self._parent = parent
         self._alias = alias
-        self._transf = format_type(transformations, dtype=list)
+        self._transf = copy.deepcopy(transformations)
         self._catalog = {
             "cov": {},
             "pearson": {},

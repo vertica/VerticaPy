@@ -263,7 +263,7 @@ def plot_acf_pacf(
     TableSample
         acf, pacf, confidence
     """
-    by = format_type(by, dtype=list)
+    by = format_type(by, method=list)
     by, column, ts = vdf._format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)

@@ -230,7 +230,7 @@ class AutoDataPrep(VerticaModel):
             vdf = input_relation.copy()
         if isinstance(X, NoneType):
             X = vdf.get_columns()
-        X, by = format_type(X, by, dtype=list)
+        X, by = format_type(X, by, method=list)
         if not (ts) and self.parameters["identify_ts"]:
             nb_date, nb_num, nb_others = 0, 0, 0
             for x in X:

@@ -15,14 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import sys, time, warnings
-from typing import Union, Optional
+from typing import Union
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
     format_schema_table,
-    format_type,
     quote_ident,
 )
 from verticapy._utils._sql._sys import _executeSQL
@@ -34,7 +33,7 @@ def insert_into(
     table_name: str,
     data: list,
     schema: str = "",
-    column_names: Optional[list] = None,
+    column_names: list = [],
     copy: bool = True,
     genSQL: bool = False,
 ) -> Union[int, str]:
@@ -67,7 +66,6 @@ def insert_into(
     int
         The number of rows ingested.
     """
-    column_names = format_type(column_names, dtype=list)
     if not (schema):
         schema = conf.get_option("temp_schema")
     input_relation = format_schema_table(schema, table_name)

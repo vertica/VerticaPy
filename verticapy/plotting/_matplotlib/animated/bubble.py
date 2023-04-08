@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
-from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
@@ -202,7 +201,7 @@ class AnimatedBubblePlot(AnimatedBase):
         self,
         lim_labels: int = 6,
         fixed_xy_lim: bool = False,
-        bbox: Optional[list] = None,
+        bbox: list = [],
         img: str = "",
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
@@ -215,7 +214,6 @@ class AnimatedBubblePlot(AnimatedBase):
         """
         Draws an animated bubble plot using the Matplotlib API.
         """
-        bbox = format_type(bbox, dtype=list)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(12, 8), set_axis_below=True, grid=True, style_kwargs=style_kwargs
         )

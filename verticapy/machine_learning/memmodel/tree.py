@@ -16,12 +16,12 @@ permissions and limitations under the License.
 """
 import copy, math
 from collections.abc import Iterable
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 import numpy as np
 
 import verticapy._config.config as conf
 from verticapy._typing import ArrayLike
-from verticapy._utils._sql._format import clean_query, format_magic, format_type
+from verticapy._utils._sql._format import clean_query, format_magic
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 
@@ -834,7 +834,7 @@ class NonBinaryTree(Tree):
     def _to_graphviz_tree(
         self,
         tree: dict,
-        classes_color: Optional[list] = None,
+        classes_color: list = [],
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
@@ -846,7 +846,6 @@ class NonBinaryTree(Tree):
         """
         Returns the code for a Graphviz tree.
         """
-        classes_color = format_type(classes_color, dtype=list)
         if process and len(classes_color) == 0:
             classes_color = self._default_colors()
         if tree["is_leaf"]:
