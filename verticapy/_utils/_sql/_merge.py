@@ -14,10 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy._utils._sql._format import quote_ident
+from typing import Optional
+
+from verticapy._utils._sql._format import format_type, quote_ident
 
 
-def erase_prefix_in_name(name: str, prefix: list = []) -> str:
+def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
     """
     Excludes the input lists of prefixes from the 
     input name and returns it.
@@ -36,6 +38,7 @@ def erase_prefix_in_name(name: str, prefix: list = []) -> str:
     name
         The name without the prefixes.
     """
+    prefix = format_type(prefix, dtype=list)
     new_name = name
     for p in prefix:
         n = len(p)
@@ -45,7 +48,7 @@ def erase_prefix_in_name(name: str, prefix: list = []) -> str:
     return new_name
 
 
-def erase_suffix_in_name(name: str, suffix: list = []) -> str:
+def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
     """
     Excludes the input lists of suffixes from the
     input name and returns it.
@@ -64,6 +67,7 @@ def erase_suffix_in_name(name: str, suffix: list = []) -> str:
     name
         The name without the suffixes.
     """
+    suffix = format_type(suffix, dtype=list)
     new_name = name
     for s in suffix:
         n = len(s)
@@ -73,7 +77,7 @@ def erase_suffix_in_name(name: str, suffix: list = []) -> str:
     return new_name
 
 
-def erase_word_in_name(name: str, word: list = []) -> str:
+def erase_word_in_name(name: str, word: Optional[list] = None) -> str:
     """
     Excludes the input lists of words from the 
     input name and returns it.
@@ -92,6 +96,7 @@ def erase_word_in_name(name: str, word: list = []) -> str:
     name
         The name without the input words.
     """
+    word = format_type(word, dtype=list)
     for w in word:
         if w in name:
             return name.replace(w, "")
@@ -101,9 +106,9 @@ def erase_word_in_name(name: str, word: list = []) -> str:
 
 def erase_in_name(
     name: str,
-    suffix: list = [],
-    prefix: list = [],
-    word: list = [],
+    suffix: Optional[list] = None,
+    prefix: Optional[list] = None,
+    word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> str:
     """
@@ -137,6 +142,7 @@ def erase_in_name(
         The name without the prefixes, suffixes 
         and input words.
     """
+    suffix, prefix, word = format_type(suffix, prefix, word, dtype=list)
     new_name = name
     f = {
         "p": (erase_prefix_in_name, prefix),
@@ -151,9 +157,9 @@ def erase_in_name(
 def is_similar_name(
     name1: str,
     name2: str,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> bool:
     """
@@ -188,6 +194,9 @@ def is_similar_name(
         True if the two names are similar, false 
         otherwise.
     """
+    skip_suffix, skip_prefix, skip_word = format_type(
+        skip_suffix, skip_prefix, skip_word, dtype=list
+    )
     n1 = erase_in_name(
         name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
     )
@@ -200,9 +209,9 @@ def is_similar_name(
 def belong_to_group(
     name: str,
     group: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> bool:
     """
@@ -237,6 +246,9 @@ def belong_to_group(
         True if the name belong to the input group, 
         false otherwise.
     """
+    skip_suffix, skip_prefix, skip_word = format_type(
+        skip_suffix, skip_prefix, skip_word, dtype=list
+    )
     for name2 in group:
         if is_similar_name(
             name1=name,
@@ -252,9 +264,9 @@ def belong_to_group(
 
 def group_similar_names(
     colnames: list,
-    skip_suffix: list = [],
-    skip_prefix: list = [],
-    skip_word: list = [],
+    skip_suffix: Optional[list] = None,
+    skip_prefix: Optional[list] = None,
+    skip_word: Optional[list] = None,
     order: list = ["p", "s", "w"],
 ) -> dict:
     """
@@ -285,6 +297,9 @@ def group_similar_names(
     dict
         dictionary including the different groups.
     """
+    skip_suffix, skip_prefix, skip_word = format_type(
+        skip_suffix, skip_prefix, skip_word, dtype=list
+    )
     result = {}
     for col in colnames:
         groupname = erase_in_name(
