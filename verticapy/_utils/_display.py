@@ -15,11 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import html, shutil
-from typing import Optional
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._cast import to_category
-from verticapy._utils._sql._format import format_type
 from verticapy._utils._logo import verticapy_logo_html
 
 
@@ -30,14 +28,13 @@ def print_table(
     repeat_first_column: bool = False,
     first_element: str = "",
     return_html: bool = False,
-    dtype: Optional[dict] = None,
-    percent: Optional[dict] = None,
+    dtype: dict = {},
+    percent: dict = {},
 ) -> str:
     """
     Returns the HTML code or string to display the final 
     relation.
     """
-    dtype, percent = format_type(dtype, percent, dtype=dict)
     if not (return_html):
         data_columns_rep = [] + data_columns
         if repeat_first_column:
