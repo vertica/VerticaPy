@@ -327,7 +327,7 @@ class vDFFilter:
 
     @save_verticapy_logs
     def filter(
-        self, conditions: Optional[SQLExpression] = None, *args, **kwargs
+        self, conditions: Union[list, str] = [], *args, **kwargs
     ) -> "vDataFrame":
         """
         Filters  the vDataFrame using the  input  expressions.
@@ -345,7 +345,6 @@ class vDFFilter:
         vDataFrame
             self
         """
-        conditions = format_type(conditions, dtype=list)
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
         if not (isinstance(conditions, str)) or (args):
@@ -620,7 +619,7 @@ class vDFFilter:
         self,
         conditions: SQLExpression = "",
         usecols: Optional[SQLColumns] = None,
-        expr: Optional[SQLExpression] = None,
+        expr: SQLExpression = [],
         order_by: Union[str, dict, list] = [],
     ) -> "vDataFrame":
         """
