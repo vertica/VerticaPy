@@ -865,7 +865,7 @@ class vDFMachineLearning:
     def train_test_split(
         self,
         test_size: float = 0.33,
-        order_by: Union[None, str, list, dict] = None,
+        order_by: Union[str, list, dict] = {},
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
@@ -895,7 +895,8 @@ class vDFMachineLearning:
         tuple
             (train vDataFrame, test vDataFrame)
         """
-        order_by = format_type(order_by, dtype=list)
+        if isinstance(order_by, str):
+            order_by = [order_by]
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
             random_state = conf.get_option("random_state")

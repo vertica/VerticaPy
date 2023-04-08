@@ -95,7 +95,7 @@ class vDFJoinUnionSort:
     def join(
         self,
         input_relation: SQLRelation,
-        on: Union[None, tuple, dict, list] = None,
+        on: Union[tuple, dict, list] = {},
         on_interpolate: Optional[dict] = None,
         how: Literal[
             "left", "right", "cross", "full", "natural", "self", "inner", None
@@ -179,7 +179,7 @@ class vDFJoinUnionSort:
         vDataFrame
             object result of the join.
         """
-        on, on_interpolate = format_type(on, on_interpolate, dtype=dict)
+        on_interpolate = format_type(on_interpolate, dtype=dict)
         expr1, expr2 = format_type(expr1, expr2, dtype=list)
         if isinstance(on, tuple):
             on = [on]

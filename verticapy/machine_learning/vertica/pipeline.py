@@ -144,7 +144,7 @@ class Pipeline:
             params[step[0]] = step[1].get_params()
         return params
 
-    def set_params(self, parameters: Optional[dict[dict]] = None, **kwargs) -> None:
+    def set_params(self, parameters: dict[dict] = {}, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -159,7 +159,6 @@ class Pipeline:
             Example: set_params(pipeline1 = dict1, 
                                 pipeline2 = dict2)
         """
-        parameters = format_type(parameters, dtype=dict)
         for param in {**parameters, **kwargs}:
             for step in self.steps:
                 if param.lower() == step[0].lower():

@@ -496,7 +496,7 @@ def bayesian_search_cv(
     cv: int = 3,
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
-    param_grid: Union[None, dict, list] = None,
+    param_grid: Union[dict, list] = {},
     random_nbins: int = 16,
     bayesian_nbins: int = None,
     random_grid: bool = False,
@@ -621,7 +621,7 @@ def bayesian_search_cv(
     TableSample
         result of the bayesian search.
     """
-    RFmodel_params, param_grid = format_type(RFmodel_params, param_grid, dtype=dict)
+    RFmodel_params = format_type(RFmodel_params, dtype=dict)
     X = format_type(X, dtype=list)
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
