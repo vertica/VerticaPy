@@ -223,7 +223,7 @@ class Preprocessing(Unsupervised):
         else:
             X = quote_ident(X)
         X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, dtype=list
+            X, key_columns, exclude_columns, method=list
         )
         if key_columns:
             key_columns = ", ".join(quote_ident(key_columns))
@@ -293,7 +293,7 @@ class Preprocessing(Unsupervised):
         else:
             X = quote_ident(X)
         X, key_columns, exclude_columns = format_type(
-            X, key_columns, exclude_columns, dtype=list
+            X, key_columns, exclude_columns, method=list
         )
         if self._model_type == "OneHotEncoder":
             raise AttributeError(
@@ -859,7 +859,7 @@ class OneHotEncoder(Preprocessing):
     def __init__(
         self,
         name: str,
-        extra_levels: Optional[dict] = None,
+        extra_levels: dict = {},
         drop_first: bool = True,
         ignore_null: bool = True,
         separator: str = "_",
@@ -868,7 +868,7 @@ class OneHotEncoder(Preprocessing):
     ) -> None:
         self.model_name = name
         self.parameters = {
-            "extra_levels": format_type(extra_levels, dtype=dict),
+            "extra_levels": extra_levels,
             "drop_first": drop_first,
             "ignore_null": ignore_null,
             "separator": separator,

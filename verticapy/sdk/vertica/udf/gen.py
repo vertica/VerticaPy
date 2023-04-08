@@ -15,10 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
-from typing import Optional, Union
+from typing import Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_type
 
 from verticapy.sdk.vertica.udf.utils import get_set_add_function
 
@@ -142,7 +141,7 @@ def generate_udf(
     function,
     arg_types: Union[list, dict],
     return_type: Union[type, dict],
-    parameters: Optional[dict] = None,
+    parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
 ) -> tuple[str, str]:
@@ -150,7 +149,6 @@ def generate_udf(
     Generates the UDx Python code and the SQL
     statements needed to install it.
     """
-    parameters = format_type(parameters, dtype=dict)
     if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."

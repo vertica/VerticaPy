@@ -15,13 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Optional
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
     format_schema_table,
-    format_type,
     quote_ident,
 )
 from verticapy._utils._gen import gen_tmp_name
@@ -39,7 +37,7 @@ def read_file(
     path: str,
     schema: str = "",
     table_name: str = "",
-    dtype: Optional[dict] = None,
+    dtype: dict = {},
     unknown: str = "varchar",
     varchar_varbinary_length: int = 80,
     insert: bool = False,
@@ -118,7 +116,6 @@ def read_file(
     vDataFrame
         The vDataFrame of the relation.
     """
-    dtype = format_type(dtype, dtype=dict)
     assert not (ingest_local) or insert, ValueError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )

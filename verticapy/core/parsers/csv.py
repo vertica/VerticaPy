@@ -187,7 +187,7 @@ def read_csv(
     sep: str = "",
     header: bool = True,
     header_names: Optional[list] = None,
-    dtype: Optional[dict] = None,
+    dtype: dict = {},
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\027",
@@ -299,7 +299,6 @@ def read_csv(
     vDataFrame
     	The vDataFrame of the relation.
 	"""
-    dtype = format_type(dtype, dtype=dict)
     header_names = format_type(header_names, dtype=list)
     if schema:
         temporary_local_table = False

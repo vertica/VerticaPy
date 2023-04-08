@@ -28,7 +28,7 @@ def read_avro(
     schema: str = "",
     table_name: str = "",
     usecols: Optional[list] = None,
-    new_name: Optional[dict] = None,
+    new_name: dict = {},
     insert: bool = False,
     reject_on_materialized_type_error: bool = False,
     flatten_maps: bool = True,

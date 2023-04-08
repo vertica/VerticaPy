@@ -17,18 +17,17 @@ permissions and limitations under the License.
 import warnings
 from typing import Literal, Optional
 
-from matplotlib.axes import Axes
-from matplotlib.pyplot import Figure as mFigure
-from plotly.graph_objs._figure import Figure
-from vertica_highcharts import Highchart, Highstock
-
 import verticapy._config.config as conf
-from verticapy._utils._sql._format import format_type
 from verticapy._typing import PlottingObject
 
 import verticapy.plotting._matplotlib as vpy_matplotlib_plt
 import verticapy.plotting._plotly as vpy_plotly_plt
 import verticapy.plotting._highcharts as vpy_highcharts_plt
+
+from matplotlib.axes import Axes
+from matplotlib.pyplot import Figure as mFigure
+from plotly.graph_objs._figure import Figure
+from vertica_highcharts import Highchart, Highstock
 
 
 class PlottingUtils:
@@ -36,14 +35,11 @@ class PlottingUtils:
         self,
         class_name: str = "",
         chart: Optional[PlottingObject] = None,
-        matplotlib_kwargs: Optional[dict] = None,
-        plotly_kwargs: Optional[dict] = None,
-        highchart_kwargs: Optional[dict] = None,
-        style_kwargs: Optional[dict] = None,
+        matplotlib_kwargs: dict = {},
+        plotly_kwargs: dict = {},
+        highchart_kwargs={},
+        style_kwargs: dict = {},
     ) -> tuple[Literal[vpy_highcharts_plt, vpy_matplotlib_plt, vpy_plotly_plt], dict]:
-        highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs = format_type(
-            highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs, dtype=dict
-        )
         chart_not_none = True
         if isinstance(chart, (Axes, mFigure)):
             lib = "matplotlib"

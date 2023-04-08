@@ -463,9 +463,8 @@ class vDataColumn(
         alias: str,
         transformations: Optional[list] = None,
         parent: Optional[vDataFrame] = None,
-        catalog: Optional[dict] = None,
+        catalog: dict = {},
     ) -> None:
-        catalog = format_type(catalog, dtype=dict)
         self._parent = parent
         self._alias = alias
         self._transf = format_type(transformations, dtype=list)

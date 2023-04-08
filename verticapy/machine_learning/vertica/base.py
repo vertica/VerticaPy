@@ -400,15 +400,12 @@ class VerticaModel(PlottingUtils):
                 return key
         return param
 
-    def _get_verticapy_param_dict(
-        self, options: Optional[dict] = None, **kwargs
-    ) -> dict:
+    def _get_verticapy_param_dict(self, options: dict = {}, **kwargs) -> dict:
         """
         Takes as input a dictionary of Vertica options and 
         returns  the  associated  dictionary of  VerticaPy
         options.
         """
-        options = format_type(options, dtype=dict)
         parameters = {}
         map_dict = {**options, **kwargs}
         for param in map_dict:
@@ -432,7 +429,7 @@ class VerticaModel(PlottingUtils):
                 del parameters[p]
         return parameters
 
-    def set_params(self, parameters: Optional[dict] = None, **kwargs) -> None:
+    def set_params(self, parameters: dict = {}, **kwargs) -> None:
         """
         Sets the parameters of the model.
 
@@ -444,7 +441,6 @@ class VerticaModel(PlottingUtils):
             New  parameters can  also be passed as  arguments
             Example: set_params(param1 = val1, param2 = val2)
         """
-        parameters = format_type(parameters, dtype=dict)
         all_init_params = list(get_type_hints(self.__init__).keys())
         new_parameters = copy.deepcopy({**self.parameters, **kwargs})
         new_parameters_keys = list(new_parameters.keys())
@@ -1061,8 +1057,8 @@ class Tree:
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "box", "style": "filled"},
-        arrow_style: Optional[dict] = None,
-        leaf_style: Optional[dict] = None,
+        arrow_style: dict = {},
+        leaf_style: dict = {},
     ) -> str:
         """
         Returns the code for a Graphviz tree.

@@ -84,7 +84,7 @@ class Decomposition(Preprocessing):
         else:
             X = quote_ident(X)
         X, exclude_columns, key_columns = format_type(
-            X, exclude_columns, key_columns, dtype=list
+            X, exclude_columns, key_columns, method=list
         )
         fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 

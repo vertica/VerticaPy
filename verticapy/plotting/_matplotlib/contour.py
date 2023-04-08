@@ -18,8 +18,6 @@ from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 
-from verticapy._utils._sql._format import format_type
-
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -55,10 +53,7 @@ class ContourPlot(MatplotlibBase):
         }
         return None
 
-    def _update_style(
-        self, cf: bool = False, style_kwargs: Optional[dict] = None
-    ) -> dict:
-        style_kwargs = format_type(style_kwargs, dtype=dict)
+    def _update_style(self, cf: bool = False, style_kwargs: dict = {}) -> dict:
         if cf:
             kwargs = self._update_dict(self.init_style_cf, style_kwargs)
             for s in ["colors", "color", "linewidths", "linestyles"]:

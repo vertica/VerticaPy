@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy, decimal, datetime, math, time
-from typing import Any, Literal, Optional, TYPE_CHECKING, Union
+from typing import Any, Literal, TYPE_CHECKING, Union
 import numpy as np
 
 import pandas as pd
@@ -24,7 +24,7 @@ import verticapy._config.config as conf
 from verticapy._utils._display import print_table
 from verticapy._utils._object import _get_vdf
 from verticapy._utils._sql._display import print_query, print_time
-from verticapy._utils._sql._format import clean_query, format_type, quote_ident
+from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import MissingColumn
@@ -78,18 +78,18 @@ class TableSample:
 
     def __init__(
         self,
-        values: Optional[dict] = None,
-        dtype: Optional[dict] = None,
+        values: dict = {},
+        dtype: dict = {},
         count: int = 0,
         offset: int = 0,
-        percent: Optional[dict] = None,
+        percent: dict = {},
         max_columns: int = -1,
     ) -> None:
-        self.values = format_type(values, dtype=dict)
-        self.dtype = format_type(dtype, dtype=dict)
+        self.values = values
+        self.dtype = dtype
         self.count = count
         self.offset = offset
-        self.percent = format_type(percent, dtype=dict)
+        self.percent = percent
         self.max_columns = max_columns
         for column in values:
             if column not in dtype:

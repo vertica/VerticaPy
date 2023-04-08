@@ -206,7 +206,7 @@ class AnimatedBubblePlot(AnimatedBase):
         img: str = "",
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
-        date_style_dict: Optional[dict] = None,
+        date_style_dict: dict = {},
         interval: int = 10,
         repeat: bool = True,
         ax: Optional[Axes] = None,
@@ -215,7 +215,6 @@ class AnimatedBubblePlot(AnimatedBase):
         """
         Draws an animated bubble plot using the Matplotlib API.
         """
-        date_style_dict = format_type(date_style_dict, dtype=dict)
         bbox = format_type(bbox, dtype=list)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(12, 8), set_axis_below=True, grid=True, style_kwargs=style_kwargs

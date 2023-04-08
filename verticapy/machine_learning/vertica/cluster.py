@@ -698,8 +698,8 @@ class BisectingKMeans(KMeans, Tree):
         percent: bool = False,
         vertical: bool = True,
         node_style: dict = {"shape": "none"},
-        arrow_style: Optional[dict] = None,
-        leaf_style: Optional[dict] = None,
+        arrow_style: dict = {},
+        leaf_style: dict = {},
     ) -> str:
         """
         Returns the code for a Graphviz tree.

@@ -19,9 +19,7 @@ from typing import Optional
 
 from vertica_highcharts import Highchart, Highstock
 
-from verticapy._utils._sql._format import format_type
 from verticapy._typing import HChart
-
 from verticapy.plotting.base import PlottingBase
 
 
@@ -32,9 +30,8 @@ class HighchartsBase(PlottingBase):
         width: int = 600,
         height: int = 400,
         stock: bool = False,
-        style_kwargs: Optional[dict] = None,
+        style_kwargs: dict = {},
     ) -> HChart:
-        style_kwargs = format_type(style_kwargs, dtype=dict)
         kwargs = copy.deepcopy(style_kwargs)
         if chart != None:
             return chart, kwargs
