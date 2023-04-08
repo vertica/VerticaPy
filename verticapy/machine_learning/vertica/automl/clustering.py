@@ -122,7 +122,7 @@ class AutoClustering(VerticaModel):
     def __init__(
         self,
         name: str,
-        n_cluster: int = None,
+        n_cluster: Optional[int] = None,
         init: Union[Literal["kmeanspp", "random"], ArrayLike] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,

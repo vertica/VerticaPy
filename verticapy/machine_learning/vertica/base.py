@@ -963,7 +963,7 @@ class Tree:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
-    def get_score(self, tree_id: int = None,) -> TableSample:
+    def get_score(self, tree_id: Optional[int] = None,) -> TableSample:
         """
         Returns the feature importance metrics for the input 
         tree.
