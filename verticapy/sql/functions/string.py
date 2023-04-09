@@ -60,7 +60,9 @@ def lower(expr: SQLExpression) -> StringSQL:
     return StringSQL(f"LOWER({expr})", "text")
 
 
-def substr(expr: SQLExpression, position: int, extent: Optional[int] = None) -> StringSQL:
+def substr(
+    expr: SQLExpression, position: int, extent: Optional[int] = None
+) -> StringSQL:
     """
     Returns   VARCHAR  or  VARBINARY  value 
     representing a substring of a specified 

@@ -17,8 +17,8 @@ permissions and limitations under the License.
 import copy
 from typing import Optional, Union
 
-from verticapy._utils._sql._format import quote_ident
-from verticapy._typing import SQLExpression
+from verticapy._utils._sql._format import format_type, quote_ident
+from verticapy._typing import NoneType, SQLExpression
 from verticapy.errors import MissingColumn
 
 
@@ -48,8 +48,8 @@ class vDFUtils:
     def _format_colnames(
         self,
         *args,
-        columns: Union[str, list, dict] = [],
-        expected_nb_of_cols: Union[int, list] = [],
+        columns: Union[None, str, list, dict] = None,
+        expected_nb_of_cols: Union[None, int, list] = None,
         raise_error: bool = True,
     ) -> SQLExpression:
         """
@@ -83,6 +83,8 @@ class vDFUtils:
         SQLExpression
             Formatted columns' names.
         """
+        if isinstance(columns, NoneType):
+            columns = []
         if args:
             result = []
             for arg in args:
@@ -136,8 +138,7 @@ class vDFUtils:
                 for col in columns:
                     result += [self._format_colnames(col, raise_error=raise_error)]
         if raise_error:
-            if isinstance(expected_nb_of_cols, int):
-                expected_nb_of_cols = [expected_nb_of_cols]
+            expected_nb_of_cols = format_type(expected_nb_of_cols, dtype=list)
             if len(expected_nb_of_cols) > 0:
                 if len(args) > 0:
                     columns = args[0]
