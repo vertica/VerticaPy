@@ -103,7 +103,7 @@ def read_pandas(
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    sep = "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else ""
+    sep = "/" if ((temp_path) and temp_path[-1] != "/") else ""
     path = f"{temp_path}{sep}{name}.csv"
     clear = False
     try:

@@ -522,7 +522,7 @@ class vDFFilter:
     def sample(
         self,
         n: Optional[PythonNumber] = None,
-        x: float = None,
+        x: Optional[float] = None,
         method: Literal["random", "systematic", "stratified"] = "random",
         by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":

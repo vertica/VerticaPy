@@ -1129,6 +1129,8 @@ class vDFAgg:
             rollup_expr += ")"
         if having:
             having = f" HAVING {having}"
+        else:
+            having = ""
         columns_str = ", ".join(
             [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
         )
