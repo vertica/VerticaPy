@@ -29,6 +29,7 @@ from verticapy._utils._sql._format import (
     quote_ident,
 )
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._typing import NoneType
 from verticapy.errors import ExtensionError, MissingRelation
 
 from verticapy.core.parsers._utils import extract_compression, get_first_file
@@ -300,6 +301,8 @@ def read_csv(
     	The vDataFrame of the relation.
 	"""
     dtype = format_type(dtype, dtype=dict)
+    if isinstance(sep, NoneType):
+        sep = ""
     header_names = format_type(header_names, dtype=list)
     if schema:
         temporary_local_table = False

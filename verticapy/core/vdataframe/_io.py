@@ -24,7 +24,7 @@ import pandas as pd
 pickle.DEFAULT_PROTOCOL = 4
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLExpression, TYPE_CHECKING
+from verticapy._typing import NoneType, SQLColumns, SQLExpression, TYPE_CHECKING
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -208,7 +208,7 @@ class vDFInOut:
                     if isinstance(item, str):
                         tmp_row += [quotechar + item + quotechar]
                     elif item == None:
-                        tmp_row += [na_rep]
+                        tmp_row += ["" if isinstance(na_rep, NoneType) else na_rep]
                     else:
                         tmp_row += [str(item)]
                 csv_file += "\n" + sep.join(tmp_row)
