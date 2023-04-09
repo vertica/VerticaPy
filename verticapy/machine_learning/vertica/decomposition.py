@@ -109,7 +109,7 @@ class Decomposition(Preprocessing):
     def score(
         self,
         X: Optional[SQLColumns] = None,
-        input_relation: str = "",
+        input_relation: Optional[str] = None,
         metric: Literal["avg", "median"] = "avg",
         p: int = 2,
     ) -> TableSample:

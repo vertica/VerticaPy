@@ -25,7 +25,7 @@ from verticapy.connection.connect import current_cursor
 
 def save_to_query_profile(
     name: str,
-    path: str = "",
+    path: Optional[str] = None,
     json_dict: Optional[dict] = None,
     query_label: str = "verticapy_json",
     return_query: bool = False,
@@ -69,8 +69,8 @@ def save_to_query_profile(
     try:
 
         def dict_to_json_string(
-            name: str = "",
-            path: str = "",
+            name: Optional[str] = None,
+            path: Optional[str] = None,
             json_dict: Optional[dict] = None,
             add_identifier: bool = False,
         ) -> str:

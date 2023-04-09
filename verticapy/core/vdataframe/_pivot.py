@@ -113,7 +113,7 @@ class vDFPivot:
             skip_word = [skip_word]
         columns = self.get_columns()
         group_dict = group_similar_names(columns, skip_word=skip_word)
-        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self._genSQL()}"
+        sql = f"SELECT {gen_coalesce(group_dict)} FROM {self}"
         return self._new_vdataframe(sql)
 
     @save_verticapy_logs
@@ -174,7 +174,7 @@ class vDFPivot:
                     {', '.join(index)}, 
                     '{column_str}' AS {col_name}, 
                     {column}{conv} AS {val_name} 
-                FROM {self._genSQL()})"""
+                FROM {self})"""
             ]
         query = " UNION ALL ".join(query)
         return self._new_vdataframe(query)
@@ -188,7 +188,7 @@ class vDFPivot:
         columns: str,
         values: str,
         aggr: str = "sum",
-        prefix: str = "",
+        prefix: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Returns the Pivot of the vDataFrame using the input aggregation.
@@ -242,6 +242,6 @@ class vDFPivot:
             SELECT 
                 {index},
                 {", ".join(new_cols_trans)}
-            FROM {self._genSQL()}
+            FROM {self}
             GROUP BY 1""",
         )

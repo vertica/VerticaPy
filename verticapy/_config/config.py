@@ -80,7 +80,7 @@ class Option:
     key: str
     val: Any
     defval: Any
-    doc: str = ""
+    doc: Optional[str] = None
     validator: Callable[[Any], Literal[True]]
     map_: dict[str, list]
 

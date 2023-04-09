@@ -44,7 +44,7 @@ def pcsv(
     sep: str = ",",
     header: bool = True,
     header_names: Optional[list] = None,
-    na_rep: str = "",
+    na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
     record_terminator: str = "\n",
@@ -54,7 +54,7 @@ def pcsv(
     reject_on_empty_key: bool = False,
     reject_on_materialized_type_error: bool = False,
     ingest_local: bool = True,
-    flex_name: str = "",
+    flex_name: Optional[str] = None,
     genSQL: bool = False,
 ) -> dict[str, str]:
     """
@@ -182,13 +182,13 @@ def pcsv(
 @save_verticapy_logs
 def read_csv(
     path: str,
-    schema: str = "",
-    table_name: str = "",
-    sep: str = "",
+    schema: Optional[str] = None,
+    table_name: Optional[str] = None,
+    sep: Optional[str] = None,
     header: bool = True,
     header_names: Optional[list] = None,
     dtype: Optional[dict] = None,
-    na_rep: str = "",
+    na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
     record_terminator: str = "\n",

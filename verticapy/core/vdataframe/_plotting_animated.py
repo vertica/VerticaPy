@@ -342,7 +342,7 @@ class vDFAnimatedPlot(PlottingUtils):
         limit: int = 1000000,
         limit_labels: int = 6,
         bbox: Optional[list] = None,
-        img: str = "",
+        img: Optional[str] = None,
         fixed_xy_lim: bool = False,
         date_in_title: bool = False,
         date_f=None,

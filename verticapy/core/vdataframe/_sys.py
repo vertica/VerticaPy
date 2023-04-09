@@ -186,8 +186,8 @@ class vDFSystem:
 
     def _get_catalog_value(
         self,
-        column: str = "",
-        key: str = "",
+        column: Optional[str] = None,
+        key: Optional[str] = None,
         method: Optional[str] = None,
         columns: Optional[SQLColumns] = None,
     ) -> Optional[str]:
@@ -268,8 +268,8 @@ class vDFSystem:
         values: Optional[dict] = None,
         erase: bool = False,
         columns: Optional[SQLColumns] = None,
-        matrix: str = "",
-        column: str = "",
+        matrix: Optional[str] = None,
+        column: Optional[str] = None,
     ) -> None:
         """
         VERTICAPY stores the already computed aggregations to 
@@ -510,7 +510,7 @@ class vDFSystem:
                 EXPLAIN 
                 SELECT 
                     /*+LABEL('vDataframe.explain')*/ * 
-                FROM {self._genSQL()}""",
+                FROM {self}""",
             title="Explaining the Current Relation",
             method="fetchall",
             sql_push_ext=self._vars["sql_push_ext"],
@@ -649,7 +649,7 @@ class vDCSystem:
         setattr(self._parent, name[1:-1], new_vDataColumn)
         self._parent._vars["columns"] += [name]
         self._parent._add_to_history(
-            f"[Add Copy]: A copy of the vDataColumn {self._alias} "
+            f"[Add Copy]: A copy of the vDataColumn {self} "
             f"named {name} was added to the vDataFrame."
         )
         return self._parent
@@ -693,8 +693,8 @@ class vDCSystem:
                 SELECT 
                     /*+LABEL('vDataColumn.storage_usage')*/ 
                     ZEROIFNULL(SUM(LENGTH({alias_sql_repr}::varchar))) 
-                FROM {self._parent._genSQL()}""",
-            title=f"Computing the Store Usage of the vDataColumn {self._alias}.",
+                FROM {self._parent}""",
+            title=f"Computing the Store Usage of the vDataColumn {self}.",
             method="fetchfirstelem",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],

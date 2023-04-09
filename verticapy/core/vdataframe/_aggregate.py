@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import decimal, multiprocessing, warnings
-from typing import Literal, Union, Optional
+from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
@@ -499,7 +499,7 @@ class vDFAgg:
                         SELECT 
                             /*+LABEL('vDataframe.aggregate')*/ 
                             {", ".join([str(item) for sublist in agg for item in sublist])} 
-                        FROM {self._genSQL()} 
+                        FROM {self} 
                         LIMIT 1""",
                     title="Computing the different aggregations.",
                     method="fetchrow",
@@ -540,7 +540,7 @@ class vDFAgg:
                     WITH vdf_table AS 
                         (SELECT 
                             /*+LABEL('vDataframe.aggregate')*/ * 
-                         FROM {self._genSQL()}) {query}"""
+                         FROM {self}) {query}"""
                 if nb_precomputed == len(func) * len(columns):
                     result = _executeSQL(query, print_time_sql=False, method="fetchall")
                 else:
@@ -575,7 +575,7 @@ class vDFAgg:
                                         SELECT 
                                             /*+LABEL('vDataframe.aggregate')*/ 
                                             {columns_str} 
-                                        FROM {self._genSQL()}""",
+                                        FROM {self}""",
                                     title=(
                                         "Computing the different aggregations one "
                                         "vDataColumn at a time."
@@ -604,7 +604,7 @@ class vDFAgg:
                                         SELECT 
                                             /*+LABEL('vDataframe.aggregate')*/ 
                                             {agg_fun} 
-                                        FROM {self._genSQL()}""",
+                                        FROM {self}""",
                                     title=(
                                         "Computing the different aggregations one "
                                         "vDataColumn & one agg at a time."
@@ -785,7 +785,7 @@ class vDFAgg:
                             SELECT 
                                 /*+LABEL('vDataframe.describe')*/ 
                                 SUMMARIZE_NUMCOL({cols_to_compute_str}) OVER () 
-                            FROM {self._genSQL()}""",
+                            FROM {self}""",
                         title=(
                             "Computing the descriptive statistics of all numerical "
                             "columns using SUMMARIZE_NUMCOL."
@@ -1036,7 +1036,7 @@ class vDFAgg:
         columns: SQLColumns,
         expr: Optional[SQLExpression] = None,
         rollup: Union[bool, list] = False,
-        having: str = "",
+        having: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Aggregates the vDataFrame by grouping the elements.
@@ -1144,7 +1144,7 @@ class vDFAgg:
         query = f"""
             SELECT 
                 {columns_str} 
-            FROM {self._genSQL()} 
+            FROM {self} 
             GROUP BY {rollup_expr_str}{having}"""
         if not (rollup):
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
@@ -1665,7 +1665,7 @@ class vDFAgg:
             (SELECT 
                 *, 
                 ROW_NUMBER() OVER (PARTITION BY {columns}) AS duplicated_index 
-             FROM {self._genSQL()}) duplicated_index_table 
+             FROM {self}) duplicated_index_table 
              WHERE duplicated_index > 1"""
         if count:
             total = _executeSQL(
@@ -1765,7 +1765,7 @@ class vDCAgg:
         self,
         method: Literal["auto", "numerical", "categorical", "cat_stats"] = "auto",
         max_cardinality: int = 6,
-        numcol: str = "",
+        numcol: Optional[str] = None,
     ) -> TableSample:
         """
         Aggregates the vDataColumn using multiple statistical 
@@ -1826,8 +1826,8 @@ class vDCAgg:
                 tmp_query = f"""
                     SELECT 
                         '{category}' AS 'index', 
-                        COUNT({self._alias}) AS count, 
-                        100 * COUNT({self._alias}) / {self._parent.shape()[0]} AS percent, 
+                        COUNT({self}) AS count, 
+                        100 * COUNT({self}) / {self._parent.shape()[0]} AS percent, 
                         AVG({numcol}{cast}) AS mean, 
                         STDDEV({numcol}{cast}) AS std, 
                         MIN({numcol}{cast}) AS min, 
@@ -1844,7 +1844,7 @@ class vDCAgg:
                         MAX({numcol}{cast}) AS max 
                    FROM vdf_table"""
                 if category in ("None", None):
-                    tmp_query += f" WHERE {self._alias} IS NULL"
+                    tmp_query += f" WHERE {self} IS NULL"
                 else:
                     alias_sql_repr = to_varchar(self.category(), self._alias)
                     tmp_query += f" WHERE {alias_sql_repr} = '{category}'"
@@ -1854,9 +1854,9 @@ class vDCAgg:
                     WITH vdf_table AS 
                         (SELECT 
                             * 
-                        FROM {self._parent._genSQL()}) 
+                        FROM {self._parent}) 
                         {' UNION ALL '.join(query)}""",
-                title=f"Describes the statics of {numcol} partitioned by {self._alias}.",
+                title=f"Describes the statics of {numcol} partitioned by {self}.",
                 sql_push_ext=self._parent._vars["sql_push_ext"],
                 symbol=self._parent._vars["symbol"],
             ).values
@@ -1866,10 +1866,10 @@ class vDCAgg:
             or (method == "categorical")
         ):
             query = f"""(SELECT 
-                            {self._alias} || '', 
+                            {self} || '', 
                             COUNT(*) 
                         FROM vdf_table 
-                        GROUP BY {self._alias} 
+                        GROUP BY {self} 
                         ORDER BY COUNT(*) DESC 
                         LIMIT {max_cardinality})"""
             if distinct_count > max_cardinality:
@@ -1881,8 +1881,8 @@ class vDCAgg:
                         (SELECT 
                             COUNT(*) AS count 
                          FROM vdf_table 
-                         WHERE {self._alias} IS NOT NULL 
-                         GROUP BY {self._alias} 
+                         WHERE {self} IS NOT NULL 
+                         GROUP BY {self} 
                          ORDER BY COUNT(*) DESC 
                          OFFSET {max_cardinality + 1}) VERTICAPY_SUBTABLE) 
                      ORDER BY count DESC"""
@@ -1891,8 +1891,8 @@ class vDCAgg:
                     WITH vdf_table AS 
                         (SELECT 
                             /*+LABEL('vDataColumn.describe')*/ * 
-                         FROM {self._parent._genSQL()}) {query}""",
-                title=f"Computing the descriptive statistics of {self._alias}.",
+                         FROM {self._parent}) {query}""",
+                title=f"Computing the descriptive statistics of {self}.",
                 method="fetchall",
                 sql_push_ext=self._parent._vars["sql_push_ext"],
                 symbol=self._parent._vars["symbol"],
@@ -2180,17 +2180,17 @@ class vDCAgg:
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
         assert n >= 1, ValueError("Parameter 'n' must be greater or equal to 1")
-        where = f" WHERE {self._alias} IS NOT NULL " if (dropna) else " "
+        where = f" WHERE {self} IS NOT NULL " if (dropna) else " "
         result = _executeSQL(
             f"""
             SELECT 
-                /*+LABEL('vDataColumn.mode')*/ {self._alias} 
+                /*+LABEL('vDataColumn.mode')*/ {self} 
             FROM (
                 SELECT 
-                    {self._alias}, 
+                    {self}, 
                     COUNT(*) AS _verticapy_cnt_ 
-                FROM {self._parent._genSQL()}
-                {where}GROUP BY {self._alias} 
+                FROM {self._parent}
+                {where}GROUP BY {self} 
                 ORDER BY _verticapy_cnt_ DESC 
                 LIMIT {n}) VERTICAPY_SUBTABLE 
                 ORDER BY _verticapy_cnt_ ASC 
@@ -2250,21 +2250,21 @@ class vDCAgg:
             limit = f"LIMIT {k}"
             topk_cat = k
         if dropna:
-            where = f" WHERE {self._alias} IS NOT NULL"
+            where = f" WHERE {self} IS NOT NULL"
         alias_sql_repr = to_varchar(self.category(), self._alias)
         result = _executeSQL(
             query=f"""
             SELECT 
                 /*+LABEL('vDataColumn.topk')*/
-                {alias_sql_repr} AS {self._alias},
+                {alias_sql_repr} AS {self},
                 COUNT(*) AS _verticapy_cnt_,
                 100 * COUNT(*) / {self._parent.shape()[0]} AS percent
-            FROM {self._parent._genSQL()}
+            FROM {self._parent}
             {where} 
             GROUP BY {alias_sql_repr} 
             ORDER BY _verticapy_cnt_ DESC
             {limit}""",
-            title=f"Computing the top{topk_cat} categories of {self._alias}.",
+            title=f"Computing the top{topk_cat} categories of {self}.",
             method="fetchall",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
@@ -2292,26 +2292,26 @@ class vDCAgg:
             query = f"""
                 SELECT 
                     /*+LABEL('vDataColumn.distinct')*/ 
-                    {alias_sql_repr} AS {self._alias} 
-                FROM {self._parent._genSQL()} 
-                WHERE {self._alias} IS NOT NULL 
-                GROUP BY {self._alias} 
-                ORDER BY {self._alias}"""
+                    {alias_sql_repr} AS {self} 
+                FROM {self._parent} 
+                WHERE {self} IS NOT NULL 
+                GROUP BY {self} 
+                ORDER BY {self}"""
         else:
             query = f"""
                 SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ {self._alias} 
+                    /*+LABEL('vDataColumn.distinct')*/ {self} 
                 FROM 
                     (SELECT 
-                        {alias_sql_repr} AS {self._alias}, 
+                        {alias_sql_repr} AS {self}, 
                         {kwargs['agg']} AS verticapy_agg 
-                     FROM {self._parent._genSQL()} 
-                     WHERE {self._alias} IS NOT NULL 
+                     FROM {self._parent} 
+                     WHERE {self} IS NOT NULL 
                      GROUP BY 1) x 
                 ORDER BY verticapy_agg DESC"""
         query_result = _executeSQL(
             query=query,
-            title=f"Computing the distinct categories of {self._alias}.",
+            title=f"Computing the distinct categories of {self}.",
             method="fetchall",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],

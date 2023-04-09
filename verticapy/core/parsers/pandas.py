@@ -33,11 +33,11 @@ from verticapy.core.vdataframe.base import vDataFrame
 @save_verticapy_logs
 def read_pandas(
     df: pd.DataFrame,
-    name: str = "",
-    schema: str = "",
+    name: Optional[str] = None,
+    schema: Optional[str] = None,
     dtype: Optional[dict] = None,
     parse_nrows: int = 10000,
-    temp_path: str = "",
+    temp_path: Optional[str] = None,
     insert: bool = False,
 ) -> vDataFrame:
     """

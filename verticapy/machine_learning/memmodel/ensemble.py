@@ -58,7 +58,7 @@ class Ensemble(InMemoryModel):
     # Trees Representation Methods.
 
     def plot_tree(
-        self, pic_path: str = "", tree_id: int = 0, *args, **kwargs,
+        self, pic_path: Optional[str] = None, tree_id: int = 0, *args, **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.

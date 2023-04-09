@@ -28,7 +28,7 @@ def generate_lib_udf(
     udf_list: list,
     library_name: str,
     include_dependencies: Union[None, str, list[str]] = None,
-    file_path: str = "",
+    file_path: Optional[str] = None,
     create_file: bool = False,
 ) -> tuple[str, str]:
     """
@@ -142,8 +142,8 @@ def generate_udf(
     arg_types: Union[list, dict],
     return_type: Union[type, dict],
     parameters: Optional[dict] = None,
-    new_name: str = "",
-    library_name: str = "",
+    new_name: Optional[str] = None,
+    library_name: Optional[str] = None,
 ) -> tuple[str, str]:
     """
     Generates the UDx Python code and the SQL

@@ -153,7 +153,7 @@ class AutoDataPrep(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str = "",
+        name: Optional[str] = None,
         cat_method: Literal["label", "ooe"] = "ooe",
         num_method: Literal["same_freq", "same_width", "none"] = "none",
         nbins: int = 20,
@@ -196,7 +196,7 @@ class AutoDataPrep(VerticaModel):
         self,
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
-        ts: str = "",
+        ts: Optional[str] = None,
         by: Optional[SQLColumns] = None,
     ) -> None:
         """
@@ -355,7 +355,7 @@ class AutoDataPrep(VerticaModel):
                         SELECT 
                             /*+LABEL('learn.delphi.AutoDataPrep.fit')*/
                             verticapy_time_delta 
-                        FROM {vdf_tmp._genSQL()} 
+                        FROM {vdf_tmp} 
                         ORDER BY cnt DESC 
                         LIMIT 1""",
                     method="fetchfirstelem",

@@ -28,7 +28,7 @@ def print_table(
     is_finished: bool = True,
     offset: int = 0,
     repeat_first_column: bool = False,
-    first_element: str = "",
+    first_element: Optional[str] = None,
     return_html: bool = False,
     dtype: Optional[dict] = None,
     percent: Optional[dict] = None,

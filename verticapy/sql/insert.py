@@ -33,7 +33,7 @@ from verticapy.errors import MissingRelation
 def insert_into(
     table_name: str,
     data: list,
-    schema: str = "",
+    schema: Optional[str] = None,
     column_names: Optional[list] = None,
     copy: bool = True,
     genSQL: bool = False,

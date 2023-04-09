@@ -91,9 +91,9 @@ class vDFInOut:
     @save_verticapy_logs
     def to_csv(
         self,
-        path: str = "",
+        path: Optional[str] = None,
         sep: str = ",",
-        na_rep: str = "",
+        na_rep: Optional[str] = None,
         quotechar: str = '"',
         usecols: Optional[SQLColumns] = None,
         header: bool = True,
@@ -193,7 +193,7 @@ class vDFInOut:
                     SELECT 
                         /*+LABEL('vDataframe.to_csv')*/ 
                         {', '.join(columns)} 
-                    FROM {self._genSQL()}
+                    FROM {self}
                     {order_by} 
                     LIMIT {limit} 
                     OFFSET {current_nb_rows_written}""",
@@ -324,7 +324,7 @@ class vDFInOut:
                 INSERT INTO {name}{insert_usecols_str} 
                     SELECT 
                         {select}{nb_split} 
-                    FROM {self._genSQL()}
+                    FROM {self}
                     {db_filter}
                     {self._get_last_order_by()}"""
         else:
@@ -336,7 +336,7 @@ class vDFInOut:
                 SELECT 
                     /*+LABEL('vDataframe.to_db')*/ 
                     {select}{nb_split} 
-                FROM {self._genSQL()}
+                FROM {self}
                 {db_filter}
                 {self._get_last_order_by()}"""
         _executeSQL(
@@ -398,7 +398,7 @@ class vDFInOut:
         query = f"""
             SELECT 
                 /*+LABEL('vDataframe.to_geopandas')*/ {columns} 
-            FROM {self._genSQL()}
+            FROM {self}
             {self._get_last_order_by()}"""
         data = _executeSQL(
             query, title="Getting the vDataFrame values.", method="fetchall"
@@ -415,7 +415,7 @@ class vDFInOut:
     @save_verticapy_logs
     def to_json(
         self,
-        path: str = "",
+        path: Optional[str] = None,
         usecols: Optional[SQLColumns] = None,
         order_by: Union[None, SQLColumns, dict] = None,
         n_files: int = 1,
@@ -490,7 +490,7 @@ class vDFInOut:
                     SELECT 
                         /*+LABEL('vDataframe.to_json')*/ 
                         {', '.join(transformations)} 
-                    FROM {self._genSQL()}
+                    FROM {self}
                     {order_by} 
                     LIMIT {limit} 
                     OFFSET {current_nb_rows_written}""",
@@ -544,7 +544,7 @@ class vDFInOut:
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_list')*/ * 
-                FROM {self._genSQL()}
+                FROM {self}
                 {self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
@@ -591,7 +591,7 @@ class vDFInOut:
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.to_pandas')*/ * 
-                FROM {self._genSQL()}{self._get_last_order_by()}""",
+                FROM {self}{self._get_last_order_by()}""",
             title="Getting the vDataFrame values.",
             method="fetchall",
             sql_push_ext=self._vars["sql_push_ext"],
@@ -709,7 +709,7 @@ class vDFInOut:
                                   dirMode = '{dirMode}',
                                   int96AsTimestamp = {str(int96AsTimestamp).lower()}) 
                           OVER({partition}{self._get_sort_syntax(order_by)}) 
-                       AS SELECT * FROM {self._genSQL()};""",
+                       AS SELECT * FROM {self};""",
             title="Exporting data to Parquet format.",
             sql_push_ext=self._vars["sql_push_ext"],
             symbol=self._vars["symbol"],
@@ -799,6 +799,6 @@ class vDFInOut:
                                  overwrite = {overwrite}, 
                                  shape = '{shape}') 
                 OVER() 
-            FROM {self._genSQL()};"""
+            FROM {self};"""
         _executeSQL(query=query, title="Exporting the SHP.")
         return self

@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import os
 
+import verticapy as vp
 import verticapy._config.config as conf
 from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
 

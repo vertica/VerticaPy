@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from vertica_python.errors import QueryError
 
 from verticapy._utils._sql._format import format_schema_table, quote_ident
@@ -50,7 +52,7 @@ def create_schema(schema: str, raise_error: bool = False,) -> bool:
 def create_table(
     table_name: str,
     dtype: dict,
-    schema: str = "",
+    schema: Optional[str] = None,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
     genSQL: bool = False,

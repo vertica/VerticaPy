@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -87,13 +87,13 @@ def create_index(
                 max_mem_mb={max_mem_mb}, 
                 skip_nonindexable_polygons={skip_nonindexable_polygons}) 
             OVER() 
-        FROM {vdf._genSQL()}"""
+        FROM {vdf}"""
     return TableSample.read_sql(query)
 
 
 @save_verticapy_logs
 def describe_index(
-    name: str = "", list_polygons: bool = False
+    name: Optional[str] = None, list_polygons: bool = False
 ) -> Union[TableSample, vDataFrame]:
     """
     Retrieves  information about an index that 

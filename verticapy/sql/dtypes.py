@@ -47,9 +47,9 @@ def vertica_python_dtype(
 
 
 def get_data_types(
-    expr: str = "",
-    column: str = "",
-    table_name: str = "",
+    expr: Optional[str] = None,
+    column: Optional[str] = None,
+    table_name: Optional[str] = None,
     schema: str = "public",
     usecols: Optional[list] = None,
 ) -> Union[tuple, list[tuple]]:

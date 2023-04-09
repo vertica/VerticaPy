@@ -209,7 +209,7 @@ def het_white(
         SELECT 
             {', '.join(variables)}, 
             POWER({eps}, 2) AS v_eps2 
-        FROM {vdf._genSQL()}"""
+        FROM {vdf}"""
     vdf_white = vDataFrame(query)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)

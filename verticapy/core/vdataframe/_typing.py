@@ -97,7 +97,7 @@ class vDFTyping:
                         SELECT 
                             /*+LABEL('vDataframe.catcol')*/ 
                             (APPROXIMATE_COUNT_DISTINCT({column}) < {max_cardinality}) 
-                        FROM {self._genSQL()}""",
+                        FROM {self}""",
                     title="Looking at columns with low cardinality.",
                     method="fetchfirstelem",
                     sql_push_ext=self._vars["sql_push_ext"],
@@ -199,9 +199,9 @@ class vDCTyping:
                     vertica_version(condition=[10, 0, 0])
                 query = f"""
                     SELECT 
-                        {self._alias} 
-                    FROM {self._parent._genSQL()} 
-                    ORDER BY LENGTH({self._alias}) DESC 
+                        {self} 
+                    FROM {self._parent} 
+                    ORDER BY LENGTH({self}) DESC 
                     LIMIT 1"""
                 biggest_str = _executeSQL(
                     query, title="getting the biggest string", method="fetchfirstelem",
@@ -265,9 +265,9 @@ class vDCTyping:
             query = f"""
                 SELECT 
                     /*+LABEL('vDataColumn.astype')*/ 
-                    {transformation[0]} AS {self._alias} 
-                FROM {self._parent._genSQL()} 
-                WHERE {self._alias} IS NOT NULL 
+                    {transformation[0]} AS {self} 
+                FROM {self._parent} 
+                WHERE {self} IS NOT NULL 
                 LIMIT 20"""
             _executeSQL(
                 query,
@@ -277,12 +277,12 @@ class vDCTyping:
             )
             self._transf += [(transformation[1], dtype, to_category(ctype=dtype),)]
             self._parent._add_to_history(
-                f"[AsType]: The vDataColumn {self._alias} was converted to {dtype}."
+                f"[AsType]: The vDataColumn {self} was converted to {dtype}."
             )
             return self._parent
         except Exception as e:
             raise ConversionError(
-                f"{e}\nThe vDataColumn {self._alias} can not be converted to {dtype}"
+                f"{e}\nThe vDataColumn {self} can not be converted to {dtype}"
             )
 
     def category(self) -> str:

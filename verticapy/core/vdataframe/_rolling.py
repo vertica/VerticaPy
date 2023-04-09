@@ -37,7 +37,7 @@ class vDFRolling:
         columns: SQLColumns,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, dict, list] = None,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by using an 
@@ -247,7 +247,7 @@ class vDFRolling:
         column: str,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, dict, list] = None,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -288,7 +288,7 @@ class vDFRolling:
         column: str,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, dict, list] = None,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -329,7 +329,7 @@ class vDFRolling:
         column: str,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, dict, list] = None,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -370,7 +370,7 @@ class vDFRolling:
         column: str,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, dict, list] = None,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 

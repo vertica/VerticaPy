@@ -219,7 +219,7 @@ class KNeighborsRegressor(Regressor):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         inplace: bool = True,
         **kwargs,
     ) -> vDataFrame:
@@ -543,7 +543,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
         **kwargs,
@@ -604,7 +604,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
         **kwargs,
@@ -890,7 +890,7 @@ class KernelDensity(Regressor, Tree):
                 SELECT 
                     /*+LABEL('learn.neighbors.KernelDensity.fit')*/ 
                     {", ".join(L)} 
-                FROM {vdf._genSQL()}"""
+                FROM {vdf}"""
             result = _executeSQL(
                 query=query, title="Computing the KDE", method="fetchrow"
             )
@@ -990,7 +990,7 @@ class KernelDensity(Regressor, Tree):
                         SELECT 
                             /*+LABEL('learn.neighbors.KernelDensity.fit')*/
                             {", ".join(X)}, 0.0::float AS KDE 
-                        FROM {vdf._genSQL()} 
+                        FROM {vdf} 
                         LIMIT 0""",
                 print_time_sql=False,
             )
@@ -1241,7 +1241,7 @@ class LocalOutlierFactor(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
-        index: str = "",
+        index: Optional[str] = None,
     ) -> None:
         """
     	Trains the model.

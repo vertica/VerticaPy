@@ -249,7 +249,7 @@ class VerticaModel(PlottingUtils):
 
     # Attributes Methods.
 
-    def get_attributes(self, attr_name: str = "") -> Any:
+    def get_attributes(self, attr_name: Optional[str] = None) -> Any:
         """
         Returns the model attributes.
 
@@ -278,7 +278,7 @@ class VerticaModel(PlottingUtils):
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
-    def get_vertica_attributes(self, attr_name: str = "") -> TableSample:
+    def get_vertica_attributes(self, attr_name: Optional[str] = None) -> TableSample:
         """
         Returns the model vertica attributes. Those are stored
         in Vertica.
@@ -1113,7 +1113,7 @@ class Tree:
         )
 
     def plot_tree(
-        self, tree_id: int = 0, pic_path: str = "", *args, **kwargs,
+        self, tree_id: int = 0, pic_path: Optional[str] = None, *args, **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
@@ -1403,7 +1403,7 @@ class BinaryClassifier(Classifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         cutoff: PythonNumber = 0.5,
         inplace: bool = True,
     ) -> vDataFrame:
@@ -1461,7 +1461,7 @@ class BinaryClassifier(Classifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
     ) -> vDataFrame:
@@ -2098,7 +2098,7 @@ class MulticlassClassifier(Classifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         cutoff: Optional[PythonNumber] = None,
         inplace: bool = True,
     ) -> vDataFrame:
@@ -2178,7 +2178,7 @@ class MulticlassClassifier(Classifier):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         pos_label: Optional[PythonScalar] = None,
         inplace: bool = True,
     ) -> vDataFrame:
@@ -2671,7 +2671,7 @@ class Regressor(Supervised):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """

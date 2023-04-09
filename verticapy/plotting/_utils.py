@@ -34,7 +34,7 @@ import verticapy.plotting._highcharts as vpy_highcharts_plt
 class PlottingUtils:
     def _get_plotting_lib(
         self,
-        class_name: str = "",
+        class_name: Optional[str] = None,
         chart: Optional[PlottingObject] = None,
         matplotlib_kwargs: Optional[dict] = None,
         plotly_kwargs: Optional[dict] = None,

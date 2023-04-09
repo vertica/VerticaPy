@@ -413,7 +413,7 @@ class Tree(InMemoryModel):
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
         return res + "\n}"
 
-    def plot_tree(self, pic_path: str = "", *args, **kwargs,) -> "Source":
+    def plot_tree(self, pic_path: Optional[str] = None, *args, **kwargs,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 

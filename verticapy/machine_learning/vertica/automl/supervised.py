@@ -295,7 +295,7 @@ class AutoML(VerticaModel):
 
     # Attributes Methods.
 
-    def get_vertica_attributes(self, attr_name: str = "") -> TableSample:
+    def get_vertica_attributes(self, attr_name: Optional[str] = None) -> TableSample:
         """
         Returns the model attribute.
 
@@ -340,7 +340,10 @@ class AutoML(VerticaModel):
     # Model Fitting Method.
 
     def fit(
-        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None, y: str = ""
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        y: Optional[str] = None,
     ) -> None:
         """
         Trains the model.
