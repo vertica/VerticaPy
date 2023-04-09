@@ -461,14 +461,13 @@ class vDataColumn(
     def __init__(
         self,
         alias: str,
-        transformations: Optional[list] = None,
+        transformations: list = [],
         parent: Optional[vDataFrame] = None,
-        catalog: Optional[dict] = None,
+        catalog: dict = {},
     ) -> None:
-        catalog = format_type(catalog, dtype=dict)
         self._parent = parent
         self._alias = alias
-        self._transf = format_type(transformations, dtype=list)
+        self._transf = copy.deepcopy(transformations)
         self._catalog = {
             "cov": {},
             "pearson": {},
