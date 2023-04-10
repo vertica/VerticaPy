@@ -26,6 +26,7 @@ from verticapy.plotting._plotly.spider import SpiderChart
 from verticapy.plotting._plotly.range import RangeCurve
 from verticapy.plotting._plotly.line import LinePlot, MultiLinePlot
 from verticapy.plotting._plotly.outliers import OutliersPlot
+from verticapy.plotting._plotly.acf import ACFPlot
 from verticapy.plotting._plotly.base import PlotlyBase
 
 from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve
