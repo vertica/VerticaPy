@@ -91,7 +91,7 @@ class TableSample:
         self.offset = offset
         self.percent = format_type(percent, dtype=dict)
         self.max_columns = max_columns
-        for column in values:
+        for column in self.values:
             if column not in self.dtype:
                 self.dtype[column] = "undefined"
         return None
