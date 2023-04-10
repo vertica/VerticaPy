@@ -1176,7 +1176,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["aad"], **locals())
+        return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def all(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
@@ -1198,7 +1198,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["bool_and"], **locals())
+        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def any(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
@@ -1219,7 +1219,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["bool_or"], **locals())
+        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def avg(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
@@ -1241,7 +1241,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["avg"], **locals())
+        return self.aggregate(func=["avg"], columns=columns, **agg_kwargs)
 
     mean = avg
 
@@ -1265,7 +1265,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["count"], **locals())
+        return self.aggregate(func=["count"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def kurtosis(
@@ -1287,7 +1287,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["kurtosis"], **locals())
+        return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwargs)
 
     kurt = kurtosis
 
@@ -1310,7 +1310,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["mad"], **locals())
+        return self.aggregate(func=["mad"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def max(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
@@ -1330,7 +1330,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["max"], **locals())
+        return self.aggregate(func=["max"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def median(
@@ -1375,7 +1375,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["min"], **locals())
+        return self.aggregate(func=["min"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def product(
@@ -1398,7 +1398,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["prod"], **locals())
+        return self.aggregate(func=["prod"], columns=columns, **agg_kwargs)
 
     prod = product
 
@@ -1466,7 +1466,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["sem"], **locals())
+        return self.aggregate(func=["sem"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def skewness(
@@ -1489,7 +1489,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["skewness"], **locals())
+        return self.aggregate(func=["skewness"], columns=columns, **agg_kwargs)
 
     skew = skewness
 
@@ -1513,7 +1513,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["stddev"], **locals())
+        return self.aggregate(func=["stddev"], columns=columns, **agg_kwargs)
 
     stddev = std
 
@@ -1536,7 +1536,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["sum"], **locals())
+        return self.aggregate(func=["sum"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
     def var(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
@@ -1557,7 +1557,7 @@ class vDFAgg:
         TableSample
             result.
         """
-        return self.aggregate(func=["variance"], **locals())
+        return self.aggregate(func=["variance"], columns=columns, **agg_kwargs)
 
     variance = var
 
@@ -1631,7 +1631,7 @@ class vDFAgg:
             result.
         """
         func = ["approx_unique"] if approx else ["unique"]
-        return self.aggregate(func=func, **locals())
+        return self.aggregate(func=func, columns=columns, **agg_kwargs)
 
     # Deals with duplicates.
 
