@@ -27,7 +27,7 @@ from verticapy._utils._object import _get_mllib
 from verticapy._typing import PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import EmptyParameter
@@ -778,10 +778,10 @@ class vDFCorr:
             Plotting Object.
         """
         method = str(method).lower()
-        if isinstance(columns, str):
-            columns = [columns]
-        elif columns == None:
+        if columns == None:
             columns = self.numcol()
+        else:
+            columns = format_type(columns, dtype=list)
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
@@ -1040,9 +1040,7 @@ class vDFCorr:
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
-
+        columns = format_type(columns, dtype=list)
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
@@ -1122,8 +1120,7 @@ class vDFCorr:
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         if method == "beta":
             method = "slope"
         elif method == "alpha":
@@ -1636,8 +1633,7 @@ class vDFCorr:
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, y = self._format_colnames(columns, y)
         if not (columns):
             columns = self.get_columns(exclude_columns=[y])

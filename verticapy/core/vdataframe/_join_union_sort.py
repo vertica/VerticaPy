@@ -15,13 +15,16 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
-from verticapy._typing import SQLColumns, SQLExpression, SQLRelation
+from verticapy._typing import NoneType, SQLColumns, SQLExpression, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import extract_and_rename_subquery
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import (
+    extract_and_rename_subquery,
+    format_type,
+    quote_ident,
+)
 from verticapy._utils._sql._vertica_version import vertica_version
 
 
@@ -36,8 +39,8 @@ class vDFJoinUnionSort:
     def append(
         self,
         input_relation: SQLRelation,
-        expr1: SQLExpression = [],
-        expr2: SQLExpression = [],
+        expr1: Optional[SQLExpression] = None,
+        expr2: Optional[SQLExpression] = None,
         union_all: bool = True,
     ) -> "vDataFrame":
         """
@@ -70,11 +73,7 @@ class vDFJoinUnionSort:
         vDataFrame
            vDataFrame of the Union
         """
-        if isinstance(expr1, str):
-            expr1 = [expr1]
-        if isinstance(expr2, str):
-            expr2 = [expr2]
-        object_type = None
+        expr1, expr2 = format_type(expr1, expr2, dtype=list)
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
@@ -97,8 +96,8 @@ class vDFJoinUnionSort:
         how: Literal[
             "left", "right", "cross", "full", "natural", "self", "inner", None
         ] = "natural",
-        expr1: SQLExpression = ["*"],
-        expr2: SQLExpression = ["*"],
+        expr1: Optional[SQLExpression] = None,
+        expr2: Optional[SQLExpression] = None,
     ) -> "vDataFrame":
         """
         Joins the vDataFrame with another one or an input relation.
@@ -176,10 +175,11 @@ class vDFJoinUnionSort:
         vDataFrame
             object result of the join.
         """
-        if isinstance(expr1, str):
-            expr1 = [expr1]
-        if isinstance(expr2, str):
-            expr2 = [expr2]
+        if isinstance(expr1, NoneType):
+            expr1 = "*"
+        if isinstance(expr2, NoneType):
+            expr2 = "*"
+        expr1, expr2 = format_type(expr1, expr2, dtype=list)
         if isinstance(on, tuple):
             on = [on]
         # List with the operators
@@ -286,8 +286,7 @@ class vDFJoinUnionSort:
         vDataFrame
             self
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
         max_pos = 0
         for column in self._vars["columns"]:

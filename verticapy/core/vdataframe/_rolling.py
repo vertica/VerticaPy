@@ -133,8 +133,7 @@ class vDFRolling:
             else:
                 rule[idx] = "PRECEDING" if int(window[idx]) < 0 else "FOLLOWING"
                 window[idx] = abs(int(window[idx]))
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         if not (name):
             name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             name = f"moving_{name}"

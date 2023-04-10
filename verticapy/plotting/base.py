@@ -29,7 +29,7 @@ from verticapy._typing import (
     SQLColumns,
 )
 from verticapy._utils._sql._cast import to_varchar
-from verticapy._utils._sql._format import clean_query, quote_ident
+from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.string_sql.base import StringSQL
@@ -630,10 +630,10 @@ class PlottingBase(PlottingBaseSQL):
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
+        if not (columns):
             columns = vdf.numcol()
+        else:
+            columns = format_type(columns, dtype=list)
         if not (columns):
             raise ValueError("No numerical columns found to compute the statistics.")
         columns, by = vdf._format_colnames(columns, by)
@@ -716,10 +716,10 @@ class PlottingBase(PlottingBaseSQL):
     ) -> None:
         if not (0 <= q[0] < 0.5 < q[1] <= 1):
             raise ValueError
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
+        if not (columns):
             columns = vdf.numcol()
+        else:
+            columns = format_type(columns, dtype=list)
         if not (columns):
             raise ValueError("No numerical columns found to compute the statistics.")
         columns, by = vdf._format_colnames(columns, by)
@@ -833,8 +833,7 @@ class PlottingBase(PlottingBaseSQL):
         self._init_check(dim=len(columns), is_standard=is_standard)
         if not (is_standard):
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = vdf._format_colnames(columns, of)
         is_column_date = [False, False]
         timestampadd = ["", ""]
@@ -1155,8 +1154,7 @@ class PlottingBase(PlottingBaseSQL):
         method: str = "count",
         of: Optional[str] = None,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns = vdf._format_colnames(columns)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
@@ -1204,8 +1202,7 @@ class PlottingBase(PlottingBaseSQL):
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns = vdf._format_colnames(columns)
         cols_to_select = copy.deepcopy(columns)
         vdf_tmp = vdf.copy()
@@ -1266,8 +1263,7 @@ class PlottingBase(PlottingBaseSQL):
         max_nb_points: int = 1000,
         threshold: float = 3.0,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns = vdf._format_colnames(columns)
         aggregations = vdf.agg(
             func=["avg", "std", "min", "max"], columns=columns
@@ -1343,10 +1339,10 @@ class PlottingBase(PlottingBaseSQL):
     def _compute_scatter_matrix(
         self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
+        if not (columns):
             columns = vdf.numcol()
+        else:
+            columns = format_type(columns, dtype=list)
         columns = vdf._format_colnames(columns)
         n = len(columns)
         data = {
@@ -1380,10 +1376,10 @@ class PlottingBase(PlottingBaseSQL):
         limit: int = -1,
         limit_over: int = -1,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
-        elif not (columns):
+        if not (columns):
             columns = vdf.numcol()
+        else:
+            columns = format_type(columns, dtype=list)
         columns, order_by = vdf._format_colnames(columns, order_by)
         X = vdf.between(
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
@@ -1436,8 +1432,7 @@ class PlottingBase(PlottingBaseSQL):
         order_by_start: Optional[PythonScalar] = None,
         order_by_end: Optional[PythonScalar] = None,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, order_by = vdf._format_colnames(columns, order_by)
         expr = []
         for column in columns:
@@ -1523,8 +1518,7 @@ class PlottingBase(PlottingBaseSQL):
         limit: int = 1000000,
         lim_labels: int = 6,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, order_by, by, catcol = vdf._format_colnames(
             columns, order_by, by, catcol
         )
@@ -1583,8 +1577,7 @@ class PlottingBase(PlottingBaseSQL):
         max_cardinality: Union[int, tuple, list] = None,
         h: Union[int, tuple, list] = None,
     ) -> None:
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         n = len(columns)
         if isinstance(h, (int, float, NoneType)):

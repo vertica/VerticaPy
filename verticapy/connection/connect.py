@@ -103,8 +103,8 @@ def set_connection(conn: Connection) -> None:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
         res = conn.cursor().fetchone()[0]
         assert res == 1
-    except:
-        ValueError("The input connector is not working properly.")
+    except Exception as e:
+        raise ConnectionError(f"The input connector is not working properly.\n{e}")
     gb_conn = get_global_connection()
     gb_conn._set_connection(conn)
     return None

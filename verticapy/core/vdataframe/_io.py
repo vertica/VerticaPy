@@ -143,7 +143,9 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        order_by, usecols, new_header = format_type(order_by, usecols, new_header, dtype=list)
+        order_by, usecols, new_header = format_type(
+            order_by, usecols, new_header, dtype=list
+        )
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):

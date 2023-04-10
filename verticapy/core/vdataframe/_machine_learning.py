@@ -218,8 +218,7 @@ class vDFMachineLearning:
             An independent model containing the result.
         """
         if "process" not in kwargs or kwargs["process"]:
-            if isinstance(columns, str):
-                columns = [columns]
+            columns = format_type(columns, dtype=list)
             assert 2 <= nbins <= 16, ValueError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )

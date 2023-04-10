@@ -156,8 +156,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].bar(
@@ -268,8 +267,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].barh(
@@ -713,8 +711,7 @@ class vDFPlot(PlottingUtils):
         obj
             TableSample.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt = self._get_plotting_lib(class_name="HeatMap")[0]
         plt_obj = vpy_plt.HeatMap(
@@ -805,8 +802,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
@@ -916,8 +912,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
