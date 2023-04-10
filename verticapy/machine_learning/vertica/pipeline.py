@@ -172,7 +172,7 @@ class Pipeline:
         self,
         input_relation: SQLRelation,
         X: list,
-        y: str = "",
+        y: Optional[str] = None,
         test_relation: SQLRelation = "",
     ) -> None:
         """

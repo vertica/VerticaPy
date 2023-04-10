@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
@@ -41,9 +41,9 @@ class vDFText:
         ] = "substr",
         position: int = 1,
         occurrence: int = 1,
-        replacement: str = "",
+        replacement: Optional[str] = None,
         return_position: int = 0,
-        name: str = "",
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Computes a new vDataColumn based on regular expressions. 
@@ -176,7 +176,7 @@ class vDCText:
         return self.apply(func=f"REGEXP_SUBSTR({{}}, '{pat}')")
 
     @save_verticapy_logs
-    def str_replace(self, to_replace: str, value: str = "") -> "vDataFrame":
+    def str_replace(self, to_replace: str, value: Optional[str] = None) -> "vDataFrame":
         """
         Replaces  the  regular expression matches in each  of  the 
         vDataColumn record by an input value. The vDataColumn will 

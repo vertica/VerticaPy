@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import datetime
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 
 
@@ -92,7 +92,7 @@ def to_sql_dtype(dtype: Union[type, str]) -> Union[type, str]:
 
 
 def to_category(
-    ctype: str = "",
+    ctype: Optional[str] = None,
 ) -> Literal[
     "text",
     "int",

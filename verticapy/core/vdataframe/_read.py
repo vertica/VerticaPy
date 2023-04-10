@@ -70,7 +70,7 @@ class vDFRead:
                 limit = ""
             query = f"""
                 SELECT * 
-                FROM {self._genSQL()}
+                FROM {self}
                 {self._get_last_order_by()} 
                 OFFSET {index_start}{limit}"""
             return self._new_vdataframe(query)
@@ -86,7 +86,7 @@ class vDFRead:
                 query=f"""
                     SELECT /*+LABEL('vDataframe.__getitem__')*/ 
                         {', '.join(columns)} 
-                    FROM {self._genSQL()}
+                    FROM {self}
                     {self._get_last_order_by()} 
                     OFFSET {index} LIMIT 1""",
                 title="Getting the vDataFrame element.",
@@ -260,7 +260,7 @@ class vDFRead:
             query=f"""
                 SELECT 
                     {', '.join(all_columns)} 
-                FROM {self._genSQL()}
+                FROM {self}
                 {self._get_last_order_by()} 
                 LIMIT {limit} OFFSET {offset}""",
             title=title,
@@ -306,7 +306,7 @@ class vDFRead:
             query=f"""
                 SELECT 
                     /*+LABEL('vDataframe.shape')*/ COUNT(*) 
-                FROM {self._genSQL()} LIMIT 1
+                FROM {self} LIMIT 1
             """,
             title="Computing the total number of elements (COUNT(*))",
             method="fetchfirstelem",
@@ -368,7 +368,7 @@ class vDFRead:
                 columns[i] = column + dtype
             else:
                 columns[i] = str(columns[i])
-        query = f"SELECT  {', '.join(columns)} FROM {self._genSQL()}"
+        query = f"SELECT  {', '.join(columns)} FROM {self}"
         return self._new_vdataframe(query)
 
 
@@ -395,7 +395,7 @@ class vDCRead:
                         index_stop_str = str(index_stop)
                 else:
                     index_stop_str = "1 + APPLY_COUNT_ELEMENTS({})"
-                elem_to_select = f"{self._alias}[{index_start_str}:{index_stop_str}]"
+                elem_to_select = f"{self}[{index_start_str}:{index_stop_str}]"
                 elem_to_select = elem_to_select.replace("{}", self._alias)
                 new_alias = quote_ident(
                     f"{self._alias[1:-1]}.{index_start}:{index_stop}"
@@ -403,7 +403,7 @@ class vDCRead:
                 query = f"""
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self._parent._genSQL()}) VERTICAPY_SUBTABLE"""
+                    FROM {self._parent}) VERTICAPY_SUBTABLE"""
                 vcol = self._parent._new_vdataframe(query)[new_alias]
                 vcol._transf[-1] = (
                     new_alias,
@@ -429,20 +429,20 @@ class vDCRead:
                     limit = ""
                 query = f"""
                     SELECT 
-                        {self._alias} 
-                    FROM {self._parent._genSQL()}
+                        {self} 
+                    FROM {self._parent}
                     {self._parent._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
                 return self._parent._new_vdataframe(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
-                elem_to_select = f"{self._alias}[{index}]"
+                elem_to_select = f"{self}[{index}]"
                 new_alias = quote_ident(f"{self._alias[1:-1]}.{index}")
                 query = f"""
                     SELECT 
                         {elem_to_select} AS {new_alias} 
-                    FROM {self._parent._genSQL()}"""
+                    FROM {self._parent}"""
                 vcol = self._parent._new_vdataframe(query)[new_alias]
                 vcol._init_transf = f"{self._init_transf}[{index}]"
                 return vcol
@@ -454,8 +454,8 @@ class vDCRead:
                     query=f"""
                         SELECT 
                             /*+LABEL('vDataColumn.__getitem__')*/ 
-                            {self._alias}{cast} 
-                        FROM {self._parent._genSQL()}
+                            {self}{cast} 
+                        FROM {self._parent}
                         {self._parent._get_last_order_by()} 
                         OFFSET {index} 
                         LIMIT 1""",
@@ -467,16 +467,16 @@ class vDCRead:
         elif isinstance(index, str):
             if self.category() == "vmap":
                 index_str = index.replace("'", "''")
-                elem_to_select = f"MAPLOOKUP({self._alias}, '{index_str}')"
+                elem_to_select = f"MAPLOOKUP({self}, '{index_str}')"
                 init_transf = f"MAPLOOKUP({self._init_transf}, '{index_str}')"
             else:
                 vertica_version(condition=[10, 0, 0])
-                elem_to_select = f"{self._alias}.{quote_ident(index)}"
+                elem_to_select = f"{self}.{quote_ident(index)}"
                 init_transf = f"{self._init_transf}.{quote_ident(index)}"
             query = f"""
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
-                FROM {self._parent._genSQL()}"""
+                FROM {self._parent}"""
             vcol = self._parent._new_vdataframe(query)[index]
             vcol._init_transf = init_transf
             return vcol
@@ -524,13 +524,13 @@ class vDCRead:
         """
         if offset < 0:
             offset = max(0, self._parent.shape()[0] - limit)
-        title = f"Reads {self._alias}."
+        title = f"Reads {self}."
         alias_sql_repr = to_varchar(self.category(), self._alias)
         tail = TableSample.read_sql(
             query=f"""
                 SELECT 
-                    {alias_sql_repr} AS {self._alias} 
-                FROM {self._parent._genSQL()}
+                    {alias_sql_repr} AS {self} 
+                FROM {self._parent}
                 {self._parent._get_last_order_by()} 
                 LIMIT {limit} 
                 OFFSET {offset}""",
@@ -561,10 +561,10 @@ class vDCRead:
         query = f"""
             SELECT 
                 * 
-            FROM {self._parent._genSQL()} 
-            WHERE {self._alias} IS NOT NULL 
-            ORDER BY {self._alias} DESC LIMIT {n}"""
-        title = f"Reads {self._alias} {n} largest elements."
+            FROM {self._parent} 
+            WHERE {self} IS NOT NULL 
+            ORDER BY {self} DESC LIMIT {n}"""
+        title = f"Reads {self} {n} largest elements."
         return TableSample.read_sql(
             query,
             title=title,
@@ -591,10 +591,10 @@ class vDCRead:
             f"""
             SELECT 
                 * 
-            FROM {self._parent._genSQL()} 
-            WHERE {self._alias} IS NOT NULL 
-            ORDER BY {self._alias} ASC LIMIT {n}""",
-            title=f"Reads {n} {self._alias} smallest elements.",
+            FROM {self._parent} 
+            WHERE {self} IS NOT NULL 
+            ORDER BY {self} ASC LIMIT {n}""",
+            title=f"Reads {n} {self} smallest elements.",
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
         )

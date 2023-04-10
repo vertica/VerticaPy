@@ -224,7 +224,7 @@ def adfuller(
                 /*+LABEL('statistical_tests.adfuller')*/ 
                 {", ".join(lag)}, 
                 {ts_str} AS ts 
-            FROM {vdf._genSQL()}"""
+            FROM {vdf}"""
     _executeSQL(query, print_time_sql=False)
     model = LinearRegression(name, solver="Newton", max_iter=1000)
     predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
@@ -308,7 +308,7 @@ def mkt(
     else:
         vdf = vDataFrame(input_relation)
     column, ts = vdf._format_colnames(column, ts)
-    table = f"(SELECT {column}, {ts} FROM {vdf._genSQL()})"
+    table = f"(SELECT {column}, {ts} FROM {vdf})"
     query = f"""
         SELECT 
             /*+LABEL('statistical_tests.mkt')*/ 
@@ -335,7 +335,7 @@ def mkt(
              FROM 
                 (SELECT 
                     ROW_NUMBER() OVER (PARTITION BY {column}) AS row 
-                 FROM {vdf._genSQL()}) VERTICAPY_SUBTABLE 
+                 FROM {vdf}) VERTICAPY_SUBTABLE 
              GROUP BY row) VERTICAPY_SUBTABLE"""
     STDS = _executeSQL(
         query=query,
@@ -450,7 +450,7 @@ def cochrane_orcutt(
             (SELECT 
                 {eps_name} * LAG({eps_name}) OVER (ORDER BY {ts}) AS num,  
                 POWER({eps_name}, 2) AS den 
-             FROM {vdf._genSQL()}) x"""
+             FROM {vdf}) x"""
     pho = _executeSQL(
         query=query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
     )
@@ -514,7 +514,7 @@ def durbin_watson(
              FROM (SELECT 
                     {eps} AS et, 
                     {ts}{by_select} 
-                   FROM {vdf._genSQL()}) VERTICAPY_SUBTABLE) 
+                   FROM {vdf}) VERTICAPY_SUBTABLE) 
                    VERTICAPY_SUBTABLE"""
     return _executeSQL(
         query=query, title="Computing the Durbin Watson d.", method="fetchfirstelem",
@@ -642,7 +642,7 @@ def het_arch(
                 AS lag_{i}"""
         ]
         X_names += [f"lag_{i}"]
-    query = f"SELECT {', '.join(X)} FROM {vdf._genSQL()}"
+    query = f"SELECT {', '.join(X)} FROM {vdf}"
     vdf_lags = vDataFrame(query)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)

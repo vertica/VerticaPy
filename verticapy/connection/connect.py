@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 import vertica_python
 from vertica_python.vertica.cursor import Cursor
 from vertica_python.vertica.connection import Connection
@@ -54,7 +56,7 @@ def auto_connect() -> None:
 read_auto_connect = auto_connect
 
 
-def connect(section: str, dsn: str = "") -> None:
+def connect(section: str, dsn: Optional[str] = None) -> None:
     """
     Connects to the database.
 
@@ -191,7 +193,7 @@ def current_cursor() -> Cursor:
 # Local Connection.
 
 
-def vertica_connection(section: str, dsn: str = "") -> Connection:
+def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     """
     Reads the input DSN and creates a Vertica Database 
     connection.

@@ -18,6 +18,7 @@ import os, warnings
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._parsers import get_header_names, guess_sep
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -44,7 +45,7 @@ def pcsv(
     sep: str = ",",
     header: bool = True,
     header_names: Optional[list] = None,
-    na_rep: str = "",
+    na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
     record_terminator: str = "\n",
@@ -54,7 +55,7 @@ def pcsv(
     reject_on_empty_key: bool = False,
     reject_on_materialized_type_error: bool = False,
     ingest_local: bool = True,
-    flex_name: str = "",
+    flex_name: Optional[str] = None,
     genSQL: bool = False,
 ) -> dict[str, str]:
     """
@@ -116,6 +117,8 @@ def pcsv(
         dictionary containing each column and its type.
     """
     header_names = format_type(header_names, dtype=list)
+    if isinstance(na_rep, NoneType):
+        na_rep = ""
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -173,7 +176,7 @@ def pcsv(
                 print_time_sql=False,
             )
             dtype[column_dtype[0]] = column_dtype[1]
-        except:
+        except Exception as e:
             dtype[column_dtype[0]] = "Varchar(100)"
     drop(flex_name, method="table")
     return dtype
@@ -182,13 +185,13 @@ def pcsv(
 @save_verticapy_logs
 def read_csv(
     path: str,
-    schema: str = "",
-    table_name: str = "",
-    sep: str = "",
+    schema: Optional[str] = None,
+    table_name: Optional[str] = None,
+    sep: Optional[str] = None,
     header: bool = True,
     header_names: Optional[list] = None,
     dtype: Optional[dict] = None,
-    na_rep: str = "",
+    na_rep: Optional[str] = None,
     quotechar: str = '"',
     escape: str = "\027",
     record_terminator: str = "\n",
@@ -300,6 +303,8 @@ def read_csv(
     	The vDataFrame of the relation.
 	"""
     dtype = format_type(dtype, dtype=dict)
+    if isinstance(sep, NoneType):
+        sep = ""
     header_names = format_type(header_names, dtype=list)
     if schema:
         temporary_local_table = False
@@ -322,14 +327,12 @@ def read_csv(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
         "set to True."
     )
-    path, sep, header_names, na_rep, quotechar, escape = (
-        path.replace("'", "''"),
-        sep.replace("'", "''"),
-        [str(elem).replace("'", "''") for elem in header_names],
-        na_rep.replace("'", "''"),
-        quotechar.replace("'", "''"),
-        escape.replace("'", "''"),
-    )
+    path = path.replace("'", "''")
+    sep = sep.replace("'", "''")
+    header_names = [str(elem).replace("'", "''") for elem in header_names]
+    na_rep = "" if isinstance(na_rep, NoneType) else na_rep.replace("'", "''")
+    quotechar = quotechar.replace("'", "''")
+    escape = escape.replace("'", "''")
     file_extension = path.split(".")[-1].lower()
     compression = extract_compression(path)
     if file_extension != "csv" and (compression == "UNCOMPRESSED"):

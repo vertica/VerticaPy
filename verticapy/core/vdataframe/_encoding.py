@@ -216,7 +216,7 @@ class vDCEncode:
         k: int = 6,
         new_category: str = "Others",
         RFmodel_params: dict = {},
-        response: str = "",
+        response: Optional[str] = None,
         return_enum_trans: bool = False,
     ) -> "vDataFrame":
         """
@@ -364,12 +364,12 @@ class vDCEncode:
             where = f"WHERE _verticapy_row_nb_ IN ({possibilities})"
             query = f"""
                 SELECT /*+LABEL('vDataColumn.discretize')*/ 
-                    {self._alias} 
+                    {self} 
                 FROM (SELECT 
-                        {self._alias}, 
-                        ROW_NUMBER() OVER (ORDER BY {self._alias}) AS _verticapy_row_nb_ 
-                      FROM {self._parent._genSQL()} 
-                      WHERE {self._alias} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
+                        {self}, 
+                        ROW_NUMBER() OVER (ORDER BY {self}) AS _verticapy_row_nb_ 
+                      FROM {self._parent} 
+                      WHERE {self} IS NOT NULL) VERTICAPY_SUBTABLE {where}"""
             result = _executeSQL(
                 query=query,
                 title="Computing the equal frequency histogram bins.",
@@ -433,14 +433,14 @@ class vDCEncode:
             except:
                 pass
             self._parent._add_to_history(
-                f"[Discretize]: The vDataColumn {self._alias} was discretized."
+                f"[Discretize]: The vDataColumn {self} was discretized."
             )
         return self._parent
 
     @save_verticapy_logs
     def one_hot_encode(
         self,
-        prefix: str = "",
+        prefix: Optional[str] = None,
         prefix_sep: str = "_",
         drop_first: bool = True,
         use_numbers_as_suffix: bool = False,
@@ -524,7 +524,7 @@ class vDCEncode:
             conj = "s were " if len(all_new_features) > 1 else " was "
             self._parent._add_to_history(
                 "[Get Dummies]: One hot encoder was applied to the vDataColumn "
-                f"{self._alias}\n{len(all_new_features)} feature{conj}created: "
+                f"{self}\n{len(all_new_features)} feature{conj}created: "
                 f"{', '.join(all_new_features)}."
             )
         return self._parent
@@ -562,7 +562,7 @@ class vDCEncode:
             self._catalog["percent"] = 100
             self._parent._add_to_history(
                 "[Label Encoding]: Label Encoding was applied to the vDataColumn"
-                f" {self._alias} using the following mapping:{text_info}"
+                f" {self} using the following mapping:{text_info}"
             )
         return self._parent
 
@@ -592,7 +592,7 @@ class vDCEncode:
         self._transf += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
         self._parent._update_catalog(erase=True, columns=[self._alias])
         self._parent._add_to_history(
-            f"[Mean Encode]: The vDataColumn {self._alias} was transformed "
+            f"[Mean Encode]: The vDataColumn {self} was transformed "
             f"using a mean encoding with {response} as Response Column."
         )
         if conf.get_option("print_info"):

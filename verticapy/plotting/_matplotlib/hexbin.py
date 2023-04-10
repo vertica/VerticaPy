@@ -66,7 +66,7 @@ class HexbinMap(MatplotlibBase):
     def draw(
         self,
         bbox: Optional[list] = None,
-        img: str = "",
+        img: Optional[str] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,
     ) -> Axes:

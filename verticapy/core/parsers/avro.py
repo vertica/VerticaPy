@@ -25,8 +25,8 @@ from verticapy.core.vdataframe.base import vDataFrame
 @save_verticapy_logs
 def read_avro(
     path: str,
-    schema: str = "",
-    table_name: str = "",
+    schema: Optional[str] = None,
+    table_name: Optional[str] = None,
     usecols: Optional[list] = None,
     new_name: Optional[dict] = None,
     insert: bool = False,

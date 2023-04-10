@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import shutil
+from typing import Optional
 
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import clean_query, indentSQL
@@ -23,7 +24,7 @@ if conf._get_import_success("jupyter"):
     from IPython.display import HTML, display
 
 
-def print_query(query: str, title: str = "") -> None:
+def print_query(query: str, title: Optional[str] = None) -> None:
     """
     Displays the input query.
     """

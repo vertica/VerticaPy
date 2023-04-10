@@ -29,7 +29,9 @@ class StringSQL:
     def _object_type(self) -> Literal["StringSQL"]:
         return "StringSQL"
 
-    def __init__(self, alias, category: str = "", init_transf: str = "") -> None:
+    def __init__(
+        self, alias, category: Optional[str] = None, init_transf: Optional[str] = None
+    ) -> None:
         self._alias = alias
         self._category = category
         if not (init_transf):

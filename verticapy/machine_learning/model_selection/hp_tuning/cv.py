@@ -498,7 +498,7 @@ def bayesian_search_cv(
     cutoff: float = -1,
     param_grid: Union[None, dict, list] = None,
     random_nbins: int = 16,
-    bayesian_nbins: int = None,
+    bayesian_nbins: Optional[int] = None,
     random_grid: bool = False,
     lmax: int = 15,
     nrows: int = 100000,

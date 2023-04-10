@@ -310,7 +310,7 @@ class XGBoost(Tree):
             "objective": {"name": objective, param: param_val},
         }
 
-    def to_json(self, path: str = "") -> Optional[str]:
+    def to_json(self, path: Optional[str] = None) -> Optional[str]:
         """
         Creates  a  Python  XGBoost  JSON  file  that  can 
         be imported into the Python XGBoost API.
@@ -1261,7 +1261,7 @@ class IsolationForest(Clustering, Tree):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -1307,7 +1307,7 @@ class IsolationForest(Clustering, Tree):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         cutoff: PythonNumber = 0.7,
         contamination: Optional[PythonNumber] = None,
         inplace: bool = True,

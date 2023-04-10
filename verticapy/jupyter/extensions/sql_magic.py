@@ -51,7 +51,7 @@ from verticapy.jupyter.extensions._utils import get_magic_options
 @save_verticapy_logs
 @needs_local_scope
 def sql_magic(
-    line: str, cell: str = "", local_ns: Optional[dict] = None
+    line: str, cell: Optional[str] = None, local_ns: Optional[dict] = None
 ) -> "vDataFrame":
     """
     Executes SQL queries in the Jupyter cell.

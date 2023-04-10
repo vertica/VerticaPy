@@ -72,7 +72,7 @@ class Clustering(Unsupervised):
         self,
         vdf: SQLRelation,
         X: Optional[SQLColumns] = None,
-        name: str = "",
+        name: Optional[str] = None,
         inplace: bool = True,
     ) -> vDataFrame:
         """
@@ -745,7 +745,7 @@ class BisectingKMeans(KMeans, Tree):
             leaf_style=leaf_style,
         )
 
-    def plot_tree(self, pic_path: str = "", *args, **kwargs,) -> "Source":
+    def plot_tree(self, pic_path: Optional[str] = None, *args, **kwargs,) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -871,7 +871,7 @@ class DBSCAN(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
-        index: str = "",
+        index: Optional[str] = None,
     ) -> None:
         """
         Trains the model.

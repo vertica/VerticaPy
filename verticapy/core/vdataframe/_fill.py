@@ -160,7 +160,7 @@ class vDFFill:
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [f"{func}({column}, '{interp}') AS {column}"]
-        query = f"SELECT {{}} FROM {self._genSQL()}"
+        query = f"SELECT {{}} FROM {self}"
         tmp_query = [f"slice_time AS {quote_ident(ts)}"]
         tmp_query += quote_ident(by)
         tmp_query += all_elements
@@ -267,12 +267,12 @@ class vDCFill:
         else:
             query = f"""
                 SELECT /*+LABEL('vDataColumn.fill_outliers')*/ 
-                    PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self._alias}) OVER (), 
-                    PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self._alias}) OVER () 
-                FROM {self._parent._genSQL()} LIMIT 1"""
+                    PERCENTILE_CONT({alpha}) WITHIN GROUP (ORDER BY {self}) OVER (), 
+                    PERCENTILE_CONT(1 - {alpha}) WITHIN GROUP (ORDER BY {self}) OVER () 
+                FROM {self._parent} LIMIT 1"""
             p_alpha, p_1_alpha = _executeSQL(
                 query=query,
-                title=f"Computing the quantiles of {self._alias}.",
+                title=f"Computing the quantiles of {self}.",
                 method="fetchrow",
                 sql_push_ext=self._parent._vars["sql_push_ext"],
                 symbol=self._parent._vars["symbol"],
@@ -288,19 +288,19 @@ class vDCFill:
                 WITH vdf_table AS 
                     (SELECT 
                         /*+LABEL('vDataColumn.fill_outliers')*/ * 
-                    FROM {self._parent._genSQL()}) 
+                    FROM {self._parent}) 
                     (SELECT 
-                        AVG({self._alias}) 
-                    FROM vdf_table WHERE {self._alias} < {p_alpha}) 
+                        AVG({self}) 
+                    FROM vdf_table WHERE {self} < {p_alpha}) 
                     UNION ALL 
                     (SELECT 
-                        AVG({self._alias}) 
-                    FROM vdf_table WHERE {self._alias} > {p_1_alpha})"""
+                        AVG({self}) 
+                    FROM vdf_table WHERE {self} > {p_1_alpha})"""
             mean_alpha, mean_1_alpha = [
                 item[0]
                 for item in _executeSQL(
                     query=query,
-                    title=f"Computing the average of the {self._alias}'s lower and upper outliers.",
+                    title=f"Computing the average of the {self}'s lower and upper outliers.",
                     method="fetchall",
                     sql_push_ext=self._parent._vars["sql_push_ext"],
                     symbol=self._parent._vars["symbol"],
@@ -385,7 +385,7 @@ class vDCFill:
             val = self.mode(dropna=True)
             if val == None:
                 warning_message = (
-                    f"The vDataColumn {self._alias} has no mode "
+                    f"The vDataColumn {self} has no mode "
                     "(only missing values).\nNothing was filled."
                 )
                 warnings.warn(warning_message, Warning)
@@ -413,8 +413,8 @@ class vDCFill:
                     query = f"""
                         SELECT 
                             /*+LABEL('vDataColumn.fillna')*/ {by[0]}, 
-                            {fun}({self._alias})
-                        FROM {self._parent._genSQL()} 
+                            {fun}({self})
+                        FROM {self._parent} 
                         GROUP BY {by[0]};"""
                     result = _executeSQL(
                         query=query,
@@ -437,7 +437,7 @@ class vDCFill:
                             SELECT 
                                 /*+LABEL('vDataColumn.fillna')*/ 
                                 {new_column.format(self._alias)} 
-                            FROM {self._parent._genSQL()} 
+                            FROM {self._parent} 
                             LIMIT 1""",
                         print_time_sql=False,
                         sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -506,7 +506,7 @@ class vDCFill:
             if conf.get_option("print_info"):
                 print(f"{total} element{conj}filled.")
             self._parent._add_to_history(
-                f"[Fillna]: {total} {self._alias} missing value{conj} filled."
+                f"[Fillna]: {total} {self} missing value{conj} filled."
             )
         else:
             if conf.get_option("print_info"):

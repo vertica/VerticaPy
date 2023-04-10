@@ -65,7 +65,7 @@ class HeatMap(MatplotlibBase):
 
     def draw(
         self,
-        colorbar: str = "",
+        colorbar: Optional[str] = None,
         extent: Optional[list] = None,
         ax: Optional[Axes] = None,
         **style_kwargs,

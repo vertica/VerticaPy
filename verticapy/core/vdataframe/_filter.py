@@ -378,7 +378,7 @@ class vDFFilter:
                         SELECT 
                             /*+LABEL('vDataframe.filter')*/ 
                             COUNT(*) 
-                        FROM {self._genSQL()}""",
+                        FROM {self}""",
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
                     sql_push_ext=self._vars["sql_push_ext"],
@@ -438,7 +438,7 @@ class vDFFilter:
                 SELECT 
                     /*+LABEL('vDataframe.first')*/ 
                     (MIN({ts}) + '{offset}'::interval)::varchar 
-                FROM {self._genSQL()}""",
+                FROM {self}""",
             title="Getting the vDataFrame first values.",
             method="fetchfirstelem",
             sql_push_ext=self._vars["sql_push_ext"],
@@ -509,7 +509,7 @@ class vDFFilter:
                 SELECT 
                     /*+LABEL('vDataframe.last')*/ 
                     (MAX({ts}) - '{offset}'::interval)::varchar 
-                FROM {self._genSQL()}""",
+                FROM {self}""",
             title="Getting the vDataFrame last values.",
             method="fetchfirstelem",
             sql_push_ext=self._vars["sql_push_ext"],
@@ -522,7 +522,7 @@ class vDFFilter:
     def sample(
         self,
         n: Optional[PythonNumber] = None,
-        x: float = None,
+        x: Optional[float] = None,
         method: Literal["random", "systematic", "stratified"] = "random",
         by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
@@ -657,7 +657,7 @@ class vDFFilter:
         if conditions:
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
-        query = f"SELECT {all_cols} FROM {self._genSQL()}{conditions}"
+        query = f"SELECT {all_cols} FROM {self}{conditions}"
         result = self._new_vdataframe(query)
         if usecols:
             result = result.select(usecols)
@@ -706,7 +706,7 @@ class vDCFilter:
             self._parent._vars["exclude_columns"] += [self._alias]
         if add_history:
             self._parent._add_to_history(
-                f"[Drop]: vDataColumn {self._alias} was deleted from the vDataFrame."
+                f"[Drop]: vDataColumn {self} was deleted from the vDataFrame."
             )
         return parent
 
@@ -743,7 +743,7 @@ class vDCFilter:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             self._parent.filter(
                 f"""
-                    ABS({self._alias} - {result["avg"][0]}) 
+                    ABS({self} - {result["avg"][0]}) 
                   / {result["std"][0]} < {threshold}"""
             )
         else:
@@ -752,7 +752,7 @@ class vDCFilter:
                 .transpose()
                 .values[self._alias]
             )
-            self._parent.filter(f"({self._alias} BETWEEN {p_alpha} AND {p_1_alpha})")
+            self._parent.filter(f"({self} BETWEEN {p_alpha} AND {p_1_alpha})")
         return self._parent
 
     @save_verticapy_logs
@@ -765,7 +765,7 @@ class vDCFilter:
         vDataFrame
             self._parent
         """
-        self._parent.filter(f"{self._alias} IS NOT NULL")
+        self._parent.filter(f"{self} IS NOT NULL")
         return self._parent
 
     @save_verticapy_logs

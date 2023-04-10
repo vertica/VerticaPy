@@ -439,12 +439,12 @@ class PlottingBase(PlottingBaseSQL):
             if (is_numeric) and not (pie):
                 query = f"""
                     SELECT 
-                        {vdc._alias},
+                        {vdc},
                         {aggregate}
-                    FROM {vdc._parent._genSQL()} 
-                    WHERE {vdc._alias} IS NOT NULL 
-                    GROUP BY {vdc._alias} 
-                    ORDER BY {vdc._alias} ASC 
+                    FROM {vdc._parent} 
+                    WHERE {vdc} IS NOT NULL 
+                    GROUP BY {vdc} 
+                    ORDER BY {vdc} ASC 
                     LIMIT {max_cardinality}"""
             else:
                 table = vdc._parent._genSQL()
@@ -465,7 +465,7 @@ class PlottingBase(PlottingBaseSQL):
                 query = f"""
                     (SELECT 
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/ 
-                        COALESCE({cast_alias}, 'NULL') AS {vdc._alias},
+                        COALESCE({cast_alias}, 'NULL') AS {vdc},
                         {aggregate}
                      FROM {table} 
                      GROUP BY 1
@@ -478,12 +478,12 @@ class PlottingBase(PlottingBaseSQL):
                             'Others',
                             {aggregate} 
                          FROM {table}
-                         WHERE {vdc._alias} NOT IN
+                         WHERE {vdc} NOT IN
                             (SELECT 
-                                {vdc._alias} 
+                                {vdc} 
                             FROM
                              (SELECT 
-                                COALESCE({cast_alias}, 'NULL') AS {vdc._alias},
+                                COALESCE({cast_alias}, 'NULL') AS {vdc},
                                 {aggregate}
                              FROM {table} 
                              GROUP BY 1
@@ -513,22 +513,22 @@ class PlottingBase(PlottingBaseSQL):
                     query=f"""
                         SELECT 
                             /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-                            DATEDIFF('second', MIN({vdc._alias}), MAX({vdc._alias}))
-                        FROM {vdc._parent._genSQL()}""",
+                            DATEDIFF('second', MIN({vdc}), MAX({vdc}))
+                        FROM {vdc._parent}""",
                     title="Computing the histogram interval",
                     method="fetchrow",
                 )
                 h = float(query_result[0]) / nbins
             min_date = vdc.min()
-            converted_date = f"DATEDIFF('second', '{min_date}', {vdc._alias})"
+            converted_date = f"DATEDIFF('second', '{min_date}', {vdc})"
             query_result = _executeSQL(
                 query=f"""
                     SELECT 
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/
                         FLOOR({converted_date} / {h}) * {h}, 
                         {aggregate} 
-                    FROM {vdc._parent._genSQL()}
-                    WHERE {vdc._alias} IS NOT NULL 
+                    FROM {vdc._parent}
+                    WHERE {vdc} IS NOT NULL 
                     GROUP BY 1 
                     ORDER BY 1""",
                 title="Computing the histogram heights",
@@ -574,10 +574,10 @@ class PlottingBase(PlottingBaseSQL):
                 query=f"""
                     SELECT
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-                        FLOOR({vdc._alias} / {h}) * {h},
+                        FLOOR({vdc} / {h}) * {h},
                         {aggregate} 
-                    FROM {vdc._parent._genSQL()}
-                    WHERE {vdc._alias} IS NOT NULL
+                    FROM {vdc._parent}
+                    WHERE {vdc} IS NOT NULL
                     GROUP BY 1
                     ORDER BY 1""",
                 title="Computing the histogram heights",
@@ -915,7 +915,7 @@ class PlottingBase(PlottingBaseSQL):
                     SELECT 
                         {cast} AS {columns[0]},
                         {aggregate}{over} 
-                    FROM {vdf._genSQL()}
+                    FROM {vdf}
                     {where}
                     GROUP BY 1 {order_by}"""
             ).to_numpy()
@@ -949,7 +949,7 @@ class PlottingBase(PlottingBaseSQL):
                                   {matrix[1]} AS {columns[1]}
                                   {aggr}
                                   {other_columns} 
-                               FROM {vdf._genSQL()}{where}) 
+                               FROM {vdf}{where}) 
                                pivot_table) pivot_table_date
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL
@@ -1171,7 +1171,7 @@ class PlottingBase(PlottingBaseSQL):
                     /*+LABEL('plotting._compute_aggregate')*/
                     {", ".join(columns)},
                     {aggregate}{over}
-                FROM {vdf._genSQL()}
+                FROM {vdf}
                 GROUP BY {", ".join(columns)}""",
                 title="Grouping all the elements for the Hexbin Plot",
                 method="fetchall",

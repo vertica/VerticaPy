@@ -1413,7 +1413,7 @@ def _compute_function_metrics(
     input_relation: SQLRelation,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 30,
-    fun_sql_name: str = "",
+    fun_sql_name: Optional[str] = None,
 ) -> list[list[float]]:
     """
     Returns the function metrics.
