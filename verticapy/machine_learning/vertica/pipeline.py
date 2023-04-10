@@ -194,8 +194,7 @@ class Pipeline:
         object
             model.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list)
         if isinstance(input_relation, str):
             vdf = vDataFrame(input_relation)
         else:

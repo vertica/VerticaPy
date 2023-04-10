@@ -83,7 +83,9 @@ class vDFUtils:
         SQLExpression
             Formatted columns' names.
         """
-        columns, expected_nb_of_cols = format_type(columns, expected_nb_of_cols, dtype=list)
+        columns, expected_nb_of_cols = format_type(
+            columns, expected_nb_of_cols, dtype=list
+        )
         if args:
             result = []
             for arg in args:

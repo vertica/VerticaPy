@@ -503,13 +503,8 @@ class VerticaModel(PlottingUtils):
             the SQL code needed to deploy the model.
         """
         if self._vertica_predict_sql:
-            if isinstance(X, str):
-                X = [X]
-            X = (
-                self.X
-                if isinstance(X, NoneType)
-                else [quote_ident(predictor) for predictor in X]
-            )
+            X = format_type(X, dtype=list, na_out=self.X)
+            X = quote_ident(X)
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
                                             USING PARAMETERS 
@@ -686,8 +681,7 @@ class Supervised(VerticaModel):
         str
             model's summary.
 		"""
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -1181,12 +1175,8 @@ class BinaryClassifier(Classifier):
     	str
     		the SQL code needed to deploy the model.
 		"""
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
-        else:
-            X = quote_ident(X)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         sql = f"""
         {self._vertica_predict_sql}({', '.join(X)} 
             USING PARAMETERS
@@ -1436,10 +1426,7 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list, na_out=self.X)
         if not (0 <= cutoff <= 1):
             raise ValueError(
                 "Incorrect parameter 'cutoff'.\nThe cutoff "
@@ -1496,10 +1483,7 @@ class BinaryClassifier(Classifier):
             the input object.
         """
         # Inititalization
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list, na_out=self.X)
         if pos_label not in [1, 0, "0", "1", None]:
             raise ValueError(
                 "Incorrect parameter 'pos_label'.\nThe class label "
@@ -1765,12 +1749,8 @@ class MulticlassClassifier(Classifier):
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-
         if not (self._is_native):
             sql = self.to_memmodel().predict_proba_sql(X)
         else:
@@ -2139,12 +2119,8 @@ class MulticlassClassifier(Classifier):
             )
 
         # Inititalization
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
-        else:
-            X = quote_ident(X)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
         if cutoff == None:
@@ -2217,12 +2193,8 @@ class MulticlassClassifier(Classifier):
                 vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
             )
         # Inititalization
-        if isinstance(X, NoneType):
-            X = self.X
-        elif isinstance(X, str):
-            X = [X]
-        else:
-            X = quote_ident(X)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         assert pos_label is None or pos_label in self.classes_, ValueError(
             "Incorrect parameter 'pos_label'.\nThe class label "
             f"must be in [{'|'.join([str(c) for c in self.classes_])}]. "
@@ -2702,12 +2674,8 @@ class Regressor(Supervised):
 		"""
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
-        if isinstance(X, NoneType):
-            X = self.X
-        if isinstance(X, str):
-            X = [X]
-        else:
-            X = quote_ident(X)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         if not (name):
@@ -2743,8 +2711,7 @@ class Unsupervised(VerticaModel):
     	str
     		model's summary.
 		"""
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:

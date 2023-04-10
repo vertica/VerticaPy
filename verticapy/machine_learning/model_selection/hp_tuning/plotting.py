@@ -154,8 +154,7 @@ def validation_curve(
         training_score_upper, test_score_lower,
         test_score, test_score_upper
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     gs_result = grid_search_cv(

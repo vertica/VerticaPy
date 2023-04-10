@@ -30,6 +30,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 
@@ -158,8 +159,7 @@ def cross_validate(
     TableSample
      	result of the cross validation.
 	"""
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if isinstance(input_relation, str):
         input_relation = vDataFrame(input_relation)
     if cv < 2:

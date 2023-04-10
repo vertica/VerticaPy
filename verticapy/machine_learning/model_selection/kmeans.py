@@ -22,7 +22,7 @@ import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._format import quote_ident, schema_relation
+from verticapy._utils._sql._format import format_type, quote_ident, schema_relation
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -93,8 +93,7 @@ def best_k(
     int
     	the k-means / k-prototypes k
 	"""
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if not (init) and (use_kprototype):
         init = "random"
     elif not (init):
@@ -203,8 +202,7 @@ def elbow(
         nb_clusters,total_within_cluster_ss,between_cluster_ss, 
         total_ss, elbow_score
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if not (init) and (use_kprototype):
         init = "random"
     elif not (init):

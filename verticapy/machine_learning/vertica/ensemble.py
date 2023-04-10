@@ -21,9 +21,9 @@ import numpy as np
 from vertica_python.errors import MissingRelation, QueryError
 
 from verticapy._typing import (
+    NoneType,
     PlottingObject,
     PythonNumber,
-    NoneType,
     SQLColumns,
     SQLRelation,
 )
@@ -1216,9 +1216,8 @@ class IsolationForest(Clustering, Tree):
         str
             the SQL code needed to deploy the model.
         """
-        if isinstance(X, str):
-            X = [X]
-        X = self.X if isinstance(X, NoneType) else quote_ident(X)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         if contamination and not (return_score):
             assert 0 < contamination < 1, ValueError(
                 "Incorrect parameter 'contamination'.\nThe parameter "

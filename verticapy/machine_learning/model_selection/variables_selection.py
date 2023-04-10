@@ -28,6 +28,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 
@@ -162,8 +163,7 @@ def randomized_features_search_cv(
     TableSample
         result of the randomized features search.
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
@@ -400,8 +400,7 @@ def stepwise(
     TableSample
         result of the stepwise.
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     assert len(X) >= 1, ValueError("Vector X must have at least one element.")
     if not (conf.get_option("overwrite_model")):
         estimator._is_already_stored(raise_error=True)
