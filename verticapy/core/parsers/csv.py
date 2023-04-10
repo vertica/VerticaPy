@@ -328,7 +328,7 @@ def read_csv(
     path = path.replace("'", "''")
     sep = sep.replace("'", "''")
     header_names = [str(elem).replace("'", "''") for elem in header_names]
-    na_rep = na_rep.replace("'", "''") if isinstance(na_rep, NoneType) else ""
+    na_rep = "" if isinstance(na_rep, NoneType) else na_rep.replace("'", "''")
     quotechar = quotechar.replace("'", "''")
     escape = escape.replace("'", "''")
     file_extension = path.split(".")[-1].lower()
