@@ -56,7 +56,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
         assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
-        assert result["value"][-1] == False
+        assert not (result["value"][-1])
 
         # testing with trend
         result = st.adfuller(
@@ -64,7 +64,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
-        assert result["value"][-1] == False
+        assert not (result["value"][-1])
 
     def test_cochrane_orcutt(self, airline_vd):
         airline_copy = airline_vd.copy()
@@ -165,7 +165,7 @@ class TestStats:
         result = st.ljungbox(
             amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False,
         )
-        assert result["Serial Correlation"][-1] == True
+        assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Ljung–Box Test Statistic"][-1] == pytest.approx(
             33724.41181636157, 1e-2
@@ -175,7 +175,7 @@ class TestStats:
         result = st.ljungbox(
             amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True,
         )
-        assert result["Serial Correlation"][-1] == True
+        assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Box-Pierce Test Statistic"][-1] == pytest.approx(
             33601.96361200001, 1e-2
@@ -188,7 +188,7 @@ class TestStats:
         assert result["value"][1] == pytest.approx(3188.0, 1e-2)
         assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
         assert result["value"][3] == pytest.approx(0.009889912917327177, 1e-2)
-        assert result["value"][4] == True
+        assert result["value"][4]
         assert result["value"][5] == "increasing"
 
     def test_seasonal_decompose(self, airline_vd):

@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, warnings
+import copy
+import warnings
 from abc import abstractmethod
 from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from collections.abc import Iterable
@@ -700,7 +701,7 @@ class Supervised(VerticaModel):
                 self.parameters["nbtype"] in nb_lookup_table
             ):
                 new_types = {}
-                for x in X:
+                for x in self.X:
                     new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
                 if not (isinstance(input_relation, vDataFrame)):
                     input_relation = vDataFrame(input_relation)

@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, math
+import copy
+import math
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 import numpy as np

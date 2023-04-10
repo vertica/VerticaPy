@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, decimal, math
+import copy
+import decimal
+import math
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm

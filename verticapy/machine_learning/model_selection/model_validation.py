@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, random, statistics, time
+import copy
+import random
+import statistics
+import time
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm

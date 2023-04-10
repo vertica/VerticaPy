@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import itertools, warnings
+import itertools
+import warnings
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
 import numpy as np
@@ -168,7 +169,7 @@ class KNeighborsRegressor(Regressor):
             the SQL code needed to deploy the model.
         """
         key_columns = format_type(key_columns, dtype=list)
-        X = format_type(key_columns, dtype=list, na_out=self.X)
+        X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
         if not (test_relation):
             test_relation = self.test_relation
@@ -959,6 +960,7 @@ class KernelDensity(Regressor, Tree):
             List of the predictors.
         """
         X = format_type(X, dtype=list)
+        X = quote_ident(X)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -1265,6 +1267,7 @@ class LocalOutlierFactor(VerticaModel):
             tables.
 		"""
         X, key_columns = format_type(X, key_columns, dtype=list)
+        X = quote_ident(X)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -1278,7 +1281,6 @@ class LocalOutlierFactor(VerticaModel):
             self.input_relation = input_relation
             if not (X):
                 X = vDataFrame(input_relation).numcol()
-        X = quote_ident(X)
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]

@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, random
+import datetime
+import random
 from typing import Optional, Union
 
 from verticapy._typing import SQLColumns, TYPE_CHECKING

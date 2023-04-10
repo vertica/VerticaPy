@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import decimal, multiprocessing, warnings
+import decimal
+import multiprocessing
+import warnings
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
@@ -1079,15 +1081,15 @@ class vDFAgg:
             "the same length as the 'columns' parameter."
         )
         columns_to_select = []
-        if rollup == True:
-            rollup_expr = "ROLLUP(" if rollup == True else ""
+        if rollup:
+            rollup_expr = "ROLLUP(" if rollup else ""
         else:
             rollup_expr = ""
         for idx, elem in enumerate(columns):
             if isinstance(elem, tuple) and rollup:
-                if rollup == True:
+                if rollup:
                     rollup_expr += "("
-                elif rollup[idx] == True:
+                elif rollup[idx]:
                     rollup_expr += "ROLLUP("
                 elif not (isinstance(rollup[idx], bool)):
                     raise ValueError(
@@ -1107,13 +1109,13 @@ class vDFAgg:
             elif isinstance(elem, str):
                 colname = self._format_colnames(elem)
                 if colname:
-                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                    if not (isinstance(rollup, bool)) and (rollup[idx]):
                         rollup_expr += "ROLLUP(" + colname + ")"
                     else:
                         rollup_expr += colname
                     columns_to_select += [colname]
                 else:
-                    if not (isinstance(rollup, bool)) and (rollup[idx] == True):
+                    if not (isinstance(rollup, bool)) and (rollup[idx]):
                         rollup_expr += "ROLLUP(" + str(elem) + ")"
                     else:
                         rollup_expr += str(elem)
@@ -1125,7 +1127,7 @@ class vDFAgg:
                     "or tuples (only when rollup is set to True)."
                 )
         rollup_expr = rollup_expr[:-2]
-        if rollup == True:
+        if rollup:
             rollup_expr += ")"
         if having:
             having = f" HAVING {having}"
