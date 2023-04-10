@@ -23,7 +23,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class ElbowCurve(PlotlyBase):
-
     # Properties.
 
     @property
@@ -38,18 +37,31 @@ class ElbowCurve(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_style = {
-            "color": self.get_colors(idx=0),
-            "marker": "o",
-            "markerfacecolor": "white",
-            "markersize": 7,
-            "markeredgecolor": "black",
+            "mode": "markers+lines",
+            "marker_line_width": 2,
+            "marker_color": "white",
+            "marker_size": 10,
+            "marker_line_color": "black",
+        }
+        self.init_layout_style = {
+            "yaxis_title": self.layout["y_label"],
+            "xaxis_title": self.layout["x_label"],
+            "width": 650,
+            "height": 650,
         }
         return None
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a Machine Learning Bubble Plot using the Plotly API.
         """
-        return self.data,self.layout
+        fig = px.line(x=self.data["x"], y=self.data["y"], markers=True)
+        fig.update_traces(**self.init_style)
+        fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
+        return fig
