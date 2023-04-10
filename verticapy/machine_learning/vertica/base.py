@@ -681,11 +681,11 @@ class Supervised(VerticaModel):
         str
             model's summary.
 		"""
-        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
+        X = format_type(X, dtype=list)
         self.X = quote_ident(X)
         self.y = quote_ident(y)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
@@ -2711,7 +2711,6 @@ class Unsupervised(VerticaModel):
     	str
     		model's summary.
 		"""
-        X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -2765,6 +2764,7 @@ class Unsupervised(VerticaModel):
             relation = input_relation
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
+        X = format_type(X, dtype=list)
         self.X = quote_ident(X)
         parameters = self._get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):

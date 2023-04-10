@@ -893,7 +893,6 @@ class DBSCAN(VerticaModel):
             in the main table to avoid creating temporary
             tables.
         """
-        X, key_columns = format_type(X, key_columns, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -905,6 +904,7 @@ class DBSCAN(VerticaModel):
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
+        X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)
         self.X = X
         self.key_columns = quote_ident(key_columns)

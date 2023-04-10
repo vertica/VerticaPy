@@ -272,7 +272,14 @@ class vDFRolling:
         vDataFrame
             self
         """
-        return self.rolling(func="max", window=("UNBOUNDED", 0), **locals(),)
+        return self.rolling(
+            func="max",
+            window=("UNBOUNDED", 0),
+            column=column,
+            by=by,
+            order_by=order_by,
+            name=name,
+        )
 
     @save_verticapy_logs
     def cummin(
@@ -306,7 +313,14 @@ class vDFRolling:
         vDataFrame
             self
         """
-        return self.rolling(func="min", window=("UNBOUNDED", 0), **locals(),)
+        return self.rolling(
+            func="min",
+            window=("UNBOUNDED", 0),
+            column=column,
+            by=by,
+            order_by=order_by,
+            name=name,
+        )
 
     @save_verticapy_logs
     def cumprod(
@@ -340,7 +354,14 @@ class vDFRolling:
         vDataFrame
             self
         """
-        return self.rolling(func="prod", window=("UNBOUNDED", 0), **locals(),)
+        return self.rolling(
+            func="prod",
+            window=("UNBOUNDED", 0),
+            column=column,
+            by=by,
+            order_by=order_by,
+            name=name,
+        )
 
     @save_verticapy_logs
     def cumsum(
@@ -374,4 +395,11 @@ class vDFRolling:
         vDataFrame
             self
         """
-        return self.rolling(func="sum", window=("UNBOUNDED", 0), **locals(),)
+        return self.rolling(
+            func="sum",
+            window=("UNBOUNDED", 0),
+            column=column,
+            by=by,
+            order_by=order_by,
+            name=name,
+        )
