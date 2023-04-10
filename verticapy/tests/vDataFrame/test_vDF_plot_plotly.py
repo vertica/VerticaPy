@@ -34,6 +34,7 @@ import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
 from verticapy.learn.model_selection import elbow
+from verticapy.learn.linear_model import LinearRegression
 
 conf.set_option("print_info", False)
 
@@ -45,6 +46,17 @@ def dummy_vd():
     arr2 = np.concatenate((np.repeat("A", 20), np.repeat("B", 30), np.repeat("C", 50)))
     np.random.shuffle(arr2)
     dummy = verticapy.vDataFrame(list(zip(arr1, arr2)), ["check 1", "check 2"])
+    yield dummy
+
+
+@pytest.fixture(scope="module")
+def dummy_scatter_vd():
+    slope = 10
+    y_intercept = -20
+    scatter_magnitude = 4
+    x = np.linspace(0, 10, 100)
+    y = y_intercept + slope * x + np.random.randn(100) * scatter_magnitude
+    dummy = verticapy.vDataFrame({"x": x, "y": y})
     yield dummy
 
 
@@ -110,15 +122,22 @@ def acf_plot_result(load_plotly, amazon_vd):
 
 
 @pytest.fixture(scope="module")
-def titanic_vd():
-    titanic = load_titanic()
-    yield titanic
-    drop(name="public.titanic")
+def regression_plot_result(load_plotly, dummy_scatter_vd):
+    model = LinearRegression("LR_churn")
+    model.fit(dummy_scatter_vd, ["x"], "y")
+    return model.plot()
 
 
 @pytest.fixture(scope="module")
 def elbow_plot_result(load_plotly, iris_vd):
     return elbow(input_relation=iris_vd, X=["PetalLengthCm", "PetalWidthCm"])
+
+
+@pytest.fixture(scope="module")
+def titanic_vd():
+    titanic = load_titanic()
+    yield titanic
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -1463,6 +1482,66 @@ class TestMachineLearningElbowCurve:
             height=custom_height,
         )
         # Assert - checking if correct object created
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningRegressionPlot:
+    def test_properties_output_type_for(self, regression_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(regression_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, regression_plot_result):
+        # Arrange
+        test_title = "x"
+        # Act
+        # Assert
+        assert (
+            regression_plot_result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self, regression_plot_result):
+        # Arrange
+        test_title = "y"
+        # Act
+        # Assert
+        assert (
+            regression_plot_result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_scatter_and_line_plot(self, regression_plot_result):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert (
+            len(regression_plot_result.data) == total_items
+        ), "Either line or scatter missing"
+
+    def test_data_all_scatter_points(self, regression_plot_result):
+        # Arrange
+        no_of_points = 100
+        # Act
+        # Assert
+        assert (
+            len(regression_plot_result.data[0]["x"]) == no_of_points
+        ), "Discrepancy between points plotted and total number ofp oints"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_scatter_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = LinearRegression("LR_churn")
+        model.fit(dummy_scatter_vd, ["x"], "y")
+        result = model.plot(height=custom_height, width=custom_width)
+        # Assert
         assert (
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
