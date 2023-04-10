@@ -287,7 +287,7 @@ class vDFMachineLearning:
                                 {column}, 
                                 {response}, 
                                 COUNT(*) AS cnt 
-                             FROM {self._genSQL()} 
+                             FROM {self} 
                              WHERE {split_predictor} IS NOT NULL 
                                AND {response} IS NOT NULL 
                              GROUP BY 1, 2) x 
@@ -619,7 +619,7 @@ class vDFMachineLearning:
         item_id: str,
         method: Literal["count", "avg", "median"] = "count",
         rating: Union[str, tuple] = "",
-        ts: str = "",
+        ts: Optional[str] = None,
         start_date: PythonScalar = "",
         end_date: PythonScalar = "",
     ) -> "vDataFrame":
@@ -910,17 +910,17 @@ class vDFMachineLearning:
                     /*+LABEL('vDataframe.train_test_split')*/ 
                     APPROXIMATE_PERCENTILE({random_func} 
                         USING PARAMETERS percentile = {test_size}) 
-                FROM {self._genSQL()}""",
+                FROM {self}""",
             title="Computing the seeded numbers quantile.",
             method="fetchfirstelem",
         )
         test_table = f"""
             SELECT * 
-            FROM {self._genSQL()} 
+            FROM {self} 
             WHERE {random_func} <= {q}{order_by}"""
         train_table = f"""
             SELECT * 
-            FROM {self._genSQL()} 
+            FROM {self} 
             WHERE {random_func} > {q}{order_by}"""
         return (
             self._new_vdataframe(train_table),

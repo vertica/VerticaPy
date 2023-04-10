@@ -192,7 +192,7 @@ class vDataFrame(
         self,
         input_relation: Union[str, list, dict, pd.DataFrame, np.ndarray, TableSample],
         usecols: Optional[SQLColumns] = None,
-        schema: str = "",
+        schema: Optional[str] = None,
         external: bool = False,
         symbol: str = "$",
         sql_push_ext: bool = True,

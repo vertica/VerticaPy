@@ -948,7 +948,7 @@ class vDFPlot(PlottingUtils):
         method: PlottingMethod = "count",
         of: Optional[str] = None,
         bbox: list = [],
-        img: str = "",
+        img: Optional[str] = None,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -1286,19 +1286,19 @@ class vDCPlot:
             result = _executeSQL(
                 f"""
                 SELECT 
-                    /*+LABEL('vDataColumn.numh')*/ COUNT({self._alias}) AS NAs, 
-                    MIN({self._alias}) AS min, 
-                    APPROXIMATE_PERCENTILE({self._alias} 
+                    /*+LABEL('vDataColumn.numh')*/ COUNT({self}) AS NAs, 
+                    MIN({self}) AS min, 
+                    APPROXIMATE_PERCENTILE({self} 
                         USING PARAMETERS percentile = 0.25) AS Q1, 
-                    APPROXIMATE_PERCENTILE({self._alias} 
+                    APPROXIMATE_PERCENTILE({self} 
                         USING PARAMETERS percentile = 0.75) AS Q3, 
-                    MAX({self._alias}) AS max 
+                    MAX({self}) AS max 
                 FROM 
                     (SELECT 
                         DATEDIFF('second', 
                                  '{self.min()}'::timestamp, 
-                                 {self._alias}) AS {self._alias} 
-                    FROM {self._parent._genSQL()}) VERTICAPY_OPTIMAL_H_TABLE""",
+                                 {self}) AS {self} 
+                    FROM {self._parent}) VERTICAPY_OPTIMAL_H_TABLE""",
                 title="Different aggregations to compute the optimal h.",
                 method="fetchrow",
                 sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -1633,7 +1633,7 @@ class vDCPlot:
     @save_verticapy_logs
     def spider(
         self,
-        by: str = "",
+        by: Optional[str] = None,
         method: str = "density",
         of: Optional[str] = None,
         max_cardinality: tuple[int, int] = (6, 6),
@@ -1944,7 +1944,7 @@ class vDCPlot:
     def plot(
         self,
         ts: str,
-        by: str = "",
+        by: Optional[str] = None,
         start_date: Optional[PythonScalar] = None,
         end_date: Optional[PythonScalar] = None,
         kind: Literal[

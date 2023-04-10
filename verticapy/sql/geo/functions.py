@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Union
+from typing import Optional, Union
 
 from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -83,7 +83,12 @@ def coordinate_converter(
 
 @save_verticapy_logs
 def intersect(
-    vdf: SQLRelation, index: str, gid: str, g: str = "", x: str = "", y: str = ""
+    vdf: SQLRelation,
+    index: str,
+    gid: str,
+    g: Optional[str] = None,
+    x: Optional[str] = None,
+    y: Optional[str] = None,
 ) -> vDataFrame:
     """
     Spatially intersects a point or points with a set 
@@ -131,7 +136,7 @@ def intersect(
             USING PARAMETERS 
                 index='{index}') 
             OVER (PARTITION BEST) AS (point_id, polygon_gid) 
-        FROM {vdf._genSQL()}"""
+        FROM {vdf}"""
 
     return vDataFrame(query)
 

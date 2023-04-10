@@ -425,7 +425,7 @@ class TableSample:
     def read_sql(
         cls,
         query: Union[str, StringSQL],
-        title: str = "",
+        title: Optional[str] = None,
         max_columns: int = -1,
         sql_push_ext: bool = False,
         symbol: str = "$",

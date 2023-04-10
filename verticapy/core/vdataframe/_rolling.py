@@ -36,8 +36,8 @@ class vDFRolling:
         window: Union[list, tuple],
         columns: SQLColumns,
         by: Optional[SQLColumns] = None,
-        order_by: Union[dict, list] = [],
-        name: str = "",
+        order_by: Union[None, dict, list] = None,
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by using an 
@@ -245,9 +245,9 @@ class vDFRolling:
     def cummax(
         self,
         column: str,
-        by: list = [],
-        order_by: Union[dict, list] = [],
-        name: str = "",
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, dict, list] = None,
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -286,9 +286,9 @@ class vDFRolling:
     def cummin(
         self,
         column: str,
-        by: list = [],
-        order_by: Union[dict, list] = [],
-        name: str = "",
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, dict, list] = None,
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -327,9 +327,9 @@ class vDFRolling:
     def cumprod(
         self,
         column: str,
-        by: list = [],
-        order_by: Union[dict, list] = [],
-        name: str = "",
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, dict, list] = None,
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 
@@ -368,9 +368,9 @@ class vDFRolling:
     def cumsum(
         self,
         column: str,
-        by: list = [],
-        order_by: Union[dict, list] = [],
-        name: str = "",
+        by: Optional[SQLColumns] = None,
+        order_by: Union[None, dict, list] = None,
+        name: Optional[str] = None,
     ) -> "vDataFrame":
         """
         Adds a new vDataColumn to the vDataFrame by computing the 

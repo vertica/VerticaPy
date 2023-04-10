@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 from verticapy._typing import SQLExpression
 from verticapy._utils._sql._format import format_magic
 from verticapy._utils._sql._vertica_version import check_minimum_version
@@ -58,7 +60,9 @@ def lower(expr: SQLExpression) -> StringSQL:
     return StringSQL(f"LOWER({expr})", "text")
 
 
-def substr(expr: SQLExpression, position: int, extent: int = None) -> StringSQL:
+def substr(
+    expr: SQLExpression, position: int, extent: Optional[int] = None
+) -> StringSQL:
     """
     Returns   VARCHAR  or  VARBINARY  value 
     representing a substring of a specified 

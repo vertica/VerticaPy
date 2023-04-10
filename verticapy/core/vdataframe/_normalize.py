@@ -131,7 +131,7 @@ class vDCNorm:
                     avg, stddev = self.aggregate(["avg", "std"]).values[self._alias]
                     if stddev == 0:
                         warning_message = (
-                            f"Can not normalize {self._alias} using a "
+                            f"Can not normalize {self} using a "
                             "Z-Score - The Standard Deviation is null !"
                         )
                         warnings.warn(warning_message, Warning)
@@ -142,9 +142,9 @@ class vDCNorm:
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
-                                    AVG({self._alias}), 
-                                    STDDEV({self._alias}) 
-                                FROM {self._parent._genSQL()} GROUP BY {by[0]}""",
+                                    AVG({self}), 
+                                    STDDEV({self}) 
+                                FROM {self._parent} GROUP BY {by[0]}""",
                             title="Computing the different categories to normalize.",
                             method="fetchall",
                             sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -176,7 +176,7 @@ class vDCNorm:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {avg},
                                     {stddev} 
-                                FROM {self._parent._genSQL()} 
+                                FROM {self._parent} 
                                 LIMIT 1""",
                             print_time_sql=False,
                             sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -184,17 +184,17 @@ class vDCNorm:
                         )
                     except:
                         avg, stddev = (
-                            f"AVG({self._alias}) OVER (PARTITION BY {', '.join(by)})",
-                            f"STDDEV({self._alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"AVG({self}) OVER (PARTITION BY {', '.join(by)})",
+                            f"STDDEV({self}) OVER (PARTITION BY {', '.join(by)})",
                         )
                 else:
                     avg, stddev = (
-                        f"AVG({self._alias}) OVER (PARTITION BY {', '.join(by)})",
-                        f"STDDEV({self._alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"AVG({self}) OVER (PARTITION BY {', '.join(by)})",
+                        f"STDDEV({self}) OVER (PARTITION BY {', '.join(by)})",
                     )
                 nullifzero = "NULLIFZERO" if (nullifzero) else ""
                 if return_trans:
-                    return f"({self._alias} - {avg}) / {nullifzero}({stddev})"
+                    return f"({self} - {avg}) / {nullifzero}({stddev})"
                 else:
                     final_transformation = [
                         (f"({{}} - {avg}) / {nullifzero}({stddev})", "float", "float",)
@@ -214,14 +214,14 @@ class vDCNorm:
                 mad *= 1.4826
                 if mad != 0:
                     if return_trans:
-                        return f"({self._alias} - {med}) / ({mad})"
+                        return f"({self} - {med}) / ({mad})"
                     else:
                         final_transformation = [
                             (f"({{}} - {med}) / ({mad})", "float", "float",)
                         ]
                 else:
                     warning_message = (
-                        f"Can not normalize {self._alias} using a "
+                        f"Can not normalize {self} using a "
                         "Robust Z-Score - The MAD is null !"
                     )
                     warnings.warn(warning_message, Warning)
@@ -234,7 +234,7 @@ class vDCNorm:
                     cmin, cmax = self.aggregate(["min", "max"]).values[self._alias]
                     if cmax - cmin == 0:
                         warning_message = (
-                            f"Can not normalize {self._alias} using "
+                            f"Can not normalize {self} using "
                             "the MIN and the MAX. MAX = MIN !"
                         )
                         warnings.warn(warning_message, Warning)
@@ -245,9 +245,9 @@ class vDCNorm:
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
-                                    MIN({self._alias}), 
-                                    MAX({self._alias})
-                                FROM {self._parent._genSQL()} 
+                                    MIN({self}), 
+                                    MAX({self})
+                                FROM {self._parent} 
                                 GROUP BY {by[0]}""",
                             title=f"Computing the different categories {by[0]} to normalize.",
                             method="fetchall",
@@ -275,7 +275,7 @@ class vDCNorm:
                                     /*+LABEL('vDataColumn.normalize')*/ 
                                     {cmin_cmax[1]}, 
                                     {cmin_cmax[0]} 
-                                FROM {self._parent._genSQL()} 
+                                FROM {self._parent} 
                                 LIMIT 1""",
                             print_time_sql=False,
                             sql_push_ext=self._parent._vars["sql_push_ext"],
@@ -283,17 +283,17 @@ class vDCNorm:
                         )
                     except:
                         cmax, cmin = (
-                            f"MAX({self._alias}) OVER (PARTITION BY {', '.join(by)})",
-                            f"MIN({self._alias}) OVER (PARTITION BY {', '.join(by)})",
+                            f"MAX({self}) OVER (PARTITION BY {', '.join(by)})",
+                            f"MIN({self}) OVER (PARTITION BY {', '.join(by)})",
                         )
                 else:
                     cmax, cmin = (
-                        f"MAX({self._alias}) OVER (PARTITION BY {', '.join(by)})",
-                        f"MIN({self._alias}) OVER (PARTITION BY {', '.join(by)})",
+                        f"MAX({self}) OVER (PARTITION BY {', '.join(by)})",
+                        f"MIN({self}) OVER (PARTITION BY {', '.join(by)})",
                     )
                 nullifzero = "NULLIFZERO" if (nullifzero) else ""
                 if return_trans:
-                    return f"({self._alias} - {cmin}) / {nullifzero}({cmax} - {cmin})"
+                    return f"({self} - {cmin}) / {nullifzero}({cmax} - {cmin})"
                 else:
                     final_transformation = [
                         (
@@ -357,7 +357,7 @@ class vDCNorm:
                 self._catalog["min"] = 0
                 self._catalog["max"] = 1
             self._parent._add_to_history(
-                f"[Normalize]: The vDataColumn '{self._alias}' was "
+                f"[Normalize]: The vDataColumn '{self}' was "
                 f"normalized with the method '{method}'."
             )
         else:

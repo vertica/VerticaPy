@@ -203,7 +203,7 @@ class AnimatedBubblePlot(AnimatedBase):
         lim_labels: int = 6,
         fixed_xy_lim: bool = False,
         bbox: Optional[list] = None,
-        img: str = "",
+        img: Optional[str] = None,
         date_in_title: bool = False,
         date_f: Optional[Callable] = None,
         date_style_dict: Optional[dict] = None,

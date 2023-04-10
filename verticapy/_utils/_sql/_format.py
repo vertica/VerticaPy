@@ -138,6 +138,35 @@ def format_magic(
         return val
 
 
+def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
+    """
+    Format the input objects  by using the input type. It is
+    used to simplify the code as many functions are checking
+    types and instantiate the corresponding object.
+    """
+    res = ()
+    for arg in args:
+        if isinstance(arg, NoneType):
+            if dtype == list:
+                r = []
+            elif dtype == dict:
+                r = {}
+            else:
+                r = None
+        elif isinstance(arg, (float, int, str)):
+            if dtype == list:
+                r = [arg]
+            else:
+                r = arg
+        else:
+            r = arg
+        res += (r,)
+    if len(res) == 1:
+        return res[0]
+    else:
+        return res
+
+
 def indentSQL(query: str) -> str:
     """
     Indents the input SQL query.
@@ -183,35 +212,6 @@ def indentSQL(query: str) -> str:
         del return_l[0]
     query_print += query[i:n]
     return query_print
-
-
-def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
-    """
-    Format the input objects  by using the input type. It is
-    used to simplify the code as many functions are checking
-    types and instantiate the corresponding object.
-    """
-    res = []
-    for arg in args:
-        if isinstance(arg, NoneType):
-            if dtype == list:
-                r = []
-            elif dtype == dict:
-                r = {}
-            else:
-                r = None
-        elif isinstance(arg, (float, int, str)):
-            if dtype == list:
-                r = [arg]
-            else:
-                r = arg
-        else:
-            r = arg
-        res += [r]
-    if len(res) == 1:
-        return res[0]
-    else:
-        return tuple(res)
 
 
 def list_strip(L: list) -> list:

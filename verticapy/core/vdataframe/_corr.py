@@ -93,7 +93,7 @@ class vDFCorr:
                         (SELECT 
                             RANK() OVER (ORDER BY {columns[0]}) AS {columns[0]}, 
                             RANK() OVER (ORDER BY {columns[1]}) AS {columns[1]} 
-                        FROM {self._genSQL()}) rank_spearman_table
+                        FROM {self}) rank_spearman_table
                     """
                 query = f"""
                     SELECT 
@@ -146,7 +146,7 @@ class vDFCorr:
                        * SQRT(SUM({column_b}{cast_b}) 
                        * SUM(1 - {column_b}{cast_b}) 
                        / COUNT(*) / COUNT(*)) 
-                    FROM {self._genSQL()} 
+                    FROM {self} 
                     WHERE {column_b} IS NOT NULL 
                       AND {column_n} IS NOT NULL;"""
                 title = (
@@ -161,7 +161,7 @@ class vDFCorr:
                         {columns[0]}, 
                         {columns[1]}, 
                         COUNT(*) AS nij 
-                    FROM {self._genSQL()} 
+                    FROM {self} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1, 2"""
@@ -169,7 +169,7 @@ class vDFCorr:
                     SELECT 
                         {columns[0]}, 
                         COUNT(*) AS ni 
-                    FROM {self._genSQL()} 
+                    FROM {self} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1"""
@@ -177,7 +177,7 @@ class vDFCorr:
                     SELECT 
                         {columns[1]}, 
                         COUNT(*) AS nj 
-                    FROM {self._genSQL()} 
+                    FROM {self} 
                     WHERE {columns[0]} IS NOT NULL 
                       AND {columns[1]} IS NOT NULL 
                     GROUP BY 1"""
@@ -187,7 +187,7 @@ class vDFCorr:
                             COUNT(*) AS n, 
                             APPROXIMATE_COUNT_DISTINCT({columns[0]}) AS k, 
                             APPROXIMATE_COUNT_DISTINCT({columns[1]}) AS r 
-                         FROM {self._genSQL()} 
+                         FROM {self} 
                          WHERE {columns[0]} IS NOT NULL 
                            AND {columns[1]} IS NOT NULL""",
                     title="Computing the columns cardinalities.",
@@ -249,18 +249,18 @@ class vDFCorr:
                         (SELECT 
                             {columns[0]}, 
                             {columns[1]} 
-                         FROM {self._genSQL()}) x 
+                         FROM {self}) x 
                         CROSS JOIN 
                         (SELECT 
                             {columns[0]}, 
                             {columns[1]} 
-                         FROM {self._genSQL()}) y"""
+                         FROM {self}) y"""
                 title = f"Computing the kendall correlation between {columns[0]} and {columns[1]}."
             elif method == "cov":
                 query = f"""
                     SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
                         COVAR_POP({columns[0]}{cast_0}, {columns[1]}{cast_1}) 
-                    FROM {self._genSQL()}"""
+                    FROM {self}"""
                 title = (
                     f"Computing the covariance between {columns[0]} and {columns[1]}."
                 )
@@ -306,9 +306,7 @@ class vDFCorr:
                             for column in columns
                         ]
                     )
-                    table = (
-                        f"(SELECT {columns_str} FROM {self._genSQL()}) spearman_table"
-                    )
+                    table = f"(SELECT {columns_str} FROM {self}) spearman_table"
                 vertica_version(condition=[9, 2, 1])
                 result = _executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
@@ -410,11 +408,11 @@ class vDFCorr:
                             f"{fun}() OVER (ORDER BY {column}) AS {column}"
                             for column in columns
                         ]
-                        table = f"(SELECT {', '.join(rank)} FROM {self._genSQL()}) rank_spearman_table"
+                        table = f"(SELECT {', '.join(rank)} FROM {self}) rank_spearman_table"
                     elif method == "kendall":
                         table = f"""
-                            (SELECT {", ".join(columns)} FROM {self._genSQL()}) x 
-                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self._genSQL()}) y"""
+                            (SELECT {", ".join(columns)} FROM {self}) x 
+                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self}) y"""
                     else:
                         table = self._genSQL()
                     if nb_precomputed == nb_loop:
@@ -614,11 +612,13 @@ class vDFCorr:
                         f"{fun}() OVER (ORDER BY {column}) AS {column}"
                         for column in all_cols
                     ]
-                    table = f"(SELECT {', '.join(rank)} FROM {self._genSQL()}) rank_spearman_table"
+                    table = (
+                        f"(SELECT {', '.join(rank)} FROM {self}) rank_spearman_table"
+                    )
                 elif method == "kendall":
                     table = f"""
-                        (SELECT {", ".join(all_cols)} FROM {self._genSQL()}) x 
-             CROSS JOIN (SELECT {", ".join(all_cols)} FROM {self._genSQL()}) y"""
+                        (SELECT {", ".join(all_cols)} FROM {self}) x 
+             CROSS JOIN (SELECT {", ".join(all_cols)} FROM {self}) y"""
                 else:
                     table = self._genSQL()
                 if nb_precomputed == len(cols):
@@ -720,7 +720,7 @@ class vDFCorr:
             "pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"
         ] = "pearson",
         mround: int = 3,
-        focus: str = "",
+        focus: Optional[str] = None,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -870,7 +870,7 @@ class vDFCorr:
         sql = f"""
             SELECT 
                 /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) 
-            FROM {self._genSQL()} 
+            FROM {self} 
             WHERE {column1} IS NOT NULL AND {column2} IS NOT NULL;"""
         n = _executeSQL(
             sql,
@@ -909,11 +909,11 @@ class vDFCorr:
             table = f"""
                 (SELECT 
                     {", ".join([column1, column2])} 
-                 FROM {self._genSQL()}) x 
+                 FROM {self}) x 
                 CROSS JOIN 
                 (SELECT 
                     {", ".join([column1, column2])} 
-                 FROM {self._genSQL()}) y"""
+                 FROM {self}) y"""
             nc, nd = _executeSQL(
                 query=f"""
                     SELECT 
@@ -941,7 +941,7 @@ class vDFCorr:
                             (SELECT 
                                 {column1}, 
                                 COUNT(*) AS ni 
-                             FROM {self._genSQL()} 
+                             FROM {self} 
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vti.",
                     method="fetchrow",
@@ -959,7 +959,7 @@ class vDFCorr:
                             (SELECT 
                                 {column2}, 
                                 COUNT(*) AS ni 
-                             FROM {self._genSQL()} 
+                             FROM {self} 
                              GROUP BY 1) VERTICAPY_SUBTABLE""",
                     title="Computing vui.",
                     method="fetchrow",
@@ -976,7 +976,7 @@ class vDFCorr:
                             SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                                 APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
                                 APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
-                            FROM {self._genSQL()} 
+                            FROM {self} 
                             WHERE {column1} IS NOT NULL 
                               AND {column2} IS NOT NULL""",
                         title="Computing the columns categories in the pivot table.",
@@ -993,7 +993,7 @@ class vDFCorr:
                     SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                         APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
                         APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
-                    FROM {self._genSQL()} 
+                    FROM {self} 
                     WHERE {column1} IS NOT NULL 
                       AND {column2} IS NOT NULL""",
                 title="Computing the columns categories in the pivot table.",
@@ -1011,7 +1011,7 @@ class vDFCorr:
     def cov(
         self,
         columns: Optional[SQLColumns] = None,
-        focus: str = "",
+        focus: Optional[str] = None,
         show: bool = True,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -1173,7 +1173,7 @@ class vDFCorr:
                         SELECT 
                             /*+LABEL('vDataframe.regr')*/
                             {", ".join(all_list)} 
-                        FROM {self._genSQL()}""",
+                        FROM {self}""",
                     title=f"Computing the {method.upper()} Matrix.",
                     method="fetchrow",
                     sql_push_ext=self._vars["sql_push_ext"],
@@ -1193,7 +1193,7 @@ class vDFCorr:
                                     /*+LABEL('vDataframe.regr')*/ 
                                     {method.upper()}({columns[i]}{cast_i}, 
                                                      {columns[j]}{cast_j}) 
-                                FROM {self._genSQL()}""",
+                                FROM {self}""",
                             title=f"Computing the {method.upper()} aggregation, one at a time.",
                             method="fetchfirstelem",
                             sql_push_ext=self._vars["sql_push_ext"],
@@ -1702,20 +1702,20 @@ class vDCCorr:
         )[0].replace("{}", self._alias)
         query = f"""
             SELECT 
-                {trans} AS {self._alias}, 
-                {self._alias} AS ord, 
+                {trans} AS {self}, 
+                {self} AS ord, 
                 {y}::int AS {y} 
-            FROM {self._parent._genSQL()}"""
+            FROM {self._parent}"""
         query = f"""
             SELECT 
-                {self._alias}, 
+                {self}, 
                 MIN(ord) AS ord, 
                 SUM(1 - {y}) AS non_events, 
                 SUM({y}) AS events 
             FROM ({query}) x GROUP BY 1"""
         query = f"""
             SELECT 
-                {self._alias}, 
+                {self}, 
                 ord, 
                 non_events, 
                 events, 
@@ -1724,7 +1724,7 @@ class vDCCorr:
             FROM ({query}) x"""
         query = f"""
             SELECT 
-                {self._alias} AS index, 
+                {self} AS index, 
                 non_events, 
                 events, 
                 pt_non_events, 
@@ -1740,7 +1740,7 @@ class vDCCorr:
                         / NULLIFZERO(pt_events))) 
                 END AS iv 
             FROM ({query}) x ORDER BY ord"""
-        title = f"Computing WOE & IV of {self._alias} (response = {y})."
+        title = f"Computing WOE & IV of {self} (response = {y})."
         result = TableSample.read_sql(
             query,
             title=title,

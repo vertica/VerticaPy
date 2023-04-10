@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional
 
 from verticapy._utils._sql._format import (
     format_schema_table,
@@ -25,7 +25,7 @@ from verticapy._utils._sql._sys import _executeSQL
 
 
 def drop(
-    name: str = "",
+    name: Optional[str] = None,
     method: Literal["table", "view", "model", "geo", "text", "auto", "schema"] = "auto",
     raise_error: bool = False,
 ) -> bool:

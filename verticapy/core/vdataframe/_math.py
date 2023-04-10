@@ -98,7 +98,7 @@ class vDFMath:
         columns: Optional[SQLColumns] = None,
         by: Optional[SQLColumns] = None,
         order_by: Union[None, SQLColumns, dict] = None,
-        name: str = "",
+        name: Optional[str] = None,
         offset: int = 1,
         x_smoothing: float = 0.5,
         add_count: bool = True,
@@ -546,7 +546,9 @@ class vDCMath:
             return self.apply(func=f"{{}} + ({x})")
 
     @save_verticapy_logs
-    def apply(self, func: Union[str, StringSQL], copy_name: str = "") -> "vDataFrame":
+    def apply(
+        self, func: Union[str, StringSQL], copy_name: Optional[str] = None
+    ) -> "vDataFrame":
         """
         Applies a function to the vDataColumn.
 
@@ -575,8 +577,8 @@ class vDCMath:
                 expr=f"""
                     SELECT 
                         {func_apply} AS apply_test_feature 
-                    FROM {self._parent._genSQL()} 
-                    WHERE {self._alias} IS NOT NULL 
+                    FROM {self._parent} 
+                    WHERE {self} IS NOT NULL 
                     LIMIT 0""",
                 column="apply_test_feature",
             )
@@ -802,13 +804,13 @@ class vDCMath:
             fun = "APPLY_COUNT_ELEMENTS"
         else:
             fun = "LENGTH"
-        elem_to_select = f"{fun}({self._alias})"
+        elem_to_select = f"{fun}({self})"
         init_transf = f"{fun}({self._init_transf})"
         new_alias = quote_ident(self._alias[1:-1] + ".length")
         query = f"""
             SELECT 
                 {elem_to_select} AS {new_alias} 
-            FROM {self._parent._genSQL()}"""
+            FROM {self._parent}"""
         vcol = self._parent._new_vdataframe(query)[new_alias]
         vcol._init_transf = init_transf
         return vcol

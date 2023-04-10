@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import random
+from typing import Optional
 
 from verticapy._utils._sql._format import quote_ident
 
@@ -33,7 +34,7 @@ def gen_name(L: list) -> str:
     )
 
 
-def gen_tmp_name(schema: str = "", name: str = "") -> str:
+def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> str:
     """
     Generates a temporary name using the input schema 
     and name.

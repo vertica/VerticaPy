@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import os
+from typing import Optional
 
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.utils import get_confparser
@@ -41,7 +42,7 @@ def available_connections() -> list[str]:
 available_auto_connection = available_connections
 
 
-def read_dsn(section: str, dsn: str = "") -> dict:
+def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     """
     Reads the DSN information from the VERTICAPY_
     CONNECTION environment variable  or the input 

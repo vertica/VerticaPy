@@ -27,12 +27,12 @@ from verticapy.connection.connect import current_cursor
 
 def _executeSQL(
     query: str,
-    title: str = "",
+    title: Optional[str] = None,
     data: Optional[list] = None,
     method: Literal[
         "cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"
     ] = "cursor",
-    path: str = "",
+    path: Optional[str] = None,
     print_time_sql: bool = True,
     sql_push_ext: bool = False,
     symbol: str = "$",

@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Optional
+
 import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
@@ -23,7 +25,9 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 
 @save_verticapy_logs
-def read_shp(path: str, schema: str = "public", table_name: str = "",) -> vDataFrame:
+def read_shp(
+    path: str, schema: str = "public", table_name: Optional[str] = None,
+) -> vDataFrame:
     """
     Ingests a SHP file.  For the moment, only files 
     located in  the Vertica server can be ingested.

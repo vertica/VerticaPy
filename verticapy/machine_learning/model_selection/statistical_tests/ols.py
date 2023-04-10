@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Literal, Union
+from typing import Literal, Optional, Union
 import numpy as np
 from scipy.stats import chi2, f
 
@@ -209,7 +209,7 @@ def het_white(
         SELECT 
             {', '.join(variables)}, 
             POWER({eps}, 2) AS v_eps2 
-        FROM {vdf._genSQL()}"""
+        FROM {vdf}"""
     vdf_white = vDataFrame(query)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
@@ -295,7 +295,7 @@ OLS Tests: Multicollinearity.
 
 @save_verticapy_logs
 def variance_inflation_factor(
-    input_relation: SQLRelation, X: SQLColumns, X_idx: int = None
+    input_relation: SQLRelation, X: SQLColumns, X_idx: Optional[int] = None
 ) -> Union[float, TableSample]:
     """
     Computes the variance inflation factor (VIF). It can be 

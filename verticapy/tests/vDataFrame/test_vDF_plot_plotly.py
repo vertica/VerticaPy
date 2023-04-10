@@ -33,7 +33,10 @@ import verticapy
 import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
+
 from verticapy.learn.linear_model import LinearRegression
+from verticapy.learn.model_selection import elbow
+
 
 conf.set_option("print_info", False)
 
@@ -69,7 +72,10 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -108,7 +114,12 @@ def dummy_dist_vd():
 @pytest.fixture(scope="module")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
     )
 
 
@@ -124,6 +135,11 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
+
+
+@pytest.fixture(scope="module")
+def elbow_plot_result(load_plotly, iris_vd):
+    return elbow(input_relation=iris_vd, X=["PetalLengthCm", "PetalWidthCm"])
 
 
 @pytest.fixture(scope="module")
@@ -364,7 +380,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -388,7 +410,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -1415,6 +1443,51 @@ class TestVDFACFPlot:
         )
         # Assert - checking if correct object created
         assert result.layout["height"] == custom_height, "Custom height not working"
+
+
+class TestMachineLearningElbowCurve:
+    def test_properties_output_type_for(self, elbow_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(elbow_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, elbow_plot_result):
+        # Arrange
+        test_title = "Number of Clusters"
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            elbow_plot_result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_data_all_scatter_points(self, elbow_plot_result):
+        # Arrange
+        mode = "markers+line"
+        # Act
+        # Assert - checking if correct object created
+        assert set(elbow_plot_result.data[0]["mode"]) == set(
+            mode
+        ), "Either lines or marker missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        result = elbow(
+            input_relation=iris_vd,
+            X=["PetalLengthCm", "PetalWidthCm"],
+            width=custom_width,
+            height=custom_height,
+        )
+        # Assert - checking if correct object created
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
 
 
 class TestMachineLearningRegressionPlot:

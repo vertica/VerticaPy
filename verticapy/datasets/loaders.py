@@ -37,7 +37,7 @@ def load_dataset(
     name: str,
     dtype: dict,
     copy_cols: Optional[list] = None,
-    dataset_name: str = "",
+    dataset_name: Optional[str] = None,
 ) -> vDataFrame:
     """
     General Function to ingest a dataset.

@@ -37,11 +37,12 @@ from verticapy.core.vdataframe.base import vDataFrame
 @save_verticapy_logs
 def read_file(
     path: str,
-    schema: str = "",
-    table_name: str = "",
+    schema: Optional[str] = None,
+    table_name: Optional[str] = None,
     dtype: Optional[dict] = None,
     unknown: str = "varchar",
     varchar_varbinary_length: int = 80,
+    numeric_precision_scale: tuple[int, int] = (37, 15),
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
@@ -219,10 +220,15 @@ def read_file(
             result = result.split(")")[0:-1] + ") ON COMMIT PRESERVE ROWS" + end
         result = [result]
     if varchar_varbinary_length != 80:
-        result[0] = (
-            result[0]
-            .replace(" varchar", f" varchar({varchar_varbinary_length})")
-            .replace(" varbinary", f" varbinary({varchar_varbinary_length})")
+        result[0] = result[0].replace(
+            " varchar", f" varchar({varchar_varbinary_length})"
+        )
+        result[0] = result[0].replace(
+            " varbinary", f" varbinary({varchar_varbinary_length})"
+        )
+        result[0] = result[0].replace(
+            "precision, scale",
+            f"{numeric_precision_scale[0], numeric_precision_scale[1]}",
         )
     for col in dtype:
         extract_col_dt = extract_col_dt_from_query(result[0], col)

@@ -191,7 +191,7 @@ def chartSQL(
 @save_verticapy_logs
 @needs_local_scope
 def chart_magic(
-    line: str, cell: str = "", local_ns: Optional[dict] = None
+    line: str, cell: Optional[str] = None, local_ns: Optional[dict] = None
 ) -> Union[Highstock, Highchart]:
     """
     Draws  responsive charts using the High Chart  API: 

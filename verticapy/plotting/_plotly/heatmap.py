@@ -87,7 +87,7 @@ class HeatMap(PlotlyBase):
 
     def draw(
         self,
-        colorbar: str = "",
+        colorbar: Optional[str] = None,
         extent: Optional[list] = None,
         fig: Optional[Figure] = None,
         **style_kwargs,

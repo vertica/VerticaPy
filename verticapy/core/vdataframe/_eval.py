@@ -91,7 +91,7 @@ class vDFEval:
                 "be able to solve this issue."
             )
         try:
-            query = f"SELECT {expr} AS {name} FROM {self._genSQL()} LIMIT 0"
+            query = f"SELECT {expr} AS {name} FROM {self} LIMIT 0"
             ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
         except QueryError:
             raise vQueryError(
