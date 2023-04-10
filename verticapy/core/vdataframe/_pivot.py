@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Optional, Union, TYPE_CHECKING
 
-from verticapy._typing import SQLColumns, SQLExpression
+from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
@@ -214,6 +214,8 @@ class vDFPivot:
         vDataFrame
             the pivot table object.
         """
+        if isinstance(prefix, NoneType):
+            prefix = ""
         index, columns, values = self._format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:

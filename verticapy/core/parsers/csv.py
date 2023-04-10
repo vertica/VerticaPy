@@ -18,6 +18,7 @@ import os, warnings
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._parsers import get_header_names, guess_sep
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -29,7 +30,6 @@ from verticapy._utils._sql._format import (
     quote_ident,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._typing import NoneType
 from verticapy.errors import ExtensionError, MissingRelation
 
 from verticapy.core.parsers._utils import extract_compression, get_first_file
@@ -117,6 +117,8 @@ def pcsv(
         dictionary containing each column and its type.
     """
     header_names = format_type(header_names, dtype=list)
+    if isinstance(na_rep, NoneType):
+        na_rep = ""
     if record_terminator == "\n":
         record_terminator = "\\n"
     if not (flex_name):
@@ -174,7 +176,7 @@ def pcsv(
                 print_time_sql=False,
             )
             dtype[column_dtype[0]] = column_dtype[1]
-        except:
+        except Exception as e:
             dtype[column_dtype[0]] = "Varchar(100)"
     drop(flex_name, method="table")
     return dtype
