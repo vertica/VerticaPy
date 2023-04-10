@@ -325,14 +325,12 @@ def read_csv(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
         "set to True."
     )
-    path, sep, header_names, na_rep, quotechar, escape = (
-        path.replace("'", "''"),
-        sep.replace("'", "''"),
-        [str(elem).replace("'", "''") for elem in header_names],
-        na_rep.replace("'", "''"),
-        quotechar.replace("'", "''"),
-        escape.replace("'", "''"),
-    )
+    path = path.replace("'", "''")
+    sep = sep.replace("'", "''")
+    header_names = [str(elem).replace("'", "''") for elem in header_names]
+    na_rep = na_rep.replace("'", "''") if isinstance(na_rep, NoneType) else ""
+    quotechar = quotechar.replace("'", "''")
+    escape = escape.replace("'", "''")
     file_extension = path.split(".")[-1].lower()
     compression = extract_compression(path)
     if file_extension != "csv" and (compression == "UNCOMPRESSED"):
