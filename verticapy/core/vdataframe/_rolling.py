@@ -274,11 +274,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="max",
-            columns=column,
             window=("UNBOUNDED", 0),
-            by=by,
-            order_by=order_by,
-            name=name,
+            **locals(),
         )
 
     @save_verticapy_logs
@@ -315,11 +312,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="min",
-            columns=column,
             window=("UNBOUNDED", 0),
-            by=by,
-            order_by=order_by,
-            name=name,
+            **locals(),
         )
 
     @save_verticapy_logs
@@ -356,11 +350,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="prod",
-            columns=column,
             window=("UNBOUNDED", 0),
-            by=by,
-            order_by=order_by,
-            name=name,
+            **locals(),
         )
 
     @save_verticapy_logs
@@ -397,9 +388,6 @@ class vDFRolling:
         """
         return self.rolling(
             func="sum",
-            columns=column,
             window=("UNBOUNDED", 0),
-            by=by,
-            order_by=order_by,
-            name=name,
+            **locals(),
         )
