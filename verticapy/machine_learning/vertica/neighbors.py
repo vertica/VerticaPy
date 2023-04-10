@@ -167,8 +167,9 @@ class KNeighborsRegressor(Regressor):
         str
             the SQL code needed to deploy the model.
         """
-        X, key_columns = format_type(X, key_columns, dtype=list)
-        X = quote_ident(X) if (X) else self.X
+        key_columns = format_type(key_columns, dtype=list)
+        X = format_type(key_columns, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         if not (test_relation):
             test_relation = self.test_relation
             if not (key_columns):
@@ -405,8 +406,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         SQLExpression
             the SQL code needed to deploy the model.
         """
-        X, key_columns = format_type(X, key_columns, dtype=list)
-        X = quote_ident(X) if len(X) > 0 else self.X
+        key_columns = format_type(key_columns, dtype=list)
+        X = format_type(X, dtype=list, na_out=self.X)
+        X = quote_ident(X)
         if not (test_relation):
             test_relation = self.test_relation
             if not (key_columns):

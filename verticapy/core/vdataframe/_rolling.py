@@ -275,7 +275,7 @@ class vDFRolling:
         return self.rolling(
             func="max",
             window=("UNBOUNDED", 0),
-            column=column,
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -316,7 +316,7 @@ class vDFRolling:
         return self.rolling(
             func="min",
             window=("UNBOUNDED", 0),
-            column=column,
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -357,7 +357,7 @@ class vDFRolling:
         return self.rolling(
             func="prod",
             window=("UNBOUNDED", 0),
-            column=column,
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -398,7 +398,7 @@ class vDFRolling:
         return self.rolling(
             func="sum",
             window=("UNBOUNDED", 0),
-            column=column,
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
