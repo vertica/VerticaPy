@@ -18,7 +18,7 @@ import copy
 from typing import Optional, Union
 
 from verticapy._utils._sql._format import format_type, quote_ident
-from verticapy._typing import SQLExpression
+from verticapy._typing import NoneType, SQLExpression
 from verticapy.errors import MissingColumn
 
 
@@ -83,17 +83,16 @@ class vDFUtils:
         SQLExpression
             Formatted columns' names.
         """
-        columns, expected_nb_of_cols = format_type(
-            columns, expected_nb_of_cols, dtype=list
-        )
-        if args:
+        if len(args) > 0:
             result = []
             for arg in args:
                 result += [self._format_colnames(columns=arg, raise_error=raise_error)]
             if len(args) == 1:
                 result = result[0]
         else:
-            if not (columns) or isinstance(columns, (int, float)):
+            if isinstance(columns, NoneType):
+                return None
+            elif not (columns) or isinstance(columns, (int, float)):
                 return copy.deepcopy(columns)
             if raise_error:
                 if isinstance(columns, str):
@@ -139,8 +138,7 @@ class vDFUtils:
                 for col in columns:
                     result += [self._format_colnames(col, raise_error=raise_error)]
         if raise_error:
-            if isinstance(expected_nb_of_cols, int):
-                expected_nb_of_cols = [expected_nb_of_cols]
+            expected_nb_of_cols = format_type(expected_nb_of_cols, dtype=list)
             if len(expected_nb_of_cols) > 0:
                 if len(args) > 0:
                     columns = args[0]
