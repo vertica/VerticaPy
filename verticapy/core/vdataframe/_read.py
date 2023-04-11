@@ -348,8 +348,7 @@ class vDFRead:
         vDataFrame
             object with only the selected columns.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         for i in range(len(columns)):
             column = self._format_colnames(columns[i], raise_error=False)
             if column:

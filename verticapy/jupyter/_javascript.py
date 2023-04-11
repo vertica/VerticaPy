@@ -14,8 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, json, os, uuid
+import datetime
+import json
+import os
+import uuid
 from typing import Any, Optional, TextIO
+
 import numpy as np
 
 from verticapy._typing import ArrayLike

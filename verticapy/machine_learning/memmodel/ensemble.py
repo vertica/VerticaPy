@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 from typing import Literal, Optional
+
 import numpy as np
 
 import verticapy._config.config as conf

@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, copy, math
+import copy
+import datetime
+import math
 from typing import Callable, Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
@@ -156,8 +158,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].bar(
@@ -268,8 +269,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].barh(
@@ -713,8 +713,7 @@ class vDFPlot(PlottingUtils):
         obj
             TableSample.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt = self._get_plotting_lib(class_name="HeatMap")[0]
         plt_obj = vpy_plt.HeatMap(
@@ -805,8 +804,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
@@ -916,8 +914,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
@@ -947,7 +944,7 @@ class vDFPlot(PlottingUtils):
         columns: SQLColumns,
         method: PlottingMethod = "count",
         of: Optional[str] = None,
-        bbox: list = [],
+        bbox: Optional[list] = None,
         img: Optional[str] = None,
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
@@ -991,8 +988,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        columns, bbox = format_type(columns, bbox, dtype=list)
         columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="HexbinMap",

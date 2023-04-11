@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, re, time, warnings
+import copy
+import re
+import time
+import warnings
 from typing import Any, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf

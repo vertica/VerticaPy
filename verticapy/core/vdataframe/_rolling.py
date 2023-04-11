@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, random
+import datetime
+import random
 from typing import Optional, Union
 
 from verticapy._typing import SQLColumns, TYPE_CHECKING
@@ -133,8 +134,7 @@ class vDFRolling:
             else:
                 rule[idx] = "PRECEDING" if int(window[idx]) < 0 else "FOLLOWING"
                 window[idx] = abs(int(window[idx]))
-        if isinstance(columns, str):
-            columns = [columns]
+        columns = format_type(columns, dtype=list)
         if not (name):
             name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             name = f"moving_{name}"
@@ -275,8 +275,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="max",
-            columns=column,
             window=("UNBOUNDED", 0),
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -316,8 +316,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="min",
-            columns=column,
             window=("UNBOUNDED", 0),
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -357,8 +357,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="prod",
-            columns=column,
             window=("UNBOUNDED", 0),
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,
@@ -398,8 +398,8 @@ class vDFRolling:
         """
         return self.rolling(
             func="sum",
-            columns=column,
             window=("UNBOUNDED", 0),
+            columns=column,
             by=by,
             order_by=order_by,
             name=name,

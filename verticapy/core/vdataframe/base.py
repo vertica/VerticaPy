@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, warnings
+import copy
+import warnings
 from typing import Literal, Optional, Union
 import numpy as np
 
@@ -461,13 +462,13 @@ class vDataColumn(
     def __init__(
         self,
         alias: str,
-        transformations: list = [],
+        transformations: Optional[list] = None,
         parent: Optional[vDataFrame] = None,
         catalog: dict = {},
     ) -> None:
         self._parent = parent
         self._alias = alias
-        self._transf = copy.deepcopy(transformations)
+        self._transf = format_type(transformations, dtype=list)
         self._catalog = {
             "cov": {},
             "pearson": {},

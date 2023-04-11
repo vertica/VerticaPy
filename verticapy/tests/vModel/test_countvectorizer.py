@@ -97,9 +97,9 @@ class TestCountVectorizer:
 
     def test_set_params(self, model):
         model.set_params({"lowercase": False})
-        assert model.get_params()["lowercase"] == False
+        assert not (model.get_params()["lowercase"])
         model.set_params({"lowercase": True})
-        assert model.get_params()["lowercase"] == True
+        assert model.get_params()["lowercase"]
 
     def test_model_from_vDF(self, titanic_vd):
         model_class = CountVectorizer("model_test_vdf",)

@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 import re
 from typing import Any, Iterable, Literal, Optional, Union
+
 import numpy as np
 
 import pandas as pd
@@ -138,7 +139,7 @@ def format_magic(
         return val
 
 
-def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
+def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None) -> Any:
     """
     Format the input objects  by using the input type. It is
     used to simplify the code as many functions are checking
@@ -147,7 +148,9 @@ def format_type(*args, dtype: Literal[NoneType, dict, list]) -> Any:
     res = ()
     for arg in args:
         if isinstance(arg, NoneType):
-            if dtype == list:
+            if not (isinstance(na_out, NoneType)):
+                r = na_out
+            elif dtype == list:
                 r = []
             elif dtype == dict:
                 r = {}

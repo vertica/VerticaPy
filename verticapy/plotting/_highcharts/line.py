@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 from datetime import date, datetime
 from typing import Literal, Optional
+
 import numpy as np
 
 from verticapy._typing import HChart

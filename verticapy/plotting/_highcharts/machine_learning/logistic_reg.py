@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+
 import numpy as np
 
 from verticapy._typing import HChart
@@ -54,7 +55,10 @@ class LogisticRegressionPlot(SVMClassifierPlot):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         if len(self.layout["columns"]) == 2:
-            logit = lambda x: 1 / (1 + np.exp(-x))
+
+            def logit(x: float) -> float:
+                return 1 / (1 + np.exp(-x))
+
             x, w = self.data["X"][:, 0], self.data["X"][:, -1]
             x0, x1 = x[w == 0], x[w == 1]
             min_logit_x, max_logit_x = np.nanmin(x), np.nanmax(x)

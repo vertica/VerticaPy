@@ -27,9 +27,9 @@ from verticapy._typing import (
     SQLRelation,
     SQLColumns,
 )
-from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._format import schema_relation
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type, schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
 
 
@@ -372,8 +372,7 @@ class AutoML(VerticaModel):
                 )
             else:
                 X = input_relation.get_columns(exclude_columns=exclude_columns)
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list)
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()

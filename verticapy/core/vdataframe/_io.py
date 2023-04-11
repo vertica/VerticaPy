@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, decimal, pickle, os
+import copy
+import decimal
+import pickle
+import os
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
 import numpy as np
@@ -97,7 +100,7 @@ class vDFInOut:
         quotechar: str = '"',
         usecols: Optional[SQLColumns] = None,
         header: bool = True,
-        new_header: list = [],
+        new_header: Optional[list] = None,
         order_by: Union[None, SQLColumns, dict] = None,
         n_files: int = 1,
     ) -> Union[None, str, list[str]]:
@@ -143,7 +146,9 @@ class vDFInOut:
             JSON str or list (n_files>1) if 'path' is not defined; 
             otherwise, nothing.
         """
-        order_by, usecols = format_type(order_by, usecols, dtype=list)
+        order_by, usecols, new_header = format_type(
+            order_by, usecols, new_header, dtype=list
+        )
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
         if (n_files != 1) and not (order_by):

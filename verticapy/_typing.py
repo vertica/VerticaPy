@@ -14,8 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, decimal
+import datetime
+import decimal
 from typing import Annotated, Literal, Union, TYPE_CHECKING
+
 import numpy as np
 
 if TYPE_CHECKING:

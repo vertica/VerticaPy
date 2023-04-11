@@ -14,11 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, random, statistics, time
+import copy
+import random
+import statistics
+import time
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
-from tqdm.auto import tqdm
+
 import numpy as np
+
+from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import (
@@ -30,6 +35,7 @@ from verticapy._typing import (
     SQLRelation,
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
 
@@ -158,8 +164,7 @@ def cross_validate(
     TableSample
      	result of the cross validation.
 	"""
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if isinstance(input_relation, str):
         input_relation = vDataFrame(input_relation)
     if cv < 2:

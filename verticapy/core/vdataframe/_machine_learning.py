@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, math, random, warnings
+import datetime
+import math
+import random
+import warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 import numpy as np
@@ -218,8 +221,7 @@ class vDFMachineLearning:
             An independent model containing the result.
         """
         if "process" not in kwargs or kwargs["process"]:
-            if isinstance(columns, str):
-                columns = [columns]
+            columns = format_type(columns, dtype=list)
             assert 2 <= nbins <= 16, ValueError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )

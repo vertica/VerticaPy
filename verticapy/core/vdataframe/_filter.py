@@ -14,7 +14,10 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, datetime, random, warnings
+import copy
+import datetime
+import random
+import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
 
@@ -22,6 +25,7 @@ from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import (
+    NoneType,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -327,7 +331,7 @@ class vDFFilter:
 
     @save_verticapy_logs
     def filter(
-        self, conditions: Union[list, str] = [], *args, **kwargs
+        self, conditions: Union[None, list, str] = None, *args, **kwargs
     ) -> "vDataFrame":
         """
         Filters  the vDataFrame using the  input  expressions.
@@ -350,6 +354,8 @@ class vDFFilter:
         if not (isinstance(conditions, str)) or (args):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
+            elif isinstance(conditions, NoneType):
+                conditions = []
             else:
                 conditions = list(conditions)
             conditions += list(args)

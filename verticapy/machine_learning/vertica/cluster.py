@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy, os, vertica_python
+import copy
+import os
+import vertica_python
 from abc import abstractmethod
 from typing import Literal, Optional, Union
 import numpy as np
@@ -893,7 +895,6 @@ class DBSCAN(VerticaModel):
             in the main table to avoid creating temporary
             tables.
         """
-        X, key_columns = format_type(X, key_columns, dtype=list)
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -905,6 +906,7 @@ class DBSCAN(VerticaModel):
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
+        X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)
         self.X = X
         self.key_columns = quote_ident(key_columns)

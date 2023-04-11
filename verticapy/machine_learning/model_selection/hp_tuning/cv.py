@@ -16,13 +16,15 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
-from tqdm.auto import tqdm
+
 import numpy as np
+
+from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation
-from verticapy._utils._sql._format import format_type
 from verticapy._utils._gen import gen_tmp_name
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -167,8 +169,7 @@ def randomized_search_cv(
     TableSample
         result of the randomized search.
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
     return grid_search_cv(
         estimator,
@@ -308,8 +309,7 @@ def grid_search_cv(
     TableSample
         Result of the the grid search.
     """
-    if isinstance(X, str):
-        X = [X]
+    X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
@@ -879,9 +879,7 @@ def enet_search_cv(
     TableSample
         result of the ENET search.
     """
-    if isinstance(X, str):
-        X = [X]
-
+    X = format_type(X, dtype=list)
     param_grid = parameter_grid(
         {
             "solver": ["cgd"],

@@ -14,7 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime, decimal, inspect
+import datetime
+import decimal
+import inspect
 from typing import Literal
 
 

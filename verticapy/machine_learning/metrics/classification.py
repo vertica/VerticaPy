@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
+
 import numpy as np
 
 from verticapy._typing import (

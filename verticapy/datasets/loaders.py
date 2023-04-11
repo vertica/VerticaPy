@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import os, vertica_python
+import os
+import vertica_python
 from typing import Optional
 
 from verticapy._utils._sql._collect import save_verticapy_logs

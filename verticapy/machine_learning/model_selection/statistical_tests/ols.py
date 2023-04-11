@@ -22,6 +22,7 @@ from scipy.stats import chi2, f
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_type
 from verticapy._utils._gen import gen_tmp_name
 
 from verticapy.core.tablesample.base import TableSample
@@ -60,9 +61,8 @@ def het_breuschpagan(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    X = format_type(X, dtype=list)
     eps, X = vdf._format_colnames(eps, X)
-    if isinstance(X, str):
-        X = [X]
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
@@ -140,9 +140,8 @@ def het_goldfeldquandt(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    X = format_type(X, dtype=list)
     y, X = vdf._format_colnames(y, X)
-    if isinstance(X, str):
-        X = [X]
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -194,9 +193,8 @@ def het_white(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    X = format_type(X, dtype=list)
     eps, X = vdf._format_colnames(eps, X)
-    if isinstance(X, str):
-        X = [X]
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -265,9 +263,8 @@ def endogtest(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    X = format_type(X, dtype=list)
     eps, X = vdf._format_colnames(eps, X)
-    if isinstance(X, str):
-        X = [X]
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     try:
@@ -322,9 +319,8 @@ def variance_inflation_factor(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
+    X = format_type(X, dtype=list)
     X, X_idx = vdf._format_colnames(X, X_idx)
-    if isinstance(X, str):
-        X = [X]
     if isinstance(X_idx, str):
         for i in range(len(X)):
             if X[i] == X_idx:
