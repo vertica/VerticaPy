@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
 
+from verticapy._typing import NoneType
+
 
 def bool_validator(val: bool) -> Literal[True]:
     if isinstance(val, bool):
@@ -35,14 +37,14 @@ def in_validator(values: list) -> Literal[True]:
 
 
 def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
-    if isinstance(val, bool) or val == None:
+    if isinstance(val, bool) or isinstance(val, NoneType):
         return True
     else:
         raise ValueError("The option must be a boolean or None.")
 
 
 def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
-    if (isinstance(val, int) and val >= 0) or val == None:
+    if (isinstance(val, int) and val >= 0) or isinstance(val, NoneType):
         return True
     else:
         raise ValueError("The option must be positive.")

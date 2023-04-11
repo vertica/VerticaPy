@@ -222,8 +222,8 @@ class vDFPivot:
             aggr += "({})"
         new_cols = self[columns].distinct()
         new_cols_trans = []
-        for elem in new_cols:
-            if elem == None:
+        for col in new_cols:
+            if isinstance(col, NoneType):
                 new_cols_trans += [
                     aggr.replace(
                         "{}",
@@ -235,9 +235,9 @@ class vDFPivot:
                 new_cols_trans += [
                     aggr.replace(
                         "{}",
-                        f"(CASE WHEN {columns} = '{elem}' THEN {values} ELSE NULL END)",
+                        f"(CASE WHEN {columns} = '{col}' THEN {values} ELSE NULL END)",
                     )
-                    + f"AS '{prefix}{elem}'"
+                    + f"AS '{prefix}{col}'"
                 ]
         return self._new_vdataframe(
             f"""

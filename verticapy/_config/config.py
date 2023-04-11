@@ -17,6 +17,8 @@ permissions and limitations under the License.
 import copy
 from typing import Any, Callable, Literal, Optional
 
+from verticapy._typing import NoneType
+
 GEOPANDAS_IMPORT: bool
 try:
     from geopandas import GeoDataFrame
@@ -193,7 +195,7 @@ def set_option(key: str, value: Any = None) -> None:
         op.validator(value)
         if isinstance(op.map_, dict) and isinstance(value, str):
             op.val = op.map_[value]
-        elif value == None:
+        elif isinstance(value, NoneType):
             op.val = op.defval
         else:
             op.val = value

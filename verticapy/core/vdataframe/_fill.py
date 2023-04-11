@@ -22,6 +22,7 @@ from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import (
+    NoneType,
     PythonNumber,
     PythonScalar,
     TimeInterval,
@@ -49,7 +50,10 @@ from verticapy.sql.flex import compute_vmap_keys, isvmap
 class vDFFill:
     @save_verticapy_logs
     def fillna(
-        self, val: dict = {}, method: dict = {}, numeric_only: bool = False
+        self,
+        val: Optional[dict] = None,
+        method: Optional[dict] = None,
+        numeric_only: bool = False,
     ) -> "vDataFrame":
         """
         Fills the vDataColumns missing elements using specific rules.
@@ -82,6 +86,7 @@ class vDFFill:
         vDataFrame
             self
         """
+        val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         try:
@@ -107,7 +112,7 @@ class vDFFill:
         self,
         ts: str,
         rule: TimeInterval,
-        method: dict = {},
+        method: Optional[dict] = None,
         by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
@@ -141,6 +146,7 @@ class vDFFill:
         vDataFrame
             object result of the interpolation.
         """
+        method = format_type(method, dtype=dict)
         by = format_type(by, dtype=list)
         method, ts, by = self._format_colnames(method, ts, by)
         all_elements = []
@@ -204,9 +210,9 @@ class vDCFill:
         vDataFrame
             self._parent
         """
-        assert (lower != None) or (upper != None), ValueError(
-            "At least 'lower' or 'upper' must have a numerical value"
-        )
+        assert (not (isinstance(lower, NoneType))) or (
+            not (isinstance(upper, NoneType))
+        ), ValueError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             f"WHEN {{}} < {lower} THEN {lower} "
             if (isinstance(lower, (float, int)))
@@ -308,10 +314,10 @@ class vDCFill:
                     symbol=self._parent._vars["symbol"],
                 )
             ]
-            if mean_alpha == None:
+            if isinstance(mean_alpha, NoneType):
                 mean_alpha = "NULL"
-            if mean_1_alpha == None:
-                mean_alpha = "NULL"
+            if isinstance(mean_1_alpha, NoneType):
+                mean_1_alpha = "NULL"
             self.apply(
                 func=f"""
                     (CASE 
@@ -383,9 +389,9 @@ class vDCFill:
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()
-        if (method == "mode") and (val == None):
+        if (method == "mode") and isinstance(val, NoneType):
             val = self.mode(dropna=True)
-            if val == None:
+            if isinstance(val, NoneType):
                 warning_message = (
                     f"The vDataColumn {self} has no mode "
                     "(only missing values).\nNothing was filled."
@@ -394,7 +400,7 @@ class vDCFill:
                 return self._parent
         if isinstance(val, str):
             val = val.replace("'", "''")
-        if val != None:
+        if not (isinstance(val, NoneType)):
             new_column = f"COALESCE({{}}, '{val}')"
         elif expr:
             new_column = f"COALESCE({{}}, {expr})"
@@ -426,12 +432,14 @@ class vDCFill:
                         symbol=self._parent._vars["symbol"],
                     )
                     for idx, x in enumerate(result):
-                        if x[0] == None:
+                        if isinstance(x[0], NoneType):
                             result[idx][0] = "NULL"
                         else:
                             x0 = str(x[0]).replace("'", "''")
                             result[idx][0] = f"'{x0}'"
-                        result[idx][1] = "NULL" if (x[1] == None) else str(x[1])
+                        result[idx][1] = (
+                            "NULL" if isinstance(x[1], NoneType) else str(x[1])
+                        )
                     val = ", ".join([f"{x[0]}, {x[1]}" for x in result])
                     new_column = f"COALESCE({{}}, DECODE({by[0]}, {val}, NULL))"
                     _executeSQL(

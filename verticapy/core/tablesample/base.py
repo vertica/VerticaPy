@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._display import print_table
 from verticapy._utils._object import _get_vdf
 from verticapy._utils._sql._display import print_query, print_time
@@ -250,7 +251,7 @@ class TableSample:
         """
         if isinstance(val, str):
             val = "'" + val.replace("'", "''") + "'"
-        elif val == None:
+        elif isinstance(val, NoneType):
             val = "NULL"
         elif isinstance(val, bytes):
             val = str(val)[2:-1]

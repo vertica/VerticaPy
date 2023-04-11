@@ -18,7 +18,7 @@ from typing import Literal, Optional
 
 import numpy as np
 
-from verticapy._typing import HChart
+from verticapy._typing import HChart, NoneType
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -45,7 +45,7 @@ class BoxPlot(HighchartsBase):
         y_label = self.layout["y_label"]
         if hasattr(labels, "tolist"):
             labels = labels.tolist()
-        if y_label == None:
+        if isinstance(y_label, NoneType):
             pointFormat = ""
         else:
             pointFormat = f"{y_label}: "

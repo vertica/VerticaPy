@@ -171,14 +171,18 @@ class Preprocessing(Unsupervised):
                     ):
                         if (k != 0 or not (self.parameters["drop_first"])) and (
                             not (self.parameters["ignore_null"])
-                            or self.cat_["category_level"][i] != None
+                            or not (
+                                isinstance(self.cat_["category_level"][i], NoneType)
+                            )
                         ):
                             if self.parameters["column_naming"] == "indices":
                                 name = f'"{quote_ident(column)[1:-1]}{self.parameters["separator"]}'
                                 name += f'{self.cat_["category_level_index"][i]}"'
                                 names += [name]
                             else:
-                                if self.cat_["category_level"][i] != None:
+                                if not (
+                                    isinstance(self.cat_["category_level"][i], NoneType)
+                                ):
                                     category_level = self.cat_["category_level"][
                                         i
                                     ].lower()
@@ -237,7 +241,7 @@ class Preprocessing(Unsupervised):
         if exclude_columns:
             sql += f", exclude_columns = '{exclude_columns}'"
         if self._model_type == "OneHotEncoder":
-            if self.parameters["separator"] == None:
+            if isinstance(self.parameters["separator"], NoneType):
                 separator = "null"
             else:
                 separator = self.parameters["separator"].lower()
@@ -250,7 +254,7 @@ class Preprocessing(Unsupervised):
                 "values",
                 "values_relaxed",
             ):
-                if self.parameters["null_column_name"] == None:
+                if isinstance(self.parameters["null_column_name"], NoneType):
                     null_column_name = "null"
                 else:
                     null_column_name = self.parameters["null_column_name"].lower()

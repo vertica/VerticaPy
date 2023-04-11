@@ -175,9 +175,9 @@ def _compute_final_score(
     Computes the final score by using the different results
     of the multi-confusion matrix.
     """
-    if pos_label == None and isinstance(labels, NoneType):
+    if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
-    if pos_label == None:
+    if isinstance(pos_label, NoneType):
         cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
         return _compute_final_score_from_cm(metric, cm, average=average, multi=True)
     else:
@@ -1490,7 +1490,7 @@ def _compute_multiclass_metric(
     else:
         # micro is not feasible using AUC.
         weights = [1.0 for args in labels]
-    nbins_kw = {"nbins": nbins} if nbins != None else {}
+    nbins_kw = {"nbins": nbins} if not (isinstance(nbins, NoneType)) else {}
     scores = [
         weights[i]
         * metric(
@@ -1561,7 +1561,7 @@ def best_cutoff(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, NoneType):
+    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1649,7 +1649,7 @@ def roc_auc(
     float
         score.
 	"""
-    if pos_label != None or isinstance(labels, NoneType):
+    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1735,7 +1735,7 @@ def prc_auc(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, NoneType):
+    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1811,7 +1811,7 @@ def log_loss(
     float
         score.
     """
-    if pos_label != None or isinstance(labels, NoneType):
+    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -2018,7 +2018,7 @@ def classification_report(
             "csi",
         ]
     values = {"index": metrics}
-    if (cutoff == None) and num_classes > 2:
+    if isinstance(cutoff, NoneType) and num_classes > 2:
         if estimator:
             cm = estimator.confusion_matrix()
         else:

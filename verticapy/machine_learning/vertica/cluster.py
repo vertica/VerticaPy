@@ -990,14 +990,20 @@ class DBSCAN(VerticaModel):
             while graph:
                 node = graph[0][0]
                 node_neighbor = graph[0][1]
-                if (clusters[node] == None) and (clusters[node_neighbor] == None):
+                if isinstance(clusters[node], NoneType) and isinstance(
+                    clusters[node_neighbor], NoneType
+                ):
                     clusters[node] = i
                     clusters[node_neighbor] = i
                     i = i + 1
                 else:
-                    if clusters[node] != None and clusters[node_neighbor] == None:
+                    if not (isinstance(clusters[node], NoneType)) and isinstance(
+                        clusters[node_neighbor], NoneType
+                    ):
                         clusters[node_neighbor] = clusters[node]
-                    elif clusters[node_neighbor] != None and clusters[node] == None:
+                    elif not (
+                        isinstance(clusters[node_neighbor], NoneType)
+                    ) and isinstance(clusters[node], NoneType):
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:

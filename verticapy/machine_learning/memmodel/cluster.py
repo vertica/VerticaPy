@@ -19,7 +19,7 @@ from typing import Literal, Optional, Union
 
 import numpy as np
 
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
@@ -378,7 +378,9 @@ class BisectingKMeans(Clustering, Tree):
         Function used recursively to get the Tree prediction 
         starting at the input node.
         """
-        if self.children_left_[node_id] == self.children_right_[node_id] == None:
+        if isinstance(self.children_left_[node_id], NoneType) and isinstance(
+            self.children_right_[node_id], NoneType
+        ):
             return int(node_id)
         else:
             right_node = int(self.children_right_[node_id])
@@ -425,7 +427,9 @@ class BisectingKMeans(Clustering, Tree):
         Function used recursively to do the final SQL code 
         generation.
         """
-        if children_left[node_id] == children_right[node_id] == None:
+        if isinstance(children_left[node_id], NoneType) and isinstance(
+            children_right[node_id], NoneType
+        ):
             return int(node_id)
         else:
             right_node = int(children_right[node_id])
@@ -642,7 +646,7 @@ class KPrototypes(Clustering):
                     centroid_val = float(centroid_val)
                 except:
                     pass
-                if isinstance(centroid_val, str) or centroid_val == None:
+                if isinstance(centroid_val, str) or isinstance(centroid_val, NoneType):
                     distance_cat += abs(int(val == centroid_val) - 1)
                 else:
                     distance_num += (val - centroid_val) ** self.p_

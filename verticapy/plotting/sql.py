@@ -19,7 +19,7 @@ from typing import Literal, TYPE_CHECKING
 import numpy as np
 
 from verticapy._utils._object import _get_vdf
-from verticapy._typing import ColorType
+from verticapy._typing import ColorType, NoneType
 
 from verticapy.core.tablesample.base import TableSample
 

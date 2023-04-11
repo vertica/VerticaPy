@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Any, Iterable, Literal, Optional
 
-from verticapy._typing import SQLColumns
+from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._sql._format import format_magic, format_type
 
 
@@ -145,14 +145,18 @@ class StringSQL:
         )
 
     def __eq__(self, x: Any) -> "StringSQL":
-        op = "IS" if (x == None) and not (isinstance(x, StringSQL)) else "="
+        op = "IS" if isinstance(x, NoneType) and not (isinstance(x, StringSQL)) else "="
         val = format_magic(x)
         if val != "NULL":
             val = f"({val})"
         return StringSQL(f"({self._init_transf}) {op} {val}", self.category())
 
     def __ne__(self, x: Any) -> "StringSQL":
-        op = "IS NOT" if (x == None) and not (isinstance(x, StringSQL)) else "!="
+        op = (
+            "IS NOT"
+            if isinstance(x, NoneType) and not (isinstance(x, StringSQL))
+            else "!="
+        )
         val = format_magic(x)
         if val != "NULL":
             val = f"({val})"

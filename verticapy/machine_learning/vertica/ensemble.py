@@ -123,7 +123,7 @@ class XGBoost(Tree):
                 parents[right_child] = i
             if attributes[5][i]:
                 split_conditions += [attributes[3][i]]
-            elif attributes[5][i] == None:
+            elif isinstance(attributes[5][i], NoneType):
                 if self._model_type == "XGBRegressor":
                     split_conditions += [
                         float(attributes[4][i]) * self.parameters["learning_rate"]
@@ -827,7 +827,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
                 if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             for j in range(len(tree_d["value"])):
-                if tree_d["value"][j] != None:
+                if not (isinstance(tree_d["value"][j], NoneType)):
                     prob = [0.0 for i in range(n_classes)]
                     for k, c in enumerate(self.classes_):
                         if str(c) == str(tree_d["value"][j]):
@@ -1038,7 +1038,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
                 if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             for j in range(len(tree[6])):
-                if tree[6][j] != None:
+                if not (isinstance(tree[6][j], NoneType)):
                     all_classes_logodss = []
                     for c in self.classes_:
                         all_classes_logodss += [tree[6][j][str(c)]]

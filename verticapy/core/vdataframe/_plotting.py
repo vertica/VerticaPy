@@ -26,6 +26,7 @@ from verticapy._utils._object import _get_mllib
 from verticapy._typing import (
     ArrayLike,
     ColorType,
+    NoneType,
     PlottingMethod,
     PlottingObject,
     PythonNumber,
@@ -1076,7 +1077,7 @@ class vDFPlot(PlottingUtils):
                 aggr.values["min"][1],
                 aggr.values["max"][1],
             )
-        if len(columns) > 3 and dimensions == None:
+        if len(columns) > 3 and isinstance(dimensions, NoneType):
             dimensions = (1, 2)
         if isinstance(dimensions, Iterable):
             model_name = gen_tmp_name(

@@ -520,7 +520,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         Computes the model confusion matrix.
         """
-        if pos_label == None:
+        if isinstance(pos_label, NoneType):
             input_relation = f"""
                 (SELECT 
                     *, 
@@ -637,7 +637,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             key_columns_arg = key_columns
 
         # Generating the probabilities
-        if pos_label == None:
+        if isinstance(pos_label, NoneType):
             predict = [
                 f"""ZEROIFNULL(AVG(DECODE(predict_neighbors, 
                                           '{c}', 

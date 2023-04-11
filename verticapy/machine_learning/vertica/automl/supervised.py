@@ -653,7 +653,7 @@ class AutoML(VerticaModel):
         self.best_model_ = best_model
         self.model_grid_ = result
         self.parameters["reverse"] = not (reverse)
-        if self.preprocess_ != None:
+        if not (isinstance(self.preprocess_, NoneType)):
             self.preprocess_.drop()
             self.preprocess_.final_relation_ = vDataFrame(self.preprocess_.sql_)
         return None

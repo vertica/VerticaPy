@@ -18,6 +18,7 @@ import os
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
@@ -448,7 +449,7 @@ def read_json(
                             final_cols[column] = col
             final_transformation = []
             for column in final_cols:
-                if final_cols[column] == None:
+                if isinstance(final_cols[column], NoneType):
                     final_transformation += [f'NULL AS "{column}"']
                 else:
                     final_transformation += [

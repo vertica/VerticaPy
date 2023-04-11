@@ -18,6 +18,8 @@ from typing import Literal, Optional
 
 from matplotlib.axes import Axes
 
+from verticapy._typing import NoneType
+
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -101,7 +103,9 @@ class RangeCurve(MatplotlibBase):
         if len(self.layout["columns"]) == 1:
             ax.set_ylabel(self.layout["columns"][0])
         else:
-            if ("y_label" in self.layout) and (self.layout["y_label"] != None):
+            if ("y_label" in self.layout) and not (
+                isinstance(self.layout["y_label"], NoneType)
+            ):
                 ax.set_ylabel(self.layout["y_label"])
             ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
             box = ax.get_position()

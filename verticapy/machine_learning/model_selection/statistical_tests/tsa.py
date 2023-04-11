@@ -20,7 +20,13 @@ import numpy as np
 from scipy.stats import chi2, norm, f
 
 import verticapy._config.config as conf
-from verticapy._typing import PythonNumber, SQLColumns, SQLRelation, TimeInterval
+from verticapy._typing import (
+    NoneType,
+    PythonNumber,
+    SQLColumns,
+    SQLRelation,
+    TimeInterval,
+)
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, schema_relation
@@ -346,7 +352,7 @@ def mkt(
         STDS = float(STDS)
     except TypeError:
         STDS = None
-    if STDS in (None, 0) or S == None:
+    if STDS in (None, 0) or isinstance(S, NoneType):
         return None
     if S > 0:
         ZMK = (S - 1) / STDS

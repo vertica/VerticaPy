@@ -24,7 +24,7 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -113,13 +113,13 @@ class AnimatedBubblePlot(AnimatedBase):
                 scatter_plot_init.set_sizes(np.array(scatter_values[i]["s"]))
             if "cmap" in kwargs:
                 scatter_plot_init.set_array(np.array(scatter_values[i]["c"]))
-            elif self.layout["catcol"] != None:
+            elif not (isinstance(self.layout["catcol"], NoneType)):
                 scatter_plot_init.set_color(np.array(scatter_values[i]["c"]))
             if "edgecolors" in self._update_dict(kwargs, style_kwargs):
                 scatter_plot_init.set_edgecolor(
                     self._update_dict(kwargs, style_kwargs)["edgecolors"]
                 )
-            if self.layout["catcol"] != None:
+            if not (isinstance(self.layout["catcol"], NoneType)):
                 for k in range(lim_labels):
                     text_plots[k].set_position(
                         (scatter_values[i]["x"][k], scatter_values[i]["y"][k])
@@ -144,7 +144,7 @@ class AnimatedBubblePlot(AnimatedBase):
     def _compute_anim_params(
         self, date_f: Optional[Callable] = None, **style_kwargs
     ) -> tuple:
-        if date_f == None:
+        if isinstance(date_f, NoneType):
 
             def date_f(x: Any) -> str:
                 return str(x)
@@ -171,7 +171,7 @@ class AnimatedBubblePlot(AnimatedBase):
         custom_lines, all_categories, c = [], [], []
         if "cmap" in kwargs:
             c = list(self.data["Y"][:, 2].astype(float))
-        elif self.layout["by"] == None:
+        elif isinstance(self.layout["by"], NoneType):
             c = [colors[0]] * len(self.data["x"])
         else:
             for cat in self.data["Y"][:, -1]:
@@ -190,7 +190,9 @@ class AnimatedBubblePlot(AnimatedBase):
                     {
                         "x": Y0[ts_idx:idx],
                         "y": Y1[ts_idx:idx],
-                        "c": c if isinstance(c, str) or c == None else c[ts_idx:idx],
+                        "c": c
+                        if isinstance(c, str) or isinstance(c, NoneType)
+                        else c[ts_idx:idx],
                         "s": size
                         if isinstance(size, (float, int))
                         else size[ts_idx:idx],
@@ -239,7 +241,7 @@ class AnimatedBubblePlot(AnimatedBase):
             **self._update_dict(kwargs, style_kwargs),
         )
         text_plots = []
-        if self.layout["catcol"] != None:
+        if not (isinstance(self.layout["catcol"], NoneType)):
             for idx in range(lim_labels):
                 text_plots += [
                     ax.text(
@@ -298,7 +300,7 @@ class AnimatedBubblePlot(AnimatedBase):
             )
         if "cmap" in kwargs:
             fig.colorbar(sc, ax=ax).set_label(self.layout["by"])
-        elif self.layout["catcol"] != None:
+        elif not (isinstance(self.layout["catcol"], NoneType)):
             leg = ax.legend(
                 custom_lines,
                 all_cats,

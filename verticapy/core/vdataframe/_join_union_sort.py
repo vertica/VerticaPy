@@ -175,11 +175,8 @@ class vDFJoinUnionSort:
         vDataFrame
             object result of the join.
         """
-        if isinstance(expr1, NoneType):
-            expr1 = "*"
-        if isinstance(expr2, NoneType):
-            expr2 = "*"
-        expr1, expr2 = format_type(expr1, expr2, dtype=list)
+        on, on_interpolate = format_type(on, on_interpolate, dtype=dict)
+        expr1, expr2 = format_type(expr1, expr2, dtype=list, na_out="*")
         if isinstance(on, tuple):
             on = [on]
         # List with the operators

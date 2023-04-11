@@ -212,7 +212,7 @@ class vDFInOut:
                 for item in row:
                     if isinstance(item, str):
                         tmp_row += [quotechar + item + quotechar]
-                    elif item == None:
+                    elif isinstance(item, NoneType):
                         tmp_row += ["" if isinstance(na_rep, NoneType) else na_rep]
                     else:
                         tmp_row += [str(item)]
@@ -511,7 +511,7 @@ class vDFInOut:
                         isinstance(item, (str,)) and is_complex_vmap[i]
                     ):
                         tmp_row += [f"{quote_ident(columns[i])}: {item}"]
-                    elif item != None:
+                    elif not (isinstance(item, NoneType)):
                         tmp_row += [f'{quote_ident(columns[i])}: "{item}"']
                 json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit

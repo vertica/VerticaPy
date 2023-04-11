@@ -20,7 +20,7 @@ import numpy as np
 from scipy.stats import chi2, f
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns, SQLRelation
+from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._gen import gen_tmp_name
@@ -347,7 +347,7 @@ def variance_inflation_factor(
             return 1 / (1 - R2)
         else:
             return np.inf
-    elif X_idx == None:
+    elif isinstance(X_idx, NoneType):
         VIF = []
         for i in range(len(X)):
             VIF += [variance_inflation_factor(vdf, X, i)]

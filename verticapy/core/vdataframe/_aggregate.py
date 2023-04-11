@@ -23,6 +23,7 @@ from tqdm.auto import tqdm
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
+    NoneType,
     PythonNumber,
     PythonScalar,
     SQLColumns,
@@ -254,7 +255,7 @@ class vDFAgg:
 
                 if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                     nb_precomputed += 1
-                    if pre_comp == None or pre_comp != pre_comp:
+                    if isinstance(pre_comp, NoneType) or pre_comp != pre_comp:
                         expr = "NULL"
                     elif isinstance(pre_comp, (int, float)):
                         expr = pre_comp
@@ -310,8 +311,8 @@ class vDFAgg:
                         count == 0
                         or (std != std)
                         or (avg != avg)
-                        or (std == None)
-                        or (avg == None)
+                        or isinstance(std, NoneType)
+                        or isinstance(avg, NoneType)
                     ):
                         expr = "NULL"
                     elif (count == 1) or (std == 0):
@@ -336,8 +337,8 @@ class vDFAgg:
                         count == 0
                         or (std != std)
                         or (avg != avg)
-                        or (std == None)
-                        or (avg == None)
+                        or isinstance(std, NoneType)
+                        or isinstance(avg, NoneType)
                     ):
                         expr = "NULL"
                     elif (count == 1) or (std == 0):
@@ -2189,7 +2190,7 @@ class vDCAgg:
         if n == 1:
             pre_comp = self._parent._get_catalog_value(self._alias, "top")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-                if not (dropna) and (pre_comp != None):
+                if not (dropna) and (not (isinstance(pre_comp, NoneType))):
                     return pre_comp
         assert n >= 1, ValueError("Parameter 'n' must be greater or equal to 1")
         where = f" WHERE {self} IS NOT NULL " if (dropna) else " "

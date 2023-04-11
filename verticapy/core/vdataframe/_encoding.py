@@ -217,7 +217,7 @@ class vDCEncode:
         nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
-        RFmodel_params: dict = {},
+        RFmodel_params: Optional[dict] = None,
         response: Optional[str] = None,
         return_enum_trans: bool = False,
     ) -> "vDataFrame":
@@ -270,6 +270,7 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
+        RFmodel_params = format_type(RFmodel_params, dtype=dict)
         vml = _get_mllib()
         if self.isnum() and method == "smart":
             schema = conf.get_option("temp_schema")

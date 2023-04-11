@@ -19,7 +19,7 @@ import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
@@ -152,20 +152,20 @@ class vDCNorm:
                             symbol=self._parent._vars["symbol"],
                         )
                         for i in range(len(result)):
-                            if result[i][2] == None:
+                            if isinstance(result[i][2], NoneType):
                                 pass
                             elif math.isnan(result[i][2]):
                                 result[i][2] = None
                         avg_stddev = []
                         for i in range(1, 3):
-                            if x[0] != None:
+                            if not (isinstance(x[0], NoneType)):
                                 x0 = f"""'{str(x[0]).replace("'", "''")}'"""
                             else:
                                 x0 = "NULL"
                             x_tmp = [
-                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
                                 for x in result
-                                if x[i] != None
+                                if not (isinstance(x[i], NoneType))
                             ]
                             avg_stddev += [
                                 f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
@@ -257,14 +257,14 @@ class vDCNorm:
                         )
                         cmin_cmax = []
                         for i in range(1, 3):
-                            if x[0] != None:
+                            if not (isinstance(x[0], NoneType)):
                                 x0 = f"""'{str(x[0]).replace("'", "''")}'"""
                             else:
                                 x0 = "NULL"
                             x_tmp = [
-                                f"""{x0}, {x[i] if x[i] != None else "NULL"}"""
+                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
                                 for x in result
-                                if x[i] != None
+                                if not (isinstance(x[i], NoneType))
                             ]
                             cmin_cmax += [
                                 f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
@@ -331,7 +331,7 @@ class vDCNorm:
 
                         if "percent" in elem:
                             self._catalog[elem] = sauv[elem]
-                        elif elem == None:
+                        elif isinstance(elem, NoneType):
                             self._catalog[elem] = None
                         elif method == "robust_zscore":
                             self._catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (

@@ -486,7 +486,7 @@ def read_csv(
                 for col in dtype:
                     if quote_ident(name).lower() == quote_ident(col).lower():
                         key = col
-                if key == None:
+                if isinstance(key, NoneType):
                     raise KeyError(f"'{name}'")
                 dtype_sorted[key] = dtype[key]
             query1 = create_table(

@@ -21,7 +21,7 @@ import warnings
 from typing import Any, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
-from verticapy._typing import SQLColumns
+from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -228,7 +228,7 @@ class vDFSystem:
             result = "VERTICAPY_NOT_PRECOMPUTED"
         if result != result:
             result = None
-        if ("top" not in key) and (result == None):
+        if ("top" not in key) and isinstance(result, NoneType):
             return "VERTICAPY_NOT_PRECOMPUTED"
         return result
 

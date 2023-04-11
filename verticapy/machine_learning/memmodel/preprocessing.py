@@ -19,7 +19,7 @@ from typing import Literal, Union
 
 import numpy as np
 
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._sql._format import format_magic
 
 
@@ -264,7 +264,7 @@ class OneHotEncoder(InMemoryModel):
                     if self.column_naming_ == "indices":
                         sql_tmp_feature += f' AS "{X_i}_{j}"'
                     elif self.column_naming_ in ("values", "values_relaxed"):
-                        if self.categories_[i][j] != None:
+                        if not (isinstance(self.categories_[i][j], NoneType)):
                             categories_i_j = self.categories_[i][j]
                         else:
                             categories_i_j = "NULL"

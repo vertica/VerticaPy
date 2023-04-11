@@ -221,7 +221,7 @@ class VerticaModel(PlottingUtils):
             Vertica DB.
         """
         model_type = None
-        if name == None:
+        if isinstance(name, NoneType):
             name = self.model_name
         schema, model_name = schema_relation(name)
         schema, model_name = schema[1:-1], model_name[1:-1]
@@ -777,7 +777,7 @@ class Supervised(VerticaModel):
                      '{', '.join(self.X)}' 
                      USING PARAMETERS 
                      {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
-            if alpha != None:
+            if not (isinstance(alpha, NoneType)):
                 query += f", alpha = {alpha}"
             if self._model_type in (
                 "RandomForestClassifier",
@@ -841,7 +841,7 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
-                if tree.values["leaf_path_length"][i] != None:
+                if not (isinstance(tree.values["leaf_path_length"][i], NoneType)):
                     tree.values["prediction"] += [
                         [
                             int(float(tree.values["leaf_path_length"][i])),
@@ -893,7 +893,7 @@ class Tree:
                 self.features_importance_trees_[tree_id] = importance
             else:
                 self.features_importance_trees_ = {tree_id: importance}
-        elif tree_id == None:
+        elif isinstance(tree_id, NoneType):
             self.features_importance_ = importance
         return None
 
@@ -901,7 +901,7 @@ class Tree:
         """
         Returns model's features importances.
         """
-        if tree_id == None and hasattr(self, "features_importance_"):
+        if isinstance(tree_id, NoneType) and hasattr(self, "features_importance_"):
             return copy.deepcopy(self.features_importance_)
         elif (
             isinstance(tree_id, int)
@@ -976,7 +976,7 @@ class Tree:
         TableSample
             model's score.
         """
-        tree_id = "" if tree_id == None else f", tree_id={tree_id}"
+        tree_id = "" if isinstance(tree_id, NoneType) else f", tree_id={tree_id}"
         query = f"""
             SELECT {self._model_importance_function} 
             (USING PARAMETERS model_name = '{self.model_name}'{tree_id})"""
@@ -1502,11 +1502,11 @@ class BinaryClassifier(Classifier):
         # Result
         name_tmp = name
         if pos_label in [0, "0", None]:
-            if pos_label == None:
+            if isinstance(pos_label, NoneType):
                 name_tmp = f"{name}_0"
             vdf_return.eval(name_tmp, f"1 - {self.deploySQL(X=X)}")
         if pos_label in [1, "1", None]:
-            if pos_label == None:
+            if isinstance(pos_label, NoneType):
                 name_tmp = f"{name}_1"
             vdf_return.eval(name_tmp, self.deploySQL(X=X))
 
@@ -1676,9 +1676,9 @@ class MulticlassClassifier(Classifier):
         """
         Checks if the pos_label is correct.
         """
-        if pos_label == None and self._is_binary_classifier():
+        if isinstance(pos_label, NoneType) and self._is_binary_classifier():
             return 1
-        elif pos_label == None:
+        elif isinstance(pos_label, NoneType):
             return None
         elif str(pos_label) not in [str(c) for c in self.classes_]:
             raise ValueError(
@@ -1947,13 +1947,13 @@ class MulticlassClassifier(Classifier):
         """
         if hasattr(self, "_confusion_matrix"):
             return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
-        elif pos_label == None:
+        elif isinstance(pos_label, NoneType):
             return mt.multilabel_confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, self.classes_
             )
         else:
             pos_label = self._check_pos_label(pos_label=pos_label)
-            if cutoff == None:
+            if isinstance(cutoff, NoneType):
                 cutoff = 1.0 / len(self.classes_)
             return mt.confusion_matrix(
                 self.y,
@@ -2124,7 +2124,7 @@ class MulticlassClassifier(Classifier):
         X = quote_ident(X)
         if not (name):
             name = gen_name([self._model_type, self.model_name])
-        if cutoff == None:
+        if isinstance(cutoff, NoneType):
             cutoff = 1.0 / len(self.classes_)
         elif not (0 <= cutoff <= 1):
             raise ValueError(
@@ -2210,7 +2210,7 @@ class MulticlassClassifier(Classifier):
         vdf_return = vdf if inplace else vdf.copy()
 
         # Result
-        if pos_label == None:
+        if isinstance(pos_label, NoneType):
             for c in self.classes_:
                 name_tmp = gen_name([name, c])
                 vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=None, X=X))
