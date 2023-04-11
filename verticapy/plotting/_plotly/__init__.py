@@ -32,6 +32,7 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
 from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve
+from verticapy.plotting._plotly.machine_learning.lof import LOFPlot
 
 
 import plotly.io as pio
