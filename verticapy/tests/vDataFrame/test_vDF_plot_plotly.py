@@ -36,6 +36,7 @@ from verticapy.datasets import load_titanic, load_iris, load_amazon
 
 from verticapy.learn.linear_model import LinearRegression
 from verticapy.learn.model_selection import elbow
+from verticapy.learn.neighbors import LocalOutlierFactor
 
 
 conf.set_option("print_info", False)
