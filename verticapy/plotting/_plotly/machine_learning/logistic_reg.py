@@ -46,6 +46,12 @@ class LogisticRegressionPlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
+        self.init_layout_style = {
+            "yaxis_title": f"P({self.layout['columns'][-1]} = 1)",
+            "xaxis_title": self.layout["columns"][0],
+            "width": 700,
+            "height": 600,
+        }
         self.init_style_0 = {
             "marker": "o",
             "s": 50,
@@ -71,7 +77,7 @@ class LogisticRegressionPlot(PlotlyBase):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a Logistic Regression plot using the Matplotlib API.
+        Draws a Logistic Regression plot using the Plotly API.
         """
         fig = self._get_fig(fig)
         logit = lambda x: 1 / (1 + np.exp(-x))
@@ -87,21 +93,16 @@ class LogisticRegressionPlot(PlotlyBase):
             else np.array([max_logit_x])
         )
         y_logit=logit(self.data["coef"][0] + self.data["coef"][1] * x_logit)
-
-        # y = logit(y0 + slope * x)
         if len(self.layout["columns"]) == 2:
             fig.add_trace(
                 go.Scatter(x=x0, y=logit(y0 + slope * x0), 
                 #marker_color="black",
                 name="-1",mode="markers",
-                        #marker_colorscale=["black","orange"]
                         )
             )
             fig.add_trace(
                 go.Scatter(x=x1, y=logit(y0 + slope * x0), 
-                #marker_color="orange",
                 name="+1",mode="markers",
-                        #marker_colorscale=["black","orange"]
                         )
             )
             fig.add_trace(
@@ -111,10 +112,65 @@ class LogisticRegressionPlot(PlotlyBase):
                     mode="lines",
                     line_shape="linear",
                     name="Logit",
+                    opacity=0.5,
                 )
             )
         elif len(self.layout["columns"]) == 3:
-            pass
+            y = self.data["X"][:, 1]
+            y0, y1 = y[z == 0], y[z == 1]
+            min_logit_y, max_logit_y = (
+                min(self.data["X"][:, 1]),
+                max(self.data["X"][:, 1]),
+            )
+            step_y = (max_logit_y - min_logit_y) / 40.0
+            X_logit = (
+                np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
+                if (step_x > 0)
+                else np.array([max_logit_x])
+            )
+            Y_logit = (
+                np.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
+                if (step_y > 0)
+                else np.array([max_logit_y])
+            )
+            X_logit, Y_logit = np.meshgrid(X_logit, Y_logit)
+            Z_logit = 1 / (
+                1
+                + np.exp(
+                    -(
+                        self.data["coef"][0]
+                        + self.data["coef"][1] * X_logit
+                        + self.data["coef"][2] * Y_logit
+                    )
+                )
+            )
+            X_logit, Y_logit, Z_logit
+
+            for i, x, y, s in [
+                (0, x0, y0, self.init_style_0),
+                (1, x1, y1, self.init_style_1),
+            ]:
+                fig.add_trace(
+                    go.Scatter3d(
+                        x=x,
+                        y=y,
+                        z=logit(
+                            self.data["coef"][0]
+                            + self.data["coef"][1] * x
+                            + self.data["coef"][2] * y
+                        ),
+                        name=str(i),
+                        mode="markers"
+                    ))
+            # fig = fig.add_trace(go.Surface(z=Z_logit, 
+            # ))
+            self.init_layout_style["scene"] = dict(
+                aspectmode="cube",
+                xaxis_title=self.layout["columns"][0],
+                yaxis_title=self.layout["columns"][1],
+                zaxis_title=f"P({self.layout['columns'][-1]} = 1)",
+            )
         else:
             raise ValueError("The number of predictors is too big.")
+        fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
         return fig
