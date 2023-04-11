@@ -53,12 +53,16 @@ def dummy_vd():
 
 @pytest.fixture(scope="module")
 def dummy_scatter_vd():
-    slope = 10
+    slope_y = 10
+    slope_z = 5
     y_intercept = -20
-    scatter_magnitude = 4
+    z_intercept = 20
+    scatter_magnitude_y = 4
+    scatter_magnitude_z = 40
     x = np.linspace(0, 10, 100)
-    y = y_intercept + slope * x + np.random.randn(100) * scatter_magnitude
-    dummy = verticapy.vDataFrame({"x": x, "y": y})
+    y = y_intercept + slope_y * x + np.random.randn(100) * scatter_magnitude_y
+    z = z_intercept + slope_z * x + np.random.randn(100) * scatter_magnitude_z
+    dummy = verticapy.vDataFrame({"X": x, "Y": y, "Z": z})
     yield dummy
 
 
@@ -127,6 +131,20 @@ def acf_plot_result(load_plotly, amazon_vd):
 def regression_plot_result(load_plotly, dummy_scatter_vd):
     model = LinearRegression("LR_churn")
     model.fit(dummy_scatter_vd, ["x"], "y")
+    return model.plot()
+
+
+@pytest.fixture(scope="module")
+def local_outlier_factor_3d_plot_result(load_plotly, dummy_scatter_vd):
+    model = LocalOutlierFactor("lof_test_3d")
+    model.fit(dummy_scatter_vd, ["X", "Y", "Z"])
+    return model.plot()
+
+
+@pytest.fixture(scope="module")
+def local_outlier_factor_plot_result(load_plotly, dummy_scatter_vd):
+    model = LocalOutlierFactor("lof_test")
+    model.fit(dummy_scatter_vd, ["X", "Y"])
     return model.plot()
 
 
@@ -1501,7 +1519,7 @@ class TestMachineLearningRegressionPlot:
 
     def test_properties_xaxis_label(self, regression_plot_result):
         # Arrange
-        test_title = "x"
+        test_title = "X"
         # Act
         # Assert
         assert (
@@ -1510,7 +1528,7 @@ class TestMachineLearningRegressionPlot:
 
     def test_properties_yaxis_label(self, regression_plot_result):
         # Arrange
-        test_title = "y"
+        test_title = "Y"
         # Act
         # Assert
         assert (
@@ -1541,7 +1559,113 @@ class TestMachineLearningRegressionPlot:
         custom_width = 700
         # Act
         model = LinearRegression("LR_churn")
-        model.fit(dummy_scatter_vd, ["x"], "y")
+        model.fit(dummy_scatter_vd, ["X"], "Y")
+        result = model.plot(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningLOFPlot:
+    def test_properties_output_type_for_2d(self, local_outlier_factor_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(local_outlier_factor_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_output_type_for_3d(self, local_outlier_factor_3d_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(local_outlier_factor_3d_plot_result)
+            == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, local_outlier_factor_plot_result):
+        # Arrange
+        test_title = "X"
+        # Act
+        # Assert
+        assert (
+            local_outlier_factor_plot_result.layout["xaxis"]["title"]["text"]
+            == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self, local_outlier_factor_plot_result):
+        # Arrange
+        test_title = "Y"
+        # Act
+        # Assert
+        assert (
+            local_outlier_factor_plot_result.layout["yaxis"]["title"]["text"]
+            == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_xaxis_label_for_3d(self, local_outlier_factor_3d_plot_result):
+        # Arrange
+        test_title = "X"
+        # Act
+        # Assert
+        assert (
+            local_outlier_factor_3d_plot_result.layout["xaxis"]["title"]["text"]
+            == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label_for_3d(self, local_outlier_factor_3d_plot_result):
+        # Arrange
+        test_title = "Y"
+        # Act
+        # Assert
+        assert (
+            local_outlier_factor_3d_plot_result.layout["yaxis"]["title"]["text"]
+            == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_scatter_and_line_plot(self, local_outlier_factor_plot_result):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert (
+            len(local_outlier_factor_plot_result.data) == total_items
+        ), "Either outline or scatter missing"
+
+    def test_properties_hoverinfo_for_2d(self, local_outlier_factor_plot_result):
+        # Arrange
+        x = "{x}"
+        y = "{y}"
+        # Act
+        # Assert
+        assert (
+            x in local_outlier_factor_plot_result.data[1]["hovertemplate"]
+            and y in local_outlier_factor_plot_result.data[1]["hovertemplate"]
+        ), "Hover information does not contain x or y"
+
+    def test_properties_hoverinfo_for_3d(self, local_outlier_factor_3d_plot_result):
+        # Arrange
+        x = "{x}"
+        y = "{y}"
+        z = "{z}"
+        # Act
+        # Assert
+        assert (
+            (x in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
+            and (y in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
+            and (z in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
+        ), "Hover information does not contain x, y or z"
+
+    def test_additional_options_custom_height(self, load_plotly, dummy_scatter_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = LocalOutlierFactor("lof_test")
+        model.fit(dummy_scatter_vd, ["X", "Y"])
         result = model.plot(height=custom_height, width=custom_width)
         # Assert
         assert (
