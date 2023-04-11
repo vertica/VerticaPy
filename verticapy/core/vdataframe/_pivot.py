@@ -32,7 +32,7 @@ class vDFPivot:
     @save_verticapy_logs
     def flat_vmap(
         self,
-        vmap_col: SQLExpression = [],
+        vmap_col: Optional[SQLExpression] = None,
         limit: int = 100,
         exclude_columns: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
@@ -59,6 +59,7 @@ class vDFPivot:
         vDataFrame
             object with the flattened VMaps.
         """
+        vmap_col = format_type(vmap_col, dtype=list)
         if not (vmap_col):
             vmap_col = []
             all_cols = self.get_columns()

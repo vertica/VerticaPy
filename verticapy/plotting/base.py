@@ -231,8 +231,9 @@ class PlottingBase(PlottingBaseSQL):
         return kwargs
 
     def get_colors(
-        self, d: Optional[dict] = {}, idx: Optional[int] = None
+        self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:
+        d = format_type(d, dtype=dict)
         if "color" in d:
             if isinstance(d["color"], str):
                 return d["color"]
