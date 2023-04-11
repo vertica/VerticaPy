@@ -15,8 +15,10 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
-from tqdm.auto import tqdm
+
 import numpy as np
+
+from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import PlottingObject, SQLColumns, SQLRelation

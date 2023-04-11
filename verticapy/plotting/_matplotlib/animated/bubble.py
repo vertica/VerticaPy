@@ -14,8 +14,9 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+
 import numpy as np
-from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
@@ -144,7 +145,10 @@ class AnimatedBubblePlot(AnimatedBase):
         self, date_f: Optional[Callable] = None, **style_kwargs
     ) -> tuple:
         if date_f == None:
-            date_f = lambda x: str(x)
+
+            def date_f(x: Any) -> str:
+                return str(x)
+
         colors = self._get_final_color(style_kwargs=style_kwargs)
         kwargs = self.init_style
         if self.layout["by"]:

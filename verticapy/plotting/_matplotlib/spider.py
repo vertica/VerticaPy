@@ -14,8 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import math
 from typing import Literal, Optional
+
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -54,7 +54,7 @@ class SpiderChart(MatplotlibBase):
         Draws a spider plot using the Matplotlib API.
         """
         m = self.data["X"].shape[0]
-        angles = [i / float(m) * 2 * math.pi for i in range(m)]
+        angles = [i / float(m) * 2 * np.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
         if not (ax):

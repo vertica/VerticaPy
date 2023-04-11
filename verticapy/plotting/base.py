@@ -18,6 +18,7 @@ import copy
 import math
 import random
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
+
 import numpy as np
 
 import matplotlib.colors as plt_colors
@@ -328,7 +329,10 @@ class PlottingBase(PlottingBaseSQL):
                     APPROXIMATE_PERCENTILE({quote_ident(of)} 
                         USING PARAMETERS
                         percentile = {q})"""
-                fun = lambda x: np.quantile(x, q)
+
+                def fun(x: ArrayLike) -> float:
+                    return np.quantile(x, q)
+
             else:
                 raise ValueError(
                     "The parameter 'method' must be in [avg|mean|min|max|sum|"

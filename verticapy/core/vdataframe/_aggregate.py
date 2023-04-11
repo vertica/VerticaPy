@@ -1037,7 +1037,7 @@ class vDFAgg:
         self,
         columns: SQLColumns,
         expr: Optional[SQLExpression] = None,
-        rollup: Union[bool, list] = False,
+        rollup: Union[bool, list[bool]] = False,
         having: Optional[str] = None,
     ) -> "vDataFrame":
         """
@@ -1081,15 +1081,15 @@ class vDFAgg:
             "the same length as the 'columns' parameter."
         )
         columns_to_select = []
-        if rollup:
+        if isinstance(rollup, bool) and rollup:
             rollup_expr = "ROLLUP(" if rollup else ""
         else:
             rollup_expr = ""
         for idx, elem in enumerate(columns):
             if isinstance(elem, tuple) and rollup:
-                if rollup:
+                if isinstance(rollup, bool) and rollup:
                     rollup_expr += "("
-                elif rollup[idx]:
+                elif isinstance(rollup[idx], bool) and rollup[idx]:
                     rollup_expr += "ROLLUP("
                 elif not (isinstance(rollup[idx], bool)):
                     raise ValueError(
@@ -1109,13 +1109,21 @@ class vDFAgg:
             elif isinstance(elem, str):
                 colname = self._format_colnames(elem)
                 if colname:
-                    if not (isinstance(rollup, bool)) and (rollup[idx]):
+                    if (
+                        not (isinstance(rollup, bool))
+                        and isinstance(rollup[idx], bool)
+                        and (rollup[idx])
+                    ):
                         rollup_expr += "ROLLUP(" + colname + ")"
                     else:
                         rollup_expr += colname
                     columns_to_select += [colname]
                 else:
-                    if not (isinstance(rollup, bool)) and (rollup[idx]):
+                    if (
+                        not (isinstance(rollup, bool))
+                        and isinstance(rollup[idx], bool)
+                        and (rollup[idx])
+                    ):
                         rollup_expr += "ROLLUP(" + str(elem) + ")"
                     else:
                         rollup_expr += str(elem)
@@ -1127,7 +1135,7 @@ class vDFAgg:
                     "or tuples (only when rollup is set to True)."
                 )
         rollup_expr = rollup_expr[:-2]
-        if rollup:
+        if isinstance(rollup, bool) and rollup:
             rollup_expr += ")"
         if having:
             having = f" HAVING {having}"

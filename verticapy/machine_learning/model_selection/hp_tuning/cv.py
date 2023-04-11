@@ -16,8 +16,10 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
-from tqdm.auto import tqdm
+
 import numpy as np
+
+from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns, SQLRelation

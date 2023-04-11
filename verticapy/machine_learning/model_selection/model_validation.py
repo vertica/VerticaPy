@@ -20,8 +20,10 @@ import statistics
 import time
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
-from tqdm.auto import tqdm
+
 import numpy as np
+
+from tqdm.auto import tqdm
 
 import verticapy._config.config as conf
 from verticapy._typing import (

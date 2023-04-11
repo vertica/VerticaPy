@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import csv
 import os
 from typing import Optional
+
 import pandas as pd
 
 import verticapy._config.config as conf

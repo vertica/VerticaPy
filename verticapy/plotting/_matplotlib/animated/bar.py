@@ -14,7 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Callable, Literal, Optional
+from typing import Any, Callable, Literal, Optional
+
 import numpy as np
 
 from matplotlib.axes import Axes
@@ -163,7 +164,10 @@ class AnimatedBarChart(AnimatedBase):
         self, date_f: Optional[Callable] = None, **style_kwargs
     ) -> tuple:
         if date_f == None:
-            date_f = lambda x: str(x)
+
+            def date_f(x: Any) -> str:
+                return str(x)
+
         colors = self._get_style_color(style_kwargs=style_kwargs)
         n, m = self.data["Y"].shape
         all_cats = np.unique(self.data["Y"][:, 0])

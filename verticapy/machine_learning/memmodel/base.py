@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import copy
 from abc import abstractmethod
 from typing import Literal, Union
+
 import numpy as np
 
 from verticapy._typing import ArrayLike

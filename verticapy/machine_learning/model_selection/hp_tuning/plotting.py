@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional, Union
 from collections.abc import Iterable
+
 import numpy as np
 
 from verticapy._typing import PlottingObject, PythonScalar, SQLColumns, SQLRelation

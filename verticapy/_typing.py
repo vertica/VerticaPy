@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import datetime
 import decimal
 from typing import Annotated, Literal, Union, TYPE_CHECKING
+
 import numpy as np
 
 if TYPE_CHECKING:

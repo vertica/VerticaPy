@@ -72,7 +72,10 @@ class LogisticRegressionPlot(MatplotlibBase):
         """
         Draws a Logistic Regression plot using the Matplotlib API.
         """
-        logit = lambda x: 1 / (1 + np.exp(-x))
+
+        def logit(x: float) -> float:
+            return 1 / (1 + np.exp(-x))
+
         x, z = self.data["X"][:, 0], self.data["X"][:, -1]
         x0, x1 = x[z == 0], x[z == 1]
         min_logit_x, max_logit_x = min(self.data["X"][:, 0]), max(self.data["X"][:, 0])

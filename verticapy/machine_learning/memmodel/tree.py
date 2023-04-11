@@ -18,6 +18,7 @@ import copy
 import math
 from collections.abc import Iterable
 from typing import Literal, Optional, Union
+
 import numpy as np
 
 import verticapy._config.config as conf

@@ -19,6 +19,7 @@ import json
 import os
 import uuid
 from typing import Any, Optional, TextIO
+
 import numpy as np
 
 from verticapy._typing import ArrayLike
