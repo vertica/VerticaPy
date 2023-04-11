@@ -32,12 +32,11 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
 from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve
+from verticapy.plotting._plotly.machine_learning.logistic_reg import LogisticRegressionPlot
 
 
 import plotly.io as pio
 import plotly.graph_objects as go
 
-pio.templates["VerticaPy"] = go.layout.Template(
-    layout_colorway=PlotlyBase().get_colors()
-)
+pio.templates["VerticaPy"] = go.layout.Template(layout_colorway=PlotlyBase().get_colors())
 pio.templates.default = "VerticaPy"
