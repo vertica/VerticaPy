@@ -165,11 +165,11 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if start != None and end != None:
+        if not (isinstance(start, NoneType)) and not (isinstance(end, NoneType)):
             condition = f"BETWEEN '{start}' AND '{end}'"
-        elif start != None:
+        elif not (isinstance(start, NoneType)):
             condition = f"> '{start}'"
-        elif end != None:
+        elif not (isinstance(end, NoneType)):
             condition = f"< '{end}'"
         else:
             return self.copy() if inplace else self
@@ -209,11 +209,13 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if start_time != None and end_time != None:
+        if not (isinstance(start_time, NoneType)) and not (
+            isinstance(end_time, NoneType)
+        ):
             condition = f"BETWEEN '{start_time}' AND '{end_time}'"
-        elif start_time != None:
+        elif not (isinstance(start_time, NoneType)):
             condition = f"> '{start_time}'"
-        elif end_time != None:
+        elif not (isinstance(end_time, NoneType)):
             condition = f"< '{end_time}'"
         else:
             raise ValueError(
@@ -480,7 +482,7 @@ class vDFFilter:
         for i in range(n):
             tmp_query = []
             for column in val:
-                if val[column][i] == None:
+                if isinstance(val[column][i], NoneType):
                     tmp_query += [f"{quote_ident(column)} IS NULL"]
                 else:
                     val_str = str(val[column][i]).replace("'", "''")
@@ -563,13 +565,13 @@ class vDFFilter:
         """
         if x == 1:
             return self.copy()
-        assert n != None or x != None, ValueError(
-            "One of the parameter 'n' or 'x' must not be empty."
-        )
-        assert n == None or x == None, ValueError(
+        assert not (isinstance(n, NoneType)) or not (
+            isinstance(x, NoneType)
+        ), ValueError("One of the parameter 'n' or 'x' must not be empty.")
+        assert isinstance(n, NoneType) or isinstance(x, NoneType), ValueError(
             "One of the parameter 'n' or 'x' must be empty."
         )
-        if n != None:
+        if not (isinstance(n, NoneType)):
             x = float(n / self.shape()[0])
             if x >= 1:
                 return self.copy()

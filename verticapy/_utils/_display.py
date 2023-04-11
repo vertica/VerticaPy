@@ -19,6 +19,7 @@ import shutil
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._typing import NoneType
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._logo import verticapy_logo_html
@@ -126,7 +127,7 @@ def print_table(
                 val = data_columns[j][i]
                 if isinstance(val, str):
                     val = html.escape(val)
-                if val == None:
+                if isinstance(val, NoneType):
                     val = "[null]"
                     color = "#999999"
                 else:

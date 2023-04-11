@@ -18,7 +18,7 @@ from typing import Literal, Optional
 
 import numpy as np
 
-from verticapy._typing import HChart
+from verticapy._typing import HChart, NoneType
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -120,7 +120,7 @@ class StepwisePlot(HighchartsBase):
                     float(self.data["s"][i]),
                 ]
             ]
-            if c != None:
+            if not (isinstance(c, NoneType)):
                 sign = self.data["sign"][i]
                 chart.add_data_set(data, "bubble", sign + c, **lookup_table[sign])
         i = -1

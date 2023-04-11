@@ -75,10 +75,8 @@ def color_validator(val: Union[str, list, None]) -> Literal[True]:
     """
     Validator used to check and change the colors.
     """
-    if (
-        (isinstance(val, str) and val in COLORS_OPTIONS)
-        or isinstance(val, list)
-        or val == None
+    if (isinstance(val, str) and val in COLORS_OPTIONS) or isinstance(
+        val, (list, NoneType)
     ):
         return True
     else:
@@ -239,10 +237,10 @@ class PlottingBase(PlottingBaseSQL):
             if isinstance(d["color"], str):
                 return d["color"]
             else:
-                if idx == None:
+                if isinstance(idx, NoneType):
                     idx = 0
                 return d["color"][idx % len(d["color"])]
-        elif idx == None:
+        elif isinstance(idx, NoneType):
             if not (conf.get_option("colors")):
                 colors = COLORS_OPTIONS["default"]
                 all_colors = [plt_colors.cnames[key] for key in plt_colors.cnames]
@@ -279,7 +277,7 @@ class PlottingBase(PlottingBaseSQL):
             args2 = args + [[self.get_colors(idx=1), "#FFFFFF", self.get_colors(idx=0)]]
             cm1 = cmap_from_list(*args1, **kwargs)
             cm2 = cmap_from_list(*args2, **kwargs)
-            if idx == None:
+            if isinstance(idx, NoneType):
                 return (cm1, cm2)
             elif idx == 0:
                 return cm1
@@ -500,11 +498,14 @@ class PlottingBase(PlottingBaseSQL):
             )
             y = (
                 [
-                    item[1] / float(count) if item[1] != None else 0
+                    item[1] / float(count) if not (isinstance(item[1], NoneType)) else 0
                     for item in query_result
                 ]
                 if (method.lower() == "density")
-                else [item[1] if item[1] != None else 0 for item in query_result]
+                else [
+                    item[1] if not (isinstance(item[1], NoneType)) else 0
+                    for item in query_result
+                ]
             )
             x = [0.4 * i + 0.2 for i in range(0, len(y))]
             adj_width = 0.4 * (1 - bargap)
@@ -512,7 +513,9 @@ class PlottingBase(PlottingBaseSQL):
             is_categorical = True
         # case when date
         elif is_date:
-            if ((h == None) or (h <= 0)) and ((nbins == None) or (nbins <= 0)):
+            if (isinstance(h, NoneType) or (h <= 0)) and (
+                isinstance(nbins, NoneType) or (nbins <= 0)
+            ):
                 h = vdc.numh()
             elif nbins > 0:
                 query_result = _executeSQL(
@@ -570,7 +573,9 @@ class PlottingBase(PlottingBaseSQL):
             is_categorical = True
         # case when numerical
         else:
-            if ((h == None) or (h <= 0)) and ((nbins == None) or (nbins <= 0)):
+            if (isinstance(h, NoneType) or (h <= 0)) and (
+                isinstance(nbins, NoneType) or (nbins <= 0)
+            ):
                 h = vdc.numh()
             elif nbins > 0:
                 h = float(vdc.max() - vdc.min()) / nbins
@@ -610,7 +615,9 @@ class PlottingBase(PlottingBaseSQL):
             "is_categorical": is_categorical,
         }
         self.layout = {
-            "labels": [li if li != None else "None" for li in labels],
+            "labels": [
+                li if not (isinstance(li, NoneType)) else "None" for li in labels
+            ],
             "column": self._clean_quotes(vdc._alias),
             "method": method,
             "method_of": method + f"({of})" if of else method,
@@ -671,7 +678,7 @@ class PlottingBase(PlottingBaseSQL):
                 data[category] = copy.deepcopy(self.data)
         else:
             h_, categories = [], None
-            if h == None or h <= 0:
+            if isinstance(h, NoneType) or h <= 0:
                 for idx, column in enumerate(columns):
                     h_ += [vdf[column].numh()]
                 h = min(h_)
@@ -849,7 +856,7 @@ class PlottingBase(PlottingBaseSQL):
             is_date = vdf[column].isdate()
             where = []
             if is_numeric:
-                if h[idx] == None:
+                if isinstance(h[idx], NoneType):
                     interval = vdf[column].numh()
                     if interval > 0.01:
                         interval = round(interval, 2)
@@ -884,7 +891,7 @@ class PlottingBase(PlottingBaseSQL):
                                           / {interval}) * {interval}) ASC"""
                 where += [f"{column} IS NOT NULL"]
             elif is_date:
-                if h[idx] == None:
+                if isinstance(h[idx], NoneType):
                     interval = vdf[column].numh()
                 else:
                     interval = max(math.floor(h[idx]), 1)
@@ -1047,14 +1054,14 @@ class PlottingBase(PlottingBaseSQL):
                 x_tmp, y_tmp, z_tmp = [], [], []
                 j, last_non_null_value = 0, 0
                 while y_start == y_new and i < n and j < nbins:
-                    if dataset[i][2] != None:
+                    if not (isinstance(dataset[i][2], NoneType)):
                         last_non_null_value = float(dataset[i][2])
                     x_tmp += [float(dataset[i][1])]
                     y_tmp += [float(dataset[i][0])]
                     z_tmp += [
                         float(
                             dataset[i][2]
-                            if (dataset[i][2] != None)
+                            if not (isinstance(dataset[i][2], NoneType))
                             else last_non_null_value
                         )
                     ]
@@ -1073,7 +1080,9 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
             "func": func,
-            "func_repr": func_name if func_name != None else func_repr,
+            "func_repr": func_name
+            if not (isinstance(func_name, NoneType))
+            else func_repr,
         }
         return None
 
@@ -1123,14 +1132,14 @@ class PlottingBase(PlottingBaseSQL):
                 x_tmp, y_tmp, z_tmp = [], [], []
                 j, last_non_null_value = 0, 0
                 while y_start == y_new and i < n and j < nbins:
-                    if dataset[i][2] != None:
+                    if not (isinstance(dataset[i][2], NoneType)):
                         last_non_null_value = float(dataset[i][2])
                     x_tmp += [float(dataset[i][1])]
                     y_tmp += [float(dataset[i][0])]
                     z_tmp += [
                         float(
                             dataset[i][2]
-                            if (dataset[i][2] != None)
+                            if not (isinstance(dataset[i][2], NoneType))
                             else last_non_null_value
                         )
                     ]
@@ -1149,7 +1158,9 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
             "func": func,
-            "func_repr": func_name if func_name != None else func_repr,
+            "func_repr": func_name
+            if not (isinstance(func_name, NoneType))
+            else func_repr,
         }
         return None
 
@@ -1214,10 +1225,10 @@ class PlottingBase(PlottingBaseSQL):
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
         if max_nb_points > 0:
-            if size != None:
+            if not (isinstance(size, NoneType)):
                 cols_to_select += [vdf._format_colnames(size)]
                 has_size = True
-            if by != None:
+            if not (isinstance(by, NoneType)):
                 has_category = True
                 by = vdf._format_colnames(by)
                 if vdf[by].isnum():
@@ -1238,7 +1249,7 @@ class PlottingBase(PlottingBaseSQL):
                     ]
                 if cat_priority:
                     vdf_tmp = vdf_tmp[by].isin(cat_priority)
-            elif cmap_col != None:
+            elif not (isinstance(cmap_col, NoneType)):
                 cols_to_select += [vdf._format_colnames(cmap_col)]
                 has_cmap = True
             X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
@@ -1251,14 +1262,18 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
             "size": self._clean_quotes(size),
-            "c": self._clean_quotes(by) if (by != None) else cmap_col,
+            "c": self._clean_quotes(by)
+            if (not (isinstance(by, NoneType)))
+            else cmap_col,
             "has_category": has_category,
             "has_cmap": has_cmap,
             "has_size": has_size,
         }
-        if (size != None) and (max_nb_points > 0):
+        if not (isinstance(size, NoneType)) and (max_nb_points > 0):
             self.data["s"] = X[:, n].astype(float)
-        if ((by != None) or (cmap_col != None)) and (max_nb_points > 0):
+        if (
+            (not (isinstance(by, NoneType))) or (not (isinstance(cmap_col, NoneType)))
+        ) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
         return None
 
@@ -1531,7 +1546,7 @@ class PlottingBase(PlottingBaseSQL):
         cols = copy.deepcopy(columns)
         if len(cols) == 2:
             cols += [1]
-        by_ = 1 if by == None else by
+        by_ = 1 if isinstance(by, NoneType) else by
         if catcol:
             cols += [catcol]
         where = f" AND {order_by} > '{order_by_start}'" if (order_by_start) else ""
@@ -1567,7 +1582,7 @@ class PlottingBase(PlottingBaseSQL):
             "order_by": self._clean_quotes(order_by),
             "by": self._clean_quotes(by),
             "catcol": self._clean_quotes(catcol),
-            "by_is_num": vdf[by].isnum() if by != None else None,
+            "by_is_num": vdf[by].isnum() if not (isinstance(by, NoneType)) else None,
             "limit": limit,
             "limit_over": limit_over,
         }
@@ -1589,7 +1604,7 @@ class PlottingBase(PlottingBaseSQL):
         if isinstance(h, (int, float, NoneType)):
             h = (h,) * n
         if isinstance(max_cardinality, (int, float, NoneType)):
-            if max_cardinality == None:
+            if isinstance(max_cardinality, NoneType):
                 max_cardinality = (6,) * n
             else:
                 max_cardinality = (max_cardinality,) * n

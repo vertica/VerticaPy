@@ -20,7 +20,7 @@ from typing import Optional
 from vertica_highcharts import Highchart, Highstock
 
 from verticapy._utils._sql._format import format_type
-from verticapy._typing import HChart
+from verticapy._typing import HChart, NoneType
 
 from verticapy.plotting.base import PlottingBase
 
@@ -36,7 +36,7 @@ class HighchartsBase(PlottingBase):
     ) -> HChart:
         style_kwargs = format_type(style_kwargs, dtype=dict)
         kwargs = copy.deepcopy(style_kwargs)
-        if chart != None:
+        if not (isinstance(chart, NoneType)):
             return chart, kwargs
         if "figsize" in kwargs and isinstance(kwargs, tuple):
             width, height = kwargs["figsize"]

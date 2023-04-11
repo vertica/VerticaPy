@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import xgboost as xgb
 
 # VerticaPy
+from verticapy._typing import NoneType
 from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
@@ -458,12 +459,12 @@ class TestXGBR:
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
-        assert tree_1["prediction"][0] == None
+        assert isinstance(tree_1["prediction"][0], NoneType)
         assert tree_1["prediction"][1] in ("0.880000", "0.701250")
-        assert tree_1["prediction"][2] == None
-        assert tree_1["prediction"][3] == None
+        assert isinstance(tree_1["prediction"][2], NoneType)
+        assert isinstance(tree_1["prediction"][3], NoneType)
         assert tree_1["prediction"][4] in ("0.080000", "0.057778")
-        assert tree_1["prediction"][5] == None
+        assert isinstance(tree_1["prediction"][5], NoneType)
         assert tree_1["prediction"][6] in ("-0.720000", "-0.573750")
         assert tree_1["prediction"][7] in ("-0.720000", "-0.405000")
         assert tree_1["prediction"][8] in ("0.080000", "0.045000")

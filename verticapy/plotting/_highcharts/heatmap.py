@@ -19,7 +19,7 @@ from typing import Literal, Optional
 
 import numpy as np
 
-from verticapy._typing import HChart
+from verticapy._typing import HChart, NoneType
 from verticapy.plotting._highcharts.base import HighchartsBase
 
 
@@ -135,7 +135,7 @@ class HeatMap(HighchartsBase):
         else:
             d = {}
         for vm in ["vmin", "vmax"]:
-            if vm in self.layout and self.layout[vm] != None:
+            if vm in self.layout and not (isinstance(self.layout[vm], NoneType)):
                 d[vm[1:]] = self.layout[vm]
         return d
 

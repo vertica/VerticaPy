@@ -26,7 +26,7 @@ import scipy.special as scipy_special
 
 import verticapy._config.config as conf
 from verticapy._utils._object import _get_mllib
-from verticapy._typing import PlottingObject, SQLColumns
+from verticapy._typing import NoneType, PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
@@ -326,7 +326,7 @@ class vDFCorr:
                 for x in result:
                     i = corr_dict[quote_ident(x[0])]
                     j = corr_dict[quote_ident(x[1])]
-                    if x[2] != None:
+                    if not (isinstance(x[2], NoneType)):
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
@@ -361,7 +361,10 @@ class vDFCorr:
                             pre_comp_val = self._get_catalog_value(
                                 method=method, columns=[columns[i], columns[j]]
                             )
-                            if pre_comp_val == None or pre_comp_val != pre_comp_val:
+                            if (
+                                isinstance(pre_comp_val, NoneType)
+                                or pre_comp_val != pre_comp_val
+                            ):
                                 pre_comp_val = "NULL"
                             if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                                 all_list += [str(pre_comp_val)]
@@ -452,7 +455,7 @@ class vDFCorr:
                     for j in range(0, i + step):
                         current = result[k]
                         k += 1
-                        if current == None:
+                        if isinstance(current, NoneType):
                             current = np.nan
                         matrix[i][j] = current
                         matrix[j][i] = current
@@ -570,7 +573,10 @@ class vDFCorr:
                     pre_comp_val = self._get_catalog_value(
                         method=method, columns=[focus, column]
                     )
-                    if pre_comp_val == None or pre_comp_val != pre_comp_val:
+                    if (
+                        isinstance(pre_comp_val, NoneType)
+                        or pre_comp_val != pre_comp_val
+                    ):
                         pre_comp_val = "NULL"
                     if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                         all_list += [str(pre_comp_val)]
@@ -662,7 +668,7 @@ class vDFCorr:
                     matrix += [
                         self._aggregate_matrix(method=method, columns=[column, focus])
                     ]
-        matrix = [np.nan if (x == None) else x for x in matrix]
+        matrix = [np.nan if isinstance(x, NoneType) else x for x in matrix]
         data = [(cols[i], float(matrix[i])) for i in range(len(matrix))]
         data.sort(key=lambda tup: abs(tup[1]), reverse=True)
         cols = [x[0] for x in data]
@@ -780,10 +786,7 @@ class vDFCorr:
             Plotting Object.
         """
         method = str(method).lower()
-        if columns == None:
-            columns = self.numcol()
-        else:
-            columns = format_type(columns, dtype=list)
+        columns = format_type(columns, dtype=list, na_out=self.numcol())
         columns, focus = self._format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
@@ -1147,7 +1150,7 @@ class vDFCorr:
                 pre_comp_val = self._get_catalog_value(
                     method=method, columns=[columns[i], columns[j]]
                 )
-                if pre_comp_val == None or pre_comp_val != pre_comp_val:
+                if isinstance(pre_comp_val, NoneType) or pre_comp_val != pre_comp_val:
                     pre_comp_val = "NULL"
                 if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                     all_list += [str(pre_comp_val)]
@@ -1205,7 +1208,7 @@ class vDFCorr:
             for j in range(0, n):
                 current = result[k]
                 k += 1
-                if current == None:
+                if isinstance(current, NoneType):
                     current = np.nan
                 matrix[i][j] = current
         if show:

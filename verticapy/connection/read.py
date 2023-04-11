@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import os
 from typing import Optional
 
+from verticapy._typing import NoneType
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.utils import get_confparser
 
@@ -92,7 +93,7 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                     option_name = "password"
                 elif option_name == "uid":
                     option_name = "user"
-                if os.getenv(option_val) != None:
+                if not (isinstance(os.getenv(option_val), NoneType)):
                     conn_info[option_name] = os.getenv(option_val)
                 else:
                     raise ValueError(

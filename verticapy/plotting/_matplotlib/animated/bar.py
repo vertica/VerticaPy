@@ -21,6 +21,7 @@ import numpy as np
 from matplotlib.axes import Axes
 import matplotlib.animation as animation
 
+from verticapy._typing import NoneType
 from verticapy._utils._sql._format import format_type
 
 from verticapy.plotting._matplotlib.animated.base import AnimatedBase
@@ -163,7 +164,7 @@ class AnimatedBarChart(AnimatedBase):
     def _compute_anim_params(
         self, date_f: Optional[Callable] = None, **style_kwargs
     ) -> tuple:
-        if date_f == None:
+        if isinstance(date_f, NoneType):
 
             def date_f(x: Any) -> str:
                 return str(x)

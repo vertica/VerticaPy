@@ -21,6 +21,8 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
+from verticapy._typing import NoneType
+
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -98,7 +100,7 @@ class HeatMap(MatplotlibBase):
         try:
             im = ax.imshow(np.transpose(X), **kwargs)
         except:
-            if kwargs["extent"] != None:
+            if not (isinstance(kwargs["extent"], NoneType)):
                 kwargs["extent"] = None
                 im = ax.imshow(np.transpose(X), **kwargs)
             else:

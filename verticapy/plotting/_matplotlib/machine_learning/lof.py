@@ -19,6 +19,8 @@ import numpy as np
 
 from matplotlib.axes import Axes
 
+from verticapy._typing import NoneType
+
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
@@ -96,7 +98,7 @@ class LOFPlot(MatplotlibBase):
             ax, fig, style_kwargs = self._get_ax_fig(
                 ax, size=size, set_axis_below=True, grid=True, style_kwargs=style_kwargs
             )
-            if y_label == None:
+            if isinstance(y_label, NoneType):
                 ax.set_yticks([])
             else:
                 ax.set_ylabel(y_label)

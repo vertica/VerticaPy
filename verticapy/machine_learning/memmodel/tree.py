@@ -22,7 +22,7 @@ from typing import Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
@@ -211,7 +211,9 @@ class Tree(InMemoryModel):
         str
             SQL code.
         """
-        n = max([len(val) if val != None else 0 for val in self.value_])
+        n = max(
+            [len(val) if not (isinstance(val, NoneType)) else 0 for val in self.value_]
+        )
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
 
     # Trees Representation Methods.
