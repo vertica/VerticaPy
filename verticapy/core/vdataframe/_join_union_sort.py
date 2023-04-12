@@ -91,8 +91,8 @@ class vDFJoinUnionSort:
     def join(
         self,
         input_relation: SQLRelation,
-        on: Union[tuple, dict, list] = {},
-        on_interpolate: dict = {},
+        on: Union[None, tuple, dict, list] = None,
+        on_interpolate: Optional[dict] = None,
         how: Literal[
             "left", "right", "cross", "full", "natural", "self", "inner", None
         ] = "natural",

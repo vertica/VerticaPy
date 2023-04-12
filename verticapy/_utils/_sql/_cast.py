@@ -112,35 +112,19 @@ def to_category(
     """
     ctype = ctype.lower().strip()
     if ctype != "":
-        if (ctype[0:5] == "array") or (ctype[0:3] == "row") or (ctype[0:3] == "set"):
+        if ctype.startswith(("array", "row", "set")):
             return "complex"
-        elif (
-            (ctype[0:4] == "date")
-            or (ctype[0:4] == "time")
-            or (ctype == "smalldatetime")
-            or (ctype[0:8] == "interval")
-        ):
+        elif ctype.startswith(("date", "interval", "smalldatetime", "time")):
             return "date"
-        elif (
-            (ctype[0:3] == "int")
-            or (ctype[0:4] == "bool")
-            or (ctype in ("tinyint", "smallint", "bigint"))
-        ):
+        elif ctype.startswith(("bigint", "bool", "int", "smallint", "tinyint")):
             return "int"
-        elif (
-            (ctype[0:3] == "num")
-            or (ctype[0:5] == "float")
-            or (ctype[0:7] == "decimal")
-            or (ctype == "money")
-            or (ctype[0:6] == "double")
-            or (ctype[0:4] == "real")
-        ):
+        elif ctype.startswith(("decimal", "double", "float", "money", "num", "real")):
             return "float"
-        elif ctype[0:3] == "geo":
+        elif ctype.startswith("geo"):
             return "spatial"
-        elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
+        elif ctype.startswith(("binary", "byte", "raw")):
             return "binary"
-        elif "uuid" in ctype:
+        elif ctype.startswith("uuid"):
             return "uuid"
         elif ctype.startswith("vmap"):
             return "vmap"

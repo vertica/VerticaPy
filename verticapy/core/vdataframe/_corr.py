@@ -862,7 +862,7 @@ class vDFCorr:
         """
         method = str(method).lower()
         column1, column2 = self._format_colnames(column1, column2)
-        if method[0:7] == "kendall":
+        if method.startswith("kendall"):
             if method == "kendall":
                 kendall_type = "b"
             else:

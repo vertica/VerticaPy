@@ -129,7 +129,7 @@ def load_model(
             .replace("\n", " ")
             .strip()
         )
-    if info.lower()[0:7] == "select ":
+    if info.lower().startswith("select "):
         info = info[7:].split("(")
     else:
         info = info.split("(")

@@ -102,7 +102,7 @@ class vDFEval:
             )
         if not (ctype):
             ctype = "undefined"
-        elif (ctype.lower()[0:12] in ("long varbina", "long varchar")) and (
+        elif (ctype.lower().startswith(("long varbina", "long varchar"))) and (
             self._vars["isflex"]
             or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
         ):

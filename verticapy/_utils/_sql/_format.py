@@ -41,10 +41,10 @@ def clean_query(query: SQLExpression) -> SQLExpression:
         query = query.replace("\t", " ").replace("\n", " ")
         query = re.sub(" +", " ", query)
 
-        while len(query) > 0 and (query[-1] in (";", " ")):
+        while len(query) > 0 and query.endswith((";", " ")):
             query = query[0:-1]
 
-        while len(query) > 0 and (query[0] in (";", " ")):
+        while len(query) > 0 and query.startswith((";", " ")):
             query = query[1:]
 
         return query.strip().replace("\xa0", " ")

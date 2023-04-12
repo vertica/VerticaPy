@@ -22,7 +22,7 @@ def is_longvar(ctype: str) -> bool:
     Returns True if the input SQL ctype is
     a long varbinary or long varchar.
     """
-    return ctype.lower()[0:12] in ("long varbina", "long varchar")
+    return ctype.lower().startswith(("long varbina", "long varchar"))
 
 
 def is_dql(query: str) -> bool:

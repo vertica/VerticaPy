@@ -53,7 +53,7 @@ def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = "") -> s
     elif key == "top1_percent":
         key = "top_percent"
     elif "%" == key[-1]:
-        start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
+        start = 7 if len(key) >= 7 and key.startswith("approx_") else 0
         if float(key[start:-1]) == int(float(key[start:-1])):
             key = f"{int(float(key[start:-1]))}%"
             if start == 7:

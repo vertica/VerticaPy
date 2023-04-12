@@ -160,7 +160,7 @@ class vDFAgg:
         for fun in func:
 
             if fun[-1] == "%":
-                if (len(fun.lower()) >= 8) and fun[0:7] == "approx_":
+                if (len(fun.lower()) >= 8) and fun.startswith("approx_"):
                     agg_approx += [fun.lower()]
                 else:
                     agg_exact_percent += [fun.lower()]
@@ -263,7 +263,7 @@ class vDFAgg:
                         pre_comp_str = str(pre_comp).replace("'", "''")
                         expr = f"'{pre_comp_str}'"
 
-                elif ("_percent" in fun.lower()) and (fun.lower()[0:3] == "top"):
+                elif fun.lower().endswith("_percent") and fun.lower().startswith("top"):
                     n = fun.lower().replace("top", "").replace("_percent", "")
                     if n == "":
                         n = 1
@@ -288,7 +288,7 @@ class vDFAgg:
                     except:
                         expr = "0.0"
 
-                elif (len(fun.lower()) > 2) and (fun.lower()[0:3] == "top"):
+                elif (len(fun.lower()) > 2) and (fun.lower().startswith("top")):
                     n = fun.lower()[3:] if (len(fun.lower()) > 3) else 1
                     try:
                         n = int(n)
@@ -403,7 +403,7 @@ class vDFAgg:
 
                 elif "%" == fun[-1]:
                     try:
-                        if (len(fun.lower()) >= 8) and fun[0:7] == "approx_":
+                        if (len(fun.lower()) >= 8) and fun.startswith("approx_"):
                             percentile = float(fun[7:-1]) / 100
                             expr = f"""
                                 APPROXIMATE_PERCENTILE({column}{cast} 

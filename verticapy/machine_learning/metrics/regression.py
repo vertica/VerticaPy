@@ -482,8 +482,8 @@ def regression_report(
         relation = input_relation
     metrics_sql = []
     for m in selected_metrics:
-        if m[0] == "q":
-            if m[0:2] == "qe":
+        if m.startswith("q"):
+            if m.startswith("qe"):
                 q = float(m[2:-1]) / 100
             else:
                 q = float(m[14:-1]) / 100

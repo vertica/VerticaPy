@@ -464,11 +464,12 @@ class vDataColumn(
         alias: str,
         transformations: Optional[list] = None,
         parent: Optional[vDataFrame] = None,
-        catalog: dict = {},
+        catalog: Optional[dict] = None,
     ) -> None:
         self._parent = parent
         self._alias = alias
         self._transf = format_type(transformations, dtype=list)
+        catalog = format_type(catalog, dtype=dict)
         self._catalog = {
             "cov": {},
             "pearson": {},

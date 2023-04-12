@@ -200,9 +200,9 @@ def sql_magic(
         for i in range(n):
 
             query = queries[i]
-            while len(query) > 0 and (query[-1] in (";", " ")):
+            while len(query) > 0 and query.endswith((";", " ")):
                 query = query[0:-1]
-            while len(query) > 0 and (query[0] in (";", " ")):
+            while len(query) > 0 and query.startswith((";", " ")):
                 query = query[1:]
             queries[i] = query
 
@@ -232,7 +232,7 @@ def sql_magic(
             else:
                 query_type = query.split(" ")[1].upper().replace("(", "")
 
-            if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
+            if len(query_type) > 1 and query_type.startswith(("/*", "--")):
                 query_type = "undefined"
 
             if (query_type == "COPY") and ("from local" in query.lower()):

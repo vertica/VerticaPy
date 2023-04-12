@@ -416,28 +416,15 @@ class vDFSystem:
         ]
         for column in columns:
             ctype = self[column].ctype()
-            if (
-                (ctype[0:4] == "date")
-                or (ctype[0:4] == "time")
-                or (ctype[0:8] == "interval")
-                or (ctype == "smalldatetime")
-            ):
+            if ctype.startswith(("date", "time", "interval", "smalldatetime")):
                 maxsize, expsize = 8, 8
             elif "int" in ctype:
                 maxsize, expsize = 8, self[column].store_usage()
-            elif ctype[0:4] == "bool":
+            elif ctype.startswith("bool"):
                 maxsize, expsize = 1, 1
-            elif (
-                (ctype[0:5] == "float")
-                or (ctype[0:6] == "double")
-                or (ctype[0:4] == "real")
-            ):
+            elif ctype.startswith(("float", "double", "real")):
                 maxsize, expsize = 8, 8
-            elif (
-                (ctype[0:7] in ("numeric", "decimal"))
-                or (ctype[0:6] == "number")
-                or (ctype[0:5] == "money")
-            ):
+            elif ctype.startswith(("decimal", "number", "numeric", "money")):
                 try:
                     size = sum(
                         [
@@ -445,27 +432,29 @@ class vDFSystem:
                             for item in ctype.split("(")[1].split(")")[0].split(",")
                         ]
                     )
-                except:
+                except IndexError:
                     size = 38
                 maxsize, expsize = size, size
-            elif ctype[0:7] == "varchar":
+            elif ctype.startswith("varchar"):
                 try:
                     size = int(ctype.split("(")[1].split(")")[0])
-                except:
+                except IndexError:
                     size = 80
                 maxsize, expsize = size, self[column].store_usage()
-            elif (ctype[0:4] == "char") or (ctype[0:3] == "geo") or ("binary" in ctype):
+            elif ctype.startswith("geo") or ctype.endswith(
+                ("binary", "bytea", "char", "raw")
+            ):
                 try:
                     size = int(ctype.split("(")[1].split(")")[0])
                     maxsize, expsize = size, size
-                except:
-                    if ctype[0:3] == "geo":
+                except IndexError:
+                    if ctype.startswith("geo"):
                         maxsize, expsize = 10000000, 10000
-                    elif "long" in ctype:
+                    elif ctype.startswith("long"):
                         maxsize, expsize = 32000000, 10000
                     else:
                         maxsize, expsize = 65000, 1000
-            elif ctype[0:4] == "uuid":
+            elif ctype.startswith("uuid"):
                 maxsize, expsize = 16, 16
             else:
                 maxsize, expsize = 80, self[column].store_usage()
