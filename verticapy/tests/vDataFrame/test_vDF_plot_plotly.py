@@ -34,7 +34,11 @@ import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
 
-from verticapy.learn.linear_model import LinearRegression, LogisticRegression
+from verticapy.learn.linear_model import (
+    LinearRegression,
+    LogisticRegression,
+)
+from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow
 from verticapy.learn.neighbors import LocalOutlierFactor
 
@@ -116,7 +120,7 @@ def dummy_dist_vd():
     yield dummy
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
         ts="date",
@@ -128,39 +132,50 @@ def acf_plot_result(load_plotly, amazon_vd):
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def regression_plot_result(load_plotly, dummy_scatter_vd):
     model = LinearRegression("LR_churn")
     model.fit(dummy_scatter_vd, ["x"], "y")
     return model.plot()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def local_outlier_factor_3d_plot_result(load_plotly, dummy_scatter_vd):
     model = LocalOutlierFactor("lof_test_3d")
     model.fit(dummy_scatter_vd, ["X", "Y", "Z"])
     return model.plot()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def local_outlier_factor_plot_result(load_plotly, dummy_scatter_vd):
     model = LocalOutlierFactor("lof_test")
     model.fit(dummy_scatter_vd, ["X", "Y"])
     return model.plot()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def logistic_regression_plot_result(load_plotly, titanic_vd):
     model = LogisticRegression("log_reg_test")
     model.fit(titanic_vd, ["fare"], "survived")
     return model.plot()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def logistic_regression_plot_for_3d_result(load_plotly, titanic_vd):
     model = LogisticRegression("log_reg_test")
     model.fit(titanic_vd, ["fare", "age"], "survived")
     return model.plot()
+
+
+@pytest.fixture(scope="class")
+def importance_plot_result(load_plotly, iris_vd):
+    model = RandomForestClassifier("importance_test")
+    model.fit(
+        iris_vd,
+        ["PetalLengthCm", "PetalWidthCm", "SepalWidthCm", "SepalLengthCm"],
+        "Species",
+    )
+    return model.features_importance()
 
 
 @pytest.fixture(scope="module")
@@ -170,7 +185,7 @@ def titanic_vd():
     drop(name="public.titanic")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def elbow_plot_result(load_plotly, iris_vd):
     return elbow(input_relation=iris_vd, X=["PetalLengthCm", "PetalWidthCm"])
 
@@ -1377,6 +1392,7 @@ class TestVDFOutliersPlot:
 
 
 class TestVDFACFPlot:
+    @pytest.fixture(autouse=True)
     def test_properties_output_type_for(self, acf_plot_result):
         # Arrange
         # Act
@@ -1479,6 +1495,7 @@ class TestVDFACFPlot:
 
 
 class TestMachineLearningElbowCurve:
+    @pytest.fixture(autouse=True)
     def test_properties_output_type_for(self, elbow_plot_result):
         # Arrange
         # Act
@@ -1524,6 +1541,7 @@ class TestMachineLearningElbowCurve:
 
 
 class TestMachineLearningRegressionPlot:
+    @pytest.fixture(autouse=True)
     def test_properties_output_type_for(self, regression_plot_result):
         # Arrange
         # Act
@@ -1584,6 +1602,7 @@ class TestMachineLearningRegressionPlot:
 
 
 class TestMachineLearningLOFPlot:
+    @pytest.fixture(autouse=True)
     def test_properties_output_type_for_2d(self, local_outlier_factor_plot_result):
         # Arrange
         # Act
@@ -1690,6 +1709,7 @@ class TestMachineLearningLOFPlot:
 
 
 class TestMachineLearningLogisticRegressionPlot:
+    @pytest.fixture(autouse=True)
     def test_properties_output_type_for_2d(self, logistic_regression_plot_result):
         # Arrange
         # Act
@@ -1772,6 +1792,62 @@ class TestMachineLearningLogisticRegressionPlot:
         model = LogisticRegression("log_reg_test")
         model.fit(titanic_vd, ["fare"], "survived")
         result = model.plot(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningImportanceBarChart:
+    @pytest.fixture(autouse=True)
+    def test_properties_output_type_for_2d(self, importance_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(importance_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, importance_plot_result):
+        # Arrange
+        test_title = "Importance (%)"
+        # Act
+        # Assert
+        assert (
+            importance_plot_result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self, importance_plot_result):
+        # Arrange
+        test_title = "Features"
+        # Act
+        # Assert
+        assert (
+            importance_plot_result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_data_no_of_columns(self, importance_plot_result):
+        # Arrange
+        total_items = 4
+        # Act
+        # Assert
+        assert (
+            len(importance_plot_result.data[0]["x"]) == total_items
+        ), "Some columns missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = RandomForestClassifier("importance_test")
+        model.fit(
+            iris_vd,
+            ["PetalLengthCm", "PetalWidthCm", "SepalWidthCm", "SepalLengthCm"],
+            "Species",
+        )
+        result = model.features_importance(height=custom_height, width=custom_width)
         # Assert
         assert (
             result.layout["height"] == custom_height
