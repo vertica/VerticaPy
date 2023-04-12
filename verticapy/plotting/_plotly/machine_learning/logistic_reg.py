@@ -24,7 +24,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class LogisticRegressionPlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -52,30 +51,30 @@ class LogisticRegressionPlot(PlotlyBase):
             "width": 700,
             "height": 600,
         }
-        self.init_style_0 = {
-            "marker": "o",
-            "s": 50,
-            "color": self.get_colors(idx=0),
-            "edgecolors": "black",
-            "alpha": 0.8,
+        self.init_style_hover_2d = {
+            "hovertemplate": f"{self.layout['columns'][0]}: "
+            "%{x} <br>"
+            f"P({self.layout['columns'][-1]} = 1): "
+            " %{y} <br>"
         }
-        self.init_style_1 = {
-            "marker": "o",
-            "s": 50,
-            "color": self.get_colors(idx=1),
-            "edgecolors": "black",
+        self.init_style_hover_3d = {
+            "hovertemplate": f"{self.layout['columns'][0]}: "
+            "%{x} <br>"
+            f"{self.layout['columns'][1]}: "
+            " %{y} <br>"
+            f"P({self.layout['columns'][-1]} = 1): "
+            " %{y} <br>"
         }
-        self.init_style_Z = {
-            "rstride": 1,
-            "cstride": 1,
-            "alpha": 0.5,
-            "color": "gray",
-        }
+
         return None
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a Logistic Regression plot using the Plotly API.
         """
@@ -92,18 +91,23 @@ class LogisticRegressionPlot(PlotlyBase):
             if (step_x > 0)
             else np.array([max_logit_x])
         )
-        y_logit=logit(self.data["coef"][0] + self.data["coef"][1] * x_logit)
+        y_logit = logit(self.data["coef"][0] + self.data["coef"][1] * x_logit)
         if len(self.layout["columns"]) == 2:
             fig.add_trace(
-                go.Scatter(x=x0, y=logit(y0 + slope * x0), 
-                #marker_color="black",
-                name="-1",mode="markers",
-                        )
+                go.Scatter(
+                    x=x0,
+                    y=logit(y0 + slope * x0),
+                    name="-1",
+                    mode="markers",
+                )
             )
             fig.add_trace(
-                go.Scatter(x=x1, y=logit(y0 + slope * x0), 
-                name="+1",mode="markers",
-                        )
+                go.Scatter(
+                    x=x1,
+                    y=logit(y0 + slope * x0),
+                    name="+1",
+                    mode="markers",
+                )
             )
             fig.add_trace(
                 go.Scatter(
@@ -115,6 +119,7 @@ class LogisticRegressionPlot(PlotlyBase):
                     opacity=0.5,
                 )
             )
+            fig.update_traces(**self.init_style_hover_2d)
         elif len(self.layout["columns"]) == 3:
             y = self.data["X"][:, 1]
             y0, y1 = y[z == 0], y[z == 1]
@@ -146,9 +151,9 @@ class LogisticRegressionPlot(PlotlyBase):
             )
             X_logit, Y_logit, Z_logit
 
-            for i, x, y, s in [
-                (0, x0, y0, self.init_style_0),
-                (1, x1, y1, self.init_style_1),
+            for i, x, y in [
+                (0, x0, y0),
+                (1, x1, y1),
             ]:
                 fig.add_trace(
                     go.Scatter3d(
@@ -160,10 +165,14 @@ class LogisticRegressionPlot(PlotlyBase):
                             + self.data["coef"][2] * y
                         ),
                         name=str(i),
-                        mode="markers"
-                    ))
-            # fig = fig.add_trace(go.Surface(z=Z_logit, 
-            # ))
+                        mode="markers",
+                    )
+                )
+            fig = fig.add_trace(
+                go.Surface(
+                    z=Z_logit,
+                )
+            )
             self.init_layout_style["scene"] = dict(
                 aspectmode="cube",
                 xaxis_title=self.layout["columns"][0],

@@ -61,7 +61,11 @@ class RegressionPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a regression plot using the Plotly API.
         """
