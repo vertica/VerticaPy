@@ -38,6 +38,7 @@ from verticapy.plotting._plotly.machine_learning.logistic_reg import (
 )
 
 
+
 import plotly.io as pio
 import plotly.graph_objects as go
 
