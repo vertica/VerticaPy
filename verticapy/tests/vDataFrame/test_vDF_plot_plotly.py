@@ -34,7 +34,7 @@ import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
 
-from verticapy.learn.linear_model import LinearRegression
+from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.model_selection import elbow
 from verticapy.learn.neighbors import LocalOutlierFactor
 
@@ -77,7 +77,10 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -116,7 +119,12 @@ def dummy_dist_vd():
 @pytest.fixture(scope="module")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
     )
 
 
@@ -138,6 +146,20 @@ def local_outlier_factor_3d_plot_result(load_plotly, dummy_scatter_vd):
 def local_outlier_factor_plot_result(load_plotly, dummy_scatter_vd):
     model = LocalOutlierFactor("lof_test")
     model.fit(dummy_scatter_vd, ["X", "Y"])
+    return model.plot()
+
+
+@pytest.fixture(scope="module")
+def logistic_regression_plot_result(load_plotly, titanic_vd):
+    model = LogisticRegression("log_reg_test")
+    model.fit(titanic_vd, ["fare"], "survived")
+    return model.plot()
+
+
+@pytest.fixture(scope="module")
+def logistic_regression_plot_for_3d_result(load_plotly, titanic_vd):
+    model = LogisticRegression("log_reg_test")
+    model.fit(titanic_vd, ["fare", "age"], "survived")
     return model.plot()
 
 
@@ -391,7 +413,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -415,7 +443,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -1647,6 +1681,96 @@ class TestMachineLearningLOFPlot:
         # Act
         model = LocalOutlierFactor("lof_test")
         model.fit(dummy_scatter_vd, ["X", "Y"])
+        result = model.plot(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningLogisticRegressionPlot:
+    def test_properties_output_type_for_2d(self, logistic_regression_plot_result):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(logistic_regression_plot_result) == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_output_type_for_3d(
+        self, logistic_regression_plot_for_3d_result
+    ):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(logistic_regression_plot_for_3d_result)
+            == plotly.graph_objs._figure.Figure
+        ), "wrong object crated"
+
+    def test_properties_xaxis_label(self, logistic_regression_plot_result):
+        # Arrange
+        test_title = "fare"
+        # Act
+        # Assert
+        assert (
+            logistic_regression_plot_result.layout["xaxis"]["title"]["text"]
+            == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self, logistic_regression_plot_result):
+        # Arrange
+        test_title = "P(survived = 1)"
+        # Act
+        # Assert
+        assert (
+            logistic_regression_plot_result.layout["yaxis"]["title"]["text"]
+            == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_xaxis_label_for_3d(
+        self, logistic_regression_plot_for_3d_result
+    ):
+        # Arrange
+        test_title = "fare"
+        # Act
+        # Assert
+        assert (
+            logistic_regression_plot_for_3d_result.layout["xaxis"]["title"]["text"]
+            == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label_for_3d(
+        self, logistic_regression_plot_for_3d_result
+    ):
+        # Arrange
+        test_title = "P(survived = 1)"
+        # Act
+        # Assert
+        assert (
+            logistic_regression_plot_for_3d_result.layout["yaxis"]["title"]["text"]
+            == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_two_scatter_and_line_plot(
+        self, logistic_regression_plot_result
+    ):
+        # Arrange
+        total_items = 3
+        # Act
+        # Assert
+        assert (
+            len(logistic_regression_plot_result.data) == total_items
+        ), "Either line or the two scatter plots are missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = LogisticRegression("log_reg_test")
+        model.fit(titanic_vd, ["fare"], "survived")
         result = model.plot(height=custom_height, width=custom_width)
         # Assert
         assert (
