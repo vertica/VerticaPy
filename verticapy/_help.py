@@ -54,11 +54,11 @@ def help_start() -> None:
         print(message)
     try:
         response = int(input())
-    except:
+    except TypeError:
         print("Invalid choice.\nPlease enter a number between 0 and 11.")
         try:
             response = int(input())
-        except:
+        except TypeError:
             print("Invalid choice.\nRerun the help_start function when you need help.")
             return
     if response == 0:

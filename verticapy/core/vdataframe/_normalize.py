@@ -18,6 +18,8 @@ import math
 import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -183,7 +185,7 @@ class vDCNorm:
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                    except:
+                    except QueryError:
                         avg, stddev = (
                             f"AVG({self}) OVER (PARTITION BY {', '.join(by)})",
                             f"STDDEV({self}) OVER (PARTITION BY {', '.join(by)})",
@@ -282,7 +284,7 @@ class vDCNorm:
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                    except:
+                    except QueryError:
                         cmax, cmin = (
                             f"MAX({self}) OVER (PARTITION BY {', '.join(by)})",
                             f"MIN({self}) OVER (PARTITION BY {', '.join(by)})",
@@ -313,41 +315,37 @@ class vDCNorm:
                 for k in range(max_floor):
                     self._transf += [("{}", self.ctype(), self.category())]
             self._transf += final_transformation
-            sauv = {}
-            for elem in self._catalog:
-                sauv[elem] = self._catalog[elem]
+            sauv = copy.deepcopy(self._catalog)
             self._parent._update_catalog(erase=True, columns=[self._alias])
-            try:
 
-                if "count" in sauv:
-                    self._catalog["count"] = sauv["count"]
-                    self._catalog["percent"] = (
-                        100 * sauv["count"] / self._parent.shape()[0]
-                    )
+            parent_cnt = self._parent.shape()[0]
 
-                for elem in sauv:
+            if "count" in sauv:
+                self._catalog["count"] = sauv["count"]
+                if parent_cnt == 0:
+                    self._catalog["percent"] = 100
+                else:
+                    self._catalog["percent"] = 100 * sauv["count"] / parent_cnt
 
-                    if "top" in elem:
+            for elem in sauv:
 
-                        if "percent" in elem:
-                            self._catalog[elem] = sauv[elem]
-                        elif isinstance(elem, NoneType):
-                            self._catalog[elem] = None
-                        elif method == "robust_zscore":
-                            self._catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
-                                1.4826 * sauv["mad"]
-                            )
-                        elif method == "zscore":
-                            self._catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv[
-                                "std"
-                            ]
-                        elif method == "minmax":
-                            self._catalog[elem] = (sauv[elem] - sauv["min"]) / (
-                                sauv["max"] - sauv["min"]
-                            )
+                if "top" in elem:
 
-            except:
-                pass
+                    if "percent" in elem:
+                        self._catalog[elem] = sauv[elem]
+                    elif isinstance(elem, NoneType):
+                        self._catalog[elem] = None
+                    elif method == "robust_zscore":
+                        self._catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
+                            1.4826 * sauv["mad"]
+                        )
+                    elif method == "zscore":
+                        self._catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv["std"]
+                    elif method == "minmax":
+                        self._catalog[elem] = (sauv[elem] - sauv["min"]) / (
+                            sauv["max"] - sauv["min"]
+                        )
+
             if method == "robust_zscore":
                 self._catalog["median"] = 0
                 self._catalog["mad"] = 1 / 1.4826

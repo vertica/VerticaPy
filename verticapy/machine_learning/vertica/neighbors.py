@@ -971,10 +971,7 @@ class KernelDensity(Regressor, Tree):
             vdf = input_relation
             input_relation = input_relation._genSQL()
         else:
-            try:
-                vdf = vDataFrame(input_relation)
-            except:
-                vdf = vDataFrame(input_relation)
+            vdf = vDataFrame(input_relation)
             if not (X):
                 X = vdf.numcol()
         X = vdf._format_colnames(X)

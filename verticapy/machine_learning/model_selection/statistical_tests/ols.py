@@ -19,6 +19,8 @@ from typing import Literal, Optional, Union
 import numpy as np
 from scipy.stats import chi2, f
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -70,7 +72,7 @@ def het_breuschpagan(
     try:
         model.fit(vdf_copy, X, "v_eps2")
         R2 = model.score(metric="r2")
-    except:
+    except QueryError:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_copy, X, "v_eps2")
         R2 = model.score(metric="r2")
@@ -149,7 +151,7 @@ def het_goldfeldquandt(
     model = LinearRegression(name)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
-    except:
+    except QueryError:
         model.set_params({"solver": "bfgs"})
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     finally:
@@ -214,7 +216,7 @@ def het_white(
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
         R2 = model.score(metric="r2")
-    except:
+    except QueryError:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_white, variables_names, "v_eps2")
         R2 = model.score(metric="r2")
@@ -270,7 +272,7 @@ def endogtest(
     try:
         model.fit(vdf, X, eps)
         R2 = model.score(metric="r2")
-    except:
+    except QueryError:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf, X, eps)
         R2 = model.score(metric="r2")
@@ -337,7 +339,7 @@ def variance_inflation_factor(
         try:
             model.fit(vdf, X_r, y_r)
             R2 = model.score(metric="r2")
-        except:
+        except QueryError:
             model.set_params({"solver": "bfgs"})
             model.fit(vdf, X_r, y_r)
             R2 = model.score(metric="r2")

@@ -18,6 +18,8 @@ from abc import abstractmethod
 from typing import Literal, Optional, Union
 import numpy as np
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_tmp_name
@@ -923,12 +925,12 @@ class OneHotEncoder(Preprocessing):
                             attr_name = 'varchar_categories')""",
                 title="Getting Model Attributes.",
             )
-        except:
+        except QueryError:
             try:
                 self.cat_ = TableSample.read_sql(
                     query=query, title="Getting Model Attributes.",
                 )
-            except:
+            except QueryError:
                 self.cat_ = self.get_vertica_attributes("varchar_categories")
         self.cat_ = self.cat_.to_list()
         cat = self._compute_ohe_list([c[0:2] for c in self.cat_])

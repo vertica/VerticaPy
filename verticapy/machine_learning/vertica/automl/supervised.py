@@ -530,7 +530,7 @@ class AutoML(VerticaModel):
             )
             model_preprocess.fit(input_relation, X=X)
             input_relation = model_preprocess.final_relation_
-            X = [elem for elem in model_preprocess.X_out_]
+            X = copy.deepcopy(model_preprocess.X_out_)
             self.preprocess_ = model_preprocess
         else:
             self.preprocess_ = None

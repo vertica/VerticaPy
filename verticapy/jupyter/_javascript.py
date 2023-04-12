@@ -131,15 +131,12 @@ def beautiful_header(
             ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;"></div>'
         if val in percent:
             per = int(float(percent[val]))
-            try:
-                if per == 100:
-                    diff = 36
-                elif per > 10:
-                    diff = 30
-                else:
-                    diff = 24
-            except:
-                pass
+            if per == 100:
+                diff = 36
+            elif per > 10:
+                diff = 30
+            else:
+                diff = 24
             missing_values = (
                 f'<div style="float: right; margin-top: 6px;">{per}%</div><div '
                 f'style="width: calc(100% - {diff}px); height: 8px; margin-top: '

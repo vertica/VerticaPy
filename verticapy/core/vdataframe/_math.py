@@ -182,7 +182,7 @@ class vDFMath:
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
-        by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
+        by_order = ["order_by"] + list(order_by) if (order_by) else []
         if not (name):
             name = gen_name([func] + columns + by_name + by_order)
         func = func.lower()
@@ -228,7 +228,7 @@ class vDFMath:
                 median_name = f"{column_str}_median_{random_nb}"
                 std_name = f"{column_str}_std_{random_nb}"
                 count_name = f"{column_str}_count_{random_nb}"
-                all_cols = [elem for elem in self._vars["columns"]]
+                all_cols = copy.deepcopy(self._vars["columns"])
                 if func == "mad":
                     self.eval(median_name, f"MEDIAN({columns[0]}) OVER ({by})")
                 else:
@@ -591,7 +591,7 @@ class vDCMath:
                         re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
                         max_floor = max(len(self._parent[column]._transf), max_floor)
-                except:
+                except TypeError:
                     pass
             max_floor -= len(self._transf)
             if copy_name:

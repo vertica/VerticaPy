@@ -14,11 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 import datetime
 import re
 import warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
+
+from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import (
@@ -35,7 +38,7 @@ from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import EmptyParameter, QueryError
+from verticapy.errors import EmptyParameter, QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
@@ -453,7 +456,7 @@ class vDCFill:
                         sql_push_ext=self._parent._vars["sql_push_ext"],
                         symbol=self._parent._vars["symbol"],
                     )
-                except:
+                except QueryError:
                     new_column = f"""
                         COALESCE({{}}, {fun}({{}}) 
                             OVER (PARTITION BY {', '.join(by)}))"""
@@ -479,13 +482,13 @@ class vDCFill:
             category, ctype = "int", "bool"
         else:
             category, ctype = self.category(), self.ctype()
-        copy_trans = [elem for elem in self._transf]
+        copy_trans = copy.deepcopy(self._transf)
         total = self.count()
         if method not in ["mode", "0ifnull"]:
             max_floor = 0
             all_partition = by
             if method in ["ffill", "pad", "bfill", "backfill"]:
-                all_partition += [elem for elem in order_by]
+                all_partition += list(order_by)
             for elem in all_partition:
                 if len(self._parent[elem]._transf) > max_floor:
                     max_floor = len(self._parent[elem]._transf)
@@ -494,23 +497,22 @@ class vDCFill:
                 self._transf += [("{}", self.ctype(), self.category())]
         self._transf += [(new_column, ctype, category)]
         try:
-            sauv = {}
-            for elem in self._catalog:
-                sauv[elem] = self._catalog[elem]
+            sauv = copy.deepcopy(self._catalog)
             self._parent._update_catalog(erase=True, columns=[self._alias])
             total = abs(self.count() - total)
         except Exception as e:
-            self._transf = [elem for elem in copy_trans]
-            raise QueryError(f"{e}\nAn Error happened during the filling.")
+            self._transf = copy.deepcopy(copy_trans)
+            raise vQueryError(f"{e}\nAn Error happened during the filling.")
         if total > 0:
-            try:
-                if "count" in sauv:
-                    self._catalog["count"] = int(sauv["count"]) + total
+            if "count" in sauv:
+                parent_cnt = self._parent.shape()[0]
+                self._catalog["count"] = int(sauv["count"]) + total
+                if parent_cnt == 0:
+                    self._catalog["percent"] = 100
+                else:
                     self._catalog["percent"] = (
-                        100 * (int(sauv["count"]) + total) / self._parent.shape()[0]
+                        100 * (int(sauv["count"]) + total) / parent_cnt
                     )
-            except:
-                pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
             if conf.get_option("print_info"):

@@ -390,7 +390,7 @@ def read_csv(
             if not (dtype):
                 header_names = file_header
             else:
-                header_names = [elem for elem in dtype]
+                header_names = list(dtype)
             header_names = list_strip(header_names)
         elif len(file_header) > len(header_names):
             header_names += [
@@ -403,7 +403,7 @@ def read_csv(
                 file_str = f.readline()
                 f.close()
                 sep = guess_sep(file_str)
-            except:
+            except FileNotFoundError:
                 sep = ","
         if not (materialize):
             suffix, prefix, final_relation = (

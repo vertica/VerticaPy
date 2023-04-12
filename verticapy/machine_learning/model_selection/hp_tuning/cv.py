@@ -365,7 +365,7 @@ def grid_search_cv(
                 tqdm=False,
             )
             if training_score:
-                keys = [elem for elem in current_cv[0].values]
+                keys = list(current_cv[0].values)
                 data += [
                     (
                         estimator.get_params(),
@@ -385,7 +385,7 @@ def grid_search_cv(
                         f" {current_cv[0][keys[2]][cv]}\033[0m;"
                     )
             else:
-                keys = [elem for elem in current_cv.values]
+                keys = list(current_cv.values)
                 data += [
                     (
                         config,
@@ -649,7 +649,7 @@ def bayesian_search_cv(
     if "enet" not in kwargs:
         params = []
         for param_grid in param_gs["parameters"]:
-            params += [elem for elem in param_grid]
+            params += list(param_grid)
         all_params = list(dict.fromkeys(params))
     else:
         all_params = ["C", "l1_ratio"]
@@ -761,7 +761,7 @@ def bayesian_search_cv(
     for elem in result.values:
         result.values[elem] += param_gs[elem]
     data = []
-    keys = [elem for elem in result.values]
+    keys = list(result.values)
     for i in range(len(result[keys[0]])):
         data += [tuple([result[elem][i] for elem in result.values])]
     data.sort(key=lambda tup: tup[1], reverse=reverse)

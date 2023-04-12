@@ -42,9 +42,9 @@ def to_dtype_category(
     Returns the category associated with
     the Python input type.
     """
-    try:
+    if hasattr(expr, "category"):
         category = expr.category()
-    except:
+    else:
         if isinstance(expr, float):
             category = "float"
         elif isinstance(expr, int):

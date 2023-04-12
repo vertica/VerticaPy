@@ -19,6 +19,8 @@ from typing import Optional, Union
 import numpy as np
 from scipy.stats import chi2, norm, f
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import (
     NoneType,
@@ -655,7 +657,7 @@ def het_arch(
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score(metric="r2")
-    except:
+    except QueryError:
         model.set_params({"solver": "bfgs"})
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score(metric="r2")

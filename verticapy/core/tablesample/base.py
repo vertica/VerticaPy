@@ -125,7 +125,7 @@ class TableSample:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
             k = int(max_columns / 2)
-            columns = [elem for elem in self.values]
+            columns = list(self.values)
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
@@ -179,7 +179,7 @@ class TableSample:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
             k = int(max_columns / 2)
-            columns = [elem for elem in self.values]
+            columns = list(self.values)
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
@@ -282,7 +282,7 @@ class TableSample:
         try:
             if math.isnan(val):
                 val = "NULL"
-        except:
+        except TypeError:
             pass
         return val
 
@@ -410,7 +410,7 @@ class TableSample:
                 for idx, val_tmp in enumerate(d[x]):
                     try:
                         val = float(val_tmp)
-                    except:
+                    except TypeError:
                         val = val_tmp
                     if not (use_number_as_category):
                         res += [[x, d["index"][idx], val]]
@@ -486,7 +486,7 @@ class TableSample:
         result = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
         data_columns = [[item] for item in columns]
-        data = [item for item in result]
+        data = list(result)
         for row in data:
             for idx, val in enumerate(row):
                 data_columns[idx] += [val]
@@ -564,7 +564,7 @@ class TableSample:
             for idx, item in enumerate(self.values[column]):
                 try:
                     columns[idx] += [item]
-                except:
+                except IndexError:
                     pass
         columns = [index] + columns
         values = {}
@@ -582,7 +582,7 @@ class TableSample:
             Python list.
         """
         res = []
-        all_cols = [elem for elem in self.values]
+        all_cols = list(self.values)
         if all_cols == []:
             return []
         for i in range(len(self.values[all_cols[0]])):

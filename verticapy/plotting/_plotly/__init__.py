@@ -39,7 +39,6 @@ from verticapy.plotting._plotly.machine_learning.logistic_reg import (
 from verticapy.plotting._plotly.machine_learning.importance import ImportanceBarChart
 
 
-
 import plotly.io as pio
 import plotly.graph_objects as go
 

@@ -17,10 +17,55 @@ permissions and limitations under the License.
 from functools import wraps
 from typing import Any, Callable, Optional
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._utils._sql._format import format_type
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.connection.connect import current_cursor
+
+
+def _dict_to_json_string(
+    name: Optional[str] = None,
+    path: Optional[str] = None,
+    json_dict: Optional[dict] = None,
+    add_identifier: bool = False,
+) -> str:
+    gb_conn = get_global_connection()
+    json = "{"
+    if name:
+        json += f'"verticapy_fname": "{name}", '
+    if path:
+        json += f'"verticapy_fpath": "{path}", '
+    if add_identifier:
+        json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
+    for key in json_dict:
+        object_type = None
+        if hasattr(json_dict[key], "_object_type"):
+            object_type = json_dict[key]._object_type
+        json += f'"{key}": '
+        if isinstance(json_dict[key], bool):
+            json += "true" if json_dict[key] else "false"
+        elif isinstance(json_dict[key], (float, int)):
+            json += str(json_dict[key])
+        elif json_dict[key] is None:
+            json += "null"
+        elif object_type == "vDataFrame":
+            json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
+            json += f'"{json_dict_str}"'
+        elif object_type == "VerticaModel":
+            json += f'"{json_dict[key]._model_type}"'
+        elif isinstance(json_dict[key], dict):
+            json += dict_to_json_string(json_dict=json_dict[key])
+        elif isinstance(json_dict[key], list):
+            json_dict_str = ";".join([str(item) for item in json_dict[key]])
+            json += f'"{json_dict_str}"'
+        else:
+            json_dict_str = str(json_dict[key]).replace('"', '\\"')
+            json += f'"{json_dict_str}"'
+        json += ", "
+    json = json[:-2] + "}"
+    return json
 
 
 def save_to_query_profile(
@@ -66,61 +111,17 @@ def save_to_query_profile(
     value = conf.get_option("save_query_profile")
     if not (value):
         return False
+    query_label_str = query_label.replace("'", "''")
+    dict_to_json_string_str = _dict_to_json_string(
+        name, path, json_dict, add_identifier
+    ).replace("'", "''")
+    query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
+    if return_query:
+        return query
     try:
-
-        def dict_to_json_string(
-            name: Optional[str] = None,
-            path: Optional[str] = None,
-            json_dict: Optional[dict] = None,
-            add_identifier: bool = False,
-        ) -> str:
-            gb_conn = get_global_connection()
-
-            json = "{"
-            if name:
-                json += f'"verticapy_fname": "{name}", '
-            if path:
-                json += f'"verticapy_fpath": "{path}", '
-            if add_identifier:
-                json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
-            for key in json_dict:
-                object_type = None
-                if hasattr(json_dict[key], "_object_type"):
-                    object_type = json_dict[key]._object_type
-                json += f'"{key}": '
-                if isinstance(json_dict[key], bool):
-                    json += "true" if json_dict[key] else "false"
-                elif isinstance(json_dict[key], (float, int)):
-                    json += str(json_dict[key])
-                elif json_dict[key] is None:
-                    json += "null"
-                elif object_type == "vDataFrame":
-                    json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
-                    json += f'"{json_dict_str}"'
-                elif object_type == "VerticaModel":
-                    json += f'"{json_dict[key]._model_type}"'
-                elif isinstance(json_dict[key], dict):
-                    json += dict_to_json_string(json_dict=json_dict[key])
-                elif isinstance(json_dict[key], list):
-                    json_dict_str = ";".join([str(item) for item in json_dict[key]])
-                    json += f'"{json_dict_str}"'
-                else:
-                    json_dict_str = str(json_dict[key]).replace('"', '\\"')
-                    json += f'"{json_dict_str}"'
-                json += ", "
-            json = json[:-2] + "}"
-            return json
-
-        query_label_str = query_label.replace("'", "''")
-        dict_to_json_string_str = dict_to_json_string(
-            name, path, json_dict, add_identifier
-        ).replace("'", "''")
-        query = f"SELECT /*+LABEL('{query_label_str}')*/ '{dict_to_json_string_str}'"
-        if return_query:
-            return query
         current_cursor().execute(query)
         return True
-    except:
+    except QueryError:
         return False
 
 

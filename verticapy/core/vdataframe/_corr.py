@@ -24,10 +24,12 @@ import numpy as np
 import scipy.stats as scipy_st
 import scipy.special as scipy_special
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
-from verticapy._utils._object import _get_mllib
 from verticapy._typing import NoneType, PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._object import _get_mllib
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -274,7 +276,7 @@ class vDFCorr:
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-            except:
+            except QueryError:
                 result = np.nan
             self._update_catalog(
                 values={columns[1]: result}, matrix=method, column=columns[0]
@@ -330,7 +332,7 @@ class vDFCorr:
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
-            except:
+            except QueryError:
                 if method in (
                     "pearson",
                     "spearman",
@@ -441,7 +443,7 @@ class vDFCorr:
                             sql_push_ext=self._vars["sql_push_ext"],
                             symbol=self._vars["symbol"],
                         )
-                except:
+                except QueryError:
                     n = len(columns)
                     result = []
                     for i in loop:
@@ -652,7 +654,7 @@ class vDFCorr:
                         symbol=self._vars["symbol"],
                     )
                 matrix = copy.deepcopy(result)
-            except:
+            except QueryError:
                 fail = 1
         if not (
             method in ("spearman", "spearmand", "pearson", "kendall", "cov")
@@ -1183,7 +1185,7 @@ class vDFCorr:
                 )
             if n == 1:
                 return result[0]
-        except:
+        except QueryError:
             n = len(columns)
             result = []
             for i in range(0, n):
@@ -1367,8 +1369,8 @@ class vDFCorr:
             result = self._new_vdataframe(query).corr(
                 [], method=method, focus=column, show=False
             )
-            columns = [elem for elem in result.values["index"]]
-            acf = [elem for elem in result.values[column]]
+            columns = copy.deepcopy(result.values["index"])
+            acf = copy.deepcopy(result.values[column])
             acf_band = []
             if confidence:
                 for k in range(1, len(acf) + 1):
@@ -1569,7 +1571,7 @@ class vDFCorr:
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
-            columns = [elem for elem in p]
+            columns = list(p)
             pacf_band = []
             if confidence:
                 for k in range(1, len(pacf) + 1):

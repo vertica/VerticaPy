@@ -25,7 +25,7 @@ try:
     from shapely import wkt
 
     GEOPANDAS_IMPORT = True
-except:
+except ModuleNotFoundError:
     GEOPANDAS_IMPORT = False
 
 GRAPHVIZ_IMPORT: bool
@@ -33,7 +33,7 @@ try:
     import graphviz
 
     GRAPHVIZ_IMPORT = True
-except:
+except ModuleNotFoundError:
     GRAPHVIZ_IMPORT = False
 
 ISNOTEBOOK: bool = False
@@ -43,7 +43,7 @@ try:
     shell = get_ipython().__class__.__name__
     if shell == "ZMQInteractiveShell":
         ISNOTEBOOK = True  # Jupyter notebook or qtconsole
-except:
+except ModuleNotFoundError:
     pass
 
 DATEUTIL_IMPORT: bool
@@ -51,7 +51,7 @@ try:
     from dateutil.parser import parse
 
     DATEUTIL_IMPORT = True
-except:
+except ModuleNotFoundError:
     DATEUTIL_IMPORT = False
 
 from verticapy._config.validators import (

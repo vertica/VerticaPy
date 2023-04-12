@@ -121,7 +121,7 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
         res += [int(current_version[1])]
         res += [int(current_version[2].split("-")[0])]
         res += [int(current_version[2].split("-")[1])]
-    except:
+    except TypeError:
         pass
     if condition:
         if condition[0] < res[0]:

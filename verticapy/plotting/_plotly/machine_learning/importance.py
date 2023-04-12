@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
+
 from typing import Literal, Optional
 
 import numpy as np
@@ -52,32 +54,33 @@ class ImportanceBarChart(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a coeff importance bar chart using the Plotly API.
         """
-        importances, coef_names, signs = self._compute_importance()
         fig = self._get_fig(fig)
-        signs = np.array(signs)
-        importances_pos = np.array(importances)
-        signs = np.array(signs)
-        importances_pos[signs == -1] = 0.0
+        importances_pos = copy.deepcopy(self.data["importance"])
+        importances_pos[self.data["signs"] == -1] = 0.0
         importances_pos = importances_pos.tolist()
-        importances_neg = np.array(importances)
-        importances_neg[signs == 1] = 0.0
+        importances_neg = copy.deepcopy(self.data["importance"])
+        importances_neg[self.data["signs"] == 1] = 0.0
         importances_neg = importances_neg.tolist()
         fig.add_trace(
-            go.Bar(x=importances_pos, y=coef_names, orientation="h", name="Postive")
+            go.Bar(
+                x=importances_pos,
+                y=self.layout["columns"],
+                orientation="h",
+                name="Postive",
+            )
         )
         showlegend = False
-        if len(signs[signs == -1]) != 0:
+        if len(self.data["signs"][self.data["signs"] == -1]) != 0:
             fig.add_trace(
                 go.Bar(
-                    x=importances_neg, y=coef_names, orientation="h", name="Negative"
+                    x=importances_neg,
+                    y=self.layout["columns"],
+                    orientation="h",
+                    name="Negative",
                 )
             )
             showlegend = True

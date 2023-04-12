@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
+from vertica_python.errors import QueryError
+
 from verticapy._utils._sql._format import (
     format_schema_table,
     quote_ident,
@@ -129,7 +131,7 @@ def drop(
                 print_time_sql=False,
             )
             return drop(name=name, method="text", raise_error=raise_error)
-        except:
+        except QueryError:
             fail = True
         if fail:
             if raise_error:
@@ -152,7 +154,7 @@ def drop(
         try:
             _executeSQL(query, title="Deleting the relation.")
             result = True
-        except:
+        except QueryError:
             if raise_error:
                 raise
             result = False

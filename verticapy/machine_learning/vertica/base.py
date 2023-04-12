@@ -21,6 +21,8 @@ from typing import Any, Callable, Literal, Optional, Union, get_type_hints
 from collections.abc import Iterable
 import numpy as np
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
@@ -2849,7 +2851,7 @@ class Unsupervised(VerticaModel):
         query += ")"
         try:
             _executeSQL(query, "Fitting the model.")
-        except:
+        except QueryError:
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))

@@ -43,7 +43,7 @@ def create_schema(schema: str, raise_error: bool = False,) -> bool:
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
         return True
-    except:
+    except QueryError:
         if raise_error:
             raise
         return False
