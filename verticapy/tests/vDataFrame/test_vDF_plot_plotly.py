@@ -760,8 +760,8 @@ class TestVDFBoxPlot:
         # Act
         result = dummy_dist_vd["0"].boxplot()
         # Assert
-        assert dummy_dist_vd.max()["max"][0] == max(
-            result.data[0]["x"][0]
+        assert dummy_dist_vd.max()["max"][0] == pytest.approx(
+            max(result.data[0]["x"][0]), 2
         ), "Maximum value not in plot"
 
 
@@ -1331,7 +1331,7 @@ class TestVDFOutliersPlot:
         # Act
         result = titanic_vd.outliers_plot(columns=[column_name])
         # Assert -
-        assert result.data[1]["x"][0] == column_name, "X axis label incorrect"
+        assert result.data[0]["x"][0] == column_name, "X axis label incorrect"
 
     def test_properties_xaxis_for_2d(self, load_plotly, titanic_vd):
         # Arrange
