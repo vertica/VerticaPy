@@ -36,7 +36,7 @@ def vertica_python_dtype(
     """
     res = type_name
     has_precision_scale = not (
-        type_name.startswith(
+        type_name.lower().startswith(
             ("array", "bool", "date", "int", "map", "row", "set", "uuid")
         )
     )
