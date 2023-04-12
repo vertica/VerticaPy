@@ -43,7 +43,7 @@ try:
     shell = get_ipython().__class__.__name__
     if shell == "ZMQInteractiveShell":
         ISNOTEBOOK = True  # Jupyter notebook or qtconsole
-except ModuleNotFoundError:
+except (ModuleNotFoundError, NameError):
     pass
 
 DATEUTIL_IMPORT: bool
