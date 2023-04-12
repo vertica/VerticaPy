@@ -35,10 +35,10 @@ def vertica_python_dtype(
     returns its corresponding data type.
     """
     res = type_name
-    has_precision_scale = (
-        (type_name[0:4].lower() not in ("uuid", "date", "bool"))
-        and (type_name[0:5].lower() != "array")
-        and (type_name[0:3].lower() not in ("set", "row", "map", "int"))
+    has_precision_scale = not (
+        type_name.startswith(
+            ("array", "bool", "date", "int", "map", "row", "set", "uuid")
+        )
     )
     if display_size and has_precision_scale:
         res += f"({display_size})"

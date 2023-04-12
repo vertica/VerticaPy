@@ -60,10 +60,7 @@ class LOFPlot(PlotlyBase):
                 sizemode="diameter",
                 sizemin=1,
                 color="white",
-                line=dict(
-                    width=2,
-                    color="black",
-                ),
+                line=dict(width=2, color="black",),
             ),
             "name": "IOF",
             "hovertemplate": f"{self.layout['columns'][0]}: "
@@ -81,10 +78,7 @@ class LOFPlot(PlotlyBase):
                 sizemode="diameter",
                 sizemin=1,
                 color="white",
-                line=dict(
-                    width=2,
-                    color="black",
-                ),
+                line=dict(width=2, color="black",),
             ),
             "name": "IOF",
             "hovertemplate": f"{self.layout['columns'][0]}: "
@@ -118,21 +112,11 @@ class LOFPlot(PlotlyBase):
         if 2 <= len(self.layout["columns"]) <= 3:
             fig.add_trace(
                 go.Scatter(
-                    x=X,
-                    y=Y,
-                    mode="markers",
-                    name="Scatter Points",
-                    hoverinfo="none",
+                    x=X, y=Y, mode="markers", name="Scatter Points", hoverinfo="none",
                 )
             )
 
-            fig.add_trace(
-                go.Scatter(
-                    x=X,
-                    y=Y,
-                    **self.init_of_scatter_style,
-                )
-            )
+            fig.add_trace(go.Scatter(x=X, y=Y, **self.init_of_scatter_style,))
         elif len(self.layout["columns"]) == 4:
             fig.add_trace(
                 go.Scatter3d(
@@ -145,14 +129,7 @@ class LOFPlot(PlotlyBase):
                     hoverinfo="none",
                 )
             )
-            fig.add_trace(
-                go.Scatter3d(
-                    x=X,
-                    y=Y,
-                    z=Z,
-                    **self.init_of_scatter3d_style,
-                )
-            )
+            fig.add_trace(go.Scatter3d(x=X, y=Y, z=Z, **self.init_of_scatter3d_style,))
             self.init_layout_style["scene"] = dict(
                 aspectmode="cube",
                 xaxis_title=self.layout["columns"][0],
@@ -166,7 +143,7 @@ class LOFPlot(PlotlyBase):
                 "LocalOutlierFactor Plot is available for a maximum of 3 columns."
             )
         if not marker_sizeref:
-            marker_sizeref = 2.0 * max(self.data["X"][:, -1]) / (8.0**2)
+            marker_sizeref = 2.0 * max(self.data["X"][:, -1]) / (8.0 ** 2)
         fig.update_traces(marker_sizeref=marker_sizeref, selector=dict(type="scatter"))
         fig.update_traces(
             marker_sizeref=marker_sizeref, selector=dict(type="scatter3d")

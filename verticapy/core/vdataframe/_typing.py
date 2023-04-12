@@ -210,13 +210,17 @@ class vDCTyping:
                 sep = guess_sep(biggest_str)
                 if str(dtype).startswith("vmap"):
                     if len(biggest_str) > 2 and (
-                        (biggest_str[0] == "{" and biggest_str[-1] == "}")
+                        (biggest_str.startswith("{") and biggest_str.endswith("}"))
                     ):
                         transformation_2 = """MAPJSONEXTRACTOR({} 
                                                     USING PARAMETERS flatten_maps=false)"""
                     else:
                         header_names = ""
-                        if len(dtype) > 4 and dtype[:5] == "vmap(" and dtype[-1] == ")":
+                        if (
+                            len(dtype) > 4
+                            and dtype.startswith("vmap(")
+                            and dtype.endswith(")")
+                        ):
                             header_names = f", header_names='{dtype[5:-1]}'"
                         transformation_2 = f"""MAPDELIMITEDEXTRACTOR({{}} 
                                                             USING PARAMETERS 
@@ -229,8 +233,8 @@ class vDCTyping:
                     else:
                         collection_null_element = ""
                     if len(biggest_str) > 2 and (
-                        (biggest_str[0] == "(" and biggest_str[-1] == ")")
-                        or (biggest_str[0] == "{" and biggest_str[-1] == "}")
+                        (biggest_str.startswith("(") and biggest_str.endswith(")"))
+                        or (biggest_str.startswith("{") and biggest_str.endswith("}"))
                     ):
                         collection_open = f", collection_open='{biggest_str[0]}'"
                         collection_close = f", collection_close='{biggest_str[-1]}'"
@@ -243,9 +247,7 @@ class vDCTyping:
                                         {collection_open}
                                         {collection_close}
                                         {collection_null_element})"""
-            elif (
-                dtype[0:7] == "varchar" or dtype[0:4] == "char"
-            ) and self.category() == "vmap":
+            elif dtype.startswith(("char", "varchar")) and self.category() == "vmap":
                 transformation_2 = f"""MAPTOSTRING({{}} 
                                                    USING PARAMETERS 
                                                    canonical_json=false)::{dtype}"""
@@ -334,7 +336,7 @@ class vDCTyping:
         bool
             True if the vDataColumn is boolean.
         """
-        return self.ctype()[0:4] == "bool"
+        return self.ctype().startswith("bool")
 
     def isdate(self) -> bool:
         """

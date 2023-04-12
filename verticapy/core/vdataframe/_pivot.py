@@ -66,8 +66,6 @@ class vDFPivot:
             for col in all_cols:
                 if self[col].isvmap():
                     vmap_col += [col]
-        if isinstance(vmap_col, str):
-            vmap_col = [vmap_col]
         exclude_columns = format_type(exclude_columns, dtype=list)
         exclude_columns_final = quote_ident(exclude_columns, lower=True)
         vmap_col_final = []
@@ -110,9 +108,8 @@ class vDFPivot:
         vDataFrame
             An object containing the merged element.
         """
-        if isinstance(skip_word, str):
-            skip_word = [skip_word]
         columns = self.get_columns()
+        skip_word = format_type(skip_word, dtype=list)
         group_dict = group_similar_names(columns, skip_word=skip_word)
         sql = f"SELECT {gen_coalesce(group_dict)} FROM {self}"
         return self._new_vdataframe(sql)
@@ -148,10 +145,8 @@ class vDFPivot:
         vDataFrame
             the narrow table object.
         """
-        index, columns = format_type(index, columns, dtype=list)
+        index, columns = format_type(index, columns, dtype=list, na_out=self.numcol())
         index, columns = self._format_colnames(index, columns)
-        if not (columns):
-            columns = self.numcol()
         for idx in index:
             if idx in columns:
                 columns.remove(idx)

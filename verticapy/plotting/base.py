@@ -317,12 +317,13 @@ class PlottingBase(PlottingBaseSQL):
                 "Parameter 'of' must be empty when using customized aggregations."
             )
         if (
-            (method in ["avg", "min", "max", "sum"]) or (method and method[-1] == "%")
+            (method in ["avg", "min", "max", "sum"])
+            or (isinstance(method, str) and method.endswith("%"))
         ) and (of):
             if method in ["avg", "min", "max", "sum"]:
                 aggregate = f"{method.upper()}({quote_ident(of)})"
                 fun = fun_map[method]
-            elif method and method[-1] == "%":
+            elif isinstance(method, str) and method.endswith("%"):
                 q = float(method[0:-1]) / 100
                 aggregate = f"""
                     APPROXIMATE_PERCENTILE({quote_ident(of)} 
