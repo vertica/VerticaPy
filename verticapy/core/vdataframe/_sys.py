@@ -328,7 +328,7 @@ class vDFSystem:
                             val = float(val)
                             if val - int(val) == 0:
                                 val = int(val)
-                        except TypeError:
+                        except (TypeError, ValueError):
                             pass
                         if val != val:
                             val = None

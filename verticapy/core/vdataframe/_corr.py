@@ -332,7 +332,7 @@ class vDFCorr:
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
-            except QueryError:
+            except (AssertionError, QueryError):
                 if method in (
                     "pearson",
                     "spearman",

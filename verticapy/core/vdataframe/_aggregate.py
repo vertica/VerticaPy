@@ -514,7 +514,7 @@ class vDFAgg:
             result = list(res)
             try:
                 result = [float(item) for item in result]
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
             values = {"index": func}
             i = 0
