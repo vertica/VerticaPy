@@ -41,7 +41,7 @@ from verticapy.learn.linear_model import (
 from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow
 from verticapy.learn.neighbors import LocalOutlierFactor
-
+from verticapy.learn.decomposition import PCA
 
 conf.set_option("print_info", False)
 
@@ -176,6 +176,14 @@ def importance_plot_result(load_plotly, iris_vd):
         "Species",
     )
     return model.features_importance()
+
+
+@pytest.fixture(scope="class")
+def pca_circle_plot_result(load_plotly, iris_vd):
+    model = PCA("pca_circle_test")
+    model.drop()
+    model.fit(iris_vd)
+    return model.plot_circle()
 
 
 @pytest.fixture(scope="module")
@@ -1393,30 +1401,33 @@ class TestVDFOutliersPlot:
 
 class TestVDFACFPlot:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for(self, acf_plot_result):
+    def result(self, acf_plot_result):
+        self.result = acf_plot_result
+
+    def test_properties_output_type_for(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(acf_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, acf_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "Lag"
         # Act
         # Assert - checking if correct object created
         assert (
-            acf_plot_result.layout["xaxis"]["title"]["text"] == test_title
+            self.result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_scatter_points_and_confidence(self, acf_plot_result):
+    def test_properties_scatter_points_and_confidence(self):
         # Arrange
         total_elements = 3
         # Act
         # Assert - checking if correct object created
         assert (
-            len(acf_plot_result.data) == total_elements
+            len(self.result.data) == total_elements
         ), "Some elements of plot are missing"
 
     def test_properties_vertical_lines_for_custom_lag(self, load_plotly, amazon_vd):
@@ -1496,29 +1507,32 @@ class TestVDFACFPlot:
 
 class TestMachineLearningElbowCurve:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for(self, elbow_plot_result):
+    def result(self, elbow_plot_result):
+        self.result = elbow_plot_result
+
+    def test_properties_output_type_for(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(elbow_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, elbow_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "Number of Clusters"
         # Act
         # Assert - checking if correct object created
         assert (
-            elbow_plot_result.layout["xaxis"]["title"]["text"] == test_title
+            self.result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_data_all_scatter_points(self, elbow_plot_result):
+    def test_data_all_scatter_points(self):
         # Arrange
         mode = "markers+line"
         # Act
         # Assert - checking if correct object created
-        assert set(elbow_plot_result.data[0]["mode"]) == set(
+        assert set(self.result.data[0]["mode"]) == set(
             mode
         ), "Either lines or marker missing"
 
@@ -1542,48 +1556,49 @@ class TestMachineLearningElbowCurve:
 
 class TestMachineLearningRegressionPlot:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for(self, regression_plot_result):
+    def result(self, regression_plot_result):
+        self.result = regression_plot_result
+
+    def test_properties_output_type_for(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(regression_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, regression_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "X"
         # Act
         # Assert
         assert (
-            regression_plot_result.layout["xaxis"]["title"]["text"] == test_title
+            self.result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label(self, regression_plot_result):
+    def test_properties_yaxis_label(self):
         # Arrange
         test_title = "Y"
         # Act
         # Assert
         assert (
-            regression_plot_result.layout["yaxis"]["title"]["text"] == test_title
+            self.result.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_properties_scatter_and_line_plot(self, regression_plot_result):
+    def test_properties_scatter_and_line_plot(self):
         # Arrange
         total_items = 2
         # Act
         # Assert
-        assert (
-            len(regression_plot_result.data) == total_items
-        ), "Either line or scatter missing"
+        assert len(self.result.data) == total_items, "Either line or scatter missing"
 
-    def test_data_all_scatter_points(self, regression_plot_result):
+    def test_data_all_scatter_points(self):
         # Arrange
         no_of_points = 100
         # Act
         # Assert
         assert (
-            len(regression_plot_result.data[0]["x"]) == no_of_points
+            len(self.result.data[0]["x"]) == no_of_points
         ), "Discrepancy between points plotted and total number ofp oints"
 
     def test_additional_options_custom_height(self, load_plotly, dummy_scatter_vd):
@@ -1603,84 +1618,84 @@ class TestMachineLearningRegressionPlot:
 
 class TestMachineLearningLOFPlot:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for_2d(self, local_outlier_factor_plot_result):
+    def result_2d(self, local_outlier_factor_plot_result):
+        self.result = local_outlier_factor_plot_result
+
+    @pytest.fixture(autouse=True)
+    def result_3d(self, local_outlier_factor_3d_plot_result):
+        self.result_3d = local_outlier_factor_3d_plot_result
+
+    def test_properties_output_type_for_2d(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(local_outlier_factor_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_output_type_for_3d(self, local_outlier_factor_3d_plot_result):
+    def test_properties_output_type_for_3d(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(local_outlier_factor_3d_plot_result)
-            == plotly.graph_objs._figure.Figure
+            type(self.result_3d) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, local_outlier_factor_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "X"
         # Act
         # Assert
         assert (
-            local_outlier_factor_plot_result.layout["xaxis"]["title"]["text"]
-            == test_title
+            self.result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label(self, local_outlier_factor_plot_result):
+    def test_properties_yaxis_label(self):
         # Arrange
         test_title = "Y"
         # Act
         # Assert
         assert (
-            local_outlier_factor_plot_result.layout["yaxis"]["title"]["text"]
-            == test_title
+            self.result.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_properties_xaxis_label_for_3d(self, local_outlier_factor_3d_plot_result):
+    def test_properties_xaxis_label_for_3d(self):
         # Arrange
         test_title = "X"
         # Act
         # Assert
         assert (
-            local_outlier_factor_3d_plot_result.layout["xaxis"]["title"]["text"]
-            == test_title
+            self.result_3d.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label_for_3d(self, local_outlier_factor_3d_plot_result):
+    def test_properties_yaxis_label_for_3d(self):
         # Arrange
         test_title = "Y"
         # Act
         # Assert
         assert (
-            local_outlier_factor_3d_plot_result.layout["yaxis"]["title"]["text"]
-            == test_title
+            self.result_3d.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_properties_scatter_and_line_plot(self, local_outlier_factor_plot_result):
+    def test_properties_scatter_and_line_plot(self):
         # Arrange
         total_items = 2
         # Act
         # Assert
-        assert (
-            len(local_outlier_factor_plot_result.data) == total_items
-        ), "Either outline or scatter missing"
+        assert len(self.result.data) == total_items, "Either outline or scatter missing"
 
-    def test_properties_hoverinfo_for_2d(self, local_outlier_factor_plot_result):
+    def test_properties_hoverinfo_for_2d(self):
         # Arrange
         x = "{x}"
         y = "{y}"
         # Act
         # Assert
         assert (
-            x in local_outlier_factor_plot_result.data[1]["hovertemplate"]
-            and y in local_outlier_factor_plot_result.data[1]["hovertemplate"]
+            x in self.result.data[1]["hovertemplate"]
+            and y in self.result.data[1]["hovertemplate"]
         ), "Hover information does not contain x or y"
 
-    def test_properties_hoverinfo_for_3d(self, local_outlier_factor_3d_plot_result):
+    def test_properties_hoverinfo_for_3d(self):
         # Arrange
         x = "{x}"
         y = "{y}"
@@ -1688,9 +1703,9 @@ class TestMachineLearningLOFPlot:
         # Act
         # Assert
         assert (
-            (x in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
-            and (y in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
-            and (z in local_outlier_factor_3d_plot_result.data[1]["hovertemplate"])
+            (x in self.result_3d.data[1]["hovertemplate"])
+            and (y in self.result_3d.data[1]["hovertemplate"])
+            and (z in self.result_3d.data[1]["hovertemplate"])
         ), "Hover information does not contain x, y or z"
 
     def test_additional_options_custom_height(self, load_plotly, dummy_scatter_vd):
@@ -1710,12 +1725,19 @@ class TestMachineLearningLOFPlot:
 
 class TestMachineLearningLogisticRegressionPlot:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for_2d(self, logistic_regression_plot_result):
+    def result_2d(self, logistic_regression_plot_result):
+        self.result_2d = logistic_regression_plot_result
+
+    @pytest.fixture(autouse=True)
+    def result_3d(self, logistic_regression_plot_for_3d_result):
+        self.result_3d = logistic_regression_plot_for_3d_result
+
+    def test_properties_output_type_for_2d(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(logistic_regression_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result_2d) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
     def test_properties_output_type_for_3d(
@@ -1725,63 +1747,52 @@ class TestMachineLearningLogisticRegressionPlot:
         # Act
         # Assert - checking if correct object created
         assert (
-            type(logistic_regression_plot_for_3d_result)
-            == plotly.graph_objs._figure.Figure
+            type(self.result_3d) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, logistic_regression_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "fare"
         # Act
         # Assert
         assert (
-            logistic_regression_plot_result.layout["xaxis"]["title"]["text"]
-            == test_title
+            self.result_2d.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label(self, logistic_regression_plot_result):
+    def test_properties_yaxis_label(self):
         # Arrange
         test_title = "P(survived = 1)"
         # Act
         # Assert
         assert (
-            logistic_regression_plot_result.layout["yaxis"]["title"]["text"]
-            == test_title
+            self.result_2d.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_properties_xaxis_label_for_3d(
-        self, logistic_regression_plot_for_3d_result
-    ):
+    def test_properties_xaxis_label_for_3d(self):
         # Arrange
         test_title = "fare"
         # Act
         # Assert
         assert (
-            logistic_regression_plot_for_3d_result.layout["xaxis"]["title"]["text"]
-            == test_title
+            self.result_3d.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label_for_3d(
-        self, logistic_regression_plot_for_3d_result
-    ):
+    def test_properties_yaxis_label_for_3d(self):
         # Arrange
         test_title = "P(survived = 1)"
         # Act
         # Assert
         assert (
-            logistic_regression_plot_for_3d_result.layout["yaxis"]["title"]["text"]
-            == test_title
+            self.result_3d.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_properties_two_scatter_and_line_plot(
-        self, logistic_regression_plot_result
-    ):
+    def test_properties_two_scatter_and_line_plot(self):
         # Arrange
         total_items = 3
         # Act
         # Assert
         assert (
-            len(logistic_regression_plot_result.data) == total_items
+            len(self.result_2d.data) == total_items
         ), "Either line or the two scatter plots are missing"
 
     def test_additional_options_custom_height(self, load_plotly, titanic_vd):
@@ -1801,40 +1812,41 @@ class TestMachineLearningLogisticRegressionPlot:
 
 class TestMachineLearningImportanceBarChart:
     @pytest.fixture(autouse=True)
-    def test_properties_output_type_for_2d(self, importance_plot_result):
+    def result(self, importance_plot_result):
+        self.result = importance_plot_result
+
+    def test_properties_output_type_for_2d(self):
         # Arrange
         # Act
         # Assert - checking if correct object created
         assert (
-            type(importance_plot_result) == plotly.graph_objs._figure.Figure
+            type(self.result) == plotly.graph_objs._figure.Figure
         ), "wrong object crated"
 
-    def test_properties_xaxis_label(self, importance_plot_result):
+    def test_properties_xaxis_label(self):
         # Arrange
         test_title = "Importance (%)"
         # Act
         # Assert
         assert (
-            importance_plot_result.layout["xaxis"]["title"]["text"] == test_title
+            self.result.layout["xaxis"]["title"]["text"] == test_title
         ), "X axis label incorrect"
 
-    def test_properties_yaxis_label(self, importance_plot_result):
+    def test_properties_yaxis_label(self):
         # Arrange
         test_title = "Features"
         # Act
         # Assert
         assert (
-            importance_plot_result.layout["yaxis"]["title"]["text"] == test_title
+            self.result.layout["yaxis"]["title"]["text"] == test_title
         ), "Y axis label incorrect"
 
-    def test_data_no_of_columns(self, importance_plot_result):
+    def test_data_no_of_columns(self):
         # Arrange
         total_items = 4
         # Act
         # Assert
-        assert (
-            len(importance_plot_result.data[0]["x"]) == total_items
-        ), "Some columns missing"
+        assert len(self.result.data[0]["x"]) == total_items, "Some columns missing"
 
     def test_additional_options_custom_height(self, load_plotly, iris_vd):
         # rrange
@@ -1848,6 +1860,60 @@ class TestMachineLearningImportanceBarChart:
             "Species",
         )
         result = model.features_importance(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningPCACirclePlot:
+    @pytest.fixture(autouse=True)
+    def result(self, pca_circle_plot_result):
+        self.result = pca_circle_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "Dim1 (5.3%)"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "Dim2 (92.5%)"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_data_no_of_columns(self):
+        # Arrange
+        total_items = 4
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some columns missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = PCA("pca_circle_test")
+        model.drop()
+        model.fit(iris_vd)
+        result = model.plot_circle(height=custom_height, width=custom_width)
         # Assert
         assert (
             result.layout["height"] == custom_height

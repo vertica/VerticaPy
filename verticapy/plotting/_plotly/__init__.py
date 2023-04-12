@@ -37,7 +37,7 @@ from verticapy.plotting._plotly.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
 )
 from verticapy.plotting._plotly.machine_learning.importance import ImportanceBarChart
-
+from verticapy.plotting._plotly.machine_learning.pca import PCACirclePlot
 
 
 import plotly.io as pio
