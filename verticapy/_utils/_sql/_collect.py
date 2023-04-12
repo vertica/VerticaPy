@@ -56,7 +56,7 @@ def _dict_to_json_string(
         elif object_type == "VerticaModel":
             json += f'"{json_dict[key]._model_type}"'
         elif isinstance(json_dict[key], dict):
-            json += dict_to_json_string(json_dict=json_dict[key])
+            json += _dict_to_json_string(json_dict=json_dict[key])
         elif isinstance(json_dict[key], list):
             json_dict_str = ";".join([str(item) for item in json_dict[key]])
             json += f'"{json_dict_str}"'

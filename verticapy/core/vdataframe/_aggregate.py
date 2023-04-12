@@ -627,7 +627,7 @@ class vDFAgg:
                 if isinstance(values[elem][idx], str) and "top" not in elem:
                     try:
                         values[elem][idx] = float(values[elem][idx])
-                    except TypeError:
+                    except (TypeError, ValueError):
                         pass
 
         self._update_catalog(values)
