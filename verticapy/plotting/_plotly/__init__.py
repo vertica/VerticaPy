@@ -36,6 +36,7 @@ from verticapy.plotting._plotly.machine_learning.lof import LOFPlot
 from verticapy.plotting._plotly.machine_learning.logistic_reg import (
     LogisticRegressionPlot,
 )
+from verticapy.plotting._plotly.machine_learning.importance import ImportanceBarChart
 
 
 
