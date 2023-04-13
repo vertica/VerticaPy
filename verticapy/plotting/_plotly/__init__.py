@@ -42,6 +42,7 @@ from verticapy.plotting._plotly.machine_learning.model_evaluation import (
     ROCCurve,
     CutoffCurve,
     PRCCurve,
+    LiftChart,
 )
 
 import plotly.io as pio

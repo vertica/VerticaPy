@@ -204,8 +204,13 @@ class LiftChart(ROCCurve):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {
-            "alpha": 0.2,
+        self.init_layout_style = {
+            "title": self.layout["title"],
+            "yaxis_title": "Values",
+            "xaxis_title": self.layout["x_label"],
+            "width": 800,
+            "height": 400,
+            "showlegend": True,
         }
         return None
 
@@ -217,6 +222,29 @@ class LiftChart(ROCCurve):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a Machine Learning Lift Chart using the Plotly API.
+        Draws a Machine Cutoff Curve using the Matplotlib API.
         """
-        return None
+        fig = self._get_fig(fig)
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["y"],
+                mode="lines+markers",
+                line_shape="linear",
+                fill="tozeroy",
+                name="Cumulative Capture Rate",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["z"],
+                mode="lines+markers",
+                line_shape="linear",
+                fill="tonexty",
+                name="Cumulative Lift",
+            )
+        )
+        fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
+        fig.show()
+        return fig
