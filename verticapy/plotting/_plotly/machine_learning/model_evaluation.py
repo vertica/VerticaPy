@@ -86,7 +86,7 @@ class ROCCurve(PlotlyBase):
         return fig
 
 
-class CutoffCurve(ROCCurve):
+class CutoffCurve(PlotlyBase):
     # Properties.
 
     @property
@@ -96,9 +96,12 @@ class CutoffCurve(ROCCurve):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {
-            "facecolor": "black",
-            "alpha": 0.02,
+        self.init_layout_style = {
+            "title": "Cutoff Curve",
+            "xaxis_title": "Decision Boundary",
+            "width": 800,
+            "height": 600,
+            "showlegend": True,
         }
         return None
 
@@ -107,12 +110,33 @@ class CutoffCurve(ROCCurve):
     def draw(
         self,
         fig: Optional[Figure] = None,
+        line_shape: Literal["linear", "spline", "vhv", "hv", "vh", "hvh"] = "hv",
         **style_kwargs,
     ) -> Figure:
         """
         Draws a Machine Cutoff Curve using the Matplotlib API.
         """
-        return None
+        fig = self._get_fig(fig)
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["y"],
+                mode="lines+markers",
+                line_shape=line_shape,
+                name="Specificity",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["z"],
+                mode="lines+markers",
+                line_shape=line_shape,
+                name="Sensitivity",
+            )
+        )
+        fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
+        return fig
 
 
 class PRCCurve(ROCCurve):
@@ -122,18 +146,52 @@ class PRCCurve(ROCCurve):
     def _kind(self) -> Literal["prc"]:
         return "prc"
 
+    def _init_style(self) -> None:
+        self.init_layout_style = {
+            "title": self.layout["title"],
+            "yaxis_title": self.layout["y_label"],
+            "xaxis_title": self.layout["x_label"],
+            "width": 800,
+            "height": 600,
+            "showlegend": False,
+            "annotations": [
+                dict(
+                    x=0.5,
+                    y=0.05,
+                    xref="paper",
+                    yref="paper",
+                    showarrow=False,
+                    text=f"AUC: {self.data['auc']:.4f}",
+                    font=dict(size=14),
+                )
+            ],
+        }
+        return None
+
     # Draw.
 
     def draw(
         self,
         fig: Optional[Figure] = None,
+        line_shape: Literal["linear", "spline", "vhv", "hv", "vh", "hvh"] = "hv",
         **style_kwargs,
     ) -> Figure:
         """
         Draws a Machine Learning PRC Curve using the Plotly API.
         """
-
-        return None
+        fig = self._get_fig(fig)
+        fig.add_trace(
+            go.Scatter(
+                x=self.data["x"],
+                y=self.data["y"],
+                mode="lines",
+                line_shape=line_shape,
+                name="Specificity",
+                fill="tozeroy",
+            )
+        )
+        fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
+        return fig
 
 
 class LiftChart(ROCCurve):

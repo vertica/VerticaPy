@@ -38,7 +38,11 @@ from verticapy.plotting._plotly.machine_learning.logistic_reg import (
 )
 from verticapy.plotting._plotly.machine_learning.importance import ImportanceBarChart
 from verticapy.plotting._plotly.machine_learning.pca import PCACirclePlot
-from verticapy.plotting._plotly.machine_learning.model_evaluation import ROCCurve
+from verticapy.plotting._plotly.machine_learning.model_evaluation import (
+    ROCCurve,
+    CutoffCurve,
+    PRCCurve,
+)
 
 import plotly.io as pio
 import plotly.graph_objects as go
