@@ -145,7 +145,8 @@ class vDCNorm:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    {by[0]}, 
                                     AVG({self}), 
                                     STDDEV({self}) 
                                 FROM {self._parent} GROUP BY {by[0]}""",
@@ -155,25 +156,44 @@ class vDCNorm:
                             symbol=self._parent._vars["symbol"],
                         )
                         for i in range(len(result)):
-                            if isinstance(result[i][2], NoneType):
-                                pass
-                            elif math.isnan(result[i][2]):
+                            if not (isinstance(result[i][2], NoneType)) and math.isnan(
+                                result[i][2]
+                            ):
                                 result[i][2] = None
-                        avg_stddev = []
-                        for i in range(1, 3):
-                            if not (isinstance(x[0], NoneType)):
-                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
-                            else:
-                                x0 = "NULL"
-                            x_tmp = [
-                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
-                                for x in result
-                                if not (isinstance(x[i], NoneType))
-                            ]
-                            avg_stddev += [
-                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
-                            ]
-                        avg, stddev = avg_stddev
+                        avg = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[1]
+                                        if not (isinstance(x[1], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[1], NoneType))
+                                ]
+                            ),
+                        )
+                        stddev = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[2]
+                                        if not (isinstance(x[2], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[2], NoneType))
+                                ]
+                            ),
+                        )
                         _executeSQL(
                             query=f"""
                                 SELECT 
@@ -248,7 +268,8 @@ class vDCNorm:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    {by[0]}, 
                                     MIN({self}), 
                                     MAX({self})
                                 FROM {self._parent} 
@@ -258,27 +279,46 @@ class vDCNorm:
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                        cmin_cmax = []
-                        for i in range(1, 3):
-                            if not (isinstance(x[0], NoneType)):
-                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
-                            else:
-                                x0 = "NULL"
-                            x_tmp = [
-                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
-                                for x in result
-                                if not (isinstance(x[i], NoneType))
-                            ]
-                            cmin_cmax += [
-                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
-                            ]
-                        cmin, cmax = cmin_cmax
+                        cmin = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[1]
+                                        if not (isinstance(x[1], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[1], NoneType))
+                                ]
+                            ),
+                        )
+                        cmax = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[2]
+                                        if not (isinstance(x[2], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[2], NoneType))
+                                ]
+                            ),
+                        )
                         _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ 
-                                    {cmin_cmax[1]}, 
-                                    {cmin_cmax[0]} 
+                                    {cmax}, 
+                                    {cmin} 
                                 FROM {self._parent} 
                                 LIMIT 1""",
                             print_time_sql=False,

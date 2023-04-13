@@ -18,6 +18,8 @@ import os
 import warnings
 from typing import Optional
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._parsers import get_header_names, guess_sep
@@ -177,7 +179,7 @@ def pcsv(
                 print_time_sql=False,
             )
             dtype[column_dtype[0]] = column_dtype[1]
-        except Exception as e:
+        except QueryError:
             dtype[column_dtype[0]] = "Varchar(100)"
     drop(flex_name, method="table")
     return dtype
@@ -403,7 +405,7 @@ def read_csv(
                 file_str = f.readline()
                 f.close()
                 sep = guess_sep(file_str)
-            except FileNotFoundError:
+            except (FileNotFoundError, UnicodeDecodeError):
                 sep = ","
         if not (materialize):
             suffix, prefix, final_relation = (

@@ -313,7 +313,7 @@ class vDFSystem:
                     val = values[elem]
                     try:
                         val = float(val)
-                    except TypeError:
+                    except (TypeError, ValueError):
                         pass
                     self[column]._catalog[matrix][elem] = val
         else:
@@ -328,7 +328,7 @@ class vDFSystem:
                             val = float(val)
                             if val - int(val) == 0:
                                 val = int(val)
-                        except (TypeError, ValueError):
+                        except (OverflowError, TypeError, ValueError):
                             pass
                         if val != val:
                             val = None

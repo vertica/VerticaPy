@@ -64,7 +64,7 @@ __url__: str = "https://github.com/vertica/verticapy/"
 __license__: str = "Apache License, Version 2.0"
 __version__: str = "1.0.0-beta"
 
-from verticapy._config.config import set_option
+from verticapy._config.config import get_option, set_option
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
 from verticapy._help import help_start

@@ -593,7 +593,7 @@ class vDCMath:
                         re.search(re.compile(f"\\b{column_str}\\b"), func,)
                     ):
                         max_floor = max(len(self._parent[column]._transf), max_floor)
-                except TypeError:
+                except:
                     pass
             max_floor -= len(self._transf)
             if copy_name:
