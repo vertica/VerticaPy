@@ -34,7 +34,7 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import EmptyParameter
+from verticapy.errors import EmptyParameter, VersionError
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -288,15 +288,16 @@ class vDFCorr:
                 result = float(result)
             return result
         elif len(columns) > 2:
+            nb_precomputed, n = 0, len(columns)
+            for column1 in columns:
+                for column2 in columns:
+                    pre_comp_val = self._get_catalog_value(
+                        method=method, columns=[column1, column2]
+                    )
+                    if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
+                        nb_precomputed += 1
             try:
-                nb_precomputed, n = 0, len(columns)
-                for column1 in columns:
-                    for column2 in columns:
-                        pre_comp_val = self._get_catalog_value(
-                            method=method, columns=[column1, column2]
-                        )
-                        if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
-                            nb_precomputed += 1
+                vertica_version(condition=[9, 2, 1])
                 assert (nb_precomputed <= n * n / 3) and (
                     method in ("pearson", "spearman", "spearmand",)
                 )
@@ -311,7 +312,6 @@ class vDFCorr:
                         ]
                     )
                     table = f"(SELECT {columns_str} FROM {self}) spearman_table"
-                vertica_version(condition=[9, 2, 1])
                 result = _executeSQL(
                     query=f"""SELECT /*+LABEL('vDataframe._aggregate_matrix')*/ 
                                 CORR_MATRIX({', '.join(columns)}) 
@@ -332,7 +332,7 @@ class vDFCorr:
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
-            except:
+            except (AssertionError, QueryError, VersionError):
                 if method in (
                     "pearson",
                     "spearman",
@@ -408,7 +408,7 @@ class vDFCorr:
                                     f"COVAR_POP({columns[i]}{cast_i}, {columns[j]}{cast_j})"
                                 ]
                             else:
-                                raise
+                                assert False
                     if method in ("spearman", "spearmand"):
                         fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                         rank = [
@@ -418,8 +418,8 @@ class vDFCorr:
                         table = f"(SELECT {', '.join(rank)} FROM {self}) rank_spearman_table"
                     elif method == "kendall":
                         table = f"""
-                            (SELECT {", ".join(columns)} FROM {self}) x 
-                 CROSS JOIN (SELECT {", ".join(columns)} FROM {self}) y"""
+                                           (SELECT {", ".join(columns)} FROM {self}) x 
+                                CROSS JOIN (SELECT {", ".join(columns)} FROM {self}) y"""
                     else:
                         table = self._genSQL()
                     if nb_precomputed == nb_loop:
@@ -443,7 +443,7 @@ class vDFCorr:
                             sql_push_ext=self._vars["sql_push_ext"],
                             symbol=self._vars["symbol"],
                         )
-                except QueryError:
+                except (AssertionError, QueryError):
                     n = len(columns)
                     result = []
                     for i in loop:

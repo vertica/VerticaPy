@@ -398,7 +398,7 @@ class TableSample:
         d = copy.deepcopy(self.values)
         if use_number_as_category:
             categories_alpha = d["index"]
-            categories_beta = [x for x in d]
+            categories_beta = list(d)
             del categories_beta[0]
             bijection_categories = {}
             for idx, x in enumerate(categories_alpha):
