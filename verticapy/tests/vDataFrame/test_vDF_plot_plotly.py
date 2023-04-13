@@ -39,7 +39,7 @@ from verticapy.learn.linear_model import (
     LogisticRegression,
 )
 from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy.learn.model_selection import elbow
+from verticapy.learn.model_selection import elbow, lift_chart, prc_curve
 from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.decomposition import PCA
 
@@ -81,9 +81,37 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
+    yield dummy
+
+
+@pytest.fixture(scope="class")
+def dummy_probability_data():
+    count = 100
+    first_count = 10
+    second_count = 40
+    third_count = count - first_count - second_count
+    prob_1_first = 0
+    prob_1_second = 0.4
+    prob_1_third = 0.9
+    pred = list(
+        np.random.choice([0, 1], size=first_count, p=[1 - prob_1_first, prob_1_first])
+    )
+    pred.extend(
+        np.random.choice(
+            [0, 1], size=second_count, p=[1 - prob_1_second, prob_1_second]
+        )
+    )
+    pred.extend(
+        np.random.choice([0, 1], size=third_count, p=[1 - prob_1_third, prob_1_third])
+    )
+    prob = np.linspace(0, 1, count)
+    dummy = verticapy.vDataFrame({"y_true": prob, "y_score": pred})
     yield dummy
 
 
@@ -120,7 +148,12 @@ def dummy_dist_vd():
 @pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
     )
 
 
@@ -176,6 +209,32 @@ def pca_circle_plot_result(load_plotly, iris_vd):
     model.drop()
     model.fit(iris_vd)
     return model.plot_circle()
+
+
+@pytest.fixture(scope="class")
+def roc_plot_result(load_plotly, titanic_vd):
+    model = RandomForestClassifier("roc_plot_test")
+    model.drop()
+    model.fit(titanic_vd, ["age", "fare", "sex"], "survived")
+    return model.roc_curve()
+
+
+@pytest.fixture(scope="class")
+def cutoff_curve_plot_result(load_plotly, iris_vd):
+    model = RandomForestClassifier("cutoff_curve_plot_test")
+    model.drop()
+    model.fit(iris_vd, ["PetalLengthCm", "PetalWidthCm"], "Species")
+    return model.cutoff_curve(pos_label="Iris-virginica")
+
+
+@pytest.fixture(scope="class")
+def prc_curve_plot_result(load_plotly, dummy_probability_data):
+    return prc_curve("y_true", "y_score", dummy_probability_data)
+
+
+@pytest.fixture(scope="class")
+def lift_chart_plot_result(load_plotly, dummy_probability_data):
+    return lift_chart("y_true", "y_score", dummy_probability_data)
 
 
 @pytest.fixture(scope="module")
@@ -428,7 +487,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -452,7 +517,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -1894,6 +1965,246 @@ class TestMachineLearningPCACirclePlot:
         model.drop()
         model.fit(iris_vd)
         result = model.plot_circle(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningROCCurve:
+    @pytest.fixture(autouse=True)
+    def result(self, roc_plot_result):
+        self.result = roc_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_title(self):
+        # Arrange
+        test_title = "ROC Curve"
+        # Act
+        # Assert
+        assert self.result.layout["title"]["text"] == test_title, "Plot Title Incorrect"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "False Positive Rate (1-Specificity)"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "True Positive Rate (Sensitivity)"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = RandomForestClassifier("roc_plot_test")
+        model.drop()
+        model.fit(titanic_vd, ["age", "fare", "sex"], "survived")
+        result = model.roc_curve(height=custom_height, width=custom_width)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningCutoffCurve:
+    @pytest.fixture(autouse=True)
+    def result(self, cutoff_curve_plot_result):
+        self.result = cutoff_curve_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "Decision Boundary"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "Values"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        model = RandomForestClassifier("cutoff_curve_plot_test")
+        model.drop()
+        model.fit(iris_vd, ["PetalLengthCm", "PetalWidthCm"], "Species")
+        result = model.cutoff_curve(
+            pos_label="Iris-virginica", width=custom_width, height=custom_height
+        )
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningPRCCurve:
+    @pytest.fixture(autouse=True)
+    def result(self, prc_curve_plot_result):
+        self.result = prc_curve_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "Recall"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "Precision"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 1
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(self, dummy_probability_data):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        result = prc_curve(
+            "y_true",
+            "y_score",
+            dummy_probability_data,
+            width=custom_width,
+            height=custom_height,
+        )
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningLiftChart:
+    @pytest.fixture(autouse=True)
+    def result(self, lift_chart_plot_result):
+        self.result = lift_chart_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_title(self):
+        # Arrange
+        test_title = "Lift Table"
+        # Act
+        # Assert
+        assert self.result.layout["title"]["text"] == test_title, "Plot title incorrect"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "Cumulative Data Fraction"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "Values"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(
+        self, load_plotly, dummy_probability_data
+    ):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+        result = prc_curve(
+            "y_true",
+            "y_score",
+            dummy_probability_data,
+            width=custom_width,
+            height=custom_height,
+        )
         # Assert
         assert (
             result.layout["height"] == custom_height

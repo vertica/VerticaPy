@@ -98,9 +98,10 @@ class CutoffCurve(PlotlyBase):
     def _init_style(self) -> None:
         self.init_layout_style = {
             "title": "Cutoff Curve",
+            "yaxis_title": "Values",
             "xaxis_title": "Decision Boundary",
             "width": 800,
-            "height": 600,
+            "height": 450,
             "showlegend": True,
         }
         return None
