@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from typing import Optional, Union
 
+from vertica_python.errors import QueryError
+
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -203,6 +205,6 @@ def isvmap(expr: Union[str, StringSQL], column: str,) -> bool:
             title="Checking if the column is a vmap.",
             method="fetchall",
         )
-    except:
+    except QueryError:
         return False
     return len(res) != 0 and (res[0][0] != -1)

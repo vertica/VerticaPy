@@ -644,7 +644,7 @@ class KPrototypes(Clustering):
                 try:
                     val = float(val)
                     centroid_val = float(centroid_val)
-                except:
+                except (TypeError, ValueError):
                     pass
                 if isinstance(centroid_val, str) or isinstance(centroid_val, NoneType):
                     distance_cat += abs(int(val == centroid_val) - 1)

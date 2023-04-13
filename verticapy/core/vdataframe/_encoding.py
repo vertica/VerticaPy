@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 import math
 import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
@@ -423,18 +424,15 @@ class vDCEncode:
             return trans
         else:
             self._transf += [trans]
-            sauv = {}
-            for elem in self._catalog:
-                sauv[elem] = self._catalog[elem]
+            sauv = copy.deepcopy(self._catalog)
             self._parent._update_catalog(erase=True, columns=[self._alias])
-            try:
-                if "count" in sauv:
-                    self._catalog["count"] = sauv["count"]
-                    self._catalog["percent"] = (
-                        100 * sauv["count"] / self._parent.shape()[0]
-                    )
-            except:
-                pass
+            if "count" in sauv:
+                self._catalog["count"] = sauv["count"]
+                parent_cnt = self._parent.shape()[0]
+                if parent_cnt == 0:
+                    self._catalog["percent"] = 100
+                else:
+                    self._catalog["percent"] = 100 * sauv["count"] / parent_cnt
             self._parent._add_to_history(
                 f"[Discretize]: The vDataColumn {self} was discretized."
             )

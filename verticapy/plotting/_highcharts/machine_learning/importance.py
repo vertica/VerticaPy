@@ -37,9 +37,7 @@ class ImportanceBarChart(HighchartsBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        importances, coef_names, signs = self._compute_importance()
-        signs = np.array(signs)
-        legend = len(signs[signs == -1]) != 0
+        legend = len(self.data["signs"][self.data["signs"] == -1]) != 0
         self.init_style = {
             "title": {"text": ""},
             "chart": {"type": "column", "inverted": True},
@@ -51,7 +49,7 @@ class ImportanceBarChart(HighchartsBase):
                     if "y_label" in self.layout
                     else "Features"
                 },
-                "categories": coef_names,
+                "categories": self.layout["columns"],
             },
             "yAxis": {
                 "title": {
@@ -72,16 +70,14 @@ class ImportanceBarChart(HighchartsBase):
         """
         Draws a coeff importance bar chart using the HC API.
         """
-        importances, coef_names, signs = self._compute_importance()
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        importances_pos = np.array(importances)
-        signs = np.array(signs)
-        importances_pos[signs == -1] = 0.0
+        importances_pos = copy.deepcopy(self.data["importance"])
+        importances_pos[self.data["signs"] == -1] = 0.0
         importances_pos = importances_pos.tolist()
-        importances_neg = np.array(importances)
-        importances_neg[signs == 1] = 0.0
+        importances_neg = copy.deepcopy(self.data["importance"])
+        importances_neg[self.data["signs"] == 1] = 0.0
         importances_neg = importances_neg.tolist()
         chart.add_data_set(importances_pos, "bar", name="+1")
         chart.add_data_set(importances_neg, "bar", name="-1")

@@ -215,7 +215,7 @@ def randomized_features_search_cv(
                     tqdm=False,
                 )
                 if training_score:
-                    keys = [elem for elem in current_cv[0].values]
+                    keys = list(current_cv[0].values)
                     data += [
                         (
                             config,

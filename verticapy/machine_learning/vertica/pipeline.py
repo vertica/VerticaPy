@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
+
 from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
@@ -94,22 +96,17 @@ class Pipeline:
                     "The steps 'name' of the Pipeline must be of "
                     f"type str. Found {type(s[0])}."
                 )
-            else:
-                try:
-                    if idx < len(steps) - 1:
-                        s[1].transform
-                    s[1].fit
-                except:
-                    if idx < len(steps) - 1:
-                        raise ValueError(
-                            "The estimators of the Pipeline must have a "
-                            "'transform' and a 'fit' method."
-                        )
-                    else:
-                        raise ValueError(
-                            "The last estimator of the Pipeline must have a "
-                            "'fit' method."
-                        )
+            elif idx < len(steps) - 1 and (
+                not (hasattr(s[1], "transform")) or not (hasattr(s[1], "fit"))
+            ):
+                raise AttributeError(
+                    "The estimators of the Pipeline must have a "
+                    "'transform' and a 'fit' method."
+                )
+            elif not (hasattr(s[1], "fit")):
+                raise ValueError(
+                    "The last estimator of the Pipeline must have a " "'fit' method."
+                )
             self.steps += [s]
         return None
 
@@ -201,7 +198,7 @@ class Pipeline:
             vdf = input_relation
         if conf.get_option("overwrite_model"):
             self.drop()
-        X_new = [elem for elem in X]
+        X_new = copy.deepcopy(X)
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             if (idx == len(self.steps) - 1) and (y):
@@ -213,11 +210,10 @@ class Pipeline:
                 X_new = step[1]._get_names(X=X)
         self.input_relation = self.steps[0][1].input_relation
         self.X = [column for column in self.steps[0][1].X]
-        try:
+        if hasattr(self.steps[-1][1], "y"):
             self.y = self.steps[-1][1].y
+        if hasattr(self.steps[-1][1], "test_relation"):
             self.test_relation = self.steps[-1][1].test_relation
-        except:
-            pass
         return None
 
     # Model Evaluation Methods.
@@ -299,7 +295,7 @@ class Pipeline:
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X_new, X_all = [elem for elem in X], []
+        X_new, X_all = copy.deepcopy(X), []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             if idx == len(self.steps) - 1:
@@ -346,7 +342,7 @@ class Pipeline:
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X_new, X_all = [elem for elem in X], []
+        X_new, X_all = copy.deepcopy(X), []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             current_vdf = step[1].transform(current_vdf, X_new)
@@ -388,7 +384,7 @@ class Pipeline:
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X_new, X_all = [elem for elem in X], []
+        X_new, X_all = copy.deepcopy(X), []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):
             step = self.steps[-idx]

@@ -1087,8 +1087,15 @@ class vDFPlot(PlottingUtils):
             model.drop()
             try:
                 model.fit(self, columns)
-                ax = model.transform(self).scatter(
-                    columns=["col1", "col2"],
+                vdf = model.transform(self)
+                ev_1 = model.explained_variance_[dimensions[0] - 1]
+                x_label = f"Dim{dimensions[0]} ({ev_1}%)"
+                ev_2 = model.explained_variance_[dimensions[1] - 1]
+                y_label = f"Dim{dimensions[1]} ({ev_2}%)"
+                vdf[f"col{dimensions[0]}"].rename(x_label)
+                vdf[f"col{dimensions[1]}"].rename(y_label)
+                chart = vdf.scatter(
+                    columns=[x_label, y_label],
                     by=by,
                     cmap_col=cmap_col,
                     size=size,
@@ -1100,18 +1107,9 @@ class vDFPlot(PlottingUtils):
                     chart=chart,
                     **style_kwargs,
                 )
-                for idx, fun in enumerate([ax.set_xlabel, ax.set_ylabel]):
-                    if not (model.explained_variance_[dimensions[idx] - 1]):
-                        dimension2 = ""
-                    else:
-                        x2 = round(
-                            model.explained_variance_[dimensions[idx] - 1] * 100, 1
-                        )
-                        dimension2 = f"({x2}%)"
-                    fun(f"Dim{dimensions[idx]} {dimension2}")
             finally:
                 model.drop()
-            return ax
+            return chart
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="ScatterPlot",
             chart=chart,

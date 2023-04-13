@@ -17,6 +17,8 @@ permissions and limitations under the License.
 import os
 from typing import Optional
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._gen import gen_tmp_name
@@ -398,7 +400,7 @@ def read_json(
                     print_time_sql=False,
                 )
                 dtype[column_dtype[0]] = column_dtype[1]
-            except:
+            except QueryError:
                 dtype[column_dtype[0]] = "Varchar(100)"
         if not (insert):
             cols = (

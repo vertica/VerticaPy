@@ -176,6 +176,8 @@ class PlottingBase(PlottingBaseSQL):
                 **self.layout,
                 **misc_layout,
             }
+        if hasattr(self, "_kind") and self._kind == "importance":
+            self._compute_importance()
         self._init_style()
         return None
 
@@ -376,7 +378,7 @@ class PlottingBase(PlottingBaseSQL):
                 if isinstance(d2["color"], str):
                     d["color"] = d2["color"]
                 elif color_idx < 0:
-                    d["color"] = [elem for elem in d2["color"]]
+                    d["color"] = list(d2["color"])
                 else:
                     d["color"] = d2["color"][color_idx % len(d2["color"])]
             else:
@@ -401,7 +403,10 @@ class PlottingBase(PlottingBaseSQL):
         importances, coef_names, signs = zip(
             *sorted(zip(importances, coef_names, signs))
         )
-        return importances, coef_names, signs
+        self.data["importance"] = np.array(importances)
+        self.data["signs"] = np.array(signs)
+        self.layout["columns"] = coef_names
+        return None
 
     # 1D AGG Graphics: BAR / PIE ...
 

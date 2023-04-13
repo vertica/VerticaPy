@@ -242,12 +242,10 @@ class vDFRead:
         TableSample
             result.
         """
-        columns = format_type(columns, dtype=list)
+        columns = format_type(columns, dtype=list, na_out=self.get_columns())
         columns = self._format_colnames(columns)
         if offset < 0:
             offset = max(0, self.shape()[0] - limit)
-        if len(columns) == 0:
-            columns = self.get_columns()
         all_columns = []
         for column in columns:
             cast = to_varchar(self[column].category(), column)
@@ -276,17 +274,17 @@ class vDFRead:
         result.offset = offset
         all_percent = True
         for column in columns:
-            if not ("percent" in self[column]._catalog):
+            if "percent" not in self[column]._catalog:
                 all_percent = False
         all_percent = (all_percent) or (conf.get_option("percent_bar"))
         if all_percent:
             percent = self.aggregate(["percent"], columns).transpose().values
-        for column in result.values:
-            result.dtype[column] = self[column].ctype()
-            if result.count == 0:
-                result.percent[column] = 100.0
-            elif all_percent:
-                result.percent[column] = percent[self._format_colnames(column)][0]
+            for column in result.values:
+                result.dtype[column] = self[column].ctype()
+                if result.count == 0:
+                    result.percent[column] = 100.0
+                elif all_percent:
+                    result.percent[column] = percent[self._format_colnames(column)][0]
         return result
 
     def shape(self) -> tuple[int, int]:

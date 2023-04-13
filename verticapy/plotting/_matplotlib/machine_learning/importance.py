@@ -47,12 +47,12 @@ class ImportanceBarChart(MatplotlibBase):
         """
         Draws a coeff importance bar chart using the Matplotlib API.
         """
-        importances, coef_names, signs = self._compute_importance()
+        n = len(self.data["importance"])
         x_label = self.layout["x_label"] if "x_label" in self.layout else "Importance"
         y_label = self.layout["y_label"] if "y_label" in self.layout else "Features"
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,
-            size=(12, int(len(importances) / 2) + 1),
+            size=(12, int(n / 2) + 1),
             set_axis_below=True,
             grid=True,
             style_kwargs=style_kwargs,
@@ -62,11 +62,10 @@ class ImportanceBarChart(MatplotlibBase):
         style_kwargs = self._update_dict(self.init_style, style_kwargs)
         style_kwargs["color"] = [
             self.get_colors(d=style_kwargs, idx={-1: 1, 0: 0, 1: 0}[int(i)])
-            for i in signs
+            for i in self.data["signs"]
         ]
-        ax.barh(range(0, len(importances)), importances, 0.9, **style_kwargs)
-        signs = np.array(signs)
-        if len(signs[signs == -1]) != 0:
+        ax.barh(range(0, n), self.data["importance"], 0.9, **style_kwargs)
+        if len(self.data["signs"][self.data["signs"] == -1]) != 0:
             color_plus = mpatches.Patch(color=plus, label="sign +")
             color_minus = mpatches.Patch(color=minus, label="sign -")
             ax.legend(
@@ -78,6 +77,6 @@ class ImportanceBarChart(MatplotlibBase):
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
-        ax.set_yticks(range(0, len(importances)))
-        ax.set_yticklabels(coef_names)
+        ax.set_yticks(range(0, n))
+        ax.set_yticklabels(self.layout["columns"])
         return ax

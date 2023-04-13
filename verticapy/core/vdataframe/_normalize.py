@@ -14,9 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 import math
 import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
+
+from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns
@@ -142,7 +145,8 @@ class vDCNorm:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    {by[0]}, 
                                     AVG({self}), 
                                     STDDEV({self}) 
                                 FROM {self._parent} GROUP BY {by[0]}""",
@@ -152,25 +156,44 @@ class vDCNorm:
                             symbol=self._parent._vars["symbol"],
                         )
                         for i in range(len(result)):
-                            if isinstance(result[i][2], NoneType):
-                                pass
-                            elif math.isnan(result[i][2]):
+                            if not (isinstance(result[i][2], NoneType)) and math.isnan(
+                                result[i][2]
+                            ):
                                 result[i][2] = None
-                        avg_stddev = []
-                        for i in range(1, 3):
-                            if not (isinstance(x[0], NoneType)):
-                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
-                            else:
-                                x0 = "NULL"
-                            x_tmp = [
-                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
-                                for x in result
-                                if not (isinstance(x[i], NoneType))
-                            ]
-                            avg_stddev += [
-                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
-                            ]
-                        avg, stddev = avg_stddev
+                        avg = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[1]
+                                        if not (isinstance(x[1], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[1], NoneType))
+                                ]
+                            ),
+                        )
+                        stddev = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[2]
+                                        if not (isinstance(x[2], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[2], NoneType))
+                                ]
+                            ),
+                        )
                         _executeSQL(
                             query=f"""
                                 SELECT 
@@ -183,7 +206,7 @@ class vDCNorm:
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                    except:
+                    except QueryError:
                         avg, stddev = (
                             f"AVG({self}) OVER (PARTITION BY {', '.join(by)})",
                             f"STDDEV({self}) OVER (PARTITION BY {', '.join(by)})",
@@ -245,7 +268,8 @@ class vDCNorm:
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ {by[0]}, 
+                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    {by[0]}, 
                                     MIN({self}), 
                                     MAX({self})
                                 FROM {self._parent} 
@@ -255,34 +279,53 @@ class vDCNorm:
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                        cmin_cmax = []
-                        for i in range(1, 3):
-                            if not (isinstance(x[0], NoneType)):
-                                x0 = f"""'{str(x[0]).replace("'", "''")}'"""
-                            else:
-                                x0 = "NULL"
-                            x_tmp = [
-                                f"""{x0}, {x[i] if not(isinstance(x[i], NoneType)) else "NULL"}"""
-                                for x in result
-                                if not (isinstance(x[i], NoneType))
-                            ]
-                            cmin_cmax += [
-                                f"""DECODE({by[0]}, {", ".join(x_tmp)}, NULL)"""
-                            ]
-                        cmin, cmax = cmin_cmax
+                        cmin = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[1]
+                                        if not (isinstance(x[1], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[1], NoneType))
+                                ]
+                            ),
+                        )
+                        cmax = "DECODE({}, {}, NULL)".format(
+                            by[0],
+                            ", ".join(
+                                [
+                                    "{}, {}".format(
+                                        "'{}'".format(str(x[0]).replace("'", "''"))
+                                        if not (isinstance(x[0], NoneType))
+                                        else "NULL",
+                                        x[2]
+                                        if not (isinstance(x[2], NoneType))
+                                        else "NULL",
+                                    )
+                                    for x in result
+                                    if not (isinstance(x[2], NoneType))
+                                ]
+                            ),
+                        )
                         _executeSQL(
                             query=f"""
                                 SELECT 
                                     /*+LABEL('vDataColumn.normalize')*/ 
-                                    {cmin_cmax[1]}, 
-                                    {cmin_cmax[0]} 
+                                    {cmax}, 
+                                    {cmin} 
                                 FROM {self._parent} 
                                 LIMIT 1""",
                             print_time_sql=False,
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
                         )
-                    except:
+                    except QueryError:
                         cmax, cmin = (
                             f"MAX({self}) OVER (PARTITION BY {', '.join(by)})",
                             f"MIN({self}) OVER (PARTITION BY {', '.join(by)})",
@@ -313,41 +356,37 @@ class vDCNorm:
                 for k in range(max_floor):
                     self._transf += [("{}", self.ctype(), self.category())]
             self._transf += final_transformation
-            sauv = {}
-            for elem in self._catalog:
-                sauv[elem] = self._catalog[elem]
+            sauv = copy.deepcopy(self._catalog)
             self._parent._update_catalog(erase=True, columns=[self._alias])
-            try:
 
-                if "count" in sauv:
-                    self._catalog["count"] = sauv["count"]
-                    self._catalog["percent"] = (
-                        100 * sauv["count"] / self._parent.shape()[0]
-                    )
+            parent_cnt = self._parent.shape()[0]
 
-                for elem in sauv:
+            if "count" in sauv:
+                self._catalog["count"] = sauv["count"]
+                if parent_cnt == 0:
+                    self._catalog["percent"] = 100
+                else:
+                    self._catalog["percent"] = 100 * sauv["count"] / parent_cnt
 
-                    if "top" in elem:
+            for elem in sauv:
 
-                        if "percent" in elem:
-                            self._catalog[elem] = sauv[elem]
-                        elif isinstance(elem, NoneType):
-                            self._catalog[elem] = None
-                        elif method == "robust_zscore":
-                            self._catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
-                                1.4826 * sauv["mad"]
-                            )
-                        elif method == "zscore":
-                            self._catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv[
-                                "std"
-                            ]
-                        elif method == "minmax":
-                            self._catalog[elem] = (sauv[elem] - sauv["min"]) / (
-                                sauv["max"] - sauv["min"]
-                            )
+                if "top" in elem:
 
-            except:
-                pass
+                    if "percent" in elem:
+                        self._catalog[elem] = sauv[elem]
+                    elif isinstance(elem, NoneType):
+                        self._catalog[elem] = None
+                    elif method == "robust_zscore":
+                        self._catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
+                            1.4826 * sauv["mad"]
+                        )
+                    elif method == "zscore":
+                        self._catalog[elem] = (sauv[elem] - sauv["mean"]) / sauv["std"]
+                    elif method == "minmax":
+                        self._catalog[elem] = (sauv[elem] - sauv["min"]) / (
+                            sauv["max"] - sauv["min"]
+                        )
+
             if method == "robust_zscore":
                 self._catalog["median"] = 0
                 self._catalog["mad"] = 1 / 1.4826

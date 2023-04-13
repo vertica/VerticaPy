@@ -18,6 +18,8 @@ import warnings
 import vertica_python
 from typing import Optional, Union
 
+from vertica_python.errors import QueryError
+
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import format_type, format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -103,18 +105,18 @@ def get_data_types(
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor) and not (
         table_name
     ):
+        if column:
+            column_name_ident = quote_ident(column)
+            query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 0;"
+        elif usecols:
+            query = f"""
+                SELECT 
+                    {", ".join(quote_ident(usecols))} 
+                FROM ({expr}) x 
+                LIMIT 0;"""
+        else:
+            query = expr
         try:
-            if column:
-                column_name_ident = quote_ident(column)
-                query = f"SELECT {column_name_ident} FROM ({expr}) x LIMIT 0;"
-            elif usecols:
-                query = f"""
-                    SELECT 
-                        {", ".join(quote_ident(usecols))} 
-                    FROM ({expr}) x 
-                    LIMIT 0;"""
-            else:
-                query = expr
             _executeSQL(query, print_time_sql=False)
             description, ctype = current_cursor().description, []
             for d in description:
@@ -132,7 +134,7 @@ def get_data_types(
             if column:
                 return ctype[0][1]
             return ctype
-        except:
+        except QueryError:
             pass
     if not (table_name):
         table_name, schema = gen_tmp_name(name="table"), "v_temp_schema"

@@ -158,7 +158,7 @@ class vDFSystem:
         # the final relation
         try:
             order_final = self._vars["order_by"][max_transformation_floor - 1]
-        except:
+        except (IndexError, KeyError):
             order_final = ""
         for vml_undefined in [
             ", ___VERTICAPY_UNDEFINED___",
@@ -224,7 +224,7 @@ class vDFSystem:
                 if key not in self[column]._catalog
                 else self[column]._catalog[key]
             )
-        except:
+        except AttributeError:
             result = "VERTICAPY_NOT_PRECOMPUTED"
         if result != result:
             result = None
@@ -237,7 +237,7 @@ class vDFSystem:
         Returns the last column used to sort the data.
         """
         max_pos, order_by = 0, ""
-        columns_tmp = [elem for elem in self.get_columns()]
+        columns_tmp = copy.deepcopy(self.get_columns())
         for column in columns_tmp:
             max_pos = max(max_pos, len(self[column]._transf) - 1)
         if max_pos in self._vars["order_by"]:
@@ -313,7 +313,7 @@ class vDFSystem:
                     val = values[elem]
                     try:
                         val = float(val)
-                    except:
+                    except (TypeError, ValueError):
                         pass
                     self[column]._catalog[matrix][elem] = val
         else:
@@ -328,7 +328,7 @@ class vDFSystem:
                             val = float(val)
                             if val - int(val) == 0:
                                 val = int(val)
-                        except:
+                        except (OverflowError, TypeError, ValueError):
                             pass
                         if val != val:
                             val = None
@@ -551,7 +551,7 @@ class vDFSystem:
         """
         total = sum([sys.getsizeof(elem) for elem in self._vars]) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
-        columns = [elem for elem in self._vars["columns"]]
+        columns = copy.deepcopy(self._vars["columns"])
         for column in columns:
             values["index"] += [column]
             values["value"] += [self[column].memory_usage()]
@@ -634,7 +634,7 @@ class vDCSystem:
         new_vDataColumn = self._parent._new_vdatacolumn(
             name,
             parent=self._parent,
-            transformations=[item for item in self._transf],
+            transformations=list(self._transf),
             catalog=self._catalog,
         )
         setattr(self._parent, name, new_vDataColumn)

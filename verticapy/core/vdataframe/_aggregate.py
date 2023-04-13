@@ -20,6 +20,8 @@ import warnings
 from typing import Literal, Optional, Union
 from tqdm.auto import tqdm
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
@@ -481,7 +483,7 @@ class vDFAgg:
                         .replace("'", "")
                         .replace('"', "")
                     )
-                except:
+                except IndexError:
                     pass
         values = {"index": func}
 
@@ -509,10 +511,10 @@ class vDFAgg:
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-            result = [item for item in res]
+            result = list(res)
             try:
                 result = [float(item) for item in result]
-            except:
+            except (TypeError, ValueError):
                 pass
             values = {"index": func}
             i = 0
@@ -520,7 +522,7 @@ class vDFAgg:
                 values[column] = result[i : i + len(func)]
                 i += len(func)
 
-        except:
+        except QueryError:
 
             try:
                 query = [
@@ -556,9 +558,9 @@ class vDFAgg:
                     )
 
                 for idx, elem in enumerate(result):
-                    values[columns[idx]] = [item for item in elem]
+                    values[columns[idx]] = list(elem)
 
-            except:
+            except QueryError:
 
                 try:
 
@@ -595,7 +597,7 @@ class vDFAgg:
                             values[columns[i]] = [
                                 elem for elem in current_cursor().fetchone()
                             ]
-                except:
+                except QueryError:
 
                     for i, elem in enumerate(agg):
                         values[columns[i]] = []
@@ -625,7 +627,7 @@ class vDFAgg:
                 if isinstance(values[elem][idx], str) and "top" not in elem:
                     try:
                         values[elem][idx] = float(values[elem][idx])
-                    except:
+                    except (TypeError, ValueError):
                         pass
 
         self._update_catalog(values)
@@ -805,7 +807,7 @@ class vDFAgg:
                         vals[col] = tb[col]
                     values = TableSample(vals).transpose().values
 
-            except:
+            except QueryError:
 
                 values = self.aggregate(
                     [

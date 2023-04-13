@@ -100,7 +100,7 @@ class StringSQL:
         elif len(args) == 0:
             ValueError("Method 'in_' doesn't work with no parameters.")
         else:
-            x = [elem for elem in args]
+            x = copy.deepcopy(args)
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
         ), f"Method '_in' only works on iterable elements other than str. Found {x}."
@@ -114,7 +114,7 @@ class StringSQL:
         elif len(args) == 0:
             ValueError("Method '_not_in' doesn't work with no parameters.")
         else:
-            x = [elem for elem in args]
+            x = copy.deepcopy(args)
         if not (isinstance(x, Iterable)) or (isinstance(x, str)):
             raise TypeError(
                 "Method '_not_in' only works on iterable "

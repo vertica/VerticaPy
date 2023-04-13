@@ -375,7 +375,7 @@ class vDFFilter:
                 print("Nothing was filtered.")
         else:
             max_pos = 0
-            columns_tmp = [elem for elem in self._vars["columns"]]
+            columns_tmp = copy.deepcopy(self._vars["columns"])
             for column in columns_tmp:
                 max_pos = max(max_pos, len(self[column]._transf) - 1)
             new_count = self.shape()[0]
@@ -393,7 +393,7 @@ class vDFFilter:
                     symbol=self._vars["symbol"],
                 )
                 count -= new_count
-            except:
+            except QueryError:
                 del self._vars["where"][-1]
                 if conf.get_option("print_info"):
                     warning_message = (
