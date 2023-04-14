@@ -21,7 +21,7 @@ from typing import Literal, Optional, Union, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
-from verticapy._utils._sql._gen import gen_name
+from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
