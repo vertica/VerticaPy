@@ -93,7 +93,7 @@ class VoronoiPlot(PlotlyBase):
             "showscale": False,
         }
 
-    def _get_voronoi_lines(self, points):
+    def _get_voronoi_lines(self, points: np.array) -> tuple[list, list]:
         vor = scipy_st.Voronoi(points)
         center = vor.points.mean(axis=0)
         ptp_bound = vor.points.ptp(axis=0)
@@ -104,9 +104,9 @@ class VoronoiPlot(PlotlyBase):
             if np.all(simplex >= 0):
                 finite_segments.append(vor.vertices[simplex])
             else:
-                i = simplex[simplex >= 0][0]  
+                i = simplex[simplex >= 0][0]
 
-                t = vor.points[pointidx[1]] - vor.points[pointidx[0]]  
+                t = vor.points[pointidx[1]] - vor.points[pointidx[0]]
                 t /= np.linalg.norm(t)
                 n = np.array([-t[1], t[0]])
 
