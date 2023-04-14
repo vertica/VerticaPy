@@ -14,7 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from collections.abc import Iterable
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 import numpy as np
@@ -1179,54 +1178,6 @@ def precision_score(
     return _compute_final_score(_precision_score, **locals(),)
 
 
-@save_verticapy_logs
-def prevalence_threshold(
-    y_true: str,
-    y_score: str,
-    input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
-    labels: Optional[ArrayLike] = None,
-    pos_label: Optional[PythonScalar] = None,
-) -> Union[float, list[float]]:
-    """
-    Computes the Prevalence.
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    average: str, optional
-        The method used to  compute the final score for
-        multiclass-classification.
-            micro    : positive  and   negative  values 
-                       globally.
-            macro    : average  of  the  score of  each 
-                       class.
-            weighted : weighted average of the score of 
-                       each class.
-            scores   : scores  for   all  the  classes.
-    labels: ArrayLike, optional
-        List   of   the  response  column   categories.
-    pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
-        parameter 'pos_label' represents this class.
-
-    Returns
-    -------
-    float
-        score.
-    """
-    return _compute_final_score(_prevalence, **locals(),)
-
-
 def _prevalence_threshold(tn: int, fn: int, fp: int, tp: int) -> float:
     fpr, tpr = _false_positive_rate(**locals()), np.sqrt(_recall_score(**locals()))
     return np.sqrt(fpr) / (tpr + fpr) if ((tpr + fpr) != 0) else 0.0
@@ -1490,7 +1441,7 @@ def _compute_multiclass_metric(
     else:
         # micro is not feasible using AUC.
         weights = [1.0 for args in labels]
-    nbins_kw = {"nbins": nbins} if not (isinstance(nbins, NoneType)) else {}
+    nbins_kw = {"nbins": nbins} if not isinstance(nbins, NoneType) else {}
     scores = [
         weights[i]
         * metric(
@@ -1561,7 +1512,7 @@ def best_cutoff(
     float
         score.
     """
-    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
+    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1649,7 +1600,7 @@ def roc_auc(
     float
         score.
 	"""
-    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
+    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1735,7 +1686,7 @@ def prc_auc(
     float
         score.
     """
-    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
+    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -1811,7 +1762,7 @@ def log_loss(
     float
         score.
     """
-    if not (isinstance(pos_label, NoneType)) or isinstance(labels, NoneType):
+    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         if isinstance(y_score, str):
             y_s = y_score
         elif (len(y_score) == 2) and ("{}" in y_score[0]):
@@ -2068,7 +2019,7 @@ def classification_report(
                 raise ValueError(
                     f"Undefined Metric '{m}'. Must be in {possible_metrics}."
                 )
-        if not (is_multi):
+        if not is_multi:
             all_cm_metrics += [(tn, fn, fp, tp)]
     res = TableSample(values)
     if num_classes > 2:

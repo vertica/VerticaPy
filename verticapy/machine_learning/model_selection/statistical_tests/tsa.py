@@ -14,9 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
-from typing import Optional, Union
-import numpy as np
+from typing import Optional
+
 from scipy.stats import chi2, norm, f
 
 from vertica_python.errors import QueryError
@@ -53,71 +52,64 @@ def _df_critical_value(alpha: float, N: int, with_trend: bool) -> float:
     """
     Dickey Fuller test Critical value.
     """
-    if not (with_trend):
+    if not with_trend:
         if N <= 25:
             if alpha == 0.01:
                 return -3.75
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.62
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.33
-            else:
-                return -3.00
+            return -3.00
         elif N <= 50:
             if alpha == 0.01:
                 return -3.58
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.60
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.22
-            else:
-                return -2.93
+            return -2.93
         elif N <= 100:
             if alpha == 0.01:
                 return -3.51
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.58
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.17
-            else:
-                return -2.89
+            return -2.89
         elif N <= 250:
             if alpha == 0.01:
                 return -3.46
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.57
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.14
-            else:
-                return -2.88
+            return -2.88
         elif N <= 500:
             if alpha == 0.01:
                 return -3.44
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.57
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.13
-            else:
-                return -2.87
+            return -2.87
         else:
             if alpha == 0.01:
                 return -3.43
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -2.57
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.12
-            else:
-                return -2.86
+            return -2.86
     else:
         if N <= 25:
             if alpha == 0.01:
                 return -4.38
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.24
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.95
-            else:
-                return -3.60
+            return -3.60
         elif N <= 50:
             if alpha == 0.01:
                 return -4.15
@@ -579,15 +571,15 @@ def ljungbox(
     else:
         acf = [acf]
     n = vdf[column].count()
-    if not (box_pierce):
+    if not box_pierce:
         name = "Ljung–Box Test Statistic"
     else:
         name = "Box-Pierce Test Statistic"
     res = TableSample({"index": [], name: [], "p_value": [], "Serial Correlation": []})
     Q = 0
     for k in range(p):
-        div = n - k - 1 if not (box_pierce) else 1
-        mult = n * (n + 2) if not (box_pierce) else n
+        div = n - k - 1 if not box_pierce else 1
+        mult = n * (n + 2) if not box_pierce else n
         Q += mult * acf[k] ** 2 / div
         pvalue = chi2.sf(Q, k + 1)
         res.values["index"] += [k + 1]
@@ -754,7 +746,7 @@ def seasonal_decompose(
     trend_name = f"{column[1:-1]}_trend"
     seasonal_name = f"{column[1:-1]}_seasonal"
     epsilon_name = f"{column[1:-1]}_epsilon"
-    by_str = "" if not (by) else f"PARTITION BY {', '.join(by)} "
+    by_str = "" if not by else f"PARTITION BY {', '.join(by)} "
     if polynomial_order <= 0:
         if two_sided:
             if period == 1:

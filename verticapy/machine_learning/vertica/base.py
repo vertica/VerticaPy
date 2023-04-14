@@ -18,7 +18,6 @@ import copy
 import warnings
 from abc import abstractmethod
 from typing import Any, Callable, Literal, Optional, Union, get_type_hints
-from collections.abc import Iterable
 import numpy as np
 
 from vertica_python.errors import QueryError
@@ -48,8 +47,6 @@ from verticapy._utils._sql._vertica_version import (
 )
 from verticapy.errors import (
     ConversionError,
-    FunctionError,
-    ModelError,
     VersionError,
 )
 
@@ -62,7 +59,7 @@ from verticapy.plotting._utils import PlottingUtils
 
 from verticapy.sql.drop import drop
 
-if conf._get_import_success("graphviz"):
+if conf.get_import_success("graphviz"):
     from graphviz import Source
 
 ##
@@ -157,7 +154,6 @@ class VerticaModel(PlottingUtils):
                 x == col
             ):
                 return idx
-        return None
 
     # System & Special Methods.
 
@@ -223,8 +219,6 @@ class VerticaModel(PlottingUtils):
             Vertica DB.
         """
         model_type = None
-        if isinstance(name, NoneType):
-            name = self.model_name
         schema, model_name = schema_relation(name)
         schema, model_name = schema[1:-1], model_name[1:-1]
         res = _executeSQL(
@@ -266,7 +260,7 @@ class VerticaModel(PlottingUtils):
         Any
             model attribute.
         """
-        if not (attr_name):
+        if not attr_name:
             return self._attributes
         elif attr_name in self._attributes:
             if hasattr(self, attr_name):
@@ -462,7 +456,6 @@ class VerticaModel(PlottingUtils):
                 warnings.warn(warning_message, Warning)
             new_parameters[p] = parameters[p]
         self.__init__(name=self.model_name, **new_parameters)
-        return None
 
     # Model's Summary.
 
@@ -545,7 +538,7 @@ class VerticaModel(PlottingUtils):
         model = self.to_memmodel()
         if return_proba:
             return model.predict_proba
-        elif hasattr(model, "predict") and not (return_distance_clusters):
+        elif hasattr(model, "predict") and not return_distance_clusters:
             return model.predict
         else:
             return model.transform
@@ -584,7 +577,7 @@ class VerticaModel(PlottingUtils):
         model = self.to_memmodel()
         if return_proba:
             return model.predict_proba_sql(X)
-        elif hasattr(model, "predict") and not (return_distance_clusters):
+        elif hasattr(model, "predict") and not return_distance_clusters:
             return model.predict_sql(X)
         else:
             return model.transform_sql(X)
@@ -705,7 +698,7 @@ class Supervised(VerticaModel):
                 new_types = {}
                 for x in self.X:
                     new_types[x] = nb_lookup_table[self.parameters["nbtype"]]
-                if not (isinstance(input_relation, vDataFrame)):
+                if not isinstance(input_relation, vDataFrame):
                     input_relation = vDataFrame(input_relation)
                 else:
                     input_relation.copy()
@@ -779,7 +772,7 @@ class Supervised(VerticaModel):
                      '{', '.join(self.X)}' 
                      USING PARAMETERS 
                      {', '.join([f"{p} = {parameters[p]}" for p in parameters])}"""
-            if not (isinstance(alpha, NoneType)):
+            if not isinstance(alpha, NoneType):
                 query += f", alpha = {alpha}"
             if self._model_type in (
                 "RandomForestClassifier",
@@ -799,8 +792,7 @@ class Supervised(VerticaModel):
         self._compute_attributes()
         if self._is_native:
             return self.summarize()
-        else:
-            return None
+        return None
 
 
 class Tree:
@@ -843,7 +835,7 @@ class Tree:
         if self._model_type == "IsolationForest":
             tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
             for i in range(n):
-                if not (isinstance(tree.values["leaf_path_length"][i], NoneType)):
+                if not isinstance(tree.values["leaf_path_length"][i], NoneType):
                     tree.values["prediction"] += [
                         [
                             int(float(tree.values["leaf_path_length"][i])),
@@ -897,7 +889,6 @@ class Tree:
                 self.features_importance_trees_ = {tree_id: importance}
         elif isinstance(tree_id, NoneType):
             self.features_importance_ = importance
-        return None
 
     def _get_features_importance(self, tree_id: Optional[int] = None) -> np.ndarray:
         """
@@ -1186,7 +1177,7 @@ class BinaryClassifier(Classifier):
             model_name = '{self.model_name}',
             type = 'probability',
             match_by_pos = 'true')"""
-        if not (isinstance(cutoff, NoneType)) and (0 <= cutoff <= 1):
+        if not isinstance(cutoff, NoneType) and 0 <= cutoff <= 1:
             sql = f"""
                 (CASE 
                     WHEN {sql} >= {cutoff} 
@@ -1430,7 +1421,7 @@ class BinaryClassifier(Classifier):
         """
         # Inititalization
         X = format_type(X, dtype=list, na_out=self.X)
-        if not (0 <= cutoff <= 1):
+        if not 0 <= cutoff <= 1:
             raise ValueError(
                 "Incorrect parameter 'cutoff'.\nThe cutoff "
                 "must be between 0 and 1, inclusive."
@@ -1438,7 +1429,7 @@ class BinaryClassifier(Classifier):
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = quote_ident(X)
-        if not (name):
+        if not name:
             name = gen_name([self._model_type, self.model_name])
 
         # In Place
@@ -1495,7 +1486,7 @@ class BinaryClassifier(Classifier):
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = quote_ident(X)
-        if not (name):
+        if not name:
             name = gen_name([self._model_type, self.model_name])
 
         # In Place
@@ -1680,9 +1671,9 @@ class MulticlassClassifier(Classifier):
         """
         if isinstance(pos_label, NoneType) and self._is_binary_classifier():
             return 1
-        elif isinstance(pos_label, NoneType):
+        if isinstance(pos_label, NoneType):
             return None
-        elif str(pos_label) not in [str(c) for c in self.classes_]:
+        if str(pos_label) not in [str(c) for c in self.classes_]:
             raise ValueError(
                 "Parameter 'pos_label' must be one of the response column classes."
             )
@@ -1754,7 +1745,7 @@ class MulticlassClassifier(Classifier):
         """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        if not (self._is_native):
+        if not self._is_native:
             sql = self.to_memmodel().predict_proba_sql(X)
         else:
             sql = [
@@ -1771,9 +1762,9 @@ class MulticlassClassifier(Classifier):
                     model_name = '{self.model_name}',
                     match_by_pos = 'true')""",
             ]
-        if not (allSQL):
+        if not allSQL:
             if pos_label in list(self.classes_):
-                if not (self._is_native):
+                if not self._is_native:
                     sql = sql[self._get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
@@ -1795,7 +1786,7 @@ class MulticlassClassifier(Classifier):
                             non_pos_label = self.classes_[1]
                         sql = sql.format(non_pos_label)
             else:
-                if not (self._is_native):
+                if not self._is_native:
                     sql = self.to_memmodel().predict_sql(X)
                 else:
                     sql = sql[1]
@@ -2124,11 +2115,11 @@ class MulticlassClassifier(Classifier):
         # Inititalization
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        if not (name):
+        if not name:
             name = gen_name([self._model_type, self.model_name])
         if isinstance(cutoff, NoneType):
             cutoff = 1.0 / len(self.classes_)
-        elif not (0 <= cutoff <= 1):
+        elif not 0 <= cutoff <= 1:
             raise ValueError(
                 "Incorrect parameter 'cutoff'.\nThe cutoff "
                 "must be between 0 and 1, inclusive."
@@ -2205,7 +2196,7 @@ class MulticlassClassifier(Classifier):
         )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        if not (name):
+        if not name:
             name = gen_name([self._model_type, self.model_name])
 
         # In Place
@@ -2228,7 +2219,7 @@ class MulticlassClassifier(Classifier):
         Returns the SQL needed to draw the plot.
         """
         pos_label = self._check_pos_label(pos_label)
-        if not (self._is_native):
+        if not self._is_native:
             return self.deploySQL(allSQL=True)[
                 self._get_match_index(pos_label, self.classes_, False)
             ]
@@ -2681,7 +2672,7 @@ class Regressor(Supervised):
         X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        if not (name):
+        if not name:
             name = f"{self._model_type}_" + "".join(
                 ch for ch in self.model_name if ch.isalnum()
             )
@@ -2770,7 +2761,7 @@ class Unsupervised(VerticaModel):
         X = format_type(X, dtype=list)
         self.X = quote_ident(X)
         parameters = self._get_vertica_param_dict()
-        if "num_components" in parameters and not (parameters["num_components"]):
+        if "num_components" in parameters and not parameters["num_components"]:
             del parameters["num_components"]
         fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
         query = f"""
@@ -2796,7 +2787,7 @@ class Unsupervised(VerticaModel):
                 del parameters[param]
         if (
             "init_method" in parameters
-            and not (isinstance(parameters["init_method"], str))
+            and not isinstance(parameters["init_method"], str)
             and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
         ):
             name_init = gen_tmp_name(
@@ -2854,7 +2845,7 @@ class Unsupervised(VerticaModel):
         except QueryError:
             if (
                 "init_method" in parameters
-                and not (isinstance(parameters["init_method"], str))
+                and not isinstance(parameters["init_method"], str)
                 and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
             ):
                 drop(name_init, method="table")
@@ -2870,5 +2861,4 @@ class Unsupervised(VerticaModel):
         self._compute_attributes()
         if self._is_native:
             return self.summarize()
-        else:
-            return None
+        return None

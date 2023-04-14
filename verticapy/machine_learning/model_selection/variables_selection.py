@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import copy
 import itertools
 import random
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 
 import numpy as np
 
@@ -45,8 +45,6 @@ from verticapy.machine_learning.metrics import aic_score, bic_score
 from verticapy.machine_learning.model_selection.model_validation import cross_validate
 
 from verticapy.machine_learning.vertica.base import VerticaModel
-
-from verticapy.sql.drop import drop
 
 
 @save_verticapy_logs
@@ -254,9 +252,9 @@ def randomized_features_search_cv(
             except Exception as e:
                 if skip_error and skip_error != "no_print":
                     print(e)
-                elif not (skip_error):
+                elif not skip_error:
                     raise (e)
-    if not (data):
+    if not data:
         if training_score:
             return TableSample(
                 {
@@ -406,7 +404,7 @@ def stepwise(
     """
     X = format_type(X, dtype=list)
     assert len(X) >= 1, ValueError("Vector X must have at least one element.")
-    if not (conf.get_option("overwrite_model")):
+    if not conf.get_option("overwrite_model"):
         estimator._is_already_stored(raise_error=True)
     res, current_step = [], 0
     table = (

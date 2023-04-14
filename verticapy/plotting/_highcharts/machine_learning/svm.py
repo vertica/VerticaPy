@@ -86,7 +86,6 @@ class SVMClassifierPlot(HighchartsBase):
             "zIndex": 1,
             "color": "black",
         }
-        return None
 
     # Draw.
 

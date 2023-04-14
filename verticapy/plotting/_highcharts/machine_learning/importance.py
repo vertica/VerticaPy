@@ -14,9 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Literal, Optional
-
-import numpy as np
 
 from verticapy._typing import HChart
 from verticapy.plotting._highcharts.base import HighchartsBase
@@ -62,7 +61,6 @@ class ImportanceBarChart(HighchartsBase):
             "plotOptions": {"series": {"stacking": "normal"}},
             "colors": self.get_colors(),
         }
-        return None
 
     # Draw.
 

@@ -16,9 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 import random
-import statistics
 import time
-from collections.abc import Iterable
 from typing import Literal, Optional, Union
 
 import numpy as np
@@ -36,7 +34,6 @@ from verticapy._typing import (
 )
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
-from verticapy._utils._sql._sys import _executeSQL
 
 
 from verticapy.core.tablesample.base import TableSample
@@ -220,7 +217,7 @@ def cross_validate(
         estimator.drop()
         random_state = conf.get_option("random_state")
         random_state = (
-            random.randint(-10e6, 10e6) if not (random_state) else random_state + i
+            random.randint(-10e6, 10e6) if not random_state else random_state + i
         )
         train, test = input_relation.train_test_split(
             test_size=float(1 / cv), order_by=[X[0]], random_state=random_state

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal
 
 import numpy as np
 from numpy.linalg import svd
@@ -51,7 +51,6 @@ class PCA(InMemoryModel):
     def __init__(self, principal_components: ArrayLike, mean: ArrayLike) -> None:
         self.principal_components_ = np.array(principal_components)
         self.mean_ = np.array(mean)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -163,7 +162,6 @@ class PCA(InMemoryModel):
         """
         res = self.matrix_rotation(self.principal_components_, gamma, q, tol)
         self.principal_components_ = res
-        return None
 
 
 class SVD(InMemoryModel):
@@ -194,7 +192,6 @@ class SVD(InMemoryModel):
     def __init__(self, vectors: ArrayLike, values: ArrayLike) -> None:
         self.vectors_ = np.array(vectors)
         self.values_ = np.array(values)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 

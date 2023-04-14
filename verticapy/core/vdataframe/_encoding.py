@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import copy
 import math
 import warnings
-from typing import Literal, Optional, Union, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
@@ -162,7 +162,7 @@ class vDCEncode:
         assert len(breaks) >= 2, ValueError(
             "Length of parameter 'breaks' must be greater or equal to 2."
         )
-        assert len(breaks) == len(labels) + 1 or not (labels), ValueError(
+        assert len(breaks) == len(labels) + 1 or not labels, ValueError(
             "Length of parameter breaks must be equal to the length of parameter "
             "'labels' + 1 or parameter 'labels' must be empty."
         )
@@ -275,7 +275,7 @@ class vDCEncode:
         vml = _get_mllib()
         if self.isnum() and method == "smart":
             schema = conf.get_option("temp_schema")
-            if not (schema):
+            if not schema:
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
@@ -383,7 +383,7 @@ class vDCEncode:
             )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
-            if not (h) or h <= 0:
+            if not h or h <= 0:
                 if nbins <= 0:
                     h = self.numh()
                 else:
@@ -470,7 +470,7 @@ class vDCEncode:
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
-            if not (prefix):
+            if not prefix:
                 prefix = self._alias.replace('"', "") + prefix_sep.replace('"', "_")
             else:
                 prefix = prefix.replace('"', "_") + prefix_sep.replace('"', "_")
@@ -481,7 +481,7 @@ class vDCEncode:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not (self._parent._is_colname_in(name)), NameError(
+                assert not self._parent._is_colname_in(name), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "

@@ -48,7 +48,6 @@ class HorizontalBarChart(PlotlyBase):
             # "width": 500 ,
             "height": 100 * len(self.layout["labels"]),
         }
-        return None
 
     # Draw.
 

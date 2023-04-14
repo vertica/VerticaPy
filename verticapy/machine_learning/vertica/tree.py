@@ -94,7 +94,6 @@ class DecisionTreeRegressor(RandomForestRegressor):
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
-        return None
 
 
 class DummyTreeRegressor(RandomForestRegressor):
@@ -126,7 +125,6 @@ class DummyTreeRegressor(RandomForestRegressor):
             "min_info_gain": 0.0,
             "nbins": 1000,
         }
-        return None
 
 
 """
@@ -198,7 +196,6 @@ class DecisionTreeClassifier(RandomForestClassifier):
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
-        return None
 
 
 class DummyTreeClassifier(RandomForestClassifier):
@@ -230,4 +227,3 @@ class DummyTreeClassifier(RandomForestClassifier):
             "min_info_gain": 0.0,
             "nbins": 1000,
         }
-        return None

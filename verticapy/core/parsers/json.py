@@ -33,6 +33,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.errors import ExtensionError, MissingRelation
 
 from verticapy.core.parsers._utils import extract_compression
+from verticapy.core.parsers.all import read_file
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.drop import drop
@@ -265,20 +266,20 @@ def read_json(
         schema = "v_temp_schema"
     else:
         schema = "public"
-    assert not (temporary_table) or not (temporary_local_table), ValueError(
+    assert not temporary_table or not temporary_local_table, ValueError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True."
     )
     file_extension = path.split(".")[-1].lower()
     compression = extract_compression(path)
     if (
-        (file_extension not in ("json",) and not (is_avro))
+        (file_extension not in ("json",) and not is_avro)
         or (file_extension not in ("avro",) and (is_avro))
     ) and (compression == "UNCOMPRESSED"):
         raise ExtensionError("The file extension is incorrect !")
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
-    if gen_tmp_table_name and temporary_local_table and not (table_name):
+    if gen_tmp_table_name and temporary_local_table and not table_name:
         table_name = gen_tmp_name(name=basename)
-    if not (table_name):
+    if not table_name:
         table_name = basename
     if is_avro:
         label = "read_avro"
@@ -286,7 +287,7 @@ def read_json(
     else:
         label = "read_json"
         parser = "FJSONPARSER"
-    if not (genSQL):
+    if not genSQL:
         table_name_str = table_name.replace("'", "''")
         schema_str = schema.replace("'", "''")
         column_name = _executeSQL(
@@ -303,15 +304,15 @@ def read_json(
             method="fetchall",
         )
     input_relation = format_schema_table(schema, table_name)
-    if not (genSQL) and (column_name != []) and not (insert):
+    if not genSQL and (column_name != []) and not insert:
         raise NameError(f"The table {input_relation} already exists !")
-    elif not (genSQL) and (column_name == []) and (insert):
+    elif not genSQL and (column_name == []) and (insert):
         raise MissingRelation(f"The table {input_relation} doesn't exist !")
     else:
         if temporary_local_table:
             input_relation = quote_ident(table_name)
         all_queries = []
-        if not (materialize):
+        if not materialize:
             suffix, prefix = "", "ON COMMIT PRESERVE ROWS;"
             if temporary_local_table:
                 suffix = "LOCAL TEMP "
@@ -327,19 +328,19 @@ def read_json(
             query = f"""
                 CREATE FLEX LOCAL TEMP TABLE {flex_name}(x int) 
                 ON COMMIT PRESERVE ROWS;"""
-        if not (insert):
+        if not insert:
             all_queries += [clean_query(query)]
         options = []
-        if start_point and not (is_avro):
+        if start_point and not is_avro:
             options += [f"start_point='{start_point}'"]
-        if record_terminator and not (is_avro):
+        if record_terminator and not is_avro:
             prefix = ""
             if "\\" in record_terminator.__repr__():
                 prefix = "E"
             options += [f"record_terminator={prefix}'{record_terminator}'"]
-        if suppress_nonalphanumeric_key_chars and not (is_avro):
+        if suppress_nonalphanumeric_key_chars and not is_avro:
             options += ["suppress_nonalphanumeric_key_chars=true"]
-        elif not (is_avro):
+        elif not is_avro:
             options += ["suppress_nonalphanumeric_key_chars=false"]
         if reject_on_materialized_type_error:
             assert materialize, ValueError(
@@ -349,13 +350,13 @@ def read_json(
             options += ["reject_on_materialized_type_error=true"]
         else:
             options += ["reject_on_materialized_type_error=false"]
-        if reject_on_duplicate and not (is_avro):
+        if reject_on_duplicate and not is_avro:
             options += ["reject_on_duplicate=true"]
-        elif not (is_avro):
+        elif not is_avro:
             options += ["reject_on_duplicate=false"]
-        if reject_on_empty_key and not (is_avro):
+        if reject_on_empty_key and not is_avro:
             options += ["reject_on_empty_key=true"]
-        elif not (is_avro):
+        elif not is_avro:
             options += ["reject_on_empty_key=false"]
         if flatten_arrays:
             options += ["flatten_arrays=true"]
@@ -373,18 +374,18 @@ def read_json(
             FROM{local} '{path_str}' {compression} 
             PARSER {parser}({", ".join(options)});"""
         all_queries = all_queries + [clean_query(query2)]
-        if genSQL and insert and not (materialize):
+        if genSQL and insert and not materialize:
             return [clean_query(query2)]
-        elif genSQL and not (materialize):
+        elif genSQL and not materialize:
             return all_queries
-        if not (insert):
+        if not insert:
             _executeSQL(
                 query, title="Creating flex table.",
             )
         _executeSQL(
             query2, title="Ingesting the data in the flex table.",
         )
-        if not (materialize):
+        if not materialize:
             return vDataFrame(table_name, schema=schema)
         result = compute_flextable_keys(flex_name)
         dtype = {}
@@ -402,10 +403,10 @@ def read_json(
                 dtype[column_dtype[0]] = column_dtype[1]
             except QueryError:
                 dtype[column_dtype[0]] = "Varchar(100)"
-        if not (insert):
+        if not insert:
             cols = (
                 [column for column in dtype]
-                if not (usecols)
+                if not usecols
                 else [column for column in usecols]
             )
             for i, column in enumerate(cols):
@@ -433,7 +434,7 @@ def read_json(
             _executeSQL(
                 query3, title="Creating table.",
             )
-            if not (temporary_local_table) and conf.get_option("print_info"):
+            if not temporary_local_table and conf.get_option("print_info"):
                 print(f"The table {input_relation} has been successfully created.")
         else:
             column_name_dtype = {}

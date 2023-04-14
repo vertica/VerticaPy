@@ -143,14 +143,14 @@ class Decomposition(Preprocessing):
         if isinstance(X, NoneType):
             X = self.X
         X = format_type(X, dtype=list)
-        if not (input_relation):
+        if not input_relation:
             input_relation = self.input_relation
         metric = str(metric).upper()
         if metric == "MEDIAN":
             metric = "APPROXIMATE_MEDIAN"
         if self._model_type in ("PCA", "SVD"):
             n_components = self.parameters["n_components"]
-            if not (n_components):
+            if not n_components:
                 n_components = len(X)
         else:
             n_components = len(X)
@@ -231,7 +231,7 @@ class Decomposition(Preprocessing):
         if isinstance(X, NoneType):
             X = self.X
         X = format_type(X, dtype=list)
-        if not (vdf):
+        if not vdf:
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -275,7 +275,7 @@ class Decomposition(Preprocessing):
         vdf = self.transform(vDataFrame(self.input_relation))
         dim_perc = []
         for d in dimensions:
-            if not (self.explained_variance_[d - 1]):
+            if not self.explained_variance_[d - 1]:
                 dim_perc += [""]
             else:
                 dim_perc += [f" ({round(self.explained_variance_[d - 1] * 100, 1)}%)"]
@@ -460,7 +460,6 @@ class PCA(Decomposition):
             "scale": scale,
             "method": str(method).lower(),
         }
-        return None
 
     # Attributes Methods.
 
@@ -487,7 +486,6 @@ class PCA(Decomposition):
             if v != "index":
                 values[v] = [c[idx - 1] for c in cos2]
         self.cos2_ = TableSample(values).to_numpy()
-        return None
 
     # I/O Methods.
 
@@ -556,7 +554,6 @@ class MCA(PCA):
     def __init__(self, name: str) -> None:
         self.model_name = name
         self.parameters = {}
-        return None
 
     # Plotting Methods.
 
@@ -809,7 +806,6 @@ class SVD(Decomposition):
             "n_components": n_components,
             "method": str(method).lower(),
         }
-        return None
 
     # Attributes Methods.
 
@@ -822,7 +818,6 @@ class SVD(Decomposition):
         self.explained_variance_ = np.array(
             self.get_vertica_attributes("singular_values")["explained_variance"]
         )
-        return None
 
     # I/O Methods.
 

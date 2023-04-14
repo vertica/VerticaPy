@@ -62,7 +62,6 @@ class Clustering(InMemoryModel):
         self.clusters_ = np.array(clusters)
         self.classes_ = np.array(clusters_names)
         self.p_ = p
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -256,7 +255,6 @@ class KMeans(Clustering):
     def __init__(self, clusters: ArrayLike, p: int = 2) -> None:
         self.clusters_ = np.array(clusters)
         self.p_ = p
-        return None
 
 
 class NearestCentroid(Clustering):
@@ -290,7 +288,6 @@ class NearestCentroid(Clustering):
         self.clusters_ = np.array(clusters)
         self.classes_ = np.array(classes)
         self.p_ = p
-        return None
 
 
 class BisectingKMeans(Clustering, Tree):
@@ -369,7 +366,6 @@ class BisectingKMeans(Clustering, Tree):
         self.cluster_size_ = np.array(cluster_size)
         self.cluster_score_ = np.array(cluster_score)
         self.p_ = p
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -530,7 +526,7 @@ class BisectingKMeans(Clustering, Tree):
             leaf_style = {"shape": "none"}
         n = len(self.children_left_)
         vertical = ""
-        if not (vertical):
+        if not vertical:
             position = '\ngraph [rankdir = "LR"];'
         res = "digraph Tree{" + position
         for i in range(n):
@@ -627,7 +623,6 @@ class KPrototypes(Clustering):
         self.p_ = p
         self.gamma_ = gamma
         self.is_categorical_ = np.array(is_categorical)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -692,7 +687,7 @@ class KPrototypes(Clustering):
             is_categorical = copy.deepcopy(self.is_categorical_)
 
         for c in self.clusters_:
-            if not (len(X) == len(c) == len(is_categorical)):
+            if not len(X) == len(c) == len(is_categorical):
                 raise ValueError(
                     "The length of parameter 'X' must be the same as "
                     "the length of each cluster AND the categorical vector."

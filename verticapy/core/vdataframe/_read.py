@@ -14,8 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import copy
-from typing import Any, Optional, Union, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 from collections.abc import Iterable
 
 from vertica_python.errors import QueryError
@@ -39,7 +38,7 @@ from verticapy.core.tablesample.base import TableSample
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-if conf._get_import_success("jupyter"):
+if conf.get_import_success("IPython"):
     from IPython.display import HTML, display
 
 
@@ -55,7 +54,7 @@ class vDFRead:
             )
             index_stop = index.stop
             index_start = index.start
-            if not (isinstance(index_start, int)):
+            if not isinstance(index_start, int):
                 index_start = 0
             if index_start < 0:
                 index_start += self.shape()[0]
@@ -377,7 +376,7 @@ class vDCRead:
             )
             index_stop = index.stop
             index_start = index.start
-            if not (isinstance(index_start, int)):
+            if not isinstance(index_start, int):
                 index_start = 0
             if self.isarray():
                 vertica_version(condition=[10, 0, 0])

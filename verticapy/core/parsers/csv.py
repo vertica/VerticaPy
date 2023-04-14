@@ -124,7 +124,7 @@ def pcsv(
         na_rep = ""
     if record_terminator == "\n":
         record_terminator = "\\n"
-    if not (flex_name):
+    if not flex_name:
         flex_name = gen_tmp_name(name="flex")[1:-1]
     if header_names:
         header_names = f"header_names = '{sep.join(header_names)}',"
@@ -322,11 +322,11 @@ def read_csv(
         )
         warnings.warn(warning_message, Warning)
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
-    if gen_tmp_table_name and temporary_local_table and not (table_name):
+    if gen_tmp_table_name and temporary_local_table and not table_name:
         table_name = gen_tmp_name(name=basename)
-    elif not (table_name):
+    elif not table_name:
         table_name = basename
-    assert not (temporary_table) or not (temporary_local_table), ValueError(
+    assert not temporary_table or not temporary_local_table, ValueError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
         "set to True."
     )
@@ -343,7 +343,7 @@ def read_csv(
     multiple_files = False
     if "*" in basename:
         multiple_files = True
-    if not (genSQL):
+    if not genSQL:
         table_name_str = table_name.replace("'", "''")
         schema_str = schema.replace("'", "''")
         result = _executeSQL(
@@ -358,9 +358,9 @@ def read_csv(
             method="fetchall",
         )
     input_relation = format_schema_table(schema, table_name)
-    if not (genSQL) and (result != []) and not (insert) and not (genSQL):
+    if not genSQL and (result != []) and not insert and not genSQL:
         raise NameError(f"The table {input_relation} already exists !")
-    elif not (genSQL) and (result == []) and (insert):
+    elif not genSQL and (result == []) and (insert):
         raise MissingRelation(f"The table {input_relation} doesn't exist !")
     else:
         if temporary_local_table:
@@ -370,26 +370,26 @@ def read_csv(
         if multiple_files and ingest_local:
             path_first_file_in_folder = get_first_file(path, "csv")
         if (
-            not (header_names)
-            and not (dtype)
+            not header_names
+            and not dtype
             and (compression == "UNCOMPRESSED")
             and ingest_local
         ):
-            if not (path_first_file_in_folder):
+            if not path_first_file_in_folder:
                 raise ValueError("No CSV file detected in the folder.")
             file_header = get_header_names(path_first_file_in_folder, sep)
-        elif not (header_names) and not (dtype) and (compression != "UNCOMPRESSED"):
+        elif not header_names and not dtype and (compression != "UNCOMPRESSED"):
             raise ValueError(
                 "The input file is compressed and parameters 'dtypes' and 'header_names'"
                 " are not defined. It is impossible to read the file's header."
             )
-        elif not (header_names) and not (dtype) and not (ingest_local):
+        elif not header_names and not dtype and not ingest_local:
             raise ValueError(
                 "The input file is in the Vertica server and parameters 'dtypes' and "
                 "'header_names' are not defined. It is impossible to read the file's header."
             )
         if (header_names == []) and (header):
-            if not (dtype):
+            if not dtype:
                 header_names = file_header
             else:
                 header_names = list(dtype)
@@ -399,15 +399,15 @@ def read_csv(
                 f"ucol{i + len(header_names)}"
                 for i in range(len(file_header) - len(header_names))
             ]
-        if not (sep):
+        if not sep:
             try:
-                f = open(path_first_file_in_folder, "r")
+                f = open(path_first_file_in_folder, "r", encoding="utf-8")
                 file_str = f.readline()
                 f.close()
                 sep = guess_sep(file_str)
             except (FileNotFoundError, UnicodeDecodeError):
                 sep = ","
-        if not (materialize):
+        if not materialize:
             suffix, prefix, final_relation = (
                 "",
                 " ON COMMIT PRESERVE ROWS;",
@@ -439,11 +439,11 @@ def read_csv(
                 flex_name=input_relation,
                 genSQL=True,
             )[1]
-            if genSQL and not (insert):
+            if genSQL and not insert:
                 return [clean_query(query), clean_query(query2)]
             elif genSQL:
                 return [clean_query(query2)]
-            if not (insert):
+            if not insert:
                 _executeSQL(
                     query, title="Creating the flex table.",
                 )
@@ -453,13 +453,13 @@ def read_csv(
             return vDataFrame(table_name, schema=schema)
         if (
             (parse_nrows > 0)
-            and not (insert)
+            and not insert
             and (compression == "UNCOMPRESSED")
             and ingest_local
         ):
-            f = open(path_first_file_in_folder, "r")
+            f = open(path_first_file_in_folder, "r", encoding="utf-8")
             path_test = path_first_file_in_folder[:-4] + "_verticapy_copy.csv"
-            f2 = open(path_test, "w")
+            f2 = open(path_test, "w", encoding="utf-8")
             for i in range(parse_nrows + int(header)):
                 line = f.readline()
                 f2.write(line)
@@ -468,8 +468,8 @@ def read_csv(
         else:
             path_test = path_first_file_in_folder
         query1 = ""
-        if not (insert):
-            if not (dtype):
+        if not insert:
+            if not dtype:
                 dtype = pcsv(
                     path_test,
                     sep,
@@ -515,14 +515,14 @@ def read_csv(
             else:
                 return [clean_query(query1), clean_query(query2)]
         else:
-            if not (insert):
+            if not insert:
                 _executeSQL(query1, title="Creating the table.")
             _executeSQL(
                 query2, title="Ingesting the data.",
             )
             if (
-                not (insert)
-                and not (temporary_local_table)
+                not insert
+                and not temporary_local_table
                 and conf.get_option("print_info")
             ):
                 print(f"The table {input_relation} has been successfully created.")

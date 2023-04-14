@@ -88,7 +88,6 @@ class RegressionPlot(HighchartsBase):
         self.init_style_line = {
             "zIndex": 1,
         }
-        return None
 
     # Draw.
 

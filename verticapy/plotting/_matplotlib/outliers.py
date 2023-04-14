@@ -65,7 +65,6 @@ class OutliersPlot(ScatterPlot):
         self.init_style_linewidth = {
             "linewidths": 2,
         }
-        return None
 
     # Draw.
 
@@ -75,7 +74,7 @@ class OutliersPlot(ScatterPlot):
         """
         Draws an outliers contour plot using the Matplotlib API.
         """
-        if not (cmap):
+        if not cmap:
             cmap = self.get_cmap(color=self.get_colors(idx=2))
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=False, grid=False, style_kwargs=style_kwargs

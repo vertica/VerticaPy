@@ -58,7 +58,6 @@ class RangeCurve(LinePlot):
             "fillOpacity": 0.3,
             "zIndex": 0,
         }
-        return None
 
     # Draw.
 

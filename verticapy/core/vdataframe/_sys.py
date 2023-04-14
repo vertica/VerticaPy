@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import re
+import sys
 import time
 import warnings
 from typing import Any, Optional, Union, TYPE_CHECKING
@@ -33,8 +33,6 @@ from verticapy.core.tablesample.base import TableSample
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.flex import isvmap
 
 
 class vDFSystem:
@@ -128,7 +126,7 @@ class vDFSystem:
         if (
             (transformations_first_floor)
             or (self._vars["allcols_ind"] != len(first_values))
-        ) and not (all_undefined):
+        ) and not all_undefined:
             table = f"""
                 SELECT 
                     {', '.join(first_values)} 
@@ -175,8 +173,8 @@ class vDFSystem:
         else:
             table = f"({table}) VERTICAPY_SUBTABLE{where_final}{order_final}"
             table = f"(SELECT *{split} FROM {table}) VERTICAPY_SUBTABLE"
-        if (self._vars["exclude_columns"]) and not (split):
-            if not (force_columns_copy):
+        if (self._vars["exclude_columns"]) and not split:
+            if not force_columns_copy:
                 force_columns_copy = self.get_columns()
             force_columns_copy = ", ".join(force_columns_copy)
             table = f"""
@@ -199,13 +197,13 @@ class vDFSystem:
         useless computations. This method returns the stored aggregation 
         if it was already computed.
         """
-        if not (conf.get_option("cache")):
+        if not conf.get_option("cache"):
             return "VERTICAPY_NOT_PRECOMPUTED"
         if column == "VERTICAPY_COUNT":
             if self._vars["count"] < 0:
                 return "VERTICAPY_NOT_PRECOMPUTED"
             total = self._vars["count"]
-            if not (isinstance(total, (int, float))):
+            if not isinstance(total, (int, float)):
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
@@ -248,7 +246,7 @@ class vDFSystem:
         """
         Returns the SQL syntax to use to sort the input columns.
         """
-        if not (columns):
+        if not columns:
             return ""
         if isinstance(columns, dict):
             order_by = []
@@ -301,7 +299,7 @@ class vDFSystem:
             "regr_syy": {},
         }
         if erase:
-            if not (columns):
+            if not columns:
                 columns = self.get_columns()
             for column in columns:
                 self[column]._catalog = copy.deepcopy(agg_dict)
@@ -333,7 +331,6 @@ class vDFSystem:
                         if val != val:
                             val = None
                         self[column]._catalog[key] = val
-        return None
 
     def current_relation(self, reindent: bool = True) -> str:
         """
@@ -375,7 +372,7 @@ class vDFSystem:
         bool
             True if the vDataFrame has no vDataColumns.
         """
-        return not (self.get_columns())
+        return not self.get_columns()
 
     @save_verticapy_logs
     def expected_store_usage(self, unit: str = "b") -> TableSample:
@@ -510,7 +507,7 @@ class vDFSystem:
         )
         result = [elem[0] for elem in result]
         result = "\n".join(result)
-        if not (digraph):
+        if not digraph:
             result = result.replace("------------------------------\n", "")
             result = result.replace("\\n", "\n\t")
             result = result.replace(", ", ",").replace(",", ", ").replace("\n}", "}")

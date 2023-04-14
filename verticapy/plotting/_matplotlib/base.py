@@ -49,14 +49,14 @@ class MatplotlibBase(PlottingBase):
         if "height" in kwargs:
             size = (size[0], kwargs["height"])
             del kwargs["height"]
-        if not (ax) and dim == 3:
-            if conf._get_import_success("jupyter"):
+        if not ax and dim == 3:
+            if conf.get_import_success("IPython"):
                 plt.figure(figsize=size)
             ax = plt.axes(projection="3d")
             return ax, plt, kwargs
-        elif not (ax):
+        elif not ax:
             fig, ax = plt.subplots()
-            if conf._get_import_success("jupyter"):
+            if conf.get_import_success("IPython"):
                 fig.set_size_inches(*size)
             if grid:
                 if grid in ("x", "y"):
@@ -70,7 +70,7 @@ class MatplotlibBase(PlottingBase):
 
     @staticmethod
     def _get_matrix_fig_size(n: int,) -> tuple[int, int]:
-        if conf._get_import_success("jupyter"):
+        if conf.get_import_success("IPython"):
             return min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
         else:
             return min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)

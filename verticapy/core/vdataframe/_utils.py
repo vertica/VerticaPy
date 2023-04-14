@@ -92,7 +92,7 @@ class vDFUtils:
         else:
             if isinstance(columns, NoneType):
                 return None
-            elif not (columns) or isinstance(columns, (int, float)):
+            if not columns or isinstance(columns, (int, float)):
                 return copy.deepcopy(columns)
             if raise_error:
                 if isinstance(columns, str):
@@ -162,7 +162,6 @@ class vDFUtils:
                 x == col
             ):
                 return idx
-        return None
 
     def _is_colname_in(self, column: str) -> bool:
         """
