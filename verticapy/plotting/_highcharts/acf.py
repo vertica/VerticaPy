@@ -76,6 +76,7 @@ class ACFPlot(HighchartsBase):
             "fillOpacity": 0.3,
             "marker": {"enabled": False,},
         }
+        return None
 
     # Draw.
 
@@ -119,6 +120,7 @@ class ACFPACFPlot(ACFPlot):
         super()._init_style()
         self.init_style_bar["pointPadding"] = 0.3
         del self.init_style_bar["linkedTo"]
+        return None
 
     # Draw.
 

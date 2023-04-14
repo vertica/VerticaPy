@@ -56,6 +56,7 @@ class HorizontalBarChart(HighchartsBase):
             "tooltip": {"headerFormat": "", "pointFormat": "{point.y}"},
         }
         self.init_style_bar = {"pointPadding": self.data["bargap"] / 2}
+        return None
 
     # Draw.
 
@@ -145,6 +146,7 @@ class HorizontalBarChart2D(HighchartsBase):
                 },
                 "colors": self.get_colors(),
             }
+        return None
 
     # Draw.
 
@@ -190,3 +192,4 @@ class DrillDownHorizontalBarChart(DrillDownBarChart):
     def _init_style(self) -> None:
         super()._init_style()
         self.init_style["chart"] = {"type": "column", "inverted": True}
+        return None

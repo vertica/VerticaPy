@@ -24,9 +24,9 @@ def get_header_names(path: str, sep: str) -> list[str]:
     Returns the input CSV file's header columns' 
     names.
     """
-    f = open(path, "r", encoding="utf-8")
+    f = open(path, "r")
     file_header = f.readline().replace("\n", "").replace('"', "")
-    if not sep:
+    if not (sep):
         sep = guess_sep(file_header)
     file_header = file_header.split(sep)
     f.close()

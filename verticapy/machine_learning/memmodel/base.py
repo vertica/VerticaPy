@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 from abc import abstractmethod
-from typing import Literal
+from typing import Literal, Union
 
 import numpy as np
 
@@ -61,6 +61,7 @@ class InMemoryModel:
     def set_attributes(self, **kwargs) -> None:
         attributes_ = {**self.get_attributes(), **kwargs}
         self.__init__(**attributes_)
+        return None
 
 
 class MulticlassClassifier(InMemoryModel):

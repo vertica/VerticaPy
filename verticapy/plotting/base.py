@@ -17,7 +17,6 @@ permissions and limitations under the License.
 import copy
 import math
 import random
-import warnings
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
 
 import numpy as np
@@ -44,7 +43,7 @@ from verticapy.plotting.sql import PlottingBaseSQL
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
-if conf.get_import_success("dateutil"):
+if conf._get_import_success("dateutil"):
     from dateutil.parser import parse
 
 """
@@ -102,6 +101,7 @@ class PlottingBase(PlottingBaseSQL):
     @property
     def _compute_method(self) -> Literal[None]:
         """Must be overridden in child class"""
+        return None
 
     @property
     def _dimension_bounds(self) -> tuple[PythonNumber, PythonNumber]:
@@ -179,18 +179,19 @@ class PlottingBase(PlottingBaseSQL):
         if hasattr(self, "_kind") and self._kind == "importance":
             self._compute_importance()
         self._init_style()
+        return None
 
     def _init_check(self, dim: int, is_standard: bool) -> None:
         lower, upper = self._dimension_bounds
-        if not lower <= dim <= upper:
+        if not (lower <= dim <= upper):
             if lower == upper:
                 message = f"exactly {lower}"
             else:
                 message = f"between {lower} and {upper}."
             raise ValueError(
-                f"The number of columns to draw the plot must be {message}. Found {dim}."
+                f"The number of columns to draw the plot must be {message}. Found {n}."
             )
-        if self._only_standard and not is_standard:
+        if self._only_standard and not (is_standard):
             raise ValueError(
                 f"When drawing {self._kind} {self._category}s, the parameter "
                 "'method' can not represent a customized aggregation."
@@ -211,6 +212,7 @@ class PlottingBase(PlottingBaseSQL):
     def _init_style(self) -> None:
         """Must be overridden in child class"""
         self.init_style = {}
+        return None
 
     def _get_final_color(self, style_kwargs: dict, idx: int = 0,) -> str:
         for key in ["colors", "color", "c"]:
@@ -242,7 +244,7 @@ class PlottingBase(PlottingBaseSQL):
                     idx = 0
                 return d["color"][idx % len(d["color"])]
         elif isinstance(idx, NoneType):
-            if not conf.get_option("colors"):
+            if not (conf.get_option("colors")):
                 colors = COLORS_OPTIONS["default"]
                 all_colors = [plt_colors.cnames[key] for key in plt_colors.cnames]
                 random.shuffle(all_colors)
@@ -273,7 +275,7 @@ class PlottingBase(PlottingBaseSQL):
         cmap_from_list = plt_colors.LinearSegmentedColormap.from_list
         kwargs = {"N": 1000}
         args = ["verticapy_cmap"]
-        if not color:
+        if not (color):
             args1 = args + [["#FFFFFF", self.get_colors(idx=0)]]
             args2 = args + [[self.get_colors(idx=1), "#FFFFFF", self.get_colors(idx=0)]]
             cm1 = cmap_from_list(*args1, **kwargs)
@@ -404,6 +406,7 @@ class PlottingBase(PlottingBaseSQL):
         self.data["importance"] = np.array(importances)
         self.data["signs"] = np.array(signs)
         self.layout["columns"] = coef_names
+        return None
 
     # 1D AGG Graphics: BAR / PIE ...
 
@@ -421,12 +424,12 @@ class PlottingBase(PlottingBaseSQL):
         """
         Computes the aggregations needed to draw a 1D graphic.
         """
-        if not 0.0 < bargap <= 1.0:
+        if not (0.0 < bargap <= 1.0):
             raise ValueError("Parameter 'bargap' must be between 0 and 1.")
         other_columns = ""
         of = vdc._parent._format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
-        if not is_standard:
+        if not (is_standard):
             other_columns = ", " + ", ".join(
                 vdc._parent.get_columns(exclude_columns=[vdc._alias])
             )
@@ -435,16 +438,16 @@ class PlottingBase(PlottingBaseSQL):
         cardinality, count, is_numeric, is_date, is_categorical = (
             vdc.nunique(True),
             vdc._parent.shape()[0],
-            vdc.isnum() and not vdc.isbool(),
+            vdc.isnum() and not (vdc.isbool()),
             (vdc.category() == "date"),
             False,
         )
         rotation = 0 if ((is_numeric) and (cardinality > max_cardinality)) else 90
         # case when categorical
-        if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
+        if (((cardinality <= max_cardinality) or not (is_numeric)) or pie) and not (
             is_date
         ):
-            if (is_numeric) and not pie:
+            if (is_numeric) and not (pie):
                 query = f"""
                     SELECT 
                         {vdc},
@@ -502,12 +505,12 @@ class PlottingBase(PlottingBaseSQL):
             )
             y = (
                 [
-                    item[1] / float(count) if not isinstance(item[1], NoneType) else 0
+                    item[1] / float(count) if not (isinstance(item[1], NoneType)) else 0
                     for item in query_result
                 ]
                 if (method.lower() == "density")
                 else [
-                    item[1] if not isinstance(item[1], NoneType) else 0
+                    item[1] if not (isinstance(item[1], NoneType)) else 0
                     for item in query_result
                 ]
             )
@@ -619,7 +622,9 @@ class PlottingBase(PlottingBaseSQL):
             "is_categorical": is_categorical,
         }
         self.layout = {
-            "labels": [li if not isinstance(li, NoneType) else "None" for li in labels],
+            "labels": [
+                li if not (isinstance(li, NoneType)) else "None" for li in labels
+            ],
             "column": self._clean_quotes(vdc._alias),
             "method": method,
             "method_of": method + f"({of})" if of else method,
@@ -629,6 +634,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     # HISTOGRAMS
 
@@ -644,11 +650,11 @@ class PlottingBase(PlottingBaseSQL):
         max_cardinality: int = 8,
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
-        if not columns:
+        if not (columns):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        if not columns:
+        if not (columns):
             raise ValueError("No numerical columns found to compute the statistics.")
         columns, by = vdf._format_colnames(columns, by)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
@@ -656,7 +662,7 @@ class PlottingBase(PlottingBaseSQL):
         if by and len(columns) == 1:
             column = columns[0]
             cols = [column]
-            if not h or h <= 0:
+            if not (h) or h <= 0:
                 h = vdf[column].numh()
             data, categories = {"width": h}, []
             vdf_tmp = vdf[by].isin(cat_priority) if cat_priority else vdf.copy()
@@ -712,6 +718,7 @@ class PlottingBase(PlottingBaseSQL):
             "is_standard": is_standard,
             "has_category": bool(categories),
         }
+        return None
 
     # BOXPLOTS
 
@@ -727,13 +734,13 @@ class PlottingBase(PlottingBaseSQL):
         whis: float = 1.5,
         max_nb_fliers: int = 30,
     ) -> None:
-        if not 0 <= q[0] < 0.5 < q[1] <= 1:
+        if not (0 <= q[0] < 0.5 < q[1] <= 1):
             raise ValueError
-        if not columns:
+        if not (columns):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        if not columns:
+        if not (columns):
             raise ValueError("No numerical columns found to compute the statistics.")
         columns, by = vdf._format_colnames(columns, by)
         if len(columns) == 1 and (by):
@@ -824,6 +831,7 @@ class PlottingBase(PlottingBaseSQL):
             "whis": whis,
             "q": q,
         }
+        return None
 
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 
@@ -843,7 +851,7 @@ class PlottingBase(PlottingBaseSQL):
         other_columns = ""
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
-        if not is_standard:
+        if not (is_standard):
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
         columns = format_type(columns, dtype=list)
         columns, of = vdf._format_colnames(columns, of)
@@ -1007,6 +1015,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     def _compute_contour_grid(
         self,
@@ -1052,14 +1061,14 @@ class PlottingBase(PlottingBaseSQL):
                 x_tmp, y_tmp, z_tmp = [], [], []
                 j, last_non_null_value = 0, 0
                 while y_start == y_new and i < n and j < nbins:
-                    if not isinstance(dataset[i][2], NoneType):
+                    if not (isinstance(dataset[i][2], NoneType)):
                         last_non_null_value = float(dataset[i][2])
                     x_tmp += [float(dataset[i][1])]
                     y_tmp += [float(dataset[i][0])]
                     z_tmp += [
                         float(
                             dataset[i][2]
-                            if not isinstance(dataset[i][2], NoneType)
+                            if not (isinstance(dataset[i][2], NoneType))
                             else last_non_null_value
                         )
                     ]
@@ -1079,9 +1088,10 @@ class PlottingBase(PlottingBaseSQL):
             "columns": self._clean_quotes(columns),
             "func": func,
             "func_repr": func_name
-            if not isinstance(func_name, NoneType)
+            if not (isinstance(func_name, NoneType))
             else func_repr,
         }
+        return None
 
     def _compute_contour_grid(
         self,
@@ -1129,14 +1139,14 @@ class PlottingBase(PlottingBaseSQL):
                 x_tmp, y_tmp, z_tmp = [], [], []
                 j, last_non_null_value = 0, 0
                 while y_start == y_new and i < n and j < nbins:
-                    if not isinstance(dataset[i][2], NoneType):
+                    if not (isinstance(dataset[i][2], NoneType)):
                         last_non_null_value = float(dataset[i][2])
                     x_tmp += [float(dataset[i][1])]
                     y_tmp += [float(dataset[i][0])]
                     z_tmp += [
                         float(
                             dataset[i][2]
-                            if not isinstance(dataset[i][2], NoneType)
+                            if not (isinstance(dataset[i][2], NoneType))
                             else last_non_null_value
                         )
                     ]
@@ -1156,9 +1166,10 @@ class PlottingBase(PlottingBaseSQL):
             "columns": self._clean_quotes(columns),
             "func": func,
             "func_repr": func_name
-            if not isinstance(func_name, NoneType)
+            if not (isinstance(func_name, NoneType))
             else func_repr,
         }
+        return None
 
     def _compute_aggregate(
         self,
@@ -1199,6 +1210,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
 
@@ -1220,10 +1232,10 @@ class PlottingBase(PlottingBaseSQL):
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
         if max_nb_points > 0:
-            if not isinstance(size, NoneType):
+            if not (isinstance(size, NoneType)):
                 cols_to_select += [vdf._format_colnames(size)]
                 has_size = True
-            if not isinstance(by, NoneType):
+            if not (isinstance(by, NoneType)):
                 has_category = True
                 by = vdf._format_colnames(by)
                 if vdf[by].isnum():
@@ -1244,7 +1256,7 @@ class PlottingBase(PlottingBaseSQL):
                     ]
                 if cat_priority:
                     vdf_tmp = vdf_tmp[by].isin(cat_priority)
-            elif not isinstance(cmap_col, NoneType):
+            elif not (isinstance(cmap_col, NoneType)):
                 cols_to_select += [vdf._format_colnames(cmap_col)]
                 has_cmap = True
             X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
@@ -1257,17 +1269,20 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
             "size": self._clean_quotes(size),
-            "c": self._clean_quotes(by) if (not isinstance(by, NoneType)) else cmap_col,
+            "c": self._clean_quotes(by)
+            if (not (isinstance(by, NoneType)))
+            else cmap_col,
             "has_category": has_category,
             "has_cmap": has_cmap,
             "has_size": has_size,
         }
-        if not isinstance(size, NoneType) and (max_nb_points > 0):
+        if not (isinstance(size, NoneType)) and (max_nb_points > 0):
             self.data["s"] = X[:, n].astype(float)
         if (
-            (not isinstance(by, NoneType)) or (not isinstance(cmap_col, NoneType))
+            (not (isinstance(by, NoneType))) or (not (isinstance(cmap_col, NoneType)))
         ) and (max_nb_points > 0):
             self.data["c"] = X[:, -1]
+        return None
 
     def _compute_outliers_params(
         self,
@@ -1347,11 +1362,12 @@ class PlottingBase(PlottingBaseSQL):
         }
         self.data["inliers"] = np.array(inliers)
         self.data["outliers"] = np.array(outliers)
+        return None
 
     def _compute_scatter_matrix(
         self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
     ) -> None:
-        if not columns:
+        if not (columns):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
@@ -1374,6 +1390,7 @@ class PlottingBase(PlottingBaseSQL):
         self.layout = {
             "columns": self._clean_quotes(columns),
         }
+        return None
 
     # TIME SERIES: LINE / RANGE
 
@@ -1387,7 +1404,7 @@ class PlottingBase(PlottingBaseSQL):
         limit: int = -1,
         limit_over: int = -1,
     ) -> None:
-        if not columns:
+        if not (columns):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
@@ -1406,7 +1423,7 @@ class PlottingBase(PlottingBaseSQL):
         if limit > 0:
             X = X[:limit]
         X = X.to_numpy()
-        if not vdf[columns[-1]].isnum():
+        if not (vdf[columns[-1]].isnum()):
             Y = X[:, 1:-1]
             try:
                 Y = Y.astype(float)
@@ -1432,6 +1449,7 @@ class PlottingBase(PlottingBaseSQL):
             "limit": limit,
             "limit_over": limit_over,
         }
+        return None
 
     def _compute_range(
         self,
@@ -1469,6 +1487,7 @@ class PlottingBase(PlottingBaseSQL):
             "order_by": self._clean_quotes(order_by),
             "order_by_cat": vdf[order_by].category(),
         }
+        return None
 
     def _compute_candle_aggregate(
         self,
@@ -1512,6 +1531,7 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None
 
     def _filter_line_animated_scatter(
         self,
@@ -1569,7 +1589,7 @@ class PlottingBase(PlottingBaseSQL):
             "order_by": self._clean_quotes(order_by),
             "by": self._clean_quotes(by),
             "catcol": self._clean_quotes(catcol),
-            "by_is_num": vdf[by].isnum() if not isinstance(by, NoneType) else None,
+            "by_is_num": vdf[by].isnum() if not (isinstance(by, NoneType)) else None,
             "limit": limit,
             "limit_over": limit_over,
         }
@@ -1618,3 +1638,4 @@ class PlottingBase(PlottingBaseSQL):
             "aggregate_fun": aggregate_fun,
             "is_standard": is_standard,
         }
+        return None

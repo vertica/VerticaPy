@@ -78,7 +78,7 @@ def import_lib_udf(
     udx_str, sql = generate_lib_udf(
         udf_list, library_name, include_dependencies, f"{directory}/{file_name}"
     )
-    f = open(f"{directory}/{file_name}", "w", encoding="utf-8")
+    f = open(f"{directory}/{file_name}", "w")
     f.write(udx_str)
     f.close()
     try:

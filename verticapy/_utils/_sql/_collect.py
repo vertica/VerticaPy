@@ -109,7 +109,7 @@ def save_to_query_profile(
     """
     json_dict = format_type(json_dict, dtype=dict)
     value = conf.get_option("save_query_profile")
-    if not value:
+    if not (value):
         return False
     query_label_str = query_label.replace("'", "''")
     dict_to_json_string_str = _dict_to_json_string(

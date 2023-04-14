@@ -66,6 +66,8 @@ class LogisticRegressionPlot(PlotlyBase):
             " %{y} <br>"
         }
 
+        return None
+
     # Draw.
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:

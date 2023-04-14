@@ -45,6 +45,7 @@ class SpiderChart(MatplotlibBase):
     def _init_style(self) -> None:
         self.init_style = {"linewidth": 1, "linestyle": "solid"}
         self.init_style_opacity = {"alpha": 0.1}
+        return None
 
     # Draw.
 
@@ -56,7 +57,7 @@ class SpiderChart(MatplotlibBase):
         angles = [i / float(m) * 2 * np.pi for i in range(m)]
         angles += angles[:1]
         fig = plt.figure()
-        if not ax:
+        if not (ax):
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
         colors = self.get_colors()

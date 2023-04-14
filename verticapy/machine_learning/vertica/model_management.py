@@ -14,10 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Union
+
 from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy.core.tablesample.base import TableSample
 
 from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.cluster import (
@@ -78,7 +82,7 @@ def load_model(
     )
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
-    if not model_type:
+    if not (model_type):
         raise NameError(f"The model '{name}' doesn't exist.")
     if model_type.lower() in ("kmeans", "kprototypes",):
         info = (

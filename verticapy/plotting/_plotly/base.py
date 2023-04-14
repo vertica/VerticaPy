@@ -17,7 +17,7 @@ permissions and limitations under the License.
 from typing import Optional
 
 from verticapy.plotting.base import PlottingBase
-from verticapy._typing import ArrayLike
+from verticapy._typing import ArrayLike, NoneType
 
 from plotly.graph_objs._figure import Figure
 import plotly.graph_objects as go

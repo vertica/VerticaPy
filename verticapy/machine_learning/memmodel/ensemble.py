@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional
 
 import numpy as np
 
@@ -30,7 +30,8 @@ from verticapy.machine_learning.memmodel.tree import (
     BinaryTreeRegressor,
 )
 
-if TYPE_CHECKING and conf.get_import_success("graphviz"):
+if conf._get_import_success("graphviz"):
+    import graphviz
     from graphviz import Source
 
 
@@ -106,6 +107,7 @@ class RandomForestRegressor(Ensemble):
 
     def __init__(self, trees: list[BinaryTreeRegressor]) -> None:
         self.trees_ = copy.deepcopy(trees)
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -179,6 +181,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
             self.classes_ = copy.deepcopy(trees[0].classes_)
         else:
             self.classes_ = np.array(classes)
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -283,6 +286,7 @@ class XGBRegressor(Ensemble):
         self.trees_ = copy.deepcopy(trees)
         self.mean_ = mean
         self.eta_ = eta
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -368,6 +372,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         else:
             self.classes_ = np.array(classes)
         self.eta_ = learning_rate
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -448,6 +453,7 @@ class IsolationForest(Ensemble):
 
     def __init__(self, trees: list[BinaryTreeAnomaly]) -> None:
         self.trees_ = copy.deepcopy(trees)
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 

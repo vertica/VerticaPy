@@ -76,6 +76,7 @@ class ContourPlot(PlotlyBase):
         else:
             return {"colorscale": style_kwargs["colorscale"]}
             style_kwargs.pop("colorscale")
+        return None
 
     # Draw.
 

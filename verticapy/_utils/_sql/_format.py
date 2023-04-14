@@ -15,8 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import re
-import warnings
-from typing import Any, Iterable, Literal, Optional
+from typing import Any, Iterable, Literal, Optional, Union
 
 import numpy as np
 
@@ -123,13 +122,13 @@ def format_magic(
         object_type = x._object_type
     if object_type == "vDataColumn":
         val = x._alias
-    elif (isinstance(x, (int, float, np.int_)) and not cast_float_int_to_str) or (
+    elif (isinstance(x, (int, float, np.int_)) and not (cast_float_int_to_str)) or (
         object_type == "StringSQL"
     ):
         val = x
     elif isinstance(x, NoneType):
         val = "NULL"
-    elif isinstance(x, (int, float, np.int_)) or not cast_float_int_to_str:
+    elif isinstance(x, (int, float, np.int_)) or not (cast_float_int_to_str):
         x_str = str(x).replace("'", "''")
         val = f"'{x_str}'"
     else:
@@ -149,7 +148,7 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
     res = ()
     for arg in args:
         if isinstance(arg, NoneType):
-            if not isinstance(na_out, NoneType):
+            if not (isinstance(na_out, NoneType)):
                 r = na_out
             elif dtype == list:
                 r = []
@@ -270,7 +269,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
         fail = True
-        if len(v) > 1 and not v[1].isdigit():
+        if len(v) > 1 and not (v[1].isdigit()):
             try:
                 var = v[1:]
                 n, splits = var.count("["), []
@@ -295,7 +294,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
                 )
                 warnings.warn(warning_message, Warning)
                 fail = True
-        if not fail:
+        if not (fail):
             object_type = None
             if hasattr(val, "_object_type"):
                 object_type = val._object_type
@@ -347,6 +346,6 @@ def format_schema_table(schema: str, table_name: str) -> str:
     Returns the formatted relation. If the schema is not
     defined, the 'public' schema is used. 
     """
-    if not schema:
+    if not (schema):
         schema = "public"
     return f"{quote_ident(schema)}.{quote_ident(table_name)}"

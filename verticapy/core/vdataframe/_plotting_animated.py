@@ -305,7 +305,7 @@ class vDFAnimatedPlot(PlottingUtils):
             columns = vdf.numcol()[0:limit_over]
         else:
             vdf = self
-            if not columns:
+            if not (columns):
                 columns = vdf.numcol()
         vpy_plt, kwargs = self._get_plotting_lib(
             class_name="AnimatedLinePlot",
@@ -423,11 +423,11 @@ class vDFAnimatedPlot(PlottingUtils):
                 "vDataColumns and maximum 4 vDataColumns."
             )
         columns, ts, by = self._format_colnames(columns, ts, by)
-        if len(columns) == 3 and not self[columns[2]].isnum():
+        if len(columns) == 3 and not (self[columns[2]].isnum()):
             catcol = columns[2]
             columns = columns[0:2]
         elif len(columns) >= 4:
-            if not self[columns[3]].isnum():
+            if not (self[columns[3]].isnum()):
                 catcol = columns[3]
                 columns = columns[0:3]
             else:

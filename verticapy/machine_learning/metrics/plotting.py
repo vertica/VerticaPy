@@ -91,7 +91,7 @@ def lift_chart(
     )
     lift = np.nan_to_num(lift, nan=np.nanmax(lift))
     decision_boundary.reverse()
-    if not show:
+    if not (show):
         return TableSample(
             values={
                 "decision_boundary": decision_boundary,
@@ -173,7 +173,7 @@ def prc_curve(
         nbins=nbins,
         fun_sql_name="prc",
     )
-    if not show:
+    if not (show):
         return TableSample(
             values={"threshold": threshold, "recall": recall, "precision": precision,}
         )
@@ -248,7 +248,7 @@ def roc_curve(
         nbins=nbins,
         fun_sql_name="roc",
     )
-    if not show:
+    if not (show):
         return TableSample(
             values={
                 "threshold": threshold,

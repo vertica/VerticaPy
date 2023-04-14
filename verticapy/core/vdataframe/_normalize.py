@@ -17,7 +17,7 @@ permissions and limitations under the License.
 import copy
 import math
 import warnings
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
 
@@ -65,9 +65,9 @@ class vDFNorm:
         """
         columns = format_type(columns, dtype=list)
         no_cols = len(columns) == 0
-        columns = self.numcol() if not columns else self._format_colnames(columns)
+        columns = self.numcol() if not (columns) else self._format_colnames(columns)
         for column in columns:
-            if self[column].isnum() and not self[column].isbool():
+            if self[column].isnum() and not (self[column].isbool()):
                 self[column].normalize(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
@@ -156,7 +156,7 @@ class vDCNorm:
                             symbol=self._parent._vars["symbol"],
                         )
                         for i in range(len(result)):
-                            if not isinstance(result[i][2], NoneType) and math.isnan(
+                            if not (isinstance(result[i][2], NoneType)) and math.isnan(
                                 result[i][2]
                             ):
                                 result[i][2] = None
@@ -166,14 +166,14 @@ class vDCNorm:
                                 [
                                     "{}, {}".format(
                                         "'{}'".format(str(x[0]).replace("'", "''"))
-                                        if not isinstance(x[0], NoneType)
+                                        if not (isinstance(x[0], NoneType))
                                         else "NULL",
                                         x[1]
-                                        if not isinstance(x[1], NoneType)
+                                        if not (isinstance(x[1], NoneType))
                                         else "NULL",
                                     )
                                     for x in result
-                                    if not isinstance(x[1], NoneType)
+                                    if not (isinstance(x[1], NoneType))
                                 ]
                             ),
                         )
@@ -183,14 +183,14 @@ class vDCNorm:
                                 [
                                     "{}, {}".format(
                                         "'{}'".format(str(x[0]).replace("'", "''"))
-                                        if not isinstance(x[0], NoneType)
+                                        if not (isinstance(x[0], NoneType))
                                         else "NULL",
                                         x[2]
-                                        if not isinstance(x[2], NoneType)
+                                        if not (isinstance(x[2], NoneType))
                                         else "NULL",
                                     )
                                     for x in result
-                                    if not isinstance(x[2], NoneType)
+                                    if not (isinstance(x[2], NoneType))
                                 ]
                             ),
                         )
@@ -285,14 +285,14 @@ class vDCNorm:
                                 [
                                     "{}, {}".format(
                                         "'{}'".format(str(x[0]).replace("'", "''"))
-                                        if not isinstance(x[0], NoneType)
+                                        if not (isinstance(x[0], NoneType))
                                         else "NULL",
                                         x[1]
-                                        if not isinstance(x[1], NoneType)
+                                        if not (isinstance(x[1], NoneType))
                                         else "NULL",
                                     )
                                     for x in result
-                                    if not isinstance(x[1], NoneType)
+                                    if not (isinstance(x[1], NoneType))
                                 ]
                             ),
                         )
@@ -302,14 +302,14 @@ class vDCNorm:
                                 [
                                     "{}, {}".format(
                                         "'{}'".format(str(x[0]).replace("'", "''"))
-                                        if not isinstance(x[0], NoneType)
+                                        if not (isinstance(x[0], NoneType))
                                         else "NULL",
                                         x[2]
-                                        if not isinstance(x[2], NoneType)
+                                        if not (isinstance(x[2], NoneType))
                                         else "NULL",
                                     )
                                     for x in result
-                                    if not isinstance(x[2], NoneType)
+                                    if not (isinstance(x[2], NoneType))
                                 ]
                             ),
                         )

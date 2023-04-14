@@ -97,6 +97,7 @@ class StepwisePlot(HighchartsBase):
                 + "</b>: {point.y}<br>",
             },
         }
+        return None
 
     # Draw.
 
@@ -119,7 +120,7 @@ class StepwisePlot(HighchartsBase):
                     float(self.data["s"][i]),
                 ]
             ]
-            if not isinstance(c, NoneType):
+            if not (isinstance(c, NoneType)):
                 sign = self.data["sign"][i]
                 chart.add_data_set(data, "bubble", sign + c, **lookup_table[sign])
         i = -1

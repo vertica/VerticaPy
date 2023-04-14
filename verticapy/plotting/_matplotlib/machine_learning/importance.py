@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import numpy as np
 
 from matplotlib.axes import Axes
 import matplotlib.patches as mpatches
@@ -38,6 +39,7 @@ class ImportanceBarChart(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"alpha": 0.86}
+        return None
 
     # Draw.
 

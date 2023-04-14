@@ -59,7 +59,7 @@ def read_shp(
         title="Getting SHP definition.",
         method="fetchall",
     )
-    if not table_name:
+    if not (table_name):
         table_name = file[:-4]
     result[0] = [f'CREATE TABLE "{schema}"."{table_name}"(']
     result = [elem[0] for elem in result]

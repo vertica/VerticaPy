@@ -24,7 +24,7 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
     Parses the input DSN and returns the linked
     Config Parser.
     """
-    if not dsn:
+    if not (dsn):
         dsn = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str

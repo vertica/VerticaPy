@@ -20,6 +20,7 @@ from verticapy.connection.global_connection import get_global_connection
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import clean_query, quote_ident
 from verticapy.connection.connect import current_cursor
+from verticapy.errors import ConnectionError
 
 
 def get_dblink_fun(query: str, symbol: str = "$") -> str:

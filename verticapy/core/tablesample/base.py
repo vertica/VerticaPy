@@ -100,6 +100,7 @@ class TableSample:
         for column in self.values:
             if column not in self.dtype:
                 self.dtype[column] = "undefined"
+        return None
 
     def __iter__(self) -> tuple:
         return (elem for elem in self.values)
@@ -242,7 +243,8 @@ class TableSample:
             formatted_text += "</div>"
         return formatted_text
 
-    def _get_correct_format_and_cast(self, val: Any) -> str:
+    @staticmethod
+    def _get_correct_format_and_cast(val: Any) -> str:
         """
         Casts the input value to the correct SQL data 
         types.
@@ -410,7 +412,7 @@ class TableSample:
                         val = float(val_tmp)
                     except TypeError:
                         val = val_tmp
-                    if not use_number_as_category:
+                    if not (use_number_as_category):
                         res += [[x, d["index"][idx], val]]
                     else:
                         res += [

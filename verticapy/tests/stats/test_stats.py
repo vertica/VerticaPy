@@ -56,7 +56,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
         assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
-        assert not result["value"][-1]
+        assert not (result["value"][-1])
 
         # testing with trend
         result = st.adfuller(
@@ -64,7 +64,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
-        assert not result["value"][-1]
+        assert not (result["value"][-1])
 
     def test_cochrane_orcutt(self, airline_vd):
         airline_copy = airline_vd.copy()

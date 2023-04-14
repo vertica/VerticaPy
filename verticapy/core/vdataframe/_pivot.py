@@ -60,7 +60,7 @@ class vDFPivot:
             object with the flattened VMaps.
         """
         vmap_col = format_type(vmap_col, dtype=list)
-        if not vmap_col:
+        if not (vmap_col):
             vmap_col = []
             all_cols = self.get_columns()
             for col in all_cols:
@@ -72,7 +72,7 @@ class vDFPivot:
         for col in vmap_col:
             if quote_ident(col).lower() not in exclude_columns_final:
                 vmap_col_final += [col]
-        if not vmap_col:
+        if not (vmap_col):
             raise EmptyParameter("No VMAP was detected.")
         maplookup = []
         for vmap in vmap_col_final:
@@ -153,13 +153,13 @@ class vDFPivot:
         query = []
         all_are_num, all_are_date = True, True
         for column in columns:
-            if not self[column].isnum():
+            if not (self[column].isnum()):
                 all_are_num = False
-            if not self[column].isdate():
+            if not (self[column].isdate()):
                 all_are_date = False
         for column in columns:
             conv = ""
-            if not all_are_num and not all_are_num:
+            if not (all_are_num) and not (all_are_num):
                 conv = "::varchar"
             elif self[column].category() == "int":
                 conv = "::int"

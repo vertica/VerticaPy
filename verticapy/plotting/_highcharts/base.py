@@ -36,7 +36,7 @@ class HighchartsBase(PlottingBase):
     ) -> HChart:
         style_kwargs = format_type(style_kwargs, dtype=dict)
         kwargs = copy.deepcopy(style_kwargs)
-        if not isinstance(chart, NoneType):
+        if not (isinstance(chart, NoneType)):
             return chart, kwargs
         if "figsize" in kwargs and isinstance(kwargs, tuple):
             width, height = kwargs["figsize"]

@@ -54,6 +54,7 @@ class ACFPlot(MatplotlibBase):
         self.init_style_alpha = {
             "alpha": 0.1,
         }
+        return None
 
     # Draw.
 
@@ -134,6 +135,7 @@ class ACFPACFPlot(ACFPlot):
             "zorder": 1,
             "linewidth": 0,
         }
+        return None
 
     # Draw.
 

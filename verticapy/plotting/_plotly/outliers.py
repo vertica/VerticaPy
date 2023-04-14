@@ -49,6 +49,7 @@ class OutliersPlot(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_style = {"width": 500, "height": 500}
+        return None
 
     # Draw.
 

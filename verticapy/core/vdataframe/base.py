@@ -14,12 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
+import warnings
 from typing import Literal, Optional, Union
-
 import numpy as np
 
 import pandas as pd
 
+import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._typing import SQLColumns
 from verticapy._utils._object import _read_pandas
@@ -35,7 +37,12 @@ from verticapy._utils._sql._format import (
     quote_ident,
     schema_relation,
 )
-from verticapy.errors import MissingRelation
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.errors import (
+    ConnectionError,
+    MissingRelation,
+    QueryError,
+)
 
 from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
 from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
@@ -253,7 +260,7 @@ class vDataFrame(
 
             return self._from_pandas(input_relation, usecols)
 
-        elif not _empty:
+        elif not (_empty):
 
             if isinstance(input_relation, str) and is_dql(input_relation):
 
@@ -273,7 +280,7 @@ class vDataFrame(
 
             else:
 
-                if not schema:
+                if not (schema):
                     schema, input_relation = schema_relation(input_relation)
                 schema = quote_ident(schema)
                 input_relation = quote_ident(input_relation)
@@ -285,7 +292,7 @@ class vDataFrame(
                     dtypes = compute_flextable_keys(
                         flex_name=f"{schema}.{input_relation[1:-1]}", usecols=usecols
                     )
-                    if not dtypes:
+                    if not (dtypes):
                         raise ValueError(
                             f"The flextable {schema}.{input_relation[1:-1]} is empty."
                         )
@@ -299,7 +306,7 @@ class vDataFrame(
             columns = [quote_ident(dt[0]) for dt in dtypes]
             if len(columns) == 0:
                 raise MissingRelation(f"No table or views {input_relation} found.")
-            if not usecols:
+            if not (usecols):
                 allcols_ind = len(columns)
             else:
                 allcols_ind = -1
@@ -333,6 +340,7 @@ class vDataFrame(
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
                 new_vDataColumn._init = False
+            return None
 
     def _from_object(
         self,
@@ -486,3 +494,4 @@ class vDataColumn(
         if self._init_transf == "___VERTICAPY_UNDEFINED___":
             self._init_transf = self._alias
         self._init = True
+        return None

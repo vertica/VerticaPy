@@ -53,6 +53,7 @@ class AnimatedBarChart(AnimatedBase):
             "ha": "right",
             "va": "center",
         }
+        return None
 
     def _get_style_color(self, style_kwargs: dict) -> list:
         colors = self.get_colors()

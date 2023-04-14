@@ -15,9 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
+import copy
 
 import numpy as np
-
 import plotly.express as px
 from plotly.graph_objs._figure import Figure
 
@@ -59,6 +59,7 @@ class HeatMap(PlotlyBase):
                 zeroline=False,
             ),
         }
+        return None
 
     def _get_cmap_style(self, style_kwargs: dict) -> dict:
         if (

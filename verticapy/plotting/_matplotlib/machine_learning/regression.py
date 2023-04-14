@@ -51,6 +51,7 @@ class RegressionPlot(MatplotlibBase):
             "s": 50,
             "edgecolors": "black",
         }
+        return None
 
     # Draw.
 

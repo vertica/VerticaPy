@@ -13,7 +13,34 @@ distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
-               
+"""
+#
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /
+#              ____________       ______
+#             / __        `\     /     /
+#            |  \/         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
+#                    _
+# \  / _  __|_. _ _ |_)
+#  \/ (/_|  | |(_(_|| \/
+#                     /
+"""
 VerticaPy  is   a  Python   library   with   scikit-like
 functionality  for  conducting   data science   projects
 on data stored in Vertica, taking advantage of Vertica’s

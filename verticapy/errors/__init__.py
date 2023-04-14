@@ -16,6 +16,10 @@ permissions and limitations under the License.
 """
 
 
+class ConnectionError(Exception):
+    ...
+
+
 class ConversionError(Exception):
     ...
 

@@ -90,7 +90,7 @@ def get_data_types(
         their respective type.
     """
     usecols = format_type(usecols, dtype=list)
-    if not expr and not table_name:
+    if not (expr) and not (table_name):
         raise ValueError(
             "Missing parameter: 'expr' and 'table_name' can not both be empty."
         )
@@ -136,7 +136,7 @@ def get_data_types(
             return ctype
         except QueryError:
             pass
-    if not table_name:
+    if not (table_name):
         table_name, schema = gen_tmp_name(name="table"), "v_temp_schema"
         drop(format_schema_table(schema, table_name), method="table")
         try:

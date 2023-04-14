@@ -50,7 +50,7 @@ from verticapy.machine_learning.vertica.base import (
 
 from verticapy.sql.drop import drop
 
-if conf.get_import_success("graphviz"):
+if conf._get_import_success("graphviz"):
     from graphviz import Source
 
 """
@@ -109,7 +109,7 @@ class Clustering(Unsupervised):
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
         X = quote_ident(X)
-        if not name:
+        if not (name):
             name = (
                 self._model_type
                 + "_"
@@ -276,6 +276,7 @@ class KMeans(Clustering):
             "max_iter": max_iter,
             "tol": tol,
         }
+        return None
 
     # Attributes Methods.
 
@@ -287,6 +288,7 @@ class KMeans(Clustering):
         self.clusters_ = centers.to_numpy()
         self.p_ = 2
         self._compute_metrics()
+        return None
 
     def _compute_metrics(self) -> None:
         """
@@ -320,6 +322,7 @@ class KMeans(Clustering):
         self.total_within_cluster_ss_ = metrics[2]
         self.elbow_score_ = metrics[3]
         self.converged_ = metrics[4]
+        return None
 
     # I/O Methods.
 
@@ -461,6 +464,7 @@ class KPrototypes(KMeans):
             "tol": tol,
             "gamma": gamma,
         }
+        return None
 
     # Attributes Methods.
 
@@ -477,6 +481,7 @@ class KPrototypes(KMeans):
             [("char" in dtypes[key].lower()) for key in dtypes]
         )
         self._compute_metrics()
+        return None
 
     # I/O Methods.
 
@@ -628,6 +633,7 @@ class BisectingKMeans(KMeans, Tree):
             "max_iter": max_iter,
             "tol": tol,
         }
+        return None
 
     # Attributes Methods.
 
@@ -651,6 +657,7 @@ class BisectingKMeans(KMeans, Tree):
         self.between_cluster_ss_ = metrics[2]
         self.elbow_score_ = metrics[3]
         self.cluster_i_ss_ = np.array(metrics[4:])
+        return None
 
     # Parameters Methods.
 
@@ -844,6 +851,7 @@ class DBSCAN(VerticaModel):
     ) -> None:
         self.model_name = name
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -907,7 +915,7 @@ class DBSCAN(VerticaModel):
         name_main = gen_tmp_name(name="main")
         name_dbscan_clusters = gen_tmp_name(name="clusters")
         try:
-            if not index:
+            if not (index):
                 index = "id"
                 drop(f"v_temp_schema.{name_main}", method="table")
                 _executeSQL(
@@ -989,7 +997,7 @@ class DBSCAN(VerticaModel):
                     clusters[node_neighbor] = i
                     i = i + 1
                 else:
-                    if not isinstance(clusters[node], NoneType) and isinstance(
+                    if not (isinstance(clusters[node], NoneType)) and isinstance(
                         clusters[node_neighbor], NoneType
                     ):
                         clusters[node_neighbor] = clusters[node]
@@ -999,7 +1007,7 @@ class DBSCAN(VerticaModel):
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:
-                f = open(f"{name_dbscan_clusters}.csv", "w", encoding="utf-8")
+                f = open(f"{name_dbscan_clusters}.csv", "w")
                 for c in clusters:
                     f.write(f"{c}, {clusters[c]}\n")
                 f.close()
@@ -1057,6 +1065,7 @@ class DBSCAN(VerticaModel):
         finally:
             drop(f"v_temp_schema.{name_main}", method="table")
             drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
+        return None
 
     # Prediction / Transformation Methods.
 
@@ -1162,6 +1171,7 @@ class NearestCentroid(MulticlassClassifier):
     def __init__(self, name: str, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -1191,6 +1201,7 @@ class NearestCentroid(MulticlassClassifier):
         self.clusters_ = centroids.to_numpy()[:, 0:-1]
         self.classes_ = self._array_to_int(centroids.to_numpy()[:, -1])
         self.p_ = self.parameters["p"]
+        return None
 
     # Prediction / Transformation Methods.
 

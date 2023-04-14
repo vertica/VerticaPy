@@ -104,7 +104,7 @@ def create_table(
     else:
         input_relation = quote_ident(table_name)
     temp = "TEMPORARY " if temporary_table else ""
-    if not schema:
+    if not (schema):
         temp = "LOCAL TEMPORARY " if temporary_local_table else ""
     dtype_str = [f"{quote_ident(column)} {dtype[column]}" for column in dtype]
     dtype_str = ", ".join(dtype_str)

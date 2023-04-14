@@ -145,7 +145,7 @@ class TestvDFCorrelation:
         assert tree["children"]["female"]["children"][127.6]["children"][38.0][
             "prediction"
         ][1] == pytest.approx(0.720496894409938)
-        assert not tree["split_is_numerical"]
+        assert not (tree["split_is_numerical"])
         assert tree["split_predictor"] == '"sex"'
         assert tree["split_predictor_idx"] == 2
         pred = result.predict([[3.0, 11.0, "male"], [11.0, 1.0, "female"]])

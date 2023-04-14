@@ -92,6 +92,7 @@ class OutliersPlot(HighchartsBase):
                 "lineColor": "black",
             },
         }
+        return None
 
     # Draw.
 

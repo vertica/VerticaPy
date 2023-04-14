@@ -63,6 +63,7 @@ class VoronoiPlot(MatplotlibBase):
             "zorder": 4,
             "marker": "x",
         }
+        return None
 
     # Draw.
 
@@ -88,7 +89,7 @@ class VoronoiPlot(MatplotlibBase):
         scipy_st.voronoi_plot_2d(
             v, ax=ax, **self._update_dict(self.init_style, style_kwargs)
         )
-        if not ax:
+        if not (ax):
             ax = plt
             ax.xlabel(self.layout["columns"][0])
             ax.ylabel(self.layout["columns"][1])

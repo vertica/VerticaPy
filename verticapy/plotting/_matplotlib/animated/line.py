@@ -47,6 +47,7 @@ class AnimatedLinePlot(AnimatedBase):
             "linewidth": 1,
             "linewidth": 2,
         }
+        return None
 
     def _get_style(self, idx: int = 0) -> dict[str, Any]:
         colors = self.get_colors()
@@ -67,7 +68,7 @@ class AnimatedLinePlot(AnimatedBase):
                 if len(self.data["Y"][:, m][0:i]) > 0:
                     min_y = min(np.nanmin(self.data["Y"][:, m][0:i]), min_y)
                     max_y = max(np.nanmax(self.data["Y"][:, m][0:i]), max_y)
-            if not fixed_xy_lim:
+            if not (fixed_xy_lim):
                 if i > 0:
                     ax.set_ylim(min_y, max_y)
                 if i > window_size:

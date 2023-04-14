@@ -55,6 +55,7 @@ class BarChart(HighchartsBase):
             "tooltip": {"headerFormat": "", "pointFormat": "{point.y}"},
         }
         self.init_style_bar = {"pointPadding": self.data["bargap"] / 2}
+        return None
 
     # Draw.
 
@@ -104,6 +105,7 @@ class BarChart2D(HighchartsBase):
             "legend": {"enabled": True, "title": {"text": self.layout["columns"][1]}},
         }
         self.init_style_stacked = {"plotOptions": {"series": {"stacking": "normal"}}}
+        return None
 
     # Draw.
 
@@ -156,6 +158,7 @@ class DrillDownBarChart(HighchartsBase):
             },
             "colors": self.get_colors(),
         }
+        return None
 
     # Draw.
 

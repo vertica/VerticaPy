@@ -16,10 +16,11 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-from vertica_python.errors import MissingRelation, QueryError
+from vertica_python.errors import QueryError
 
 from verticapy._utils._sql._format import (
     format_schema_table,
+    quote_ident,
     schema_relation,
 )
 from verticapy._utils._sql._sys import _executeSQL
@@ -64,7 +65,7 @@ def drop(
     """
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
-    if not name:
+    if not (name):
         method = "temp"
     if method == "auto":
         fail, end_conditions = False, False

@@ -75,20 +75,20 @@ def generate_lib_udf(
         UDF py file, str needed to install the library.
 	"""
     include_dependencies = format_type(include_dependencies, dtype=list)
-    if not isinstance(include_dependencies, (list)):
+    if not (isinstance(include_dependencies, (list))):
         raise ValueError(
             "The parameter include_dependencies type must be <list>. "
             f"Found {type(include_dependencies)}."
         )
-    if not isinstance(library_name, str):
+    if not (isinstance(library_name, str)):
         raise ValueError(
             f"The parameter library_name type must be <str>. Found {type(library_name)}."
         )
-    if not isinstance(file_path, str):
+    if not (isinstance(file_path, str)):
         raise ValueError(
             f"The parameter file_path type must be <str>. Found {type(file_path)}."
         )
-    if not isinstance(create_file, bool):
+    if not (isinstance(create_file, bool)):
         raise ValueError(
             f"The parameter create_file type must be <bool>. Found {type(create_file)}."
         )
@@ -102,12 +102,12 @@ def generate_lib_udf(
             udx_str += f"import {udf}\n"
     if include_dependencies:
         for dep_file_path in include_dependencies:
-            if not isinstance(dep_file_path, str):
+            if not (isinstance(dep_file_path, str)):
                 raise ValueError(
                     "The parameter include_dependencies type must be <list> of <str>. "
                     f"Found {type(dep_file_path)} inside."
                 )
-            f = open(dep_file_path, "r", encoding="utf-8")
+            f = open(dep_file_path)
             file_str = f.read()
             exec(file_str)
             udx_str += "\n" + file_str + "\n"
@@ -121,16 +121,16 @@ def generate_lib_udf(
     sql_path = f"{library_name}.sql"
     if file_path:
         sql_path = f"{os.path.dirname(file_path)}/{sql_path}"
-    if not file_path:
+    if not (file_path):
         file_path = f"verticapy_{library_name}.py"
     sql = [
         f"CREATE OR REPLACE LIBRARY {library_name} AS '{file_path}' LANGUAGE 'Python';"
     ] + sql
     if create_file:
-        f = open(file_path, "w", encoding="utf-8")
+        f = open(file_path, "w")
         f.write(udx_str)
         f.close()
-        f = open(sql_path, "w", encoding="utf-8")
+        f = open(sql_path, "w")
         f.write("\n".join(sql))
         f.close()
     else:
@@ -150,35 +150,35 @@ def generate_udf(
     statements needed to install it.
     """
     parameters = format_type(parameters, dtype=dict)
-    if not hasattr(function, "__call__"):
+    if not (hasattr(function, "__call__")):
         raise ValueError(
             f"The function parameter must be a Python function. Found {type(function)}."
         )
-    if not new_name:
+    if not (new_name):
         new_name = function.__name__
-    elif not isinstance(new_name, str):
+    elif not (isinstance(new_name, str)):
         raise ValueError(
             f"The parameter new_name type must be <str>. Found {type(new_name)}."
         )
     module = function.__module__
     if module == "__main__":
         module = ""
-    if not library_name:
+    if not (library_name):
         library_name = module
     if module:
         module += "."
-    elif not isinstance(library_name, str):
+    elif not (isinstance(library_name, str)):
         raise ValueError(
             f"The parameter library_name type must be <str>. Found {type(library_name)}."
         )
     if isinstance(arg_types, dict):
         arg_types = [arg_types[var] for var in arg_types]
-    elif not isinstance(arg_types, list):
+    elif not (isinstance(arg_types, list)):
         raise ValueError(
             f"The arg_types parameter must be a <list> of <types>. Found {type(arg_types)}."
         )
     for idx, dtype in enumerate(arg_types):
-        if not isinstance(dtype, type):
+        if not (isinstance(dtype, type)):
             raise ValueError(
                 "Each element of arg_types parameter must be a <type>. "
                 f"Found {type(dtype)} at index {idx}."

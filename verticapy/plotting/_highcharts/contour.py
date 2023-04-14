@@ -106,6 +106,7 @@ class ContourPlot(HighchartsBase):
             "series_type": "heatmap",
             "dataLabels": {"enabled": False,},
         }
+        return None
 
     # Draw.
 

@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal
+from typing import Literal, Union
 
 import numpy as np
 
@@ -53,6 +53,7 @@ class Scaler(InMemoryModel):
     def __init__(self, sub: ArrayLike, den: ArrayLike) -> None:
         self.sub_ = np.array(sub)
         self.den_ = np.array(den)
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -90,7 +91,7 @@ class Scaler(InMemoryModel):
         list
             SQL code.
         """
-        if not len(X) == len(self.den_) == len(self.sub_):
+        if not (len(X) == len(self.den_) == len(self.sub_)):
             raise ValueError(
                 "The length of parameter 'X' must be equal to the length "
                 "of the vector 'sub' and 'den'."
@@ -121,6 +122,7 @@ class StandardScaler(Scaler):
     def __init__(self, mean: ArrayLike, std: ArrayLike) -> None:
         self.sub_ = np.array(mean)
         self.den_ = np.array(std)
+        return None
 
 
 class MinMaxScaler(Scaler):
@@ -146,6 +148,7 @@ class MinMaxScaler(Scaler):
     def __init__(self, min_: ArrayLike, max_: ArrayLike) -> None:
         self.sub_ = np.array(min_)
         self.den_ = np.array(max_) - np.array(min_)
+        return None
 
 
 class OneHotEncoder(InMemoryModel):
@@ -193,6 +196,7 @@ class OneHotEncoder(InMemoryModel):
         self.categories_ = copy.deepcopy(categories)
         self.column_naming_ = column_naming
         self.drop_first_ = drop_first
+        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -204,7 +208,7 @@ class OneHotEncoder(InMemoryModel):
         X_trans = []
         for i, x in enumerate(X):
             for j, c in enumerate(self.categories_[i]):
-                if j != 0 or not self.drop_first_:
+                if j != 0 or not (self.drop_first_):
                     if str(x) == str(c):
                         X_trans += [1]
                     else:
@@ -253,14 +257,14 @@ class OneHotEncoder(InMemoryModel):
         for i in range(len(X)):
             sql_tmp = []
             for j in range(len(self.categories_[i])):
-                if not self.drop_first_ or j > 0:
+                if not (self.drop_first_) or j > 0:
                     val = format_magic(self.categories_[i][j])
                     sql_tmp_feature = f"(CASE WHEN {X[i]} = {val} THEN 1 ELSE 0 END)"
                     X_i = str(X[i]).replace('"', "")
                     if self.column_naming_ == "indices":
                         sql_tmp_feature += f' AS "{X_i}_{j}"'
                     elif self.column_naming_ in ("values", "values_relaxed"):
-                        if not isinstance(self.categories_[i][j], NoneType):
+                        if not (isinstance(self.categories_[i][j], NoneType)):
                             categories_i_j = self.categories_[i][j]
                         else:
                             categories_i_j = "NULL"

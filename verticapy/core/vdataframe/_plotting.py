@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
+import datetime
 import math
 from typing import Callable, Literal, Optional, Union
 from collections.abc import Iterable
@@ -30,6 +32,7 @@ from verticapy._typing import (
     PythonNumber,
     PythonScalar,
     SQLColumns,
+    SQLExpression,
 )
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -39,7 +42,6 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting._utils import PlottingUtils
-from plotting.base import PlottingBase
 
 
 class vDFPlot(PlottingUtils):
@@ -473,9 +475,9 @@ class vDFPlot(PlottingUtils):
         vml = _get_mllib()
         columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns)
-        if not columns:
+        if not (columns):
             columns = self.numcol()
-        if not columns:
+        if not (columns):
             raise ValueError("No numerical columns found.")
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
         if not xlim:
@@ -1067,7 +1069,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         vml = _get_mllib()
-        if img and not bbox and len(columns) == 2:
+        if img and not (bbox) and len(columns) == 2:
             aggr = self.agg(columns=columns, func=["min", "max"])
             bbox = (
                 aggr.values["min"][0],
@@ -1830,7 +1832,7 @@ class vDCPlot:
             xlim=xlim_,
             store=False,
         )
-        if not by:
+        if not (by):
             try:
                 model.fit(self._parent, [self._alias])
                 return model.plot(chart=chart, **style_kwargs)
@@ -2086,13 +2088,13 @@ class vDCPlot:
         if check:
             column = self._parent._format_colnames(column)
             columns += [column]
-            if not "cmap" in kwargs:
+            if not ("cmap" in kwargs):
                 kwargs["cmap"] = PlottingBase().get_cmap(idx=0)
         else:
-            if not "color" in kwargs:
+            if not ("color" in kwargs):
                 kwargs["color"] = PlottingBase().get_colors(idx=0)
-        if not "legend" in kwargs:
+        if not ("legend" in kwargs):
             kwargs["legend"] = True
-        if not "figsize" in kwargs:
+        if not ("figsize" in kwargs):
             kwargs["figsize"] = (14, 10)
         return self._parent[columns].to_geopandas(self._alias).plot(*args, **kwargs)

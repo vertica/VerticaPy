@@ -15,14 +15,49 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import importlib
 from typing import Any, Callable, Literal, Optional
 
 from verticapy._typing import NoneType
 
+GEOPANDAS_IMPORT: bool
+try:
+    from geopandas import GeoDataFrame
+    from shapely import wkt
+
+    GEOPANDAS_IMPORT = True
+except ModuleNotFoundError:
+    GEOPANDAS_IMPORT = False
+
+GRAPHVIZ_IMPORT: bool
+try:
+    import graphviz
+
+    GRAPHVIZ_IMPORT = True
+except ModuleNotFoundError:
+    GRAPHVIZ_IMPORT = False
+
+ISNOTEBOOK: bool = False
+try:
+    import IPython
+
+    shell = get_ipython().__class__.__name__
+    if shell == "ZMQInteractiveShell":
+        ISNOTEBOOK = True  # Jupyter notebook or qtconsole
+except (ModuleNotFoundError, NameError):
+    pass
+
+DATEUTIL_IMPORT: bool
+try:
+    from dateutil.parser import parse
+
+    DATEUTIL_IMPORT = True
+except ModuleNotFoundError:
+    DATEUTIL_IMPORT = False
+
 from verticapy._config.validators import (
     bool_validator,
     in_validator,
+    optional_bool_validator,
     optional_positive_int_validator,
     str_validator,
     st_positive_int_validator,
@@ -30,8 +65,17 @@ from verticapy._config.validators import (
 from verticapy.errors import OptionError
 
 
-def get_import_success(module: str) -> bool:
-    return not isinstance(importlib.util.find_spec(module), NoneType)
+def _get_import_success(key: str) -> bool:
+    lookup_table = {
+        "dateutil": DATEUTIL_IMPORT,
+        "geopandas": GEOPANDAS_IMPORT,
+        "graphviz": GRAPHVIZ_IMPORT,
+        "jupyter": ISNOTEBOOK,
+    }
+    if key in lookup_table:
+        return lookup_table[key]
+    else:
+        return False
 
 
 class Option:
@@ -56,6 +100,7 @@ class Option:
         self.doc = doc
         self.validator = validator
         self.map_ = copy.deepcopy(map_)
+        return None
 
 
 _all_options: dict[str, Option] = {}
@@ -67,6 +112,7 @@ def get_option(key: str) -> Any:
 
 def register_option(op: Option) -> None:
     _all_options[op.key] = op
+    return None
 
 
 def set_option(key: str, value: Any = None) -> None:
@@ -153,7 +199,7 @@ def set_option(key: str, value: Any = None) -> None:
             op.val = op.defval
         else:
             op.val = value
-
+        return None
     else:
         raise OptionError(f"Option '{key}' does not exist.")
 

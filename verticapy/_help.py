@@ -14,20 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os
+
+import verticapy as vp
 import verticapy._config.config as conf
 from verticapy._utils._logo import verticapy_logo_html, verticapy_logo_str
-
-if conf.get_import_success("IPython"):
-    from IPython.display import display, Markdown
 
 
 def help_start() -> None:
     """
     VERTICAPY Interactive Help (FAQ).
     """
+    path = os.path.dirname(vp.__file__)
     img1 = verticapy_logo_html(size="10%")
     img2 = verticapy_logo_str()
-    if conf.get_import_success("IPython"):
+    if conf._get_import_success("jupyter"):
         message = img1
     else:
         message = img2
@@ -45,9 +46,9 @@ def help_start() -> None:
         "- <b>[Enter  6]</b> Write SQL queries in Jupyter\n "
         "- <b>[Enter -1]</b> Exit"
     )
-    if not conf.get_import_success("IPython"):
+    if not (conf._get_import_success("jupyter")):
         message = message.replace("<b>", "").replace("</b>", "")
-    if conf.get_import_success("IPython"):
+    if conf._get_import_success("jupyter"):
         display(Markdown(message))
     else:
         print(message)
@@ -86,11 +87,13 @@ def help_start() -> None:
     else:
         message = "Invalid choice.\nPlease enter a number between -1 and 6."
     if 0 <= response <= 6:
-        if not conf.get_import_success("IPython"):
+        if not (conf._get_import_success("jupyter")):
             message = f"Please go to {link}"
         else:
             message = f"Please go to <a href='{link}'>{link}</a>"
-    if conf.get_import_success("IPython"):
+    if conf._get_import_success("jupyter"):
         display(Markdown(message))
     else:
         print(message)
+
+    return None

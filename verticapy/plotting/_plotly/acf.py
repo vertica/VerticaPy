@@ -17,7 +17,8 @@ permissions and limitations under the License.
 from typing import Literal, Optional
 
 import numpy as np
-
+import plotly.graph_objects as go
+import plotly.express as px
 from plotly.graph_objs._figure import Figure
 
 from verticapy.plotting._plotly.base import PlotlyBase
@@ -72,6 +73,7 @@ class ACFPlot(PlotlyBase):
             "marker_size": 12,
             "hovertemplate": "ACF <br><b>lag</b>: %{x}<br><b>value</b>: %{y:0.3f}<br><extra></extra>",
         }
+        return None
 
     # Draw.
 

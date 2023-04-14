@@ -77,6 +77,7 @@ class PieChart(HighchartsBase):
         self.init_style_3d = {
             "chart": {"type": "pie", "options3d": {"enabled": True, "alpha": 45}}
         }
+        return None
 
     # Draw.
 
@@ -139,6 +140,7 @@ class NestedPieChart(HighchartsBase):
             self.init_style["plotOptions"]["pie"]["allowPointSelect"] = True
             self.init_style["plotOptions"]["pie"]["cursor"] = "pointer"
             self.init_style["plotOptions"]["pie"]["showInLegend"] = True
+        return None
 
     # Draw.
 

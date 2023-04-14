@@ -345,9 +345,9 @@ class XGBoost(Tree):
             .replace("++++", '\\"')
         )
         if path:
-            f = open(path, "w+", encoding="utf-8")
+            f = open(path, "w+")
             f.write(res)
-
+            return None
         else:
             return res
 
@@ -467,6 +467,7 @@ class RandomForestRegressor(RandomForest, Regressor):
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
+        return None
 
     # Attributes Methods.
 
@@ -486,7 +487,7 @@ class RandomForestRegressor(RandomForest, Regressor):
                 "value": tree[4],
             }
             for j in range(len(tree[5])):
-                if not tree[5][j] and isinstance(tree_d["threshold"][j], str):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             tree_d["value"] = [
                 float(val) if isinstance(val, str) else val for val in tree_d["value"]
@@ -494,6 +495,7 @@ class RandomForestRegressor(RandomForest, Regressor):
             model = mm.BinaryTreeRegressor(**tree_d)
             trees += [model]
         self.trees_ = trees
+        return None
 
     # I/O Methods.
 
@@ -630,6 +632,7 @@ class XGBRegressor(XGBoost, Regressor):
             "col_sample_by_node": col_sample_by_node,
         }
         self.parameters = params
+        return None
 
     # Attributes Methods.
 
@@ -658,7 +661,7 @@ class XGBRegressor(XGBoost, Regressor):
                 "value": tree[4],
             }
             for j in range(len(tree[5])):
-                if not tree[5][j] and isinstance(tree_d["threshold"][j], str):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             tree_d["value"] = [
                 float(val) if isinstance(val, str) else val for val in tree_d["value"]
@@ -666,6 +669,7 @@ class XGBRegressor(XGBoost, Regressor):
             model = mm.BinaryTreeRegressor(**tree_d)
             trees += [model]
         self.trees_ = trees
+        return None
 
     # I/O Methods.
 
@@ -793,6 +797,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
             "min_info_gain": min_info_gain,
             "nbins": nbins,
         }
+        return None
 
     # Attributes Methods.
 
@@ -819,10 +824,10 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
             }
             n_classes = len(self.classes_)
             for j in range(len(tree[5])):
-                if not tree[5][j] and isinstance(tree_d["threshold"][j], str):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             for j in range(len(tree_d["value"])):
-                if not isinstance(tree_d["value"][j], NoneType):
+                if not (isinstance(tree_d["value"][j], NoneType)):
                     prob = [0.0 for i in range(n_classes)]
                     for k, c in enumerate(self.classes_):
                         if str(c) == str(tree_d["value"][j]):
@@ -836,6 +841,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
             model = mm.BinaryTreeClassifier(**tree_d)
             trees += [model]
         self.trees_ = trees
+        return None
 
     # I/O Methods.
 
@@ -973,6 +979,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
             "col_sample_by_node": col_sample_by_node,
         }
         self.parameters = params
+        return None
 
     # Attributes Methods.
 
@@ -1028,10 +1035,10 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
                 "classes": self.classes_,
             }
             for j in range(len(tree[5])):
-                if not tree[5][j] and isinstance(tree_d["threshold"][j], str):
+                if not (tree[5][j]) and isinstance(tree_d["threshold"][j], str):
                     tree_d["threshold"][j] = float(tree_d["threshold"][j])
             for j in range(len(tree[6])):
-                if not isinstance(tree[6][j], NoneType):
+                if not (isinstance(tree[6][j], NoneType)):
                     all_classes_logodss = []
                     for c in self.classes_:
                         all_classes_logodss += [tree[6][j][str(c)]]
@@ -1039,6 +1046,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
             model = mm.BinaryTreeClassifier(**tree_d)
             trees += [model]
         self.trees_ = trees
+        return None
 
     # I/O Methods.
 
@@ -1134,6 +1142,7 @@ class IsolationForest(Clustering, Tree):
             "sample": sample,
             "col_sample_by_tree": col_sample_by_tree,
         }
+        return None
 
     # Attributes Methods.
 
@@ -1162,11 +1171,12 @@ class IsolationForest(Clustering, Tree):
                 "psy": self.psy_,
             }
             for idx in range(len(tree[5])):
-                if not tree[5][idx] and isinstance(tree_d["threshold"][idx], str):
+                if not (tree[5][idx]) and isinstance(tree_d["threshold"][idx], str):
                     tree_d["threshold"][idx] = float(tree_d["threshold"][idx])
             model = mm.BinaryTreeAnomaly(**tree_d)
             trees += [model]
         self.trees_ = trees
+        return None
 
     # I/O Methods.
 
@@ -1208,12 +1218,12 @@ class IsolationForest(Clustering, Tree):
         """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        if contamination and not return_score:
+        if contamination and not (return_score):
             assert 0 < contamination < 1, ValueError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
                 "'contamination' must be between 0.0 and 1.0, exclusive."
             )
-        elif not return_score:
+        elif not (return_score):
             assert 0 < cutoff < 1, ValueError(
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
@@ -1283,7 +1293,7 @@ class IsolationForest(Clustering, Tree):
         # Inititalization
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        if not name:
+        if not (name):
             name = gen_name([self._model_type, self.model_name])
 
         # In Place
@@ -1343,7 +1353,7 @@ class IsolationForest(Clustering, Tree):
         # Initialization
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        if not name:
+        if not (name):
             name = gen_name([self._model_type, self.model_name])
 
         # In Place

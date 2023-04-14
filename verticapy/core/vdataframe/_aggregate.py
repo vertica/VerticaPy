@@ -704,7 +704,7 @@ class vDFAgg:
 
         if method == "numerical":
 
-            if not columns:
+            if not (columns):
                 columns = self.numcol()
             else:
                 for column in columns:
@@ -781,7 +781,7 @@ class vDFAgg:
                             values[fun] += [self._get_catalog_value(column, fun)]
                 if col_to_compute:
                     cols_to_compute_str = [
-                        col if not self[col].isbool() else f"{col}::int"
+                        col if not (self[col].isbool()) else f"{col}::int"
                         for col in col_to_compute
                     ]
                     cols_to_compute_str = ", ".join(cols_to_compute_str)
@@ -861,7 +861,7 @@ class vDFAgg:
 
         elif method == "length":
 
-            if not columns:
+            if not (columns):
                 columns = self.get_columns()
             func = [
                 "dtype",
@@ -888,7 +888,7 @@ class vDFAgg:
 
         elif method == "range":
 
-            if not columns:
+            if not (columns):
                 columns = []
                 all_cols = self.get_columns()
                 for idx, column in enumerate(all_cols):
@@ -905,7 +905,7 @@ class vDFAgg:
         elif method == "all":
 
             datecols, numcol, catcol = [], [], []
-            if not columns:
+            if not (columns):
                 columns = self.get_columns()
             for elem in columns:
                 if self[elem].isnum():
@@ -1077,7 +1077,9 @@ class vDFAgg:
             object result of the grouping.
         """
         columns, expr = format_type(columns, expr, dtype=list)
-        assert not isinstance(rollup, list) or len(rollup) == len(columns), ValueError(
+        assert not (isinstance(rollup, list)) or len(rollup) == len(
+            columns
+        ), ValueError(
             "If parameter 'rollup' is of type list, it should have "
             "the same length as the 'columns' parameter."
         )
@@ -1092,7 +1094,7 @@ class vDFAgg:
                     rollup_expr += "("
                 elif isinstance(rollup[idx], bool) and rollup[idx]:
                     rollup_expr += "ROLLUP("
-                elif not isinstance(rollup[idx], bool):
+                elif not (isinstance(rollup[idx], bool)):
                     raise ValueError(
                         "When parameter 'rollup' is not a boolean, it "
                         "has to be a list of booleans."
@@ -1111,7 +1113,7 @@ class vDFAgg:
                 colname = self._format_colnames(elem)
                 if colname:
                     if (
-                        not isinstance(rollup, bool)
+                        not (isinstance(rollup, bool))
                         and isinstance(rollup[idx], bool)
                         and (rollup[idx])
                     ):
@@ -1121,7 +1123,7 @@ class vDFAgg:
                     columns_to_select += [colname]
                 else:
                     if (
-                        not isinstance(rollup, bool)
+                        not (isinstance(rollup, bool))
                         and isinstance(rollup[idx], bool)
                         and (rollup[idx])
                     ):
@@ -1145,7 +1147,7 @@ class vDFAgg:
         columns_str = ", ".join(
             [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
         )
-        if not rollup:
+        if not (rollup):
             rollup_expr_str = ", ".join(
                 [
                     str(i + 1)
@@ -1159,7 +1161,7 @@ class vDFAgg:
                 {columns_str} 
             FROM {self} 
             GROUP BY {rollup_expr_str}{having}"""
-        if not rollup:
+        if not (rollup):
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
         else:
             rollup_expr_str = rollup_expr
@@ -1820,7 +1822,7 @@ class vDCAgg:
             self.isnum(),
             self.isdate(),
         )
-        if (is_date) and method != "categorical":
+        if (is_date) and not (method == "categorical"):
             result = self.aggregate(["count", "min", "max"])
             index = result.values["index"]
             result = result.values[self._alias]
@@ -1875,7 +1877,7 @@ class vDCAgg:
             ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
-            or not is_numeric
+            or not (is_numeric)
             or (method == "categorical")
         ):
             query = f"""(SELECT 
@@ -2190,7 +2192,7 @@ class vDCAgg:
         if n == 1:
             pre_comp = self._parent._get_catalog_value(self._alias, "top")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
-                if not dropna and (not isinstance(pre_comp, NoneType)):
+                if not (dropna) and (not (isinstance(pre_comp, NoneType))):
                     return pre_comp
         assert n >= 1, ValueError("Parameter 'n' must be greater or equal to 1")
         where = f" WHERE {self} IS NOT NULL " if (dropna) else " "
@@ -2213,8 +2215,8 @@ class vDCAgg:
             sql_push_ext=self._parent._vars["sql_push_ext"],
             symbol=self._parent._vars["symbol"],
         )
-        top = None if not result else result[0][0]
-        if not dropna:
+        top = None if not (result) else result[0][0]
+        if not (dropna):
             n = "" if (n == 1) else str(int(n))
             if isinstance(top, decimal.Decimal):
                 top = float(top)

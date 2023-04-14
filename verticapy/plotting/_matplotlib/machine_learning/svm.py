@@ -68,6 +68,7 @@ class SVMClassifierPlot(MatplotlibBase):
             "alpha": 0.5,
             "color": "gray",
         }
+        return None
 
     # Draw.
 

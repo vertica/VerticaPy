@@ -59,6 +59,7 @@ class ROCCurve(HighchartsBase):
             "tooltip": {"headerFormat": "", "pointFormat": "[{point.x}, {point.y}]",},
             "colors": self.get_colors(),
         }
+        return None
 
     # Draw.
 
@@ -110,6 +111,7 @@ class CutoffCurve(HighchartsBase):
             "tooltip": {"crosshairs": True, "shared": True},
             "colors": self.get_colors(),
         }
+        return None
 
     # Draw.
 
@@ -155,6 +157,7 @@ class LiftChart(HighchartsBase):
         }
         self.init_style_y = {"zIndex": 1, "fillOpacity": 0.9}
         self.init_style_z = {"zIndex": 0, "fillOpacity": 0.9}
+        return None
 
     # Draw.
 

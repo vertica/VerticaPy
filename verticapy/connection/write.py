@@ -40,9 +40,11 @@ def change_auto_connection(name: str) -> None:
         confparser.add_section(gb_conn._vpy_auto_connection)
         confparser.set(gb_conn._vpy_auto_connection, "name", name)
         path = get_connection_file()
-        f = open(path, "w+", encoding="utf-8")
+        f = open(path, "w+")
         confparser.write(f)
         f.close()
+
+        return None
 
     else:
 
@@ -82,7 +84,7 @@ def delete_connection(name: str) -> bool:
             if name_auto == name:
                 confparser.remove_section(gb_conn._vpy_auto_connection)
         path = get_connection_file()
-        f = open(path, "w+", encoding="utf-8")
+        f = open(path, "w+")
         confparser.write(f)
         f.close()
 
@@ -157,8 +159,8 @@ def new_connection(
 
     if confparser.has_section(name):
 
-        if not overwrite:
-            raise ValueError(
+        if not (overwrite):
+            raise ParserError(
                 f"The section '{name}' already exists. You "
                 "can overwrite it by setting the parameter "
                 "'overwrite' to True."
@@ -168,13 +170,15 @@ def new_connection(
     confparser.add_section(name)
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
-    f = open(path, "w+", encoding="utf-8")
+    f = open(path, "w+")
     confparser.write(f)
     f.close()
     if auto:
         change_auto_connection(name)
 
     connect(name, path)
+
+    return None
 
 
 new_auto_connection = new_connection

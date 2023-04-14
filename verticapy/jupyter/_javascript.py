@@ -25,7 +25,6 @@ import numpy as np
 from verticapy._typing import ArrayLike, NoneType
 from verticapy._utils._logo import verticapy_logo_html
 from verticapy._utils._sql._cast import to_category
-from verticapy._utils._sql._format import format_type
 
 """
 Utils Functions.
@@ -195,7 +194,7 @@ def clean_data(data: ArrayLike) -> ArrayLike:
                 continue
             else:
                 val = data[i][j]
-                if isinstance(val, bool) is False and not isinstance(val, NoneType):
+                if isinstance(val, bool) is False and not (isinstance(val, NoneType)):
                     data[i][
                         j
                     ] = f"""
@@ -230,7 +229,7 @@ def datatables_repr(
     Returns the HTML/javascript representation of the table.
     """
     dtype = format_type(dtype, dtype=dict)
-    if not repeat_first_column:
+    if not (repeat_first_column):
         index_column = list(range(1 + offset, len(data_columns[0]) + offset))
         data_columns = [[""] + [i for i in index_column]] + data_columns
     columns = []

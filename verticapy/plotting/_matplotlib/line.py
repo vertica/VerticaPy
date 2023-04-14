@@ -55,6 +55,7 @@ class LinePlot(MatplotlibBase):
         self.init_style_fill = {
             "alpha": 0.2,
         }
+        return None
 
     def _get_style(self, idx: int = 0) -> dict[str, Any]:
         colors = self.get_colors()
@@ -80,7 +81,7 @@ class LinePlot(MatplotlibBase):
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
         )
         plot_fun = ax.step if (self.layout["kind"] == "step") else ax.plot
-        if not self.layout["has_category"]:
+        if not (self.layout["has_category"]):
             args = [self.data["x"], self.data["Y"][:, 0]]
             kwargs = self._update_dict(self.init_style, style_kwargs)
             plot_fun(*args, **kwargs)
@@ -142,6 +143,7 @@ class MultiLinePlot(MatplotlibBase):
         }
         if len(self.data["x"]) < 20:
             self.init_style["markerfacecolor"] = "white"
+        return None
 
     def _get_style(self, idx: int = 0,) -> dict[str, Any]:
         colors = self.get_colors()
@@ -210,7 +212,7 @@ class MultiLinePlot(MatplotlibBase):
                     "color": colors[i],
                     **style_kwargs,
                 }
-                if not isinstance(kwargs["color"], str):
+                if not (isinstance(kwargs["color"], str)):
                     kwargs["color"] = kwargs["color"][i % len(kwargs["color"])]
                 ax.fill_between(*args, **kwargs)
                 prec = points

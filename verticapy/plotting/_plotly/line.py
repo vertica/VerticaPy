@@ -44,6 +44,7 @@ class LinePlot(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_style = {"width": 800, "height": 450}
+        return None
 
     # Draw.
 
@@ -112,6 +113,7 @@ class MultiLinePlot(PlotlyBase):
     # Styling Methods.
     def _init_style(self) -> None:
         self.init_style = {"width": 800, "height": 450}
+        return None
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """

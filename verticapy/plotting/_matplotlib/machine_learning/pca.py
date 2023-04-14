@@ -52,6 +52,7 @@ class PCACirclePlot(MatplotlibBase):
         }
         self.init_style_plot = {"linestyle": "--", "color": "black"}
         self.layout["columns"] = self._clean_quotes(self.layout["columns"])
+        return None
 
     # Draw.
 
@@ -121,6 +122,7 @@ class PCAScreePlot(MatplotlibBase):
             "c": "r",
             "linestyle": "--",
         }
+        return None
 
     # Draw.
 
@@ -191,6 +193,7 @@ class PCAVarPlot(MatplotlibBase):
             "linestyle": "--",
             "color": "black",
         }
+        return None
 
     def _get_final_style(self, style_kwargs: dict) -> dict:
         style_kwargs_updated = copy.deepcopy(

@@ -93,7 +93,7 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                     option_name = "password"
                 elif option_name == "uid":
                     option_name = "user"
-                if not isinstance(os.getenv(option_val), NoneType):
+                if not (isinstance(os.getenv(option_val), NoneType)):
                     conn_info[option_name] = os.getenv(option_val)
                 else:
                     raise ValueError(
@@ -143,7 +143,7 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                 option_val = option_val.lower()
                 conn_info[option_name] = option_val in ("true", "t", "yes", "y")
 
-            elif option_name != "session_label" and not option_name.startswith("env"):
+            elif option_name != "session_label" and not (option_name.startswith("env")):
                 conn_info[option_name] = option_val
 
         return conn_info

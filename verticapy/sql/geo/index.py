@@ -116,7 +116,7 @@ def describe_index(
     TableSample
         geospatial indexes.
     """
-    if not name:
+    if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:
         query = f"""

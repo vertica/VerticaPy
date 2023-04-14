@@ -16,13 +16,15 @@ permissions and limitations under the License.
 """
 import itertools
 import warnings
-from typing import Literal, Optional
+from collections.abc import Iterable
+from typing import Literal, Optional, Union
 import numpy as np
 
 from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import (
+    ArrayLike,
     NoneType,
     PlottingObject,
     PythonNumber,
@@ -125,6 +127,7 @@ class KNeighborsRegressor(Regressor):
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -137,6 +140,7 @@ class KNeighborsRegressor(Regressor):
     def _compute_attributes(self) -> None:
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+        return None
 
     # I/O Methods.
 
@@ -167,9 +171,9 @@ class KNeighborsRegressor(Regressor):
         key_columns = format_type(key_columns, dtype=list)
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        if not test_relation:
+        if not (test_relation):
             test_relation = self.test_relation
-            if not key_columns:
+            if not (key_columns):
                 key_columns = [self.y]
         p = self.parameters["p"]
         X_str = ", ".join([f"x.{x}" for x in X])
@@ -233,7 +237,7 @@ class KNeighborsRegressor(Regressor):
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
-        if not name:
+        if not (name):
             name = f"{self._model_type}_" + "".join(
                 ch for ch in self.model_name if ch.isalnum()
             )
@@ -340,6 +344,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -352,7 +357,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     ) -> Optional[PythonNumber]:
         if isinstance(cutoff, NoneType):
             return 1.0 / len(self.classes_)
-        elif not 0 <= cutoff <= 1:
+        elif not (0 <= cutoff <= 1):
             ValueError(
                 "Incorrect parameter 'cutoff'.\nThe cutoff "
                 "must be between 0 and 1, inclusive."
@@ -369,6 +374,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         self.classes_ = self._get_classes()
         self.p_ = self.parameters["p"]
         self.n_neighbors_ = self.parameters["n_neighbors"]
+        return None
 
     # I/O Methods.
 
@@ -404,9 +410,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         key_columns = format_type(key_columns, dtype=list)
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        if not test_relation:
+        if not (test_relation):
             test_relation = self.test_relation
-            if not key_columns:
+            if not (key_columns):
                 key_columns = [self.y]
         p = self.parameters["p"]
         n_neighbors = self.parameters["n_neighbors"]
@@ -562,7 +568,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             key_columns_str = ", " + ", ".join(key_columns)
         else:
             key_columns_str = ""
-        if not name:
+        if not (name):
             name = gen_name([self._model_type, self.model_name])
 
         if self._is_binary_classifier():
@@ -623,7 +629,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             vdf = vDataFrame(vdf)
         X = quote_ident(X) if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
-        if not name:
+        if not (name):
             name = gen_name([self._model_type, self.model_name])
         if "key_columns" in kwargs:
             key_columns_arg = None
@@ -822,6 +828,7 @@ class KernelDensity(Regressor, Tree):
             self._verticapy_store = True
         else:
             self._verticapy_store = False
+        return None
 
     def drop(self) -> bool:
         """
@@ -847,7 +854,7 @@ class KernelDensity(Regressor, Tree):
         Returns the result of the KDE.
         """
         for col in columns:
-            if not vdf[col].isnum():
+            if not (vdf[col].isnum()):
                 raise TypeError(
                     f"Cannot compute KDE for non-numerical columns. {col} is not numerical."
                 )
@@ -959,13 +966,13 @@ class KernelDensity(Regressor, Tree):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(input_relation, vDataFrame):
-            if not X:
+            if not (X):
                 X = input_relation.numcol()
             vdf = input_relation
             input_relation = input_relation._genSQL()
         else:
             vdf = vDataFrame(input_relation)
-            if not X:
+            if not (X):
                 X = vdf.numcol()
         X = vdf._format_colnames(X)
         x, y = self._density_compute(
@@ -1020,6 +1027,7 @@ class KernelDensity(Regressor, Tree):
             self.X, self.input_relation = X, input_relation
             self.verticapy_x = x
             self.verticapy_y = y
+        return None
 
     # Plotting Methods.
 
@@ -1197,6 +1205,7 @@ class LocalOutlierFactor(VerticaModel):
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
+        return None
 
     def drop(self) -> bool:
         """
@@ -1224,6 +1233,7 @@ class LocalOutlierFactor(VerticaModel):
             method="fetchfirstelem",
             print_time_sql=False,
         )
+        return None
 
     # Model Fitting Method.
 
@@ -1262,11 +1272,11 @@ class LocalOutlierFactor(VerticaModel):
         self.key_columns = quote_ident(key_columns)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation._genSQL()
-            if not X:
+            if not (X):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
-            if not X:
+            if not (X):
                 X = vDataFrame(input_relation).numcol()
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
@@ -1277,7 +1287,7 @@ class LocalOutlierFactor(VerticaModel):
         tmp_lrd_table_name = gen_tmp_name(name="lrd")
         tmp_lof_table_name = gen_tmp_name(name="lof")
         try:
-            if not index:
+            if not (index):
                 index = "id"
                 main_table = tmp_main_table_name
                 schema = "v_temp_schema"
@@ -1404,6 +1414,7 @@ class LocalOutlierFactor(VerticaModel):
             drop(f"v_temp_schema.{tmp_distance_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lrd_table_name}", method="table")
             drop(f"v_temp_schema.{tmp_lof_table_name}", method="table")
+        return None
 
     # Prediction / Transformation Methods.
 

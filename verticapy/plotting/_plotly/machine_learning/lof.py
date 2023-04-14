@@ -90,6 +90,8 @@ class LOFPlot(PlotlyBase):
             "IOF: %{customdata:.2f} <extra></extra>",
         }
 
+        return None
+
     # Draw.
 
     def draw(

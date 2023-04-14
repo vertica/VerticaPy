@@ -23,14 +23,14 @@ import verticapy._config.config as conf
 
 from verticapy.plotting._matplotlib.base import MatplotlibBase
 
-if conf.get_import_success("IPython"):
+if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
 
 class AnimatedBase(MatplotlibBase):
     @staticmethod
     def _return_animation(a: animation.Animation) -> Union["HTML", animation.Animation]:
-        if conf.get_import_success("IPython"):
+        if conf._get_import_success("jupyter"):
             anim = a.to_jshtml()
             plt.close("all")
             return HTML(anim)

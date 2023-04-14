@@ -88,6 +88,7 @@ class LOFPlot(HighchartsBase):
             "zIndex": 0,
             "tooltip": tooltip,
         }
+        return None
 
     # Draw.
 

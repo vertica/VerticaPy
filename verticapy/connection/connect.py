@@ -26,6 +26,7 @@ from verticapy.connection.global_connection import (
 )
 from verticapy.connection.read import read_dsn
 from verticapy.connection.utils import get_confparser, get_connection_file
+from verticapy.errors import ConnectionError
 
 """
 Connecting to the DB.
@@ -49,6 +50,7 @@ def auto_connect() -> None:
             " using the 'set_connection' function."
         )
     connect(section)
+    return None
 
 
 read_auto_connect = auto_connect
@@ -69,9 +71,9 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     """
     gb_conn = get_global_connection()
     prev_conn = gb_conn._get_connection()
-    if not dsn:
+    if not (dsn):
         dsn = get_connection_file()
-    if prev_conn and not prev_conn.closed():
+    if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     try:
         gb_conn._set_connection(vertica_connection(section, dsn), section, dsn)
@@ -86,6 +88,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
                 "the 'available_connections' function."
             )
         raise (e)
+    return None
 
 
 def set_connection(conn: Connection) -> None:
@@ -104,6 +107,7 @@ def set_connection(conn: Connection) -> None:
         raise ConnectionError(f"The input connector is not working properly.\n{e}")
     gb_conn = get_global_connection()
     gb_conn._set_connection(conn)
+    return None
 
 
 """
@@ -117,8 +121,9 @@ def close_connection() -> None:
     """
     gb_conn = get_global_connection()
     connection = gb_conn._get_connection()
-    if connection and not connection.closed():
+    if connection and not (connection.closed()):
         connection.close()
+    return None
 
 
 """
@@ -148,7 +153,7 @@ def current_connection() -> GlobalConnection:
 
     # Look if the connection does not exist or is closed
 
-    if not conn or conn.closed():
+    if not (conn) or conn.closed():
 
         # Connection using the existing credentials
 

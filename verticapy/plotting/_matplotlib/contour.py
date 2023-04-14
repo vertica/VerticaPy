@@ -53,6 +53,7 @@ class ContourPlot(MatplotlibBase):
             ),
             "levels": 14,
         }
+        return None
 
     def _update_style(
         self, cf: bool = False, style_kwargs: Optional[dict] = None

@@ -63,6 +63,7 @@ class CandleStick(LinePlot):
             "colors": self.get_colors(),
         }
         self.init_style_column = {"yAxis": 1}
+        return None
 
     # Draw.
 

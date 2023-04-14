@@ -52,7 +52,7 @@ def load_dataset(
     except:
 
         name = quote_ident(name)
-        schema = "v_temp_schema" if not schema else quote_ident(schema)
+        schema = "v_temp_schema" if not (schema) else quote_ident(schema)
         create_table(table_name=name, dtype=dtype, schema=schema)
 
         try:

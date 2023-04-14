@@ -24,13 +24,14 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 import verticapy._config.config as conf
-from verticapy._typing import NoneType
+from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._sql._format import format_type
+from verticapy._utils._sql._sys import _executeSQL
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-if conf.get_import_success("IPython"):
+if conf._get_import_success("jupyter"):
     from IPython.display import HTML
 
 from verticapy.plotting._matplotlib.animated.base import AnimatedBase
@@ -70,6 +71,7 @@ class AnimatedBubblePlot(AnimatedBase):
             "ha": "center",
             "va": "center",
         }
+        return None
 
     def _get_final_color(self, style_kwargs: dict) -> list:
         if "color" in style_kwargs:
@@ -111,13 +113,13 @@ class AnimatedBubblePlot(AnimatedBase):
                 scatter_plot_init.set_sizes(np.array(scatter_values[i]["s"]))
             if "cmap" in kwargs:
                 scatter_plot_init.set_array(np.array(scatter_values[i]["c"]))
-            elif not isinstance(self.layout["catcol"], NoneType):
+            elif not (isinstance(self.layout["catcol"], NoneType)):
                 scatter_plot_init.set_color(np.array(scatter_values[i]["c"]))
             if "edgecolors" in self._update_dict(kwargs, style_kwargs):
                 scatter_plot_init.set_edgecolor(
                     self._update_dict(kwargs, style_kwargs)["edgecolors"]
                 )
-            if not isinstance(self.layout["catcol"], NoneType):
+            if not (isinstance(self.layout["catcol"], NoneType)):
                 for k in range(lim_labels):
                     text_plots[k].set_position(
                         (scatter_values[i]["x"][k], scatter_values[i]["y"][k])
@@ -126,12 +128,12 @@ class AnimatedBubblePlot(AnimatedBase):
             min_x, max_x = min(scatter_values[i]["x"]), max(scatter_values[i]["x"])
             min_y, max_y = min(scatter_values[i]["y"]), max(scatter_values[i]["y"])
             delta_x, delta_y = max_x - min_x, max_y - min_y
-            if not fixed_xy_lim:
+            if not (fixed_xy_lim):
                 ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
                 ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
-                if not date_in_title:
+                if not (date_in_title):
                     anim_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
-            if not date_in_title:
+            if not (date_in_title):
                 anim_text.set_text(date_f(scatter_values[i]["date"]))
             else:
                 ax.set_title(date_f(scatter_values[i]["date"]))
@@ -239,7 +241,7 @@ class AnimatedBubblePlot(AnimatedBase):
             **self._update_dict(kwargs, style_kwargs),
         )
         text_plots = []
-        if not isinstance(self.layout["catcol"], NoneType):
+        if not (isinstance(self.layout["catcol"], NoneType)):
             for idx in range(lim_labels):
                 text_plots += [
                     ax.text(
@@ -261,7 +263,7 @@ class AnimatedBubblePlot(AnimatedBase):
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
-            if not date_in_title:
+            if not (date_in_title):
                 anim_text = ax.text(
                     (bbox[0] + bbox[1]) / 2,
                     (bbox[2] + bbox[3]) / 2,
@@ -273,7 +275,7 @@ class AnimatedBubblePlot(AnimatedBase):
             delta_x, delta_y = max_x - min_x, max_y - min_y
             ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
             ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
-            if not date_in_title:
+            if not (date_in_title):
                 anim_text = ax.text(
                     (max_x + min_x) / 2,
                     (max_y + min_y) / 2,
@@ -283,12 +285,12 @@ class AnimatedBubblePlot(AnimatedBase):
                 )
         if img:
             bim = plt.imread(img)
-            if not bbox:
+            if not (bbox):
                 bbox = (min_x, max_x, min_y, max_y)
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(bim, extent=bbox)
-        elif not date_in_title:
+        elif not (date_in_title):
             anim_text = ax.text(
                 (max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2,
                 (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2,
@@ -298,7 +300,7 @@ class AnimatedBubblePlot(AnimatedBase):
             )
         if "cmap" in kwargs:
             fig.colorbar(sc, ax=ax).set_label(self.layout["by"])
-        elif not isinstance(self.layout["catcol"], NoneType):
+        elif not (isinstance(self.layout["catcol"], NoneType)):
             leg = ax.legend(
                 custom_lines,
                 all_cats,

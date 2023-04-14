@@ -40,6 +40,7 @@ class ROCCurve(MatplotlibBase):
         self.init_style = {
             "alpha": 0.1,
         }
+        return None
 
     # Draw.
 
@@ -106,6 +107,7 @@ class CutoffCurve(ROCCurve):
             "facecolor": "black",
             "alpha": 0.02,
         }
+        return None
 
     # Draw.
 
@@ -200,6 +202,7 @@ class LiftChart(ROCCurve):
         self.init_style = {
             "alpha": 0.2,
         }
+        return None
 
     # Draw.
 

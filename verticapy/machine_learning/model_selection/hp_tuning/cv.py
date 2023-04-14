@@ -404,9 +404,9 @@ def grid_search_cv(
         except Exception as e:
             if skip_error and skip_error != "no_print":
                 print(e)
-            elif not skip_error:
+            elif not (skip_error):
                 raise (e)
-    if not data:
+    if not (data):
         if training_score:
             return TableSample(
                 {
@@ -629,7 +629,7 @@ def bayesian_search_cv(
             f"\033[1m\033[4mStep 1 - Computing Random Models"
             " using Grid Search\033[0m\033[0m\n"
         )
-    if not param_grid:
+    if not (param_grid):
         param_grid = gen_params_grid(estimator, random_nbins, len(X), lmax, 0)
     param_gs = grid_search_cv(
         estimator,
@@ -653,7 +653,7 @@ def bayesian_search_cv(
         all_params = list(dict.fromkeys(params))
     else:
         all_params = ["C", "l1_ratio"]
-    if not bayesian_nbins:
+    if not (bayesian_nbins):
         bayesian_nbins = max(int(np.exp(np.log(nrows) / len(all_params))), 1)
     result = {}
     for elem in all_params:
@@ -893,7 +893,7 @@ def enet_search_cv(
         }
     )
     if estimator_type == "auto":
-        if not isinstance(input_relation, vDataFrame):
+        if not (isinstance(input_relation, vDataFrame)):
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation

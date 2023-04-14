@@ -57,6 +57,7 @@ class ElbowCurve(HighchartsBase):
             "tooltip": {"headerFormat": "", "pointFormat": "[{point.x}, {point.y}]",},
             "colors": self.get_colors(),
         }
+        return None
 
     # Draw.
 

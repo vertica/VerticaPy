@@ -135,12 +135,12 @@ class vDFRolling:
                 rule[idx] = "PRECEDING" if int(window[idx]) < 0 else "FOLLOWING"
                 window[idx] = abs(int(window[idx]))
         columns = format_type(columns, dtype=list)
-        if not name:
+        if not (name):
             name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             name = f"moving_{name}"
         columns, by = self._format_colnames(columns, by)
-        by = "" if not by else "PARTITION BY " + ", ".join(by)
-        if not order_by:
+        by = "" if not (by) else "PARTITION BY " + ", ".join(by)
+        if not (order_by):
             order_by = f" ORDER BY {columns[0]}"
         else:
             order_by = self._get_sort_syntax(order_by)

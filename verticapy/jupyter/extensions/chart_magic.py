@@ -27,7 +27,11 @@ import verticapy._config.config as conf
 from verticapy._typing import PlottingObject
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, replace_vars_in_query
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy.connection.connect import current_cursor
 
+
+from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.jupyter.extensions._utils import get_magic_options
@@ -152,8 +156,8 @@ def chartSQL(
                 kind = "barh"
             elif (
                 len(cols) == 3
-                and not vdf[cols[0]].isnum()
-                and not vdf[cols[1]].isnum()
+                and not (vdf[cols[0]].isnum())
+                and not (vdf[cols[1]].isnum())
                 and vdf[cols[2]].isnum()
             ):
                 kind = "barh2D"
@@ -220,7 +224,7 @@ def chart_magic(
     """
 
     # Initialization
-    query = "" if (not cell and (line)) else cell
+    query = "" if (not (cell) and (line)) else cell
 
     # Options
     options = {}
@@ -272,7 +276,7 @@ def chart_magic(
         raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
     if "-f" in options:
-        f = open(options["-f"], "r", encoding="utf-8")
+        f = open(options["-f"], "r")
         query = f.read()
         f.close()
 
@@ -306,3 +310,4 @@ def load_ipython_extension(ipython) -> None:
     ipython.register_magic_function(chart_magic, "line", "chart")
     ipython.register_magic_function(chart_magic, "cell", "plot")
     ipython.register_magic_function(chart_magic, "line", "plot")
+    return None

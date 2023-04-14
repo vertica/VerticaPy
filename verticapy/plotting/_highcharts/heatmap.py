@@ -95,6 +95,7 @@ class HeatMap(HighchartsBase):
                 "color": "#000000",
             },
         }
+        return None
 
     def _get_cmap_style(self, style_kwargs: dict) -> dict:
         if (
@@ -134,7 +135,7 @@ class HeatMap(HighchartsBase):
         else:
             d = {}
         for vm in ["vmin", "vmax"]:
-            if vm in self.layout and not isinstance(self.layout[vm], NoneType):
+            if vm in self.layout and not (isinstance(self.layout[vm], NoneType)):
                 d[vm[1:]] = self.layout[vm]
         return d
 

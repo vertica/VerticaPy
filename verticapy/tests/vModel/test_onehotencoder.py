@@ -190,7 +190,7 @@ class TestOneHotEncoder:
 
     def test_set_params(self, model):
         model.set_params({"ignore_null": False})
-        assert not model.get_params()["ignore_null"]
+        assert not (model.get_params()["ignore_null"])
 
     def test_model_from_vDF(self, titanic_vd):
         current_cursor().execute("DROP MODEL IF EXISTS ohe_vDF")

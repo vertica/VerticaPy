@@ -39,7 +39,7 @@ def create_conn_file():
         for elem in base_test.test_config:
             if elem != "log_level":
                 confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
-        f = open(path, "w+", encoding="utf-8")
+        f = open(path, "w+")
         confparser.write(f)
         f.close()
 

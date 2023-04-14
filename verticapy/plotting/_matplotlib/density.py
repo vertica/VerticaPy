@@ -45,6 +45,7 @@ class DensityPlot(MatplotlibBase):
         self.init_style_alpha = {
             "alpha": 0.7,
         }
+        return None
 
     # Draw.
 
@@ -79,6 +80,7 @@ class MultiDensityPlot(DensityPlot):
         self.init_style_alpha = {
             "alpha": 0.5,
         }
+        return None
 
     # Draw.
 
@@ -141,6 +143,7 @@ class DensityPlot2D(MatplotlibBase):
             "origin": "lower",
             "interpolation": "bilinear",
         }
+        return None
 
     # Draw.
 

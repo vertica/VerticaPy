@@ -74,6 +74,7 @@ class ChampionChallengerPlot(HighchartsBase):
             },
             "colors": self.get_colors(),
         }
+        return None
 
     # Draw.
 

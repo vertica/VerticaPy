@@ -19,7 +19,7 @@ from typing import Literal, TYPE_CHECKING
 import numpy as np
 
 from verticapy._utils._object import _get_vdf
-from verticapy._typing import ColorType
+from verticapy._typing import ColorType, NoneType
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -68,6 +68,7 @@ class PlottingBaseSQL:
             "aggregate_fun": None,
             "is_standard": False,
         }
+        return None
 
     # HISTOGRAMS
 
@@ -116,6 +117,7 @@ class PlottingBaseSQL:
         if len(numcols) == 1 and len(catcols) == 1:
             by = catcols[0]
         self._compute_statistics(vdf=vdf, columns=numcols, by=by)
+        return None
 
     # 2D AGG Graphics: BAR / PIE / HEATMAP / CONTOUR / HEXBIN ...
 
@@ -162,6 +164,7 @@ class PlottingBaseSQL:
             "mround": 10,
             "with_numbers": True,
         }
+        return None
 
     def _compute_aggregate_sql(self, query: str) -> None:
         tbs = TableSample().read_sql(query)
@@ -178,6 +181,7 @@ class PlottingBaseSQL:
             "aggregate_fun": np.sum,
             "is_standard": False,
         }
+        return None
 
     def _compute_contour_grid_sql(self, query: str) -> None:
         vdf = self._get_vdataframe_from_query(query=query)
@@ -185,6 +189,7 @@ class PlottingBaseSQL:
         self._compute_contour_grid(
             vdf=vdf, columns=columns[0:2], func=columns[2], func_name=None
         )
+        return None
 
     # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
 
@@ -225,6 +230,7 @@ class PlottingBaseSQL:
             "has_cmap": False,
             "has_size": has_size,
         }
+        return None
 
     def _compute_outliers_params_sql(
         self,
@@ -244,11 +250,13 @@ class PlottingBaseSQL:
             "inliers_color": inliers_color,
             "inliers_border_color": inliers_border_color,
         }
+        return None
 
     def _compute_scatter_matrix_sql(self, query: str) -> None:
         vdf = self._get_vdataframe_from_query(query=query)
         columns = vdf.numcol()
         self._compute_scatter_matrix(vdf=vdf, columns=columns)
+        return None
 
     # TIME SERIES: LINE / RANGE
 
@@ -283,6 +291,7 @@ class PlottingBaseSQL:
             "limit_over": -1,
             "kind": kind,
         }
+        return None
 
     def _compute_range_sql(self, query: str,) -> None:
         tbs = TableSample().read_sql(query)
@@ -300,6 +309,7 @@ class PlottingBaseSQL:
             "order_by": order_by,
             "order_by_cat": tbs.category(column=order_by),
         }
+        return None
 
     def _compute_candle_aggregate_sql(self, query: str) -> None:
         tbs = TableSample().read_sql(query)
@@ -318,6 +328,7 @@ class PlottingBaseSQL:
             "aggregate_fun": None,
             "is_standard": False,
         }
+        return None
 
     # ND AGG Graphics: BAR / PIE / DRILLDOWNS ...
 
@@ -350,3 +361,4 @@ class PlottingBaseSQL:
             "aggregate_fun": None,
             "is_standard": False,
         }
+        return None

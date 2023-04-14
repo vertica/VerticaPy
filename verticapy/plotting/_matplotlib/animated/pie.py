@@ -45,6 +45,7 @@ class AnimatedPieChart(AnimatedBarChart):
             "textprops": {"fontsize": 10, "fontweight": "bold"},
             "autopct": "%1.1f%%",
         }
+        return None
 
     # Draw.
 

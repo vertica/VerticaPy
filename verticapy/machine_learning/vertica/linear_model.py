@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 import numpy as np
 
 from verticapy._typing import PlottingObject, PythonNumber
@@ -57,6 +57,7 @@ class LinearModel:
         details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
+        return None
 
     # Features Importance Methods.
 
@@ -94,7 +95,7 @@ class LinearModel:
         """
         Returns the features' importance.
         """
-        if not hasattr(self, "features_importance_"):
+        if not (hasattr(self, "features_importance_")):
             self._compute_features_importance()
         return copy.deepcopy(self.features_importance_)
 
@@ -199,6 +200,7 @@ class LinearModelClassifier(LinearModel):
         details = self.get_vertica_attributes("details")
         self.coef_ = np.array(details["coefficient"][1:])
         self.intercept_ = details["coefficient"][0]
+        return None
 
     # I/O Methods.
 
@@ -327,7 +329,7 @@ class ElasticNet(Regressor, LinearModel):
         fit_intercept: bool = True,
     ) -> None:
         self.model_name = name
-        if vertica_version()[0] < 12 and not fit_intercept:
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
                 "Vertica versions greater or equal to 12."
@@ -341,6 +343,7 @@ class ElasticNet(Regressor, LinearModel):
             "l1_ratio": l1_ratio,
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class Lasso(Regressor, LinearModel):
@@ -414,7 +417,7 @@ class Lasso(Regressor, LinearModel):
         fit_intercept: bool = True,
     ) -> None:
         self.model_name = name
-        if vertica_version()[0] < 12 and not fit_intercept:
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
                 "Vertica versions greater or equal to 12."
@@ -427,6 +430,7 @@ class Lasso(Regressor, LinearModel):
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class LinearRegression(Regressor, LinearModel):
@@ -493,7 +497,7 @@ class LinearRegression(Regressor, LinearModel):
         fit_intercept: bool = True,
     ) -> None:
         self.model_name = name
-        if vertica_version()[0] < 12 and not fit_intercept:
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
                 "Vertica versions greater or equal to 12."
@@ -505,6 +509,7 @@ class LinearRegression(Regressor, LinearModel):
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 class Ridge(Regressor, LinearModel):
@@ -577,7 +582,7 @@ class Ridge(Regressor, LinearModel):
         fit_intercept: bool = True,
     ) -> None:
         self.model_name = name
-        if vertica_version()[0] < 12 and not fit_intercept:
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
                 "Vertica versions greater or equal to 12."
@@ -590,6 +595,7 @@ class Ridge(Regressor, LinearModel):
             "solver": str(solver).lower(),
             "fit_intercept": fit_intercept,
         }
+        return None
 
 
 """
@@ -679,7 +685,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         penalty = str(penalty).lower()
         solver = str(solver).lower()
         self.model_name = name
-        if vertica_version()[0] < 12 and not fit_intercept:
+        if vertica_version()[0] < 12 and not (fit_intercept):
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
                 "Vertica versions greater or equal to 12."
@@ -702,3 +708,4 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
                 )
         elif str(penalty).lower() in ("l1", "l2"):
             del self.parameters["l1_ratio"]
+        return None

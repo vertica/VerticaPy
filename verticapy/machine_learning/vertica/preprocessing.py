@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from abc import abstractmethod
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 import numpy as np
 
 from vertica_python.errors import QueryError
@@ -153,17 +153,17 @@ class Preprocessing(Unsupervised):
         """
         X = format_type(X, dtype=list)
         X = quote_ident(X)
-        if not X:
+        if not (X):
             X = self.X
-        if self._model_type in ("PCA", "SVD", "MCA") and not inverse:
+        if self._model_type in ("PCA", "SVD", "MCA") and not (inverse):
             if self._model_type in ("PCA", "SVD"):
                 n = self.parameters["n_components"]
-                if not n:
+                if not (n):
                     n = len(self.X)
             else:
                 n = len(self.X)
             return [f"col{i}" for i in range(1, n + 1)]
-        elif self._model_type == "OneHotEncoder" and not inverse:
+        elif self._model_type == "OneHotEncoder" and not (inverse):
             names = []
             for column in self.X:
                 k = 0
@@ -171,8 +171,8 @@ class Preprocessing(Unsupervised):
                     if quote_ident(self.cat_["category_name"][i]) == quote_ident(
                         column
                     ):
-                        if (k != 0 or not self.parameters["drop_first"]) and (
-                            not self.parameters["ignore_null"]
+                        if (k != 0 or not (self.parameters["drop_first"])) and (
+                            not (self.parameters["ignore_null"])
                             or not (
                                 isinstance(self.cat_["category_level"][i], NoneType)
                             )
@@ -343,7 +343,7 @@ class Preprocessing(Unsupervised):
         if isinstance(X, NoneType):
             X = self.X
         X = format_type(X, dtype=list)
-        if not vdf:
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -381,9 +381,9 @@ class Preprocessing(Unsupervised):
             raise AttributeError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
-        if not vdf:
+        if not (vdf):
             vdf = self.input_relation
-        if not X:
+        if not (X):
             X = self._get_names()
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -488,6 +488,7 @@ class CountVectorizer(VerticaModel):
             "ignore_special": ignore_special,
             "max_text_size": max_text_size,
         }
+        return None
 
     def drop(self) -> bool:
         """
@@ -503,6 +504,7 @@ class CountVectorizer(VerticaModel):
         """
         self.stop_words_ = self._compute_stop_words()
         self.vocabulary_ = self._compute_vocabulary()
+        return None
 
     def _compute_stop_words(self) -> np.ndarray:
         """
@@ -601,7 +603,7 @@ class CountVectorizer(VerticaModel):
                 ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;""",
             title="Computing the CountVectorizer [Step 0].",
         )
-        if not self.parameters["lowercase"]:
+        if not (self.parameters["lowercase"]):
             text = " || ".join(self.X)
         else:
             text = f"LOWER({' || '.join(self.X)})"
@@ -622,6 +624,7 @@ class CountVectorizer(VerticaModel):
             title="Computing the CountVectorizer [Step 2].",
         )
         self._compute_attributes()
+        return None
 
     # Prediction / Transformation Methods.
 
@@ -704,6 +707,7 @@ class Scaler(Preprocessing):
     ) -> None:
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
+        return None
 
     # Attributes Methods.
 
@@ -721,6 +725,7 @@ class Scaler(Preprocessing):
         else:
             self.mean_ = values[:, 0]
             self.std_ = values[:, 1]
+        return None
 
     # I/O Methods.
 
@@ -746,6 +751,7 @@ class StandardScaler(Scaler):
 
     def __init__(self, name: str) -> None:
         super().__init__(name, "zscore")
+        return None
 
 
 class RobustScaler(Scaler):
@@ -757,6 +763,7 @@ class RobustScaler(Scaler):
 
     def __init__(self, name: str) -> None:
         super().__init__(name, "robust_zscore")
+        return None
 
 
 class MinMaxScaler(Scaler):
@@ -768,6 +775,7 @@ class MinMaxScaler(Scaler):
 
     def __init__(self, name: str) -> None:
         super().__init__(name, "minmax")
+        return None
 
 
 """
@@ -871,6 +879,7 @@ class OneHotEncoder(Preprocessing):
             "column_naming": str(column_naming).lower(),
             "null_column_name": null_column_name,
         }
+        return None
 
     # Attributes Methods.
 
@@ -936,6 +945,7 @@ class OneHotEncoder(Preprocessing):
         self.categories_ = categories
         self.column_naming_ = self.parameters["column_naming"]
         self.drop_first_ = self.parameters["drop_first"]
+        return None
 
     # I/O Methods.
 

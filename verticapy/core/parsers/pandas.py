@@ -94,14 +94,14 @@ def read_pandas(
         vDataFrame of the new relation.
     """
     dtype = format_type(dtype, dtype=dict)
-    if not schema:
+    if not (schema):
         schema = conf.get_option("temp_schema")
-    if insert and not name:
+    if insert and not (name):
         raise ValueError(
             "Parameter 'name' can not be empty when "
             "parameter 'insert' is set to True."
         )
-    if not name:
+    if not (name):
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
@@ -140,10 +140,10 @@ def read_pandas(
         if len(str_cols) > 0 or len(null_columns) > 0:
             # to_csv is adding an undesired special character
             # we remove it
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, "r") as f:
                 filedata = f.read()
             filedata = filedata.replace(",", ",").replace('""', "")
-            with open(path, "w", encoding="utf-8") as f:
+            with open(path, "w") as f:
                 f.write(filedata)
         if insert:
             input_relation = format_schema_table(schema, name)

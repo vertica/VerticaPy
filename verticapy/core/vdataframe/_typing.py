@@ -20,7 +20,7 @@ from verticapy._typing import SQLColumns
 from verticapy._utils._parsers import guess_sep
 from verticapy._utils._sql._cast import to_sql_dtype, to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import clean_query
+from verticapy._utils._sql._format import clean_query, format_type
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
@@ -91,7 +91,7 @@ class vDFTyping:
         """
         columns = []
         for column in self.get_columns():
-            if (self[column].category() == "int") and not self[column].isbool():
+            if (self[column].category() == "int") and not (self[column].isbool()):
                 is_cat = _executeSQL(
                     query=f"""
                         SELECT 

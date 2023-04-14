@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 
-from typing import Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns, SQLRelation
@@ -91,23 +91,24 @@ class Pipeline:
                     "The steps of the Pipeline must be composed of 2 elements "
                     f"(name, transform). Found {len(s)}."
                 )
-            elif not isinstance(s[0], str):
+            elif not (isinstance(s[0], str)):
                 raise ValueError(
                     "The steps 'name' of the Pipeline must be of "
                     f"type str. Found {type(s[0])}."
                 )
             elif idx < len(steps) - 1 and (
-                not hasattr(s[1], "transform") or not hasattr(s[1], "fit")
+                not (hasattr(s[1], "transform")) or not (hasattr(s[1], "fit"))
             ):
                 raise AttributeError(
                     "The estimators of the Pipeline must have a "
                     "'transform' and a 'fit' method."
                 )
-            elif not hasattr(s[1], "fit"):
+            elif not (hasattr(s[1], "fit")):
                 raise ValueError(
                     "The last estimator of the Pipeline must have a " "'fit' method."
                 )
             self.steps += [s]
+        return None
 
     def __getitem__(self, index) -> VerticaModel:
         if isinstance(index, slice):
@@ -160,6 +161,7 @@ class Pipeline:
             for step in self.steps:
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])
+        return None
 
     # Model Fitting Method.
 
@@ -212,6 +214,7 @@ class Pipeline:
             self.y = self.steps[-1][1].y
         if hasattr(self.steps[-1][1], "test_relation"):
             self.test_relation = self.steps[-1][1].test_relation
+        return None
 
     # Model Evaluation Methods.
 
@@ -284,11 +287,11 @@ class Pipeline:
             object result of the model transformation.
         """
         X = format_type(X, dtype=list)
-        if not hasattr(self.steps[-1][1], "predict"):
+        if not (hasattr(self.steps[-1][1], "predict")):
             raise ModelError(
                 "The last estimator of the Pipeline has no 'predict' method."
             )
-        if not vdf:
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -331,11 +334,11 @@ class Pipeline:
             object result of the model transformation.
         """
         X = format_type(X, dtype=list)
-        if not hasattr(self.steps[-1][1], "transform"):
+        if not (hasattr(self.steps[-1][1], "transform")):
             raise ModelError(
                 "The last estimator of the Pipeline has no 'transform' method."
             )
-        if not vdf:
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
@@ -372,12 +375,12 @@ class Pipeline:
         """
         X = format_type(X, dtype=list)
         for idx in range(len(self.steps)):
-            if not hasattr(self.steps[idx][1], "inverse_transform"):
+            if not (hasattr(self.steps[idx][1], "inverse_transform")):
                 raise ModelError(
                     f"The estimator [{idx}] of the Pipeline has "
                     "no 'inverse_transform' method."
                 )
-        if not vdf:
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)

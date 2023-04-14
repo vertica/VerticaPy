@@ -65,6 +65,7 @@ class SpiderChart(HighchartsBase):
                 "y": 70,
                 "layout": "vertical",
             }
+        return None
 
     # Draw.
 

@@ -22,6 +22,8 @@ import verticapy._config.config as conf
 from verticapy._typing import ArrayLike, SQLColumns, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 
+from verticapy.core.vdataframe.base import vDataFrame
+
 from verticapy.machine_learning.model_selection import best_k
 from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
@@ -147,6 +149,7 @@ class AutoClustering(VerticaModel):
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
         }
+        return None
 
     # Model Fitting Method.
 
@@ -175,7 +178,7 @@ class AutoClustering(VerticaModel):
             self.preprocess_ = model_preprocess
         else:
             self.preprocess_ = None
-        if not self.parameters["n_cluster"]:
+        if not (self.parameters["n_cluster"]):
             if self.parameters["print_info"]:
                 print(
                     f"\033[1m\033[4mFinding a suitable number of clusters\033[0m\033[0m\n"
@@ -217,3 +220,4 @@ class AutoClustering(VerticaModel):
                     tol=self.parameters["tol"],
                 )
             self.model_.fit(input_relation, X=X)
+        return None

@@ -40,7 +40,7 @@ from verticapy.core.tablesample.base import TableSample
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
-if conf.get_import_success("geopandas"):
+if conf._get_import_success("geopandas"):
     from geopandas import GeoDataFrame
     from shapely import wkt
 
@@ -151,14 +151,14 @@ class vDFInOut:
         )
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
-        if (n_files != 1) and not order_by:
+        if (n_files != 1) and not (order_by):
             raise ValueError(
                 "If you want to store the vDataFrame in many CSV files, "
                 "you have to sort your data by using at least one column. "
                 "If the column hasn't unique values, the final result can "
                 "not be guaranteed."
             )
-        columns = self.get_columns() if not usecols else quote_ident(usecols)
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         for col in columns:
             if self[col].category() in ("vmap", "complex"):
                 raise TypeError(
@@ -173,7 +173,7 @@ class vDFInOut:
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
         order_by = self._get_sort_syntax(order_by)
-        if not order_by:
+        if not (order_by):
             order_by = self._get_last_order_by()
         if n_files > 1 and path:
             os.makedirs(path)
@@ -220,20 +220,21 @@ class vDFInOut:
             current_nb_rows_written += limit
             file_id += 1
             if n_files == 1 and path:
-                file = open(path, "w+", encoding="utf-8")
+                file = open(path, "w+")
                 file.write(csv_file)
                 file.close()
             elif path:
-                file = open(f"{path}/{file_id}.csv", "w+", encoding="utf-8")
+                file = open(f"{path}/{file_id}.csv", "w+")
                 file.write(csv_file)
                 file.close()
             else:
                 csv_files += [csv_file]
-        if not path:
+        if not (path):
             if n_files == 1:
                 return csv_files[0]
             else:
                 return csv_files
+        return None
 
     @save_verticapy_logs
     def to_db(
@@ -298,11 +299,11 @@ class vDFInOut:
         elif relation_type == "local":
             relation_type += " temporary table"
         isflex = self._vars["isflex"]
-        if not usecols:
+        if not (usecols):
             usecols = self.get_columns()
-        if not usecols and not isflex:
+        if not (usecols) and not (isflex):
             select = "*"
-        elif usecols and not isflex:
+        elif usecols and not (isflex):
             select = ", ".join(quote_ident(usecols))
         else:
             select = []
@@ -317,12 +318,12 @@ class vDFInOut:
         insert_usecols = ", ".join(quote_ident(usecols))
         random_func = _current_random(nb_split)
         nb_split = f", {random_func} AS _verticapy_split_" if (nb_split > 0) else ""
-        if isinstance(db_filter, Iterable) and not isinstance(db_filter, str):
+        if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join([f"({elem})" for elem in db_filter])
         db_filter = f" WHERE {db_filter}" if (db_filter) else ""
         if relation_type == "insert":
             insert_usecols_str = (
-                f" ({insert_usecols})" if not nb_split and select != "*" else ""
+                f" ({insert_usecols})" if not (nb_split) and select != "*" else ""
             )
             query = f"""
                 INSERT INTO {name}{insert_usecols_str} 
@@ -390,7 +391,7 @@ class vDFInOut:
             The geopandas.GeoDataFrame of the current vDataFrame 
             relation.
         """
-        if not conf.get_import_success("geopandas"):
+        if not (conf._get_import_success("geopandas")):
             raise ImportError(
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "
@@ -458,14 +459,14 @@ class vDFInOut:
         order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
             raise ValueError("Parameter 'n_files' must be greater or equal to 1.")
-        if (n_files != 1) and not order_by:
+        if (n_files != 1) and not (order_by):
             raise ValueError(
                 "If you want to store the vDataFrame in many JSON files, you "
                 "have to sort your data by using at least one column. If "
                 "the column hasn't unique values, the final result can not "
                 "be guaranteed."
             )
-        columns = self.get_columns() if not usecols else quote_ident(usecols)
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         transformations, is_complex_vmap = [], []
         for col in columns:
             if self[col].category() == "complex":
@@ -481,11 +482,11 @@ class vDFInOut:
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
         order_by = self._get_sort_syntax(order_by)
-        if not order_by:
+        if not (order_by):
             order_by = self._get_last_order_by()
         if n_files > 1 and path:
             os.makedirs(path)
-        if not path:
+        if not (path):
             json_files = []
         while current_nb_rows_written < total:
             json_file = "[\n"
@@ -510,23 +511,23 @@ class vDFInOut:
                         isinstance(item, (str,)) and is_complex_vmap[i]
                     ):
                         tmp_row += [f"{quote_ident(columns[i])}: {item}"]
-                    elif not isinstance(item, NoneType):
+                    elif not (isinstance(item, NoneType)):
                         tmp_row += [f'{quote_ident(columns[i])}: "{item}"']
                 json_file += "{" + ", ".join(tmp_row) + "},\n"
             current_nb_rows_written += limit
             file_id += 1
             json_file = json_file[0:-2] + "\n]"
             if n_files == 1 and path:
-                file = open(path, "w+", encoding="utf-8")
+                file = open(path, "w+")
                 file.write(json_file)
                 file.close()
             elif path:
-                file = open(f"{path}/{file_id}.json", "w+", encoding="utf-8")
+                file = open(f"{path}/{file_id}.json", "w+")
                 file.write(json_file)
                 file.close()
             else:
                 json_files += [json_file]
-        if not path:
+        if not (path):
             if n_files == 1:
                 return json_files[0]
             else:
@@ -737,7 +738,7 @@ class vDFInOut:
         vDataFrame
             self
         """
-        pickle.dump(self, open(name, "wb", encoding="utf-8"))
+        pickle.dump(self, open(name, "wb"))
         return self
 
     @save_verticapy_logs
@@ -793,7 +794,7 @@ class vDFInOut:
                 STV_SetExportShapefileDirectory(
                 USING PARAMETERS path = '{path}');"""
         _executeSQL(query=query, title="Setting SHP Export directory.")
-        columns = self.get_columns() if not usecols else quote_ident(usecols)
+        columns = self.get_columns() if not (usecols) else quote_ident(usecols)
         columns = ", ".join(columns)
         query = f"""
             SELECT 
