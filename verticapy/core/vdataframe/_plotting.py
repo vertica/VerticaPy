@@ -39,7 +39,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting._utils import PlottingUtils
-from plotting.base import PlottingBase
+from verticapy.plotting.base import PlottingBase
 
 
 class vDFPlot(PlottingUtils):
