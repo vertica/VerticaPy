@@ -737,7 +737,7 @@ class vDFInOut:
         vDataFrame
             self
         """
-        pickle.dump(self, open(name, "wb", encoding="utf-8"))
+        pickle.dump(self, open(name, "wb"))
         return self
 
     @save_verticapy_logs

@@ -460,7 +460,7 @@ class vDCFill:
                 " must be a list of at least one element to use to order the data"
             )
             desc = "" if (method in ("ffill", "pad")) else " DESC"
-            partition_by = f"PARTITION BY {', '.join(by)}" if (by) else ""
+            partition_by = f"PARTITION BY {', '.join(by)}" if by else ""
             order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
             new_column = f"""
                 COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) 

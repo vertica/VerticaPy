@@ -204,7 +204,7 @@ def adfuller(
     relation_name = gen_tmp_name(
         schema=conf.get_option("temp_schema"), name="linear_reg_view"
     )
-    by_str = f"PARTITION BY {', '.join(by)}" if (by) else ""
+    by_str = f"PARTITION BY {', '.join(by)}" if by else ""
     if vdf[ts].isdate():
         ts_str = f"TIMESTAMPDIFF(SECOND, {ts}, MIN({ts}) OVER ())"
     else:
@@ -501,8 +501,8 @@ def durbin_watson(
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
-    by_str = f"PARTITION BY {', '.join(by)} " if (by) else ""
-    by_select = (", " + ", ".join(by)) if (by) else ""
+    by_str = f"PARTITION BY {', '.join(by)} " if by else ""
+    by_select = (", " + ", ".join(by)) if by else ""
     query = f"""
         SELECT 
             /*+LABEL('statistical_tests.durbin_watson')*/ 
@@ -633,7 +633,7 @@ def het_arch(
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
     eps, ts, by = vdf._format_colnames(eps, ts, by)
-    by_str = f"PARTITION BY {', '.join(by)}" if (by) else ""
+    by_str = f"PARTITION BY {', '.join(by)}" if by else ""
     X = []
     X_names = []
     for i in range(0, p + 1):

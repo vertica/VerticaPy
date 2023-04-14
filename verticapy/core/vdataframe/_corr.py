@@ -1348,7 +1348,7 @@ class vDFCorr:
             )._genSQL()
         if isinstance(p, (int, float)):
             p = range(1, p + 1)
-        by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+        by = f"PARTITION BY {', '.join(by)} " if by else ""
         columns = [
             f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
             for i in p
@@ -1516,7 +1516,7 @@ class vDFCorr:
                 table = self.interpolate(
                     ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
                 )._genSQL()
-            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+            by = f"PARTITION BY {', '.join(by)} " if by else ""
             columns = [
                 f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
                 for i in range(1, p + 1)

@@ -184,13 +184,13 @@ class vDFMath:
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self._format_colnames(columns, by)
-        by_name = ["by"] + by if (by) else []
+        by_name = ["by"] + by if by else []
         by_order = ["order_by"] + list(order_by) if (order_by) else []
         if not name:
             name = gen_name([func] + columns + by_name + by_order)
         func = func.lower()
         by = ", ".join(by)
-        by = f"PARTITION BY {by}" if (by) else ""
+        by = f"PARTITION BY {by}" if by else ""
         order_by = self._get_sort_syntax(order_by)
         func = verticapy_agg_name(func.lower(), method="vertica")
         if func in (
@@ -381,7 +381,7 @@ class vDFMath:
                     "The parameter 'columns' must be empty when using analytic"
                     f" method '{func}'"
                 )
-            if (by) and (order_by):
+            if by and (order_by):
                 order_by = f" {order_by}"
             if func in ("lead", "lag"):
                 info_param = f", {offset}"

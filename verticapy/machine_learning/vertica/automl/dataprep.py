@@ -222,7 +222,7 @@ class AutoDataPrep(VerticaModel):
             self._is_already_stored(raise_error=True)
         current_print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
-        if (by) and not ts:
+        if by and not ts:
             raise ValueError("Parameter 'by' must be empty if 'ts' is not defined.")
         if isinstance(input_relation, str):
             vdf = vDataFrame(input_relation)
