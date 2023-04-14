@@ -44,6 +44,7 @@ from verticapy.machine_learning.model_selection.hp_tuning.param_gen import (
 from verticapy.machine_learning.model_selection.variables_selection import stepwise
 from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
+from verticapy.machine_learning.vertica.cluster import NearestCentroid
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
@@ -61,7 +62,6 @@ from verticapy.machine_learning.vertica.linear_model import (
 from verticapy.machine_learning.vertica.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
-    NearestCentroid,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
