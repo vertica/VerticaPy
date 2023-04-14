@@ -14,8 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
-
 from verticapy.connection.global_connection import get_global_connection
 
 
@@ -43,4 +41,3 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
     """
     gb_conn = get_global_connection()
     gb_conn._set_external_connections(symbol, cid, rowset)
-    return None

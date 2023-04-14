@@ -116,7 +116,7 @@ class Test_hchart:
             "SELECT date, number, state FROM amazon;",
         )
         try:
-            file = open("verticapy_test_hchart.html", "r")
+            file = open("verticapy_test_hchart.html", "r", encoding="utf-8")
             result = file.read()
             assert "<!DOCTYPE html>" in result
         except:
@@ -131,7 +131,7 @@ class Test_hchart:
             "  -o   verticapy_test_hchart", "SELECT date, number, state FROM amazon;",
         )
         try:
-            file = open("verticapy_test_hchart.html", "r")
+            file = open("verticapy_test_hchart.html", "r", encoding="utf-8")
             result = file.read()
             assert "<!DOCTYPE html>" in result
         except:

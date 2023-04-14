@@ -49,7 +49,6 @@ class ElbowCurve(PlotlyBase):
             "width": 650,
             "height": 650,
         }
-        return None
 
     # Draw.
 

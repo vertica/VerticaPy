@@ -50,14 +50,13 @@ class RegressionTreePlot(MatplotlibBase):
             "s": 50,
             "edgecolors": "black",
         }
-        return None
 
     @staticmethod
     def _get_final_color(style_kwargs: dict) -> str:
         color = "black"
         if "color" in style_kwargs:
             if (
-                not (isinstance(style_kwargs["color"], str))
+                not isinstance(style_kwargs["color"], str)
                 and len(style_kwargs["color"]) > 1
             ):
                 color = style_kwargs["color"][1]

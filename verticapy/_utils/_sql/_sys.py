@@ -60,7 +60,7 @@ def _executeSQL(
     if data:
         cursor.executemany(query, data)
     elif method == "copy":
-        with open(path, "r") as fs:
+        with open(path, "r", encoding="utf-8") as fs:
             cursor.copy(query, fs)
     else:
         cursor.execute(query)

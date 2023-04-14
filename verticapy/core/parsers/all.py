@@ -30,7 +30,10 @@ from verticapy._utils._sql._vertica_version import check_minimum_version
 from verticapy.errors import ExtensionError
 
 from verticapy.core.parsers._utils import extract_col_dt_from_query, extract_compression
+from verticapy.core.parsers.csv import read_csv
 from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.sql.drop import drop
 
 
 @check_minimum_version
@@ -120,7 +123,7 @@ def read_file(
         The vDataFrame of the relation.
     """
     dtype = format_type(dtype, dtype=dict)
-    assert not (ingest_local) or insert, ValueError(
+    assert not ingest_local or insert, ValueError(
         "Ingest local to create new relations is not yet supported for 'read_file'"
     )
     file_format = path.split(".")[-1].lower()
@@ -145,13 +148,13 @@ def read_file(
             ingest_local=ingest_local,
         )
     if insert:
-        if not (table_name):
+        if not table_name:
             raise ValueError(
                 "Parameter 'table_name' must be defined when parameter 'insert' is set to True."
             )
-        if not (schema) and temporary_local_table:
+        if not schema and temporary_local_table:
             schema = "v_temp_schema"
-        elif not (schema):
+        elif not schema:
             schema = "public"
         input_relation = quote_ident(schema) + "." + quote_ident(table_name)
         file_format = file_format.upper()
@@ -173,9 +176,9 @@ def read_file(
     else:
         schema = "public"
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
-    if gen_tmp_table_name and temporary_local_table and not (table_name):
+    if gen_tmp_table_name and temporary_local_table and not table_name:
         table_name = gen_tmp_name(name=basename)
-    if not (table_name):
+    if not table_name:
         table_name = basename
     result = _executeSQL(
         query=f"""
@@ -198,7 +201,7 @@ def read_file(
     if temporary_local_table:
         create_statement = f"CREATE LOCAL TEMPORARY TABLE {quote_ident(table_name)}"
     else:
-        if not (schema):
+        if not schema:
             schema = "public"
         if temporary_table:
             create_statement = f"CREATE TEMPORARY TABLE {relation}"

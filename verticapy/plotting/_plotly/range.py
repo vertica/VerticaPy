@@ -15,14 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Literal, Optional
-import numpy as np
-import pandas as pd
 
-import plotly.express as px
+import numpy as np
+
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -63,7 +60,6 @@ class RangeCurve(PlotlyBase):
                 zeroline=False,
             ),
         }
-        return None
 
     # Draw.
 

@@ -121,7 +121,6 @@ class LinearSVR(Regressor, LinearModel):
             "acceptable_error_margin": acceptable_error_margin,
             "max_iter": max_iter,
         }
-        return None
 
     # Parameters Methods.
 
@@ -233,7 +232,6 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             "class_weight": class_weight,
             "max_iter": max_iter,
         }
-        return None
 
     # Parameters Methods.
 

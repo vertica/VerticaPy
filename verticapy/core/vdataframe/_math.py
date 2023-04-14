@@ -19,7 +19,9 @@ import random
 import re
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
+import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
+from verticapy._utils._sql._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
@@ -32,7 +34,6 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.functions.conditional import decode
 
 
 class vDFMath:
@@ -59,7 +60,7 @@ class vDFMath:
         return int(self.shape()[0])
 
     def __nonzero__(self) -> bool:
-        return self.shape()[0] > 0 and not (self.empty())
+        return self.shape()[0] > 0 and not self.empty()
 
     def __round__(self, n: int) -> "vDataFrame":
         vdf = self.copy()
@@ -86,10 +87,10 @@ class vDFMath:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self.numcol() if not (columns) else self._format_colnames(columns)
+        columns = self.numcol() if not columns else self._format_colnames(columns)
         func = {}
         for column in columns:
-            if not (self[column].isbool()):
+            if not self[column].isbool():
                 func[column] = "ABS({})"
         return self.apply(func)
 
@@ -185,7 +186,7 @@ class vDFMath:
         columns, by = self._format_colnames(columns, by)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + list(order_by) if (order_by) else []
-        if not (name):
+        if not name:
             name = gen_name([func] + columns + by_name + by_order)
         func = func.lower()
         by = ", ".join(by)
@@ -213,12 +214,12 @@ class vDFMath:
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by and not (conf.get_option("print_info")):
+            if order_by and not conf.get_option("print_info"):
                 print(
                     f"\u26A0 '{func}' analytic method doesn't need an "
                     "order by clause, it was ignored"
                 )
-            elif not (columns):
+            elif not columns:
                 raise MissingColumn(
                     "The parameter 'column' must be a vDataFrame Column "
                     f"when using analytic method '{func}'"
@@ -283,7 +284,7 @@ class vDFMath:
                         name, f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
                     )
             elif func == "top":
-                if not (by):
+                if not by:
                     by_str = f"PARTITION BY {columns[0]}"
                 else:
                     by_str = f"{by}, {columns[0]}"
@@ -307,8 +308,8 @@ class vDFMath:
                 try:
                     x = float(func[0:-1]) / 100
                 except:
-                    raise FunctionError(
-                        f"The aggregate function '{fun}' doesn't exist. "
+                    raise ValueError(
+                        f"The aggregate function '{func}' doesn't exist. "
                         "If you want to compute the percentile x of the "
                         "element please write 'x%' with x > 0. Example: "
                         "50% for the median."
@@ -357,7 +358,7 @@ class vDFMath:
             "exponential_moving_average",
             "pct_change",
         ):
-            if not (columns) and func in (
+            if not columns and func in (
                 "lead",
                 "lag",
                 "first_value",
@@ -434,7 +435,7 @@ class vDFMath:
                     f"{func.upper()}({columns[0]}{info_param}) OVER ({by}{order_by})",
                 )
             except:
-                raise FunctionError(
+                raise ValueError(
                     f"The aggregate function '{func}' doesn't exist or is not "
                     "managed by the 'analytic' method. If you want more "
                     "flexibility use the 'eval' method."
@@ -501,7 +502,7 @@ class vDFMath:
         columns = self.numcol() if numeric_only else self.get_columns()
         for column in columns:
             function[column] = (
-                func if not (self[column].isbool()) else func.replace("{}", "{}::int")
+                func if not self[column].isbool() else func.replace("{}", "{}::int")
             )
         return self.apply(function)
 

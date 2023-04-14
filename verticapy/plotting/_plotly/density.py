@@ -16,9 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
 from plotly.graph_objs._figure import Figure
 
 from verticapy.plotting._plotly.base import PlotlyBase
@@ -59,7 +57,6 @@ class DensityPlot(PlotlyBase):
                 zeroline=False,
             ),
         }
-        return None
 
     # Draw.
 

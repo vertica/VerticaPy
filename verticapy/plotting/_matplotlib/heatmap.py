@@ -47,7 +47,6 @@ class HeatMap(MatplotlibBase):
     def _init_style(self) -> None:
         self.init_style = {"cmap": self.get_cmap(idx=0), "interpolation": "nearest"}
         self.init_style_text = {"color": "black", "ha": "center", "va": "center"}
-        return None
 
     def _get_cmap_style(self, style_kwargs: dict) -> dict:
         if (
@@ -100,13 +99,13 @@ class HeatMap(MatplotlibBase):
         try:
             im = ax.imshow(np.transpose(X), **kwargs)
         except:
-            if not (isinstance(kwargs["extent"], NoneType)):
+            if not isinstance(kwargs["extent"], NoneType):
                 kwargs["extent"] = None
                 im = ax.imshow(np.transpose(X), **kwargs)
             else:
                 raise
         fig.colorbar(im, ax=ax).set_label(colorbar)
-        if not (extent):
+        if not extent:
             ax.set_xticks([i for i in range(0, n)])
             ax.set_yticks([i for i in range(0, m)])
             ax.set_xticklabels(x_labels, rotation=90)

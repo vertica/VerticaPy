@@ -43,7 +43,6 @@ class LogisticRegressionPlot(SVMClassifierPlot):
         )
         self.init_style_scatter["zIndex"] = 1
         self.init_style_line["zIndex"] = 0
-        return None
 
     # Draw.
 

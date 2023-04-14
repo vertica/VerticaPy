@@ -96,9 +96,9 @@ def best_k(
     	the k-means / k-prototypes k
 	"""
     X = format_type(X, dtype=list)
-    if not (init) and (use_kprototype):
+    if not init and (use_kprototype):
         init = "random"
-    elif not (init):
+    elif not init:
         init = "kmeanspp"
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -106,7 +106,7 @@ def best_k(
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    if not (schema):
+    if not schema:
         schema = conf.get_option("temp_schema")
     schema = quote_ident(schema)
     if conf.get_option("tqdm") and (
@@ -205,9 +205,9 @@ def elbow(
         total_ss, elbow_score
     """
     X = format_type(X, dtype=list)
-    if not (init) and (use_kprototype):
+    if not init and (use_kprototype):
         init = "random"
-    elif not (init):
+    elif not init:
         init = "kmeanspp"
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])

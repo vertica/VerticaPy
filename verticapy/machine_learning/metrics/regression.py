@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 from scipy.stats import f
@@ -462,14 +462,14 @@ def regression_report(
     q_metrics, q_subquery = [], []
     cnt_in, mse_in, avg_in = False, False, False
     for m in selected_metrics:
-        if m in ("r2_adj", "aic", "bic") and not (cnt_in):
+        if m in ("r2_adj", "aic", "bic") and not cnt_in:
             q_subquery += [f"COUNT({y_true}) OVER() AS _verticapy_cnt_y_true"]
             cnt_in = True
-        if m in ("aic", "bic") and not (mse_in):
+        if m in ("aic", "bic") and not mse_in:
             mse = mean_squared_error(y_true, y_score, input_relation)
             q_subquery += [f"{mse} AS _verticapy_mse"]
             mse_in = True
-        if m in ("r2", "r2_adj") and not (avg_in):
+        if m in ("r2", "r2_adj") and not avg_in:
             q_subquery += [f"AVG({y_true}) OVER() AS _verticapy_avg_y_true"]
             avg_in = True
     if len(q_subquery) > 0:

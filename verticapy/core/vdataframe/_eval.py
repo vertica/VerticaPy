@@ -46,7 +46,7 @@ class vDFEval:
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
-        elif obj_type == "vDataColumn" and not (val._init):
+        elif obj_type == "vDataColumn" and not val._init:
             final_trans, n = val._init_transf, len(val._transf)
             for i in range(1, n):
                 final_trans = val._transf[i][0].replace("{}", final_trans)
@@ -54,11 +54,8 @@ class vDFEval:
         else:
             self.__dict__[attr] = val
 
-        return None
-
     def __setitem__(self, index: str, val: Any) -> None:
         setattr(self, index, val)
-        return None
 
     @save_verticapy_logs
     def eval(self, name: str, expr: Union[str, StringSQL]) -> "vDataFrame":
@@ -100,7 +97,7 @@ class vDFEval:
                 "you'll print the SQL code generation and probably "
                 "see why the evaluation didn't work."
             )
-        if not (ctype):
+        if not ctype:
             ctype = "undefined"
         elif (ctype.lower().startswith(("long varbina", "long varchar"))) and (
             self._vars["isflex"]
@@ -142,4 +139,3 @@ class vDFEval:
 class vDCEval:
     def __setattr__(self, attr: str, val: Any) -> None:
         self.__dict__[attr] = val
-        return None

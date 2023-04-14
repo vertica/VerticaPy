@@ -80,7 +80,6 @@ class PieChart(MatplotlibBase):
             "alpha": 1,
             "color": "black",
         }
-        return None
 
     # Draw.
 
@@ -161,7 +160,7 @@ class PieChart(MatplotlibBase):
             width = 2 * np.pi / N
             rad = np.cumsum([width] * N)
             fig = plt.figure()
-            if not (ax):
+            if not ax:
                 ax = fig.add_subplot(111, polar=True)
             ax.grid(False)
             ax.spines["polar"].set_visible(False)

@@ -19,10 +19,7 @@ import numpy as np
 import pandas as pd
 
 import plotly.express as px
-import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
-
-import verticapy._config.config as conf
 
 from verticapy.plotting._plotly.base import PlotlyBase
 
@@ -70,7 +67,6 @@ class ScatterPlot(PlotlyBase):
                 zeroline=False,
             ),
         }
-        return None
 
     # Draw.
 

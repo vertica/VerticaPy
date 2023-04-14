@@ -17,8 +17,7 @@ permissions and limitations under the License.
 import copy
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
-from verticapy._typing import NoneType, SQLColumns, SQLExpression, SQLRelation
-from verticapy._utils._gen import gen_tmp_name
+from verticapy._typing import SQLColumns, SQLExpression, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     extract_and_rename_subquery,
@@ -26,9 +25,6 @@ from verticapy._utils._sql._format import (
     quote_ident,
 )
 from verticapy._utils._sql._vertica_version import vertica_version
-
-
-from verticapy.core.string_sql.base import StringSQL
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -74,9 +70,9 @@ class vDFJoinUnionSort:
            vDataFrame of the Union
         """
         expr1, expr2 = format_type(expr1, expr2, dtype=list)
-        columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
-        columns2 = columns if not (expr2) else ", ".join(expr2)
-        union = "UNION" if not (union_all) else "UNION ALL"
+        columns = ", ".join(self.get_columns()) if not expr1 else ", ".join(expr1)
+        columns2 = columns if not expr2 else ", ".join(expr2)
+        union = "UNION" if not union_all else "UNION ALL"
         query = f"""
             (SELECT 
                 {columns} 
@@ -257,7 +253,7 @@ class vDFJoinUnionSort:
         # Final
         on_join = " ON " + " AND ".join(on_join) if on_join else ""
         expr = [f"x.{key}" for key in expr1] + [f"y.{key}" for key in expr2]
-        expr = "*" if not (expr) else ", ".join(expr)
+        expr = "*" if not expr else ", ".join(expr)
         if how:
             how = " " + how.upper() + " "
         query = (

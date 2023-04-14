@@ -48,7 +48,6 @@ class BarChart(PlotlyBase):
             "width": 100 + 100 * len(self.layout["labels"]),
             "height": 500,
         }
-        return None
 
     # Draw.
 

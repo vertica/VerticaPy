@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 import datetime
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, TimeInterval, SQLColumns, SQLRelation
@@ -170,7 +170,7 @@ class AutoDataPrep(VerticaModel):
         save: bool = True,
     ) -> None:
         self.model_name = name
-        if not (self.model_name):
+        if not self.model_name:
             self.model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="autodataprep"
             )
@@ -189,7 +189,6 @@ class AutoDataPrep(VerticaModel):
             "identify_ts": identify_ts,
             "save": save,
         }
-        return None
 
     # Model Fitting Method.
 
@@ -223,7 +222,7 @@ class AutoDataPrep(VerticaModel):
             self._is_already_stored(raise_error=True)
         current_print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
-        if (by) and not (ts):
+        if (by) and not ts:
             raise ValueError("Parameter 'by' must be empty if 'ts' is not defined.")
         if isinstance(input_relation, str):
             vdf = vDataFrame(input_relation)
@@ -232,10 +231,10 @@ class AutoDataPrep(VerticaModel):
         if isinstance(X, NoneType):
             X = vdf.get_columns()
         X, by = format_type(X, by, dtype=list)
-        if not (ts) and self.parameters["identify_ts"]:
+        if not ts and self.parameters["identify_ts"]:
             nb_date, nb_num, nb_others = 0, 0, 0
             for x in X:
-                if vdf[x].isnum() and not (vdf[x].isbool()):
+                if vdf[x].isnum() and not vdf[x].isbool():
                     nb_num += 1
                 elif vdf[x].isdate():
                     nb_date += 1
@@ -253,19 +252,19 @@ class AutoDataPrep(VerticaModel):
         n = vdf.shape()[0]
         for x in X:
             is_id = (
-                not (vdf[x].isnum())
-                and not (vdf[x].isdate())
+                not vdf[x].isnum()
+                and not vdf[x].isdate()
                 and 0.9 * n <= vdf[x].nunique()
             )
             if (
                 self.parameters["id_method"] == "drop"
                 and is_id
-                and (not (by) or x not in by)
+                and (not by or x not in by)
             ):
                 columns_to_drop += [x]
                 X_diff += [x]
-            elif not (is_id) and (not (by) or x not in by):
-                if not (vdf[x].isdate()):
+            elif not is_id and (not by or x not in by):
+                if not vdf[x].isdate():
                     if vdf[x].isnum():
                         if (self.parameters["outliers_threshold"]) and self.parameters[
                             "outliers_threshold"
@@ -292,7 +291,7 @@ class AutoDataPrep(VerticaModel):
                             vdf[x].dropna()
                     if (
                         vdf[x].isnum()
-                        and not (ts)
+                        and not ts
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
                         vdf[x].discretize(
@@ -308,24 +307,23 @@ class AutoDataPrep(VerticaModel):
                             vdf[x].dropna()
                         vdf[x].discretize(method="topk", k=self.parameters["cat_topk"])
                     if (
-                        self.parameters["cat_method"] == "ooe" and not (vdf[x].isnum())
+                        self.parameters["cat_method"] == "ooe" and not vdf[x].isnum()
                     ) or (
                         vdf[x].isnum()
-                        and not (ts)
+                        and not ts
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
                         vdf[x].get_dummies(drop_first=False)
                         columns_to_drop += [x]
                     elif (
-                        self.parameters["cat_method"] == "label"
-                        and not (vdf[x].isnum())
+                        self.parameters["cat_method"] == "label" and not vdf[x].isnum()
                     ) or (
                         vdf[x].isnum()
-                        and not (ts)
+                        and not ts
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
                         vdf[x].label_encode()
-                elif not (ts):
+                elif not ts:
                     vdf[x.replace('"', "") + "_year"] = f"YEAR({x})"
                     vdf[x.replace('"', "") + "_dayofweek"] = f"DAYOFWEEK({x})"
                     vdf[x.replace('"', "") + "_month"] = f"MONTH({x})"
@@ -367,7 +365,7 @@ class AutoDataPrep(VerticaModel):
             X_tmp = []
             for elem in X:
                 if elem != ts and elem not in by:
-                    if vdf[elem].isnum() and not (vdf[elem].isbool()):
+                    if vdf[elem].isnum() and not vdf[elem].isbool():
                         method[elem] = "linear"
                     else:
                         method[elem] = "ffill"
@@ -379,7 +377,7 @@ class AutoDataPrep(VerticaModel):
         )
         self.by = by
         self.ts = ts
-        if self.parameters["apply_pca"] and not (ts):
+        if self.parameters["apply_pca"] and not ts:
             model_pca = PCA(self.model_name + "_pca")
             model_pca.drop()
             model_pca.fit(vdf, self.X_out_)
@@ -392,4 +390,3 @@ class AutoDataPrep(VerticaModel):
             vdf.to_db(name=self.model_name, relation_type="table", inplace=True)
         self.final_relation_ = vdf
         conf.set_option("print_info", current_print_info)
-        return None

@@ -514,8 +514,8 @@ class Test_InMemoryModel:
         assert prediction[2][1] == pytest.approx(0.6957672)
         attributes = model.get_attributes()
         assert attributes["tree"]["chi2"] == pytest.approx(345.12775126385327)
-        assert not (attributes["tree"]["is_leaf"])
-        assert not (attributes["tree"]["split_is_numerical"])
+        assert not attributes["tree"]["is_leaf"]
+        assert not attributes["tree"]["split_is_numerical"]
         assert attributes["tree"]["split_predictor"] == '"sex"'
         assert attributes["tree"]["split_predictor_idx"] == 0
         assert attributes["tree"]["children"]["female"]["chi2"] == pytest.approx(

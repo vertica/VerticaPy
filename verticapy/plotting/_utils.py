@@ -54,7 +54,7 @@ class PlottingUtils:
         else:
             chart_not_none = False
             lib = conf.get_option("plotting_lib")
-        if not (self._is_available(class_name=class_name, lib=lib)):
+        if not self._is_available(class_name=class_name, lib=lib):
             if chart_not_none:
                 raise NotImplementedError(
                     f"The type of the input parameter 'chart' ('{lib}' object)"

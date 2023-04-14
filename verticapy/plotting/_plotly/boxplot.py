@@ -45,7 +45,6 @@ class BoxPlot(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_layout_style = {}
-        return None
 
     def _create_bar_info(
         self,

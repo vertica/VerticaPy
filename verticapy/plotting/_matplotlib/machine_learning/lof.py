@@ -51,7 +51,6 @@ class LOFPlot(MatplotlibBase):
             "s": 50,
             "edgecolors": "black",
         }
-        return None
 
     def _get_colors(self, style_kwargs: dict) -> list:
         colors = []
