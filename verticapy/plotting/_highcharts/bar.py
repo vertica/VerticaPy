@@ -177,7 +177,7 @@ class DrillDownBarChart(HighchartsBase):
         chart.add_data_set(data, kind, colorByPoint=True)
         drilldown_group = np.column_stack(self.data["groups"][0])
         uniques = np.unique(drilldown_group[:, 0])
-        for i, c in enumerate(uniques):
+        for c in uniques:
             data = drilldown_group[drilldown_group[:, 0] == c].tolist()
             data = [(str(x[1]), float(x[2])) for x in data]
             chart.add_drilldown_data_set(data, kind, str(c), name=str(c))

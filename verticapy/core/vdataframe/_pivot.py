@@ -162,7 +162,7 @@ class vDFPivot(vDFJoinUnionSort):
                 all_are_date = False
         for column in columns:
             conv = ""
-            if not all_are_num and not all_are_num:
+            if not all_are_num and not all_are_date:
                 conv = "::varchar"
             elif self[column].category() == "int":
                 conv = "::int"

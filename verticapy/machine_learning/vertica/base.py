@@ -167,8 +167,9 @@ class VerticaModel(PlottingUtils):
         """Must be overridden in the child class"""
         self.input_relation = None
         self.X = None
-        for att in self._attributes:
-            setattr(self, att, None)
+        # self.parameters = {}
+        # for att in self._attributes:
+        #    setattr(self, att, None)
 
     def __repr__(self) -> str:
         """
@@ -786,7 +787,6 @@ class Supervised(VerticaModel):
             for param in ("nbtype",):
                 if param in parameters:
                     del parameters[param]
-            fun = self._vertica_fit_sql
             query = f"""
                 SELECT 
                     /*+LABEL('learn.VerticaModel.fit')*/ 
@@ -838,9 +838,10 @@ class Tree:
         self.test_relation = None
         self.X = None
         self.y = None
+        # self.parameters = {}
         self.classes_ = None
-        for att in self._attributes:
-            setattr(self, att, None)
+        # for att in self._attributes:
+        #    setattr(self, att, None)
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
@@ -850,7 +851,6 @@ class Tree:
         TableSample.  It returns a list of arrays. Each 
         index of the arrays represents a node value.
         """
-        tree_list = []
         for i in range(len(tree["tree_id"])):
             tree.values["left_child_id"] = [
                 i if node_id == tree.values["node_id"][i] else node_id
@@ -2092,7 +2092,6 @@ class MulticlassClassifier(Supervised):
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         pos_label = self._check_pos_label(pos_label=pos_label)
-        y_proba = self._get_y_proba(pos_label=pos_label)
         if metric in (
             "auc",
             "prc_auc",

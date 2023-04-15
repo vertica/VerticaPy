@@ -108,7 +108,7 @@ class vDFRolling(vDFCorr):
             raise ValueError("The window must be composed of exactly 2 elements.")
         window = list(window)
         rule = [0, 0]
-        unbounded, method = False, "rows"
+        method = "rows"
         for idx, w in enumerate(window):
             if isinstance(w, (int, float)) and abs(w) == float("inf"):
                 w = "unbounded"
@@ -151,7 +151,6 @@ class vDFRolling(vDFCorr):
             {method.upper()} 
             BETWEEN {window[0]} {rule[0]} 
             AND {window[1]} {rule[1]})"""
-        all_cols = [elem.replace('"', "").lower() for elem in self._vars["columns"]]
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
                 columns_0_str = columns[0].replace('"', "").lower()

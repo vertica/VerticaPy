@@ -50,7 +50,7 @@ class BoxPlot(MatplotlibBase):
         """
         Draws a multi box plot using the Matplotlib API.
         """
-        n, m = self.data["X"].shape
+        m = self.data["X"].shape[1]
         if m == 1 and "vert" not in style_kwargs:
             style_kwargs["vert"] = False
         elif "vert" not in style_kwargs:
@@ -99,11 +99,11 @@ class BoxPlot(MatplotlibBase):
             ax.set_xlabel(x_label)
             ax.set_ylabel(y_label)
         min_lim = min(
-            min([min(f) if len(f) > 0 else np.inf for f in self.data["fliers"]]),
+            min(min(f) if len(f) > 0 else np.inf for f in self.data["fliers"]),
             self.data["X"].min(),
         )
         max_lim = max(
-            max([max(f) if len(f) > 0 else -np.inf for f in self.data["fliers"]]),
+            max(max(f) if len(f) > 0 else -np.inf for f in self.data["fliers"]),
             self.data["X"].max(),
         )
         h = (max_lim - min_lim) * 0.01

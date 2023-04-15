@@ -202,9 +202,6 @@ class XGBoost(Tree):
         """
         Method used to converts the model to JSON.
         """
-        condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
-            f"{self.y} IS NOT NULL"
-        ]
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
@@ -1020,7 +1017,6 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         else:
             self.logodds_ = prior
         trees = []
-        tree_type = "BinaryTreeClassifier"
         for i in range(self.n_estimators_):
             tree = self._compute_trees_arrays(self.get_tree(i), self.X)
             tree_d = {

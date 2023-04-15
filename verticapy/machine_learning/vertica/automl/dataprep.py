@@ -362,7 +362,6 @@ class AutoDataPrep(VerticaModel):
                 )
                 rule = datetime.timedelta(seconds=rule)
             method = {}
-            X_tmp = []
             for elem in X:
                 if elem != ts and elem not in by:
                     if vdf[elem].isnum() and not vdf[elem].isbool():

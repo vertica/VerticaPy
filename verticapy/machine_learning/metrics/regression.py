@@ -455,7 +455,7 @@ def regression_report(
         ]
     else:
         selected_metrics = copy.deepcopy(metrics)
-    q_metrics, q_subquery = [], []
+    q_subquery = []
     cnt_in, mse_in, avg_in = False, False, False
     for m in selected_metrics:
         if m in ("r2_adj", "aic", "bic") and not cnt_in:

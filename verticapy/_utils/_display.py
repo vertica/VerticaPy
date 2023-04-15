@@ -111,8 +111,8 @@ def print_table(
             ] + data_columns
         m, n = len(data_columns), len(data_columns[0])
         cell_width = []
-        for elem in data_columns:
-            cell_width += [min(5 * max([len(str(item)) for item in elem]) + 80, 280)]
+        for row in data_columns:
+            cell_width += [min(5 * max([len(str(item)) for item in row]) + 80, 280)]
         html_table = "<table>"
         for i in range(n):
             if i == 0:
@@ -246,7 +246,7 @@ def print_table(
                     if conf.get_option("mode") not in ("full", None):
                         background = "#FFFFFF"
                     html_table += (
-                        f'><input style="background-color: {val}; border: none; '
+                        f'><input style="background-color: {background}; border: none; '
                         f'text-align: center; width: {cell_width[j] - 10}px;" '
                         f'type="text" value="{val}" readonly></td>'
                     )

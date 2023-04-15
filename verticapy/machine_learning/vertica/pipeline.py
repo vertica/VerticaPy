@@ -341,7 +341,7 @@ class Pipeline:
             vdf = vDataFrame(vdf)
         X_new, X_all = copy.deepcopy(X), []
         current_vdf = vdf
-        for idx, step in enumerate(self.steps):
+        for step in self.steps:
             current_vdf = step[1].transform(current_vdf, X_new)
             X_new = step[1]._get_names(X=X)
             X_all += X_new

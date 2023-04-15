@@ -299,7 +299,7 @@ class AnimatedBubblePlot(AnimatedBase):
         if "cmap" in kwargs:
             fig.colorbar(sc, ax=ax).set_label(self.layout["by"])
         elif not isinstance(self.layout["catcol"], NoneType):
-            leg = ax.legend(
+            ax.legend(
                 custom_lines,
                 all_cats,
                 title=self.layout["by"],

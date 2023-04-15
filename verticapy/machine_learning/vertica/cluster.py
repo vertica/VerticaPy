@@ -914,7 +914,6 @@ class DBSCAN(VerticaModel):
         self.X = X
         self.key_columns = quote_ident(key_columns)
         self.input_relation = input_relation
-        schema, relation = schema_relation(input_relation)
         name_main = gen_tmp_name(name="main")
         name_dbscan_clusters = gen_tmp_name(name="clusters")
         try:

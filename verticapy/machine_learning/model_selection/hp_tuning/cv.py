@@ -674,7 +674,6 @@ def bayesian_search_cv(
     result = TableSample(result).to_sql()
     schema = conf.get_option("temp_schema")
     relation = gen_tmp_name(schema=schema, name="bayesian")
-    model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
     _executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:

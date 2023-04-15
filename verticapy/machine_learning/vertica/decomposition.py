@@ -84,7 +84,6 @@ class Decomposition(Preprocessing):
         )
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
                                             USING PARAMETERS
                                             model_name = '{self.model_name}',

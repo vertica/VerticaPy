@@ -110,7 +110,7 @@ class NaiveBayes(MulticlassClassifier):
         res = []
         for c in self.classes_:
             sub_result = []
-            for idx, elem in enumerate(X):
+            for idx in range(len(X)):
                 prob = self.attributes_[idx]
                 if prob["type"] == "multinomial":
                     prob = prob[c] ** float(X[idx])

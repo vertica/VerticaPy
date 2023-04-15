@@ -80,7 +80,7 @@ def check_minimum_version(func: Callable) -> Callable:
 
     @wraps(func)
     def func_prec_check_minimum_version(*args, **kwargs) -> Any:
-        fun_name, object_name, condition = func.__name__, "", []
+        fun_name, object_name = func.__name__, ""
         if len(args) > 0:
             object_name = type(args[0]).__name__
         name = object_name if fun_name == "__init__" else fun_name

@@ -317,17 +317,16 @@ class TableSample:
         "bool", "date", "float", "int", "undefined", "text",
     ]:
         x = np.array(self[column])
-        val = None
         for xi in x:
             if isinstance(xi, (str, np.str_)):
                 return "text"
-            elif isinstance(xi, (bool, np.bool_)):
+            if isinstance(xi, (bool, np.bool_)):
                 return "bool"
-            elif isinstance(xi, (int, np.int_)):
+            if isinstance(xi, (int, np.int_)):
                 return "int"
-            elif isinstance(xi, (float, np.float_)):
+            if isinstance(xi, (float, np.float_)):
                 return "float"
-            elif isinstance(xi, (datetime.datetime, datetime.date)):
+            if isinstance(xi, (datetime.datetime, datetime.date)):
                 return "date"
         return "undefined"
 

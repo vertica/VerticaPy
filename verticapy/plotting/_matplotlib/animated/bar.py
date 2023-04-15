@@ -145,7 +145,7 @@ class AnimatedBarChart(AnimatedBase):
             if date_in_title:
                 ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(
+                ax.text(
                     max_x + 0.27 * delta_x,
                     int(self.layout["limit_over"] / 2),
                     date_f(bar_values[i]["date"]),

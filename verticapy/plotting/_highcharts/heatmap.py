@@ -155,8 +155,8 @@ class HeatMap(HighchartsBase):
         chart.set_dict_options(style_kwargs)
         X = np.flip(self.data["X"], axis=1)
         data = []
-        for i, x in enumerate(self.layout["x_labels"]):
-            for j, y in enumerate(self.layout["y_labels"]):
+        for i in range(len(self.layout["x_labels"])):
+            for j in range(len(self.layout["y_labels"])):
                 data += [[i, j, round(X[i, j], self.layout["mround"])]]
         chart.add_data_set(data, **self.init_style_matrix)
         chart.set_dict_options(

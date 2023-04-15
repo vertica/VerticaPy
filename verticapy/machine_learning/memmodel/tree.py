@@ -211,9 +211,7 @@ class Tree(InMemoryModel):
         str
             SQL code.
         """
-        n = max(
-            [len(val) if not isinstance(val, NoneType) else 0 for val in self.value_]
-        )
+        n = max(len(val) if not isinstance(val, NoneType) else 0 for val in self.value_)
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
 
     # Trees Representation Methods.
@@ -893,10 +891,7 @@ class NonBinaryTree(Tree):
         else:
             res = ""
             for c in tree["children"]:
-                if isinstance(c, str):
-                    q, not_q = "=", "!="
-                else:
-                    q, not_q = "<=", ">"
+                q = "=" if isinstance(c, str) else "<="
                 split_predictor = tree["split_predictor"].replace('"', '\\"')
                 res += f'\n{tree["node_id"]} [label="{split_predictor}"{self._flat_dict(node_style)}]'
                 if tree["children"][c]["is_leaf"] or tree["children"][c]["children"]:

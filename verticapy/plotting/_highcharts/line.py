@@ -144,7 +144,7 @@ class LinePlot(HighchartsBase):
             chart.set_dict_options(kind_kwargs)
         if self.layout["has_category"]:
             uniques = np.unique(self.data["z"])
-            for i, c in enumerate(uniques):
+            for c in uniques:
                 x = self._to_datetime(self.data["x"][self.data["z"] == c])
                 y = self.data["Y"][:, 0][self.data["z"] == c]
                 data = np.column_stack((x, y)).tolist()
@@ -188,7 +188,7 @@ class MultiLinePlot(LinePlot):
         else:
             step_kwargs = {}
             chart.set_dict_options(kind_kwargs)
-        n, m = self.data["Y"].shape
+        m = self.data["Y"].shape[1]
         x = self._to_datetime(self.data["x"])
         for idx in range(m):
             y = self.data["Y"][:, idx]

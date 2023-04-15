@@ -354,10 +354,7 @@ class vDFInOut(vDFSystem):
             f"{relation_type} named '{name}'."
         )
         if inplace:
-            history, saving = (
-                self._vars["history"],
-                self._vars["saving"],
-            )
+            history = self._vars["history"]
             catalog_vars = {}
             for column in usecols:
                 catalog_vars[column] = self[column]._catalog

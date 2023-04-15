@@ -1339,8 +1339,7 @@ class vDFCorr(vDFEncode):
             Plotting Object.
         """
         method = str(method).lower()
-        if isinstance(by, str):
-            by = [by]
+        by = format_type(by, dtype=list)
         by, column, ts = self.format_colnames(by, column, ts)
         if unit == "rows":
             table = self._genSQL()
@@ -1380,7 +1379,7 @@ class vDFCorr(vDFEncode):
                         math.sqrt(2)
                         * scipy_special.erfinv(alpha)
                         / math.sqrt(self[column].count() - k + 1)
-                        * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
+                        * math.sqrt((1 + 2 * sum(acf[i] ** 2 for i in range(1, k))))
                     ]
             if columns[0] == column:
                 columns[0] = 0
@@ -1581,7 +1580,7 @@ class vDFCorr(vDFEncode):
                         math.sqrt(2)
                         * scipy_special.erfinv(alpha)
                         / math.sqrt(self[column].count() - k + 1)
-                        * math.sqrt((1 + 2 * sum([pacf[i] ** 2 for i in range(1, k)])))
+                        * math.sqrt((1 + 2 * sum(pacf[i] ** 2 for i in range(1, k))))
                     ]
             result = TableSample({"index": columns, "value": pacf})
             if pacf_band:

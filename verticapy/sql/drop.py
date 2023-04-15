@@ -67,7 +67,7 @@ def drop(
     if not name:
         method = "temp"
     if method == "auto":
-        fail, end_conditions = False, False
+        fail = False
         result = _executeSQL(
             query=f"""
             SELECT 

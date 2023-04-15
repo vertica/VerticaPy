@@ -376,7 +376,6 @@ class AutoML(VerticaModel):
         if isinstance(self.parameters["estimator"], str):
             v = vertica_version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            modeltype = None
             estimator_method = self.parameters["estimator"]
             if not isinstance(input_relation, vDataFrame):
                 vdf = vDataFrame(input_relation)

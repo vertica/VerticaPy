@@ -23,7 +23,7 @@ from typing import Literal
 def get_func_info(func) -> tuple:
     # TO COMPLETE - GUESS FUNCTIONS TYPES
 
-    name = func.__name__
+    # name = func.__name__
     argspec = inspect.getfullargspec(func)[6]
     if "return" in argspec:
         return_type = argspec["return"]

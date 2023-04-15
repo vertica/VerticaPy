@@ -114,7 +114,7 @@ class MultiDensityPlot(DensityPlot):
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
-        n, m = self.data["X"].shape
+        m = self.data["X"].shape[1]
         for i in range(m):
             data = np.column_stack(
                 (self.data["X"][:, i], self.data["Y"][:, i])

@@ -135,7 +135,7 @@ class ScatterPlot(HighchartsBase):
         if self.layout["has_category"]:
             chart.set_dict_options(self.init_style_cat)
             uniques = np.unique(self.data["c"])
-            for i, c in enumerate(uniques):
+            for c in uniques:
                 data = self.data["X"][self.data["c"] == c]
                 if self.layout["has_size"]:
                     data = np.column_stack((data, self.data["s"][self.data["c"] == c]))

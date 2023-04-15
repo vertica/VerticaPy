@@ -589,7 +589,7 @@ class CountVectorizer(VerticaModel):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = quote_ident(X)
-        schema, relation = schema_relation(self.model_name)
+        schema = schema_relation(self.model_name)[0]
         schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
         _executeSQL(

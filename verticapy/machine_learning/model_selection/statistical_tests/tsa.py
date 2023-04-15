@@ -651,7 +651,6 @@ def het_arch(
     finally:
         model.drop()
     n = vdf.shape()[0]
-    k = len(X)
     LM = (n - p) * R2
     lm_pvalue = chi2.sf(LM, p)
     F = (n - 2 * p - 1) * R2 / (1 - R2) / p
