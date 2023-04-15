@@ -361,7 +361,7 @@ class KMeans(Clustering):
             Plotting Object.
         """
         if len(self.X) == 2:
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="VoronoiPlot",
                 chart=chart,
                 matplotlib_kwargs={"plot_crosses": plot_crosses},
@@ -894,7 +894,7 @@ class DBSCAN(VerticaModel):
         if isinstance(input_relation, vDataFrame):
             if isinstance(X, NoneType):
                 X = input_relation.numcol()
-            input_relation = input_relation._genSQL()
+            input_relation = input_relation.current_relation()
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).numcol()
@@ -999,10 +999,9 @@ class DBSCAN(VerticaModel):
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:
-                f = open(f"{name_dbscan_clusters}.csv", "w", encoding="utf-8")
-                for c in clusters:
-                    f.write(f"{c}, {clusters[c]}\n")
-                f.close()
+                with open(f"{name_dbscan_clusters}.csv", "w", encoding="utf-8") as f:
+                    for c in clusters:
+                        f.write(f"{c}, {clusters[c]}\n")
                 drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
                 _executeSQL(
                     query=f"""
@@ -1199,7 +1198,7 @@ class NearestCentroid(MulticlassClassifier):
         Returns the input which represents the model's 
         probabilities.
         """
-        idx = self._get_match_index(pos_label, self.classes_, False)
+        idx = self.get_match_index(pos_label, self.classes_, False)
         return self.deploySQL(allSQL=True)[idx]
 
     # I/O Methods.

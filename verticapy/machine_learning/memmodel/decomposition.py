@@ -39,7 +39,7 @@ class PCA(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["PCA"]:
+    def object_type(self) -> Literal["PCA"]:
         return "PCA"
 
     @property
@@ -180,7 +180,7 @@ class SVD(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["SVD"]:
+    def object_type(self) -> Literal["SVD"]:
         return "SVD"
 
     @property

@@ -424,7 +424,7 @@ class PlottingBase(PlottingBaseSQL):
         if not 0.0 < bargap <= 1.0:
             raise ValueError("Parameter 'bargap' must be between 0 and 1.")
         other_columns = ""
-        of = vdc._parent._format_colnames(of)
+        of = vdc._parent.format_colnames(of)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         if not is_standard:
             other_columns = ", " + ", ".join(
@@ -455,7 +455,7 @@ class PlottingBase(PlottingBaseSQL):
                     ORDER BY {vdc} ASC 
                     LIMIT {max_cardinality}"""
             else:
-                table = vdc._parent._genSQL()
+                table = vdc._parent.current_relation()
                 if (pie) and (is_numeric):
                     enum_trans = (
                         vdc.discretize(h=h, return_enum_trans=True)[0].replace(
@@ -650,7 +650,7 @@ class PlottingBase(PlottingBaseSQL):
             columns = format_type(columns, dtype=list)
         if not columns:
             raise ValueError("No numerical columns found to compute the statistics.")
-        columns, by = vdf._format_colnames(columns, by)
+        columns, by = vdf.format_colnames(columns, by)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
         if by and len(columns) == 1:
@@ -735,7 +735,7 @@ class PlottingBase(PlottingBaseSQL):
             columns = format_type(columns, dtype=list)
         if not columns:
             raise ValueError("No numerical columns found to compute the statistics.")
-        columns, by = vdf._format_colnames(columns, by)
+        columns, by = vdf.format_colnames(columns, by)
         if len(columns) == 1 and (by):
             expr = [
                 f"MIN({columns[0]})",
@@ -846,7 +846,7 @@ class PlottingBase(PlottingBaseSQL):
         if not is_standard:
             other_columns = ", " + ", ".join(vdf.get_columns(exclude_columns=columns))
         columns = format_type(columns, dtype=list)
-        columns, of = vdf._format_colnames(columns, of)
+        columns, of = vdf.format_colnames(columns, of)
         is_column_date = [False, False]
         timestampadd = ["", ""]
         matrix = []
@@ -1018,7 +1018,7 @@ class PlottingBase(PlottingBaseSQL):
     ) -> None:
         from verticapy.datasets.generators import gen_meshgrid
 
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         aggregations = vdf.agg(["min", "max"], columns).to_numpy()
         self.data = {
             "min": aggregations[:, 0],
@@ -1095,7 +1095,7 @@ class PlottingBase(PlottingBaseSQL):
 
         if hasattr(self, "_max_nbins"):
             nbins = min(nbins, self._max_nbins)
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         aggregations = vdf.agg(["min", "max"], columns).to_numpy()
         self.data = {
             "min": aggregations[:, 0],
@@ -1168,7 +1168,7 @@ class PlottingBase(PlottingBaseSQL):
         of: Optional[str] = None,
     ) -> None:
         columns = format_type(columns, dtype=list)
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
         self._init_check(dim=len(columns), is_standard=is_standard)
         if method == "density":
@@ -1215,17 +1215,17 @@ class PlottingBase(PlottingBaseSQL):
         cat_priority: Union[None, PythonScalar, ArrayLike] = None,
     ) -> None:
         columns = format_type(columns, dtype=list)
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         cols_to_select = copy.deepcopy(columns)
         vdf_tmp = vdf.copy()
         has_category, has_cmap, has_size = False, False, False
         if max_nb_points > 0:
             if not isinstance(size, NoneType):
-                cols_to_select += [vdf._format_colnames(size)]
+                cols_to_select += [vdf.format_colnames(size)]
                 has_size = True
             if not isinstance(by, NoneType):
                 has_category = True
-                by = vdf._format_colnames(by)
+                by = vdf.format_colnames(by)
                 if vdf[by].isnum():
                     cols_to_select += [
                         vdf[by]
@@ -1245,7 +1245,7 @@ class PlottingBase(PlottingBaseSQL):
                 if cat_priority:
                     vdf_tmp = vdf_tmp[by].isin(cat_priority)
             elif not isinstance(cmap_col, NoneType):
-                cols_to_select += [vdf._format_colnames(cmap_col)]
+                cols_to_select += [vdf.format_colnames(cmap_col)]
                 has_cmap = True
             X = vdf_tmp[cols_to_select].sample(n=max_nb_points).to_numpy()
             if len(X) > 0:
@@ -1277,7 +1277,7 @@ class PlottingBase(PlottingBaseSQL):
         threshold: float = 3.0,
     ) -> None:
         columns = format_type(columns, dtype=list)
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         aggregations = vdf.agg(
             func=["avg", "std", "min", "max"], columns=columns
         ).to_numpy()
@@ -1355,7 +1355,7 @@ class PlottingBase(PlottingBaseSQL):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         n = len(columns)
         data = {
             "scatter": {"X": vdf[columns].sample(n=max_nb_points).to_numpy()},
@@ -1391,7 +1391,7 @@ class PlottingBase(PlottingBaseSQL):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        columns, order_by = vdf._format_colnames(columns, order_by)
+        columns, order_by = vdf.format_colnames(columns, order_by)
         X = vdf.between(
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].sort(columns=[order_by])
@@ -1443,7 +1443,7 @@ class PlottingBase(PlottingBaseSQL):
         order_by_end: Optional[PythonScalar] = None,
     ) -> None:
         columns = format_type(columns, dtype=list)
-        columns, order_by = vdf._format_colnames(columns, order_by)
+        columns, order_by = vdf.format_colnames(columns, order_by)
         expr = []
         for column in columns:
             expr += [
@@ -1480,7 +1480,7 @@ class PlottingBase(PlottingBaseSQL):
         order_by_start: Optional[PythonScalar] = None,
         order_by_end: Optional[PythonScalar] = None,
     ) -> None:
-        order_by, column = vdf._format_colnames(order_by, column)
+        order_by, column = vdf.format_colnames(order_by, column)
         try:
             of = column
             method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
@@ -1527,7 +1527,7 @@ class PlottingBase(PlottingBaseSQL):
         lim_labels: int = 6,
     ) -> None:
         columns = format_type(columns, dtype=list)
-        columns, order_by, by, catcol = vdf._format_colnames(
+        columns, order_by, by, catcol = vdf.format_colnames(
             columns, order_by, by, catcol
         )
         cols = copy.deepcopy(columns)
@@ -1547,7 +1547,7 @@ class PlottingBase(PlottingBaseSQL):
                         {order_by}, 
                         {", ".join([str(column) for column in cols])}, 
                         {by_} 
-                     FROM {vdf._genSQL(True)} 
+                     FROM {vdf.current_relation(split=True)} 
                      WHERE  {cols[0]} IS NOT NULL 
                         AND {cols[1]} IS NOT NULL 
                         AND {cols[2]} IS NOT NULL

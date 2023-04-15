@@ -19,11 +19,14 @@ from typing import Literal, Optional, TYPE_CHECKING
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._gen import gen_name
 
+from verticapy.core.vdataframe._rolling import vDFRolling
+from verticapy.core.vdataframe._corr import vDCCorr
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFText:
+class vDFText(vDFRolling):
     @save_verticapy_logs
     def regexp(
         self,
@@ -99,7 +102,7 @@ class vDFText:
         vDataFrame
             self
         """
-        column = self._format_colnames(column)
+        column = self.format_colnames(column)
         pattern_str = pattern.replace("'", "''")
         expr = f"REGEXP_{method.upper()}({column}, '{pattern_str}'"
         if method == "replace":
@@ -116,7 +119,7 @@ class vDFText:
         return self.eval(name=name, expr=expr)
 
 
-class vDCText:
+class vDCText(vDCCorr):
     @save_verticapy_logs
     def str_contains(self, pat: str) -> "vDataFrame":
         """

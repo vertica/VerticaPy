@@ -40,9 +40,9 @@ def change_auto_connection(name: str) -> None:
         confparser.add_section(gb_conn._vpy_auto_connection)
         confparser.set(gb_conn._vpy_auto_connection, "name", name)
         path = get_connection_file()
-        f = open(path, "w+", encoding="utf-8")
-        confparser.write(f)
-        f.close()
+
+        with open(path, "w+", encoding="utf-8") as f:
+            confparser.write(f)
 
     else:
 
@@ -82,9 +82,9 @@ def delete_connection(name: str) -> bool:
             if name_auto == name:
                 confparser.remove_section(gb_conn._vpy_auto_connection)
         path = get_connection_file()
-        f = open(path, "w+", encoding="utf-8")
-        confparser.write(f)
-        f.close()
+
+        with open(path, "w+", encoding="utf-8") as f:
+            confparser.write(f)
 
         return True
 
@@ -168,9 +168,10 @@ def new_connection(
     confparser.add_section(name)
     for c in conn_info:
         confparser.set(name, c, str(conn_info[c]))
-    f = open(path, "w+", encoding="utf-8")
-    confparser.write(f)
-    f.close()
+
+    with open(path, "w+", encoding="utf-8") as f:
+        confparser.write(f)
+
     if auto:
         change_auto_connection(name)
 

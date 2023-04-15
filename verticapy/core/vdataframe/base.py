@@ -22,7 +22,7 @@ import pandas as pd
 
 from verticapy.connection.global_connection import get_global_connection
 from verticapy._typing import SQLColumns
-from verticapy._utils._object import _read_pandas
+from verticapy._utils._object import read_pd
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._check import is_longvar, is_dql
@@ -37,26 +37,8 @@ from verticapy._utils._sql._format import (
 )
 from verticapy.errors import MissingRelation
 
-from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
-from verticapy.core.vdataframe._corr import vDFCorr, vDCCorr
-from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
-from verticapy.core.vdataframe._eval import vDFEval, vDCEval
-from verticapy.core.vdataframe._fill import vDFFill, vDCFill
-from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
-from verticapy.core.vdataframe._io import vDFInOut
-from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
-from verticapy.core.vdataframe._machine_learning import vDFMachineLearning
-from verticapy.core.vdataframe._math import vDFMath, vDCMath
-from verticapy.core.vdataframe._normalize import vDFNorm, vDCNorm
-from verticapy.core.vdataframe._pivot import vDFPivot
-from verticapy.core.vdataframe._plotting import vDFPlot, vDCPlot
 from verticapy.core.vdataframe._plotting_animated import vDFAnimatedPlot
-from verticapy.core.vdataframe._read import vDFRead, vDCRead
-from verticapy.core.vdataframe._rolling import vDFRolling
-from verticapy.core.vdataframe._sys import vDFSystem, vDCSystem
-from verticapy.core.vdataframe._text import vDFText, vDCText
-from verticapy.core.vdataframe._typing import vDFTyping, vDCTyping
-from verticapy.core.vdataframe._utils import vDFUtils
+from verticapy.core.vdataframe._plotting import vDCPlot
 
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
@@ -83,28 +65,7 @@ from verticapy.sql.flex import (
 ###
 
 
-class vDataFrame(
-    vDFAgg,
-    vDFAnimatedPlot,
-    vDFCorr,
-    vDFEncode,
-    vDFEval,
-    vDFFill,
-    vDFFilter,
-    vDFInOut,
-    vDFJoinUnionSort,
-    vDFMath,
-    vDFMachineLearning,
-    vDFNorm,
-    vDFPivot,
-    vDFPlot,
-    vDFRead,
-    vDFRolling,
-    vDFSystem,
-    vDFText,
-    vDFTyping,
-    vDFUtils,
-):
+class vDataFrame(vDFAnimatedPlot):
     """
     An  object that  records  all  user modifications, allowing 
     users to  manipulate  the  relation  without  mutating  the 
@@ -170,16 +131,8 @@ class vDataFrame(
     """
 
     @property
-    def _object_type(self) -> Literal["vDataFrame"]:
+    def object_type(self) -> Literal["vDataFrame"]:
         return "vDataFrame"
-
-    @staticmethod
-    def _new_vdatacolumn(*args, **kwargs) -> "vDataColumn":
-        return vDataColumn(*args, **kwargs)
-
-    @classmethod
-    def _new_vdataframe(cls, *args, **kwargs) -> "vDataFrame":
-        return cls(*args, **kwargs)
 
     @save_verticapy_logs
     def __init__(
@@ -387,7 +340,7 @@ class vDataFrame(
         """
         usecols = format_type(usecols, dtype=list)
         args = object_[usecols] if len(usecols) > 0 else object_
-        vdf = _read_pandas(args)
+        vdf = read_pd(args)
         return self.__init__(input_relation=vdf._vars["main_relation"])
 
 
@@ -400,22 +353,7 @@ class vDataFrame(
 ##
 
 
-class vDataColumn(
-    vDCAgg,
-    vDCCorr,
-    vDCEncode,
-    vDCEval,
-    vDCFill,
-    vDCFilter,
-    vDCMath,
-    vDCNorm,
-    vDCPlot,
-    vDCRead,
-    vDCSystem,
-    vDCText,
-    vDCTyping,
-    StringSQL,
-):
+class vDataColumn(vDCPlot):
     """
     Python  object  which  that  stores all user  transformations. 
     If   the  vDataFrame   represents  the  entire  relation,   a 
@@ -448,7 +386,7 @@ class vDataColumn(
     """
 
     @property
-    def _object_type(self) -> Literal["vDC"]:
+    def object_type(self) -> Literal["vDataColumn"]:
         return "vDataColumn"
 
     def __init__(

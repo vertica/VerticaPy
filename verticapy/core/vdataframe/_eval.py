@@ -19,12 +19,16 @@ from typing import Any, Union, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
 
+from verticapy._utils._object import create_new_vdc
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy.errors import QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
+
+from verticapy.core.vdataframe._io import vDFInOut
+from verticapy.core.vdataframe._sys import vDCSystem
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -33,16 +37,16 @@ from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import isvmap
 
 
-class vDFEval:
+class vDFEval(vDFInOut):
     def __setattr__(self, attr: str, val: Any) -> None:
 
         obj_type = None
-        if hasattr(val, "_object_type"):
-            obj_type = val._object_type
+        if hasattr(val, "object_type"):
+            obj_type = val.object_type
 
         if isinstance(val, (str, StringSQL, int, float)) and obj_type != "vDataColumn":
             val = str(val)
-            if self._is_colname_in(attr):
+            if self.is_colname_in(attr):
                 self[attr].apply(func=val)
             else:
                 self.eval(name=attr, expr=val)
@@ -81,7 +85,7 @@ class vDFEval:
         if isinstance(expr, StringSQL):
             expr = str(expr)
         name = quote_ident(name.replace('"', "_"))
-        if self._is_colname_in(name):
+        if self.is_colname_in(name):
             raise NameError(
                 f"A vDataColumn has already the alias {name}.\n"
                 "By changing the parameter 'name', you'll "
@@ -122,7 +126,7 @@ class vDFEval:
             )
             for i in range(max_floor)
         ] + [(expr, ctype, category)]
-        new_vDataColumn = self._new_vdatacolumn(
+        new_vDataColumn = create_new_vdc(
             name, parent=self, transformations=transformations
         )
         setattr(self, name, new_vDataColumn)
@@ -136,6 +140,6 @@ class vDFEval:
         return self
 
 
-class vDCEval:
+class vDCEval(vDCSystem):
     def __setattr__(self, attr: str, val: Any) -> None:
         self.__dict__[attr] = val

@@ -100,10 +100,10 @@ def compute_vmap_keys(
         frequencies.
     """
     vmap = quote_ident(vmap_col)
-    if hasattr(expr, "_object_type") and (expr._object_type == "vDataFrame"):
+    if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
         if not expr[vmap_col].isvmap():
             raise ValueError(f"Virtual column {vmap_col} is not a VMAP.")
-        expr = expr._genSQL()
+        expr = expr.current_relation()
     return _executeSQL(
         query=f"""
             SELECT 
@@ -174,8 +174,8 @@ def isvmap(expr: Union[str, StringSQL], column: str,) -> bool:
         True if the column is a VMap.
     """
     column = quote_ident(column)
-    if hasattr(expr, "_object_type") and (expr._object_type == "vDataFrame"):
-        expr = expr._genSQL()
+    if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
+        expr = expr.current_relation()
     try:
         res = _executeSQL(
             query=f"""

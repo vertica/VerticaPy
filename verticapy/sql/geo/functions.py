@@ -62,7 +62,7 @@ def coordinate_converter(
     vDataFrame
         result of the transformation.
     """
-    x, y = vdf._format_colnames(x, y)
+    x, y = vdf.format_colnames(x, y)
 
     result = vdf.copy()
 
@@ -118,7 +118,7 @@ def intersect(
     vDataFrame
         object containing the result of the intersection.
     """
-    x, y, gid, g = vdf._format_colnames(x, y, gid, g)
+    x, y, gid, g = vdf.format_colnames(x, y, gid, g)
 
     if g:
         params = f"{gid}, {g}"

@@ -33,6 +33,7 @@ from verticapy._typing import (
     TYPE_CHECKING,
 )
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
@@ -50,6 +51,8 @@ from verticapy.errors import (
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._eval import vDFEval, vDCEval
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
@@ -59,7 +62,7 @@ from verticapy.core.vdataframe._multiprocessing import (
 )
 
 
-class vDFAgg:
+class vDFAgg(vDFEval):
 
     # Main Aggregate Functions.
 
@@ -149,7 +152,7 @@ class vDFAgg:
                     columns = self.numcol()
                     break
         else:
-            columns = self._format_colnames(columns)
+            columns = self.format_colnames(columns)
 
         # Some aggregations are not compatibles, we need to pre-compute them.
 
@@ -697,7 +700,7 @@ class vDFAgg:
         if method == "auto":
             method = "numerical" if (len(self.numcol()) > 0) else "categorical"
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         for i in range(len(columns)):
             columns[i] = quote_ident(columns[i])
         dtype, percent = {}, {}
@@ -1098,7 +1101,7 @@ class vDFAgg:
                         "has to be a list of booleans."
                     )
                 for item in elem:
-                    colname = self._format_colnames(item)
+                    colname = self.format_colnames(item)
                     if colname:
                         rollup_expr += colname
                         columns_to_select += [colname]
@@ -1108,7 +1111,7 @@ class vDFAgg:
                     rollup_expr += ", "
                 rollup_expr = rollup_expr[:-2] + "), "
             elif isinstance(elem, str):
-                colname = self._format_colnames(elem)
+                colname = self.format_colnames(elem)
                 if colname:
                     if (
                         not isinstance(rollup, bool)
@@ -1163,7 +1166,7 @@ class vDFAgg:
             rollup_expr_str = ", ".join([str(c) for c in columns_to_select])
         else:
             rollup_expr_str = rollup_expr
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
     # Single Aggregate Functions.
 
@@ -1672,7 +1675,7 @@ class vDFAgg:
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
             columns = self.get_columns()
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         columns = ", ".join(columns)
         main_table = f"""
             (SELECT 
@@ -1721,7 +1724,7 @@ class vDFAgg:
         return result
 
 
-class vDCAgg:
+class vDCAgg(vDCEval):
 
     # Main Aggregate Functions.
 
@@ -1825,7 +1828,7 @@ class vDCAgg:
             index = result.values["index"]
             result = result.values[self._alias]
         elif (method == "cat_stats") and (numcol != ""):
-            numcol = self._parent._format_colnames(numcol)
+            numcol = self._parent.format_colnames(numcol)
             assert self._parent[numcol].category() in ("float", "int"), TypeError(
                 "The column 'numcol' must be numerical"
             )

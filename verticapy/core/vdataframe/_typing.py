@@ -28,13 +28,15 @@ from verticapy.errors import ConversionError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._read import vDFRead, vDCRead
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.flex import isvmap
 
 
-class vDFTyping:
+class vDFTyping(vDFRead):
     @save_verticapy_logs
     def astype(self, dtype: dict) -> "vDataFrame":
         """
@@ -55,7 +57,7 @@ class vDFTyping:
             self
         """
         for column in dtype:
-            self[self._format_colnames(column)].astype(dtype=dtype[column])
+            self[self.format_colnames(column)].astype(dtype=dtype[column])
         return self
 
     @save_verticapy_logs
@@ -167,7 +169,7 @@ class vDFTyping:
         return columns
 
 
-class vDCTyping:
+class vDCTyping(vDCRead):
     @save_verticapy_logs
     def astype(self, dtype: Union[str, type]) -> "vDataFrame":
         """

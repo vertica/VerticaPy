@@ -25,10 +25,10 @@ from verticapy._typing import (
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 
-from verticapy.plotting._utils import PlottingUtils
+from verticapy.core.vdataframe._plotting import vDFPlot
 
 
-class vDFAnimatedPlot(PlottingUtils):
+class vDFAnimatedPlot(vDFPlot):
 
     # 1D CHARTS.
 
@@ -102,8 +102,8 @@ class vDFAnimatedPlot(PlottingUtils):
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
-        columns, ts, by = self._format_colnames(columns, ts, by)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        columns, ts, by = self.format_colnames(columns, ts, by)
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="AnimatedBarChart",
             chart=chart,
             matplotlib_kwargs={
@@ -199,8 +199,8 @@ class vDFAnimatedPlot(PlottingUtils):
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
-        columns, ts, by = self._format_colnames(columns, ts, by)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        columns, ts, by = self.format_colnames(columns, ts, by)
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="AnimatedPieChart",
             chart=chart,
             matplotlib_kwargs={
@@ -294,7 +294,7 @@ class vDFAnimatedPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, ts, by = self._format_colnames(columns, ts, by)
+        columns, ts, by = self.format_colnames(columns, ts, by)
         if by:
             if len(columns) != 1:
                 raise ValueError(
@@ -307,7 +307,7 @@ class vDFAnimatedPlot(PlottingUtils):
             vdf = self
             if not columns:
                 columns = vdf.numcol()
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="AnimatedLinePlot",
             chart=chart,
             matplotlib_kwargs={
@@ -422,7 +422,7 @@ class vDFAnimatedPlot(PlottingUtils):
                 f"Parameter 'columns' must include at least 2 numerical "
                 "vDataColumns and maximum 4 vDataColumns."
             )
-        columns, ts, by = self._format_colnames(columns, ts, by)
+        columns, ts, by = self.format_colnames(columns, ts, by)
         if len(columns) == 3 and not self[columns[2]].isnum():
             catcol = columns[2]
             columns = columns[0:2]
@@ -435,7 +435,7 @@ class vDFAnimatedPlot(PlottingUtils):
                 columns = columns[0:2] + [columns[3]]
         else:
             catcol = None
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="AnimatedBubblePlot",
             chart=chart,
             matplotlib_kwargs={

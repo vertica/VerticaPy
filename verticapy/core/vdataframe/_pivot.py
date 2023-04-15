@@ -17,10 +17,13 @@ permissions and limitations under the License.
 from typing import Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy.errors import EmptyParameter
+
+from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -28,7 +31,7 @@ if TYPE_CHECKING:
 from verticapy.sql.flex import compute_vmap_keys
 
 
-class vDFPivot:
+class vDFPivot(vDFJoinUnionSort):
     @save_verticapy_logs
     def flat_vmap(
         self,
@@ -112,7 +115,7 @@ class vDFPivot:
         skip_word = format_type(skip_word, dtype=list)
         group_dict = group_similar_names(columns, skip_word=skip_word)
         sql = f"SELECT {gen_coalesce(group_dict)} FROM {self}"
-        return self._new_vdataframe(sql)
+        return create_new_vdf(sql)
 
     @save_verticapy_logs
     def narrow(
@@ -146,7 +149,7 @@ class vDFPivot:
             the narrow table object.
         """
         index, columns = format_type(index, columns, dtype=list, na_out=self.numcol())
-        index, columns = self._format_colnames(index, columns)
+        index, columns = self.format_colnames(index, columns)
         for idx in index:
             if idx in columns:
                 columns.remove(idx)
@@ -173,7 +176,7 @@ class vDFPivot:
                 FROM {self})"""
             ]
         query = " UNION ALL ".join(query)
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
     melt = narrow
 
@@ -212,7 +215,7 @@ class vDFPivot:
         """
         if isinstance(prefix, NoneType):
             prefix = ""
-        index, columns, values = self._format_colnames(index, columns, values)
+        index, columns, values = self.format_colnames(index, columns, values)
         aggr = aggr.upper()
         if "{}" not in aggr:
             aggr += "({})"
@@ -235,7 +238,7 @@ class vDFPivot:
                     )
                     + f"AS '{prefix}{col}'"
                 ]
-        return self._new_vdataframe(
+        return create_new_vdf(
             f"""
             SELECT 
                 {index},

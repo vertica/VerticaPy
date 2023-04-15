@@ -21,23 +21,29 @@ single file.  No other file should have inner imports.
 from typing import Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+    from verticapy.core.vdataframe.base import vDataColumn, vDataFrame
     import verticapy.machine_learning.vertica as vml
 
 
-def _get_mllib() -> Literal["vml"]:
-    import verticapy.machine_learning.vertica as vml
+def create_new_vdc(*args, **kwargs) -> "vDataColumn":
+    from verticapy.core.vdataframe.base import vDataColumn
 
-    return vml
+    return vDataColumn(*args, **kwargs)
 
 
-def _get_vdf(*args, **kwargs) -> "vDataFrame":
+def create_new_vdf(*args, **kwargs) -> "vDataFrame":
     from verticapy.core.vdataframe.base import vDataFrame
 
     return vDataFrame(*args, **kwargs)
 
 
-def _read_pandas(*args, **kwargs) -> "vDataFrame":
+def get_vertica_mllib() -> Literal["vml"]:
+    import verticapy.machine_learning.vertica as vml
+
+    return vml
+
+
+def read_pd(*args, **kwargs) -> "vDataFrame":
     from verticapy.core.parsers.pandas import read_pandas
 
     return read_pandas(*args, **kwargs)

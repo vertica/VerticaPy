@@ -41,7 +41,7 @@ class Scaler(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["Scaler"]:
+    def object_type(self) -> Literal["Scaler"]:
         return "Scaler"
 
     @property
@@ -113,7 +113,7 @@ class StandardScaler(Scaler):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["StandardScaler"]:
+    def object_type(self) -> Literal["StandardScaler"]:
         return "StandardScaler"
 
     # System & Special Methods.
@@ -138,7 +138,7 @@ class MinMaxScaler(Scaler):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["MinMaxScaler"]:
+    def object_type(self) -> Literal["MinMaxScaler"]:
         return "MinMaxScaler"
 
     # System & Special Methods.
@@ -175,7 +175,7 @@ class OneHotEncoder(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["OneHotEncoder"]:
+    def object_type(self) -> Literal["OneHotEncoder"]:
         return "OneHotEncoder"
 
     @property

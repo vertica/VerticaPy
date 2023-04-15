@@ -343,16 +343,12 @@ def anova_table(
     TableSample
         anova table.
     """
-    if isinstance(input_relation, str):
-        relation = input_relation
-    else:
-        relation = input_relation._genSQL()
     n, avg = _executeSQL(
         query=f"""
         SELECT /*+LABEL('learn.metrics.anova_table')*/
             COUNT(*), 
             AVG({y_true}) 
-        FROM {relation} 
+        FROM {input_relation} 
         WHERE {y_true} IS NOT NULL 
           AND {y_score} IS NOT NULL;""",
         title="Computing n and the average of y.",
@@ -364,7 +360,7 @@ def anova_table(
                 SUM(POWER({y_score} - {avg}, 2)), 
                 SUM(POWER({y_true} - {y_score}, 2)), 
                 SUM(POWER({y_true} - {avg}, 2)) 
-            FROM {relation} 
+            FROM {input_relation} 
             WHERE {y_score} IS NOT NULL 
               AND {y_true} IS NOT NULL;""",
         title="Computing SSR, SSE, SST.",

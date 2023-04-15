@@ -78,9 +78,8 @@ def import_lib_udf(
     udx_str, sql = generate_lib_udf(
         udf_list, library_name, include_dependencies, f"{directory}/{file_name}"
     )
-    f = open(f"{directory}/{file_name}", "w", encoding="utf-8")
-    f.write(udx_str)
-    f.close()
+    with open(f"{directory}/{file_name}", "w", encoding="utf-8") as f:
+        f.write(udx_str)
     try:
         for idx, query in enumerate(sql):
             _executeSQL(query, title=f"UDF installation. [step {idx}]")

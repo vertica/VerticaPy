@@ -39,7 +39,7 @@ class LinearModel(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["LinearModel"]:
+    def object_type(self) -> Literal["LinearModel"]:
         return "LinearModel"
 
     @property
@@ -174,7 +174,7 @@ class LinearModelClassifier(LinearModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["LinearModelClassifier"]:
+    def object_type(self) -> Literal["LinearModelClassifier"]:
         return "LinearModelClassifier"
 
     # Prediction / Transformation Methods - IN MEMORY.

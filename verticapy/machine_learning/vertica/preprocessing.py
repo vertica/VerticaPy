@@ -347,12 +347,11 @@ class Preprocessing(Unsupervised):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = vdf._format_colnames(X)
-        relation = vdf._genSQL()
+        X = vdf.format_colnames(X)
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         columns = self.deploySQL(all_columns, exclude_columns, exclude_columns)
-        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
+        main_relation = f"(SELECT {columns} FROM {vdf}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
     def inverse_transform(
@@ -387,14 +386,13 @@ class Preprocessing(Unsupervised):
             X = self._get_names()
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = vdf._format_colnames(X)
-        relation = vdf._genSQL()
+        X = vdf.format_colnames(X)
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         inverse_sql = self.deployInverseSQL(
             exclude_columns, exclude_columns, all_columns
         )
-        main_relation = f"(SELECT {inverse_sql} FROM {relation}) VERTICAPY_SUBTABLE"
+        main_relation = f"(SELECT {inverse_sql} FROM {vdf}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
 
@@ -584,7 +582,7 @@ class CountVectorizer(VerticaModel):
         if isinstance(input_relation, vDataFrame):
             if isinstance(X, NoneType):
                 X = input_relation.get_columns()
-            self.input_relation = input_relation._genSQL()
+            self.input_relation = input_relation.current_relation()
         else:
             if isinstance(X, NoneType):
                 X = vDataFrame(input_relation).get_columns()

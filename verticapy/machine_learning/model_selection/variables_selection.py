@@ -407,11 +407,8 @@ def stepwise(
     if not conf.get_option("overwrite_model"):
         estimator._is_already_stored(raise_error=True)
     res, current_step = [], 0
-    table = (
-        input_relation if isinstance(input_relation, str) else input_relation._genSQL()
-    )
     avg = _executeSQL(
-        f"SELECT /*+LABEL('stepwise')*/ AVG({y}) FROM {table}",
+        f"SELECT /*+LABEL('stepwise')*/ AVG({y}) FROM {input_relation}",
         method="fetchfirstelem",
         print_time_sql=False,
     )
@@ -535,7 +532,7 @@ def stepwise(
         estimator.drop()
     res.best_list_ = X_current
     if show:
-        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
             class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {

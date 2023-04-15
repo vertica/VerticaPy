@@ -125,7 +125,7 @@ class LinearModel:
                 "importance": fi,
             }
             layout = {"columns": copy.deepcopy(self.X)}
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
@@ -171,7 +171,7 @@ class LinearModel:
         object
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="RegressionPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.RegressionPlot(
@@ -235,7 +235,7 @@ class LinearModelClassifier(LinearModel):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="LogisticRegressionPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LogisticRegressionPlot(

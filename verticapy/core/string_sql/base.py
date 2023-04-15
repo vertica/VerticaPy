@@ -27,7 +27,7 @@ class StringSQL:
     """
 
     @property
-    def _object_type(self) -> Literal["StringSQL"]:
+    def object_type(self) -> Literal["StringSQL"]:
         return "StringSQL"
 
     def __init__(

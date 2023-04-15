@@ -29,7 +29,7 @@ from vertica_python.errors import QueryError
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, PlottingObject, SQLColumns
 from verticapy._utils._gen import gen_name, gen_tmp_name
-from verticapy._utils._object import _get_mllib
+from verticapy._utils._object import get_vertica_mllib, create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -38,10 +38,12 @@ from verticapy.errors import EmptyParameter, VersionError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._encoding import vDFEncode, vDCEncode
+
 from verticapy.sql.drop import drop
 
 
-class vDFCorr:
+class vDFCorr(vDFEncode):
 
     # System Methods.
 
@@ -62,7 +64,7 @@ class vDFCorr:
         if method == "cov":
             method_name = "Covariance"
             method_type = ""
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         if method != "cramer":
             for column in columns:
                 assert self[column].isnum(), TypeError(
@@ -480,7 +482,7 @@ class vDFCorr:
                     )
                     else None
                 )
-                vpy_plt, kwargs = self._get_plotting_lib(
+                vpy_plt, kwargs = self.get_plotting_lib(
                     class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {"X": matrix}
@@ -545,7 +547,7 @@ class vDFCorr:
                     "No numerical column found in the vDataFrame."
                 )
         else:
-            cols = self._format_colnames(columns)
+            cols = self.format_colnames(columns)
         if method != "cramer":
             method_name = "Correlation"
             method_type = f" using the method = '{method}'"
@@ -694,7 +696,7 @@ class vDFCorr:
                 )
                 else None
             )
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
@@ -789,7 +791,7 @@ class vDFCorr:
         """
         method = str(method).lower()
         columns = format_type(columns, dtype=list, na_out=self.numcol())
-        columns, focus = self._format_colnames(columns, focus)
+        columns, focus = self.format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
         kwargs = {
@@ -863,7 +865,7 @@ class vDFCorr:
             (Correlation Coefficient, pvalue)
         """
         method = str(method).lower()
-        column1, column2 = self._format_colnames(column1, column2)
+        column1, column2 = self.format_colnames(column1, column2)
         if method.startswith("kendall"):
             if method == "kendall":
                 kendall_type = "b"
@@ -1048,7 +1050,7 @@ class vDFCorr:
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, focus = self._format_colnames(columns, focus)
+        columns, focus = self.format_colnames(columns, focus)
         fun = self._aggregate_matrix
         args = []
         kwargs = {
@@ -1138,7 +1140,7 @@ class vDFCorr:
             assert columns, EmptyParameter(
                 "No numerical column found in the vDataFrame."
             )
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vDataColumn {column} must be numerical to compute the Regression Matrix."
@@ -1214,7 +1216,7 @@ class vDFCorr:
                     current = np.nan
                 matrix[i][j] = current
         if show:
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
@@ -1339,7 +1341,7 @@ class vDFCorr:
         method = str(method).lower()
         if isinstance(by, str):
             by = [by]
-        by, column, ts = self._format_colnames(by, column, ts)
+        by, column, ts = self.format_colnames(by, column, ts)
         if unit == "rows":
             table = self._genSQL()
         else:
@@ -1355,9 +1357,9 @@ class vDFCorr:
         ]
         query = f"SELECT {', '.join([column] + columns)} FROM {table}"
         if len(p) == 1:
-            return self._new_vdataframe(query).corr([], method=method)
+            return create_new_vdf(query).corr([], method=method)
         elif kind == "heatmap":
-            return self._new_vdataframe(query).corr(
+            return create_new_vdf(query).corr(
                 [],
                 method=method,
                 mround=mround,
@@ -1366,7 +1368,7 @@ class vDFCorr:
                 **style_kwargs,
             )
         else:
-            result = self._new_vdataframe(query).corr(
+            result = create_new_vdf(query).corr(
                 [], method=method, focus=column, show=False
             )
             columns = copy.deepcopy(result.values["index"])
@@ -1392,7 +1394,7 @@ class vDFCorr:
             if acf_band:
                 result.values["confidence"] = acf_band
             if show:
-                vpy_plt, kwargs = self._get_plotting_lib(
+                vpy_plt, kwargs = self.get_plotting_lib(
                     class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {
@@ -1498,7 +1500,7 @@ class vDFCorr:
         obj
             Plotting Object.
         """
-        vml = _get_mllib()
+        vml = get_vertica_mllib()
         if isinstance(by, str):
             by = [by]
         if isinstance(p, Iterable) and (len(p) == 1):
@@ -1509,7 +1511,7 @@ class vDFCorr:
                 return self.acf(
                     ts=ts, column=column, by=by, p=[1], unit=unit, method=method
                 )
-            by, column, ts = self._format_colnames(by, column, ts)
+            by, column, ts = self.format_colnames(by, column, ts)
             if unit == "rows":
                 table = self._genSQL()
             else:
@@ -1537,7 +1539,7 @@ class vDFCorr:
                     CREATE VIEW {tmp_view_name} 
                         AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
                 _executeSQL(query, print_time_sql=False)
-                vdf = self._new_vdataframe(tmp_view_name)
+                vdf = create_new_vdf(tmp_view_name)
                 drop(tmp_lr0_name, method="model")
                 model = vml.LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
@@ -1585,7 +1587,7 @@ class vDFCorr:
             if pacf_band:
                 result.values["confidence"] = pacf_band
             if show:
-                vpy_plt, kwargs = self._get_plotting_lib(
+                vpy_plt, kwargs = self.get_plotting_lib(
                     class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
                 )
                 data = {
@@ -1641,7 +1643,7 @@ class vDFCorr:
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, y = self._format_colnames(columns, y)
+        columns, y = self.format_colnames(columns, y)
         if not columns:
             columns = self.get_columns(exclude_columns=[y])
         importance = np.array(
@@ -1652,7 +1654,7 @@ class vDFCorr:
                 "importance": importance,
             }
             layout = {"columns": copy.deepcopy(columns), "x_label": "IV"}
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
@@ -1661,7 +1663,7 @@ class vDFCorr:
         )
 
 
-class vDCCorr:
+class vDCCorr(vDCEncode):
 
     # Weight of Evidence.
 
@@ -1686,7 +1688,7 @@ class vDCCorr:
         obj
             Tablesample.
         """
-        y = self._parent._format_colnames(y)
+        y = self._parent.format_colnames(y)
         assert self._parent[y].nunique() == 2, TypeError(
             f"vDataColumn {y} must be binary to use iv_woe."
         )

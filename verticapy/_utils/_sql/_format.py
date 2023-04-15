@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 import verticapy._config.config as conf
-from verticapy._utils._object import _read_pandas
+from verticapy._utils._object import read_pd
 from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
@@ -119,8 +119,8 @@ def format_magic(
         string are enclosed by single quotes "'"
     """
     object_type = None
-    if hasattr(x, "_object_type"):
-        object_type = x._object_type
+    if hasattr(x, "object_type"):
+        object_type = x.object_type
     if object_type == "vDataColumn":
         val = x._alias
     elif (isinstance(x, (int, float, np.int_)) and not cast_float_int_to_str) or (
@@ -297,14 +297,14 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
                 fail = True
         if not fail:
             object_type = None
-            if hasattr(val, "_object_type"):
-                object_type = val._object_type
+            if hasattr(val, "object_type"):
+                object_type = val.object_type
             if object_type == "vDataFrame":
-                val = val._genSQL()
+                val = val.current_relation()
             elif object_type == "TableSample":
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
             elif isinstance(val, pd.DataFrame):
-                val = _read_pandas(val)._genSQL()
+                val = read_pd(val).current_relation()
             elif isinstance(val, list):
                 val = ", ".join(["NULL" if x is None else str(x) for x in val])
             query_tmp = query_tmp.replace(v, str(val))

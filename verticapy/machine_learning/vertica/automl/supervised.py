@@ -683,7 +683,7 @@ class AutoML(VerticaModel):
                 "importance": self.stepwise_["importance"],
             }
             layout = {"columns": copy.deepcopy(self.stepwise_["variable"])}
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
@@ -731,7 +731,7 @@ class AutoML(VerticaModel):
                 "title": "Model Type",
                 "reverse": (True, self.parameters["reverse"]),
             }
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ChampionChallengerPlot",
                 chart=chart,
                 matplotlib_kwargs={"plt_text": True},
@@ -741,7 +741,7 @@ class AutoML(VerticaModel):
                 **kwargs
             )
         else:
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {

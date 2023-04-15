@@ -82,10 +82,7 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {
-            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
-            "value": list(data),
-        }
+        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -149,12 +146,7 @@ def dummy_dist_vd():
 @pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date",
-        column="number",
-        p=12,
-        by=["state"],
-        unit="month",
-        method="spearman",
+        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
     )
 
 
@@ -242,8 +234,7 @@ def lift_chart_plot_result(load_plotly, dummy_probability_data):
 def voronoi_plot_result(load_plotly, iris_vd):
     model = KMeans(name="test_KMeans_iris")
     model.fit(
-        iris_vd,
-        ["PetalLengthCm", "PetalWidthCm"],
+        iris_vd, ["PetalLengthCm", "PetalWidthCm"],
     )
     return model.plot_voronoi()
 
@@ -498,13 +489,7 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -528,13 +513,7 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         assert (
             len(
                 set(
@@ -2269,8 +2248,7 @@ class TestMachineLearningLiftChart:
         custom_width = 700
         model = KMeans(name="public.KMeans_iris")
         model.fit(
-            iris_vd,
-            ["PetalLengthCm", "PetalWidthCm"],
+            iris_vd, ["PetalLengthCm", "PetalWidthCm"],
         )
         # Act
         result = model.plot_voronoi(width=custom_width, height=custom_height)

@@ -18,6 +18,7 @@ import copy
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from verticapy._typing import SQLColumns, SQLExpression, SQLRelation
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     extract_and_rename_subquery,
@@ -26,11 +27,13 @@ from verticapy._utils._sql._format import (
 )
 from verticapy._utils._sql._vertica_version import vertica_version
 
+from verticapy.core.vdataframe._math import vDFMath
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFJoinUnionSort:
+class vDFJoinUnionSort(vDFMath):
     @save_verticapy_logs
     def append(
         self,
@@ -81,7 +84,7 @@ class vDFJoinUnionSort:
             (SELECT 
                 {columns2} 
              FROM {input_relation})"""
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
     @save_verticapy_logs
     def join(
@@ -191,12 +194,12 @@ class vDFJoinUnionSort:
             (key, on_interpolate[key], "linterpolate") for key in on_interpolate
         ]
         # Checks
-        self._format_colnames([x[0] for x in on_list])
+        self.format_colnames([x[0] for x in on_list])
         object_type = None
-        if hasattr(input_relation, "_object_type"):
-            object_type = input_relation._object_type
+        if hasattr(input_relation, "object_type"):
+            object_type = input_relation.object_type
         if object_type == "vDataFrame":
-            input_relation._format_colnames([x[1] for x in on_list])
+            input_relation.format_colnames([x[1] for x in on_list])
         # Relations
         first_relation = extract_and_rename_subquery(self._genSQL(), alias="x")
         second_relation = extract_and_rename_subquery(f"{input_relation}", alias="y")
@@ -259,7 +262,7 @@ class vDFJoinUnionSort:
         query = (
             f"SELECT {expr} FROM {first_relation}{how}JOIN {second_relation} {on_join}"
         )
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
     @save_verticapy_logs
     def sort(self, columns: Union[SQLColumns, dict]) -> "vDataFrame":
@@ -280,7 +283,7 @@ class vDFJoinUnionSort:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         max_pos = 0
         for column in self._vars["columns"]:
             max_pos = max(max_pos, len(self[column]._transf) - 1)

@@ -21,6 +21,7 @@ from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
 from verticapy._typing import SQLColumns
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
@@ -35,6 +36,8 @@ from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._utils import vDFUtils
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
@@ -42,7 +45,7 @@ if conf.get_import_success("IPython"):
     from IPython.display import HTML, display
 
 
-class vDFRead:
+class vDFRead(vDFUtils):
     def __iter__(self) -> tuple:
         columns = self.get_columns()
         return (col for col in columns)
@@ -72,7 +75,7 @@ class vDFRead:
                 FROM {self}
                 {self._get_last_order_by()} 
                 OFFSET {index_start}{limit}"""
-            return self._new_vdataframe(query)
+            return create_new_vdf(query)
 
         elif isinstance(index, int):
             columns = self.get_columns()
@@ -96,13 +99,13 @@ class vDFRead:
 
         elif isinstance(index, (str, StringSQL)):
             is_sql = False
-            if hasattr(index, "_object_type") and index._object_type == "vDataColumn":
+            if hasattr(index, "object_type") and index.object_type == "vDataColumn":
                 index = index._alias
             elif isinstance(index, StringSQL):
                 index = str(index)
                 is_sql = True
             try:
-                new_index = self._format_colnames(index)
+                new_index = self.format_colnames(index)
                 return getattr(self, new_index)
             except:
                 if is_sql:
@@ -151,7 +154,7 @@ class vDFRead:
                     if cnt == 0:
                         res.percent[column] = 100.0
                     else:
-                        res.percent[column] = percent[self._format_colnames(column)][0]
+                        res.percent[column] = percent[self.format_colnames(column)][0]
             return res
         max_rows = self._vars["max_rows"]
         if max_rows <= 0:
@@ -242,7 +245,7 @@ class vDFRead:
             result.
         """
         columns = format_type(columns, dtype=list, na_out=self.get_columns())
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         if offset < 0:
             offset = max(0, self.shape()[0] - limit)
         all_columns = []
@@ -283,7 +286,7 @@ class vDFRead:
                 if result.count == 0:
                     result.percent[column] = 100.0
                 elif all_percent:
-                    result.percent[column] = percent[self._format_colnames(column)][0]
+                    result.percent[column] = percent[self.format_colnames(column)][0]
         return result
 
     def shape(self) -> tuple[int, int]:
@@ -347,7 +350,7 @@ class vDFRead:
         """
         columns = format_type(columns, dtype=list)
         for i in range(len(columns)):
-            column = self._format_colnames(columns[i], raise_error=False)
+            column = self.format_colnames(columns[i], raise_error=False)
             if column:
                 dtype = ""
                 if self._vars["isflex"]:
@@ -365,10 +368,19 @@ class vDFRead:
             else:
                 columns[i] = str(columns[i])
         query = f"SELECT  {', '.join(columns)} FROM {self}"
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
 
 class vDCRead:
+    def __init__(self):
+        """Must be overridden in final class"""
+        self._parent = create_new_vdf(_empty=True)
+        self._alias = ""
+        self._transf = []
+        self._catalog = {}
+        self._init_transf = ""
+        self._init = False
+
     def __getitem__(self, index) -> Any:
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(

@@ -180,7 +180,7 @@ def chartSQL(
             if len(cols) > 2:
                 kind = "nested_pie"
     class_name = CLASS_NAME_MAP[kind]
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(class_name=class_name)
+    vpy_plt, kwargs = PlottingUtils().get_plotting_lib(class_name=class_name)
     graph = getattr(vpy_plt, class_name)
     return graph(query=query, **get_kind_option(kind)).draw(**kwargs)
 
@@ -272,9 +272,9 @@ def chart_magic(
         raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
     if "-f" in options:
-        f = open(options["-f"], "r", encoding="utf-8")
-        query = f.read()
-        f.close()
+        with open(options["-f"], "r", encoding="utf-8") as f:
+            query = f.read()
+            f.close()
 
     elif "-c" in options:
         query = options["-c"]

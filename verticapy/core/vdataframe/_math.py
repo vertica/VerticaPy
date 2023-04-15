@@ -30,13 +30,15 @@ from verticapy.errors import MissingColumn, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 from verticapy.sql.dtypes import get_data_types
 
 
-class vDFMath:
+class vDFMath(vDFFilter):
     def __abs__(self) -> "vDataFrame":
         return self.copy().abs()
 
@@ -87,7 +89,7 @@ class vDFMath:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self.numcol() if not columns else self._format_colnames(columns)
+        columns = self.numcol() if not columns else self.format_colnames(columns)
         func = {}
         for column in columns:
             if not self[column].isbool():
@@ -183,7 +185,7 @@ class vDFMath:
             self
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
-        columns, by = self._format_colnames(columns, by)
+        columns, by = self.format_colnames(columns, by)
         by_name = ["by"] + by if by else []
         by_order = ["order_by"] + list(order_by) if (order_by) else []
         if not name:
@@ -471,7 +473,7 @@ class vDFMath:
          vDataFrame
             self
         """
-        func = self._format_colnames(func)
+        func = self.format_colnames(func)
         for column in func:
             self[column].apply(func[column])
         return self
@@ -507,7 +509,7 @@ class vDFMath:
         return self.apply(function)
 
 
-class vDCMath:
+class vDCMath(vDCFilter):
     def __len__(self) -> int:
         return int(self.count())
 

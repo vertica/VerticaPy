@@ -206,7 +206,7 @@ def validation_curve(
             "test_score_upper": Y[:, 5],
         }
     )
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+    vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
         class_name="RangeCurve", chart=chart, style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
@@ -264,12 +264,12 @@ def plot_acf_pacf(
         acf, pacf, confidence
     """
     by = format_type(by, dtype=list)
-    by, column, ts = vdf._format_colnames(by, column, ts)
+    by, column, ts = vdf.format_colnames(by, column, ts)
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     index = [i for i in range(0, len(acf.values["value"]))]
     if show:
-        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
             class_name="ACFPACFPlot", style_kwargs=style_kwargs,
         )
         data = {

@@ -18,7 +18,7 @@ from typing import Literal, TYPE_CHECKING
 
 import numpy as np
 
-from verticapy._utils._object import _get_vdf
+from verticapy._utils._object import create_new_vdf
 from verticapy._typing import ColorType
 
 from verticapy.core.tablesample.base import TableSample
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 class PlottingBaseSQL:
     @staticmethod
     def _get_vdataframe_from_query(query: str) -> "vDataFrame":
-        return _get_vdf(input_relation=query)
+        return create_new_vdf(input_relation=query)
 
     # 1D AGG Graphics: BAR / PIE ...
 

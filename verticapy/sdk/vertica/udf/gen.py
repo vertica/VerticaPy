@@ -107,11 +107,10 @@ def generate_lib_udf(
                     "The parameter include_dependencies type must be <list> of <str>. "
                     f"Found {type(dep_file_path)} inside."
                 )
-            f = open(dep_file_path, "r", encoding="utf-8")
-            file_str = f.read()
-            exec(file_str)
-            udx_str += "\n" + file_str + "\n"
-            f.close()
+            with open(dep_file_path, "r", encoding="utf-8") as f:
+                file_str = f.read()
+                exec(file_str)
+                udx_str += "\n" + file_str + "\n"
     udx_str += "\n"
     sql = []
     for udf in udf_list:
@@ -127,12 +126,10 @@ def generate_lib_udf(
         f"CREATE OR REPLACE LIBRARY {library_name} AS '{file_path}' LANGUAGE 'Python';"
     ] + sql
     if create_file:
-        f = open(file_path, "w", encoding="utf-8")
-        f.write(udx_str)
-        f.close()
-        f = open(sql_path, "w", encoding="utf-8")
-        f.write("\n".join(sql))
-        f.close()
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(udx_str)
+        with open(sql_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(sql))
     else:
         return udx_str, sql
 

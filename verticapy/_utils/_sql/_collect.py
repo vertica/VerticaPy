@@ -41,8 +41,8 @@ def _dict_to_json_string(
         json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
     for key in json_dict:
         object_type = None
-        if hasattr(json_dict[key], "_object_type"):
-            object_type = json_dict[key]._object_type
+        if hasattr(json_dict[key], "object_type"):
+            object_type = json_dict[key].object_type
         json += f'"{key}": '
         if isinstance(json_dict[key], bool):
             json += "true" if json_dict[key] else "false"
@@ -51,7 +51,7 @@ def _dict_to_json_string(
         elif json_dict[key] is None:
             json += "null"
         elif object_type == "vDataFrame":
-            json_dict_str = json_dict[key]._genSQL().replace('"', '\\"')
+            json_dict_str = json_dict[key].current_relation().replace('"', '\\"')
             json += f'"{json_dict_str}"'
         elif object_type == "VerticaModel":
             json += f'"{json_dict[key]._model_type}"'

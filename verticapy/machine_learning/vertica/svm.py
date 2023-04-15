@@ -269,7 +269,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="SVMClassifierPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.SVMClassifierPlot(

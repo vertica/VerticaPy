@@ -28,7 +28,7 @@ import pandas as pd
 import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._display import print_table
-from verticapy._utils._object import _get_vdf
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._display import print_query, print_time
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -79,7 +79,7 @@ class TableSample:
 	"""
 
     @property
-    def _object_type(self) -> Literal["TableSample"]:
+    def object_type(self) -> Literal["TableSample"]:
         return "TableSample"
 
     def __init__(
@@ -647,4 +647,4 @@ class TableSample:
      	vDataFrame
      		vDataFrame of the TableSample.
 		"""
-        return _get_vdf(self.to_sql())
+        return create_new_vdf(self.to_sql())

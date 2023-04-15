@@ -34,7 +34,7 @@ class InMemoryModel:
 
     @property
     @abstractmethod
-    def _object_type(self) -> str:
+    def object_type(self) -> str:
         """Must be overridden in child class"""
         raise NotImplementedError
 
@@ -48,7 +48,7 @@ class InMemoryModel:
 
     def __repr__(self) -> str:
         """Returns the model Representation."""
-        return f"<{self._object_type}>"
+        return f"<{self.object_type}>"
 
     # Attributes Methods.
 
@@ -71,7 +71,7 @@ class MulticlassClassifier(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["MulticlassClassifier"]:
+    def object_type(self) -> Literal["MulticlassClassifier"]:
         return "MulticlassClassifier"
 
     # Prediction / Transformation Methods - IN MEMORY.

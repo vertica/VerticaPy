@@ -45,7 +45,7 @@ class Test_InMemoryModel:
         assert attributes["coef"][0] == 0.4
         assert attributes["coef"][1] == 0.5
         assert attributes["intercept"] == 0.8
-        assert model._object_type == "LinearModel"
+        assert model.object_type == "LinearModel"
 
     def test_LinearModelClassifier(self):
         model = mm.LinearModelClassifier(**{"coef": [0.5, 0.6], "intercept": 0.8})
@@ -74,7 +74,7 @@ class Test_InMemoryModel:
         assert attributes["coef"][0] == 0.4
         assert attributes["coef"][1] == 0.5
         assert attributes["intercept"] == 0.8
-        assert model._object_type == "LinearModelClassifier"
+        assert model.object_type == "LinearModelClassifier"
 
     def test_PCA(self):
         model = mm.PCA(
@@ -109,7 +109,7 @@ class Test_InMemoryModel:
         assert attributes["principal_components"][1][1] == pytest.approx(1.06294744)
         assert attributes["mean"][0] == 0.9
         assert attributes["mean"][1] == 0.8
-        assert model._object_type == "PCA"
+        assert model.object_type == "PCA"
 
     def test_SVD(self):
         model = mm.SVD(**{"vectors": [[0.4, 0.5], [0.3, 0.2]], "values": [0.1, 0.3]})
@@ -136,7 +136,7 @@ class Test_InMemoryModel:
         assert attributes["vectors"][1][1] == 0.8
         assert attributes["values"][0] == 0.9
         assert attributes["values"][1] == 0.8
-        assert model._object_type == "SVD"
+        assert model.object_type == "SVD"
 
     def test_MinMaxScaler(self):
         model = mm.MinMaxScaler(**{"min_": [0.4, 0.3], "max_": [0.5, 0.2],})
@@ -151,7 +151,7 @@ class Test_InMemoryModel:
         assert model.sub_[1] == 0.3
         assert model.den_[0] == pytest.approx(0.1)
         assert model.den_[1] == pytest.approx(-0.1)
-        assert model._object_type == "MinMaxScaler"
+        assert model.object_type == "MinMaxScaler"
 
     def test_StandardScaler(self):
         model = mm.StandardScaler(**{"mean": [0.4, 0.3], "std": [0.5, 0.2],})
@@ -168,7 +168,7 @@ class Test_InMemoryModel:
         assert model.sub_[1] == 0.6
         assert model.den_[0] == 0.4
         assert model.den_[1] == 0.3
-        assert model._object_type == "StandardScaler"
+        assert model.object_type == "StandardScaler"
 
     def test_OneHotEncoder(self):
         model = mm.OneHotEncoder(
@@ -243,7 +243,7 @@ class Test_InMemoryModel:
             transformation_sql[1][1]
             == '(CASE WHEN pclass = 3 THEN 1 ELSE 0 END) AS "pclass_3"'
         )
-        assert model._object_type == "OneHotEncoder"
+        assert model.object_type == "OneHotEncoder"
 
     def test_KMeans(self):
         model = mm.KMeans(**{"clusters": [[0.5, 0.6], [1, 2], [100, 200]], "p": 2})
@@ -297,7 +297,7 @@ class Test_InMemoryModel:
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model._object_type == "KMeans"
+        assert model.object_type == "KMeans"
 
     def test_NearestCentroid(self):
         model = mm.NearestCentroid(
@@ -360,7 +360,7 @@ class Test_InMemoryModel:
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model._object_type == "NearestCentroid"
+        assert model.object_type == "NearestCentroid"
 
     def test_BisectingKMeans(self):
         model = mm.BisectingKMeans(
@@ -404,7 +404,7 @@ class Test_InMemoryModel:
         assert attributes["clusters"][0][0] == 0.1
         assert attributes["clusters"][0][1] == 0.2
         assert attributes["p"] == 3
-        assert model._object_type == "BisectingKMeans"
+        assert model.object_type == "BisectingKMeans"
 
     def test_BinaryTreeRegressor(self):
         model = mm.BinaryTreeRegressor(
@@ -435,7 +435,7 @@ class Test_InMemoryModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2] == 3
         assert attributes["value"][3] == 11
-        assert model._object_type == "BinaryTreeRegressor"
+        assert model.object_type == "BinaryTreeRegressor"
 
     def test_BinaryTreeClassifier(self):
         model = mm.BinaryTreeClassifier(
@@ -490,7 +490,7 @@ class Test_InMemoryModel:
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1
         assert attributes["classes"][2] == 2
-        assert model._object_type == "BinaryTreeClassifier"
+        assert model.object_type == "BinaryTreeClassifier"
 
     def test_NonBinaryTree(self, titanic_vd):
         tree = titanic_vd.chaid("survived", ["sex", "fare"]).tree_
@@ -525,7 +525,7 @@ class Test_InMemoryModel:
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1
-        assert model._object_type == "NonBinaryTree"
+        assert model.object_type == "NonBinaryTree"
 
     def test_RandomForestRegressor(self):
         model1 = mm.BinaryTreeRegressor(
@@ -575,7 +575,7 @@ class Test_InMemoryModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2] == 3
         assert attributes["value"][3] == 11
-        assert model._object_type == "RandomForestRegressor"
+        assert model.object_type == "RandomForestRegressor"
 
     def test_RandomForestClassifier(self):
         model1 = mm.BinaryTreeClassifier(
@@ -671,7 +671,7 @@ class Test_InMemoryModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        assert model._object_type == "RandomForestClassifier"
+        assert model.object_type == "RandomForestClassifier"
 
     def test_XGBRegressor(self):
         model1 = mm.BinaryTreeRegressor(
@@ -730,7 +730,7 @@ class Test_InMemoryModel:
         attributes = model.get_attributes()
         assert attributes["eta"] == 0.2
         assert attributes["mean"] == 2.0
-        assert model._object_type == "XGBRegressor"
+        assert model.object_type == "XGBRegressor"
 
     def test_XGBClassifier(self):
         model1 = mm.BinaryTreeClassifier(
@@ -832,7 +832,7 @@ class Test_InMemoryModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        assert model._object_type == "XGBClassifier"
+        assert model.object_type == "XGBClassifier"
 
     def test_NaiveBayes(self):
         model = mm.NaiveBayes(
@@ -921,4 +921,4 @@ class Test_InMemoryModel:
         assert attributes["attributes"][1]["type"] == "multinomial"
         assert attributes["attributes"][2]["type"] == "bernoulli"
         assert attributes["attributes"][3]["type"] == "categorical"
-        assert model._object_type == "NaiveBayes"
+        assert model.object_type == "NaiveBayes"

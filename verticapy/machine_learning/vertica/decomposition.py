@@ -235,14 +235,13 @@ class Decomposition(Preprocessing):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
-        X = vdf._format_colnames(X)
-        relation = vdf._genSQL()
+        X = vdf.format_colnames(X)
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         columns = self.deploySQL(
             all_columns, n_components, cutoff, exclude_columns, exclude_columns,
         )
-        main_relation = f"(SELECT {columns} FROM {relation}) VERTICAPY_SUBTABLE"
+        main_relation = f"(SELECT {columns} FROM {vdf}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
 
     # Plotting Methods.
@@ -279,7 +278,7 @@ class Decomposition(Preprocessing):
                 dim_perc += [""]
             else:
                 dim_perc += [f" ({round(self.explained_variance_[d - 1] * 100, 1)}%)"]
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ScatterPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.ScatterPlot(
@@ -325,7 +324,7 @@ class Decomposition(Preprocessing):
         else:
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCACirclePlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
@@ -361,7 +360,7 @@ class Decomposition(Preprocessing):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
@@ -585,7 +584,7 @@ class MCA(PCA):
         variables, contribution = zip(
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(contribution)
@@ -638,7 +637,7 @@ class MCA(PCA):
         variables, quality = zip(
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
@@ -720,7 +719,7 @@ class MCA(PCA):
                         for i in range(n)
                     ]
                 )
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="PCAVarPlot", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
