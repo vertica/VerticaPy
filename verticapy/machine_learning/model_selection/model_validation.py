@@ -279,7 +279,7 @@ def learning_curve(
     input_relation: SQLRelation,
     X: SQLColumns,
     y: str,
-    sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
+    sizes: Optional[list] = None,
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
@@ -398,6 +398,7 @@ def learning_curve(
     TableSample
         result of the learning curve.
     """
+    sizes = format_type(sizes, dtype=list, na_out=[0.1, 0.33, 0.55, 0.78, 1.0])
     for s in sizes:
         assert 0 < s <= 1, ValueError("Each size must be in ]0,1].")
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":

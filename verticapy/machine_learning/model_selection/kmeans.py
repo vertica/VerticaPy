@@ -105,7 +105,7 @@ def best_k(
     else:
         L = n_cluster
         L.sort()
-    schema, relation = schema_relation(input_relation)
+    schema = schema_relation(input_relation)[0]
     if not schema:
         schema = conf.get_option("temp_schema")
     schema = quote_ident(schema)
@@ -115,6 +115,7 @@ def best_k(
         loop = tqdm(L)
     else:
         loop = L
+    i = None
     for i in loop:
         model_name = gen_tmp_name(schema=schema, name="kmeans")
         if use_kprototype:
@@ -127,7 +128,6 @@ def best_k(
         score = model.elbow_score_
         if score > elbow_score_stop:
             return i
-        score_prev = score
         model.drop()
     print(
         f"\u26A0 The K was not found. The last K (= {i}) "
@@ -214,7 +214,7 @@ def elbow(
     else:
         L = n_cluster
         L.sort()
-    schema, relation = schema_relation(input_relation)
+    schema = schema_relation(input_relation)[0]
     elbow_score = []
     between_cluster_ss = []
     total_ss = []

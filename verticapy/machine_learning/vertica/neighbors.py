@@ -123,6 +123,7 @@ class KNeighborsRegressor(Regressor):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -338,6 +339,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -807,6 +809,7 @@ class KernelDensity(Regressor, Tree):
         xlim: Optional[list] = None,
         **kwargs,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "nbins": nbins,
@@ -1195,6 +1198,7 @@ class LocalOutlierFactor(VerticaModel):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 

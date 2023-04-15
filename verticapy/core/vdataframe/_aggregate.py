@@ -53,13 +53,13 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._eval import vDFEval, vDCEval
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.core.vdataframe._multiprocessing import (
     aggregate_parallel_block,
     describe_parallel_block,
 )
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFAgg(vDFEval):

@@ -628,8 +628,8 @@ class vDFFilter(vDFAgg):
         self,
         conditions: SQLExpression = "",
         usecols: Optional[SQLColumns] = None,
-        expr: SQLExpression = [],
-        order_by: Union[str, dict, list] = [],
+        expr: Optional[SQLExpression] = None,
+        order_by: Union[None, str, dict, list] = None,
     ) -> "vDataFrame":
         """
         Searches the elements which matches with the input 

@@ -15,7 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+from abc import abstractmethod
 from typing import Literal, Optional
+
 import numpy as np
 
 from verticapy._typing import PlottingObject, PythonNumber
@@ -47,6 +49,16 @@ class LinearModel:
     @property
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "features_importance_"]
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        self.input_relation = None
+        self.test_relation = None
+        self.X = None
+        self.y = None
 
     # Attributes Methods.
 
@@ -190,6 +202,17 @@ class LinearModelClassifier(LinearModel):
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "classes_", "features_importance_"]
 
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        self.input_relation = None
+        self.test_relation = None
+        self.X = None
+        self.y = None
+        self.classes_ = None
+
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -326,6 +349,7 @@ class ElasticNet(Regressor, LinearModel):
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ) -> None:
+        super().__init__()
         self.model_name = name
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
@@ -413,6 +437,7 @@ class Lasso(Regressor, LinearModel):
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
     ) -> None:
+        super().__init__()
         self.model_name = name
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
@@ -492,6 +517,7 @@ class LinearRegression(Regressor, LinearModel):
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ) -> None:
+        super().__init__()
         self.model_name = name
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
@@ -576,6 +602,7 @@ class Ridge(Regressor, LinearModel):
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ) -> None:
+        super().__init__()
         self.model_name = name
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
@@ -676,6 +703,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ) -> None:
+        super().__init__()
         penalty = str(penalty).lower()
         solver = str(solver).lower()
         self.model_name = name

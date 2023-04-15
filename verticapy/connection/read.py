@@ -34,8 +34,8 @@ def available_connections() -> list[str]:
     gb_conn = get_global_connection()
 
     confparser = get_confparser()
-    if confparser.has_section(gb_conn._vpy_auto_connection):
-        confparser.remove_section(gb_conn._vpy_auto_connection)
+    if confparser.has_section(gb_conn.vpy_auto_connection):
+        confparser.remove_section(gb_conn.vpy_auto_connection)
     all_connections = confparser.sections()
     return all_connections
 
@@ -73,7 +73,7 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
         conn_info = {
             "port": 5433,
             "user": "dbadmin",
-            "session_label": gb_conn._vpy_session_label,
+            "session_label": gb_conn.vpy_session_label,
             "unicode_error": "ignore",
         }
 

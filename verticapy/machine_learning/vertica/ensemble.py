@@ -456,6 +456,7 @@ class RandomForestRegressor(RandomForest, Regressor):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -615,6 +616,7 @@ class XGBRegressor(XGBoost, Regressor):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         params = {
             "max_ntree": max_ntree,
@@ -782,6 +784,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -958,6 +961,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         params = {
             "max_ntree": max_ntree,
@@ -1126,6 +1130,7 @@ class IsolationForest(Clustering, Tree):
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,

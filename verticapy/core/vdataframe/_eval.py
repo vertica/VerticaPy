@@ -30,11 +30,11 @@ from verticapy.core.string_sql.base import StringSQL
 from verticapy.core.vdataframe._io import vDFInOut
 from verticapy.core.vdataframe._sys import vDCSystem
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.flex import isvmap
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFEval(vDFInOut):

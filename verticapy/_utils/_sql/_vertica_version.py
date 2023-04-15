@@ -139,7 +139,7 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
         else:
             test = False
         if not test:
-            v0, v1, v2 = res[0], res[1], str(res[2]).split("-")[0]
+            v0, v1, v2 = res[0], res[1], str(res[2]).split("-", maxsplit=1)[0]
             v = ".".join([str(c) for c in condition[:3]])
             raise VersionError(
                 (

@@ -13,34 +13,7 @@ distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
-"""
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-"""
+
 VerticaPy  is   a  Python   library   with   scikit-like
 functionality  for  conducting   data science   projects
 on data stored in Vertica, taking advantage of Vertica’s
@@ -54,6 +27,7 @@ VerticaPy aims  to  do  all  of  the above.  The idea is
 simple:  instead of moving data around  for  processing, 
 VerticaPy brings the logic to the data.
 """
+
 __author__: str = "Badr Ouali"
 __author_email__: str = "badr.ouali@vertica.com"
 __description__: str = (
@@ -99,3 +73,32 @@ from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.insert import insert_into
 from verticapy.sql.sys import current_session, username
+
+##
+#
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /
+#              ____________       ______
+#             / __        `\     /     /
+#            |  \/         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
+#                    _
+# \  / _  __|_. _ _ |_)
+#  \/ (/_|  | |(_(_|| \/
+#                     /
+##

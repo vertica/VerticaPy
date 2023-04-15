@@ -453,6 +453,7 @@ class PCA(Decomposition):
         scale: bool = False,
         method: Literal["lapack"] = "lapack",
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_components": n_components,
@@ -551,6 +552,7 @@ class MCA(PCA):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {}
 
@@ -800,6 +802,7 @@ class SVD(Decomposition):
     def __init__(
         self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_components": n_components,

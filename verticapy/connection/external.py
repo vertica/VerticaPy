@@ -40,4 +40,4 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
         query.
     """
     gb_conn = get_global_connection()
-    gb_conn._set_external_connections(symbol, cid, rowset)
+    gb_conn.set_external_connections(symbol, cid, rowset)

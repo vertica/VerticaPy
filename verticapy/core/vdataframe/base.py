@@ -186,7 +186,7 @@ class vDataFrame(vDFAnimatedPlot):
 
             gb_conn = get_global_connection()
 
-            if symbol in gb_conn._get_external_connections:
+            if symbol in gb_conn.get_external_connections:
                 query = symbol * 3 + query + symbol * 3
 
             else:

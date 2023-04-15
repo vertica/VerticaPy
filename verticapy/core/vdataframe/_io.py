@@ -39,12 +39,12 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._sys import vDFSystem
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 if conf.get_import_success("geopandas"):
     from geopandas import GeoDataFrame
     from shapely import wkt
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFInOut(vDFSystem):

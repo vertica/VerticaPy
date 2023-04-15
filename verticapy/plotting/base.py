@@ -42,11 +42,11 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting.sql import PlottingBaseSQL
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
-
 if conf.get_import_success("dateutil"):
     from dateutil.parser import parse
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 """
 Colors Options: They are used when drawing graphics.

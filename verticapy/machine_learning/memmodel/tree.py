@@ -282,7 +282,7 @@ class Tree(InMemoryModel):
         round_pred: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {"shape": "box", "style": "filled"},
+        node_style: Optional[dict] = None,
         arrow_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
@@ -325,9 +325,10 @@ class Tree(InMemoryModel):
         feature_names, classes_color = format_type(
             feature_names, classes_color, dtype=list
         )
-        node_style, arrow_style, leaf_style = format_type(
-            node_style, arrow_style, leaf_style, dtype=dict
+        node_style = format_type(
+            node_style, dtype=dict, na_out={"shape": "box", "style": "filled"}
         )
+        arrow_style, leaf_style = format_type(arrow_style, leaf_style, dtype=dict)
         empty_color = False
         if len(classes_color) == 0:
             empty_color = True

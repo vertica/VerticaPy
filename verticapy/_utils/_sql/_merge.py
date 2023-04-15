@@ -109,7 +109,7 @@ def erase_in_name(
     suffix: Optional[list] = None,
     prefix: Optional[list] = None,
     word: Optional[list] = None,
-    order: list = ["p", "s", "w"],
+    order: Optional[list] = None,
 ) -> str:
     """
     Excludes the input lists of suffixes and 
@@ -142,6 +142,7 @@ def erase_in_name(
         The name without the prefixes, suffixes 
         and input words.
     """
+    order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     suffix, prefix, word = format_type(suffix, prefix, word, dtype=list)
     new_name = name
     f = {
@@ -160,7 +161,7 @@ def is_similar_name(
     skip_suffix: Optional[list] = None,
     skip_prefix: Optional[list] = None,
     skip_word: Optional[list] = None,
-    order: list = ["p", "s", "w"],
+    order: Optional[list] = None,
 ) -> bool:
     """
     Excludes the input lists of suffixes, prefixes 
@@ -194,6 +195,7 @@ def is_similar_name(
         True if the two names are similar, false 
         otherwise.
     """
+    order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
         skip_suffix, skip_prefix, skip_word, dtype=list
     )
@@ -212,7 +214,7 @@ def belong_to_group(
     skip_suffix: Optional[list] = None,
     skip_prefix: Optional[list] = None,
     skip_word: Optional[list] = None,
-    order: list = ["p", "s", "w"],
+    order: Optional[list] = None,
 ) -> bool:
     """
     Excludes the input lists of suffixes, prefixes 
@@ -246,6 +248,7 @@ def belong_to_group(
         True if the name belong to the input group, 
         false otherwise.
     """
+    order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
         skip_suffix, skip_prefix, skip_word, dtype=list
     )
@@ -267,7 +270,7 @@ def group_similar_names(
     skip_suffix: Optional[list] = None,
     skip_prefix: Optional[list] = None,
     skip_word: Optional[list] = None,
-    order: list = ["p", "s", "w"],
+    order: Optional[list] = None,
 ) -> dict:
     """
     Creates similar group using the input column 
@@ -297,6 +300,7 @@ def group_similar_names(
     dict
         dictionary including the different groups.
     """
+    order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
         skip_suffix, skip_prefix, skip_word, dtype=list
     )

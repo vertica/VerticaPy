@@ -486,7 +486,7 @@ class BisectingKMeans(Clustering, Tree):
         round_score: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {"shape": "none"},
+        node_style: Optional[dict] = None,
         arrow_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
@@ -521,9 +521,10 @@ class BisectingKMeans(Clustering, Tree):
         str
             Graphviz code.
         """
-        arrow_style, leaf_style = format_type(arrow_style, leaf_style, dtype=dict)
-        if len(leaf_style) == 0:
-            leaf_style = {"shape": "none"}
+        node_style, leaf_style = format_type(
+            node_style, leaf_style, dtype=dict, na_out={"shape": "none"}
+        )
+        arrow_style = format_type(arrow_style, dtype=dict)
         n = len(self.children_left_)
         vertical = ""
         if not vertical:

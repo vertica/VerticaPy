@@ -30,10 +30,10 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._read import vDFRead, vDCRead
 
+from verticapy.sql.flex import isvmap
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.flex import isvmap
 
 
 class vDFTyping(vDFRead):

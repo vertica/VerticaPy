@@ -19,7 +19,9 @@ import os
 import vertica_python
 from abc import abstractmethod
 from typing import Literal, Optional, Union
+
 import numpy as np
+
 from vertica_python.errors import QueryError
 
 import verticapy._config.config as conf
@@ -67,6 +69,14 @@ class Clustering(Unsupervised):
     def _vertica_predict_sql(self) -> str:
         """Must be overridden in child class"""
         raise NotImplementedError
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        self.input_relation = None
+        self.X = None
 
     # Prediction / Transformation Methods.
 
@@ -269,6 +279,7 @@ class KMeans(Clustering):
         max_iter: int = 300,
         tol: float = 1e-4,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
@@ -453,7 +464,7 @@ class KPrototypes(KMeans):
         tol: float = 1e-4,
         gamma: float = 1.0,
     ) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -617,6 +628,7 @@ class BisectingKMeans(KMeans, Tree):
         max_iter: int = 300,
         tol: float = 1e-4,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_cluster": n_cluster,
@@ -842,6 +854,7 @@ class DBSCAN(VerticaModel):
     def __init__(
         self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
@@ -1159,6 +1172,7 @@ class NearestCentroid(MulticlassClassifier):
 
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"p": p}
 

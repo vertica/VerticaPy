@@ -38,11 +38,11 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._utils import vDFUtils
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 if conf.get_import_success("IPython"):
     from IPython.display import HTML, display
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFRead(vDFUtils):
