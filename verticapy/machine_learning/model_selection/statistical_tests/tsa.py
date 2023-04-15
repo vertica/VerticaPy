@@ -199,7 +199,7 @@ def adfuller(
     else:
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
-    ts, column, by = vdf._format_colnames(ts, column, by)
+    ts, column, by = vdf.format_colnames(ts, column, by)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     relation_name = gen_tmp_name(
         schema=conf.get_option("temp_schema"), name="linear_reg_view"
@@ -307,7 +307,7 @@ def mkt(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    column, ts = vdf._format_colnames(column, ts)
+    column, ts = vdf.format_colnames(column, ts)
     table = f"(SELECT {column}, {ts} FROM {vdf})"
     query = f"""
         SELECT 
@@ -427,7 +427,7 @@ def cochrane_orcutt(
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    ts = vdf._format_colnames(ts)
+    ts = vdf.format_colnames(ts)
     name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
@@ -500,7 +500,7 @@ def durbin_watson(
     else:
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
-    eps, ts, by = vdf._format_colnames(eps, ts, by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)} " if by else ""
     by_select = (", " + ", ".join(by)) if by else ""
     query = f"""
@@ -564,7 +564,7 @@ def ljungbox(
     else:
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
-    column, ts, by = vdf._format_colnames(column, ts, by)
+    column, ts, by = vdf.format_colnames(column, ts, by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
         acf = acf.values["value"][1:]
@@ -632,7 +632,7 @@ def het_arch(
     else:
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
-    eps, ts, by = vdf._format_colnames(eps, ts, by)
+    eps, ts, by = vdf.format_colnames(eps, ts, by)
     by_str = f"PARTITION BY {', '.join(by)}" if by else ""
     X = []
     X_names = []
@@ -738,7 +738,7 @@ def seasonal_decompose(
     else:
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
-    ts, column, by = vdf._format_colnames(ts, column, by)
+    ts, column, by = vdf.format_colnames(ts, column, by)
     if rule:
         vdf = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:

@@ -90,7 +90,7 @@ class VerticaModel(PlottingUtils):
         return False
 
     @property
-    def _object_type(self) -> Literal["VerticaModel"]:
+    def object_type(self) -> Literal["VerticaModel"]:
         return "VerticaModel"
 
     @property
@@ -145,7 +145,7 @@ class VerticaModel(PlottingUtils):
         return np.array(res)
 
     @staticmethod
-    def _get_match_index(x: str, col_list: list, str_check: bool = True) -> None:
+    def get_match_index(x: str, col_list: list, str_check: bool = True) -> None:
         """
         Returns the matching index.
         """
@@ -717,7 +717,7 @@ class Supervised(VerticaModel):
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
             if isinstance(input_relation, vDataFrame):
-                self.input_relation = input_relation._genSQL()
+                self.input_relation = input_relation.current_relation()
             else:
                 self.input_relation = input_relation
             if self._is_native:
@@ -738,7 +738,7 @@ class Supervised(VerticaModel):
             self.input_relation = input_relation
             relation = input_relation
         if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation._genSQL()
+            self.test_relation = test_relation.current_relation()
         elif test_relation:
             self.test_relation = test_relation
         else:
@@ -940,7 +940,7 @@ class Tree:
                 "importance": fi,
             }
             layout = {"columns": copy.deepcopy(self.X)}
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
@@ -1004,7 +1004,7 @@ class Tree:
         if self._model_subcategory == "REGRESSOR":
             vdf = vDataFrame(self.input_relation)
             vdf["_prediction"] = self.deploySQL()
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="RegressionTreePlot", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.RegressionTreePlot(
@@ -1765,7 +1765,7 @@ class MulticlassClassifier(Classifier):
         if not allSQL:
             if pos_label in list(self.classes_):
                 if not self._is_native:
-                    sql = sql[self._get_match_index(pos_label, self.classes_, False)]
+                    sql = sql[self.get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = sql[0].format(pos_label)
                 if isinstance(cutoff, (int, float)) and 0.0 <= cutoff <= 1.0:
@@ -2221,7 +2221,7 @@ class MulticlassClassifier(Classifier):
         pos_label = self._check_pos_label(pos_label)
         if not self._is_native:
             return self.deploySQL(allSQL=True)[
-                self._get_match_index(pos_label, self.classes_, False)
+                self.get_match_index(pos_label, self.classes_, False)
             ]
         else:
             return self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -2721,7 +2721,7 @@ class Unsupervised(VerticaModel):
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
             if isinstance(input_relation, vDataFrame):
-                self.input_relation = input_relation._genSQL()
+                self.input_relation = input_relation.current_relation()
             else:
                 self.input_relation = input_relation
             if self._model_type == "MCA":

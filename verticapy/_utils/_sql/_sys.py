@@ -60,8 +60,8 @@ def _executeSQL(
     if data:
         cursor.executemany(query, data)
     elif method == "copy":
-        with open(path, "r", encoding="utf-8") as fs:
-            cursor.copy(query, fs)
+        with open(path, "r", encoding="utf-8") as f:
+            cursor.copy(query, f)
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time

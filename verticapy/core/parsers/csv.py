@@ -401,9 +401,8 @@ def read_csv(
             ]
         if not sep:
             try:
-                f = open(path_first_file_in_folder, "r", encoding="utf-8")
-                file_str = f.readline()
-                f.close()
+                with open(path_first_file_in_folder, "r", encoding="utf-8") as f:
+                    file_str = f.readline()
                 sep = guess_sep(file_str)
             except (FileNotFoundError, UnicodeDecodeError):
                 sep = ","
@@ -457,14 +456,12 @@ def read_csv(
             and (compression == "UNCOMPRESSED")
             and ingest_local
         ):
-            f = open(path_first_file_in_folder, "r", encoding="utf-8")
-            path_test = path_first_file_in_folder[:-4] + "_verticapy_copy.csv"
-            f2 = open(path_test, "w", encoding="utf-8")
-            for i in range(parse_nrows + int(header)):
-                line = f.readline()
-                f2.write(line)
-            f.close()
-            f2.close()
+            with open(path_first_file_in_folder, "r", encoding="utf-8") as f:
+                path_test = path_first_file_in_folder[:-4] + "_verticapy_copy.csv"
+                with open(path_test, "w", encoding="utf-8") as f2:
+                    for i in range(parse_nrows + int(header)):
+                        line = f.readline()
+                        f2.write(line)
         else:
             path_test = path_first_file_in_folder
         query1 = ""

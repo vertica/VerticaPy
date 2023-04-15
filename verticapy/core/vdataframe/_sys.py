@@ -23,6 +23,7 @@ from typing import Any, Optional, Union, TYPE_CHECKING
 import verticapy._config.config as conf
 from verticapy._typing import NoneType, SQLColumns
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._object import create_new_vdc
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, indentSQL, quote_ident
@@ -31,11 +32,13 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._typing import vDFTyping, vDCTyping
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFSystem:
+class vDFSystem(vDFTyping):
     def __format__(self, format_spec: Any) -> str:
         return format(self._genSQL(), format_spec)
 
@@ -213,7 +216,7 @@ class vDFSystem:
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
         key = verticapy_agg_name(key.lower())
-        column = self._format_colnames(column)
+        column = self.format_colnames(column)
         try:
             if (key == "approx_unique") and ("unique" in self[column]._catalog):
                 key = "unique"
@@ -251,7 +254,7 @@ class vDFSystem:
         if isinstance(columns, dict):
             order_by = []
             for col in columns:
-                column_name = self._format_colnames(col)
+                column_name = self.format_colnames(col)
                 if columns[col].lower() not in ("asc", "desc"):
                     warning_message = (
                         f"Method of {column_name} must be in (asc, desc), "
@@ -279,7 +282,7 @@ class vDFSystem:
         """
         values = format_type(values, dtype=dict)
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         agg_dict = {
             "cov": {},
             "pearson": {},
@@ -332,14 +335,18 @@ class vDFSystem:
                             val = None
                         self[column]._catalog[key] = val
 
-    def current_relation(self, reindent: bool = True) -> str:
+    def current_relation(self, reindent: bool = True, split: bool = False) -> str:
         """
         Returns the current vDataFrame relation.
 
         Parameters
         ----------
         reindent: bool, optional
-            Reindent the text to be more readable. 
+            Reindent the text to be more readable.
+        split: bool, optional
+            Adds a split  column __verticapy_split__  
+            in the  relation which can be to  use to 
+            downsample the data.
 
         Returns
         -------
@@ -347,9 +354,9 @@ class vDFSystem:
             The formatted current vDataFrame relation.
         """
         if reindent:
-            return indentSQL(self._genSQL())
+            return indentSQL(self._genSQL(split=split))
         else:
-            return self._genSQL()
+            return self._genSQL(split=split)
 
     def del_catalog(self) -> "vDataFrame":
         """
@@ -590,7 +597,7 @@ class vDFSystem:
                 "index of the column to swap."
             )
             column2 = self.get_columns()[column2]
-        column1, column2 = self._format_colnames(column1, column2)
+        column1, column2 = self.format_colnames(column1, column2)
         columns = self._vars["columns"]
         all_cols = {}
         for idx, elem in enumerate(columns):
@@ -602,7 +609,7 @@ class vDFSystem:
         return self
 
 
-class vDCSystem:
+class vDCSystem(vDCTyping):
     def __format__(self, format_spec) -> str:
         return format(self._alias, format_spec)
 
@@ -622,13 +629,13 @@ class vDCSystem:
         """
         if name == "":
             raise ValueError("The parameter 'name' must not be empty")
-        elif self._parent._is_colname_in(name):
+        elif self._parent.is_colname_in(name):
             raise ValueError(
                 f"A vDataColumn has already the alias {name}.\nBy changing "
                 "the parameter 'name', you'll be able to solve this issue."
             )
         name = quote_ident(name.replace('"', "_"))
-        new_vDataColumn = self._parent._new_vdatacolumn(
+        new_vDataColumn = create_new_vdc(
             name,
             parent=self._parent,
             transformations=list(self._transf),
@@ -715,7 +722,7 @@ class vDCSystem:
         """
         old_name = quote_ident(self._alias)
         new_name = quote_ident(new_name)[1:-1]
-        if self._parent._is_colname_in(new_name):
+        if self._parent.is_colname_in(new_name):
             raise NameError(
                 f"A vDataColumn has already the alias {new_name}.\n"
                 "By changing the parameter 'new_name', you'll "

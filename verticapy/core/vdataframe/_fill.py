@@ -29,6 +29,7 @@ from verticapy._typing import (
     TimeInterval,
     SQLColumns,
 )
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -36,11 +37,14 @@ from verticapy.errors import QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+from verticapy.core.vdataframe._pivot import vDFPivot
+from verticapy.core.vdataframe._math import vDCMath
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFFill:
+class vDFFill(vDFPivot):
     @save_verticapy_logs
     def fillna(
         self,
@@ -93,9 +97,9 @@ class vDFFill:
                         self[column].fillna(method="auto")
             else:
                 for column in val:
-                    self[self._format_colnames(column)].fillna(val=val[column])
+                    self[self.format_colnames(column)].fillna(val=val[column])
                 for column in method:
-                    self[self._format_colnames(column)].fillna(method=method[column],)
+                    self[self.format_colnames(column)].fillna(method=method[column],)
             return self
         finally:
             conf.set_option("print_info", print_info)
@@ -141,7 +145,7 @@ class vDFFill:
         """
         method = format_type(method, dtype=dict)
         by = format_type(by, dtype=list)
-        method, ts, by = self._format_colnames(method, ts, by)
+        method, ts, by = self.format_colnames(method, ts, by)
         all_elements = []
         for column in method:
             assert method[column] in (
@@ -173,12 +177,12 @@ class vDFFill:
         query += f""" 
             TIMESERIES slice_time AS '{rule}' 
             OVER ({partition}ORDER BY {quote_ident(ts)}::timestamp)"""
-        return self._new_vdataframe(query)
+        return create_new_vdf(query)
 
     asfreq = interpolate
 
 
-class vDCFill:
+class vDCFill(vDCMath):
     @save_verticapy_logs
     def clip(
         self,
@@ -378,7 +382,7 @@ class vDCFill:
         """
         method = method.lower()
         by, order_by = format_type(by, order_by, dtype=list)
-        by, order_by = self._parent._format_colnames(by, order_by)
+        by, order_by = self._parent.format_colnames(by, order_by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()

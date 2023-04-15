@@ -32,7 +32,32 @@ import verticapy.plotting._highcharts as vpy_highcharts_plt
 
 
 class PlottingUtils:
-    def _get_plotting_lib(
+    @staticmethod
+    def _first_available_lib(
+        class_name: str,
+    ) -> Literal["highcharts", "matplotlib", "plotly"]:
+        lookup_table = {
+            vpy_highcharts_plt: "highcharts",
+            vpy_matplotlib_plt: "matplotlib",
+            vpy_plotly_plt: "plotly",
+        }
+        for lib in [vpy_plotly_plt, vpy_highcharts_plt, vpy_matplotlib_plt]:
+            if hasattr(lib, class_name):
+                return lookup_table[lib]
+        raise NotImplementedError("This graphic is not yet implemented.")
+
+    @staticmethod
+    def _is_available(
+        class_name: str, lib: Literal["highcharts", "plotly", "matplotlib"]
+    ) -> bool:
+        lookup_table = {
+            "highcharts": vpy_highcharts_plt,
+            "matplotlib": vpy_matplotlib_plt,
+            "plotly": vpy_plotly_plt,
+        }
+        return hasattr(lookup_table[lib], class_name)
+
+    def get_plotting_lib(
         self,
         class_name: Optional[str] = None,
         chart: Optional[PlottingObject] = None,
@@ -83,28 +108,3 @@ class PlottingUtils:
         else:
             raise ModuleNotFoundError(f"Unrecognized library: '{lib}'.")
         return vpy_plt, kwargs
-
-    @staticmethod
-    def _is_available(
-        class_name: str, lib: Literal["highcharts", "plotly", "matplotlib"]
-    ) -> bool:
-        lookup_table = {
-            "highcharts": vpy_highcharts_plt,
-            "matplotlib": vpy_matplotlib_plt,
-            "plotly": vpy_plotly_plt,
-        }
-        return hasattr(lookup_table[lib], class_name)
-
-    @staticmethod
-    def _first_available_lib(
-        class_name: str,
-    ) -> Literal["highcharts", "matplotlib", "plotly"]:
-        lookup_table = {
-            vpy_highcharts_plt: "highcharts",
-            vpy_matplotlib_plt: "matplotlib",
-            vpy_plotly_plt: "plotly",
-        }
-        for lib in [vpy_plotly_plt, vpy_highcharts_plt, vpy_matplotlib_plt]:
-            if hasattr(lib, class_name):
-                return lookup_table[lib]
-        raise NotImplementedError("This graphic is not yet implemented.")

@@ -24,12 +24,13 @@ from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 
+from verticapy.core.vdataframe._corr import vDFCorr
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFRolling:
+class vDFRolling(vDFCorr):
     @save_verticapy_logs
     def rolling(
         self,
@@ -138,7 +139,7 @@ class vDFRolling:
         if not name:
             name = gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             name = f"moving_{name}"
-        columns, by = self._format_colnames(columns, by)
+        columns, by = self.format_colnames(columns, by)
         by = "" if not by else "PARTITION BY " + ", ".join(by)
         if not order_by:
             order_by = f" ORDER BY {columns[0]}"

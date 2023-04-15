@@ -33,7 +33,7 @@ from IPython.core.magic import needs_local_scope
 from IPython.display import display, HTML
 
 import verticapy._config.config as conf
-from verticapy._utils._object import _get_vdf
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._format import (
@@ -141,9 +141,8 @@ def sql_magic(
             raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
         if "-f" in options:
-            f = open(options["-f"], "r", encoding="utf-8")
-            queries = f.read()
-            f.close()
+            with open(options["-f"], "r", encoding="utf-8") as f:
+                queries = f.read()
 
         elif "-c" in options:
             queries = options["-c"]
@@ -283,7 +282,7 @@ def sql_magic(
                 error = ""
 
                 try:
-                    result = _get_vdf(query, _is_sql_magic=True,)
+                    result = create_new_vdf(query, _is_sql_magic=True,)
                     result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
@@ -322,8 +321,8 @@ def sql_magic(
         # Exporting the result
 
         if (
-            hasattr(result, "_object_type")
-            and (result._object_type == "vDataFrame")
+            hasattr(result, "object_type")
+            and (result.object_type == "vDataFrame")
             and ("-o" in options)
         ):
 

@@ -217,11 +217,7 @@ class LiftChart(ROCCurve):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a Machine Cutoff Curve using the Matplotlib API.
         """

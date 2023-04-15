@@ -15,14 +15,21 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
+from abc import abstractmethod
 from typing import Optional, Union
 
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._typing import NoneType, SQLExpression
 from verticapy.errors import MissingColumn
 
+from verticapy.plotting._utils import PlottingUtils
 
-class vDFUtils:
+
+class vDFUtils(PlottingUtils):
+    def __init__(self):
+        """Must be overridden in final class"""
+        self._vars = {}
+
     @staticmethod
     def _levenshtein(s: str, t: str) -> int:
         rows = len(s) + 1
@@ -45,7 +52,7 @@ class vDFUtils:
                 )
         return dist[row][col]
 
-    def _format_colnames(
+    def format_colnames(
         self,
         *args,
         columns: Union[None, str, list, dict] = None,
@@ -62,7 +69,7 @@ class vDFUtils:
             List  of columns' names to format. It allows  to 
             use as input multiple  objects and to get all of 
             them formatted.
-            Example:  self._format_colnames(x0, x1, x2) will 
+            Example:  self.format_colnames(x0, x1, x2) will 
             return x0_f, x1_f, x2_f where xi_f represents xi 
             correctly formatted.
         columns: SQLColumns / dict, optional
@@ -86,7 +93,7 @@ class vDFUtils:
         if len(args) > 0:
             result = []
             for arg in args:
-                result += [self._format_colnames(columns=arg, raise_error=raise_error)]
+                result += [self.format_colnames(columns=arg, raise_error=raise_error)]
             if len(args) == 1:
                 result = result[0]
         else:
@@ -131,12 +138,12 @@ class vDFUtils:
             elif isinstance(columns, dict):
                 result = {}
                 for col in columns:
-                    key = self._format_colnames(col, raise_error=raise_error)
+                    key = self.format_colnames(col, raise_error=raise_error)
                     result[key] = columns[col]
             else:
                 result = []
                 for col in columns:
-                    result += [self._format_colnames(col, raise_error=raise_error)]
+                    result += [self.format_colnames(col, raise_error=raise_error)]
         if raise_error:
             expected_nb_of_cols = format_type(expected_nb_of_cols, dtype=list)
             if len(expected_nb_of_cols) > 0:
@@ -150,8 +157,13 @@ class vDFUtils:
                     )
         return result
 
+    @abstractmethod
+    def get_columns(self) -> str:
+        """Must be overridden in child class"""
+        raise NotImplementedError
+
     @staticmethod
-    def _get_match_index(
+    def get_match_index(
         x: str, col_list: list, str_check: bool = True
     ) -> Optional[int]:
         """
@@ -163,11 +175,10 @@ class vDFUtils:
             ):
                 return idx
 
-    def _is_colname_in(self, column: str) -> bool:
+    def is_colname_in(self, column: str) -> bool:
         """
         Method used to check if the input column name is used by 
         the vDataFrame.
-        If not, the function raises an error.
 
         Parameters
         ----------
@@ -177,8 +188,8 @@ class vDFUtils:
         Returns
         -------
         bool
-            True if the column is used by the vDataFrame
-            False otherwise.
+            True if the  column is used by the vDataFrame False 
+            otherwise.
         """
         columns = self.get_columns()
         column = quote_ident(column).lower()

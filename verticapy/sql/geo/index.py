@@ -77,7 +77,7 @@ def create_index(
     TableSample
         geospatial indexes.
     """
-    gid, g = vdf._format_colnames(gid, g)
+    gid, g = vdf.format_colnames(gid, g)
     query = f"""
         SELECT 
             STV_Create_Index({gid}, {g} 

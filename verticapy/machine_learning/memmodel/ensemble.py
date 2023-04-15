@@ -95,7 +95,7 @@ class RandomForestRegressor(Ensemble):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["RandomForestRegressor"]:
+    def object_type(self) -> Literal["RandomForestRegressor"]:
         return "RandomForestRegressor"
 
     @property
@@ -161,7 +161,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["RandomForestClassifier"]:
+    def object_type(self) -> Literal["RandomForestClassifier"]:
         return "RandomForestClassifier"
 
     @property
@@ -268,7 +268,7 @@ class XGBRegressor(Ensemble):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["XGBRegressor"]:
+    def object_type(self) -> Literal["XGBRegressor"]:
         return "XGBRegressor"
 
     @property
@@ -344,7 +344,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["XGBClassifier"]:
+    def object_type(self) -> Literal["XGBClassifier"]:
         return "XGBClassifier"
 
     @property
@@ -437,7 +437,7 @@ class IsolationForest(Ensemble):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["IsolationForest"]:
+    def object_type(self) -> Literal["IsolationForest"]:
         return "IsolationForest"
 
     @property

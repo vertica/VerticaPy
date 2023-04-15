@@ -23,6 +23,7 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
@@ -30,13 +31,15 @@ from verticapy.errors import MissingColumn, QueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
+from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 from verticapy.sql.dtypes import get_data_types
 
 
-class vDFMath:
+class vDFMath(vDFFilter):
     def __abs__(self) -> "vDataFrame":
         return self.copy().abs()
 
@@ -87,7 +90,7 @@ class vDFMath:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self.numcol() if not columns else self._format_colnames(columns)
+        columns = self.numcol() if not columns else self.format_colnames(columns)
         func = {}
         for column in columns:
             if not self[column].isbool():
@@ -183,7 +186,7 @@ class vDFMath:
             self
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
-        columns, by = self._format_colnames(columns, by)
+        columns, by = self.format_colnames(columns, by)
         by_name = ["by"] + by if by else []
         by_order = ["order_by"] + list(order_by) if (order_by) else []
         if not name:
@@ -471,7 +474,7 @@ class vDFMath:
          vDataFrame
             self
         """
-        func = self._format_colnames(func)
+        func = self.format_colnames(func)
         for column in func:
             self[column].apply(func[column])
         return self
@@ -507,7 +510,7 @@ class vDFMath:
         return self.apply(function)
 
 
-class vDCMath:
+class vDCMath(vDCFilter):
     def __len__(self) -> int:
         return int(self.count())
 
@@ -814,7 +817,7 @@ class vDCMath:
             SELECT 
                 {elem_to_select} AS {new_alias} 
             FROM {self._parent}"""
-        vcol = self._parent._new_vdataframe(query)[new_alias]
+        vcol = create_new_vdf(query)[new_alias]
         vcol._init_transf = init_transf
         return vcol
 

@@ -345,8 +345,8 @@ class XGBoost(Tree):
             .replace("++++", '\\"')
         )
         if path:
-            f = open(path, "w+", encoding="utf-8")
-            f.write(res)
+            with open(path, "w+", encoding="utf-8") as f:
+                f.write(res)
 
         else:
             return res

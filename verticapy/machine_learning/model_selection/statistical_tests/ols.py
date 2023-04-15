@@ -64,7 +64,7 @@ def het_breuschpagan(
     else:
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
-    eps, X = vdf._format_colnames(eps, X)
+    eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     vdf_copy = vdf.copy()
@@ -143,7 +143,7 @@ def het_goldfeldquandt(
     else:
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
-    y, X = vdf._format_colnames(y, X)
+    y, X = vdf.format_colnames(y, X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -196,7 +196,7 @@ def het_white(
     else:
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
-    eps, X = vdf._format_colnames(eps, X)
+    eps, X = vdf.format_colnames(eps, X)
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -266,7 +266,7 @@ def endogtest(
     else:
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
-    eps, X = vdf._format_colnames(eps, X)
+    eps, X = vdf.format_colnames(eps, X)
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     try:
@@ -322,7 +322,7 @@ def variance_inflation_factor(
     else:
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
-    X, X_idx = vdf._format_colnames(X, X_idx)
+    X, X_idx = vdf.format_colnames(X, X_idx)
     if isinstance(X_idx, str):
         for i in range(len(X)):
             if X[i] == X_idx:

@@ -48,7 +48,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    column = vdf._format_colnames(column)
+    column = vdf.format_colnames(column)
     jb = vdf[column].agg(["jb"]).values[column][0]
     pvalue = chi2.sf(jb, 2)
     return jb, pvalue
@@ -76,7 +76,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    column = vdf._format_colnames(column)
+    column = vdf.format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
@@ -141,7 +141,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
-    column = vdf._format_colnames(column)
+    column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
     gamma2 = 36 * (n - 7) * (n ** 2 + 2 * n - 5)

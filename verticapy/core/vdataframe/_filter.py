@@ -31,16 +31,18 @@ from verticapy._typing import (
     SQLExpression,
     TimeInterval,
 )
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFFilter:
+class vDFFilter(vDFAgg):
     @save_verticapy_logs
     def at_time(self, ts: str, time: TimeInterval) -> "vDataFrame":
         """
@@ -62,7 +64,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        self.filter(f"{self._format_colnames(ts)}::time = '{time}'")
+        self.filter(f"{self.format_colnames(ts)}::time = '{time}'")
         return self
 
     @save_verticapy_logs
@@ -101,7 +103,7 @@ class vDFFilter:
         if not 0 <= x <= 1:
             raise ValueError("Parameter 'x' must be between 0 and 1")
         order_by = format_type(order_by, dtype=list)
-        column, order_by = self._format_colnames(column, order_by)
+        column, order_by = self.format_colnames(column, order_by)
         topk = self[column].topk()
         min_cnt = topk["count"][-1]
         min_class = topk["index"][-1]
@@ -173,7 +175,7 @@ class vDFFilter:
         else:
             return self.copy() if inplace else self
         filter_function = self.filter if inplace else self.search
-        return filter_function(f"{self._format_colnames(column)} {condition}",)
+        return filter_function(f"{self.format_colnames(column)} {condition}",)
 
     @save_verticapy_logs
     def between_time(
@@ -221,7 +223,7 @@ class vDFFilter:
                 "One of the parameters 'start_time' or 'end_time' must be defined."
             )
         filter_function = self.filter if inplace else self.search
-        return filter_function(f"{self._format_colnames(ts)}::time {condition}",)
+        return filter_function(f"{self.format_colnames(ts)}::time {condition}",)
 
     @save_verticapy_logs
     def drop(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
@@ -244,7 +246,7 @@ class vDFFilter:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         for column in columns:
             self[column].drop()
         return self
@@ -277,7 +279,7 @@ class vDFFilter:
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
-                self.get_columns() if not columns else self._format_colnames(columns)
+                self.get_columns() if not columns else self.format_colnames(columns)
             )
             name = (
                 "__verticapy_duplicated_index__"
@@ -312,7 +314,7 @@ class vDFFilter:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()
         total = self.shape()[0]
@@ -439,7 +441,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        ts = self._format_colnames(ts)
+        ts = self.format_colnames(ts)
         first_date = _executeSQL(
             query=f"""
                 SELECT 
@@ -475,7 +477,7 @@ class vDFFilter:
         vDataFrame
             The vDataFrame of the search.
         """
-        val = self._format_colnames(val)
+        val = self.format_colnames(val)
         n = len(val[list(val.keys())[0]])
         result = []
         for i in range(n):
@@ -510,7 +512,7 @@ class vDFFilter:
         vDataFrame
             self
         """
-        ts = self._format_colnames(ts)
+        ts = self.format_colnames(ts)
         last_date = _executeSQL(
             query=f"""
                 SELECT 
@@ -582,7 +584,7 @@ class vDFFilter:
                 f"Parameter 'by' must be empty when using '{method}' sampling."
             )
         by = format_type(by, dtype=list)
-        by = self._format_colnames(by)
+        by = self.format_colnames(by)
         random_int = random.randint(0, 10000000)
         name = f"__verticapy_random_{random_int}__"
         name2 = f"__verticapy_random_{random_int + 1}__"
@@ -665,13 +667,13 @@ class vDFFilter:
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)
         query = f"SELECT {all_cols} FROM {self}{conditions}"
-        result = self._new_vdataframe(query)
+        result = create_new_vdf(query)
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)
 
 
-class vDCFilter:
+class vDCFilter(vDCAgg):
     @save_verticapy_logs
     def drop(self, add_history: bool = True) -> "vDataFrame":
         """

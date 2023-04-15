@@ -99,7 +99,7 @@ def lift_chart(
                 "lift": list(lift),
             }
         )
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+    vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
         class_name="LiftChart", chart=chart, style_kwargs=style_kwargs,
     )
     data = {
@@ -178,7 +178,7 @@ def prc_curve(
             values={"threshold": threshold, "recall": recall, "precision": precision,}
         )
     auc = _compute_area(precision, recall)
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+    vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
         class_name="PRCCurve", chart=chart, style_kwargs=style_kwargs,
     )
     data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
@@ -258,7 +258,7 @@ def roc_curve(
         )
     auc = _compute_area(true_positive, false_positive)
     if cutoff_curve:
-        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
             class_name="CutoffCurve", chart=chart, style_kwargs=style_kwargs,
         )
         data = {
@@ -275,7 +275,7 @@ def roc_curve(
         }
         return vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
-        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
             class_name="ROCCurve", chart=chart, style_kwargs=style_kwargs,
         )
         data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}

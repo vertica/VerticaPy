@@ -20,7 +20,7 @@ from collections.abc import Iterable
 import numpy as np
 
 import verticapy._config.config as conf
-from verticapy._utils._object import _get_mllib
+from verticapy._utils._object import get_vertica_mllib
 from verticapy._typing import (
     ArrayLike,
     ColorType,
@@ -38,11 +38,13 @@ from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.plotting._utils import PlottingUtils
+from verticapy.core.vdataframe._machine_learning import vDFMachineLearning
+from verticapy.core.vdataframe._normalize import vDCNorm
+
 from verticapy.plotting.base import PlottingBase
 
 
-class vDFPlot(PlottingUtils):
+class vDFPlot(vDFMachineLearning):
 
     # Boxplots.
 
@@ -85,7 +87,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
@@ -158,7 +160,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].bar(
                 method=method,
@@ -168,7 +170,7 @@ class vDFPlot(PlottingUtils):
                 **style_kwargs,
             )
         elif kind == "drilldown":
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="DrillDownBarChart", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.DrillDownBarChart(
@@ -180,7 +182,7 @@ class vDFPlot(PlottingUtils):
                 max_cardinality=max_cardinality,
             ).draw(**kwargs)
         else:
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="BarChart2D", chart=chart, style_kwargs=style_kwargs,
             )
             return vpy_plt.BarChart2D(
@@ -269,7 +271,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
         if len(columns) == 1:
             return self[columns[0]].barh(
                 method=method,
@@ -280,7 +282,7 @@ class vDFPlot(PlottingUtils):
                 **style_kwargs,
             )
         elif kind == "drilldown":
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="DrillDownHorizontalBarChart",
                 chart=chart,
                 style_kwargs=style_kwargs,
@@ -298,7 +300,7 @@ class vDFPlot(PlottingUtils):
                 kind = "fully_stacked"
             elif kind == "pyramid":
                 kind = "density"
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="HorizontalBarChart2D",
                 chart=chart,
                 style_kwargs=style_kwargs,
@@ -352,7 +354,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="NestedPieChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.NestedPieChart(
@@ -417,7 +419,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="Histogram", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
@@ -470,9 +472,9 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vml = _get_mllib()
+        vml = get_vertica_mllib()
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         if not columns:
             columns = self.numcol()
         if not columns:
@@ -512,7 +514,7 @@ class vDFPlot(PlottingUtils):
                     model.drop()
             X = np.column_stack(X)
             Y = np.column_stack(Y)
-            vpy_plt, kwargs = self._get_plotting_lib(
+            vpy_plt, kwargs = self.get_plotting_lib(
                 class_name="MultiDensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
@@ -580,7 +582,7 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="MultiLinePlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.MultiLinePlot(
@@ -641,7 +643,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="RangeCurve",
             chart=chart,
             matplotlib_kwargs={"plot_median": plot_median,},
@@ -713,8 +715,8 @@ class vDFPlot(PlottingUtils):
             TableSample.
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        vpy_plt = self._get_plotting_lib(class_name="HeatMap")[0]
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        vpy_plt = self.get_plotting_lib(class_name="HeatMap")[0]
         plt_obj = vpy_plt.HeatMap(
             vdf=self,
             columns=columns,
@@ -804,8 +806,8 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        vpy_plt, kwargs = self._get_plotting_lib(
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.HeatMap(
@@ -854,7 +856,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ContourPlot", chart=chart, style_kwargs=style_kwargs,
         )
         func_name = None
@@ -914,13 +916,13 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
         for column in columns:
             assert self[column].isnum(), TypeError(
                 f"vDataColumn {column} must be numerical to draw the Heatmap."
             )
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="HeatMap",
             chart=chart,
             matplotlib_kwargs={"extent": min_max[columns[0]] + min_max[columns[1]],},
@@ -988,8 +990,8 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
-        columns, of = self._format_colnames(columns, of, expected_nb_of_cols=2)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="HexbinMap",
             chart=chart,
             matplotlib_kwargs={"bbox": bbox, "img": img},
@@ -1066,7 +1068,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vml = _get_mllib()
+        vml = get_vertica_mllib()
         if img and not bbox and len(columns) == 2:
             aggr = self.agg(columns=columns, func=["min", "max"])
             bbox = (
@@ -1108,7 +1110,7 @@ class vDFPlot(PlottingUtils):
             finally:
                 model.drop()
             return chart
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ScatterPlot",
             chart=chart,
             matplotlib_kwargs={"bbox": bbox, "img": img,},
@@ -1153,8 +1155,8 @@ class vDFPlot(PlottingUtils):
             Plotting Object.
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
-        vpy_plt, kwargs = self._get_plotting_lib(
+        columns = self.format_colnames(columns)
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ScatterMatrix", style_kwargs=style_kwargs,
         )
         return vpy_plt.ScatterMatrix(
@@ -1205,7 +1207,7 @@ class vDFPlot(PlottingUtils):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="OutliersPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.OutliersPlot(
@@ -1222,7 +1224,7 @@ class vDFPlot(PlottingUtils):
         ).draw(**kwargs)
 
 
-class vDCPlot:
+class vDCPlot(vDCNorm):
 
     # Special Methods.
 
@@ -1380,7 +1382,7 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BoxPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BoxPlot(
@@ -1461,7 +1463,7 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BarChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.BarChart(
@@ -1539,7 +1541,7 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="HorizontalBarChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.HorizontalBarChart(
@@ -1610,7 +1612,7 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="PieChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.PieChart(
@@ -1674,11 +1676,11 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        by, of = self._parent._format_colnames(by, of)
+        by, of = self._parent.format_colnames(by, of)
         columns = [self._alias]
         if by:
             columns += [by]
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="SpiderChart", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.SpiderChart(
@@ -1755,7 +1757,7 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="Histogram", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.Histogram(
@@ -1815,9 +1817,9 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        vml = _get_mllib()
+        vml = get_vertica_mllib()
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
-        by = self._parent._format_colnames(by)
+        by = self._parent.format_colnames(by)
         if not xlim:
             xlim_ = [(self.min(), self.max())]
         else:
@@ -1851,7 +1853,7 @@ class vDCPlot:
                     model.drop()
             X = np.column_stack(X)
             Y = np.column_stack(Y)
-            vpy_plt, kwargs = self._parent._get_plotting_lib(
+            vpy_plt, kwargs = self._parent.get_plotting_lib(
                 class_name="MultiDensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             data = {"X": X, "Y": Y}
@@ -1919,8 +1921,8 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        ts = self._parent._format_colnames(ts)
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        ts = self._parent.format_colnames(ts)
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="CandleStick", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.CandleStick(
@@ -1984,8 +1986,8 @@ class vDCPlot:
         obj
             Plotting Object.
         """
-        ts, by = self._parent._format_colnames(ts, by)
-        vpy_plt, kwargs = self._parent._get_plotting_lib(
+        ts, by = self._parent.format_colnames(ts, by)
+        vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="LinePlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LinePlot(
@@ -2084,7 +2086,7 @@ class vDCPlot:
         else:
             check = False
         if check:
-            column = self._parent._format_colnames(column)
+            column = self._parent.format_colnames(column)
             columns += [column]
             if not "cmap" in kwargs:
                 kwargs["cmap"] = PlottingBase().get_cmap(idx=0)

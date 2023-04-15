@@ -24,12 +24,14 @@ import scipy.stats as scipy_st
 
 import verticapy._config.config as conf
 from verticapy._typing import PythonScalar, SQLColumns
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
-
 from verticapy.core.tablesample.base import TableSample
+
+from verticapy.core.vdataframe._normalize import vDFNorm
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -38,7 +40,7 @@ from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
 
 
-class vDFMachineLearning:
+class vDFMachineLearning(vDFNorm):
     @save_verticapy_logs
     def add_duplicates(
         self, weight: Union[int, str], use_gcd: bool = True
@@ -61,7 +63,7 @@ class vDFMachineLearning:
             the output vDataFrame.
         """
         if isinstance(weight, str):
-            weight = self._format_colnames(weight)
+            weight = self.format_colnames(weight)
             assert self[weight].category() == "int", TypeError(
                 "The weight vDataColumn category must be "
                 f"'integer', found {self[weight].category()}."
@@ -138,7 +140,7 @@ class vDFMachineLearning:
         """
         columns = format_type(columns, dtype=list)
         if len(columns) > 0:
-            columns = self._format_colnames(columns)
+            columns = self.format_colnames(columns)
         else:
             columns = self.get_columns()
         vdf = self.copy()
@@ -236,7 +238,7 @@ class vDFMachineLearning:
             p["is_numerical"][0],
             p["chi2"][0],
         )
-        split_predictor_idx = self._get_match_index(
+        split_predictor_idx = self.get_match_index(
             split_predictor,
             columns
             if "process" not in kwargs or kwargs["process"]
@@ -388,7 +390,7 @@ class vDFMachineLearning:
                     remove_cols += [col]
         else:
             remove_cols = []
-            columns_tmp = self._format_colnames(columns_tmp)
+            columns_tmp = self.format_colnames(columns_tmp)
             for col in columns_tmp:
                 if self[col].category() not in ("float", "int", "text") or (
                     self[col].category() == "text"
@@ -442,7 +444,7 @@ class vDFMachineLearning:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns) if (columns) else self.numcol()
+        columns = self.format_colnames(columns) if (columns) else self.numcol()
         if not robust:
             result = self.aggregate(func=["std", "avg"], columns=columns).values
         else:
@@ -518,7 +520,7 @@ class vDFMachineLearning:
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         columns = format_type(columns, dtype=list)
-        columns, response = self._format_colnames(columns, response)
+        columns, response = self.format_colnames(columns, response)
         assert 2 <= nbins <= 16, ValueError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
@@ -545,7 +547,7 @@ class vDFMachineLearning:
                     response=response,
                     RFmodel_params=RFmodel_params,
                 )
-        response = vdf._format_colnames(response)
+        response = vdf.format_colnames(response)
         if response in columns:
             columns.remove(response)
         chi2_list = []
@@ -605,7 +607,7 @@ class vDFMachineLearning:
         if len(columns) == 0:
             numcol = self.numcol()
         else:
-            numcol = self._format_colnames(columns)
+            numcol = self.format_colnames(columns)
         vdf = self.copy()
         all_comb = combinations_with_replacement(numcol, r=r)
         for elem in all_comb:
@@ -679,7 +681,7 @@ class vDFMachineLearning:
         vDataFrame
             The vDataFrame of the recommendation.
         """
-        unique_id, item_id, ts = self._format_colnames(unique_id, item_id, ts)
+        unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
         assert (
             method == "count" or rating
@@ -692,7 +694,7 @@ class vDFMachineLearning:
             assert (
                 method != "count"
             ), "Method 'count' can not be used if parameter 'rating' is defined."
-            rating = self._format_colnames(rating)
+            rating = self.format_colnames(rating)
         if ts:
             if start_date and end_date:
                 vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
@@ -809,7 +811,7 @@ class vDFMachineLearning:
         float
             score.
         """
-        y_true, y_score = self._format_colnames(y_true, y_score)
+        y_true, y_score = self.format_colnames(y_true, y_score)
         args = [y_true, y_score, self._genSQL()]
         return FUNCTIONS_DICTIONNARY[metric](*args)
 
@@ -850,7 +852,7 @@ class vDFMachineLearning:
             self
         """
         by = format_type(by, dtype=list)
-        by, ts = self._format_colnames(by, ts)
+        by, ts = self.format_colnames(by, ts)
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"
@@ -924,6 +926,6 @@ class vDFMachineLearning:
             FROM {self} 
             WHERE {random_func} > {q}{order_by}"""
         return (
-            self._new_vdataframe(train_table),
-            self._new_vdataframe(test_table),
+            create_new_vdf(train_table),
+            create_new_vdf(test_table),
         )

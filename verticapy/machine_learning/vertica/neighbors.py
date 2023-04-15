@@ -242,7 +242,7 @@ class KNeighborsRegressor(Regressor):
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
+            X=X, test_relation=vdf.current_relation(), key_columns=key_columns_arg
         )
         sql = f"""
             SELECT 
@@ -567,7 +567,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         if self._is_binary_classifier():
             table = self.deploySQL(
-                X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
+                X=X, test_relation=vdf.current_relation(), key_columns=key_columns_arg
             )
             sql = f"""
                 (SELECT 
@@ -582,7 +582,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         else:
             table = self.deploySQL(
                 X=X,
-                test_relation=vdf._genSQL(),
+                test_relation=vdf.current_relation(),
                 key_columns=key_columns_arg,
                 predict=True,
             )
@@ -651,7 +651,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         else:
             key_columns_str = ""
         table = self.deploySQL(
-            X=X, test_relation=vdf._genSQL(), key_columns=key_columns_arg
+            X=X, test_relation=vdf.current_relation(), key_columns=key_columns_arg
         )
         sql = f"""
             SELECT 
@@ -906,7 +906,7 @@ class KernelDensity(Regressor, Tree):
         """
         Returns the result of the KDE for all the data points.
         """
-        columns = vdf._format_colnames(columns)
+        columns = vdf.format_colnames(columns)
         x_vars = []
         y = []
         for idx, column in enumerate(columns):
@@ -962,12 +962,12 @@ class KernelDensity(Regressor, Tree):
             if not X:
                 X = input_relation.numcol()
             vdf = input_relation
-            input_relation = input_relation._genSQL()
+            input_relation = input_relation.current_relation()
         else:
             vdf = vDataFrame(input_relation)
             if not X:
                 X = vdf.numcol()
-        X = vdf._format_colnames(X)
+        X = vdf.format_colnames(X)
         x, y = self._density_compute(
             vdf,
             X,
@@ -1109,12 +1109,12 @@ class KernelDensity(Regressor, Tree):
         """
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
-            vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
                 class_name="DensityPlot", chart=chart, style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot
         elif len(self.X) == 2:
-            vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+            vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
                 class_name="DensityPlot2D", chart=chart, style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot2D
@@ -1261,7 +1261,7 @@ class LocalOutlierFactor(VerticaModel):
             self._is_already_stored(raise_error=True)
         self.key_columns = quote_ident(key_columns)
         if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation._genSQL()
+            self.input_relation = input_relation.current_relation()
             if not X:
                 X = input_relation.numcol()
         else:
@@ -1444,7 +1444,7 @@ class LocalOutlierFactor(VerticaModel):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._get_plotting_lib(
+        vpy_plt, kwargs = self.get_plotting_lib(
             class_name="LOFPlot", chart=chart, style_kwargs=style_kwargs,
         )
         return vpy_plt.LOFPlot(

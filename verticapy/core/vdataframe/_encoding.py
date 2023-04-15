@@ -22,14 +22,15 @@ from typing import Literal, Optional, TYPE_CHECKING
 import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, SQLColumns
 from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._object import _get_mllib
+from verticapy._utils._object import get_vertica_mllib, create_new_vdc
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
-
 from verticapy.core.string_sql.base import StringSQL
+
+from verticapy.core.vdataframe._fill import vDFFill, vDCFill
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
@@ -38,7 +39,7 @@ from verticapy.sql.drop import drop
 from verticapy.sql.functions import case_when, decode
 
 
-class vDFEncode:
+class vDFEncode(vDFFill):
     @save_verticapy_logs
     def case_when(self, name: str, *args) -> "vDataFrame":
         """
@@ -102,7 +103,7 @@ class vDFEncode:
             self
         """
         columns = format_type(columns, dtype=list)
-        columns = self._format_colnames(columns)
+        columns = self.format_colnames(columns)
         if len(columns) == 0:
             columns = self.get_columns()
         cols_hand = True if (columns) else False
@@ -124,7 +125,7 @@ class vDFEncode:
     get_dummies = one_hot_encode
 
 
-class vDCEncode:
+class vDCEncode(vDCFill):
     @save_verticapy_logs
     def cut(
         self,
@@ -272,7 +273,7 @@ class vDCEncode:
             self._parent
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
-        vml = _get_mllib()
+        vml = get_vertica_mllib()
         if self.isnum() and method == "smart":
             schema = conf.get_option("temp_schema")
             if not schema:
@@ -287,7 +288,7 @@ class vDCEncode:
                 "Parameter 'response' can not be empty in case of "
                 "discretization using the method 'smart'."
             )
-            response = self._parent._format_colnames(response)
+            response = self._parent.format_colnames(response)
             drop(tmp_view_name, method="view")
             self._parent.to_db(tmp_view_name)
             drop(tmp_model_name, method="model")
@@ -481,7 +482,7 @@ class vDCEncode:
                     name = f'"{prefix}{k}"'
                 else:
                     name = f'"{prefix}{distinct_elements_k}"'
-                assert not self._parent._is_colname_in(name), NameError(
+                assert not self._parent.is_colname_in(name), NameError(
                     "A vDataColumn has already the alias of one of "
                     f"the dummies ({name}).\nIt can be the result "
                     "of using previously the method on the vDataColumn "
@@ -504,7 +505,7 @@ class vDCEncode:
                 )
                 expr = f"DECODE({{}}, '{distinct_elements_k}', 1, 0)"
                 transformations = self._transf + [(expr, "bool", "int")]
-                new_vDataColumn = self._parent._new_vdatacolumn(
+                new_vDataColumn = create_new_vdc(
                     name,
                     parent=self._parent,
                     transformations=transformations,
@@ -583,7 +584,7 @@ class vDCEncode:
         vDataFrame
             self._parent
         """
-        response = self._parent._format_colnames(response)
+        response = self._parent.format_colnames(response)
         assert self._parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
         )

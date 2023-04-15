@@ -27,11 +27,13 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.core.vdataframe._text import vDFText, vDCText
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFNorm:
+class vDFNorm(vDFText):
     @save_verticapy_logs
     def normalize(
         self,
@@ -65,7 +67,7 @@ class vDFNorm:
         """
         columns = format_type(columns, dtype=list)
         no_cols = len(columns) == 0
-        columns = self.numcol() if not columns else self._format_colnames(columns)
+        columns = self.numcol() if not columns else self.format_colnames(columns)
         for column in columns:
             if self[column].isnum() and not self[column].isbool():
                 self[column].normalize(method=method)
@@ -80,7 +82,7 @@ class vDFNorm:
         return self
 
 
-class vDCNorm:
+class vDCNorm(vDCText):
     @save_verticapy_logs
     def normalize(
         self,
@@ -118,7 +120,7 @@ class vDCNorm:
         """
         method = method.lower()
         by = format_type(by, dtype=list)
-        by = self._parent._format_colnames(by)
+        by = self._parent.format_colnames(by)
         nullifzero, n = 1, len(by)
 
         if self.isbool():

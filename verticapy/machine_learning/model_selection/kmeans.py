@@ -243,7 +243,7 @@ def elbow(
         total_within_cluster_ss += [float(model.total_within_cluster_ss_)]
         model.drop()
     if show:
-        vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+        vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
             class_name="ElbowCurve", chart=chart, style_kwargs=style_kwargs,
         )
         data = {

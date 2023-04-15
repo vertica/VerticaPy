@@ -43,7 +43,7 @@ class Clustering(InMemoryModel):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["Clustering"]:
+    def object_type(self) -> Literal["Clustering"]:
         return "Clustering"
 
     @property
@@ -247,7 +247,7 @@ class KMeans(Clustering):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["KMeans"]:
+    def object_type(self) -> Literal["KMeans"]:
         return "KMeans"
 
     # System & Special Methods.
@@ -275,7 +275,7 @@ class NearestCentroid(Clustering):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["NearestCentroid"]:
+    def object_type(self) -> Literal["NearestCentroid"]:
         return "NearestCentroid"
 
     @property
@@ -321,7 +321,7 @@ class BisectingKMeans(Clustering, Tree):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["BisectingKMeans"]:
+    def object_type(self) -> Literal["BisectingKMeans"]:
         return "BisectingKMeans"
 
     @property
@@ -602,7 +602,7 @@ class KPrototypes(Clustering):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["KPrototypes"]:
+    def object_type(self) -> Literal["KPrototypes"]:
         return "KPrototypes"
 
     @property

@@ -246,7 +246,7 @@ class AutoDataPrep(VerticaModel):
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        X, ts, by = vdf._format_colnames(X, ts, by)
+        X, ts, by = vdf.format_colnames(X, ts, by)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -385,7 +385,7 @@ class AutoDataPrep(VerticaModel):
             self.X_out_ = vdf.get_columns(
                 exclude_columns=by + [ts] + X_diff if ts else by + X_diff
             )
-        self.sql_ = vdf._genSQL()
+        self.sql_ = vdf.current_relation()
         if self.parameters["save"]:
             vdf.to_db(name=self.model_name, relation_type="table", inplace=True)
         self.final_relation_ = vdf

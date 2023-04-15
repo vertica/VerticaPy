@@ -85,7 +85,7 @@ class NaiveBayes(MulticlassClassifier):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["NaiveBayes"]:
+    def object_type(self) -> Literal["NaiveBayes"]:
         return "NaiveBayes"
 
     @property

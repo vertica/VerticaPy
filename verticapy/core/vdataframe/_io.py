@@ -37,6 +37,8 @@ from verticapy.errors import ParsingError
 
 from verticapy.core.tablesample.base import TableSample
 
+from verticapy.core.vdataframe._sys import vDFSystem
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
@@ -45,7 +47,7 @@ if conf.get_import_success("geopandas"):
     from shapely import wkt
 
 
-class vDFInOut:
+class vDFInOut(vDFSystem):
     def copy(self) -> "vDataFrame":
         """
         Returns a deep copy of the vDataFrame.
@@ -220,13 +222,11 @@ class vDFInOut:
             current_nb_rows_written += limit
             file_id += 1
             if n_files == 1 and path:
-                file = open(path, "w+", encoding="utf-8")
-                file.write(csv_file)
-                file.close()
+                with open(path, "w+", encoding="utf-8") as f:
+                    f.write(csv_file)
             elif path:
-                file = open(f"{path}/{file_id}.csv", "w+", encoding="utf-8")
-                file.write(csv_file)
-                file.close()
+                with open(f"{path}/{file_id}.csv", "w+", encoding="utf-8") as f:
+                    f.write(csv_file)
             else:
                 csv_files += [csv_file]
         if not path:
@@ -287,7 +287,7 @@ class vDFInOut:
         """
         relation_type = relation_type.lower()
         usecols = format_type(usecols, dtype=list)
-        usecols = self._format_colnames(usecols)
+        usecols = self.format_colnames(usecols)
         commit = (
             " ON COMMIT PRESERVE ROWS"
             if (relation_type in ("local", "temporary"))
@@ -517,13 +517,11 @@ class vDFInOut:
             file_id += 1
             json_file = json_file[0:-2] + "\n]"
             if n_files == 1 and path:
-                file = open(path, "w+", encoding="utf-8")
-                file.write(json_file)
-                file.close()
+                with open(path, "w+", encoding="utf-8") as f:
+                    f.write(json_file)
             elif path:
-                file = open(f"{path}/{file_id}.json", "w+", encoding="utf-8")
-                file.write(json_file)
-                file.close()
+                with open(f"{path}/{file_id}.json", "w+", encoding="utf-8") as f:
+                    f.write(json_file)
             else:
                 json_files += [json_file]
         if not path:
@@ -699,7 +697,7 @@ class vDFInOut:
             raise ValueError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         if fileSizeMB <= 0:
             raise ValueError("Parameter 'fileSizeMB' must be greater than 0.")
-        by = self._format_colnames(by)
+        by = self.format_colnames(by)
         partition = ""
         if by:
             partition = f"PARTITION BY {', '.join(by)}"

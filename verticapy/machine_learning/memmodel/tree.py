@@ -265,9 +265,9 @@ class Tree(InMemoryModel):
         Returns the tree's output kind.
         """
         output_kind = "pred"
-        if self._object_type == "BinaryTreeAnomaly":
+        if self.object_type == "BinaryTreeAnomaly":
             output_kind = "contamination"
-        elif self._object_type == "BinaryTreeClassifier":
+        elif self.object_type == "BinaryTreeClassifier":
             output_kind = "prob"
             for val in self.value_:
                 if isinstance(val, list) and not 0.99 < sum(val) <= 1.0:
@@ -478,7 +478,7 @@ class BinaryTreeRegressor(Tree):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["BinaryTreeRegressor"]:
+    def object_type(self) -> Literal["BinaryTreeRegressor"]:
         return "BinaryTreeRegressor"
 
     @property
@@ -542,7 +542,7 @@ class BinaryTreeAnomaly(Tree):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["BinaryTreeAnomaly"]:
+    def object_type(self) -> Literal["BinaryTreeAnomaly"]:
         return "BinaryTreeAnomaly"
 
     @property
@@ -616,7 +616,7 @@ class BinaryTreeClassifier(Tree):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["BinaryTreeClassifier"]:
+    def object_type(self) -> Literal["BinaryTreeClassifier"]:
         return "BinaryTreeClassifier"
 
     @property
@@ -684,7 +684,7 @@ class NonBinaryTree(Tree):
     # Properties.
 
     @property
-    def _object_type(self) -> Literal["NonBinaryTree"]:
+    def object_type(self) -> Literal["NonBinaryTree"]:
         return "NonBinaryTree"
 
     @property

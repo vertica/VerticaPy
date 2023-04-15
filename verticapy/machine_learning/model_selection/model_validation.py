@@ -522,7 +522,7 @@ def learning_curve(
         order_by = "n"
         y_label = None
         columns = ["time"]
-    vpy_plt, kwargs = PlottingUtils()._get_plotting_lib(
+    vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
         class_name="RangeCurve", chart=chart, style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
