@@ -74,7 +74,6 @@ class DensityPlot(HighchartsBase):
             },
             "colors": self.get_colors(),
         }
-        return None
 
     # Draw.
 
@@ -104,7 +103,6 @@ class MultiDensityPlot(DensityPlot):
         self.init_style["tooltip"][
             "headerFormat"
         ] = '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>'
-        return None
 
     # Draw.
 

@@ -69,7 +69,6 @@ class BoxPlot(HighchartsBase):
         }
         if len(labels) == 1:
             self.init_style["chart"]["inverted"] = True
-        return None
 
     # Draw.
 

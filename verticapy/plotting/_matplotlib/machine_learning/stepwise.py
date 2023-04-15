@@ -37,7 +37,6 @@ class StepwisePlot(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
-        return None
 
     # Draw.
 

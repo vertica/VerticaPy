@@ -50,7 +50,6 @@ class ScatterMatrix(MatplotlibBase):
             "s": 40,
             "marker": "o",
         }
-        return None
 
     def _get_final_style_bar(self, style_kwargs: dict) -> dict:
         kwargs = {
@@ -129,7 +128,6 @@ class ScatterPlot(MatplotlibBase):
             "color": "w",
             "markersize": 8,
         }
-        return None
 
     # Draw.
 
@@ -198,7 +196,7 @@ class ScatterPlot(MatplotlibBase):
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             if img:
-                ax.imshow(im, extent=bbox)
+                ax.imshow(img, extent=bbox)
         if self.layout["has_category"]:
             ax.legend(
                 handles=legend,

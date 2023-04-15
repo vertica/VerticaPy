@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
 from typing import Literal, Optional
 
 import numpy as np
@@ -112,7 +113,6 @@ class ScatterPlot(HighchartsBase):
             self.init_style_cat = {
                 "legend": {"enabled": True, "title": {"text": self.layout["c"]}}
             }
-        return None
 
     # Draw.
 
@@ -120,7 +120,8 @@ class ScatterPlot(HighchartsBase):
         """
         Draws a scatter plot using the HC API.
         """
-        if self.layout["has_cmap"]:
+        has_cmap = self.layout["has_cmap"]
+        if has_cmap:
             warning_message = f"The parameter {has_cmap} is not supported on the Highchart API. It is ignored."
             warnings.warn(warning_message, Warning)
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal, Union
+from typing import Literal
 import numpy as np
 
 from verticapy._typing import PythonNumber
@@ -111,7 +111,6 @@ class NaiveBayes(MulticlassClassifier):
     ) -> None:
         self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
-        return None
 
     # Attributes Methods.
 
@@ -124,7 +123,6 @@ class NaiveBayes(MulticlassClassifier):
         )
         self.prior_ = np.array(self.get_vertica_attributes("prior")["probability"])
         self.attributes_ = self._get_nb_attributes()
-        return None
 
     def _get_nb_attributes(self) -> list[dict]:
         """
@@ -206,8 +204,6 @@ class BernoulliNB(NaiveBayes):
 
         super().__init__(name, alpha, nbtype="bernoulli")
 
-        return None
-
 
 class CategoricalNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'categorical'"""
@@ -215,8 +211,6 @@ class CategoricalNB(NaiveBayes):
     def __init__(self, name: str, alpha: float = 1.0) -> None:
 
         super().__init__(name, alpha, nbtype="categorical")
-
-        return None
 
 
 class GaussianNB(NaiveBayes):
@@ -226,8 +220,6 @@ class GaussianNB(NaiveBayes):
 
         super().__init__(name, nbtype="gaussian")
 
-        return None
-
 
 class MultinomialNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'multinomial'"""
@@ -235,5 +227,3 @@ class MultinomialNB(NaiveBayes):
     def __init__(self, name: str, alpha: float = 1.0) -> None:
 
         super().__init__(name, alpha, nbtype="multinomial")
-
-        return None

@@ -116,7 +116,7 @@ class vDFCorr:
                 ):
                     return np.nan
                 elif self[columns[1]].category() == "int":
-                    if not (self[columns[1]].isbool()):
+                    if not self[columns[1]].isbool():
                         agg = (
                             self[columns[1]]
                             .aggregate(["approx_unique", "min", "max"])
@@ -127,7 +127,7 @@ class vDFCorr:
                     column_b, column_n = columns[1], columns[0]
                     cast_b, cast_n = cast_1, cast_0
                 elif self[columns[0]].category() == "int":
-                    if not (self[columns[0]].isbool()):
+                    if not self[columns[0]].isbool():
                         agg = (
                             self[columns[0]]
                             .aggregate(["approx_unique", "min", "max"])
@@ -328,7 +328,7 @@ class vDFCorr:
                 for x in result:
                     i = corr_dict[quote_ident(x[0])]
                     j = corr_dict[quote_ident(x[1])]
-                    if not (isinstance(x[2], NoneType)):
+                    if not isinstance(x[2], NoneType):
                         matrix[i][j] = x[2]
                     else:
                         matrix[i][j] = np.nan
@@ -533,7 +533,7 @@ class vDFCorr:
         """
         Global method to use to compute the Correlation/Cov/Beta Vector.
         """
-        if not (columns):
+        if not columns:
             if method == "cramer":
                 cols = self.catcol()
                 assert cols, EmptyParameter(
@@ -1133,7 +1133,7 @@ class vDFCorr:
         elif method == "alpha":
             method = "intercept"
         method = f"regr_{method}"
-        if not (columns):
+        if not columns:
             columns = self.numcol()
             assert columns, EmptyParameter(
                 "No numerical column found in the vDataFrame."
@@ -1348,7 +1348,7 @@ class vDFCorr:
             )._genSQL()
         if isinstance(p, (int, float)):
             p = range(1, p + 1)
-        by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+        by = f"PARTITION BY {', '.join(by)} " if by else ""
         columns = [
             f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
             for i in p
@@ -1516,7 +1516,7 @@ class vDFCorr:
                 table = self.interpolate(
                     ts=ts, rule=f"1 {unit}", method={column: "linear"}, by=by
                 )._genSQL()
-            by = f"PARTITION BY {', '.join(by)} " if (by) else ""
+            by = f"PARTITION BY {', '.join(by)} " if by else ""
             columns = [
                 f"LAG({column}, {i}) OVER ({by}ORDER BY {ts}) AS lag_{i}_{gen_name([column])}"
                 for i in range(1, p + 1)
@@ -1642,7 +1642,7 @@ class vDFCorr:
         """
         columns = format_type(columns, dtype=list)
         columns, y = self._format_colnames(columns, y)
-        if not (columns):
+        if not columns:
             columns = self.get_columns(exclude_columns=[y])
         importance = np.array(
             [self[col].iv_woe(y=y, nbins=nbins)["iv"][-1] for col in columns]

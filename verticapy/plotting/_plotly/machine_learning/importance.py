@@ -18,7 +18,6 @@ import copy
 
 from typing import Literal, Optional
 
-import numpy as np
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
 
@@ -50,7 +49,6 @@ class ImportanceBarChart(PlotlyBase):
             "barmode": "stack",
             "yaxis": {"categoryorder": "total descending"},
         }
-        return None
 
     # Draw.
 

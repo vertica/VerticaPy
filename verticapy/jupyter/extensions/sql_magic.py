@@ -84,7 +84,7 @@ def sql_magic(
     try:
 
         # Initialization
-        queries = "" if (not (cell) and (line)) else cell
+        queries = "" if (not cell and (line)) else cell
 
         # Options
         options = {}
@@ -141,7 +141,7 @@ def sql_magic(
             raise ValueError("Cell must be empty when using options '-f' or '-c'.")
 
         if "-f" in options:
-            f = open(options["-f"], "r")
+            f = open(options["-f"], "r", encoding="utf-8")
             queries = f.read()
             f.close()
 
@@ -351,4 +351,3 @@ def sql_magic(
 def load_ipython_extension(ipython) -> None:
     ipython.register_magic_function(sql_magic, "cell", "sql")
     ipython.register_magic_function(sql_magic, "line", "sql")
-    return None

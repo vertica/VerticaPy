@@ -16,8 +16,6 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-
-import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
 from plotly.figure_factory import create_quiver
 
@@ -53,15 +51,10 @@ class PCACirclePlot(PlotlyBase):
             "height": 600,
             "legend": dict(orientation="v"),
         }
-        return None
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a PCA circle plot using the Plotly API.
         """

@@ -44,6 +44,7 @@ from verticapy.machine_learning.model_selection.hp_tuning.param_gen import (
 from verticapy.machine_learning.model_selection.variables_selection import stepwise
 from verticapy.machine_learning.vertica.automl.dataprep import AutoDataPrep
 from verticapy.machine_learning.vertica.base import VerticaModel
+from verticapy.machine_learning.vertica.cluster import NearestCentroid
 from verticapy.machine_learning.vertica.ensemble import (
     RandomForestRegressor,
     RandomForestClassifier,
@@ -291,7 +292,6 @@ class AutoML(VerticaModel):
             "preprocess_data": preprocess_data,
             "preprocess_dict": preprocess_dict,
         }
-        return None
 
     # Attributes Methods.
 
@@ -362,11 +362,11 @@ class AutoML(VerticaModel):
         else:
             self._is_already_stored(raise_error=True)
         if isinstance(X, NoneType):
-            if not (y):
+            if not y:
                 exclude_columns = []
             else:
                 exclude_columns = [y]
-            if not (isinstance(input_relation, vDataFrame)):
+            if not isinstance(input_relation, vDataFrame):
                 X = vDataFrame(input_relation).get_columns(
                     exclude_columns=exclude_columns
                 )
@@ -378,7 +378,7 @@ class AutoML(VerticaModel):
             self.parameters["estimator"] = self.parameters["estimator"].lower()
             modeltype = None
             estimator_method = self.parameters["estimator"]
-            if not (isinstance(input_relation, vDataFrame)):
+            if not isinstance(input_relation, vDataFrame):
                 vdf = vDataFrame(input_relation)
             else:
                 vdf = input_relation
@@ -652,11 +652,10 @@ class AutoML(VerticaModel):
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
         self.model_grid_ = result
-        self.parameters["reverse"] = not (reverse)
-        if not (isinstance(self.preprocess_, NoneType)):
+        self.parameters["reverse"] = not reverse
+        if not isinstance(self.preprocess_, NoneType):
             self.preprocess_.drop()
             self.preprocess_.final_relation_ = vDataFrame(self.preprocess_.sql_)
-        return None
 
     # Features Importance Methods.
 

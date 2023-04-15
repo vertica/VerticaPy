@@ -43,7 +43,6 @@ class BoxPlot(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"widths": 0.3}
-        return None
 
     # Draw.
 
@@ -93,7 +92,7 @@ class BoxPlot(MatplotlibBase):
                 kwargs = {"xdata": ydata, "ydata": xdata}
             flier.set(**kwargs)
         if self.layout["has_category"]:
-            if not (style_kwargs["vert"]):
+            if not style_kwargs["vert"]:
                 x_label, y_label = self.layout["y_label"], self.layout["x_label"]
             else:
                 x_label, y_label = self.layout["x_label"], self.layout["y_label"]

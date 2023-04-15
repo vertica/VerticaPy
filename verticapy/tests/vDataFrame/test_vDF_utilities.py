@@ -462,7 +462,7 @@ class TestvDFUtilities:
     def test_vDF_empty(self, amazon_vd):
         # test for non-empty vDataFrame
         result = amazon_vd.empty()
-        assert not (result)
+        assert not result
 
         # test for empty vDataFrame
         result2 = amazon_vd.copy().drop(["number", "date", "state"]).empty()
@@ -540,10 +540,10 @@ class TestvDFUtilities:
 
         # test for non-date-like vDataColumn
         result2 = amazon_vd["number"].isdate()
-        assert not (result2)
+        assert not result2
 
         result2 = amazon_vd["state"].isdate()
-        assert not (result2)
+        assert not result2
 
     def test_vDF_isnum(self, amazon_vd):
         # test for numerical vDataColumn
@@ -552,10 +552,10 @@ class TestvDFUtilities:
 
         # test for non-numerical vDataColumn
         result = amazon_vd["date"].isnum()
-        assert not (result)
+        assert not result
 
         result = amazon_vd["state"].isnum()
-        assert not (result)
+        assert not result
 
     @pytest.mark.skip(reason="test not stable")
     def test_vDF_memory_usage(self, amazon_vd):

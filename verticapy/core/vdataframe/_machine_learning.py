@@ -14,13 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import datetime
 import math
 import random
 import warnings
 from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
-import numpy as np
+
 import scipy.stats as scipy_st
 
 import verticapy._config.config as conf
@@ -227,7 +226,7 @@ class vDFMachineLearning:
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )
             columns = self.chaid_columns(columns)
-            if not (columns):
+            if not columns:
                 raise ValueError("No column to process.")
         idx = 0 if ("node_id" not in kwargs) else kwargs["node_id"]
         p = self.pivot_table_chi2(response, columns, nbins, method, RFmodel_params)
@@ -318,9 +317,7 @@ class vDFMachineLearning:
                 }
             tree["children"] = children
             if "process" not in kwargs or kwargs["process"]:
-                return InMemoryModel(
-                    "CHAID", attributes={"tree": tree, "classes": classes}
-                )
+                return NonBinaryTree(tree=tree, classes=classes)
             return tree, idx
         else:
             tree["children"] = {}
@@ -380,7 +377,7 @@ class vDFMachineLearning:
         """
         columns = format_type(columns, dtype=list)
         columns_tmp = columns.copy()
-        if not (columns_tmp):
+        if not columns_tmp:
             columns_tmp = self.get_columns()
             remove_cols = []
             for col in columns_tmp:
@@ -446,7 +443,7 @@ class vDFMachineLearning:
         """
         columns = format_type(columns, dtype=list)
         columns = self._format_colnames(columns) if (columns) else self.numcol()
-        if not (robust):
+        if not robust:
             result = self.aggregate(func=["std", "avg"], columns=columns).values
         else:
             result = self.aggregate(
@@ -454,7 +451,7 @@ class vDFMachineLearning:
             ).values
         conditions = []
         for idx, col in enumerate(result["index"]):
-            if not (robust):
+            if not robust:
                 conditions += [
                     f"""
                     ABS({col} - {result['avg'][idx]}) 
@@ -530,7 +527,7 @@ class vDFMachineLearning:
             if quote_ident(response) == quote_ident(col):
                 columns.remove(col)
                 break
-        if not (columns):
+        if not columns:
             raise ValueError("No column to process.")
         if self.shape()[0] == 0:
             return {

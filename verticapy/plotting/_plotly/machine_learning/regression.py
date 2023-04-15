@@ -57,8 +57,6 @@ class RegressionPlot(PlotlyBase):
             "height": 600,
         }
 
-        return None
-
     # Draw.
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:

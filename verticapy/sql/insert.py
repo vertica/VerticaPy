@@ -14,8 +14,6 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import sys
-import time
 import warnings
 from typing import Union, Optional
 
@@ -70,10 +68,10 @@ def insert_into(
         The number of rows ingested.
     """
     column_names = format_type(column_names, dtype=list)
-    if not (schema):
+    if not schema:
         schema = conf.get_option("temp_schema")
     input_relation = format_schema_table(schema, table_name)
-    if not (column_names):
+    if not column_names:
         result = _executeSQL(
             query=f"""
                 SELECT /*+LABEL('insert_into')*/
@@ -90,7 +88,7 @@ def insert_into(
             f"The table {input_relation} does not exist."
         )
     cols = quote_ident(column_names)
-    if copy and not (genSQL):
+    if copy and not genSQL:
         _executeSQL(
             query=f"""
                 INSERT INTO {input_relation} 

@@ -60,7 +60,6 @@ class HexbinMap(MatplotlibBase):
             "mincnt": 1,
             "edgecolors": None,
         }
-        return None
 
     # Draw.
 
@@ -85,7 +84,7 @@ class HexbinMap(MatplotlibBase):
             ax.set_ylim(bbox[2], bbox[3])
         if img:
             im = plt.imread(img)
-            if not (bbox):
+            if not bbox:
                 bbox = (
                     min(matrix[:, 0]),
                     max(matrix[:, 0]),

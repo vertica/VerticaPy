@@ -71,7 +71,6 @@ class PCACirclePlot(HighchartsBase):
         }
         self.init_style_circle = {"color": "#EFEFEF", "zIndex": 0}
         self.layout["columns"] = self._clean_quotes(self.layout["columns"])
-        return None
 
     # Draw.
 
@@ -132,7 +131,6 @@ class PCAScreePlot(HighchartsBase):
             "color": "black",
             "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "black",},
         }
-        return None
 
     # Draw.
 
@@ -226,7 +224,6 @@ class PCAVarPlot(HighchartsBase):
             "dashStyle": "longdash",
             "enableMouseTracking": False,
         }
-        return None
 
     # Draw.
 

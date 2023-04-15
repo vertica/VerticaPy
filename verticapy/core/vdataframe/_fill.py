@@ -16,9 +16,7 @@ permissions and limitations under the License.
 """
 import copy
 import datetime
-import re
 import warnings
-from itertools import combinations_with_replacement
 from typing import Literal, Optional, Union, TYPE_CHECKING
 
 from vertica_python.errors import QueryError
@@ -31,23 +29,15 @@ from verticapy._typing import (
     TimeInterval,
     SQLColumns,
 )
-from verticapy._utils._gen import gen_tmp_name
-from verticapy._utils._sql._cast import to_category, to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
-from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import vertica_version
-from verticapy.errors import EmptyParameter, QueryError as vQueryError
+from verticapy.errors import QueryError as vQueryError
 
 from verticapy.core.string_sql.base import StringSQL
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.drop import drop
-from verticapy.sql.dtypes import get_data_types
-from verticapy.sql.flex import compute_vmap_keys, isvmap
 
 
 class vDFFill:
@@ -93,7 +83,7 @@ class vDFFill:
         print_info = conf.get_option("print_info")
         conf.set_option("print_info", False)
         try:
-            if not (val) and not (method):
+            if not val and not method:
                 cols = self.get_columns()
                 for column in cols:
                     if numeric_only:
@@ -213,8 +203,8 @@ class vDCFill:
         vDataFrame
             self._parent
         """
-        assert (not (isinstance(lower, NoneType))) or (
-            not (isinstance(upper, NoneType))
+        assert (not isinstance(lower, NoneType)) or (
+            not isinstance(upper, NoneType)
         ), ValueError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             f"WHEN {{}} < {lower} THEN {lower} "
@@ -403,7 +393,7 @@ class vDCFill:
                 return self._parent
         if isinstance(val, str):
             val = val.replace("'", "''")
-        if not (isinstance(val, NoneType)):
+        if not isinstance(val, NoneType):
             new_column = f"COALESCE({{}}, '{val}')"
         elif expr:
             new_column = f"COALESCE({{}}, {expr})"
@@ -470,7 +460,7 @@ class vDCFill:
                 " must be a list of at least one element to use to order the data"
             )
             desc = "" if (method in ("ffill", "pad")) else " DESC"
-            partition_by = f"PARTITION BY {', '.join(by)}" if (by) else ""
+            partition_by = f"PARTITION BY {', '.join(by)}" if by else ""
             order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
             new_column = f"""
                 COALESCE({{}}, LAST_VALUE({{}} IGNORE NULLS) 

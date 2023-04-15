@@ -43,7 +43,6 @@ class BarChart(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"color": self.get_colors(idx=0), "alpha": 0.86}
-        return None
 
     # Draw.
 
@@ -99,7 +98,6 @@ class BarChart2D(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"width": 0.5, "alpha": 0.86}
-        return None
 
     # Draw.
 

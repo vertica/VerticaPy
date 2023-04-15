@@ -27,7 +27,7 @@ from verticapy._utils._sql._format import clean_query, format_magic, format_type
 
 from verticapy.machine_learning.memmodel.base import InMemoryModel
 
-if conf._get_import_success("graphviz"):
+if conf.get_import_success("graphviz"):
     import graphviz
     from graphviz import Source
 
@@ -212,7 +212,7 @@ class Tree(InMemoryModel):
             SQL code.
         """
         n = max(
-            [len(val) if not (isinstance(val, NoneType)) else 0 for val in self.value_]
+            [len(val) if not isinstance(val, NoneType) else 0 for val in self.value_]
         )
         return [self._predict_tree_sql(X, 0, True, i) for i in range(n)]
 
@@ -270,7 +270,7 @@ class Tree(InMemoryModel):
         elif self._object_type == "BinaryTreeClassifier":
             output_kind = "prob"
             for val in self.value_:
-                if isinstance(val, list) and not (0.99 < sum(val) <= 1.0):
+                if isinstance(val, list) and not 0.99 < sum(val) <= 1.0:
                     output_kind = "logodds"
                     break
         return output_kind
@@ -332,7 +332,7 @@ class Tree(InMemoryModel):
         if len(classes_color) == 0:
             empty_color = True
             classes_color = self._default_colors()
-        if not (vertical):
+        if not vertical:
             position = '\ngraph [rankdir = "LR"];'
         else:
             position = ""
@@ -356,9 +356,9 @@ class Tree(InMemoryModel):
                 if isinstance(self.value_[i], float):
                     label = f'"{self.value_[i]}"'
                 elif hasattr(self, "psy"):
-                    if not (leaf_style):
+                    if not leaf_style:
                         leaf_style = {"shape": "none"}
-                    if not (empty_color):
+                    if not empty_color:
                         color = classes_color[0]
                     else:
                         color = "#eeeeee"
@@ -389,7 +389,7 @@ class Tree(InMemoryModel):
                         f" anomaly_score: {anomaly_score} </td></tr></table>>"
                     )
                 else:
-                    if not (leaf_style):
+                    if not leaf_style:
                         leaf_style = {"shape": "none"}
                     if len(self.classes_) == 0:
                         classes_ = [k for k in range(len(self.value_[i]))]
@@ -433,7 +433,7 @@ class Tree(InMemoryModel):
         graphviz.Source
             graphviz object.
         """
-        if not (conf._get_import_success("graphviz")):
+        if not conf.get_import_success("graphviz"):
             raise ImportError(
                 "The graphviz module doesn't seem to be "
                 "installed in your environment.\nTo be "
@@ -500,7 +500,6 @@ class BinaryTreeRegressor(Tree):
         self.feature_ = np.array(feature)
         self.threshold_ = np.array(threshold)
         self.value_ = np.array(value, dtype=object)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -574,7 +573,6 @@ class BinaryTreeAnomaly(Tree):
         self.threshold_ = np.array(threshold)
         self.value_ = np.array(value, dtype=object)
         self.psy = psy
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -650,7 +648,6 @@ class BinaryTreeClassifier(Tree):
         self.threshold_ = np.array(threshold)
         self.value_ = copy.deepcopy(value)
         self.classes_ = np.array(classes)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -700,7 +697,6 @@ class NonBinaryTree(Tree):
         classes = format_type(classes, dtype=list)
         self.tree_ = copy.deepcopy(tree)
         self.classes_ = np.array(classes)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 
@@ -724,11 +720,10 @@ class NonBinaryTree(Tree):
                     tree["split_is_numerical"]
                     and (float(X[tree["split_predictor_idx"]]) <= float(c))
                 ) or (
-                    not (tree["split_is_numerical"])
+                    not tree["split_is_numerical"]
                     and (X[tree["split_predictor_idx"]] == c)
                 ):
                     return self._predict_tree(X, tree["children"][c], return_proba)
-            return None
 
     def _predict_row(self, X: ArrayLike) -> Union[ArrayLike, str, int]:
         """
@@ -869,7 +864,7 @@ class NonBinaryTree(Tree):
             if isinstance(tree["prediction"], float):
                 label = f'"{tree["prediction"]}"'
             else:
-                if not (leaf_style):
+                if not leaf_style:
                     leaf_style = {"shape": "none"}
                 if len(self.classes_) == 0:
                     classes_ = [k for k in range(len(tree["prediction"]))]
@@ -918,7 +913,7 @@ class NonBinaryTree(Tree):
                     process=False,
                 )
             if process:
-                if not (vertical):
+                if not vertical:
                     position = '\ngraph [rankdir = "LR"];'
                 else:
                     position = ""

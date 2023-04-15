@@ -45,7 +45,6 @@ class HorizontalBarChart(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"color": self.get_colors(idx=0), "alpha": 0.86}
-        return None
 
     # Draw.
 
@@ -97,7 +96,6 @@ class HorizontalBarChart2D(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {"height": 0.5, "alpha": 0.86}
-        return None
 
     # Draw.
 

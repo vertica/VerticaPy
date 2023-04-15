@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
 
@@ -49,8 +48,6 @@ class PieChart(PlotlyBase):
             "title_x": 0.5,
             "title_xanchor": "center",
         }
-
-        return None
 
     # Draw
 

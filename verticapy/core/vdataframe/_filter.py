@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-import datetime
 import random
 import warnings
 from typing import Literal, Optional, Union, TYPE_CHECKING
@@ -99,7 +98,7 @@ class vDFFilter:
         vDataFrame
             balanced vDataFrame
         """
-        if not (0 <= x <= 1):
+        if not 0 <= x <= 1:
             raise ValueError("Parameter 'x' must be between 0 and 1")
         order_by = format_type(order_by, dtype=list)
         column, order_by = self._format_colnames(column, order_by)
@@ -165,11 +164,11 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if not (isinstance(start, NoneType)) and not (isinstance(end, NoneType)):
+        if not isinstance(start, NoneType) and not isinstance(end, NoneType):
             condition = f"BETWEEN '{start}' AND '{end}'"
-        elif not (isinstance(start, NoneType)):
+        elif not isinstance(start, NoneType):
             condition = f"> '{start}'"
-        elif not (isinstance(end, NoneType)):
+        elif not isinstance(end, NoneType):
             condition = f"< '{end}'"
         else:
             return self.copy() if inplace else self
@@ -209,13 +208,13 @@ class vDFFilter:
         vDataFrame
             self
         """
-        if not (isinstance(start_time, NoneType)) and not (
+        if not isinstance(start_time, NoneType) and not (
             isinstance(end_time, NoneType)
         ):
             condition = f"BETWEEN '{start_time}' AND '{end_time}'"
-        elif not (isinstance(start_time, NoneType)):
+        elif not isinstance(start_time, NoneType):
             condition = f"> '{start_time}'"
-        elif not (isinstance(end_time, NoneType)):
+        elif not isinstance(end_time, NoneType):
             condition = f"< '{end_time}'"
         else:
             raise ValueError(
@@ -278,7 +277,7 @@ class vDFFilter:
         count = self.duplicated(columns=columns, count=True)
         if count:
             columns = (
-                self.get_columns() if not (columns) else self._format_colnames(columns)
+                self.get_columns() if not columns else self._format_colnames(columns)
             )
             name = (
                 "__verticapy_duplicated_index__"
@@ -353,8 +352,8 @@ class vDFFilter:
         """
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
-        if not (isinstance(conditions, str)) or (args):
-            if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
+        if not isinstance(conditions, str) or (args):
+            if isinstance(conditions, str) or not isinstance(conditions, Iterable):
                 conditions = [conditions]
             elif isinstance(conditions, NoneType):
                 conditions = []
@@ -565,13 +564,13 @@ class vDFFilter:
         """
         if x == 1:
             return self.copy()
-        assert not (isinstance(n, NoneType)) or not (
-            isinstance(x, NoneType)
-        ), ValueError("One of the parameter 'n' or 'x' must not be empty.")
+        assert not isinstance(n, NoneType) or not (isinstance(x, NoneType)), ValueError(
+            "One of the parameter 'n' or 'x' must not be empty."
+        )
         assert isinstance(n, NoneType) or isinstance(x, NoneType), ValueError(
             "One of the parameter 'n' or 'x' must be empty."
         )
-        if not (isinstance(n, NoneType)):
+        if not isinstance(n, NoneType):
             x = float(n / self.shape()[0])
             if x >= 1:
                 return self.copy()
@@ -579,7 +578,7 @@ class vDFFilter:
             method = method.lower()
         if method in ("systematic", "random"):
             order_by = ""
-            assert not (by), ValueError(
+            assert not by, ValueError(
                 f"Parameter 'by' must be empty when using '{method}' sampling."
             )
         by = format_type(by, dtype=list)
@@ -660,7 +659,7 @@ class vDFFilter:
             vDataFrame of the search
         """
         order_by, usecols, expr = format_type(order_by, usecols, expr, dtype=list)
-        if isinstance(conditions, Iterable) and not (isinstance(conditions, str)):
+        if isinstance(conditions, Iterable) and not isinstance(conditions, str):
             conditions = " AND ".join([f"({elem})" for elem in conditions])
         if conditions:
             conditions = f" WHERE {conditions}"
@@ -794,7 +793,7 @@ class vDCFilter:
         vDataFrame
             The vDataFrame of the search.
         """
-        if isinstance(val, str) or not (isinstance(val, Iterable)):
+        if isinstance(val, str) or not isinstance(val, Iterable):
             val = [val]
         val += list(args)
         val = {self._alias: val}

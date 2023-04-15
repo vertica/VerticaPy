@@ -40,7 +40,7 @@ def print_table(
     relation.
     """
     dtype, percent = format_type(dtype, percent, dtype=dict)
-    if not (return_html):
+    if not return_html:
         data_columns_rep = [] + data_columns
         if repeat_first_column:
             del data_columns_rep[0]
@@ -94,7 +94,7 @@ def print_table(
                 if rjust_val != []:
                     formatted_text += " \\\\"
                 formatted_text += "\n"
-            if not (is_finished) and (i == total_column_len - 1):
+            if not is_finished and (i == total_column_len - 1):
                 for k in range(0, column_count):
                     if k == 0:
                         formatted_text += "...".ljust(columns_rjust_val[k])
@@ -105,7 +105,7 @@ def print_table(
                 formatted_text += "\n"
         return formatted_text
     else:
-        if not (repeat_first_column):
+        if not repeat_first_column:
             data_columns = [
                 [""] + list(range(1 + offset, len(data_columns[0]) + offset))
             ] + data_columns

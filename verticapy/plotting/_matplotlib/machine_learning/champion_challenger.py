@@ -58,7 +58,6 @@ class ChampionChallengerPlot(MatplotlibBase):
             **self.layout,
         }
         self.data = {"z": [], "s": [], **self.data}
-        return None
 
     # Draw.
 

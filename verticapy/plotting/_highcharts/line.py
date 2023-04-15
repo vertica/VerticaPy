@@ -44,7 +44,7 @@ class LinePlot(HighchartsBase):
 
     @staticmethod
     def _to_datetime(x: list) -> list:
-        if len(x) > 0 and not (isinstance(x[0], datetime)) and isinstance(x[0], date):
+        if len(x) > 0 and not isinstance(x[0], datetime) and isinstance(x[0], date):
             return [datetime.combine(d, datetime.min.time()) for d in x]
         else:
             return copy.deepcopy(x)
@@ -126,7 +126,6 @@ class LinePlot(HighchartsBase):
             }
         elif len(self.layout["columns"]) > 1:
             self.init_style["legend"] = {"enabled": True}
-        return None
 
     # Draw.
 

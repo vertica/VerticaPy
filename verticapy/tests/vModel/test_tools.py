@@ -55,7 +55,7 @@ class TestTools:
         current_cursor().execute("CREATE SCHEMA IF NOT EXISTS load_model_test")
         model = LinearRegression("load_model_test.model_test")
         model.drop()
-        assert not (model._is_already_stored())
+        assert not model._is_already_stored()
         model.fit(titanic_vd, ["age", "fare"], "survived")
         assert model._is_already_stored()
         assert (

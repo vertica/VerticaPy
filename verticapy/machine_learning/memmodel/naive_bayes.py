@@ -15,7 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import copy
-from typing import Literal, Union
+from typing import Literal
 
 import numpy as np
 
@@ -100,7 +100,6 @@ class NaiveBayes(MulticlassClassifier):
         self.attributes_ = copy.deepcopy(attributes)
         self.prior_ = np.array(prior)
         self.classes_ = np.array(classes)
-        return None
 
     # Prediction / Transformation Methods - IN MEMORY.
 

@@ -23,9 +23,9 @@ import datetime, os, sys
 
 # Other Modules
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from vertica_highcharts.highcharts.highcharts import Highchart
 from vertica_highcharts.highstock.highstock import Highstock
+from IPython.display import HTML
 
 # VerticaPy
 import verticapy
@@ -97,28 +97,28 @@ class TestvDFPlot:
         result = pop_growth_vd.animated_bar(
             "year", ["city", "population"], "continent", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = pop_growth_vd.animated_pie(
             "year", ["city", "population"], "continent", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = pop_growth_vd.animated_bar(
             "year", ["city", "population"], "", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = pop_growth_vd.animated_pie(
             "year", ["city", "population"], "", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = amazon_vd.animated_plot("date", "number", by="state",)
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = commodities_vd.animated_plot("date", color=["r", "g", "b"])
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = gapminder_vd.animated_scatter(
             "year",
@@ -127,7 +127,7 @@ class TestvDFPlot:
             limit_labels=10,
             limit_over=100,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = gapminder_vd.animated_scatter(
             "year",
@@ -136,7 +136,7 @@ class TestvDFPlot:
             limit_labels=10,
             limit_over=100,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = gapminder_vd.animated_scatter(
             "year",
@@ -145,7 +145,7 @@ class TestvDFPlot:
             limit_labels=10,
             limit_over=100,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
         result = gapminder_vd.animated_scatter(
             "year",
@@ -154,7 +154,7 @@ class TestvDFPlot:
             limit_labels=10,
             limit_over=100,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
 
     def test_vDF_stacked_area(self, amazon_vd):

@@ -65,7 +65,6 @@ class GlobalConnection:
             "dsn": None,
         }
         self._external_connections = {}
-        return None
 
     def _get_connection(self) -> Connection:
         return self._connection["conn"]
@@ -88,7 +87,6 @@ class GlobalConnection:
         self._connection["conn"] = conn
         self._connection["section"] = section
         self._connection["dsn"] = dsn
-        return None
 
     def _set_external_connections(self, symbol: str, cid: str, rowset: int) -> None:
         if (
@@ -100,7 +98,7 @@ class GlobalConnection:
                 "cid": cid,
                 "rowset": rowset,
             }
-            return None
+
         else:
             raise ValueError(
                 "Could not set the external connection. Found a wrong type."

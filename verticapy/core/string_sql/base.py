@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import copy
 from typing import Any, Iterable, Literal, Optional
 
 from verticapy._typing import NoneType, SQLColumns
@@ -34,11 +35,10 @@ class StringSQL:
     ) -> None:
         self._alias = alias
         self._category = category
-        if not (init_transf):
+        if not init_transf:
             self._init_transf = alias
         else:
             self._init_transf = init_transf
-        return None
 
     def __repr__(self) -> "StringSQL":
         return str(self._init_transf)
@@ -115,7 +115,7 @@ class StringSQL:
             ValueError("Method '_not_in' doesn't work with no parameters.")
         else:
             x = copy.deepcopy(args)
-        if not (isinstance(x, Iterable)) or (isinstance(x, str)):
+        if not isinstance(x, Iterable) or (isinstance(x, str)):
             raise TypeError(
                 "Method '_not_in' only works on iterable "
                 f"elements other than str. Found {x}."
@@ -145,7 +145,7 @@ class StringSQL:
         )
 
     def __eq__(self, x: Any) -> "StringSQL":
-        op = "IS" if isinstance(x, NoneType) and not (isinstance(x, StringSQL)) else "="
+        op = "IS" if isinstance(x, NoneType) and not isinstance(x, StringSQL) else "="
         val = format_magic(x)
         if val != "NULL":
             val = f"({val})"
@@ -154,7 +154,7 @@ class StringSQL:
     def __ne__(self, x: Any) -> "StringSQL":
         op = (
             "IS NOT"
-            if isinstance(x, NoneType) and not (isinstance(x, StringSQL))
+            if isinstance(x, NoneType) and not isinstance(x, StringSQL)
             else "!="
         )
         val = format_magic(x)
