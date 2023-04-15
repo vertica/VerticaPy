@@ -59,6 +59,8 @@ class LinearModel:
         self.test_relation = None
         self.X = None
         self.y = None
+        for att in self._attributes:
+            setattr(self, att, None)
 
     # Attributes Methods.
 

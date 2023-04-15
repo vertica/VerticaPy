@@ -18,16 +18,14 @@ import copy
 import decimal
 import pickle
 import os
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, TYPE_CHECKING
 from collections.abc import Iterable
-import numpy as np
 
+import numpy as np
 import pandas as pd
 
-pickle.DEFAULT_PROTOCOL = 4
-
 import verticapy._config.config as conf
-from verticapy._typing import NoneType, SQLColumns, SQLExpression, TYPE_CHECKING
+from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._random import _current_random
@@ -45,6 +43,8 @@ if conf.get_import_success("geopandas"):
 
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
+
+pickle.DEFAULT_PROTOCOL = 4
 
 
 class vDFInOut(vDFSystem):

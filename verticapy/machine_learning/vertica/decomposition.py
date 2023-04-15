@@ -552,8 +552,7 @@ class MCA(PCA):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {}
 
     # Plotting Methods.

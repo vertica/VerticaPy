@@ -75,8 +75,7 @@ class Clustering(Unsupervised):
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
-        self.input_relation = None
-        self.X = None
+        super().__init__()
 
     # Prediction / Transformation Methods.
 
@@ -628,8 +627,7 @@ class BisectingKMeans(KMeans, Tree):
         max_iter: int = 300,
         tol: float = 1e-4,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_cluster": n_cluster,
             "bisection_iterations": bisection_iterations,
