@@ -412,7 +412,7 @@ class vDCRead:
                     (SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._parent}) VERTICAPY_SUBTABLE"""
-                vcol = self._parent._new_vdataframe(query)[new_alias]
+                vcol = create_new_vdf(query)[new_alias]
                 vcol._transf[-1] = (
                     new_alias,
                     self.ctype(),
@@ -441,7 +441,7 @@ class vDCRead:
                     FROM {self._parent}
                     {self._parent._get_last_order_by()} 
                     OFFSET {index_start} {limit}"""
-                return self._parent._new_vdataframe(query)
+                return create_new_vdf(query)
         elif isinstance(index, int):
             if self.isarray():
                 vertica_version(condition=[9, 3, 0])
@@ -451,7 +451,7 @@ class vDCRead:
                     SELECT 
                         {elem_to_select} AS {new_alias} 
                     FROM {self._parent}"""
-                vcol = self._parent._new_vdataframe(query)[new_alias]
+                vcol = create_new_vdf(query)[new_alias]
                 vcol._init_transf = f"{self._init_transf}[{index}]"
                 return vcol
             else:
@@ -485,7 +485,7 @@ class vDCRead:
                 SELECT 
                     {elem_to_select} AS {quote_ident(index)} 
                 FROM {self._parent}"""
-            vcol = self._parent._new_vdataframe(query)[index]
+            vcol = create_new_vdf(query)[index]
             vcol._init_transf = init_transf
             return vcol
         else:

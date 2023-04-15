@@ -353,7 +353,7 @@ class vDataFrame(vDFAnimatedPlot):
 ##
 
 
-class vDataColumn(vDCPlot):
+class vDataColumn(vDCPlot, StringSQL):
     """
     Python  object  which  that  stores all user  transformations. 
     If   the  vDataFrame   represents  the  entire  relation,   a 

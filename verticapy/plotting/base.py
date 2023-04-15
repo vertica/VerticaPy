@@ -32,6 +32,7 @@ from verticapy._typing import (
     PythonScalar,
     SQLColumns,
 )
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -1039,7 +1040,7 @@ class PlottingBase(PlottingBaseSQL):
                 }
             vdf_tmp = gen_meshgrid(d)
             if "{0}" in func and "{1}" in func:
-                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+                vdf_tmp = create_new_vdf(func.format("_contour_Z", vdf_tmp))
             else:
                 vdf_tmp["_contour_Z"] = func
             dataset = (
@@ -1116,7 +1117,7 @@ class PlottingBase(PlottingBaseSQL):
                 }
             vdf_tmp = gen_meshgrid(d)
             if "{0}" in func and "{1}" in func:
-                vdf_tmp = vdf._new_vdataframe(func.format("_contour_Z", vdf_tmp))
+                vdf_tmp = create_new_vdf(func.format("_contour_Z", vdf_tmp))
             else:
                 vdf_tmp["_contour_Z"] = func
             dataset = (
@@ -1396,7 +1397,7 @@ class PlottingBase(PlottingBaseSQL):
             column=order_by, start=order_by_start, end=order_by_end, inplace=False
         )[[order_by] + columns].sort(columns=[order_by])
         if limit_over > 0:
-            X = X._new_vdataframe(
+            X = create_new_vdf(
                 f"""
                 SELECT * FROM {X}
                 LIMIT {limit_over} OVER 

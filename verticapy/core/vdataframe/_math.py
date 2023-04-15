@@ -23,6 +23,7 @@ import verticapy._config.config as conf
 from verticapy._typing import PythonNumber, PythonScalar, SQLColumns
 from verticapy._utils._gen import gen_name
 from verticapy._utils._map import verticapy_agg_name
+from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._cast import to_category
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
@@ -816,7 +817,7 @@ class vDCMath(vDCFilter):
             SELECT 
                 {elem_to_select} AS {new_alias} 
             FROM {self._parent}"""
-        vcol = self._parent._new_vdataframe(query)[new_alias]
+        vcol = create_new_vdf(query)[new_alias]
         vcol._init_transf = init_transf
         return vcol
 
