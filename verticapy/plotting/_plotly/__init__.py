@@ -44,6 +44,7 @@ from verticapy.plotting._plotly.machine_learning.model_evaluation import (
     PRCCurve,
     LiftChart,
 )
+from verticapy.plotting._plotly.machine_learning.kmeans import VoronoiPlot
 
 import plotly.io as pio
 import plotly.graph_objects as go

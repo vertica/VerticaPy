@@ -38,6 +38,7 @@ from verticapy.learn.linear_model import (
     LinearRegression,
     LogisticRegression,
 )
+from verticapy.learn.cluster import KMeans
 from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow, lift_chart, prc_curve
 from verticapy.learn.neighbors import LocalOutlierFactor
@@ -235,6 +236,16 @@ def prc_curve_plot_result(load_plotly, dummy_probability_data):
 @pytest.fixture(scope="class")
 def lift_chart_plot_result(load_plotly, dummy_probability_data):
     return lift_chart("y_true", "y_score", dummy_probability_data)
+
+
+@pytest.fixture(scope="class")
+def voronoi_plot_result(load_plotly, iris_vd):
+    model = KMeans(name="test_KMeans_iris")
+    model.fit(
+        iris_vd,
+        ["PetalLengthCm", "PetalWidthCm"],
+    )
+    return model.plot_voronoi()
 
 
 @pytest.fixture(scope="module")
@@ -2205,6 +2216,64 @@ class TestMachineLearningLiftChart:
             width=custom_width,
             height=custom_height,
         )
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningLiftChart:
+    @pytest.fixture(autouse=True)
+    def result(self, voronoi_plot_result):
+        self.result = voronoi_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "PetalLengthCm"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "PetalWidthCm"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 20
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = KMeans(name="public.KMeans_iris")
+        model.fit(
+            iris_vd,
+            ["PetalLengthCm", "PetalWidthCm"],
+        )
+        # Act
+        result = model.plot_voronoi(width=custom_width, height=custom_height)
         # Assert
         assert (
             result.layout["height"] == custom_height
