@@ -41,7 +41,7 @@ def _executeSQL(
     Executes and returns the result of the input query.
     """
     data = format_type(data, dtype=list)
-    special_symbols = get_global_connection()._special_symbols
+    special_symbols = get_global_connection().special_symbols
     # Cleaning the query
     if sql_push_ext and (symbol in special_symbols):
         query = erase_label(query)

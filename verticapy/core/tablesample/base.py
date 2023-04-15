@@ -35,14 +35,14 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 from verticapy.errors import MissingColumn
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.jupyter._javascript import datatables_repr
 
 from verticapy.sql.dtypes import vertica_python_dtype
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class TableSample:

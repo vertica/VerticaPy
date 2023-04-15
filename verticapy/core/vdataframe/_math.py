@@ -33,10 +33,10 @@ from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
 
+from verticapy.sql.dtypes import get_data_types
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
-
-from verticapy.sql.dtypes import get_data_types
 
 
 class vDFMath(vDFFilter):
@@ -372,7 +372,7 @@ class vDFMath(vDFFilter):
                     "The parameter 'columns' must be a vDataFrame column when "
                     f"using analytic method '{func}'"
                 )
-            elif (columns) and func not in (
+            if (columns) and func not in (
                 "lead",
                 "lag",
                 "first_value",

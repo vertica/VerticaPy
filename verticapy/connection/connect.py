@@ -40,8 +40,8 @@ def auto_connect() -> None:
     gb_conn = get_global_connection()
     confparser = get_confparser()
 
-    if confparser.has_section(gb_conn._vpy_auto_connection):
-        section = confparser.get(gb_conn._vpy_auto_connection, "name")
+    if confparser.has_section(gb_conn.vpy_auto_connection):
+        section = confparser.get(gb_conn.vpy_auto_connection, "name")
     else:
         raise ConnectionError(
             "No Auto Connection available. You can create one using "
@@ -68,13 +68,13 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         If empty, the  Connection File will be used.
     """
     gb_conn = get_global_connection()
-    prev_conn = gb_conn._get_connection()
+    prev_conn = gb_conn.get_connection()
     if not dsn:
         dsn = get_connection_file()
     if prev_conn and not prev_conn.closed():
         prev_conn.close()
     try:
-        gb_conn._set_connection(vertica_connection(section, dsn), section, dsn)
+        gb_conn.set_connection(vertica_connection(section, dsn), section, dsn)
     except Exception as e:
         if "The DSN Section" in str(e):
             raise ConnectionError(
@@ -85,7 +85,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
                 "To view available connections, use the "
                 "the 'available_connections' function."
             )
-        raise (e)
+        raise e
 
 
 def set_connection(conn: Connection) -> None:
@@ -103,7 +103,7 @@ def set_connection(conn: Connection) -> None:
     except Exception as e:
         raise ConnectionError(f"The input connector is not working properly.\n{e}")
     gb_conn = get_global_connection()
-    gb_conn._set_connection(conn)
+    gb_conn.set_connection(conn)
 
 
 """
@@ -116,7 +116,7 @@ def close_connection() -> None:
     Closes the connection to the database.
     """
     gb_conn = get_global_connection()
-    connection = gb_conn._get_connection()
+    connection = gb_conn.get_connection()
     if connection and not connection.closed():
         connection.close()
 
@@ -142,9 +142,9 @@ def current_connection() -> GlobalConnection:
     Environment.
     """
     gb_conn = get_global_connection()
-    conn = gb_conn._get_connection()
-    dsn = gb_conn._get_dsn()
-    section = gb_conn._get_dsn_section()
+    conn = gb_conn.get_connection()
+    dsn = gb_conn.get_dsn()
+    section = gb_conn.get_dsn_section()
 
     # Look if the connection does not exist or is closed
 
@@ -170,12 +170,12 @@ def current_connection() -> GlobalConnection:
                     # Connection to the VerticaLab environment
 
                     conn = verticapylab_connection()
-                    gb_conn._set_connection(conn)
+                    gb_conn.set_connection(conn)
 
                 except:
-                    raise (e)
+                    raise e
 
-    return gb_conn._get_connection()
+    return gb_conn.get_connection()
 
 
 def current_cursor() -> Cursor:
@@ -230,6 +230,6 @@ def verticapylab_connection() -> Connection:
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": gb_conn._vpy_session_label,
+        "session_label": gb_conn.vpy_session_label,
     }
     return vertica_python.connect(**conn_info)

@@ -83,7 +83,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -114,7 +114,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
@@ -185,7 +185,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -216,7 +216,7 @@ class DummyTreeClassifier(RandomForestClassifier):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",

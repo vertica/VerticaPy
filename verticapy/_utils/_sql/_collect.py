@@ -38,7 +38,7 @@ def _dict_to_json_string(
     if path:
         json += f'"verticapy_fpath": "{path}", '
     if add_identifier:
-        json += f'"verticapy_id": "{gb_conn._vpy_session_identifier}", '
+        json += f'"verticapy_id": "{gb_conn.vpy_session_identifier}", '
     for key in json_dict:
         object_type = None
         if hasattr(json_dict[key], "object_type"):

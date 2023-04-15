@@ -25,10 +25,10 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
 
+from verticapy.sql.flex import compute_vmap_keys
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.flex import compute_vmap_keys
 
 
 class vDFPivot(vDFJoinUnionSort):

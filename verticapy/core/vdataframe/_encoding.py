@@ -32,11 +32,11 @@ from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.core.vdataframe._fill import vDFFill, vDCFill
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.sql.drop import drop
 from verticapy.sql.functions import case_when, decode
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFEncode(vDFFill):

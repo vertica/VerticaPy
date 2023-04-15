@@ -31,8 +31,10 @@ class GlobalConnection:
     by all VerticaPy objects.
     """
 
+    # Properties.
+
     @property
-    def _special_symbols(self) -> list[str]:
+    def special_symbols(self) -> list[str]:
         return [
             "$",
             "€",
@@ -47,16 +49,18 @@ class GlobalConnection:
         ]
 
     @property
-    def _vpy_auto_connection(self) -> Literal[VERTICAPY_AUTO_CONNECTION]:
+    def vpy_auto_connection(self) -> Literal[VERTICAPY_AUTO_CONNECTION]:
         return VERTICAPY_AUTO_CONNECTION
 
     @property
-    def _vpy_session_identifier(self) -> Literal[VERTICAPY_SESSION_IDENTIFIER]:
+    def vpy_session_identifier(self) -> Literal[VERTICAPY_SESSION_IDENTIFIER]:
         return VERTICAPY_SESSION_IDENTIFIER
 
     @property
-    def _vpy_session_label(self) -> Literal[VERTICAPY_SESSION_LABEL]:
+    def vpy_session_label(self) -> Literal[VERTICAPY_SESSION_LABEL]:
         return VERTICAPY_SESSION_LABEL
+
+    # System Methods.
 
     def __init__(self) -> None:
         self._connection = {
@@ -66,19 +70,21 @@ class GlobalConnection:
         }
         self._external_connections = {}
 
-    def _get_connection(self) -> Connection:
+    # Main Methods.
+
+    def get_connection(self) -> Connection:
         return self._connection["conn"]
 
-    def _get_external_connections(self) -> dict:
+    def get_external_connections(self) -> dict:
         return self._external_connections
 
-    def _get_dsn(self) -> str:
+    def get_dsn(self) -> str:
         return self._connection["dsn"]
 
-    def _get_dsn_section(self) -> str:
+    def get_dsn_section(self) -> str:
         return self._connection["section"]
 
-    def _set_connection(
+    def set_connection(
         self,
         conn: Connection,
         section: Optional[str] = None,
@@ -88,11 +94,11 @@ class GlobalConnection:
         self._connection["section"] = section
         self._connection["dsn"] = dsn
 
-    def _set_external_connections(self, symbol: str, cid: str, rowset: int) -> None:
+    def set_external_connections(self, symbol: str, cid: str, rowset: int) -> None:
         if (
             isinstance(cid, str)
             and isinstance(rowset, int)
-            and symbol in self._special_symbols
+            and symbol in self.special_symbols
         ):
             self._external_connections[symbol] = {
                 "cid": cid,

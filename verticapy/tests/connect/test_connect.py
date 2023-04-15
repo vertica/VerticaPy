@@ -40,7 +40,7 @@ class TestConnect:
         change_auto_connection("vp_test_config")
         # auto_connect
         auto_connect()
-        cur = gb_conn._get_connection().cursor()
+        cur = gb_conn.get_connection().cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
@@ -52,7 +52,7 @@ class TestConnect:
         )
         label = current_cursor().fetchone()[0].split("-")
         assert label[1] == vp.__version__.split("-")[0]
-        # assert label[2] == str(gb_conn._vpy_session_identifier)
+        # assert label[2] == str(gb_conn.vpy_session_identifier)
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(
