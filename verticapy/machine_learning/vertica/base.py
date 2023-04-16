@@ -839,7 +839,7 @@ class Tree:
         self.X = None
         self.y = None
         # self.parameters = {}
-        self.classes_ = None
+        # self.classes_ = None
         # for att in self._attributes:
         #    setattr(self, att, None)
 
@@ -1716,7 +1716,7 @@ class MulticlassClassifier(Supervised):
     def __init__(self) -> None:
         """Must be overridden in the child class"""
         super().__init__()
-        self.classes_ = None
+        # self.classes_ = None
 
     def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
         """

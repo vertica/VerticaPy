@@ -214,7 +214,7 @@ class LinearModelClassifier(LinearModel):
         self.test_relation = None
         self.X = None
         self.y = None
-        self.classes_ = None
+        # self.classes_ = None
 
     # Attributes Methods.
 
