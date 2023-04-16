@@ -25,10 +25,10 @@ from verticapy.errors import EmptyParameter
 
 from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
 
+from verticapy.sql.flex import compute_vmap_keys
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.sql.flex import compute_vmap_keys
 
 
 class vDFPivot(vDFJoinUnionSort):
@@ -162,7 +162,7 @@ class vDFPivot(vDFJoinUnionSort):
                 all_are_date = False
         for column in columns:
             conv = ""
-            if not all_are_num and not all_are_num:
+            if not all_are_num and not all_are_date:
                 conv = "::varchar"
             elif self[column].category() == "int":
                 conv = "::int"

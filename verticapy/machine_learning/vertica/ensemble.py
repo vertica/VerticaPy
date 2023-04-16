@@ -202,9 +202,6 @@ class XGBoost(Tree):
         """
         Method used to converts the model to JSON.
         """
-        condition = [f"{predictor} IS NOT NULL" for predictor in self.X] + [
-            f"{self.y} IS NOT NULL"
-        ]
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
@@ -456,6 +453,7 @@ class RandomForestRegressor(RandomForest, Regressor):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -615,6 +613,7 @@ class XGBRegressor(XGBoost, Regressor):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         params = {
             "max_ntree": max_ntree,
@@ -782,6 +781,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,
@@ -958,6 +958,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         params = {
             "max_ntree": max_ntree,
@@ -1016,7 +1017,6 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         else:
             self.logodds_ = prior
         trees = []
-        tree_type = "BinaryTreeClassifier"
         for i in range(self.n_estimators_):
             tree = self._compute_trees_arrays(self.get_tree(i), self.X)
             tree_d = {
@@ -1126,6 +1126,7 @@ class IsolationForest(Clustering, Tree):
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_estimators": n_estimators,

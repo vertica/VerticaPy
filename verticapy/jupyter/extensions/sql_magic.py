@@ -26,7 +26,6 @@ permissions and limitations under the License.
 import re
 import time
 import warnings
-
 from typing import Optional, TYPE_CHECKING
 
 from IPython.core.magic import needs_local_scope
@@ -44,10 +43,10 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.connection.global_connection import get_global_connection
 from verticapy.errors import QueryError
 
+from verticapy.jupyter.extensions._utils import get_magic_options
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
-
-from verticapy.jupyter.extensions._utils import get_magic_options
 
 
 @save_verticapy_logs
@@ -154,7 +153,7 @@ def sql_magic(
 
         # Looking at very specific external queries symbols
         gb_conn = get_global_connection()
-        for s in gb_conn._special_symbols:
+        for s in gb_conn.special_symbols:
 
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries

@@ -503,7 +503,7 @@ class vDFPlot(vDFMachineLearning):
             finally:
                 model.drop()
         else:
-            custom_lines, X, Y = [], [], []
+            X, Y = [], []
             for column in columns:
                 try:
                     model.fit(self, [column])
@@ -1839,10 +1839,9 @@ class vDCPlot(vDCNorm):
             finally:
                 model.drop()
         else:
-            custom_lines = []
             categories = self._parent[by].distinct()
             X, Y = [], []
-            for idx, cat in enumerate(categories):
+            for cat in categories:
                 vdf = self._parent[by].isin(cat)
                 try:
                     model.fit(vdf, [self._alias])
@@ -2088,13 +2087,13 @@ class vDCPlot(vDCNorm):
         if check:
             column = self._parent.format_colnames(column)
             columns += [column]
-            if not "cmap" in kwargs:
+            if "cmap" not in kwargs:
                 kwargs["cmap"] = PlottingBase().get_cmap(idx=0)
         else:
-            if not "color" in kwargs:
+            if "color" not in kwargs:
                 kwargs["color"] = PlottingBase().get_colors(idx=0)
-        if not "legend" in kwargs:
+        if "legend" not in kwargs:
             kwargs["legend"] = True
-        if not "figsize" in kwargs:
+        if "figsize" not in kwargs:
             kwargs["figsize"] = (14, 10)
         return self._parent[columns].to_geopandas(self._alias).plot(*args, **kwargs)

@@ -42,11 +42,11 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.plotting.sql import PlottingBaseSQL
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
-
 if conf.get_import_success("dateutil"):
     from dateutil.parser import parse
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
 
 """
 Colors Options: They are used when drawing graphics.
@@ -440,7 +440,6 @@ class PlottingBase(PlottingBaseSQL):
             (vdc.category() == "date"),
             False,
         )
-        rotation = 0 if ((is_numeric) and (cardinality > max_cardinality)) else 90
         # case when categorical
         if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
             is_date
@@ -668,7 +667,7 @@ class PlottingBase(PlottingBaseSQL):
                     k=max_cardinality, method="topk",
                 )
             uniques = vdf_tmp[by].distinct()
-            for idx, category in enumerate(uniques):
+            for category in uniques:
                 self._compute_plot_params(
                     vdf_tmp[by].isin(category)[column],
                     method=method,
@@ -800,7 +799,7 @@ class PlottingBase(PlottingBaseSQL):
         Xminf = np.array((Xmin, Xmin_adj)).max(axis=0)
         X = np.vstack((X, Xmaxf))
         X = np.vstack((Xminf, X))
-        n, m = X.shape
+        m = X.shape[1]
         fliers = []
         for i in range(m):
             if max_nb_fliers > 0:

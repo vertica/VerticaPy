@@ -112,6 +112,7 @@ class LinearSVR(Regressor, LinearModel):
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "tol": tol,
@@ -223,6 +224,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         class_weight: Union[Literal["auto", "none"], list] = [1, 1],
         max_iter: int = 100,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "tol": tol,

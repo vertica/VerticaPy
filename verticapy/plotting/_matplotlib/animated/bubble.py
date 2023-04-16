@@ -27,13 +27,13 @@ import verticapy._config.config as conf
 from verticapy._typing import NoneType
 from verticapy._utils._sql._format import format_type
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 if conf.get_import_success("IPython"):
     from IPython.display import HTML
 
-from verticapy.plotting._matplotlib.animated.base import AnimatedBase
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class AnimatedBubblePlot(AnimatedBase):
@@ -299,7 +299,7 @@ class AnimatedBubblePlot(AnimatedBase):
         if "cmap" in kwargs:
             fig.colorbar(sc, ax=ax).set_label(self.layout["by"])
         elif not isinstance(self.layout["catcol"], NoneType):
-            leg = ax.legend(
+            ax.legend(
                 custom_lines,
                 all_cats,
                 title=self.layout["by"],

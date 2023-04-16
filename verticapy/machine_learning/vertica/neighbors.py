@@ -123,6 +123,7 @@ class KNeighborsRegressor(Regressor):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -338,6 +339,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -807,6 +809,7 @@ class KernelDensity(Regressor, Tree):
         xlim: Optional[list] = None,
         **kwargs,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "nbins": nbins,
@@ -818,10 +821,9 @@ class KernelDensity(Regressor, Tree):
             "min_samples_leaf": int(min_samples_leaf),
             "xlim": format_type(xlim, dtype=list),
         }
-        if "store" not in kwargs or kwargs["store"]:
-            self._verticapy_store = True
-        else:
-            self._verticapy_store = False
+        self._verticapy_store = "store" not in kwargs or kwargs["store"]
+        self.verticapy_x = None
+        self.verticapy_y = None
 
     def drop(self) -> bool:
         """
@@ -913,19 +915,18 @@ class KernelDensity(Regressor, Tree):
             if self.parameters["xlim"]:
                 try:
                     x_min, x_max = self.parameters["xlim"][idx]
-                    N = vdf[column].count()
                 except:
                     warning_message = (
                         f"Wrong xlim for the vDataColumn {column}.\n"
                         "The max and the min will be used instead."
                     )
                     warnings.warn(warning_message, Warning)
-                    x_min, x_max, N = vdf.agg(
-                        func=["min", "max", "count"], columns=[column]
+                    x_min, x_max = vdf.agg(
+                        func=["min", "max"], columns=[column]
                     ).transpose()[column]
             else:
-                x_min, x_max, N = vdf.agg(
-                    func=["min", "max", "count"], columns=[column]
+                x_min, x_max = vdf.agg(
+                    func=["min", "max"], columns=[column]
                 ).transpose()[column]
             x_vars += [
                 [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
@@ -1195,6 +1196,7 @@ class LocalOutlierFactor(VerticaModel):
 
     @save_verticapy_logs
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -1271,7 +1273,7 @@ class LocalOutlierFactor(VerticaModel):
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
-        schema, relation = schema_relation(input_relation)
+        schema = schema_relation(input_relation)[0]
         tmp_main_table_name = gen_tmp_name(name="main")
         tmp_distance_table_name = gen_tmp_name(name="distance")
         tmp_lrd_table_name = gen_tmp_name(name="lrd")

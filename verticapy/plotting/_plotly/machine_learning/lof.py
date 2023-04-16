@@ -101,8 +101,6 @@ class LOFPlot(PlotlyBase):
         """
         Draws a Local Outlier Plot using the Plotly API.
         """
-        min_lof = np.nanmin(self.data["X"][:, -1])
-        max_lof = np.nanmax(self.data["X"][:, -1])
         X = self.data["X"][:, 0]
         Y = self.data["X"][:, 1]
         Z = self.data["X"][:, 2] if len(self.data["X"] == 3) else []

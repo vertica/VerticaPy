@@ -431,10 +431,8 @@ class vDFSystem(vDFTyping):
             elif ctype.startswith(("decimal", "number", "numeric", "money")):
                 try:
                     size = sum(
-                        [
-                            int(item)
-                            for item in ctype.split("(")[1].split(")")[0].split(",")
-                        ]
+                        int(item)
+                        for item in ctype.split("(")[1].split(")")[0].split(",")
                     )
                 except IndexError:
                     size = 38
@@ -475,8 +473,8 @@ class vDFSystem(vDFTyping):
         total += values["separator"][0]
         total_expected += values["separator"][0]
         values["header"] = [
-            (sum([len(item) for item in columns]) + len(columns)) / div_unit,
-            (sum([len(item) for item in columns]) + len(columns)) / div_unit,
+            (sum(len(col) for col in columns) + len(columns)) / div_unit,
+            (sum(len(col) for col in columns) + len(columns)) / div_unit,
             "",
         ]
         total += values["header"][0]
@@ -553,7 +551,7 @@ class vDFSystem(vDFTyping):
         TableSample
             result.
         """
-        total = sum([sys.getsizeof(elem) for elem in self._vars]) + sys.getsizeof(self)
+        total = sum(sys.getsizeof(v) for v in self._vars) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
         columns = copy.deepcopy(self._vars["columns"])
         for column in columns:

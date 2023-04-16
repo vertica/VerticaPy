@@ -33,11 +33,11 @@ from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._normalize import vDFNorm
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFMachineLearning(vDFNorm):
@@ -866,7 +866,7 @@ class vDFMachineLearning(vDFNorm):
     def train_test_split(
         self,
         test_size: float = 0.33,
-        order_by: Union[str, list, dict] = {},
+        order_by: Union[None, str, list, dict] = None,
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
@@ -896,8 +896,7 @@ class vDFMachineLearning(vDFNorm):
         tuple
             (train vDataFrame, test vDataFrame)
         """
-        if isinstance(order_by, str):
-            order_by = [order_by]
+        order_by = format_type(order_by, dtype=list)
         order_by = self._get_sort_syntax(order_by)
         if not random_state:
             random_state = conf.get_option("random_state")

@@ -83,8 +83,6 @@ class ACFPlot(PlotlyBase):
         Y = self.data["y"]
         Z = self.data["z"]
         fig = self._get_fig(fig)
-        scatter_params = {}
-
         fig.add_scatter(
             x=X, y=Z, **self.init_confidence_style, hoverinfo="none",
         )

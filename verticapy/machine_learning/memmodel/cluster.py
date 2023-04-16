@@ -226,7 +226,7 @@ class Clustering(InMemoryModel):
         clusters_distance = []
         for c in self.clusters_:
             list_tmp = []
-            for idx, col in enumerate(X):
+            for idx in range(len(X)):
                 list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
             clusters_distance += ["POWER(" + " + ".join(list_tmp) + f", 1 / {self.p_})"]
         return clusters_distance
@@ -464,7 +464,7 @@ class BisectingKMeans(Clustering, Tree):
         clusters_distance = []
         for c in self.clusters_:
             list_tmp = []
-            for idx, col in enumerate(X):
+            for idx in range(len(X)):
                 list_tmp += [f"POWER({X[idx]} - {c[idx]}, {self.p_})"]
             clusters_distance += [f"POWER({' + '.join(list_tmp)}, 1/{self.p_})"]
         is_null_x = " OR ".join([f"{x} IS NULL" for x in X])
@@ -486,7 +486,7 @@ class BisectingKMeans(Clustering, Tree):
         round_score: int = 2,
         percent: bool = False,
         vertical: bool = True,
-        node_style: dict = {"shape": "none"},
+        node_style: Optional[dict] = None,
         arrow_style: Optional[dict] = None,
         leaf_style: Optional[dict] = None,
     ) -> str:
@@ -521,9 +521,10 @@ class BisectingKMeans(Clustering, Tree):
         str
             Graphviz code.
         """
-        arrow_style, leaf_style = format_type(arrow_style, leaf_style, dtype=dict)
-        if len(leaf_style) == 0:
-            leaf_style = {"shape": "none"}
+        node_style, leaf_style = format_type(
+            node_style, leaf_style, dtype=dict, na_out={"shape": "none"}
+        )
+        arrow_style = format_type(arrow_style, dtype=dict)
         n = len(self.children_left_)
         vertical = ""
         if not vertical:
@@ -695,7 +696,7 @@ class KPrototypes(Clustering):
         clusters_distance = []
         for c in self.clusters_:
             clusters_distance_num, clusters_distance_cat = [], []
-            for idx, col in enumerate(X):
+            for idx in range(len(X)):
                 if is_categorical[idx]:
                     c_i = str(c[idx]).replace("'", "''")
                     clusters_distance_cat += [f"ABS(({X[idx]} = '{c_i}')::int - 1)"]

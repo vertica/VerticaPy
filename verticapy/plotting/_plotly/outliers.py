@@ -113,11 +113,8 @@ class OutliersPlot(PlotlyBase):
                 y=self.layout["columns"][1],
                 color="category",
             )
-
-            z_min = self.data["map"]["Z"].min()
             z_max = self.data["map"]["Z"].max()
             threshold = self.data["th"]
-            mid = (threshold + z_max) / 2
             if not colorscale:
                 colorscale = [
                     [0, "rgb(51, 255, 51)"],

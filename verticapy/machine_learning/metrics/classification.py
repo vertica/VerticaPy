@@ -85,7 +85,7 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
     """
     helper function to compute the final score.
     """
-    n, m = cm.shape
+    m = cm.shape[1]
     res = []
     for i in range(m):
         tp = cm[i][i]
@@ -141,15 +141,13 @@ def _compute_final_score_from_cm(
     if multi:
         confusion_list = _compute_classes_tn_fn_fp_tp_from_cm(cm)
         if average == "weighted":
-            score = sum(
-                [(args[1] + args[3]) * metric(*args) for args in confusion_list]
-            )
-            total = sum([(args[1] + args[3]) for args in confusion_list])
+            score = sum((args[1] + args[3]) * metric(*args) for args in confusion_list)
+            total = sum((args[1] + args[3]) for args in confusion_list)
             return score / total
         elif average == "macro":
             return np.mean([metric(*args) for args in confusion_list])
         elif average == "micro":
-            args = [sum([args[i] for args in confusion_list]) for i in range(4)]
+            args = [sum(args[i] for args in confusion_list) for i in range(4)]
             return metric(*args)
         elif average == "scores":
             return [metric(*args) for args in confusion_list]
@@ -1608,14 +1606,14 @@ def roc_auc(
         else:
             idx = list(labels).index(pos_label)
             y_s = y_score[idx]
-        threshold, false_positive, true_positive = _compute_function_metrics(
+        false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
             y_score=y_s,
             input_relation=input_relation,
             pos_label=pos_label,
             nbins=nbins,
             fun_sql_name="roc",
-        )
+        )[1:]
         return _compute_area(true_positive, false_positive)
     else:
         return _compute_multiclass_metric(
@@ -1694,14 +1692,14 @@ def prc_auc(
         else:
             idx = list(labels).index(pos_label)
             y_s = y_score[idx]
-        threshold, recall, precision = _compute_function_metrics(
+        recall, precision = _compute_function_metrics(
             y_true=y_true,
             y_score=y_s,
             input_relation=input_relation,
             pos_label=pos_label,
             nbins=nbins,
             fun_sql_name="prc",
-        )
+        )[1:]
         return _compute_area(precision, recall)
     else:
         return _compute_multiclass_metric(
@@ -2033,7 +2031,7 @@ def classification_report(
             avg_weighted += [(res_array[i] * weights).sum() / weights.sum()]
         res.values["avg_macro"] = avg_macro
         res.values["avg_weighted"] = avg_weighted
-        args = [sum([args[i] for args in all_cm_metrics]) for i in range(4)]
+        args = [sum(args[i] for args in all_cm_metrics) for i in range(4)]
         for m in metrics:
             if m in FUNCTIONS_CONFUSION_DICTIONNARY:
                 fun = FUNCTIONS_CONFUSION_DICTIONNARY[m]

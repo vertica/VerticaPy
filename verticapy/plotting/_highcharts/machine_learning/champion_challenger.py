@@ -85,7 +85,7 @@ class ChampionChallengerPlot(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         uniques = np.unique(self.data["c"])
-        for i, c in enumerate(uniques):
+        for c in uniques:
             x = self.data["x"][self.data["c"] == c]
             y = self.data["y"][self.data["c"] == c]
             s = self.data["s"][self.data["c"] == c]

@@ -355,8 +355,7 @@ class vDCNorm(vDCText):
                     if len(self._parent[elem]._transf) > max_floor:
                         max_floor = len(self._parent[elem]._transf)
                 max_floor -= len(self._transf)
-                for k in range(max_floor):
-                    self._transf += [("{}", self.ctype(), self.category())]
+                self._transf += [("{}", self.ctype(), self.category())] * max_floor
             self._transf += final_transformation
             sauv = copy.deepcopy(self._catalog)
             self._parent._update_catalog(erase=True, columns=[self._alias])

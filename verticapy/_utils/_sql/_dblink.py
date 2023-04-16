@@ -27,7 +27,7 @@ def get_dblink_fun(query: str, symbol: str = "$") -> str:
     Returns the SQL needed to deploy the DBLINK UDTF.
     """
     gb_conn = get_global_connection()
-    external_connections = gb_conn._get_external_connections()
+    external_connections = gb_conn.get_external_connections()
     if symbol not in external_connections:
         raise ConnectionError(
             "External Query detected but no corresponding "
@@ -54,7 +54,7 @@ def replace_external_queries(query: str) -> str:
     they will be materialised using local temporary tables.
     """
     gb_conn = get_global_connection()
-    external_connections = gb_conn._get_external_connections()
+    external_connections = gb_conn.get_external_connections()
     sql_keyword = (
         "select ",
         "create ",

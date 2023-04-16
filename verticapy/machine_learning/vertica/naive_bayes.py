@@ -109,6 +109,7 @@ class NaiveBayes(MulticlassClassifier):
             "auto", "bernoulli", "categorical", "multinomial", "gaussian"
         ] = "auto",
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 

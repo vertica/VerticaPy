@@ -129,7 +129,6 @@ class HorizontalBarChart2D(MatplotlibBase):
         matrix = copy.deepcopy(self.data["X"])
         m, n = matrix.shape
         yticks = [j for j in range(m)]
-        bar_height = 0.5
         if self.layout["kind"] == "density":
             ax, fig, style_kwargs = self._get_ax_fig(
                 ax,
@@ -183,7 +182,7 @@ class HorizontalBarChart2D(MatplotlibBase):
         ax.set_xlabel(self.layout["method"])
         if self.layout["kind"] in ("density", "fully_stacked"):
             vals = ax.get_xticks()
-            max_val = max([abs(x) for x in vals])
+            max_val = max(abs(x) for x in vals)
             ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
             ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
         ax.legend(

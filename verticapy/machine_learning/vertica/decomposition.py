@@ -84,7 +84,6 @@ class Decomposition(Preprocessing):
         )
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
-        fun = self._vertica_transform_sql
         sql = f"""{self._vertica_transform_sql}({', '.join(X)} 
                                             USING PARAMETERS
                                             model_name = '{self.model_name}',
@@ -453,6 +452,7 @@ class PCA(Decomposition):
         scale: bool = False,
         method: Literal["lapack"] = "lapack",
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_components": n_components,
@@ -551,7 +551,7 @@ class MCA(PCA):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(self, name: str) -> None:
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {}
 
     # Plotting Methods.
@@ -800,6 +800,7 @@ class SVD(Decomposition):
     def __init__(
         self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "n_components": n_components,

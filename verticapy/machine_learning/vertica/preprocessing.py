@@ -477,6 +477,7 @@ class CountVectorizer(VerticaModel):
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "lowercase": lowercase,
@@ -588,7 +589,7 @@ class CountVectorizer(VerticaModel):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = quote_ident(X)
-        schema, relation = schema_relation(self.model_name)
+        schema = schema_relation(self.model_name)[0]
         schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
         _executeSQL(
@@ -700,6 +701,7 @@ class Scaler(Preprocessing):
     def __init__(
         self, name: str, method: Literal["zscore", "robust_zscore", "minmax"] = "zscore"
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {"method": str(method).lower()}
 
@@ -860,6 +862,7 @@ class OneHotEncoder(Preprocessing):
         column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
         null_column_name: str = "null",
     ) -> None:
+        super().__init__()
         self.model_name = name
         self.parameters = {
             "extra_levels": format_type(extra_levels, dtype=dict),

@@ -108,7 +108,6 @@ class vDFFilter(vDFAgg):
         min_cnt = topk["count"][-1]
         min_class = topk["index"][-1]
         max_cnt = topk["count"][0]
-        max_class = topk["index"][0]
         n = len(topk["index"])
         if method == "under":
             vdf = self.search(f"{column} = '{min_class}'")
@@ -628,8 +627,8 @@ class vDFFilter(vDFAgg):
         self,
         conditions: SQLExpression = "",
         usecols: Optional[SQLColumns] = None,
-        expr: SQLExpression = [],
-        order_by: Union[str, dict, list] = [],
+        expr: Optional[SQLExpression] = None,
+        order_by: Union[None, str, dict, list] = None,
     ) -> "vDataFrame":
         """
         Searches the elements which matches with the input 

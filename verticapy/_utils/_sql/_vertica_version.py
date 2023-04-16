@@ -80,7 +80,7 @@ def check_minimum_version(func: Callable) -> Callable:
 
     @wraps(func)
     def func_prec_check_minimum_version(*args, **kwargs) -> Any:
-        fun_name, object_name, condition = func.__name__, "", []
+        fun_name, object_name = func.__name__, ""
         if len(args) > 0:
             object_name = type(args[0]).__name__
         name = object_name if fun_name == "__init__" else fun_name
@@ -139,7 +139,7 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
         else:
             test = False
         if not test:
-            v0, v1, v2 = res[0], res[1], str(res[2]).split("-")[0]
+            v0, v1, v2 = res[0], res[1], str(res[2]).split("-", maxsplit=1)[0]
             v = ".".join([str(c) for c in condition[:3]])
             raise VersionError(
                 (

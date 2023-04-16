@@ -36,9 +36,9 @@ def change_auto_connection(name: str) -> None:
 
     if confparser.has_section(name):
 
-        confparser.remove_section(gb_conn._vpy_auto_connection)
-        confparser.add_section(gb_conn._vpy_auto_connection)
-        confparser.set(gb_conn._vpy_auto_connection, "name", name)
+        confparser.remove_section(gb_conn.vpy_auto_connection)
+        confparser.add_section(gb_conn.vpy_auto_connection)
+        confparser.set(gb_conn.vpy_auto_connection, "name", name)
         path = get_connection_file()
 
         with open(path, "w+", encoding="utf-8") as f:
@@ -77,10 +77,10 @@ def delete_connection(name: str) -> bool:
     if confparser.has_section(name):
 
         confparser.remove_section(name)
-        if confparser.has_section(gb_conn._vpy_auto_connection):
-            name_auto = confparser.get(gb_conn._vpy_auto_connection, "name")
+        if confparser.has_section(gb_conn.vpy_auto_connection):
+            name_auto = confparser.get(gb_conn.vpy_auto_connection, "name")
             if name_auto == name:
-                confparser.remove_section(gb_conn._vpy_auto_connection)
+                confparser.remove_section(gb_conn.vpy_auto_connection)
         path = get_connection_file()
 
         with open(path, "w+", encoding="utf-8") as f:

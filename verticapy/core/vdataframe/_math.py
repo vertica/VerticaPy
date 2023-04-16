@@ -33,10 +33,10 @@ from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.core.vdataframe._filter import vDFFilter, vDCFilter
 
+from verticapy.sql.dtypes import get_data_types
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame, vDataColumn
-
-from verticapy.sql.dtypes import get_data_types
 
 
 class vDFMath(vDFFilter):
@@ -234,7 +234,6 @@ class vDFMath(vDFFilter):
                 median_name = f"{column_str}_median_{random_nb}"
                 std_name = f"{column_str}_std_{random_nb}"
                 count_name = f"{column_str}_count_{random_nb}"
-                all_cols = copy.deepcopy(self._vars["columns"])
                 if func == "mad":
                     self.eval(median_name, f"MEDIAN({columns[0]}) OVER ({by})")
                 else:
@@ -372,7 +371,7 @@ class vDFMath(vDFFilter):
                     "The parameter 'columns' must be a vDataFrame column when "
                     f"using analytic method '{func}'"
                 )
-            elif (columns) and func not in (
+            if (columns) and func not in (
                 "lead",
                 "lag",
                 "first_value",
@@ -602,13 +601,12 @@ class vDCMath(vDCFilter):
             max_floor -= len(self._transf)
             if copy_name:
                 copy_name_str = copy_name.replace('"', "")
-                self.add_copy(name=copy_name)
-                for k in range(max_floor):
-                    self._parent[copy_name]._transf += [
-                        ("{}", self.ctype(), self.category())
-                    ]
-                self._parent[copy_name]._transf += [(func, ctype, category)]
-                self._parent[copy_name]._catalog = self._catalog
+                self.add_copy(name=copy_name_str)
+                self._parent[copy_name_str]._transf += [
+                    ("{}", self.ctype(), self.category())
+                ] * max_floor
+                self._parent[copy_name_str]._transf += [(func, ctype, category)]
+                self._parent[copy_name_str]._catalog = self._catalog
             else:
                 for k in range(max_floor):
                     self._transf += [("{}", self.ctype(), self.category())]

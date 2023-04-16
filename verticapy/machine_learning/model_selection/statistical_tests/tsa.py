@@ -113,48 +113,43 @@ def _df_critical_value(alpha: float, N: int, with_trend: bool) -> float:
         elif N <= 50:
             if alpha == 0.01:
                 return -4.15
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.18
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.80
-            else:
-                return -3.50
+            return -3.50
         elif N <= 100:
             if alpha == 0.01:
                 return -4.04
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.15
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.73
-            else:
-                return -5.45
+            return -5.45
         elif N <= 250:
             if alpha == 0.01:
                 return -3.99
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.13
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.69
-            else:
-                return -3.43
+            return -3.43
         elif N <= 500:
             if alpha == 0.01:
                 return 3.98
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.13
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.68
-            else:
-                return -3.42
+            return -3.42
         else:
             if alpha == 0.01:
                 return -3.96
-            elif alpha == 0.10:
+            if alpha == 0.10:
                 return -3.12
-            elif alpha == 0.025:
+            if alpha == 0.025:
                 return -3.66
-            else:
-                return -3.41
+            return -3.41
 
 
 @save_verticapy_logs
@@ -656,7 +651,6 @@ def het_arch(
     finally:
         model.drop()
     n = vdf.shape()[0]
-    k = len(X)
     LM = (n - p) * R2
     lm_pvalue = chi2.sf(LM, p)
     F = (n - 2 * p - 1) * R2 / (1 - R2) / p

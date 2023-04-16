@@ -72,9 +72,7 @@ class AnimatedPieChart(AnimatedBarChart):
             if date_in_title:
                 ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(
-                    1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict
-                )
+                ax.text(1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict)
             all_categories, custom_lines = [], []
             if m >= 3:
                 for idx, c in enumerate(bar_values[i]["x"]):
@@ -91,7 +89,7 @@ class AnimatedPieChart(AnimatedBarChart):
                                 )["wedgeprops"]["alpha"],
                             )
                         ]
-                leg = ax.legend(
+                ax.legend(
                     custom_lines,
                     all_categories,
                     title=self.layout["columns"][-1],

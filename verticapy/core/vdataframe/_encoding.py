@@ -32,11 +32,11 @@ from verticapy.core.string_sql.base import StringSQL
 
 from verticapy.core.vdataframe._fill import vDFFill, vDCFill
 
-if TYPE_CHECKING:
-    from verticapy.core.vdataframe.base import vDataFrame
-
 from verticapy.sql.drop import drop
 from verticapy.sql.functions import case_when, decode
+
+if TYPE_CHECKING:
+    from verticapy.core.vdataframe.base import vDataFrame
 
 
 class vDFEncode(vDFFill):
@@ -589,8 +589,7 @@ class vDCEncode(vDCFill):
             "The response column must be numerical to use a mean encoding"
         )
         max_floor = len(self._parent[response]._transf) - len(self._transf)
-        for k in range(max_floor):
-            self._transf += [("{}", self.ctype(), self.category())]
+        self._transf += [("{}", self.ctype(), self.category())] * max_floor
         self._transf += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
         self._parent._update_catalog(erase=True, columns=[self._alias])
         self._parent._add_to_history(

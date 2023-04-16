@@ -253,7 +253,7 @@ def randomized_features_search_cv(
                 if skip_error and skip_error != "no_print":
                     print(e)
                 elif not skip_error:
-                    raise (e)
+                    raise e
     if not data:
         if training_score:
             return TableSample(

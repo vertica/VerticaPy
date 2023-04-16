@@ -117,6 +117,11 @@ class VerticaModel(PlottingUtils):
         """Must be overridden in child class"""
         raise NotImplementedError
 
+    @property
+    def _attributes(self) -> list:
+        """Must be overridden in the final class"""
+        return []
+
     # Formatting Methods.
 
     @staticmethod
@@ -156,6 +161,15 @@ class VerticaModel(PlottingUtils):
                 return idx
 
     # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        return None
+        # self.X = None
+        # self.parameters = {}
+        # for att in self._attributes:
+        #    setattr(self, att, None)
 
     def __repr__(self) -> str:
         """
@@ -643,11 +657,23 @@ class VerticaModel(PlottingUtils):
 
 
 class Supervised(VerticaModel):
+
+    # Properties
+
     @property
     @abstractmethod
     def _vertica_predict_sql(self) -> str:
         """Must be overridden in child class"""
         raise NotImplementedError
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        super().__init__()
+        # self.test_relation = None
+        # self.y = None
 
     # Model Fitting Method.
 
@@ -761,7 +787,6 @@ class Supervised(VerticaModel):
             for param in ("nbtype",):
                 if param in parameters:
                     del parameters[param]
-            fun = self._vertica_fit_sql
             query = f"""
                 SELECT 
                     /*+LABEL('learn.VerticaModel.fit')*/ 
@@ -796,7 +821,28 @@ class Supervised(VerticaModel):
 
 
 class Tree:
+
+    # Properties.
+
+    @property
+    def _attributes(self) -> list:
+        """Must be overridden in the final class"""
+        return []
+
     # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        return None
+        # self.input_relation = None
+        # self.test_relation = None
+        # self.X = None
+        # self.y = None
+        # self.parameters = {}
+        # self.classes_ = None
+        # for att in self._attributes:
+        #    setattr(self, att, None)
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
@@ -806,7 +852,6 @@ class Tree:
         TableSample.  It returns a list of arrays. Each 
         index of the arrays represents a node value.
         """
-        tree_list = []
         for i in range(len(tree["tree_id"])):
             tree.values["left_child_id"] = [
                 i if node_id == tree.values["node_id"][i] else node_id
@@ -1126,17 +1171,20 @@ class Tree:
         )
 
 
-class Classifier(Supervised):
-    pass
-
-
-class BinaryClassifier(Classifier):
+class BinaryClassifier(Supervised):
 
     # Properties.
 
     @property
     def classes_(self) -> np.ndarray:
         return np.array([0, 1])
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        super().__init__()
 
     # Attributes Methods.
 
@@ -1661,9 +1709,15 @@ class BinaryClassifier(Classifier):
         )
 
 
-class MulticlassClassifier(Classifier):
+class MulticlassClassifier(Supervised):
 
     # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        super().__init__()
+        # self.classes_ = None
 
     def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
         """
@@ -2039,7 +2093,6 @@ class MulticlassClassifier(Classifier):
         """
         fun = mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY[metric]
         pos_label = self._check_pos_label(pos_label=pos_label)
-        y_proba = self._get_y_proba(pos_label=pos_label)
         if metric in (
             "auc",
             "prc_auc",
@@ -2471,6 +2524,13 @@ class MulticlassClassifier(Classifier):
 
 class Regressor(Supervised):
 
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        super().__init__()
+
     # Model Evaluation Methods.
 
     def regression_report(
@@ -2683,6 +2743,13 @@ class Regressor(Supervised):
 
 
 class Unsupervised(VerticaModel):
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self) -> None:
+        """Must be overridden in the child class"""
+        super().__init__()
 
     # Model Fitting Method.
 
