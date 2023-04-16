@@ -165,8 +165,8 @@ class VerticaModel(PlottingUtils):
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
-        self.input_relation = None
-        self.X = None
+        return None
+        # self.X = None
         # self.parameters = {}
         # for att in self._attributes:
         #    setattr(self, att, None)
@@ -672,8 +672,8 @@ class Supervised(VerticaModel):
     def __init__(self) -> None:
         """Must be overridden in the child class"""
         super().__init__()
-        self.test_relation = None
-        self.y = None
+        # self.test_relation = None
+        # self.y = None
 
     # Model Fitting Method.
 
@@ -834,10 +834,11 @@ class Tree:
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
-        self.input_relation = None
-        self.test_relation = None
-        self.X = None
-        self.y = None
+        return None
+        # self.input_relation = None
+        # self.test_relation = None
+        # self.X = None
+        # self.y = None
         # self.parameters = {}
         # self.classes_ = None
         # for att in self._attributes:

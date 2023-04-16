@@ -55,11 +55,12 @@ class LinearModel:
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
-        self.input_relation = None
-        self.test_relation = None
-        self.X = None
-        self.y = None
-        self.parameters = {}
+        return None
+        # self.input_relation = None
+        # self.test_relation = None
+        # self.X = None
+        # self.y = None
+        # self.parameters = {}
         # for att in self._attributes:
         #    setattr(self, att, None)
 
@@ -210,10 +211,11 @@ class LinearModelClassifier(LinearModel):
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
-        self.input_relation = None
-        self.test_relation = None
-        self.X = None
-        self.y = None
+        return None
+        # self.input_relation = None
+        # self.test_relation = None
+        # self.X = None
+        # self.y = None
         # self.classes_ = None
 
     # Attributes Methods.
