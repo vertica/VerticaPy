@@ -28,6 +28,7 @@ from verticapy._typing import (
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._utils._map import add_docstring
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -38,15 +39,8 @@ if TYPE_CHECKING:
 Confusion Matrix Functions.
 """
 
-def add_docstring(*args):  # decorator factory function
-   """
-   Constructs and appends a docstring to the decorated function's existing docstring.
-   
-   When several functions share the same docstring, this decorator can be used to improve code 
-   readability and doc consistency.
-   """
-
-   arg_defs = {'y_true': '''    y_true: str
+PARAMETER_DOCSTRINGS = {
+    'y_true': '''    y_true: str
         Response column.''',
    'y_score': '''    y_score: str
         Prediction.''',
@@ -71,20 +65,7 @@ def add_docstring(*args):  # decorator factory function
         To  compute  the metric, one of  the  response 
         column  classes must be the positive one.  The 
         parameter 'pos_label' represents this class.'''
-   }
-
-   arg_docstring = ''
-   for arg in args:
-      arg_docstring += arg_defs[arg] + '\n'
-
-   def docstring_decorator(func): # actual decorator; its only argument is the decorated function
-      existing_docstring = func.__doc__ if func.__doc__ else ''
-      existing_docstring = existing_docstring.split('+')
-      func.__doc__ = existing_docstring[0] + arg_docstring + existing_docstring[1]
-   
-      return func
-
-   return docstring_decorator  # @add_docstring(*args) evaluates to the appropriate @docstring_decorator
+}
 
 
 def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
@@ -93,7 +74,7 @@ def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
     """
     return round(cm[0][0]), round(cm[1][0]), round(cm[0][1]), round(cm[1][1])
 
-@add_docstring('y_true', 'y_score', 'input_relation', 'pos_label')
+@add_docstring(PARAMETER_DOCSTRINGS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 def _compute_tn_fn_fp_tp(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ) -> tuple:
@@ -104,9 +85,6 @@ def _compute_tn_fn_fp_tp(
     true negatives, false negatives, false positives, and 
     true positives.
 
-    Parameters
-    ----------
-+
     Returns
     -------
     tuple
@@ -216,7 +194,7 @@ def _compute_final_score(
         cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
         return _compute_final_score_from_cm(metric, cm, average=average, multi=False)
 
-@add_docstring('y_true', 'y_score', 'input_relation', 'pos_label')
+@add_docstring(PARAMETER_DOCSTRINGS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
@@ -225,9 +203,6 @@ def confusion_matrix(
     """
     Computes the Confusion Matrix.
 
-    Parameters
-    ----------
-+
     Returns
     -------
     Array
