@@ -194,7 +194,7 @@ def _compute_final_score(
         cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
         return _compute_final_score_from_cm(metric, cm, average=average, multi=False)
 
-@add_docstring(PARAMETER_DOCSTRINGS, 'y_true', 'y_score', 'input_relation', 'pos_label')
+@add_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(

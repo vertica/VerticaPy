@@ -81,7 +81,7 @@ def add_docstring(*args):  # decorator factory function
     The decorator accepts a dictionary of parameter descriptions and then the keys to the parameters
     of the decorated function. For example:
 
-@add_docstring(PARAMETER_DOCSTRINGS, 'y_true', 'y_score', 'input_relation', 'pos_label')
+@add_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 
     The decorator inserts the supplied parameter descriptions inbetween the function's description
     and the Returns section. For instance, in the following docstring, the above decorator would 
