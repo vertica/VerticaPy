@@ -110,7 +110,7 @@ def add_docstring(*args):  # decorator factory function
 
     # actual decorator; its only argument is the decorated function
     def docstring_decorator(func):
-        existing_docstring = func.__doc__
+        existing_docstring = func.__doc__  if func.__doc__ else ''
         existing_docstring = existing_docstring.split('''Returns
     -------''')
         func.__doc__ = existing_docstring[0] + param_docstring + existing_docstring[1]
