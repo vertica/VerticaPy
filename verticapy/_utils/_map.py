@@ -98,10 +98,9 @@ def add_docstring(*args):  # decorator factory function
 
     When several functions share the same parameters, this decorator can be used to improve code 
     readability and doc consistency.
-   """
+    """
     param_defs = args[0]
-    param_docstring = '''
-    Parameters
+    param_docstring = '''Parameters
     ---------- \n'''
     for param in args[1:]:
         param_docstring += param_defs[param] + '\n'
@@ -110,8 +109,8 @@ def add_docstring(*args):  # decorator factory function
     -------'''
 
     # actual decorator; its only argument is the decorated function
-    def docstring_decorator(func): 
-        existing_docstring = func.__doc__ if func.__doc__ else ''
+    def docstring_decorator(func):
+        existing_docstring = func.__doc__
         existing_docstring = existing_docstring.split('''Returns
     -------''')
         func.__doc__ = existing_docstring[0] + param_docstring + existing_docstring[1]
