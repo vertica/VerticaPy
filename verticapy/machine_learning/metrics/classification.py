@@ -38,6 +38,54 @@ if TYPE_CHECKING:
 Confusion Matrix Functions.
 """
 
+def add_docstring(*args):  # decorator factory function
+   """
+   Constructs and appends a docstring to the decorated function's existing docstring.
+   
+   When several functions share the same docstring, this decorator can be used to improve code 
+   readability and doc consistency.
+   """
+
+   arg_defs = {'y_true': '''    y_true: str
+        Response column.''',
+   'y_score': '''    y_score: str
+        Prediction.''',
+   'input_relation': '''    input_relation: SQLRelation
+        Relation to use for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x''',
+   'average': '''    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                    globally.
+            macro    : average  of  the  score of  each 
+                    class.
+            weighted : weighted average of the score of 
+                    each class.
+            scores   : scores  for   all  the  classes.''',
+   'labels': '''    labels: ArrayLike, optional
+        List   of   the  response  column   categories.''',
+   'pos_label': '''    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response 
+        column  classes must be the positive one.  The 
+        parameter 'pos_label' represents this class.'''
+   }
+
+   arg_docstring = ''
+   for arg in args:
+      arg_docstring += arg_defs[arg] + '\n'
+
+   def docstring_decorator(func): # actual decorator; its only argument is the decorated function
+      existing_docstring = func.__doc__ if func.__doc__ else ''
+      existing_docstring = existing_docstring.split('+')
+      func.__doc__ = existing_docstring[0] + arg_docstring + existing_docstring[1]
+   
+      return func
+
+   return docstring_decorator  # @add_docstring(*args) evaluates to the appropriate @docstring_decorator
+
 
 def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
     """
@@ -45,7 +93,7 @@ def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
     """
     return round(cm[0][0]), round(cm[1][0]), round(cm[0][1]), round(cm[1][1])
 
-
+@add_docstring('y_true', 'y_score', 'input_relation', 'pos_label')
 def _compute_tn_fn_fp_tp(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ) -> tuple:
@@ -58,20 +106,7 @@ def _compute_tn_fn_fp_tp(
 
     Parameters
     ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation  to use for scoring. This  relation can be a 
-        view,  table, or a  customized relation (if an  alias 
-        is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    pos_label: PythonScalar, optional
-        To  compute the Confusion Matrix, one of the  response 
-        column classes must be the positive one. The parameter 
-        'pos_label' represents this class.
-
++
     Returns
     -------
     tuple
@@ -181,7 +216,7 @@ def _compute_final_score(
         cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
         return _compute_final_score_from_cm(metric, cm, average=average, multi=False)
 
-
+@add_docstring('y_true', 'y_score', 'input_relation', 'pos_label')
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
@@ -192,21 +227,7 @@ def confusion_matrix(
 
     Parameters
     ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    pos_label: str / PythonNumber, optional
-        To compute the one dimension Confusion Matrix, 
-        one  of the response column class must  be the 
-        positive   one.  The   parameter   'pos_label' 
-        represents this class.
-
++
     Returns
     -------
     Array
