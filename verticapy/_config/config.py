@@ -90,7 +90,7 @@ def set_option(key: str, value: Any = None) -> None:
         "vintage",  "vivid", "berries", "refreshing", 
         "summer", "tropical", "india", "default".
     count_on: bool
-        If set to True,  the  total  number of rows  in 
+        If set to True, the  total  number of rows  in 
         vDataFrames  and  TableSamples is  computed and 
         displayed in the footer (if footer_on is True).
     footer_on: bool
