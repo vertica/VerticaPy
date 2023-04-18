@@ -52,8 +52,8 @@ class RegressionTreePlot(PlotlyBase):
         self.init_style_hover_2d = {
             "hovertemplate": f"{self.layout['columns'][0]}: "
             "%{x} <br>"
-            f"P({self.layout['columns'][1]} = 1): "
-            " %{y} <br>"
+            f"{self.layout['columns'][1]}: "
+            "%{y} <br>"
         }
 
     # Draw.
@@ -65,7 +65,6 @@ class RegressionTreePlot(PlotlyBase):
     ) -> Figure:
         """
         Draws a regression tree plot using the Plotly API.
-        
         """
         X = self.data["X"][self.data["X"][:, 0].argsort()]
         x0 = X[:, 0]

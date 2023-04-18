@@ -43,6 +43,7 @@ from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow, lift_chart, prc_curve
 from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.decomposition import PCA
+from verticapy.learn.tree import DecisionTreeRegressor
 
 conf.set_option("print_info", False)
 
@@ -82,7 +83,10 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -146,7 +150,12 @@ def dummy_dist_vd():
 @pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
     )
 
 
@@ -234,7 +243,8 @@ def lift_chart_plot_result(load_plotly, dummy_probability_data):
 def voronoi_plot_result(load_plotly, iris_vd):
     model = KMeans(name="test_KMeans_iris")
     model.fit(
-        iris_vd, ["PetalLengthCm", "PetalWidthCm"],
+        iris_vd,
+        ["PetalLengthCm", "PetalWidthCm"],
     )
     return model.plot_voronoi()
 
@@ -244,6 +254,15 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
+
+
+@pytest.fixture(scope="class")
+def regression_tree_plot_result(load_plotly, titanic_vd):
+    model = DecisionTreeRegressor(name="model_titanic")
+    xcol="fare"
+    ycol="age"
+    model.fit(titanic_vd, x_col, y_col)
+    return model.plot(),x_col,y_col
 
 
 @pytest.fixture(scope="class")
@@ -489,7 +508,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -513,7 +538,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -2248,10 +2279,98 @@ class TestMachineLearningLiftChart:
         custom_width = 700
         model = KMeans(name="public.KMeans_iris")
         model.fit(
-            iris_vd, ["PetalLengthCm", "PetalWidthCm"],
+            iris_vd,
+            ["PetalLengthCm", "PetalWidthCm"],
         )
         # Act
         result = model.plot_voronoi(width=custom_width, height=custom_height)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningRegressionTreePlot:
+    @pytest.fixture(autouse=True)
+    def result(self, regression_tree_plot_result):
+        self.result = regression_tree_plot_result
+        self.x_col=x_col
+        self.y_col=y_col
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = self.x_col
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = self.y_col
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_observations_label(self):
+        # Arrange
+        test_title = "Observations"
+        # Act
+        # Assert
+        assert (
+            self.result.data[0]['name'] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_prediction_label(self):
+        # Arrange
+        test_title = "Prediction"
+        # Act
+        # Assert
+        assert (
+            self.result.data[1]['name']== test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_hover_label(self):
+        # Arrange
+        test_title = f"{self.x_col}: %{x} <br>{self.y_col}: %{y} <br>"
+        # Act
+        # Assert
+        assert (
+            self.result.data[0]['hovertemplate']== test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = DecisionTreeRegressor(name="model_titanic")
+        model.fit(titanic_vd, ["fare"], "age")
+        # Act
+        result = model.plot(
+            height=custom_height,
+            width=custom_width,
+        )
         # Assert
         assert (
             result.layout["height"] == custom_height
