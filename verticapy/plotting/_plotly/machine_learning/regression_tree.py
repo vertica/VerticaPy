@@ -23,7 +23,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class RegressionTreePlot(PlotlyBase):
-
     # Properties.
 
     @property
@@ -74,9 +73,13 @@ class RegressionTreePlot(PlotlyBase):
         fig = self._get_fig(fig)
         if len(self.layout["columns"]) == 3:
             fig = fig.add_trace(
-                go.Scatter(x=x0, y=y0, name="Observations",
-                mode="markers",
-                **self.init_style_hover_2d)
+                go.Scatter(
+                    x=x0,
+                    y=y0,
+                    name="Observations",
+                    mode="markers",
+                    **self.init_style_hover_2d,
+                )
             )
             fig.add_trace(
                 go.Scatter(
@@ -85,7 +88,7 @@ class RegressionTreePlot(PlotlyBase):
                     mode="lines",
                     line_shape="hv",
                     name="Prediction",
-                    **self.init_style_hover_2d
+                    **self.init_style_hover_2d,
                 )
             )
             fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))

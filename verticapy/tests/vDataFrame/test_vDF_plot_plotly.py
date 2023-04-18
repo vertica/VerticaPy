@@ -259,10 +259,10 @@ def titanic_vd():
 @pytest.fixture(scope="class")
 def regression_tree_plot_result(load_plotly, titanic_vd):
     model = DecisionTreeRegressor(name="model_titanic")
-    xcol="fare"
-    ycol="age"
+    x_col = "fare"
+    y_col = "age"
     model.fit(titanic_vd, x_col, y_col)
-    return model.plot(),x_col,y_col
+    return model.plot(), x_col, y_col
 
 
 @pytest.fixture(scope="class")
@@ -2294,9 +2294,7 @@ class TestMachineLearningLiftChart:
 class TestMachineLearningRegressionTreePlot:
     @pytest.fixture(autouse=True)
     def result(self, regression_tree_plot_result):
-        self.result = regression_tree_plot_result
-        self.x_col=x_col
-        self.y_col=y_col
+        self.result, self.x_col, self.y_col = regression_tree_plot_result
 
     def test_properties_output_type(self):
         # Arrange
@@ -2329,27 +2327,23 @@ class TestMachineLearningRegressionTreePlot:
         test_title = "Observations"
         # Act
         # Assert
-        assert (
-            self.result.data[0]['name'] == test_title
-        ), "Y axis label incorrect"
+        assert self.result.data[0]["name"] == test_title, "Y axis label incorrect"
 
     def test_properties_prediction_label(self):
         # Arrange
         test_title = "Prediction"
         # Act
         # Assert
-        assert (
-            self.result.data[1]['name']== test_title
-        ), "Y axis label incorrect"
+        assert self.result.data[1]["name"] == test_title, "Y axis label incorrect"
 
     def test_properties_hover_label(self):
         # Arrange
-        test_title = f"{self.x_col}: %{x} <br>{self.y_col}: %{y} <br>"
+        test_title = f"{self.x_col}: %" "{x} <br>" f"{self.y_col}: %" "{y} <br>"
         # Act
         # Assert
         assert (
-            self.result.data[0]['hovertemplate']== test_title
-        ), "Y axis label incorrect"
+            self.result.data[0]["hovertemplate"] == test_title
+        ), "Hover information incorrect"
 
     def test_properties_no_of_elements(self):
         # Arrange
