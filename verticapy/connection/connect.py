@@ -215,7 +215,7 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
 def verticapylab_connection() -> Connection:
     """
-    Returns the VerticaPyLab connection if possible.
+    Returns the VerticaPyLab connection, if possible.
 
     Returns
     -------
