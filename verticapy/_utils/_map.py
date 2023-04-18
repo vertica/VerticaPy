@@ -75,26 +75,27 @@ def verticapy_agg_name(key: str, method: Optional[Literal["vertica"]] = "") -> s
             key = "stddev"
     return key
 
+    """
 def add_docstring(*args):  # decorator factory function
     """
     Constructs and inserts a parameter docstring into the decorated function's existing docstring.
     The decorator accepts a dictionary of parameter descriptions and then the keys to the parameters
     of the decorated function. For example:
 
-@add_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
+    @add_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 
     The decorator inserts the supplied parameter descriptions inbetween the function's description
     and the Returns section. For instance, in the following docstring, the above decorator would 
     insert the parameter descriptions inbetween 'Computes the Confusion Matrix' and 'Returns':
 
-    \'''
+    '''
     Computes the Confusion Matrix.
     
     Returns
     -------
     Array
         confusion matrix.
-    \'''
+    '''
 
     When several functions share the same parameters, this decorator can be used to improve code 
     readability and doc consistency.
@@ -110,7 +111,7 @@ def add_docstring(*args):  # decorator factory function
 
     # actual decorator; its only argument is the decorated function
     def docstring_decorator(func):
-        existing_docstring = func.__doc__  if func.__doc__ else ''
+        existing_docstring = func.__doc__ 
         existing_docstring = existing_docstring.split('''Returns
     -------''')
         func.__doc__ = existing_docstring[0] + param_docstring + existing_docstring[1]
@@ -119,3 +120,4 @@ def add_docstring(*args):  # decorator factory function
 
     # @add_docstring(*args) evaluates to the appropriate @docstring_decorator
     return docstring_decorator
+    """

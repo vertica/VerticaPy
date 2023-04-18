@@ -49,9 +49,9 @@ def get_dblink_fun(query: str, symbol: str = "$") -> str:
 
 def replace_external_queries(query: str) -> str:
     """
-    Replaces the external queries  in the input query using
-    the DBLINK UDTF.  If many  external  queries are  used,
-    they will be materialised using local temporary tables.
+    Replaces the external queries in the input query using
+    the DBLINK UDTF. If many external queries are used,
+    they are materialised using local temporary tables.
     """
     gb_conn = get_global_connection()
     external_connections = gb_conn.get_external_connections()
