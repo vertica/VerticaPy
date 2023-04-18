@@ -45,6 +45,7 @@ from verticapy.plotting._plotly.machine_learning.model_evaluation import (
     LiftChart,
 )
 from verticapy.plotting._plotly.machine_learning.kmeans import VoronoiPlot
+from verticapy.plotting._plotly.machine_learning.regression_tree import RegressionTreePlot
 
 import plotly.io as pio
 import plotly.graph_objects as go
