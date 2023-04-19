@@ -33,6 +33,7 @@ import verticapy
 import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
+from verticapy.learn.preprocessing import OneHotEncoder
 
 from verticapy.learn.linear_model import (
     LinearRegression,
@@ -43,6 +44,7 @@ from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow, lift_chart, prc_curve
 from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.decomposition import PCA
+from verticapy.learn.svm import LinearSVC
 from verticapy.learn.tree import DecisionTreeRegressor
 
 conf.set_option("print_info", False)
@@ -249,11 +251,46 @@ def voronoi_plot_result(load_plotly, iris_vd):
     return model.plot_voronoi()
 
 
+@pytest.fixture(scope="class")
+def svm_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def svm_2d_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(
+        iris_one_hot_vd, ["PetalLengthCm", "SepalLengthCm"], "Species_Iris-setosa"
+    )
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def svm_3d_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(
+        iris_one_hot_vd,
+        ["PetalLengthCm", "SepalLengthCm", "PetalWidthCm"],
+        "Species_Iris-setosa",
+    )
+    return model.plot()
+
+
 @pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
+
+
+@pytest.fixture(scope="module")
+def iris_one_hot_vd():
+    iris_one_hot = load_iris()
+    iris_one_hot["Species"].one_hot_encode(drop_first=False)
+    yield iris_one_hot
+    drop(name="public.iris")
 
 
 @pytest.fixture(scope="class")
@@ -2365,6 +2402,100 @@ class TestMachineLearningRegressionTreePlot:
             height=custom_height,
             width=custom_width,
         )
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningSVMClassifierPlot:
+    @pytest.fixture(autouse=True)
+    def result(self, svm_plot_result, svm_2d_plot_result, svm_3d_plot_result):
+        self.result = svm_plot_result
+        self.result_2d = svm_2d_plot_result
+        self.result_3d = svm_3d_plot_result
+
+    def test_properties_output_type_for_1d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_output_typefor_2d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result_2d) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_output_type_for_3d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result_3d) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "PetalLengthCm"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_properties_no_of_elements_for_2d(self):
+        # Arrange
+        total_items = 3
+        # Act
+        # Assert
+        assert len(self.result_2d.data) == total_items, "Some elements missing"
+
+    def test_properties_no_of_elements_for_3d(self):
+        # Arrange
+        total_items = 3
+        # Act
+        # Assert
+        assert len(self.result_3d.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_one_hot_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = LinearSVC(name="public.SVC_iris")
+        model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
+        # Act
+        result = model.plot(width=custom_width, height=custom_height)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+    def test_additional_options_custom_height_for_2d(
+        self, load_plotly, iris_one_hot_vd
+    ):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = LinearSVC(name="public.SVC_iris")
+        model.fit(
+            iris_one_hot_vd, ["PetalLengthCm", "SepalWidthCm"], "Species_Iris-setosa"
+        )
+        # Act
+        result = model.plot(width=custom_width, height=custom_height)
         # Assert
         assert (
             result.layout["height"] == custom_height
