@@ -71,7 +71,7 @@ class ChampionChallengerPlot(MatplotlibBase):
         if len(self.data["s"]) > 0:
             s = np.array(
                 [
-                    min(250 + 5000 * si, 1200) if si != 0 else 1000
+                    min(250 + 5000 * si, 3000) if si != 0 else 250
                     for si in self.data["s"]
                 ]
             )
