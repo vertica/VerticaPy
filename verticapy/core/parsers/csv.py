@@ -62,7 +62,7 @@ def pcsv(
     genSQL: bool = False,
 ) -> dict[str, str]:
     """
-    Parses a CSV file using flex tables. It will identify the 
+    Parses a CSV file using flex tables. It identifies the 
     columns and their respective types.
 
     Parameters
@@ -72,14 +72,14 @@ def pcsv(
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' will be to 
-        use to name the different columns.
+        If set to False, the parameter 'header_names' is 
+        used to name the different columns.
     header_names: list, optional
-        List of the columns names.
+        List of the column names.
     na_rep: str, optional
         Missing values representation.
     quotechar: str, optional
-        Char which is enclosing the str values.
+        Char that encloses the str values.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
@@ -104,7 +104,7 @@ def pcsv(
         column  value  that  the  parser  cannot coerce  into  a 
         compatible data type.
     ingest_local: bool, optional
-        If set to True, the file will be ingested from the local 
+        If set to True, the file is ingested from the local 
         machine.
     flex_name: str, optional
         Flex table name.
@@ -227,10 +227,10 @@ def read_csv(
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' will be to 
-        use to name the different columns.
+        If set to False, the parameter 'header_names' is used 
+        to name the different columns.
     header_names: list, optional
-        List of the columns names.
+        List of the column names.
     dtype: dict, optional
         Dictionary of the user types. Providing a dictionary can 
         increase   ingestion  speed  and  precision; instead  of 
@@ -239,7 +239,7 @@ def read_csv(
     na_rep: str, optional
         Missing values representation.
     quotechar: str, optional
-        Char which is enclosing the str values.
+        Char that encloses the str values.
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
@@ -264,15 +264,15 @@ def read_csv(
         column  value  that  the  parser  cannot coerce  into  a 
         compatible data type.
     parse_nrows: int, optional
-        If  this  parameter  is greater  than 0. A new  file  of 
-        'parse_nrows' rows will be created and ingested first to 
-        identify the data types. It will be then dropped and the 
-        entire   file   will  be   ingested.  The   data   types 
-        identification  will be less precise but this  parameter 
-        can make the process faster if the file is heavy.
+        If  this parameter is greater than zero, a new  file  of 
+        'parse_nrows' rows is created and ingested to identify
+        the data types. It is then dropped and the entire file 
+        is ingested. The data types identification  will be less 
+        precise but this  parameter can make the process faster 
+        if the file is large.
     insert: bool, optional
-        If set to True,  the data will be ingested to the  input 
-        relation.   Be   sure  that  your  file  has  a   header 
+        If set to True,  the data is ingested into the specified
+        input relation. Be sure that your  file  has  a   header 
         corresponding  to  the  name  of the  relation  columns, 
         otherwise ingestion will fail.
     temporary_table: bool, optional

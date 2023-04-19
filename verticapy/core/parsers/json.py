@@ -42,8 +42,8 @@ from verticapy.sql.flex import compute_flextable_keys
 
 def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     """
-    Parses  a JSON file  using flex tables.  It will 
-    identify the columns and their respective types.
+    Parses a JSON file using flex tables. It identifies 
+    the columns and their respective types.
 
     Parameters
     ----------
@@ -56,8 +56,8 @@ def pjson(path: str, ingest_local: bool = True) -> dict[str, str]:
     Returns
     -------
     dict
-        dictionary  containing  for each  column  its 
-        SQL type.
+        dictionary containing column names and their SQL
+        data type.
     """
     flex_name = gen_tmp_name(name="flex")[1:-1]
     _executeSQL(
@@ -119,14 +119,14 @@ def read_json(
     table_name: str, optional
     	Final relation name.
     usecols: list, optional
-    	List  of the  JSON parameters to ingest.  The 
-        other ones will be ignored.  If empty all the 
-        JSON parameters will be ingested.
+    	List of the JSON parameters to ingest. The 
+        other parameters will be ignored. If empty, 
+        all the JSON parameters will be ingested.
     new_name: dict, optional
-    	Dictionary  of the new  columns name. If  the 
-        JSON file is nested,  it is advised to change 
-        the final names as special characters will be 
-        included.
+    	Dictionary of the new column names. If the JSON 
+        file is nested, it is recommended to change the 
+        final names because special characters will be 
+        included in the new column names.
     	For example, {"param": {"age": 3, 
                                 "name": Badr}, 
                       "date": 1993-03-11} 
@@ -136,11 +136,11 @@ def read_json(
         dictionary: {"param.age": "age", 
                      "param.name": "name"}
     insert: bool, optional
-    	If set to True, the  data will be ingested to the 
-        input relation.  The JSON  parameters must be the 
-        same  as the input  relation otherwise they  will 
-        not be ingested. Also, table_name cannot be empty 
-        if this is true.
+    	If set to True, the data  is ingested  into  the 
+        input relation. The JSON parameters must  be the 
+        same  as the input  relation otherwise they will 
+        not be ingested. If set to True, table_name 
+        cannot be empty.
     start_point: str, optional
         String,  name  of a key in the JSON load data  at 
         which to  begin  parsing. The  parser ignores all 
@@ -195,9 +195,9 @@ def read_json(
         Boolean,  whether  to convert lists to sub-maps with 
         integer keys. 
         When lists are flattened,  key names are concatenated 
-        as for maps. Lists are not flattened by default. This 
-        value affects all data  in the load, including nested 
-        lists.
+        in the same way as maps. Lists are not flattened by 
+        default. This value affects all data  in the load,
+        including nested lists.
     temporary_table: bool, optional
         If set to True, a temporary table will be created.
     temporary_local_table: bool, optional
@@ -225,8 +225,8 @@ def read_json(
         compared to regular tables.
     use_complex_dt: bool, optional
         Boolean,  whether  the  input data  file  has  complex 
-        structure.  When  this  is  true,  most of  the  other 
-        parameters will be ignored.
+        structure. If set to true, most of the other parameters
+        are ignored.
 
     Returns
     -------

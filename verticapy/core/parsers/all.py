@@ -55,16 +55,16 @@ def read_file(
     max_files: int = 100,
 ) -> vDataFrame:
     """
-    Inspects and ingests a  file in CSV, Parquet, ORC, 
+    Inspects and ingests a file in CSV, Parquet, ORC, 
     JSON, or Avro format.
-    This function uses  the Vertica complex data type.
-    For new table creation,  the file must be located 
+    This function uses the Vertica complex data type.
+    For new table creation, the file must be located 
     in the server.
 
     Parameters
     ----------
     path: str
-        Path to a file  or glob.  Valid  paths include  any 
+        Path to a file or glob. Valid  paths include  any 
         path that is valid  for COPY  and that uses a  file 
         format supported by this function. 
         When inferring  the data type, only  one file  will 
