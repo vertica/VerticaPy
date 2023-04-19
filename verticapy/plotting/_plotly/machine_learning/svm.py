@@ -47,11 +47,50 @@ class SVMClassifierPlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
+        self.init_layout_style_1d = {
+            "xaxis": dict(visible=False),
+            "width": 600,
+            "height": 400,
+        }
         self.init_layout_style = {
             "yaxis_title": self.layout["columns"][1],
             "xaxis_title": self.layout["columns"][0],
             "width": 900,
             "height": 500,
+        }
+        self.init_layout_style_3d = {
+            "scene": dict(
+                xaxis_title=self.layout["columns"][0],
+                yaxis_title=self.layout["columns"][1],
+                zaxis_title=self.layout["columns"][2]
+                if len(self.layout["columns"]) == 4
+                else None,
+            ),
+            "scene_aspectmode": "cube",
+            "height": 700,
+            "autosize": False,
+        }
+        self.hline_style = {
+            "y": -self.data["coef"][0] / self.data["coef"][1],
+            "line_width": 2,
+            "line_dash": "dash",
+            "line_color": "green",
+        }
+        self.hover_style_3d = {
+            "mode": "markers",
+            "hovertemplate": f"{self.layout['columns'][0]}: "
+            "%{x} <br> "
+            f"{self.layout['columns'][1]}:"
+            " %{y} <br>"
+            f"{self.layout['columns'][2]}:"
+            " %{z} <extra></extra>",
+        }
+        self.hover_style_2d = {
+            "mode": "markers",
+            "hovertemplate": f"{self.layout['columns'][0]}: "
+            "%{x} <br> "
+            f"{self.layout['columns'][1]}:"
+            " %{y} <extra></extra>",
         }
 
     # Draw.
@@ -82,13 +121,15 @@ class SVMClassifierPlot(PlotlyBase):
                 y=self.layout["columns"][0],
                 color="category",
                 stripmode="overlay",
+                hover_data={
+                    self.layout["columns"][0]: True,
+                    "category": False,
+                    "x_axis": False,
+                },
             )
-            fig.update_layout(xaxis={"visible": False})
-            fig.add_hline(
-                y=-self.data["coef"][0] / self.data["coef"][1],
-                line_width=2,
-                line_dash="dash",
-                line_color="green",
+            fig.add_hline(**self.hline_style)
+            fig.update_layout(
+                **self._update_dict(self.init_layout_style_1d, style_kwargs)
             )
         else:
             y = self.data["X"][:, 1]
@@ -102,22 +143,8 @@ class SVMClassifierPlot(PlotlyBase):
                     / self.data["coef"][2]
                     for x in x_svm
                 ]
-                fig.add_trace(
-                    go.Scatter(
-                        name="0",
-                        x=x0,
-                        y=y0,
-                        mode="markers",
-                    )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        name="1",
-                        x=x1,
-                        y=y1,
-                        mode="markers",
-                    )
-                )
+                fig.add_trace(go.Scatter(name="0", x=x0, y=y0, **self.hover_style_2d))
+                fig.add_trace(go.Scatter(name="1", x=x1, y=y1, **self.hover_style_2d))
                 fig.add_trace(
                     go.Scatter(
                         name="SVM",
@@ -157,35 +184,12 @@ class SVMClassifierPlot(PlotlyBase):
                     )
                 )
                 fig.add_trace(
-                    go.Scatter3d(
-                        name="0",
-                        x=x0,
-                        y=y0,
-                        z=z0,
-                        mode="markers",
-                    )
+                    go.Scatter3d(name="0", x=x0, y=y0, z=z0, **self.hover_style_3d)
                 )
                 fig.add_trace(
-                    go.Scatter3d(
-                        name="1",
-                        x=x1,
-                        y=y1,
-                        z=z1,
-                        mode="markers",
-                    )
+                    go.Scatter3d(name="1", x=x1, y=y1, z=z1, **self.hover_style_3d)
                 )
-                fig.update_layout(
-                    scene=dict(
-                        xaxis_title=self.layout["columns"][0],
-                        yaxis_title=self.layout["columns"][1],
-                        zaxis_title=self.layout["columns"][2],
-                    ),
-                    scene_aspectmode="cube",
-                    height=700,
-                    autosize=False,
-                )
+                fig.update_layout(**self.init_layout_style_3d)
             else:
                 raise ValueError("The number of predictors is too big.")
-
-        fig.show()
-        return self.data, self.layout
+        return fig
