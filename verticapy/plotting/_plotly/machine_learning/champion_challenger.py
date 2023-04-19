@@ -98,14 +98,14 @@ class ChampionChallengerPlot(PlotlyBase):
                 min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
             )
         else:
-            x_lim(min(x),max(x))
+            x_lim(min(x), max(x))
         if self.layout["reverse"][1]:
             y_lim = (
                 max(y) + 0.1 * (1 + max(y) - min(y)),
                 min(y) - 0.1 * (1 + max(y) - min(y)),
             )
         else:
-            y_lim(min(y),max(y))
+            y_lim(min(y), max(y))
         fig.update_layout(
             xaxis=dict(
                 tickmode="linear",
@@ -176,5 +176,4 @@ class ChampionChallengerPlot(PlotlyBase):
             **self.label_layout,
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
-        fig.show()
-        return self.data, self.layout
+        return fig

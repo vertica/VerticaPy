@@ -46,6 +46,7 @@ from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.decomposition import PCA
 from verticapy.learn.svm import LinearSVC
 from verticapy.learn.tree import DecisionTreeRegressor
+from verticapy.learn.delphi import AutoML
 
 conf.set_option("print_info", False)
 
@@ -275,6 +276,15 @@ def svm_3d_plot_result(load_plotly, iris_one_hot_vd):
         ["PetalLengthCm", "SepalLengthCm", "PetalWidthCm"],
         "Species_Iris-setosa",
     )
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def champion_challenger_plot_result(load_plotly, titanic_vd):
+    model = AutoML("model_automl",
+                lmax = 10,
+                print_info = False)
+    model.fit(titanic_vd, ["age",], "survived",)
     return model.plot()
 
 
@@ -2501,3 +2511,17 @@ class TestMachineLearningSVMClassifierPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+
+
+class TestMachineLearningChampionChallengerPlot:
+    @pytest.fixture(autouse=True)
+    def result(self, champion_challenger_plot_result):
+        self.result = champion_challenger_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
