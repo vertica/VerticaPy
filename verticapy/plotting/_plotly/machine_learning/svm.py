@@ -63,7 +63,7 @@ class SVMClassifierPlot(PlotlyBase):
                 xaxis_title=self.layout["columns"][0],
                 yaxis_title=self.layout["columns"][1],
                 zaxis_title=self.layout["columns"][2]
-                if len(self.layout["columns"]) == 4
+                if len(self.layout["columns"]) >= 3
                 else None,
             ),
             "scene_aspectmode": "cube",
@@ -83,7 +83,9 @@ class SVMClassifierPlot(PlotlyBase):
             f"{self.layout['columns'][1]}:"
             " %{y} <br>"
             f"{self.layout['columns'][2]}:"
-            " %{z} <extra></extra>",
+            " %{z} <extra></extra>"
+            if len(self.layout["columns"]) >= 3
+            else None,
         }
         self.hover_style_2d = {
             "mode": "markers",
