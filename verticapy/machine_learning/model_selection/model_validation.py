@@ -52,7 +52,7 @@ def cross_validate(
     y: str,
     metrics: Union[None, str, list[str]] = None,
     cv: int = 3,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     show_time: bool = True,
@@ -144,6 +144,7 @@ def cross_validate(
                            class.
                 weighted : weighted average of the score of 
                            each class.
+                None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
     	The main class to be considered as positive 
         (classification only).
@@ -283,7 +284,7 @@ def learning_curve(
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
@@ -378,6 +379,7 @@ def learning_curve(
                        class.
             weighted : weighted average of the score of 
                        each class.
+            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).

@@ -32,7 +32,6 @@ from verticapy.machine_learning.metrics.classification import (
     log_loss,
     markedness,
     matthews_corrcoef,
-    multilabel_confusion_matrix,
     negative_predictive_score,
     negative_likelihood_ratio,
     positive_likelihood_ratio,

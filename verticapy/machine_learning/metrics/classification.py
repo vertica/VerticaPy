@@ -77,7 +77,7 @@ def _compute_tn_fn_fp_tp(
     tuple
         tn, fn, fp, tp
     """
-    cm = confusion_matrix(y_true, y_score, input_relation, pos_label)
+    cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
     return _compute_tn_fn_fp_tp_from_cm(cm)
 
 
@@ -97,7 +97,7 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
 
 
 def _compute_classes_tn_fn_fp_tp(
-    y_true: str, y_score: str, input_relation: SQLRelation, labels: list,
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: ArrayLike,
 ) -> list[tuple]:
     """
     A helper function that  computes the confusion matrix 
@@ -116,7 +116,7 @@ def _compute_classes_tn_fn_fp_tp(
         view,  table, or a  customized relation (if an  alias 
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
-    labels: list
+    labels: ArrayLike
         List of the response column categories.
 
     Returns
@@ -124,14 +124,14 @@ def _compute_classes_tn_fn_fp_tp(
     list of tuple
         tn, fn, fp, tp for each class
     """
-    cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
+    cm = confusion_matrix(y_true, y_score, input_relation, labels=labels)
     return _compute_classes_tn_fn_fp_tp_from_cm(cm)
 
 
 def _compute_final_score_from_cm(
     metric: Callable,
     cm: ArrayLike,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     multi: bool = False,
 ) -> Union[float, list[float]]:
     """
@@ -149,7 +149,7 @@ def _compute_final_score_from_cm(
         elif average == "micro":
             args = [sum(args[i] for args in confusion_list) for i in range(4)]
             return metric(*args)
-        elif average == "scores":
+        elif isinstance(average, NoneType):
             return [metric(*args) for args in confusion_list]
         else:
             raise ValueError(
@@ -164,7 +164,7 @@ def _compute_final_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -175,17 +175,17 @@ def _compute_final_score(
     if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
     if isinstance(pos_label, NoneType):
-        cm = multilabel_confusion_matrix(y_true, y_score, input_relation, labels)
-        return _compute_final_score_from_cm(metric, cm, average=average, multi=True)
+        kwargs, multi = {"labels": labels}, True
     else:
-        cm = confusion_matrix(y_true, y_score, input_relation, pos_label=pos_label)
-        return _compute_final_score_from_cm(metric, cm, average=average, multi=False)
+        kwargs, multi = {"pos_label": pos_label}, False
+    cm = confusion_matrix(y_true, y_score, input_relation, **kwargs)
+    return _compute_final_score_from_cm(metric, cm, average=average, multi=multi)
 
 
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str, y_score: str, input_relation: SQLRelation, labels: Optional[ArrayLike] = None, pos_label: Optional[PythonScalar] = None,
 ) -> np.ndarray:
     """
     Computes the Confusion Matrix.
@@ -201,6 +201,8 @@ def confusion_matrix(
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
+    labels: ArrayLike
+        List  of  the   response   column  categories.
     pos_label: str / PythonNumber, optional
         To compute the one dimension Confusion Matrix, 
         one  of the response column class must  be the 
@@ -212,67 +214,44 @@ def confusion_matrix(
     Array
         confusion matrix.
     """
-    res = _executeSQL(
-        query=f"""
-        SELECT 
-            CONFUSION_MATRIX(obs, response 
-            USING PARAMETERS num_classes = 2) OVER() 
-        FROM 
-            (SELECT 
-                DECODE({y_true}, '{pos_label}', 
-                       1, NULL, NULL, 0) AS obs, 
-                DECODE({y_score}, '{pos_label}', 
-                       1, NULL, NULL, 0) AS response 
-             FROM {input_relation}) VERTICAPY_SUBTABLE;""",
-        title="Computing Confusion matrix.",
-        method="fetchall",
-    )
-    return np.round(np.array([x[1:-1] for x in res])).astype(int)
-
-
-@check_minimum_version
-@save_verticapy_logs
-def multilabel_confusion_matrix(
-    y_true: str, y_score: str, input_relation: SQLRelation, labels: ArrayLike,
-) -> np.ndarray:
-    """
-    Computes the Multi Label Confusion Matrix.
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    labels: ArrayLike
-        List   of   the  response  column  categories.
-
-    Returns
-    -------
-    Array
-        confusion matrix.
-    """
-    num_classes = str(len(labels))
-    query = f"""
-        SELECT 
-          CONFUSION_MATRIX(obs, response 
-          USING PARAMETERS num_classes = {num_classes}) OVER() 
-       FROM (SELECT DECODE({y_true}"""
-    for idx, l in enumerate(labels):
-        query += f", '{l}', {idx}"
-    query += f") AS obs, DECODE({y_score}"
-    for idx, l in enumerate(labels):
-        query += f", '{l}', {idx}"
-    query += f") AS response FROM {input_relation}) VERTICAPY_SUBTABLE;"
-    res = _executeSQL(
-        query=query, title="Computing Confusion Matrix.", method="fetchall",
-    )
-    return np.round(np.array([x[1:-1] for x in res])).astype(int)
+    if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
+        pos_label = 1
+    if not(isinstance(pos_label, NoneType)):
+        res = _executeSQL(
+            query=f"""
+            SELECT 
+                CONFUSION_MATRIX(obs, response 
+                USING PARAMETERS num_classes = 2) OVER() 
+            FROM 
+                (SELECT 
+                    DECODE({y_true}, '{pos_label}', 
+                           1, NULL, NULL, 0) AS obs, 
+                    DECODE({y_score}, '{pos_label}', 
+                           1, NULL, NULL, 0) AS response 
+                 FROM {input_relation}) VERTICAPY_SUBTABLE;""",
+            title="Computing Confusion matrix.",
+            method="fetchall",
+        )
+        return np.round(np.array([x[1:-1] for x in res])).astype(int)
+    elif not(isinstance(labels, NoneType)) and len(labels) > 0:
+        num_classes = str(len(labels))
+        query = f"""
+            SELECT 
+              CONFUSION_MATRIX(obs, response 
+              USING PARAMETERS num_classes = {num_classes}) OVER() 
+           FROM (SELECT DECODE({y_true}"""
+        for idx, l in enumerate(labels):
+            query += f", '{l}', {idx}"
+        query += f") AS obs, DECODE({y_score}"
+        for idx, l in enumerate(labels):
+            query += f", '{l}', {idx}"
+        query += f") AS response FROM {input_relation}) VERTICAPY_SUBTABLE;"
+        res = _executeSQL(
+            query=query, title="Computing Confusion Matrix.", method="fetchall",
+        )
+        return np.round(np.array([x[1:-1] for x in res])).astype(int)
+    else:
+        raise ValueError("Parameters 'labels' and 'pos_label' can not be both empty.")
 
 
 """
@@ -289,7 +268,7 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -316,7 +295,7 @@ def accuracy_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -341,7 +320,7 @@ def balanced_accuracy(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -368,7 +347,7 @@ def balanced_accuracy(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -393,7 +372,7 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -420,7 +399,7 @@ def critical_success_index(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -449,7 +428,7 @@ def diagnostic_odds_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -476,7 +455,7 @@ def diagnostic_odds_ratio(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -502,7 +481,7 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -529,7 +508,7 @@ def f1_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -554,7 +533,7 @@ def false_negative_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -581,7 +560,7 @@ def false_negative_rate(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -606,7 +585,7 @@ def false_positive_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -633,7 +612,7 @@ def false_positive_rate(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -658,7 +637,7 @@ def false_discovery_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -685,7 +664,7 @@ def false_discovery_rate(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -710,7 +689,7 @@ def false_omission_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -737,7 +716,7 @@ def false_omission_rate(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -762,7 +741,7 @@ def fowlkes_mallows_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -789,7 +768,7 @@ def fowlkes_mallows_index(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -814,7 +793,7 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -841,7 +820,7 @@ def informedness(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -868,7 +847,7 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -895,7 +874,7 @@ def markedness(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -924,7 +903,7 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -951,7 +930,7 @@ def matthews_corrcoef(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -976,7 +955,7 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1003,7 +982,7 @@ def negative_predictive_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1028,7 +1007,7 @@ def negative_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1055,7 +1034,7 @@ def negative_likelihood_ratio(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1081,7 +1060,7 @@ def positive_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1108,7 +1087,7 @@ def positive_likelihood_ratio(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1133,7 +1112,7 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1160,7 +1139,7 @@ def precision_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1186,7 +1165,7 @@ def prevalence_threshold(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1213,7 +1192,7 @@ def prevalence_threshold(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1238,7 +1217,7 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1265,7 +1244,7 @@ def recall_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1290,7 +1269,7 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1317,7 +1296,7 @@ def specificity_score(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1424,7 +1403,7 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
 ) -> Union[float, list[float]]:
@@ -1459,7 +1438,7 @@ def best_cutoff(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1487,7 +1466,7 @@ def best_cutoff(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1547,7 +1526,7 @@ def roc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1575,7 +1554,7 @@ def roc_auc(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1632,7 +1611,7 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1661,7 +1640,7 @@ def prc_auc(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            scores   : scores  for   all  the  classes.
+            None     : scores  for   all  the  classes.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1721,7 +1700,7 @@ def log_loss(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
     labels: Optional[ArrayLike] = None,
     pos_label: PythonScalar = 1,
 ) -> Union[float, list[float]]:
@@ -1971,7 +1950,7 @@ def classification_report(
         if estimator:
             cm = estimator.confusion_matrix()
         else:
-            cm = multilabel_confusion_matrix(
+            cm = confusion_matrix(
                 y_true, y_score, input_relation, labels=labels
             )
         all_cm_metrics = _compute_classes_tn_fn_fp_tp_from_cm(cm)

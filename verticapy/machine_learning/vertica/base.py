@@ -1995,8 +1995,8 @@ class MulticlassClassifier(Supervised):
         if hasattr(self, "_confusion_matrix"):
             return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
         elif isinstance(pos_label, NoneType):
-            return mt.multilabel_confusion_matrix(
-                self.y, self.deploySQL(), self.test_relation, self.classes_
+            return mt.confusion_matrix(
+                self.y, self.deploySQL(), self.test_relation, labels=self.classes_
             )
         else:
             pos_label = self._check_pos_label(pos_label=pos_label)
@@ -2012,7 +2012,7 @@ class MulticlassClassifier(Supervised):
     def score(
         self,
         metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+        average: Literal[None, "micro", "macro", "weighted"] = "weighted",
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
@@ -2069,7 +2069,7 @@ class MulticlassClassifier(Supervised):
                            class.
                 weighted : weighted average of the score of 
                            each class.
-                scores   : scores  for   all  the  classes.
+                None     : scores  for   all  the  classes.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 
