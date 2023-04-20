@@ -49,6 +49,7 @@ from verticapy.plotting._plotly.machine_learning.svm import SVMClassifierPlot
 from verticapy.plotting._plotly.machine_learning.regression_tree import (
     RegressionTreePlot,
 )
+from verticapy.plotting._plotly.machine_learning.champion_challenger import ChampionChallengerPlot
 
 
 import plotly.io as pio
