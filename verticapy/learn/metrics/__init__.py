@@ -25,7 +25,6 @@ from verticapy.machine_learning.metrics.classification import (
     log_loss,
     markedness,
     matthews_corrcoef,
-    multilabel_confusion_matrix,
     negative_predictive_score,
     prc_auc,
     roc_auc,
