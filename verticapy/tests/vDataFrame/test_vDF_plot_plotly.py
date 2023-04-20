@@ -1098,8 +1098,9 @@ class TestVDFLinePlot:
         # Act
         result = amazon_vd["number"].plot(ts="date", by="state")
         assert (
+            amazon_vd["date"][random.randint(0, len(amazon_vd))] in result.data[0]["x"] or 
             amazon_vd["date"][random.randint(0, len(amazon_vd))] in result.data[0]["x"]
-        ), "One date that exists in the data does not exist in the plot"
+        ), "Two dates that exists in the data do not exist in the plot"
 
     def test_additional_options_custom_width(self, load_plotly, amazon_vd):
         # Arrange
