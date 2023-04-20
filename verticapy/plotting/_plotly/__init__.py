@@ -50,7 +50,7 @@ from verticapy.plotting._plotly.machine_learning.regression_tree import (
     RegressionTreePlot,
 )
 from verticapy.plotting._plotly.machine_learning.champion_challenger import ChampionChallengerPlot
-
+from verticapy.plotting._plotly.machine_learning.stepwise import StepwisePlot
 
 import plotly.io as pio
 import plotly.graph_objects as go
