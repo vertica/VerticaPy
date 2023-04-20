@@ -33,6 +33,7 @@ import verticapy
 import verticapy._config.config as conf
 from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
+from verticapy.learn.preprocessing import OneHotEncoder
 
 from verticapy.learn.linear_model import (
     LinearRegression,
@@ -43,6 +44,10 @@ from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import elbow, lift_chart, prc_curve
 from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.decomposition import PCA
+from verticapy.learn.svm import LinearSVC
+from verticapy.learn.tree import DecisionTreeRegressor
+from verticapy.learn.delphi import AutoML
+from verticapy.learn.model_selection import stepwise
 
 conf.set_option("print_info", False)
 
@@ -82,7 +87,10 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
+        {
+            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
+            "value": list(data),
+        }
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -146,7 +154,12 @@ def dummy_dist_vd():
 @pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
+        ts="date",
+        column="number",
+        p=12,
+        by=["state"],
+        unit="month",
+        method="spearman",
     )
 
 
@@ -234,9 +247,70 @@ def lift_chart_plot_result(load_plotly, dummy_probability_data):
 def voronoi_plot_result(load_plotly, iris_vd):
     model = KMeans(name="test_KMeans_iris")
     model.fit(
-        iris_vd, ["PetalLengthCm", "PetalWidthCm"],
+        iris_vd,
+        ["PetalLengthCm", "PetalWidthCm"],
     )
     return model.plot_voronoi()
+
+
+@pytest.fixture(scope="class")
+def svm_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def svm_2d_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(
+        iris_one_hot_vd, ["PetalLengthCm", "SepalLengthCm"], "Species_Iris-setosa"
+    )
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def svm_3d_plot_result(load_plotly, iris_one_hot_vd):
+    model = LinearSVC(name="public.SVC_iris")
+    model.fit(
+        iris_one_hot_vd,
+        ["PetalLengthCm", "SepalLengthCm", "PetalWidthCm"],
+        "Species_Iris-setosa",
+    )
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def champion_challenger_plot_result(load_plotly, titanic_vd):
+    model = AutoML("model_automl", lmax=10, print_info=False)
+    model.fit(
+        titanic_vd,
+        [
+            "age",
+        ],
+        "survived",
+    )
+    return model.plot()
+
+
+@pytest.fixture(scope="class")
+def stepwise_plot_result(load_plotly, titanic_vd):
+    model = LogisticRegression(
+        name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
+    )
+    stepwise_result = stepwise(
+        model,
+        input_relation=titanic_vd,
+        X=[
+            "age",
+            "fare",
+            "parch",
+            "pclass",
+        ],
+        y="survived",
+        direction="backward",
+    )
+    return stepwise_result.step_wise_
 
 
 @pytest.fixture(scope="module")
@@ -244,6 +318,23 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
+
+
+@pytest.fixture(scope="module")
+def iris_one_hot_vd():
+    iris_one_hot = load_iris()
+    iris_one_hot["Species"].one_hot_encode(drop_first=False)
+    yield iris_one_hot
+    drop(name="public.iris")
+
+
+@pytest.fixture(scope="class")
+def regression_tree_plot_result(load_plotly, titanic_vd):
+    model = DecisionTreeRegressor(name="model_titanic")
+    x_col = "fare"
+    y_col = "age"
+    model.fit(titanic_vd, x_col, y_col)
+    return model.plot(), x_col, y_col
 
 
 @pytest.fixture(scope="class")
@@ -489,7 +580,13 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -513,7 +610,13 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
+        result = iris_vd.scatter(
+            [
+                "PetalWidthCm",
+                "PetalLengthCm",
+            ],
+            by="Species",
+        )
         assert (
             len(
                 set(
@@ -2248,10 +2351,282 @@ class TestMachineLearningLiftChart:
         custom_width = 700
         model = KMeans(name="public.KMeans_iris")
         model.fit(
-            iris_vd, ["PetalLengthCm", "PetalWidthCm"],
+            iris_vd,
+            ["PetalLengthCm", "PetalWidthCm"],
         )
         # Act
         result = model.plot_voronoi(width=custom_width, height=custom_height)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningRegressionTreePlot:
+    @pytest.fixture(autouse=True)
+    def result(self, regression_tree_plot_result):
+        self.result, self.x_col, self.y_col = regression_tree_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = self.x_col
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = self.y_col
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_observations_label(self):
+        # Arrange
+        test_title = "Observations"
+        # Act
+        # Assert
+        assert self.result.data[0]["name"] == test_title, "Y axis label incorrect"
+
+    def test_properties_prediction_label(self):
+        # Arrange
+        test_title = "Prediction"
+        # Act
+        # Assert
+        assert self.result.data[1]["name"] == test_title, "Y axis label incorrect"
+
+    def test_properties_hover_label(self):
+        # Arrange
+        test_title = f"{self.x_col}: %" "{x} <br>" f"{self.y_col}: %" "{y} <br>"
+        # Act
+        # Assert
+        assert (
+            self.result.data[0]["hovertemplate"] == test_title
+        ), "Hover information incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = DecisionTreeRegressor(name="model_titanic")
+        model.fit(titanic_vd, ["fare"], "age")
+        # Act
+        result = model.plot(
+            height=custom_height,
+            width=custom_width,
+        )
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningSVMClassifierPlot:
+    @pytest.fixture(autouse=True)
+    def result(self, svm_plot_result, svm_2d_plot_result, svm_3d_plot_result):
+        self.result = svm_plot_result
+        self.result_2d = svm_2d_plot_result
+        self.result_3d = svm_3d_plot_result
+
+    def test_properties_output_type_for_1d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_output_typefor_2d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result_2d) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_output_type_for_3d(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result_3d) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "PetalLengthCm"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 2
+        # Act
+        # Assert
+        assert len(self.result.data) == total_items, "Some elements missing"
+
+    def test_properties_no_of_elements_for_2d(self):
+        # Arrange
+        total_items = 3
+        # Act
+        # Assert
+        assert len(self.result_2d.data) == total_items, "Some elements missing"
+
+    def test_properties_no_of_elements_for_3d(self):
+        # Arrange
+        total_items = 3
+        # Act
+        # Assert
+        assert len(self.result_3d.data) == total_items, "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, iris_one_hot_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = LinearSVC(name="public.SVC_iris")
+        model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
+        # Act
+        result = model.plot(width=custom_width, height=custom_height)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+    def test_additional_options_custom_height_for_2d(
+        self, load_plotly, iris_one_hot_vd
+    ):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = LinearSVC(name="public.SVC_iris")
+        model.fit(
+            iris_one_hot_vd, ["PetalLengthCm", "SepalWidthCm"], "Species_Iris-setosa"
+        )
+        # Act
+        result = model.plot(width=custom_width, height=custom_height)
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestMachineLearningChampionChallengerPlot:
+    @pytest.fixture(autouse=True)
+    def result(self, champion_challenger_plot_result):
+        self.result = champion_challenger_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+
+class TestMachineLearningStepwisePlot:
+    @pytest.fixture(autouse=True)
+    def result(self, stepwise_plot_result):
+        self.result = stepwise_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "n_features"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "bic"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 8
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_data_start_and_end(self):
+        # Arrange
+        start = "Start"
+        end = "End"
+        # Act
+        # Assert
+        assert start in [
+            self.result.data[i]["name"] for i in range(len(self.result.data))
+        ] and end in [
+            self.result.data[i]["name"] for i in range(len(self.result.data))
+        ], "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        model = LogisticRegression(
+            name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
+        )
+        # Act
+        stepwise_result = stepwise(
+            model,
+            input_relation=titanic_vd,
+            X=[
+                "age",
+                "fare",
+                "parch",
+                "pclass",
+            ],
+            y="survived",
+            direction="backward",
+            height=custom_height,
+            width=custom_width,
+        )
+        result = stepwise_result.step_wise_
         # Assert
         assert (
             result.layout["height"] == custom_height
