@@ -1996,7 +1996,7 @@ class MulticlassClassifier(Supervised):
             return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
         elif isinstance(pos_label, NoneType):
             return mt.confusion_matrix(
-                self.y, self.deploySQL(), self.test_relation, classes=self.classes_
+                self.y, self.deploySQL(), self.test_relation, labels=self.classes_
             )
         else:
             pos_label = self._check_pos_label(pos_label=pos_label)
