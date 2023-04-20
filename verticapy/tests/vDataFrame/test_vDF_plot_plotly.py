@@ -313,6 +313,11 @@ def stepwise_plot_result(load_plotly, titanic_vd):
     return stepwise_result.step_wise_
 
 
+@pytest.fixture(scope="class")
+def hist_plot_result(load_plotly, titanic_vd):
+    return titanic_vd["age"].hist()
+
+
 @pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
@@ -2627,6 +2632,63 @@ class TestMachineLearningStepwisePlot:
             width=custom_width,
         )
         result = stepwise_result.step_wise_
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestHistogram:
+    @pytest.fixture(autouse=True)
+    def result(self, hist_plot_result):
+        self.result = hist_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "age"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "density"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 1
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+
+        result = titanic_vd["age"].hist(
+            height=custom_height,
+            width=custom_width,
+        )
         # Assert
         assert (
             result.layout["height"] == custom_height
