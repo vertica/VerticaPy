@@ -406,7 +406,6 @@ def stepwise(
     assert len(X) >= 1, ValueError("Vector X must have at least one element.")
     if not conf.get_option("overwrite_model"):
         estimator._is_already_stored(raise_error=True)
-    res, current_step = [], 0
     avg = _executeSQL(
         f"SELECT /*+LABEL('stepwise')*/ AVG({y}) FROM {input_relation}",
         method="fetchfirstelem",
@@ -434,13 +433,13 @@ def stepwise(
         loop = tqdm(range(len(X)))
     else:
         loop = range(len(X))
-    model_id = 0
+    model_id, res, current_step = 0, [], 0
     if direction == "backward":
-        X_current = copy.deepcopy(X)
         estimator.drop()
         estimator.fit(input_relation, X, y)
         current_score = estimator.score(metric=criterion)
-        res += [(X_current, current_score, None, None, 0, None)]
+        res += [(copy.deepcopy(X), current_score, None, None, 0, None)]
+        X_current = copy.deepcopy(X)
         for idx in loop:
             if print_info and idx == 0:
                 print(
@@ -473,9 +472,9 @@ def stepwise(
             res += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     else:
-        X_current = []
         current_score = fun(y, str(avg), input_relation, 0)
-        res += [(X_current, current_score, None, None, 0, None)]
+        res += [([], current_score, None, None, 0, None)]
+        X_current = []
         for idx in loop:
             if print_info and idx == 0:
                 print(
