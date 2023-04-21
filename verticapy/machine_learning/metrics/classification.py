@@ -131,16 +131,27 @@ def _compute_classes_tn_fn_fp_tp(
 def _compute_final_score_from_cm(
     metric: Callable,
     cm: ArrayLike,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     multi: bool = False,
 ) -> Union[float, list[float]]:
     """
     Computes the final score by using the different results
     of the multi-confusion matrix.
     """
-    if multi:
+    if metric == _accuracy_score:
+        return np.trace(cm) / np.sum(cm)
+    elif metric == _balanced_accuracy_score:
+        return _compute_final_score_from_cm(metric=_recall_score, cm=cm, average="macro", multi=multi)
+    elif multi:
         confusion_list = _compute_classes_tn_fn_fp_tp_from_cm(cm)
-        if average == "weighted":
+        if average == "binary":
+            if len(confusion_list) > 1:
+                raise IndexError(
+                    "Too many values in 'confusion_list' for parameter average='binary'."
+                )
+            args = confusion_list[0]
+            return metric(*args)
+        elif average == "weighted":
             score = sum((args[1] + args[3]) * metric(*args) for args in confusion_list)
             total = sum((args[1] + args[3]) for args in confusion_list)
             return score / total
@@ -164,7 +175,7 @@ def _compute_final_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -172,8 +183,29 @@ def _compute_final_score(
     Computes the final score by using the different results
     of the multi-confusion matrix.
     """
-    if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
+    if (
+        not (isinstance(pos_label, NoneType))
+        and not (isinstance(average, NoneType))
+        and average != "binary"
+    ):
+        raise ValueError(
+            "Parameter 'pos_label' can only be used when parameter 'average' is set to 'binary' or undefined."
+        )
+    if not (isinstance(pos_label, NoneType)) and not (isinstance(labels, NoneType)):
+        raise ValueError("Parameters 'pos_label' and 'labels' can not be both defined.")
+    if (
+        isinstance(pos_label, NoneType)
+        and isinstance(labels, NoneType)
+        and average == "binary"
+    ):
         pos_label = 1
+    elif isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
+        labels = _executeSQL(
+            query=f"""SELECT DISTINCT({y_true}) FROM {input_relation} WHERE {y_true} IS NOT NULL""",
+            title="Computing 'y_true' distinct categories.",
+            method="fetchall",
+        )
+        labels = np.array(labels)[:, 0]
     if isinstance(pos_label, NoneType):
         kwargs, multi = {"labels": labels}, True
     else:
@@ -185,7 +217,11 @@ def _compute_final_score(
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
-    y_true: str, y_score: str, input_relation: SQLRelation, labels: Optional[ArrayLike] = None, pos_label: Optional[PythonScalar] = None,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
 ) -> np.ndarray:
     """
     Computes the Confusion Matrix.
@@ -216,7 +252,7 @@ def confusion_matrix(
     """
     if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
-    if not(isinstance(pos_label, NoneType)):
+    if not (isinstance(pos_label, NoneType)):
         res = _executeSQL(
             query=f"""
             SELECT 
@@ -233,7 +269,7 @@ def confusion_matrix(
             method="fetchall",
         )
         return np.round(np.array([x[1:-1] for x in res])).astype(int)
-    elif not(isinstance(labels, NoneType)) and len(labels) > 0:
+    elif not (isinstance(labels, NoneType)) and len(labels) > 0:
         num_classes = str(len(labels))
         query = f"""
             SELECT 
@@ -268,10 +304,10 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> Union[float, list[float]]:
+) -> float:
     """
     Computes the Accuracy Score.
 
@@ -289,13 +325,11 @@ def accuracy_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            micro    : positive  and   negative  values 
-                       globally.
-            macro    : average  of  the  score of  each 
-                       class.
-            weighted : weighted average of the score of 
-                       each class.
-            None     : scores  for   all  the  classes.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
+            None     : accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -311,19 +345,19 @@ def accuracy_score(
     return _compute_final_score(_accuracy_score, **locals(),)
 
 
-def _balanced_accuracy(tn: int, fn: int, fp: int, tp: int) -> float:
+def _balanced_accuracy_score(tn: int, fn: int, fp: int, tp: int) -> float:
     return (_recall_score(**locals()) + _specificity_score(**locals())) / 2
 
 
 @save_verticapy_logs
-def balanced_accuracy(
+def balanced_accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
-) -> Union[float, list[float]]:
+) -> float:
     """
     Computes the Balanced Accuracy.
 
@@ -341,13 +375,11 @@ def balanced_accuracy(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            micro    : positive  and   negative  values 
-                       globally.
-            macro    : average  of  the  score of  each 
-                       class.
-            weighted : weighted average of the score of 
-                       each class.
-            None     : scores  for   all  the  classes.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
+            None     : balanced accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -360,7 +392,7 @@ def balanced_accuracy(
     float
         score.
     """
-    return _compute_final_score(_balanced_accuracy, **locals(),)
+    return _compute_final_score(_balanced_accuracy_score, **locals(),)
 
 
 def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -372,7 +404,7 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -393,6 +425,10 @@ def critical_success_index(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -428,7 +464,7 @@ def diagnostic_odds_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -449,6 +485,10 @@ def diagnostic_odds_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -481,7 +521,7 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -502,6 +542,10 @@ def f1_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -533,7 +577,7 @@ def false_negative_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -554,6 +598,10 @@ def false_negative_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -585,7 +633,7 @@ def false_positive_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -606,6 +654,10 @@ def false_positive_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -637,7 +689,7 @@ def false_discovery_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -658,6 +710,10 @@ def false_discovery_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -689,7 +745,7 @@ def false_omission_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -710,6 +766,10 @@ def false_omission_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -741,7 +801,7 @@ def fowlkes_mallows_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -762,6 +822,10 @@ def fowlkes_mallows_index(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -793,7 +857,7 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -814,6 +878,10 @@ def informedness(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -847,7 +915,7 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -868,6 +936,10 @@ def markedness(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -903,7 +975,7 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -924,6 +996,10 @@ def matthews_corrcoef(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -955,7 +1031,7 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -976,6 +1052,10 @@ def negative_predictive_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1007,7 +1087,7 @@ def negative_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1028,6 +1108,10 @@ def negative_likelihood_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1060,7 +1144,7 @@ def positive_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1081,6 +1165,10 @@ def positive_likelihood_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1112,7 +1200,7 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1133,6 +1221,10 @@ def precision_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1165,7 +1257,7 @@ def prevalence_threshold(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1186,6 +1278,10 @@ def prevalence_threshold(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1217,7 +1313,7 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1238,6 +1334,10 @@ def recall_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1269,7 +1369,7 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1290,6 +1390,10 @@ def specificity_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1403,7 +1507,7 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
 ) -> Union[float, list[float]]:
@@ -1438,7 +1542,7 @@ def best_cutoff(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1460,6 +1564,10 @@ def best_cutoff(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1526,7 +1634,7 @@ def roc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1548,6 +1656,10 @@ def roc_auc(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1611,7 +1723,7 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1634,6 +1746,10 @@ def prc_auc(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
@@ -1700,7 +1816,7 @@ def log_loss(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: PythonScalar = 1,
 ) -> Union[float, list[float]]:
@@ -1721,6 +1837,10 @@ def log_loss(
     average: str, optional
         The  method  used  to  compute  the final score for
         multiclass-classification.
+            binary   : considers  one  of  the  classes  as
+                       positive   and    use   the   binary
+                       confusion   matrix  to  compute  the
+                       score.
             micro    : positive    and    negative   values 
                        globally.
             macro    : average   of   the   score  of  each 
@@ -1780,8 +1900,8 @@ Reports.
 FUNCTIONS_CONFUSION_DICTIONNARY = {
     "accuracy": _accuracy_score,
     "acc": _accuracy_score,
-    "balanced_accuracy": _balanced_accuracy,
-    "ba": _balanced_accuracy,
+    "balanced_accuracy_score": _balanced_accuracy_score,
+    "ba": _balanced_accuracy_score,
     "recall": _recall_score,
     "tpr": _recall_score,
     "precision": _precision_score,
@@ -1950,9 +2070,7 @@ def classification_report(
         if estimator:
             cm = estimator.confusion_matrix()
         else:
-            cm = confusion_matrix(
-                y_true, y_score, input_relation, labels=labels
-            )
+            cm = confusion_matrix(y_true, y_score, input_relation, labels=labels)
         all_cm_metrics = _compute_classes_tn_fn_fp_tp_from_cm(cm)
         is_multi = True
     else:

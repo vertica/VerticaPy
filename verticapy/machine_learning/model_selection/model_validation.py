@@ -52,7 +52,7 @@ def cross_validate(
     y: str,
     metrics: Union[None, str, list[str]] = None,
     cv: int = 3,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     show_time: bool = True,
@@ -138,6 +138,10 @@ def cross_validate(
     average: str, optional
             The method used to  compute the final score for
             multiclass-classification.
+                binary   : considers one of the classes  as
+                           positive  and  use  the   binary
+                           confusion  matrix to compute the
+                           score.
                 micro    : positive  and   negative  values 
                            globally.
                 macro    : average  of  the  score of  each 
@@ -284,7 +288,7 @@ def learning_curve(
     method: Literal["efficiency", "performance", "scalability"] = "efficiency",
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
@@ -373,6 +377,10 @@ def learning_curve(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 

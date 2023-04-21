@@ -2012,7 +2012,7 @@ class MulticlassClassifier(Supervised):
     def score(
         self,
         metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+        average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
@@ -2063,6 +2063,10 @@ class MulticlassClassifier(Supervised):
         average: str, optional
             The method used to  compute the final score for
             multiclass-classification.
+                binary   : considers one of the classes  as
+                           positive  and  use  the   binary
+                           confusion  matrix to compute the
+                           score.
                 micro    : positive  and   negative  values 
                            globally.
                 macro    : average  of  the  score of  each 

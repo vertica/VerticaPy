@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.machine_learning.metrics.classification import (
     accuracy_score,
-    balanced_accuracy,
+    balanced_accuracy_score,
     best_cutoff,
     classification_report,
     confusion_matrix,
@@ -68,8 +68,8 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
-    "balanced_accuracy": balanced_accuracy,
-    "ba": balanced_accuracy,
+    "balanced_accuracy_score": balanced_accuracy_score,
+    "ba": balanced_accuracy_score,
     "auc": roc_auc,
     "prc_auc": prc_auc,
     "best_cutoff": best_cutoff,
