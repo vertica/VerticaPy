@@ -43,29 +43,29 @@ class vDFJoinUnionSort(vDFMath):
         union_all: bool = True,
     ) -> "vDataFrame":
         """
-        Merges the vDataFrame with another one or an input relation 
-        and returns a new vDataFrame.
+        Merges the vDataFrame with another vDataFrame or an input
+        relation, and returns a new vDataFrame.
 
         Parameters
         ----------
         input_relation: SQLRelation
-            Relation to use to do the merging.
+            Relation to merge with.
         expr1: SQLExpression, optional
             List of pure-SQL expressions from the current vDataFrame 
             to use during merging. For example,  'CASE WHEN "column" 
             > 3 THEN 2 ELSE NULL END' and  'POWER("column", 2)' will 
-            work. If empty, all vDataFrame vDataColumns will be used. 
+            work. If empty, all vDataFrame vDataColumns are used. 
             Aliases are recommended to avoid auto-naming.
         expr2: SQLExpression, optional
             List of pure-SQL  expressions from the input relation to 
             use during the merging.
             For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
             and 'POWER("column", 2)'  will work.  If empty, all input 
-            relation columns will be used. Aliases are recommended to 
+            relation columns are  used. Aliases  are  recommended to 
             avoid auto-naming.
         union_all: bool, optional
-            If  set to True, the  vDataFrame will  be merged with the 
-            input relation using an 'UNION ALL' instead of an 'UNION'.
+            If  set to True, the  vDataFrame is merged with the input
+            relation using an 'UNION ALL' instead of an 'UNION'.
 
         Returns
         -------
@@ -102,21 +102,21 @@ class vDFJoinUnionSort(vDFMath):
         Joins the vDataFrame with another one or an input relation.
 
         \u26A0 Warning : Joins  can  make  the  vDataFrame  structure 
-                         heavier.  It is recommended  to always check 
+                         heavier.  It is recommended that you check 
                          the    current     structure    using    the 
-                         'current_relation'  method  and  to save  it 
-                         using the 'to_db' method with the parameters 
-                         'inplace = True' and 'relation_type = table'
+                         'current_relation'  method  and  save  it 
+                         with the 'to_db' method, using the parameters 
+                         'inplace = True' and 'relation_type = table'.
 
         Parameters
         ----------
         input_relation: SQLRelation
-            Relation to use to do the merging.
+            Relation to join with.
         on: tuple / dict / list, optional
-            If it is a list then:
+            If using a list:
             List of 3-tuples. Each tuple must include (key1, key2, operator)
             —where key1 is the key of the vDataFrame, key2 is the key of the 
-            input relation, and operator can be one of the following:
+            input relation, and operator is one of the following:
                          '=' : exact match
                          '<' : key1  < key2
                          '>' : key1  > key2
@@ -133,7 +133,7 @@ class vDFJoinUnionSort(vDFMath):
                     'jarow' : JARO_WINCKLER(key1, key2) operator2 x
                       'lev' : LEVENSHTEIN(key1, key2) operator2 x
             
-            If it is a dictionary then:
+            If using a dictionary:
             This parameter must include all the different keys. It must be 
             similar to the following:
             {"relationA_key1": "relationB_key1" ..., 
@@ -141,11 +141,11 @@ class vDFJoinUnionSort(vDFMath):
             where relationA is the current vDataFrame and relationB is the 
             input relation or the input vDataFrame.
         on_interpolate: dict, optional
-            Dictionary of all different keys. Used to join two event series 
-            together  using some ordered attribute,  event series joins let 
-            you compare values from two series directly, rather than having 
-            to normalize the series  to the same measurement  interval. The 
-            dict must be similar to the following:
+            Dictionary of all unique keys. This is used to join two event 
+            series together using some ordered attribute. Event series 
+            joins let you compare values from two series directly, rather 
+            than having to normalize the series  to the same measurement  
+            interval. The dict must be similar to the following:
             {"relationA_key1": "relationB_key1" ..., 
              "relationA_keyk": "relationB_keyk"}
             where relationA is the  current vDataFrame and relationB is the 
@@ -272,7 +272,7 @@ class vDFJoinUnionSort(vDFMath):
         Parameters
         ----------
         columns: SQLColumns / dict
-            List  of the  vDataColumns  to use to sort  the data 
+            List  of the  vDataColumns  used to sort  the data, 
             using asc order or dictionary of all sorting methods. 
             For example,  to sort by  "column1" ASC and "column2" 
             DESC,  write  {"column1": "asc", "column2": "desc"}

@@ -175,7 +175,7 @@ class vDFRead(vDFUtils):
     def idisplay(self) -> None:
         """
         This  method  displays  the interactive  table. It is used  when 
-        you don't want to activate interactive table for all vDataFrames.
+        you don't want to activate interactive tables for all vDataFrames.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -237,7 +237,7 @@ class vDFRead(vDFUtils):
         columns: SQLColumns, optional
             A list containing the names of the vDataColumns to 
             include in the result.  If empty, all vDataColumns 
-            will be selected.
+            are selected.
 
         Returns
         -------
@@ -340,8 +340,8 @@ class vDFRead(vDFUtils):
         Parameters
         ----------
         columns: SQLColumns
-            List of the vDataColumns to  select. It can also be 
-            customized expressions.
+            List of the vDataColumns to  select. You can also
+            provide customized expressions.
 
         Returns
         -------

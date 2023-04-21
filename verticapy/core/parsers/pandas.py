@@ -70,7 +70,7 @@ def read_pandas(
         types,  VerticaPy uses  the specified  input 
         types instead.
     parse_nrows: int, optional
-        If    this   parameter  is  greater  than   0, 
+        If    this parameter  is  greater  than  zero, 
         VerticaPy  creates  and  ingests  a  temporary 
         file containing  'parse_nrows'  number of rows 
         to  determine  the  input  data types   before 

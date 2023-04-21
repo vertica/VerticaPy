@@ -422,21 +422,21 @@ class vDFMachineLearning(vDFNorm):
         robust: bool = False,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn labeled with 0 and 1. 1 means that the 
-        record is a global outlier.
+        Adds a new vDataColumn labeled with 0 or 1, where 1 indicates
+        that the recoard is a global outlier.
 
         Parameters
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names. If empty, all  numerical 
-            vDataColumns will be used.
+            vDataColumns are used.
         name: str, optional
             Name of the new vDataColumn.
         threshold: float, optional
-            Threshold equals to the critical score.
+            Threshold equal to the critical score.
         robust: bool
-            If set to True, the score used will be the Robust Z-Score 
-            instead of the Z-Score.
+            If set to True, uses the Robust Z-Score instead of the 
+            Z-Score.
 
         Returns
         -------
@@ -586,15 +586,15 @@ class vDFMachineLearning(vDFNorm):
         self, columns: Optional[SQLColumns] = None, r: int = 2
     ) -> "vDataFrame":
         """
-        Returns a vDataFrame containing different product 
-        combination  of   the  input  vDataColumns.  This 
+        Returns a vDataFrame containing thedifferent product 
+        combinations  of   the  input  vDataColumns.  This 
         function is ideal for bivariate analysis.
 
         Parameters
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         r: int, optional
             Degree of the polynomial.
 
@@ -655,8 +655,8 @@ class vDFMachineLearning(vDFNorm):
                          element.
         rating: str / tuple, optional
             Input vDataColumn including the items rating.
-            If the 'rating' type is 'tuple', it must composed of 
-            3 elements: 
+            If the 'rating' type is 'tuple', it must be composed 
+            of 3 elements: 
                 (r_vdf, r_item_id, r_name) where:
                      - r_vdf is an input vDataFrame.
                      - r_item_id is an  input vDataColumn which 
@@ -664,12 +664,12 @@ class vDFMachineLearning(vDFNorm):
                      - r_name is an input vDataColumn including
                        the items rating. 
         ts: str, optional
-            TS (Time Series)  vDataColumn to use to order the data. 
-            The vDataColumn type must be date like (date, datetime, 
+            TS (Time Series)  vDataColumn used to order the data. 
+            The vDataColumn type must be date (date, datetime, 
             timestamp...) or numerical.
         start_date: str / PythonNumber / date, optional
             Input Start Date. For example, time = '03-11-1993' will 
-            filter the data when 'ts'  is lesser than November 1993 
+            filter the data when 'ts'  is less than November 1993 
             the 3rd.
         end_date: str / PythonNumber / date, optional
             Input End Date.  For example,  time = '03-11-1993' will 
@@ -753,7 +753,7 @@ class vDFMachineLearning(vDFNorm):
         y_score: str
             Prediction.
         metric: str
-            The metric to use to compute the score.
+            The metric used to compute the score.
                 --- For Classification ---
                 accuracy    : Accuracy
                 auc         : Area Under the Curve 
@@ -824,24 +824,23 @@ class vDFMachineLearning(vDFNorm):
         name: str = "session_id",
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame which will 
-        correspond  to  sessions  (user  activity during  a 
+        Adds a new vDataColumn to the vDataFrame that 
+        corresponds to  sessions  (user  activity during  a 
         specific  time). A  session  ends when  ts - lag(ts) 
         is greater than a specific threshold.
 
         Parameters
         ----------
         ts: str
-            vDataColumn used  as timeline. It will be to use 
-            to order the data. It can be a numerical or type 
-            date   like    (date,   datetime,   timestamp...) 
-            vDataColumn.
+            vDataColumn used  as timeline. It is used to
+            order the data. It can be a numerical or type 
+            date (date,   datetime,   timestamp...) vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         session_threshold: str, optional
-            This parameter is the threshold which will determine 
+            This parameter is the threshold that determines 
             the end of the session. For example, if it is set to 
-            '10 minutes'  the session  ends after 10 minutes  of 
+            '10 minutes', the session  ends after 10 minutes  of 
             inactivity.
         name: str, optional
             The session name.
@@ -870,24 +869,24 @@ class vDFMachineLearning(vDFNorm):
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
-        Creates  2 vDataFrame  (train/test)  which can be to  use 
-        to  evaluate a model. The  intersection between the train 
-        and the test is empty only if a unique order is specified.
+        Creates two vDataFrames (train/test), which can be used 
+        to  evaluate a model. The intersection between the train 
+        and test set is empty only if you speicfy a unique order_by.
 
         Parameters
         ----------
         test_size: float, optional
-            Proportion of the test set  comparint to the training 
+            Proportion of the test set  compared to the training 
             set.
         order_by: str / dict / list, optional
-            List of the vDataColumns to use to sort the data using 
-            asc  order or dictionary  of all sorting methods.  For 
+            List of the vDataColumns used to sort the data, using 
+            asc order or a dictionary of all sorting methods.  For 
             example,  to sort by "column1" ASC and "column2"  DESC, 
-            write {"column1": "asc", "column2": "desc"}
+            write: {"column1": "asc", "column2": "desc"}
             Without this parameter,  the seeded random number used 
-            to split the data into  train and test can not garanty 
-            that no collision occurs.  Use this parameter to avoid 
-            collisions.
+            to split the data into train and test cannot guarantee  
+            that no collision will occur. Using this parameter 
+            avoids the possibility of collisions.
         random_state: int, optional
             Integer used to seed the randomness.
 

@@ -47,9 +47,9 @@ class vDFNorm(vDFText):
         ----------
         columns: SQLColumns, optional
             List  of the  vDataColumns names.  If empty, all numerical 
-            vDataColumns will be used.
+            vDataColumns are used.
         method: str, optional
-            Method to use to normalize.
+            Method used to normalize.
                 zscore        : Normalization  using the Z-Score  (avg 
                                 and std). 
                                 (x - avg) / std
@@ -96,7 +96,7 @@ class vDCNorm(vDCText):
         Parameters
         ----------
         method: str, optional
-            Method to use to normalize.
+            Method used to normalize.
                 zscore        : Normalization  using the Z-Score  (avg 
                                 and std). 
                                 (x - avg) / std
@@ -109,9 +109,9 @@ class vDCNorm(vDCText):
         by: SQLColumns, optional
             vDataColumns used in the partition.
         return_trans: bool, optimal
-            If  set to True,  the method  will return the  transformation 
+            If  set to True,  the method  returns the  transformation 
             used instead of the parent vDataFrame. This parameter is used 
-            for testing purpose.
+            for testing purposes.
 
         Returns
         -------
