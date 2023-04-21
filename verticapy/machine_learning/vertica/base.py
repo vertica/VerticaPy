@@ -2112,9 +2112,12 @@ class MulticlassClassifier(Supervised):
         args = [self.y, y_score, final_relation]
         kwargs = {}
         if metric not in ("aic", "bic"):
+            labels = None
+            if isinstance(pos_label, NoneType):
+                labels = self.classes_
             kwargs = {
                 "average": average,
-                "labels": self.classes_,
+                "labels": labels,
                 "pos_label": pos_label,
             }
         if metric in ("aic", "bic"):

@@ -141,7 +141,9 @@ def _compute_final_score_from_cm(
     if metric == _accuracy_score:
         return np.trace(cm) / np.sum(cm)
     elif metric == _balanced_accuracy_score:
-        return _compute_final_score_from_cm(metric=_recall_score, cm=cm, average="macro", multi=multi)
+        return _compute_final_score_from_cm(
+            metric=_recall_score, cm=cm, average="macro", multi=multi
+        )
     elif multi:
         confusion_list = _compute_classes_tn_fn_fp_tp_from_cm(cm)
         if average == "binary":
