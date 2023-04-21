@@ -131,16 +131,16 @@ def _compute_classes_tn_fn_fp_tp(
 def _compute_final_score_from_cm(
     metric: Callable,
     cm: ArrayLike,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     multi: bool = False,
 ) -> Union[float, list[float]]:
     """
     Computes the final score by using the different results
     of the multi-confusion matrix.
     """
-    if metric == _accuracy_score:
+    if metric == _accuracy_score and isinstance(average, NoneType):
         return np.trace(cm) / np.sum(cm)
-    elif metric == _balanced_accuracy_score:
+    elif metric == _balanced_accuracy_score and isinstance(average, NoneType):
         return _compute_final_score_from_cm(
             metric=_recall_score, cm=cm, average="macro", multi=multi
         )
@@ -162,7 +162,7 @@ def _compute_final_score_from_cm(
         elif average == "micro":
             args = [sum(args[i] for args in confusion_list) for i in range(4)]
             return metric(*args)
-        elif isinstance(average, NoneType):
+        elif isinstance(average, NoneType) or average == "scores":
             return [metric(*args) for args in confusion_list]
         else:
             raise ValueError(
@@ -177,7 +177,7 @@ def _compute_final_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -306,7 +306,7 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> float:
@@ -331,6 +331,13 @@ def accuracy_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            scores   : scores  for   all  the  classes.
+            weighted : weighted average of the score of 
+                       each class.
             None     : accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
@@ -356,7 +363,7 @@ def balanced_accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> float:
@@ -381,6 +388,13 @@ def balanced_accuracy_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
+            micro    : positive  and   negative  values 
+                       globally.
+            macro    : average  of  the  score of  each 
+                       class.
+            scores   : scores  for   all  the  classes.
+            weighted : weighted average of the score of 
+                       each class.
             None     : balanced accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
@@ -406,7 +420,7 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -435,9 +449,11 @@ def critical_success_index(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -466,7 +482,7 @@ def diagnostic_odds_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -495,9 +511,11 @@ def diagnostic_odds_ratio(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -523,7 +541,7 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -552,9 +570,11 @@ def f1_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -579,7 +599,7 @@ def false_negative_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -608,9 +628,11 @@ def false_negative_rate(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -635,7 +657,7 @@ def false_positive_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -664,9 +686,11 @@ def false_positive_rate(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -691,7 +715,7 @@ def false_discovery_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -720,9 +744,11 @@ def false_discovery_rate(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -747,7 +773,7 @@ def false_omission_rate(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -776,9 +802,11 @@ def false_omission_rate(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -803,7 +831,7 @@ def fowlkes_mallows_index(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -832,9 +860,11 @@ def fowlkes_mallows_index(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -859,7 +889,7 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -888,9 +918,11 @@ def informedness(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -917,7 +949,7 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -946,9 +978,11 @@ def markedness(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -977,7 +1011,7 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1006,9 +1040,11 @@ def matthews_corrcoef(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1033,7 +1069,7 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1062,9 +1098,11 @@ def negative_predictive_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1089,7 +1127,7 @@ def negative_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1118,9 +1156,11 @@ def negative_likelihood_ratio(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1146,7 +1186,7 @@ def positive_likelihood_ratio(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1175,9 +1215,11 @@ def positive_likelihood_ratio(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1202,7 +1244,7 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1231,9 +1273,11 @@ def precision_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1259,7 +1303,7 @@ def prevalence_threshold(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1288,9 +1332,11 @@ def prevalence_threshold(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1315,7 +1361,7 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1344,9 +1390,11 @@ def recall_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1371,7 +1419,7 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
@@ -1400,9 +1448,11 @@ def specificity_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1509,7 +1559,7 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
 ) -> Union[float, list[float]]:
@@ -1565,7 +1615,7 @@ def best_cutoff(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1595,9 +1645,11 @@ def best_cutoff(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1650,7 +1702,7 @@ def roc_auc_score(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1680,9 +1732,11 @@ def roc_auc_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1732,7 +1786,7 @@ def prc_auc_score(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: Optional[PythonScalar] = None,
     nbins: int = 10000,
@@ -1763,9 +1817,11 @@ def prc_auc_score(
                        globally.
             macro    : average  of  the  score of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -1818,7 +1874,7 @@ def log_loss(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     pos_label: PythonScalar = 1,
 ) -> Union[float, list[float]]:
@@ -1847,8 +1903,11 @@ def log_loss(
                        globally.
             macro    : average   of   the   score  of  each 
                        class.
+            scores   : scores  for   all  the  classes.
             weighted : weighted  average  of  the score  of 
                        each class.
+        If  empty,  the  behaviour  is  similar to  the 
+        'scores' option.
     labels: ArrayLike, optional
         List   of    the    response   column    categories.
     pos_label: PythonScalar, optional

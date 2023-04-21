@@ -57,7 +57,7 @@ def randomized_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal["binary", "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     nbins: int = 1000,
@@ -146,7 +146,6 @@ def randomized_search_cv(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -207,7 +206,7 @@ def grid_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal["binary", "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
@@ -298,7 +297,6 @@ def grid_search_cv(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to  be considered as positive 
         (classification only).

@@ -55,7 +55,7 @@ def randomized_features_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+    average: Literal["binary", "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
@@ -146,7 +146,6 @@ def randomized_features_search_cv(
                        class.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to be  considered as positive 
         (classification only).

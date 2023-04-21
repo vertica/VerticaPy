@@ -2013,7 +2013,7 @@ class MulticlassClassifier(Supervised):
     def score(
         self,
         metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
+        average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
@@ -2072,9 +2072,13 @@ class MulticlassClassifier(Supervised):
                            globally.
                 macro    : average  of  the  score of  each 
                            class.
+                scores   : scores  for   all  the  classes.
                 weighted : weighted average of the score of 
                            each class.
-                None     : scores  for   all  the  classes.
+            If empty,  the result will depend on the  input
+            metric.  Whenever  it  is  possible, the  exact 
+            score is computed.  Otherwise, the behaviour is
+            similar to the 'scores' option.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 
