@@ -1409,8 +1409,9 @@ class BinaryClassifier(Supervised):
             "logloss",
             "aic",
             "bic",
-            "prc_auc",
             "auc",
+            "roc_auc",
+            "prc_auc",
             "best_cutoff",
             "best_threshold",
         ):
@@ -1425,7 +1426,7 @@ class BinaryClassifier(Supervised):
             kwargs["pos_label"] = 1
         if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif metric in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+        elif metric in ("auc", "roc_auc", "prc_auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
@@ -2099,6 +2100,7 @@ class MulticlassClassifier(Supervised):
         pos_label = self._check_pos_label(pos_label=pos_label)
         if metric in (
             "auc",
+            "roc_auc",
             "prc_auc",
             "best_cutoff",
             "best_threshold",
@@ -2122,7 +2124,7 @@ class MulticlassClassifier(Supervised):
             }
         if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+        elif metric in ("auc", "roc_auc", "prc_auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 

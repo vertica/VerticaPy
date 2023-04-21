@@ -1507,7 +1507,7 @@ def _compute_function_metrics(
 def _compute_multiclass_metric(
     metric: Callable,
     y_true: str,
-    y_score: str,
+    y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
     average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
@@ -1539,10 +1539,31 @@ def _compute_multiclass_metric(
     return sum(scores) / sum(weights)
 
 
+def _get_yscore(
+    y_score: Union[str, ArrayLike],
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+) -> str:
+    """
+    Returns the 'y_score' to use to compute the final metric.
+    """
+    if isinstance(y_score, str):
+        return y_score
+    elif (len(y_score) == 2) and ("{}" in y_score[0]):
+        return y_score[0].format(pos_label)
+    elif not isinstance(labels, NoneType) and pos_label in labels:
+        idx = list(labels).index(pos_label)
+        return y_score[idx]
+    elif len(y_score) == 2:
+        return y_score[1]
+    else:
+        raise ValueError("Wrong parameter 'y_score'.")
+
+
 @save_verticapy_logs
 def best_cutoff(
     y_true: str,
-    y_score: str,
+    y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
     average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
@@ -1556,7 +1577,7 @@ def best_cutoff(
     ----------
     y_true: str
         Response column.
-    y_score: str
+    y_score: str | ArrayLike
         Prediction.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can 
@@ -1600,16 +1621,9 @@ def best_cutoff(
         score.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
-        if isinstance(y_score, str):
-            y_s = y_score
-        elif (len(y_score) == 2) and ("{}" in y_score[0]):
-            y_s = y_score[0].format(pos_label)
-        else:
-            idx = list(labels).index(pos_label)
-            y_s = y_score[idx]
         threshold, false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
-            y_score=y_s,
+            y_score=_get_yscore(y_score, labels, pos_label),
             input_relation=input_relation,
             pos_label=pos_label,
             nbins=nbins,
@@ -1632,9 +1646,9 @@ def best_cutoff(
 
 
 @save_verticapy_logs
-def roc_auc(
+def roc_auc_score(
     y_true: str,
-    y_score: str,
+    y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
     average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
@@ -1648,7 +1662,7 @@ def roc_auc(
     ----------
     y_true: str
         Response column.
-    y_score: str
+    y_score: str |  ArrayLike
         Prediction.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can 
@@ -1692,16 +1706,9 @@ def roc_auc(
         score.
 	"""
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
-        if isinstance(y_score, str):
-            y_s = y_score
-        elif (len(y_score) == 2) and ("{}" in y_score[0]):
-            y_s = y_score[0].format(pos_label)
-        else:
-            idx = list(labels).index(pos_label)
-            y_s = y_score[idx]
         false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
-            y_score=y_s,
+            y_score=_get_yscore(y_score, labels, pos_label),
             input_relation=input_relation,
             pos_label=pos_label,
             nbins=nbins,
@@ -1710,7 +1717,7 @@ def roc_auc(
         return _compute_area(true_positive, false_positive)
     else:
         return _compute_multiclass_metric(
-            metric=roc_auc,
+            metric=roc_auc_score,
             y_true=y_true,
             y_score=y_score,
             input_relation=input_relation,
@@ -1721,9 +1728,9 @@ def roc_auc(
 
 
 @save_verticapy_logs
-def prc_auc(
+def prc_auc_score(
     y_true: str,
-    y_score: str,
+    y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
     average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
@@ -1738,7 +1745,7 @@ def prc_auc(
     ----------
     y_true: str
         Response column.
-    y_score: str
+    y_score: str | ArrayLike
         Prediction.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can 
@@ -1782,16 +1789,9 @@ def prc_auc(
         score.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
-        if isinstance(y_score, str):
-            y_s = y_score
-        elif (len(y_score) == 2) and ("{}" in y_score[0]):
-            y_s = y_score[0].format(pos_label)
-        else:
-            idx = list(labels).index(pos_label)
-            y_s = y_score[idx]
         recall, precision = _compute_function_metrics(
             y_true=y_true,
-            y_score=y_s,
+            y_score=_get_yscore(y_score, labels, pos_label),
             input_relation=input_relation,
             pos_label=pos_label,
             nbins=nbins,
@@ -1800,7 +1800,7 @@ def prc_auc(
         return _compute_area(precision, recall)
     else:
         return _compute_multiclass_metric(
-            metric=prc_auc,
+            metric=prc_auc_score,
             y_true=y_true,
             y_score=y_score,
             input_relation=input_relation,
@@ -1816,7 +1816,7 @@ def prc_auc(
 @save_verticapy_logs
 def log_loss(
     y_true: str,
-    y_score: str,
+    y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
     average: Literal[None, "binary", "micro", "macro", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
@@ -1829,7 +1829,7 @@ def log_loss(
     ----------
     y_true: str
         Response column.
-    y_score: str
+    y_score: str | ArrayLike
         Prediction Probability.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can be a 
@@ -1862,13 +1862,7 @@ def log_loss(
         score.
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
-        if isinstance(y_score, str):
-            y_s = y_score
-        elif (len(y_score) == 2) and ("{}" in y_score[0]):
-            y_s = y_score[0].format(pos_label)
-        else:
-            idx = list(labels).index(pos_label)
-            y_s = y_score[idx]
+        y_s = _get_yscore(y_score, labels, pos_label)
         return _executeSQL(
             query=f"""
                 SELECT 
@@ -1943,8 +1937,9 @@ FUNCTIONS_CONFUSION_DICTIONNARY = {
 }
 
 FUNCTIONS_OTHER_METRICS_DICTIONNARY = {
-    "auc": roc_auc,
-    "prc_auc": prc_auc,
+    "auc": roc_auc_score,
+    "roc_auc": roc_auc_score,
+    "prc_auc": prc_auc_score,
     "best_cutoff": best_cutoff,
     "best_threshold": best_cutoff,
     "log_loss": log_loss,
