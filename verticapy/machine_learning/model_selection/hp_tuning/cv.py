@@ -57,7 +57,7 @@ def randomized_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal["binary", "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: float = -1,
     nbins: int = 1000,
@@ -136,13 +136,16 @@ def randomized_search_cv(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
                        class.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to be considered as positive 
         (classification only).
@@ -203,7 +206,7 @@ def grid_search_cv(
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    average: Literal[None, "micro", "macro", "weighted"] = "weighted",
+    average: Literal["binary", "micro", "macro", "weighted"] = "weighted",
     pos_label: Optional[PythonScalar] = None,
     cutoff: PythonNumber = -1,
     training_score: bool = True,
@@ -284,13 +287,16 @@ def grid_search_cv(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
+            binary   : considers one of the classes  as
+                       positive  and  use  the   binary
+                       confusion  matrix to compute the
+                       score.
             micro    : positive  and   negative  values 
                        globally.
             macro    : average  of  the  score of  each 
                        class.
             weighted : weighted average of the score of 
                        each class.
-            None     : scores  for   all  the  classes.
     pos_label: PythonScalar, optional
         The main class to  be considered as positive 
         (classification only).
