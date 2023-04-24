@@ -21,6 +21,7 @@ import numpy as np
 import random
 from verticapy.core.vdataframe.base import vDataFrame
 
+
 @pytest.mark.parametrize('compute_method, expected',
                          [
                              ('micro', ''),
@@ -77,7 +78,8 @@ class TestClassificationMetrics:
         # y_p = [random.uniform(0, 1) for x in range(len(y_t))]
         # input_relation = np.column_stack((y_t, y_p))
         # vdf_p = vDataFrame(input_relation, usecols=["y_t", "y_p"])
-        vpy_res = vpy_metrics.balanced_accuracy("y_t", "y_p", vdf_p, average=compute_method, labels=labels, pos_label='b')
+        vpy_res = vpy_metrics.balanced_accuracy("y_t", "y_p", vdf_p, average=compute_method, labels=labels,
+                                                pos_label='b')
 
         skl_res = skl_metrics.log_loss(y_t, y_p, labels=labels)
 
@@ -345,9 +347,9 @@ class TestClassificationMetrics:
     #     precision, recall, thresholds = skl_metrics.precision_recall_curve(y_t, y_p, pos_label='b')
     #     print(skl_metrics.auc(sorted(precision), sorted(recall)))
 
-        # print(f'vertica: {vpy_res}, sklearn: {skl_res}')
+    # print(f'vertica: {vpy_res}, sklearn: {skl_res}')
 
-        # assert vpy_res == pytest.approx(skl_res)
+    # assert vpy_res == pytest.approx(skl_res)
 
     # def test_log_loss(self, pred_cl_dataset_binary, pred_cl_dataset_multi, compute_method, expected):
     #     # binary class
