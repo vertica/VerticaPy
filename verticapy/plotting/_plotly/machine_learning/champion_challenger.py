@@ -70,11 +70,7 @@ class ChampionChallengerPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a Machine Learning Bubble Plot using the Plotly API.
         """
@@ -84,8 +80,7 @@ class ChampionChallengerPlot(PlotlyBase):
         df.loc[df["s"] == 0, "s"] = 1e-8
         fig_scatter = px.scatter(df, x="x", y="y", size="s", color="c", custom_data="c")
         fig_scatter.update_traces(
-            marker=dict(sizemin=5),
-            **self.hover_style,
+            marker=dict(sizemin=5), **self.hover_style,
         )
         for i in range(len(fig_scatter.data)):
             fig.add_trace(fig_scatter.data[i])

@@ -23,8 +23,52 @@ from verticapy.core.vdataframe.base import vDataFrame
 @pytest.fixture(scope="module")
 def pred_cl_dataset_multi():
     labels = np.array(["a", "b", "c"])
-    y_t = np.array(["a", "a", "b", "c", "c", "a", "b", "c", "a", "b", "c", "a", "b", "a", "b", "c", "a", "b", "c"])
-    y_s = np.array(["a", "b", "b", "b", "c", "a", "b", "a", "a", "c", "a", "a", "b", "a", "b", "c", "b", "b", "a"])
+    y_t = np.array(
+        [
+            "a",
+            "a",
+            "b",
+            "c",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+        ]
+    )
+    y_s = np.array(
+        [
+            "a",
+            "b",
+            "b",
+            "b",
+            "c",
+            "a",
+            "b",
+            "a",
+            "a",
+            "c",
+            "a",
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "b",
+            "b",
+            "a",
+        ]
+    )
     input_relation = np.column_stack((y_t, y_s))
     vdf = vDataFrame(input_relation, usecols=["y_t", "y_s"])
     yield vdf, y_t, y_s, labels

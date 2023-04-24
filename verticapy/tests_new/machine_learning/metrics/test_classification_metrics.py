@@ -21,7 +21,6 @@ import numpy as np
 import random
 from verticapy.core.vdataframe.base import vDataFrame
 
-
 @pytest.mark.parametrize('compute_method, expected',
                          [
                              ('micro', ''),

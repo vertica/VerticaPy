@@ -57,11 +57,7 @@ class RegressionTreePlot(PlotlyBase):
 
     # Draw.
 
-    def draw(
-        self,
-        fig: Optional[Figure] = None,
-        **style_kwargs,
-    ) -> Figure:
+    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
         Draws a regression tree plot using the Plotly API.
         """

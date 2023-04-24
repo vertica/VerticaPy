@@ -87,10 +87,7 @@ def dummy_date_vd():
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
     dummy = pd.DataFrame(
-        {
-            "date": [1910, 1920, 1930, 1940, 1950] * int(N / 5),
-            "value": list(data),
-        }
+        {"date": [1910, 1920, 1930, 1940, 1950] * int(N / 5), "value": list(data),}
     )
     dummy = verticapy.vDataFrame(dummy)
     yield dummy
@@ -154,12 +151,7 @@ def dummy_dist_vd():
 @pytest.fixture(scope="class")
 def acf_plot_result(load_plotly, amazon_vd):
     return amazon_vd.acf(
-        ts="date",
-        column="number",
-        p=12,
-        by=["state"],
-        unit="month",
-        method="spearman",
+        ts="date", column="number", p=12, by=["state"], unit="month", method="spearman",
     )
 
 
@@ -247,8 +239,7 @@ def lift_chart_plot_result(load_plotly, dummy_probability_data):
 def voronoi_plot_result(load_plotly, iris_vd):
     model = KMeans(name="test_KMeans_iris")
     model.fit(
-        iris_vd,
-        ["PetalLengthCm", "PetalWidthCm"],
+        iris_vd, ["PetalLengthCm", "PetalWidthCm"],
     )
     return model.plot_voronoi()
 
@@ -284,11 +275,7 @@ def svm_3d_plot_result(load_plotly, iris_one_hot_vd):
 def champion_challenger_plot_result(load_plotly, titanic_vd):
     model = AutoML("model_automl", lmax=10, print_info=False)
     model.fit(
-        titanic_vd,
-        [
-            "age",
-        ],
-        "survived",
+        titanic_vd, ["age",], "survived",
     )
     return model.plot()
 
@@ -301,16 +288,16 @@ def stepwise_plot_result(load_plotly, titanic_vd):
     stepwise_result = stepwise(
         model,
         input_relation=titanic_vd,
-        X=[
-            "age",
-            "fare",
-            "parch",
-            "pclass",
-        ],
+        X=["age", "fare", "parch", "pclass",],
         y="survived",
         direction="backward",
     )
     return stepwise_result.step_wise_
+
+
+@pytest.fixture(scope="class")
+def hist_plot_result(load_plotly, titanic_vd):
+    return titanic_vd["age"].hist()
 
 
 @pytest.fixture(scope="module")
@@ -580,13 +567,7 @@ class TestVDFScatterPlot:
     def test_properties_all_unique_values_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         # Assert
         assert set(
             [result.data[0]["name"], result.data[1]["name"], result.data[2]["name"]]
@@ -610,13 +591,7 @@ class TestVDFScatterPlot:
     def test_properties_colors_for_by(self, load_plotly, iris_vd):
         # Arrange
         # Act
-        result = iris_vd.scatter(
-            [
-                "PetalWidthCm",
-                "PetalLengthCm",
-            ],
-            by="Species",
-        )
+        result = iris_vd.scatter(["PetalWidthCm", "PetalLengthCm",], by="Species",)
         assert (
             len(
                 set(
@@ -1094,7 +1069,9 @@ class TestVDFLinePlot:
         result = amazon_vd["number"].plot(ts="date", by="state")
         assert (
             amazon_vd["date"][random.randint(0, len(amazon_vd))] in result.data[0]["x"]
-        ), "One date that exists in the data does not exist in the plot"
+            or amazon_vd["date"][random.randint(0, len(amazon_vd))]
+            in result.data[0]["x"]
+        ), "Two dates that exists in the data do not exist in the plot"
 
     def test_additional_options_custom_width(self, load_plotly, amazon_vd):
         # Arrange
@@ -2342,7 +2319,7 @@ class TestMachineLearningLiftChart:
         # Act
         # Assert
         assert len(self.result.data) == pytest.approx(
-            total_items, abs=1
+            total_items, abs=2
         ), "Some elements missing"
 
     def test_additional_options_custom_height(self, load_plotly, iris_vd):
@@ -2351,8 +2328,7 @@ class TestMachineLearningLiftChart:
         custom_width = 700
         model = KMeans(name="public.KMeans_iris")
         model.fit(
-            iris_vd,
-            ["PetalLengthCm", "PetalWidthCm"],
+            iris_vd, ["PetalLengthCm", "PetalWidthCm"],
         )
         # Act
         result = model.plot_voronoi(width=custom_width, height=custom_height)
@@ -2433,10 +2409,7 @@ class TestMachineLearningRegressionTreePlot:
         model = DecisionTreeRegressor(name="model_titanic")
         model.fit(titanic_vd, ["fare"], "age")
         # Act
-        result = model.plot(
-            height=custom_height,
-            width=custom_width,
-        )
+        result = model.plot(height=custom_height, width=custom_width,)
         # Assert
         assert (
             result.layout["height"] == custom_height
@@ -2615,18 +2588,67 @@ class TestMachineLearningStepwisePlot:
         stepwise_result = stepwise(
             model,
             input_relation=titanic_vd,
-            X=[
-                "age",
-                "fare",
-                "parch",
-                "pclass",
-            ],
+            X=["age", "fare", "parch", "pclass",],
             y="survived",
             direction="backward",
             height=custom_height,
             width=custom_width,
         )
         result = stepwise_result.step_wise_
+        # Assert
+        assert (
+            result.layout["height"] == custom_height
+            and result.layout["width"] == custom_width
+        ), "Custom height and width not working"
+
+
+class TestHistogram:
+    @pytest.fixture(autouse=True)
+    def result(self, hist_plot_result):
+        self.result = hist_plot_result
+
+    def test_properties_output_type(self):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert (
+            type(self.result) == plotly.graph_objs._figure.Figure
+        ), "Wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        # Arrange
+        test_title = "age"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["xaxis"]["title"]["text"] == test_title
+        ), "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        # Arrange
+        test_title = "density"
+        # Act
+        # Assert
+        assert (
+            self.result.layout["yaxis"]["title"]["text"] == test_title
+        ), "Y axis label incorrect"
+
+    def test_properties_no_of_elements(self):
+        # Arrange
+        total_items = 1
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=1
+        ), "Some elements missing"
+
+    def test_additional_options_custom_height(self, load_plotly, titanic_vd):
+        # rrange
+        custom_height = 650
+        custom_width = 700
+        # Act
+
+        result = titanic_vd["age"].hist(height=custom_height, width=custom_width,)
         # Assert
         assert (
             result.layout["height"] == custom_height

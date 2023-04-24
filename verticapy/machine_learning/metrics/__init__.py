@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.machine_learning.metrics.classification import (
     accuracy_score,
-    balanced_accuracy,
+    balanced_accuracy_score,
     best_cutoff,
     classification_report,
     confusion_matrix,
@@ -35,11 +35,11 @@ from verticapy.machine_learning.metrics.classification import (
     negative_predictive_score,
     negative_likelihood_ratio,
     positive_likelihood_ratio,
-    prc_auc,
+    prc_auc_score,
     precision_score,
     prevalence_threshold,
     recall_score,
-    roc_auc,
+    roc_auc_score,
     specificity_score,
 )
 from verticapy.machine_learning.metrics.regression import (
@@ -68,10 +68,11 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "bic": bic_score,
     "accuracy": accuracy_score,
     "acc": accuracy_score,
-    "balanced_accuracy": balanced_accuracy,
-    "ba": balanced_accuracy,
-    "auc": roc_auc,
-    "prc_auc": prc_auc,
+    "balanced_accuracy": balanced_accuracy_score,
+    "ba": balanced_accuracy_score,
+    "auc": roc_auc_score,
+    "roc_auc": roc_auc_score,
+    "prc_auc": prc_auc_score,
     "best_cutoff": best_cutoff,
     "best_threshold": best_cutoff,
     "false_discovery_rate": false_discovery_rate,
