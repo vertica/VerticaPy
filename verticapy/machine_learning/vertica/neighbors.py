@@ -523,8 +523,8 @@ class KNeighborsClassifier(MulticlassClassifier):
                     ROW_NUMBER() OVER(PARTITION BY {", ".join(self.X)}, row_id 
                                       ORDER BY proba_predict DESC) AS pos 
                  FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
-            return mt.multilabel_confusion_matrix(
-                self.y, "predict_neighbors", input_relation, self.classes_
+            return mt.confusion_matrix(
+                self.y, "predict_neighbors", input_relation, classes=self.classes_
             )
         else:
             cutoff = self._check_cutoff(cutoff=cutoff)

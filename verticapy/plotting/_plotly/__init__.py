@@ -28,6 +28,7 @@ from verticapy.plotting._plotly.line import LinePlot, MultiLinePlot
 from verticapy.plotting._plotly.outliers import OutliersPlot
 from verticapy.plotting._plotly.acf import ACFPlot
 from verticapy.plotting._plotly.base import PlotlyBase
+from verticapy.plotting._plotly.hist import Histogram
 
 
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
@@ -45,6 +46,15 @@ from verticapy.plotting._plotly.machine_learning.model_evaluation import (
     LiftChart,
 )
 from verticapy.plotting._plotly.machine_learning.kmeans import VoronoiPlot
+from verticapy.plotting._plotly.machine_learning.svm import SVMClassifierPlot
+from verticapy.plotting._plotly.machine_learning.regression_tree import (
+    RegressionTreePlot,
+)
+from verticapy.plotting._plotly.machine_learning.champion_challenger import (
+    ChampionChallengerPlot,
+)
+from verticapy.plotting._plotly.machine_learning.stepwise import StepwisePlot
+
 
 import plotly.io as pio
 import plotly.graph_objects as go

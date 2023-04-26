@@ -49,7 +49,6 @@ MINIMUM_VERTICA_VERSION = {
     "KPrototypes": [12, 0, 3],
     "MCA": [9, 1, 0],
     "MinMaxScaler": [8, 1, 0],
-    "multilabel_confusion_matrix": [8, 0, 0],
     "MultinomialNB": [8, 0, 0],
     "NaiveBayes": [8, 0, 0],
     "OneHotEncoder": [9, 0, 0],

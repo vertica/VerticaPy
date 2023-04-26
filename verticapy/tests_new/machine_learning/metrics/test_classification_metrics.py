@@ -20,11 +20,11 @@ import sklearn.metrics as skl_metrics
 
 import verticapy.machine_learning.metrics.classification as vpy_metrics
 
-class TestClassificationMetrics:
 
-	def test_f1_score(self, pred_cl_dataset):
-		vdf, y_t, y_s, labels = pred_cl_dataset
-		kwargs = {"average": "weighted", "labels": labels}
-		vpy_res = vpy_metrics.f1_score("y_t", "y_s", vdf, **kwargs)
-		skl_res = skl_metrics.f1_score(y_t, y_s, **kwargs)
-		assert vpy_res == pytest.approx(skl_res)
+class TestClassificationMetrics:
+    def test_f1_score(self, pred_cl_dataset):
+        vdf, y_t, y_s, labels = pred_cl_dataset
+        kwargs = {"average": "weighted", "labels": labels}
+        vpy_res = vpy_metrics.f1_score("y_t", "y_s", vdf, **kwargs)
+        skl_res = skl_metrics.f1_score(y_t, y_s, **kwargs)
+        assert vpy_res == pytest.approx(skl_res)

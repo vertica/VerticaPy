@@ -1411,8 +1411,9 @@ class BinaryClassifier(Supervised):
             "logloss",
             "aic",
             "bic",
-            "prc_auc",
             "auc",
+            "roc_auc",
+            "prc_auc",
             "best_cutoff",
             "best_threshold",
         ):
@@ -1427,7 +1428,7 @@ class BinaryClassifier(Supervised):
             kwargs["pos_label"] = 1
         if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif metric in ("prc_auc", "auc", "best_cutoff", "best_threshold"):
+        elif metric in ("auc", "roc_auc", "prc_auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 
@@ -1996,8 +1997,8 @@ class MulticlassClassifier(Supervised):
         if hasattr(self, "_confusion_matrix"):
             return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
         elif isinstance(pos_label, NoneType):
-            return mt.multilabel_confusion_matrix(
-                self.y, self.deploySQL(), self.test_relation, self.classes_
+            return mt.confusion_matrix(
+                self.y, self.deploySQL(), self.test_relation, labels=self.classes_
             )
         else:
             pos_label = self._check_pos_label(pos_label=pos_label)
@@ -2013,7 +2014,7 @@ class MulticlassClassifier(Supervised):
     def score(
         self,
         metric: Literal[tuple(mt.FUNCTIONS_CLASSIFICATION_DICTIONNARY)] = "accuracy",
-        average: Literal["micro", "macro", "weighted", "scores"] = "weighted",
+        average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
         pos_label: Optional[PythonScalar] = None,
         cutoff: PythonNumber = 0.5,
         nbins: int = 10000,
@@ -2064,13 +2065,21 @@ class MulticlassClassifier(Supervised):
         average: str, optional
             The method used to  compute the final score for
             multiclass-classification.
+                binary   : considers one of the classes  as
+                           positive  and  use  the   binary
+                           confusion  matrix to compute the
+                           score.
                 micro    : positive  and   negative  values 
                            globally.
                 macro    : average  of  the  score of  each 
                            class.
+                scores   : scores  for   all  the  classes.
                 weighted : weighted average of the score of 
                            each class.
-                scores   : scores  for   all  the  classes.
+            If empty,  the result will depend on the  input
+            metric.  Whenever  it  is  possible, the  exact 
+            score is computed.  Otherwise, the behaviour is
+            similar to the 'scores' option.
         pos_label: PythonScalar, optional
             Label  to  consider   as  positive.  All the 
             other classes will be  merged and considered 
@@ -2096,6 +2105,7 @@ class MulticlassClassifier(Supervised):
         pos_label = self._check_pos_label(pos_label=pos_label)
         if metric in (
             "auc",
+            "roc_auc",
             "prc_auc",
             "best_cutoff",
             "best_threshold",
@@ -2109,14 +2119,17 @@ class MulticlassClassifier(Supervised):
         args = [self.y, y_score, final_relation]
         kwargs = {}
         if metric not in ("aic", "bic"):
+            labels = None
+            if isinstance(pos_label, NoneType):
+                labels = self.classes_
             kwargs = {
                 "average": average,
-                "labels": self.classes_,
+                "labels": labels,
                 "pos_label": pos_label,
             }
         if metric in ("aic", "bic"):
             args += [len(self.X)]
-        elif metric in ("auc", "prc_auc", "best_cutoff", "best_threshold"):
+        elif metric in ("auc", "roc_auc", "prc_auc", "best_cutoff", "best_threshold"):
             kwargs["nbins"] = nbins
         return fun(*args, **kwargs)
 

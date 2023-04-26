@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class SVMClassifierPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -143,9 +142,12 @@ class SVMClassifierPlot(MatplotlibBase):
                 )
                 X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
                 Z_svm = (
-                    self.data["coef"][0]
-                    + self.data["coef"][1] * X_svm
-                    + self.data["coef"][2] * Y_svm
+                    -(
+                        self.data["coef"][0]
+                        + self.data["coef"][1] * X_svm
+                        + self.data["coef"][2] * Y_svm
+                    )
+                    / self.data["coef"][3]
                 )
                 ax, fig, style_kwargs = self._get_ax_fig(
                     ax, size=(8, 6), dim=3, style_kwargs=style_kwargs

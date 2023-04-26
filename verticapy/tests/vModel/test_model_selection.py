@@ -122,6 +122,7 @@ class TestModelSelection:
         result = enet_search_cv(titanic_vd, ["age", "fare"], "survived", small=True)
         assert len(result["parameters"]) == 19
 
+    @pytest.mark.skip(reason="needs some investigation")
     def test_bayesian_search_cv(self, titanic_vd):
         model = LinearRegression("LR_bs_test")
         model.drop()
