@@ -77,7 +77,6 @@ def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
     return round(cm[0][0]), round(cm[1][0]), round(cm[0][1]), round(cm[1][1])
 
 
-@param_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 def _compute_tn_fn_fp_tp(
     y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
 ) -> tuple:
@@ -87,6 +86,22 @@ def _compute_tn_fn_fp_tp(
     values as a tuple of the following: 
     true negatives, false negatives, false positives, and 
     true positives.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation  to use for scoring. This  relation can be a 
+        view,  table, or a  customized relation (if an  alias 
+        is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x
+    pos_label: PythonScalar, optional
+        To  compute the confusion matrix, one of the  response 
+        column classes must be the positive class. The 
+        parameter 'pos_label' represents this class.
 
     Returns
     -------
