@@ -38,16 +38,16 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     """
     Applies any Vertica function on the input 
     expressions.
-    Please check-out Vertica Documentation to 
-    see the available functions:
+    Please check-out the Vertica Documentation
+    to see the available functions:
     https://www.vertica.com/docs/
 
     Parameters
     ----------
     func: SQLExpression
-        Vertica Function. In case of geospatial, 
-        you can write  the function name without 
-        the prefix ST_ or STV_.
+        Vertica Function. For geospatial 
+        functions, you can write  the function
+        name without the ST_ or STV_ prefix.
     args: SQLExpression, optional
         Expressions.
     kwargs: SQLExpression, optional
@@ -296,9 +296,9 @@ def comb(n: int, k: int) -> StringSQL:
     Parameters
     ----------
     n: int
-        items to choose from.
+        Items to choose from.
     k: int
-        items to choose.
+        Items to choose.
 
     Returns
     -------

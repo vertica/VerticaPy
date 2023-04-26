@@ -67,14 +67,14 @@ def cross_validate(
     estimator: object
     	Vertica estimator with a fit method.
     input_relation: SQLRelation
-    	Relation  to use to train the model.
+    	Relation  used to train the model.
     X: SQLColumns
     	List   of  the  predictor   columns.
     y: str
     	Response Column.
     metrics: str / list, optional
         Metrics used to do the model evaluation. It can also 
-        be a list of metrics. If empty most of the estimator
+        be a list of metrics. If empty, most of the estimator
         metrics are computed.
         For Classification:
             accuracy    : Accuracy
@@ -151,9 +151,9 @@ def cross_validate(
     	The model cutoff (classification only).
     show_time: bool, optional
         If set to True,  the  time  and the average 
-        time   will   be  added  to   the   report.
+        time   are    added  to   the   report.
     training_score: bool, optional
-        If set to True,  the training score will be 
+        If set to True,  the training score is 
         computed   with   the   validation   score.
 
     Returns
@@ -298,7 +298,7 @@ def learning_curve(
     estimator: object
         Vertica estimator with a fit method.
     input_relation: SQLRelation
-        Relation  to use to train the model.
+        Relation  used  to train the model.
     X: SQLColumns
         List   of  the  predictor   columns.
     y: str
@@ -306,7 +306,7 @@ def learning_curve(
     sizes: list, optional
         Different sizes of the dataset used 
         to train the model. Multiple models
-        will be trained using the different 
+        are trained using the different 
         sizes.
     method: str, optional
         Method used to plot the curve.
@@ -317,7 +317,7 @@ def learning_curve(
                           size.
     metric: str, optional
         Metric used to do the model evaluation.
-            auto: logloss for classification & rmse 
+            auto: logloss for classification & RMSE 
                   for regression.
         For Classification:
             accuracy    : Accuracy
@@ -385,8 +385,8 @@ def learning_curve(
         The  model  cutoff  (classification  only).
     std_coeff: PythonNumber, optional
         Value of the standard deviation coefficient 
-        used to compute the area plot 
-        around each score.
+        used to compute the area plot around each
+        score.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs

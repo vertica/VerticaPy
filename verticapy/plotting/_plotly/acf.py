@@ -77,7 +77,7 @@ class ACFPlot(PlotlyBase):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws an ACF Time Series plot using the Plotly API.
+        Draws an ACF time series plot using the Plotly API.
         """
         X = self.data["x"]
         Y = self.data["y"]

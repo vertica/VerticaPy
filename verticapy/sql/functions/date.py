@@ -40,8 +40,7 @@ def date(expr: SQLExpression) -> StringSQL:
 
 def day(expr: SQLExpression) -> StringSQL:
     """
-    Returns as an integer the day of the month 
-    from the input expression. 
+    Returns the day of the month as an integer. 
 
     Parameters
     ----------
@@ -97,7 +96,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
 
 def extract(expr: SQLExpression, field: str) -> StringSQL:
     """
-    Extracts a sub-field such as year or hour from 
+    Extracts a sub-field, such as year or hour, from 
     a date/time expression.
 
     Parameters

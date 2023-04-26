@@ -32,32 +32,31 @@ Algorithms used for regression.
 
 class DecisionTreeRegressor(RandomForestRegressor):
     """
-    A DecisionTreeRegressor made of a single tree.
+    A DecisionTreeRegressor consisting of a single tree.
 
     Parameters
     ----------
     name: str
-        Name of  the  model.  The model  will be stored in 
-        the DB.
+        Name of the model. The model is stored in the 
+        database.
     max_features: str / int, optional
         The number of randomly  chosen features from which 
         to pick the best feature  to split on a given tree 
         node.  It  can  be  an integer  or one of the  two 
-        following methods.
+        following methods:
             auto : square root of the total number of 
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The  maximum  number of leaf nodes a tree in  the 
-        forest  can  have,  an integer between 1 and 1e9, 
-        inclusive.
+        The maximum number of leaf nodes for a tree in the
+        forest, an integer between 1 and 1e9, inclusive.
     max_depth: int, optional
         The maximum depth for growing each tree, an integer 
         between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of samples each branch must have 
-        after  splitting a node,  an integer between 1  and 
-        1e6, inclusive. A split that causes fewer remaining 
+        after a node is split, an integer between 1 and 1e6,
+        inclusive. Any split that results in fewer remaining 
         samples is discarded.
     min_info_gain: PythonNumber, optional
         The  minimum  threshold  for including a  split,  a 
@@ -105,8 +104,8 @@ class DummyTreeRegressor(RandomForestRegressor):
     Parameters
     ----------
     name: str
-        Name of  the  model.  The model  will be 
-        stored in the DB.
+        Name of the model. The model is stored
+        in the database.
     """
 
     # System & Special Methods.
@@ -134,13 +133,13 @@ Algorithms used for classification.
 
 class DecisionTreeClassifier(RandomForestClassifier):
     """
-    A DecisionTreeClassifier made of a single tree.
+    A DecisionTreeClassifier consisting of a single tree.
 
     Parameters
     ----------
     name: str
-        Name of  the  model.  The model  will be stored in 
-        the DB.
+        Name of the model. The model is stored in the 
+        database.
     max_features: str / int, optional
         The number of randomly  chosen features from which 
         to pick the best feature  to split on a given tree 
@@ -150,16 +149,15 @@ class DecisionTreeClassifier(RandomForestClassifier):
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The  maximum  number of leaf nodes a tree in  the 
-        forest  can  have,  an integer between 1 and 1e9, 
-        inclusive.
+        The maximum number of leaf nodes for a tree in the
+        forest, an integer between 1 and 1e9, inclusive.
     max_depth: int, optional
         The maximum depth for growing each tree, an integer 
         between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of samples each branch must have 
-        after  splitting a node,  an integer between 1  and 
-        1e6, inclusive. A split that causes fewer remaining 
+        after a node is split, an integer between 1 and 1e6,
+        inclusive. Any split that results in fewer remaining 
         samples is discarded.
     min_info_gain: PythonNumber, optional
         The  minimum  threshold  for including a  split,  a 
@@ -207,8 +205,8 @@ class DummyTreeClassifier(RandomForestClassifier):
     Parameters
     ----------
     name: str
-        Name of  the  model.  The model  will be 
-        stored in the DB.
+        Name of  the  model. The model is stored 
+        in the database.
     """
 
     # System & Special Methods.

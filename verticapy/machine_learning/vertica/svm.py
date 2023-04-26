@@ -44,13 +44,14 @@ class LinearSVR(Regressor, LinearModel):
     Parameters
     ----------
     name: str
-        Name of the model.  The model will be 
-        stored in the DB.
+        Name of the model. The model is stored in 
+        the database.
     tol: float, optional
-        To use to control accuracy.
+        Tolerance for stopping criteria. This is
+        used to control accuracy.
     C: float, optional
-        The  weight  for  misclassification  cost. 
-        The algorithm minimizes the regularization 
+        Weight  for  misclassification  cost. The
+        algorithm minimizes the regularization 
         cost and the misclassification cost.
     intercept_scaling: float
         A  float value, serves  as the value of a 
@@ -62,10 +63,9 @@ class LinearSVR(Regressor, LinearModel):
     intercept_mode: str, optional
         Specify how to treat the intercept.
             regularized   : Fits  the intercept  and 
-                            applies a regularization 
-                            on it.
+                            applies a regularization.
             unregularized : Fits  the  intercept but 
-                            does  not include it  in 
+                            does not include it in  
                             regularization. 
     acceptable_error_margin: float, optional
         Defines the acceptable error margin. Any data 
@@ -143,9 +143,9 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     """
     Creates  a LinearSVC object  using the  Vertica
     Support Vector Machine  (SVM)  algorithm on the 
-    data.  Given a set of  training examples,  each 
-    marked as belonging to  one or the other of two 
-    categories, an SVM  training algorithm builds a 
+    data. Given a set of training examples, where 
+    each is marked as belonging to one of two 
+    categories, an SVM training algorithm builds a 
     model that assigns new examples to one category 
     or  the other,  making it  a  non-probabilistic 
     binary linear classifier.
@@ -153,12 +153,13 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     Parameters
     ----------
     name: str
-    	Name  of the  model. The model will  be 
-        stored in the DB.
+    	Name  of the  model. The model is stored 
+        in the database.
     tol: float, optional
-    	to use to control accuracy.
+    	Tolerance for stopping criteria. This is
+        used to control accuracy.
     C: float, optional
-    	The weight for misclassification cost.  The 
+    	Weight for misclassification cost.  The 
         algorithm minimizes the regularization cost 
         and the misclassification cost.
     intercept_scaling: float
@@ -171,15 +172,14 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     intercept_mode: str, optional
     	Specify how to treat the intercept.
     		regularized   : Fits  the intercept  and 
-                            applies a regularization 
-                            on it.
+                            applies a regularization.
     		unregularized : Fits the  intercept  but 
                             does not  include  it in 
                             regularization. 
     class_weight: str / list, optional
-    	Specifies how to determine weights of the two 
+    	Specifies how to determine weights for the two 
         classes.  It can be a  list of 2 elements  or 
-        one of the following method:
+        one of the following methods:
     		auto : Weights  each class  according  to 
                    the number of samples.
     		none : No weights are used.

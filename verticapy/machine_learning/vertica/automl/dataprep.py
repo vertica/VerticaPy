@@ -60,11 +60,11 @@ class AutoDataPrep(VerticaModel):
         features.
     outliers_threshold: float, optional
         [Only used for non-time series datasets]
-        How to deal with outliers. If a number is used, 
-        all  elements with an absolute z-score  greater 
-        than  the threshold  will be converted to  NULL 
-        values.  Otherwise,  outliers  are  treated  as 
-        regular values.
+        Method for dealing with outliers. If a number 
+        is used, all  elements with an absolute z-score
+        greater than  the threshold  are converted
+        to  NULL values.  Otherwise,  outliers  are  
+        treated  as regular values.
     na_method: str, optional
         Method for handling missing values.
             auto: Mean  for the numerical features  and 
@@ -79,7 +79,7 @@ class AutoDataPrep(VerticaModel):
         merges the others  into one unique category. If 
         unspecified, all categories are kept.
     normalize: bool, optional
-        If True, the data will be normalized using  the 
+        If True, the data is normalized using  the 
         z-score. The 'num_method' parameter must be set 
         to 'none'.
     normalize_min_cat: int, optional
@@ -95,13 +95,13 @@ class AutoDataPrep(VerticaModel):
         preprocessing.
     rule: TimeInterval, optional
         [Only used for time series datasets]
-        Interval to use to slice  the time. For example, 
-        '5 minutes' will  create records separated by '5 
-        minutes' time interval. If set to auto, the rule 
-        will be detected using aggregations.
+        Interval used to slice  the time. For example, 
+        setting to '5 minutes' creates records separated
+        by '5 minutes' time interval. If set to auto, 
+        the rule is detected using aggregations.
     identify_ts: bool, optional
         If  True  and parameter 'ts' is  undefined  when 
-        fitting  the  model,  the  function will try  to 
+        fitting  the  model,  the  function tries to 
         automatically detect the parameter 'ts'.
     save: bool, optional
         If  True,  saves  the final relation inside  the 
@@ -209,10 +209,10 @@ class AutoDataPrep(VerticaModel):
         X: SQLColumns, optional
             List of the features to preprocess.
         ts: str, optional
-            Time series  vDataColumn to use to order the 
+            Time series  vDataColumn used to order the 
             data. 
             The vDataColumn type must be date-like (date, 
-            datetime, timestamp...)
+            datetime, timestamp...).
         by: SQLColumns, optional
             vDataColumns used in the partition.
         """

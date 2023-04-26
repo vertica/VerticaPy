@@ -79,21 +79,21 @@ class AutoML(VerticaModel):
         List  of Vertica  estimators with a fit  method.
         Alternatively,  you can specify 'native' for all 
         native  Vertica models, 'all' for all  VerticaPy 
-        models and 'fast' for quick modeling.
+        models, and 'fast' for quick modeling.
     estimator_type: str, optional
         Estimator Type.
             auto      : Automatically     detects     the 
                         estimator type.
-            regressor : The estimator  will  be  used  to 
+            regressor : The estimator  is  used  to 
                         perform a regression.
-            binary    : The  estimator will  be  used  to 
+            binary    : The  estimator is used  to 
                         perform  a binary classification.
-            multi     : The  estimator  will be  used  to 
-                        perform        a       multiclass 
+            multi     : The  estimator  is  used  to 
+                        perform  a multiclass 
                         classification.
     metric: str, optional
-        Metric used to do the model evaluation.
-            auto: logloss for  classification & rmse  for 
+        Metric used for the model evaluation.
+            auto: logloss for  classification & RMSE for 
                   regression.
         For Classification:
             accuracy    : Accuracy
@@ -158,28 +158,27 @@ class AutoML(VerticaModel):
     lmax: int, optional
         Maximum length of each parameter list.
     optimized_grid: int, optional
-        If set to 0,  the randomness is based on the 
+        If set to zero, the randomness is based on the 
         input parameters.
-        If set to 1,  the  randomness  is limited  to 
+        If set to one, the randomness  is limited  to 
         some parameters while others are picked based 
         on a default grid.
-        If  set to 2,  no  randomness is used  and  a 
+        If  set to two, no randomness is used  and  a 
         default grid is returned.
     stepwise: bool, optional
-        If True, the stepwise algorithm will be  used 
-        to   determine   the  final  model  list   of 
-        parameters.
+        If True, the stepwise algorithm is used to 
+        determine the final model list of parameters.
     stepwise_criterion: str, optional
-        Criterion used when doing the final estimator 
-        stepwise.
+        Criterion used when performing the final
+        estimator stepwise.
             aic : Akaike’s information criterion
             bic : Bayesian information criterion
     stepwise_direction: str, optional
-        Which direction to start the stepwise search. 
-        Can be done 'backward' or 'forward'.
+        Direction to start the stepwise search, 
+        either 'backward' or 'forward'.
     stepwise_max_steps: int, optional
         The maximum number of steps to be considered 
-        when doing the final estimator stepwise.
+        when performing the final estimator stepwise.
     x_order: str, optional
         Method for preprocessing  X before using the 
         stepwise algorithm.
@@ -198,7 +197,7 @@ class AutoML(VerticaModel):
         If True, the data will be preprocessed.
     preprocess_dict: dict, optional
         Dictionary to pass to the AutoDataPrep class 
-        in  order to preprocess the data before  the 
+        in  order to preprocess the data before  
         clustering.
     print_info: bool
         If  True,  prints the model  information  at 
@@ -321,7 +320,7 @@ class AutoML(VerticaModel):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model.
-            If empty, the model  predictors will be used.
+            If empty, the model  predictors are used.
 
         Returns
         -------
@@ -332,8 +331,8 @@ class AutoML(VerticaModel):
 
     def to_memmodel(self) -> mm.InMemoryModel:
         """
-        Converts  the model to  an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model to  an InMemory object  that
+        can be used for different types of predictions.
         """
         return self.best_model_.to_memmodel()
 

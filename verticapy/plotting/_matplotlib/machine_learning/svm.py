@@ -73,7 +73,7 @@ class SVMClassifierPlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a SVM Classifier plot using the Matplotlib API.
+        Draws an SVM classifier plot using the Matplotlib API.
         """
         x, w = self.data["X"][:, 0], self.data["X"][:, -1]
         x0, x1 = x[w == 0], x[w == 1]

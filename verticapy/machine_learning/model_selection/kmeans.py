@@ -52,13 +52,13 @@ def best_k(
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns, optional
     	List  of  the  predictor  columns.  If  empty,  all 
-        numerical columns will  be used.
+        numerical columns are used.
     n_cluster: tuple/list, optional
     	Tuple representing  the number  of clusters to start 
-        and end with. This  can also be customized list with 
+        and end with. This can also be a customized list with 
         various k values to test.
     init: str / list, optional
     	The method used to  find the initial cluster centers.
@@ -156,13 +156,13 @@ def elbow(
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns, optional
         List  of  the  predictor  columns.  If  empty,  all 
-        numerical columns will  be used.
+        numerical columns are used.
     n_cluster: tuple/list, optional
         Tuple representing  the number  of clusters to start 
-        and end with. This  can also be customized list with 
+        and end with. This can also be a customized list with 
         various k values to test.
     init: str / list, optional
         The method used to  find the initial cluster centers.
@@ -191,7 +191,7 @@ def elbow(
         the  relative  importance of numerical and  categorical 
         attributes.
     show: bool, optional
-        If set to True, the  Plotting object  will be returned.
+        If set to True, the  Plotting object is returned.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs

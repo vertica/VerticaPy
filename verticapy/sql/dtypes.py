@@ -71,9 +71,9 @@ def get_data_types(
         An expression in pure SQL. If empty, the 
         parameter 'table_name' must be defined.
     column: str, optional
-        If  not empty,  it will  return only  the 
-        data type of the input column if it is in 
-        the relation.
+        If  not empty, the function returns only
+        the data type of the input column if it 
+        is in the relation.
     table_name: str, optional
         Input table Name.
     schema: str, optional

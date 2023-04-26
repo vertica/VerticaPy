@@ -97,6 +97,21 @@ def param_docstring(*args):
 
     When several functions share the same parameters, this decorator can be used to improve code 
     readability and doc consistency.
+
+    Note: To preserve correct spacing, add four spaces before the parameter name in the 
+    dictionary value and for each following line. For example:
+
+    ...
+    'y_true': '''    y_true: str
+        Response column.''',
+    'y_score': '''    y_score: str
+        Prediction.''', 
+    'input_relation': '''    input_relation: SQLRelation
+        Relation used for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x''',
+    ...
     """
     param_defs = args[0]
     parameter_docstring = '''Parameters

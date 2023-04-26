@@ -68,7 +68,7 @@ class CandleStick(LinePlot):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a candle stick using the HC API.
+        Draws a candlestick plot using the HC API.
         """
         chart, style_kwargs = self._get_chart(
             chart, stock=True, style_kwargs=style_kwargs
