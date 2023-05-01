@@ -24,16 +24,16 @@ import pandas as pd
 @pytest.mark.parametrize('compute_method, dataset, func_args, expected',
                          [
                              ('binary', 'pred_cl_dataset_binary', {'pos_label': 'b'}, ''),
-                             # ('micro', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
-                             # ('macro', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
-                             # ('weighted', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
+                             ('micro', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
+                             ('macro', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
+                             ('weighted', 'pred_cl_dataset_multi', {'labels': 'labels'}, ''),
                              # ('scores', 'pred_cl_dataset_multi', ''),
                              # (None, 'pred_cl_dataset_multi', ''),
                              # pytest.param('invalid', 'pred_cl_dataset_multi', '', marks=pytest.mark.xfail)
                          ])
 @pytest.mark.parametrize('is_skl_metrics, classification_metrics',
                          [
-                             # ('y', 'confusion_matrix'),
+                             ('y', 'confusion_matrix'),
                              # ('y', 'accuracy_score'),  # fail
                              # ('y', 'balanced_accuracy_score'),  # fail
                              # ('n', 'critical_success_index'),
@@ -57,7 +57,7 @@ import pandas as pd
                              # ('n', 'best_cutoff'),  # need to implement
                              # ('y', 'roc_auc_score'),  # error for multi class
                              # ('n', 'prc_auc'),  # need to implement
-                             ('y', 'log_loss'),  # fail
+                             # ('y', 'log_loss'),  # fail
                              # ('y', 'classification_report') # error
                          ])
 class TestClassificationMetrics:
