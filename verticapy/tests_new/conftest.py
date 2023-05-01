@@ -16,79 +16,37 @@ permissions and limitations under the License.
 """
 import pytest
 import numpy as np
-
+import random
 from verticapy.core.vdataframe.base import vDataFrame
 
 
 @pytest.fixture(scope="module")
 def pred_cl_dataset_multi():
     labels = np.array(["a", "b", "c"])
-    y_t = np.array(
-        [
-            "a",
-            "a",
-            "b",
-            "c",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-        ]
-    )
-    y_s = np.array(
-        [
-            "a",
-            "b",
-            "b",
-            "b",
-            "c",
-            "a",
-            "b",
-            "a",
-            "a",
-            "c",
-            "a",
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "b",
-            "b",
-            "a",
-        ]
-    )
-    input_relation = np.column_stack((y_t, y_s))
-    vdf = vDataFrame(input_relation, usecols=["y_t", "y_s"])
-    yield vdf, y_t, y_s, labels
+    y_true = np.array(["a", "a", "b", "c", "c", "a", "b", "c", "a", "b", "c", "a", "b", "a", "b", "c", "a", "b", "c"])
+    y_pred = np.array(["a", "b", "b", "b", "c", "a", "b", "a", "a", "c", "a", "a", "b", "a", "b", "c", "b", "b", "a"])
+    y_prob = [[random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)] for x in range(len(y_true))]
+    input_relation = np.column_stack((y_true, y_pred, y_prob))
+    vdf = vDataFrame(input_relation, usecols=["y_true", "y_pred", "y_prob"])
+    yield vdf, y_true, y_pred, y_prob, labels
 
 
 @pytest.fixture(scope="module")
 def pred_cl_dataset_binary():
     labels = np.array(["a", "b"])
-    y_t = np.array(["a", "a", "b", "b", "a", "a", "b", "b", "a", "b", "a", "a", "b", "a", "b", "b", "a", "b", "a"])
-    y_s = np.array(["a", "b", "b", "b", "a", "a", "b", "a", "a", "b", "a", "a", "b", "a", "b", "a", "b", "b", "a"])
-    input_relation = np.column_stack((y_t, y_s))
-    vdf = vDataFrame(input_relation, usecols=["y_t", "y_s"])
-    yield vdf, y_t, y_s, labels
+    y_true = np.array(["a", "a", "b", "b", "a", "a", "b", "b", "a", "b", "a", "a", "b", "a", "b", "b", "a", "b", "a"])
+    y_pred = np.array(["a", "b", "b", "b", "a", "a", "b", "a", "a", "b", "a", "a", "b", "a", "b", "a", "b", "b", "a"])
+    y_prob = [random.uniform(0, 1) for x in range(len(y_true))]
+    input_relation = np.column_stack((y_true, y_pred, y_prob))
+    vdf = vDataFrame(input_relation, usecols=["y_true", "y_pred", "y_prob"])
+    yield vdf, y_true, y_pred, y_prob, labels
 
 
 @pytest.fixture(scope="module")
 def pred_cl_dataset_multilevel():
     labels = np.array(["c1", "c2", "c3", "c4"])
-    y_t = np.array([[0, 1, 1], [1, 1, 1], [0, 1, 0], [1, 0, 1]])
-    y_s = np.array([[0, 1, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]])
-    input_relation = np.column_stack((y_t, y_s))
+    y_true = np.array([[0, 1, 1], [1, 1, 1], [0, 1, 0], [1, 0, 1]])
+    y_pred = np.array([[0, 1, 1], [1, 1, 0], [1, 0, 1], [0, 1, 1]])
+    input_relation = np.column_stack((y_true, y_pred))
     vdf = vDataFrame(input_relation, usecols=["y_t", "y_s"])
-    yield vdf, y_t, y_s, labels
+    yield vdf, y_true, y_pred, labels
