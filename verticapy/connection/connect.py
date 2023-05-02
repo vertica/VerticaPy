@@ -224,7 +224,7 @@ def verticapylab_connection() -> Connection:
     """
     gb_conn = get_global_connection()
     conn_info = {
-        "host": "vertica-demo",
+        "host": "verticadb",
         "port": 5433,
         "user": "dbadmin",
         "password": "",
