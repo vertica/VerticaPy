@@ -21,9 +21,6 @@ class TestBarhPlot:
     def result(self, plot_result):
         self.result = plot_result
 
-    def test1(self):
-        assert True
-
     def test_properties_output_type_for(self, plotly_figure_object):
         # Arrange
         # Act

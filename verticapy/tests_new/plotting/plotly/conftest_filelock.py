@@ -1,3 +1,9 @@
+# conftest_v2.py
+# CONFTEST V 2
+# TRIES TO USE FILELOCK
+# EXPERIMENTAL
+
+
 # Pytest
 import pytest
 
@@ -20,29 +26,31 @@ from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
 from verticapy.learn.preprocessing import OneHotEncoder
 
-# # TODO - CHECK IF THE BELOW IS OPTIMAL FOR ALL CODES OR SHALL I NOT JUST DROP THE SCHEMA
-# @pytest.fixture(scope="session", autouse=True)
-# def load_test_schema(tmp_path_factory, worker_id):
-#     if worker_id == "master":
-#         # not executing with multiple workers, just create the schema and let pytest's fixture caching do its job
-#         verticapy.create_schema("test")
-#         yield
-#         verticapy.drop("test", method="schema")
-#     else:
-#         # get the temp directory shared by all workers
-#         root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
-#         # acquire a file lock to ensure that only one worker creates the schema
-#         fn = root_tmp_dir / "schema_created"
-#         with FileLock(str(fn) + ".lock"):
-#             if not fn.is_file():
-#                 verticapy.create_schema("test")
-#                 fn.write_text("created")
-#             yield
-#             # only the worker that created the schema should drop it
-#             if fn.is_file():
-#                 verticapy.drop("test", method="schema")
-#                 fn.unlink()
+# TODO - CHECK IF THE BELOW IS OPTIMAL FOR ALL CODES OR SHALL I NOT JUST DROP THE SCHEMA
+@pytest.fixture(scope="session", autouse=True)
+def load_test_schema(tmp_path_factory, worker_id):
+    if worker_id == "master":
+        # not executing with multiple workers, just create the schema and let pytest's fixture caching do its job
+        verticapy.create_schema("test")
+        yield
+        verticapy.drop("test", method="schema")
+    else:
+        # get the temp directory shared by all workers
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+
+        # acquire a file lock to ensure that only one worker creates the schema
+        fn = root_tmp_dir / "schema_created"
+        with FileLock(str(fn) + ".lock"):
+            if not fn.is_file():
+                verticapy.create_schema("test")
+                fn.write_text("created")
+            yield
+            # only the worker that created the schema should drop it
+            if fn.is_file():
+                verticapy.drop("test", method="schema")
+                fn.unlink()
+
 
 # @pytest.fixture(scope="session", autouse=True)
 # def load_test_schema(tmp_path_factory, worker_id):
@@ -67,16 +75,6 @@ from verticapy.learn.preprocessing import OneHotEncoder
 #     if fn.is_file():
 #         verticapy.drop("test", method="schema")
 #         fn.unlink()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_test_schema():
-    alphabet = string.ascii_letters
-    random_string = "".join(random.choice(alphabet) for i in range(4))
-    schema_name = f"test_{random_string}"
-    verticapy.create_schema(schema_name)
-    yield schema_name
-    verticapy.drop(schema_name, method="schema")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -211,7 +209,7 @@ def titanic_vd(load_test_schema):
 
 
 @pytest.fixture(scope="module")
-def iris_one_hot_vd(load_test_schema):
+def iris_one_hot_vd(load_test_schema="test"):
     iris_one_hot = load_iris(load_test_schema, "iris_one_hot")
     iris_one_hot["Species"].one_hot_encode(drop_first=False)
     yield iris_one_hot
@@ -219,14 +217,14 @@ def iris_one_hot_vd(load_test_schema):
 
 
 @pytest.fixture(scope="module")
-def iris_vd(load_test_schema):
+def iris_vd(load_test_schema="test"):
     iris = load_iris(load_test_schema, "iris")
     yield iris
     drop(name=f"{load_test_schema}.iris")
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(load_test_schema):
+def amazon_vd(load_test_schema="test"):
     amazon = load_amazon(load_test_schema, "amazon")
     yield amazon
     drop(name=f"{load_test_schema}.amazon")
