@@ -18,6 +18,8 @@ import pytest
 import numpy as np
 import random
 from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.datasets import load_winequality
+from verticapy import drop
 
 
 @pytest.fixture(scope="module")
@@ -50,3 +52,10 @@ def pred_cl_dataset_multilevel():
     input_relation = np.column_stack((y_true, y_pred))
     vdf = vDataFrame(input_relation, usecols=["y_t", "y_s"])
     yield vdf, y_true, y_pred, labels
+
+
+@pytest.fixture(scope="module")
+def winequality_vpy():
+    winequality = load_winequality()
+    yield winequality
+    drop(name="public.winequality",)
