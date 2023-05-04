@@ -2,7 +2,6 @@
 import pytest
 
 # Standard Python Modules
-from filelock import FileLock
 import random
 import tempfile
 import string
