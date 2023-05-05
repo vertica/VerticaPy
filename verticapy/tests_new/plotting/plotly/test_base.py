@@ -3,11 +3,12 @@ import pytest
 
 # # Standard Python Modules
 import numpy as np
+import plotly.graph_objects as go
 
 # # Verticapy 
 from verticapy.plotting._plotly.base import PlotlyBase
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="class")
 def dummy_data_parents_children():
     parents = ['0', '1']
     children = ['A', 'B', 'C']
@@ -28,51 +29,74 @@ def dummy_data_parents_children():
     return data_shaped,data_dict
 
 
+class Test_Convert_Labels_And_Get_Counts:
+    @pytest.fixture(autouse=True)
+    def result(self,dummy_data_parents_children):
+        func=PlotlyBase()
+        self.result=func._convert_labels_and_get_counts(dummy_data_parents_children[0])
 
-def test_convert_labels_and_get_counts(dummy_data_parents_children):
-    # Arrange
-    reference=dummy_data_parents_children[1]
-    func=PlotlyBase()
-    # Act
-    output=func._convert_labels_and_get_counts(dummy_data_parents_children[0])
-    result = {}
-    for i in range(len(output[0])):
-        child_value = output[1][i]
-        parent_value = output[2][i]
-        count = output[3][i]
-        key = (parent_value, child_value)
-        result[key] = count
-    # Assert
-    assert result==reference
+    def test_counts(self,dummy_data_parents_children):
+        # Arrange
+        reference=dummy_data_parents_children[1]
+        # Act
+        result = {}
+        for i in range(len(self.result[0])):
+            child_value =self.result[1][i]
+            parent_value = self.result[2][i]
+            count = self.result[3][i]
+            key = (parent_value, child_value)
+            result[key] = count
+        # Assert
+        assert result==reference
+
+    def test_unique_ids(self):
+        # Arrange
+        # Act
+        assert len(self.result[0])==len(set(self.result[0]))
     
+class Test_Get_Fig:
+    def test_input_fig(self):
+        # Arrange
+        func=PlotlyBase()
+        test_fig=go.Figure([go.Bar(x=[0,1],y=[5,10])])
+        # Act
+        result=func._get_fig(test_fig)
+        # Assert
+        assert result==test_fig
 
+    def test_input_none(self):
+        # Arrange
+        func=PlotlyBase()
+        # Act
+        result=func._get_fig(None)
+        # Assert
+        assert result==go.Figure()
 
-# # Other Modules
-# import numpy as np
+class Test_Convert_Labels_For_Heatmap:
+    def test_result(self):
+        # Arrange
+        func=PlotlyBase()
+        test=['[0.0;5]', '[5;10]', '[10;15]']
+        mid_points=['2.5','7.5','12.5']
+        # Act
+        result=func._convert_labels_for_heatmap(test)
+        # Assert
+        assert result==mid_points
 
-# # Testing variables
-# col_name = "check 2"
+class Test_Get_Max_Decimal_Point:
+    test_data_max_2_decimal=np.array([[0,1.0,0.2],
+               [0.1,0.0,0.12]])
+    test_data_max_4_decimal=np.array([[0,1.0,0.2],
+               [0.1,0.0,0.1234]])
+    test_data_max_8_decimal=np.array([[0,1.0,0.2],
+               [0.1,0.0,0.12345678]])
 
+    @pytest.mark.parametrize("test_input,expected", [(test_data_max_2_decimal, 2), (test_data_max_4_decimal, 4), (test_data_max_8_decimal, 8)])
+    def test_result(self,test_input, expected):
+        # Arrange
+        func=PlotlyBase()
+        # Act
+        result=func._get_max_decimal_point(test_input)
+        # Assert
+        assert result==expected
 
-# # Data
-# [array([['0', '0', '0', '1', '1', '1'],
-#         ['A', 'B', 'C', 'A', 'B', 'C'],
-#         ['4', '13', '23', '16', '17', '27']], dtype='<U21')
-#  array([['0', '1'],
-#         ['40', '60']], dtype='<U21')]
-
-# @pytest.fixture(scope="class")
-# def plot_result(dummy_vd):
-#     return dummy_vd[col_name].bar()
-
-
-# class TestBarPlot:
-#     @pytest.fixture(autouse=True)
-#     def result(self, plot_result):
-#         self.result = plot_result
-
-#     def test__convert_labels_and_get_counts(self, plotly_figure_object):
-#         # Arrange
-#         # Act
-#         # Assert - checking if correct object created
-#         assert type(self.result) == plotly_figure_object, "wrong object crated"
