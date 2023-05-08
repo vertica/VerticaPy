@@ -91,7 +91,7 @@ class LogisticRegressionPlot(PlotlyBase):
                 go.Scatter(x=x0, y=logit(y0 + slope * x0), name="-1", mode="markers",)
             )
             fig.add_trace(
-                go.Scatter(x=x1, y=logit(y0 + slope * x0), name="+1", mode="markers",)
+                go.Scatter(x=x1, y=logit(y0 + slope * x1), name="+1", mode="markers",)
             )
             fig.add_trace(
                 go.Scatter(
