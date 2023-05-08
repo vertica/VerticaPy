@@ -202,6 +202,20 @@ def dummy_dist_vd():
     yield dummy
 
 
+@pytest.fixture(scope="session")
+def dummy_line_data_vd():
+    N = 10
+    start_year = 1900
+    step = 10
+    num_values = N
+    import random
+
+    years = [start_year + i * step for i in range(num_values)] * 2
+    values = [random.randint(1, 100) for _ in range(N * 2)]
+    category = ["A"] * N + ["B"] * N
+    yield verticapy.vDataFrame({"date": years, "values": values, "category": category})
+
+
 @pytest.fixture(scope="module")
 def titanic_vd(load_test_schema):
     titanic = load_titanic(load_test_schema, "titanic")
