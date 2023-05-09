@@ -19,54 +19,6 @@ from verticapy import drop
 from verticapy.datasets import load_titanic, load_iris, load_amazon
 from verticapy.learn.preprocessing import OneHotEncoder
 
-# # TODO - CHECK IF THE BELOW IS OPTIMAL FOR ALL CODES OR SHALL I NOT JUST DROP THE SCHEMA
-# @pytest.fixture(scope="session", autouse=True)
-# def load_test_schema(tmp_path_factory, worker_id):
-#     if worker_id == "master":
-#         # not executing with multiple workers, just create the schema and let pytest's fixture caching do its job
-#         verticapy.create_schema("test")
-#         yield
-#         verticapy.drop("test", method="schema")
-#     else:
-#         # get the temp directory shared by all workers
-#         root_tmp_dir = tmp_path_factory.getbasetemp().parent
-
-#         # acquire a file lock to ensure that only one worker creates the schema
-#         fn = root_tmp_dir / "schema_created"
-#         with FileLock(str(fn) + ".lock"):
-#             if not fn.is_file():
-#                 verticapy.create_schema("test")
-#                 fn.write_text("created")
-#             yield
-#             # only the worker that created the schema should drop it
-#             if fn.is_file():
-#                 verticapy.drop("test", method="schema")
-#                 fn.unlink()
-
-# @pytest.fixture(scope="session", autouse=True)
-# def load_test_schema(tmp_path_factory, worker_id):
-#     # get the temp directory shared by all workers
-#     root_tmp_dir = tmp_path_factory.getbasetemp().parent
-
-#     # acquire a file lock to ensure that only one worker creates the schema
-#     fn = root_tmp_dir / "schema_created"
-#     with FileLock(str(fn) + ".lock"):
-#         if not fn.is_file():
-#             # only the first worker that acquires the lock creates the schema
-#             verticapy.create_schema("test")
-#             fn.write_text("created")
-
-#     # wait for the schema to be created by the first worker
-#     while not verticapy.schema.Schema("test").exists():
-#         pass
-
-#     yield
-
-#     # only the worker that created the schema should drop it
-#     if fn.is_file():
-#         verticapy.drop("test", method="schema")
-#         fn.unlink()
-
 DUMMY_TEST_SIZE = 100
 
 
