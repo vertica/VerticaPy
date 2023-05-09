@@ -36,13 +36,13 @@ class TestVDFOutliersPlot:
         # Arrange
         # Act
         # Assert - checking if correct object created
-        assert type(self.result) == plotly_figure_object, "wrong object crated"
+        assert type(self.result) == plotly_figure_object, "wrong object created"
 
     def test_properties_output_type_for_2d(self, plotly_figure_object):
         # Arrange
         # Act
         # Assert - checking if correct object created
-        assert type(self._2d_result) == plotly_figure_object, "wrong object crated"
+        assert type(self._2d_result) == plotly_figure_object, "wrong object created"
 
     def test_properties_xaxis_for_1d(
         self,
