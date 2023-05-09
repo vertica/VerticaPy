@@ -16,10 +16,22 @@ permissions and limitations under the License.
 """
 import pytest
 import numpy as np
-import random
 from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.datasets import load_winequality
 from verticapy import drop
+import verticapy
+import random
+import string
+
+
+@pytest.fixture(scope="module", autouse=True)
+def load_test_schema():
+    alphabet = string.ascii_letters
+    random_string = "".join(random.choice(alphabet) for i in range(4))
+    schema_name = f"test_{random_string}"
+    verticapy.create_schema(schema_name)
+    yield schema_name
+    verticapy.drop(schema_name, method="schema")
 
 
 @pytest.fixture(scope="module")
@@ -55,7 +67,7 @@ def pred_cl_dataset_multilevel():
 
 
 @pytest.fixture(scope="module")
-def winequality_vpy():
-    winequality = load_winequality()
+def winequality_vpy(load_test_schema):
+    winequality = load_winequality(load_test_schema, 'winequality')
     yield winequality
-    drop(name="public.winequality",)
+    drop(name=f"{load_test_schema}.winequality", )

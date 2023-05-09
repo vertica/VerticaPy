@@ -20,20 +20,24 @@ import verticapy.machine_learning.metrics.regression as vpy_metrics
 import pandas as pd
 import numpy as np
 from verticapy.core.vdataframe.base import vDataFrame
-from verticapy.learn.linear_model import LinearRegression
+import verticapy.learn.linear_model as vpy_linear_model
 import statsmodels.api as sm
+from statsmodels.formula.api import ols
 from verticapy import drop
+import sklearn.linear_model as skl_linear_model
+from math import log
 
 
 @pytest.fixture(scope="module")
-def vpy_lr_model_pred(winequality_vpy):
-    vpy_lr_model = LinearRegression("vpy_lr_model", )
+def vpy_lr_model_pred(winequality_vpy, load_test_schema):
+    vpy_lr_model = vpy_linear_model.LinearRegression(f"{load_test_schema}.vpy_lr_model", )
     vpy_lr_model.drop()
-    vpy_lr_model.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality", )
+    vpy_lr_model.fit(f"{load_test_schema}.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality", )
+    num_pred = len(vpy_lr_model.X)
     vpy_lr_pred_vdf = vpy_lr_model.predict(winequality_vpy, name='quality_pred')
-    yield vpy_lr_model, vpy_lr_pred_vdf
+    yield vpy_lr_model, vpy_lr_pred_vdf, num_pred
     vpy_lr_model.drop()
-    drop(name="vpy_lr_pred", )
+    drop(name=f"{load_test_schema}.vpy_lr_pred", )
 
 
 @pytest.mark.parametrize('sql_relation_type, expected',
@@ -44,64 +48,106 @@ def vpy_lr_model_pred(winequality_vpy):
                              # ('custom', ''),
                              # pytest.param('invalid', '', marks=pytest.mark.xfail)
                          ])
-@pytest.mark.parametrize('vpy_regression_metrics, skl_regression_metrics, is_skl_metrics',
+@pytest.mark.parametrize('vpy_regression_metrics, py_regression_metrics, func_params, is_skl_metrics',
                          [
-                             # ('aic_score', 'aic', 'n'),  # fail
-                             # ('bic_score', 'bic', 'n'),  # fail
-                             ('explained_variance', 'explained_variance_score', 'y'),
-                             # ('max_error', 'max_error', 'y'),
-                             # ('mean_absolute_error', 'mean_absolute_error', 'y'),
-                             # ('mean_squared_error', 'mean_squared_error', 'y'),
-                             # ('mean_squared_log_error', 'mean_squared_log_error', 'y'),  # fail
-                             # ('median_absolute_error', 'median_absolute_error', 'y'),  # fail
-                             # ('quantile_error', 'quantile_error', 'y'),  # error
-                             # ('r2_score', 'r2_score', 'y'),
-                             # ('anova_table', 'anova_table', 'y'),  # need to implement
-                             # ('regression_report', 'regression_report', 'y'),  # need to implement
-
+                             ('aic_score', 'aic', {}, 'n'),  # need to check with Badr on displaying message on using mse for aic. statsmodel uses OLS and gives different result
+                             ('bic_score', 'bic', {}, 'n'),  # need to check with Badr on displaying message on using mse for bic. statsmodel uses OLS and gives different result
+                             ('explained_variance', 'explained_variance_score', {}, 'y'),  # function name change in skl
+                             ('max_error', 'max_error', {}, 'y'),
+                             ('mean_absolute_error', 'mean_absolute_error', {}, 'y'),
+                             ('mean_squared_error', 'mean_squared_error', {}, 'y'),  # need info on root parameter
+                             ('mean_squared_log_error', 'mean_squared_log_error', {}, 'n'),  # need to check with Badr on displaying message on log base, vertica has default base 10, sklean uses natural log (e)
+                             ('median_absolute_error', 'median_absolute_error', {}, 'y'),  # fail -- decimal precision issue
+                             ('quantile_error', 'quantile_error', {}, 'n'),  # fail -- decimal precision issue
+                             ('r2_score', 'r2_score', {'k': 3, 'adj': True}, 'y'),
+                             ('r2_score', 'r2_score', {'k': 3, 'adj': False}, 'y'),  # fail -- decimal precision issue
+                             ('anova_table', 'anova_table', {}, 'n')
                          ])
 class TestRegressionMetrics:
     def test_master_regression_metrics(self, sql_relation_type, expected, vpy_lr_model_pred, vpy_regression_metrics,
-                                       skl_regression_metrics, is_skl_metrics, request):
+                                       py_regression_metrics, func_params, is_skl_metrics, load_test_schema):
 
-        vpy_lr_model, vpy_lr_pred_vdf = vpy_lr_model_pred
+        rel_tolerance = 1e-2
+        vpy_lr_model, vpy_lr_pred_vdf, num_pred = vpy_lr_model_pred
 
         # converts to pandas dataframe for non vertica framework
         vpy_lr_pred_pdf = vpy_lr_pred_vdf.to_pandas()
         vpy_lr_pred_pdf['citric_acid'] = vpy_lr_pred_pdf['citric_acid'].astype(float)
         vpy_lr_pred_pdf['residual_sugar'] = vpy_lr_pred_pdf['residual_sugar'].astype(float)
 
-        # vdf, y_true, y_pred, y_prob, labels = request.getfixturevalue(dataset)
-        y_true = np.arange(50)
-        y_pred = y_true + 1
-        # input_relation = np.column_stack((y_true, y_pred))
-        # vdf = vDataFrame(input_relation, usecols=["y_true", "y_pred"])
+        X = vpy_lr_pred_pdf[["citric_acid", "residual_sugar", "alcohol"]]
+        y = vpy_lr_pred_pdf['quality']
 
-        # verticapy logic
-        if vpy_regression_metrics:
-            # verticapy dataframe to vertica db
-            drop(name="public.vpy_lr_pred", )
-            vpy_lr_pred_vdf.to_db(name='vpy_lr_pred', relation_type=f"{sql_relation_type}")
-            vpy_res = getattr(vpy_metrics, vpy_regression_metrics)("quality", "quality_pred", 'vpy_lr_pred')
-
-        # sklearn logic
-        if is_skl_metrics == 'y':
-            if skl_regression_metrics:
-                skl_res = getattr(skl_metrics, skl_regression_metrics)(vpy_lr_pred_pdf['quality'],
-                                                                       vpy_lr_pred_pdf['quality_pred'])
+        # ******************************************* verticapy logic *************************************************
+        # verticapy dataframe to vertica db
+        drop(name=f"{load_test_schema}.vpy_lr_pred", )
+        vpy_lr_pred_vdf.to_db(name=f'{load_test_schema}.vpy_lr_pred', relation_type=f"{sql_relation_type}")
+        if vpy_regression_metrics in ['quantile_error']:
+            vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                   input_relation=f'{load_test_schema}.vpy_lr_pred', q=0.72)
+        elif vpy_regression_metrics in ['r2_score']:
+            if func_params['adj']:
+                vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                       input_relation=f'{load_test_schema}.vpy_lr_pred',
+                                                                       adj=func_params['adj'])
+            else:
+                vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                       input_relation=f'{load_test_schema}.vpy_lr_pred',
+                                                                       adj=func_params['adj'])
+        elif vpy_regression_metrics in ['anova_table']:
+            vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                   input_relation=f'{load_test_schema}.vpy_lr_pred',
+                                                                   k=1).to_pandas().replace('', 0).values.tolist()[:2]
+            vpy_res = np.array(vpy_res)
+        elif vpy_regression_metrics in ['aic_score', 'bic_score']:
+            vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                   input_relation=f'{load_test_schema}.vpy_lr_pred',
+                                                                   k=num_pred)
         else:
-            x = vpy_lr_pred_pdf[["citric_acid", "residual_sugar", "alcohol"]]
-            y = vpy_lr_pred_pdf['quality']
-            # add constant to predictor variables
-            x = sm.add_constant(x)
+            vpy_res = getattr(vpy_metrics, vpy_regression_metrics)(y_true="quality", y_score="quality_pred",
+                                                                   input_relation=f'{load_test_schema}.vpy_lr_pred')
 
-            # fit regression model
-            model = sm.OLS(y, x).fit()
+        # **************************************python based metrics logic ********************************************
+        if is_skl_metrics == 'y':
+            if py_regression_metrics in ['r2_score']:
+                r2_score = getattr(skl_metrics, py_regression_metrics)(vpy_lr_pred_pdf['quality'],
+                                                                   vpy_lr_pred_pdf['quality_pred'])
+                if func_params['adj']:
+                    skl_res = 1 - (1 - r2_score) * (len(vpy_lr_pred_pdf) - 1) / (len(vpy_lr_pred_pdf) - num_pred - 1)
+                else:
+                    skl_res = r2_score
+            else:
+                skl_res = getattr(skl_metrics, py_regression_metrics)(vpy_lr_pred_pdf['quality'],
+                                                                      vpy_lr_pred_pdf['quality_pred'])
+        else:
+            if py_regression_metrics in ['quantile_error']:
+                skl_res = abs(vpy_lr_pred_pdf['quality'] - vpy_lr_pred_pdf['quality_pred']).quantile(0.72)
+            elif py_regression_metrics in ['anova_table']:
+                cw_lm = ols('quality ~ quality_pred', data=vpy_lr_pred_pdf).fit()
+                skl_res = sm.stats.anova_lm(cw_lm, typ=1).fillna(0).values.tolist()
+                skl_res = np.array(skl_res)
+                # print(skl_res)
+            elif py_regression_metrics in ['aic', 'bic']:
+                skl_model = skl_linear_model.LinearRegression()
+                skl_model.fit(X, y)
+                num_params = len(skl_model.coef_) + 1
+                pred = skl_model.predict(X)
+                mse = skl_metrics.mean_squared_error(y, pred)
+                n = len(y)
 
-            # view AIC of model
-            print(model.aic)
-            print(model.bic)
-            skl_res = model.aic
+                if py_regression_metrics in ['aic']:
+                    aic = n * log(mse) + 2 * num_params
+                    skl_res = aic
+                else:
+                    bic = n * log(mse) + num_params * log(n)
+                    skl_res = bic
+            elif py_regression_metrics in ['mean_squared_log_error']:
+                skl_res = sum(
+                    pow(
+                        (np.log10(vpy_lr_pred_pdf['quality_pred'] + 1) - np.log10(vpy_lr_pred_pdf['quality'] + 1)),
+                        2)) / len(vpy_lr_pred_pdf)
+            else:
+                assert False, 'Invalid metric .....................'
 
         print(f'vertica: {vpy_res}, sklearn: {skl_res}')
-        assert vpy_res == pytest.approx(skl_res)
+        assert vpy_res == pytest.approx(skl_res, rel=rel_tolerance)
