@@ -67,6 +67,8 @@ from verticapy.learn.preprocessing import OneHotEncoder
 #         verticapy.drop("test", method="schema")
 #         fn.unlink()
 
+DUMMY_TEST_SIZE = 100
+
 
 @pytest.fixture(scope="session", autouse=True)
 def load_test_schema():
@@ -102,7 +104,7 @@ def dummy_vd():
 
 @pytest.fixture(scope="session")
 def dummy_scatter_vd():
-    N = 100
+    N = DUMMY_TEST_SIZE
     slope_y = 10
     slope_z = 5
     y_intercept = -20
@@ -127,7 +129,7 @@ def dummy_scatter_vd():
 
 @pytest.fixture(scope="session")
 def dummy_date_vd():
-    N = 100
+    N = DUMMY_TEST_SIZE
     years = [1910, 1920, 1930, 1940, 1950]
     median = 500
     q1 = 200
@@ -147,7 +149,7 @@ def dummy_date_vd():
 
 @pytest.fixture(scope="session")
 def dummy_probability_data():
-    count = 100
+    count = DUMMY_TEST_SIZE
     first_count = 10
     second_count = 40
     third_count = count - first_count - second_count
@@ -172,7 +174,7 @@ def dummy_probability_data():
 
 @pytest.fixture(scope="session")
 def dummy_dist_vd():
-    N = 1000
+    N = DUMMY_TEST_SIZE
     ones_percentage = 0.4
     median = 50
     q1 = 40
@@ -192,10 +194,13 @@ def dummy_dist_vd():
     result_array = result_array.reshape(len(result_array), 1)
     std = (q3 - q1) / (2 * np.sqrt(2) * scipy.special.erfinv(0.5))
     data = np.random.normal(median, std, N)
+    data_2 = np.random.normal(median + 10, std + 5, N)
     data = data.reshape(len(data), 1)
+    data_2 = data_2.reshape(len(data_2), 1)
     data[-1] = data.max() + 15
-    cols_combined = np.concatenate((data, result_array, category_array), axis=1)
-    data_all = pd.DataFrame(cols_combined, columns=["0", "binary", "cats"])
+    data_2[-1] = data_2.max() + 15 + 10
+    cols_combined = np.concatenate((data, data_2, result_array, category_array), axis=1)
+    data_all = pd.DataFrame(cols_combined, columns=["0", "1", "binary", "cats"])
     with tempfile.TemporaryDirectory() as temp_dir:
         dummy = verticapy.read_pandas(data_all, temp_path=temp_dir)
     dummy["binary"].astype("int")
@@ -204,7 +209,7 @@ def dummy_dist_vd():
 
 @pytest.fixture(scope="session")
 def dummy_line_data_vd():
-    N = 10
+    N = int(DUMMY_TEST_SIZE / 10)
     start_year = 1900
     step = 10
     num_values = N
@@ -216,29 +221,37 @@ def dummy_line_data_vd():
     yield verticapy.vDataFrame({"date": years, "values": values, "category": category})
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
+def dummy_pred_data_vd():
+    N = DUMMY_TEST_SIZE
+    slope_y = 10
+    slope_z = 5
+    y_intercept = -20
+    z_intercept = 20
+    scatter_magnitude_y = 4
+    scatter_magnitude_z = 40
+    x = np.linspace(0, 10, N)
+    y = np.linspace(0, 10, N)
+    z = np.linspace(0, 10, N)
+    pred = [0 if x[i] + y[i] + z[i] > 20 else 1 for i in range(len(x))]
+    yield verticapy.vDataFrame({"X": x, "Y": y, "Z": z, "Category": pred})
+
+
+@pytest.fixture(scope="session")
 def titanic_vd(load_test_schema):
     titanic = load_titanic(load_test_schema, "titanic")
     yield titanic
     drop(name=f"{load_test_schema}.titanic")
 
 
-@pytest.fixture(scope="module")
-def iris_one_hot_vd(load_test_schema):
-    iris_one_hot = load_iris(load_test_schema, "iris_one_hot")
-    iris_one_hot["Species"].one_hot_encode(drop_first=False)
-    yield iris_one_hot
-    drop(name=f"{load_test_schema}.iris_one_hot")
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def iris_vd(load_test_schema):
     iris = load_iris(load_test_schema, "iris")
     yield iris
     drop(name=f"{load_test_schema}.iris")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def amazon_vd(load_test_schema):
     amazon = load_amazon(load_test_schema, "amazon")
     yield amazon

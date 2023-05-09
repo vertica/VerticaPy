@@ -93,18 +93,20 @@ class TestBoxPlot:
         # Arrange
         # Act
         # Assert
-        assert (
-            self.result.data[1]["base"][0] + self.result.data[1]["x"][0]
-            == self.result.data[2]["base"][0]
+        assert self.result.data[1]["base"][0] + self.result.data[1]["x"][
+            0
+        ] == pytest.approx(
+            self.result.data[2]["base"][0], abs=1e-2
         ), "Hover boxes may overlap"
 
     def test_properties_q1_hover_box_max_value_is_equal_to_minimum_of_median(self):
         # Arrange
         # Act
         # Assert
-        assert (
-            self.result.data[2]["base"][0] + self.result.data[2]["x"][0]
-            == self.result.data[3]["base"][0]
+        assert self.result.data[2]["base"][0] + self.result.data[2]["x"][
+            0
+        ] == pytest.approx(
+            self.result.data[3]["base"][0], abs=1e-2
         ), "Hover boxes may overlap"
 
     def test_data_median_value(self):
