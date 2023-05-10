@@ -83,8 +83,9 @@ class TestVDFOutliersPlot:
         total_points = len(dummy_dist_vd[col_name_1])
         # Act
         result = dummy_dist_vd.outliers_plot(columns=[col_name_1], max_nb_points=10000)
+        plot_points_count = sum([result.data[i]["y"].shape[0] for i in range(len(result.data))])
         assert (
-            result.data[0]["y"].shape[0] + result.data[1]["y"].shape[0] == total_points
+            plot_points_count == total_points
         ), "All points are not plotted for 1d plot"
 
     def test_data_all_scatter_points_for_2d(self, dummy_dist_vd):
