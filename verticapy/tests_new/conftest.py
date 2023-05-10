@@ -33,18 +33,6 @@ def load_test_schema():
     verticapy.drop(schema_name, method="schema")
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_plotly():
-    conf.set_option("plotting_lib", "plotly")
-    yield
-    conf.set_option("plotting_lib", "matplotlib")
-
-
-@pytest.fixture(scope="session")
-def plotly_figure_object():
-    yield plotly.graph_objs._figure.Figure
-
-
 @pytest.fixture(scope="session")
 def dummy_vd():
     arr1 = np.concatenate((np.ones(60), np.zeros(40))).astype(int)

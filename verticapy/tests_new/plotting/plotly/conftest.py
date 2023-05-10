@@ -5,7 +5,7 @@ import pytest
 
 
 # Other Modules
-
+import plotly
 
 # VerticaPy
 import verticapy._config.config as conf
@@ -18,3 +18,8 @@ def load_plotly():
     conf.set_option("plotting_lib", "plotly")
     yield
     conf.set_option("plotting_lib", "matplotlib")
+
+
+@pytest.fixture(scope="session")
+def plotly_figure_object():
+    yield plotly.graph_objs._figure.Figure
