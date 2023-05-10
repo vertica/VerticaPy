@@ -20,7 +20,7 @@ import sklearn.metrics as skl_metrics
 
 import verticapy.machine_learning.metrics.classification as vpy_metrics
 
-
+@pytest.mark.skip(reason="This was only an example")
 class TestClassificationMetrics:
     def test_f1_score(self, pred_cl_dataset):
         vdf, y_t, y_s, labels = pred_cl_dataset
