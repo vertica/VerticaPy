@@ -22,6 +22,7 @@ def get_xaxis_label(obj):
         return None
 
 
+
 def get_yaxis_label(obj):
     if isinstance(obj, plt.Axes):
         return obj.get_ylabel()
