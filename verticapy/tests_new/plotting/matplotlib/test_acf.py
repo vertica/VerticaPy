@@ -5,11 +5,10 @@ import pytest
 
 
 # Other Modules
-import numpy as np
+
 
 # Vertica
-from verticapy.tests_new.plotting.
-conftest import get_xaxis_label, get_yaxis_label
+from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_yaxis_label
 
 
 @pytest.fixture(scope="class")
