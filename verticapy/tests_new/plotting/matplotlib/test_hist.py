@@ -26,17 +26,17 @@ import numpy as np
 # Vertica
 from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_yaxis_label
 
+
 # Testing variables
-col_name = "check 2"
-col_name_2 = "check 1"
+col_name_1 = "binary"
 
 
 @pytest.fixture(scope="class")
-def plot_result(dummy_vd):
-    return dummy_vd[col_name].bar()
+def plot_result(dummy_dist_vd):
+    return dummy_dist_vd[col_name_1].hist()
 
 
-class TestMatplotlibBarPlot:
+class TestMatplotlibHistogram:
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         self.result = plot_result
@@ -45,65 +45,46 @@ class TestMatplotlibBarPlot:
         # Arrange
         # Act
         # Assert - checking if correct object created
-        assert isinstance(self.result, matplotlib_figure_object), "wrong object crated"
+        assert isinstance(self.result, matplotlib_figure_object), "Wrong object created"
 
-    def test_data_ratios(self, dummy_vd):
-        ### Checking if the density was plotted correctly
-        nums = dummy_vd.to_pandas()[col_name].value_counts()
-        total = len(dummy_vd)
-        assert set([self.result.patches[i].get_height() for i in range(0, 3)]).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_properties_xaxis_label(self):
+    def test_properties_xaxis_title(self):
         # Arrange
-        test_title = col_name
+        test_title = col_name_1
         # Act
         # Assert - checking x axis label
         assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
 
-    def test_properties_yaxis_label(self):
+    def test_properties_yaxis_title(self):
         # Arrange
         test_title = "density"
         # Act
         # Assert - checking y axis label
         assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
 
-    def test_all_categories_created(self):
-        assert set(
-            [self.result.get_xticklabels()[i].get_text() for i in range(3)]
-        ).issubset(set(["A", "B", "C"]))
-
-    def test_xaxis_category(self):
-        # Arrange
+    def test_additional_options_custom_height(self, dummy_dist_vd):
+        # rrange
+        custom_height = 6
+        custom_width = 7
         # Act
-        # Assert
-        assert self.result.xaxis.get_scale() == "linear"
-
-    def test_additional_options_custom_width_and_height(self, dummy_vd):
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = dummy_vd[col_name].bar(
-            width=custom_width,
+        result = dummy_dist_vd[col_name_1].hist(
             height=custom_height,
+            width=custom_width,
         )
-        # Assert - checking if correct object created
+        # Assert
         assert (
             result.get_figure().get_size_inches()[0] == custom_width
             and result.get_figure().get_size_inches()[1] == custom_height
         ), "Custom width or height not working"
 
-    def test_additional_options_kind_stack(self, dummy_vd, matplotlib_figure_object):
+    @pytest.mark.parametrize("method", ["count", "density"])
+    @pytest.mark.parametrize("max_cardinality", [3, 5])
+    def test_properties_output_type_for_all_options(
+        self, dummy_dist_vd, matplotlib_figure_object, max_cardinality, method
+    ):
         # Arrange
-        kind = "stacked"
         # Act
-        result3 = dummy_vd.bar(
-            columns=[col_name],
-            method="avg",
-            of=col_name_2,
-            kind=kind,
+        result = dummy_dist_vd[col_name_1].hist(
+            method=method, max_cardinality=max_cardinality
         )
-        # Assert
-        assert isinstance(self.result, matplotlib_figure_object), "wrong object crated"
+        # Assert - checking if correct object created
+        assert isinstance(self.result, matplotlib_figure_object), "Wrong object created"

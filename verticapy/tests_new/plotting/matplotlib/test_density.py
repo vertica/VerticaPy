@@ -27,83 +27,89 @@ import numpy as np
 from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_yaxis_label
 
 # Testing variables
-col_name = "check 2"
-col_name_2 = "check 1"
+col_name = "0"
+by_col = "binary"
 
 
 @pytest.fixture(scope="class")
-def plot_result(dummy_vd):
-    return dummy_vd[col_name].bar()
+def plot_result(dummy_dist_vd):
+    return dummy_dist_vd[col_name].density()
 
 
-class TestMatplotlibBarPlot:
+@pytest.fixture(scope="class")
+def plot_result_multiplot(dummy_dist_vd):
+    return dummy_dist_vd[col_name].density(by=by_col)
+
+
+class TestVDFContourPlot:
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         self.result = plot_result
+
+    @pytest.fixture(autouse=True)
+    def result_2(self, plot_result_multiplot):
+        self.multi_plot_result = plot_result_multiplot
 
     def test_properties_output_type(self, matplotlib_figure_object):
         # Arrange
         # Act
         # Assert - checking if correct object created
-        assert isinstance(self.result, matplotlib_figure_object), "wrong object crated"
+        assert isinstance(self.result, matplotlib_figure_object), "Wrong object created"
 
-    def test_data_ratios(self, dummy_vd):
-        ### Checking if the density was plotted correctly
-        nums = dummy_vd.to_pandas()[col_name].value_counts()
-        total = len(dummy_vd)
-        assert set([self.result.patches[i].get_height() for i in range(0, 3)]).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
+    def test_properties_output_type_for_multiplot(self, matplotlib_figure_object):
+        # Arrange
+        # Act
+        # Assert - checking if correct object created
+        assert isinstance(
+            self.multi_plot_result, matplotlib_figure_object
+        ), "wrong object crated"
 
-    def test_properties_xaxis_label(self):
+    def test_properties_xaxis_title(self):
         # Arrange
         test_title = col_name
         # Act
         # Assert - checking x axis label
         assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
 
-    def test_properties_yaxis_label(self):
+    def test_properties_yaxis_title(self):
         # Arrange
         test_title = "density"
         # Act
         # Assert - checking y axis label
         assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
 
-    def test_all_categories_created(self):
-        assert set(
-            [self.result.get_xticklabels()[i].get_text() for i in range(3)]
-        ).issubset(set(["A", "B", "C"]))
-
-    def test_xaxis_category(self):
+    def test_properties_multiple_plots_produced_for_multiplot(
+        self,
+    ):
         # Arrange
+        number_of_plots = 2
         # Act
         # Assert
-        assert self.result.xaxis.get_scale() == "linear"
+        assert (
+            len(self.multi_plot_result.lines) == number_of_plots
+        ), "Two plots not produced for two classes"
 
-    def test_additional_options_custom_width_and_height(self, dummy_vd):
+    def test_additional_options_custom_width_and_height(self, dummy_dist_vd):
         # Arrange
         custom_width = 3
         custom_height = 4
         # Act
-        result = dummy_vd[col_name].bar(
-            width=custom_width,
-            height=custom_height,
+        result = dummy_dist_vd.density(
+            [col_name], width=custom_width, height=custom_height
         )
-        # Assert - checking if correct object created
+        # Assert
         assert (
             result.get_figure().get_size_inches()[0] == custom_width
             and result.get_figure().get_size_inches()[1] == custom_height
         ), "Custom width or height not working"
 
-    def test_additional_options_kind_stack(self, dummy_vd, matplotlib_figure_object):
+    @pytest.mark.parametrize("nbins", [10, 20])
+    @pytest.mark.parametrize("kernel", ["logistic", "sigmoid", "silverman"])
+    def test_properties_output_type_for_all_options(
+        self, dummy_dist_vd, matplotlib_figure_object, nbins, kernel
+    ):
         # Arrange
-        kind = "stacked"
         # Act
-        result3 = dummy_vd.bar(
-            columns=[col_name],
-            method="avg",
-            of=col_name_2,
-            kind=kind,
-        )
-        # Assert
-        assert isinstance(self.result, matplotlib_figure_object), "wrong object crated"
+        result = dummy_dist_vd["0"].density(kernel=kernel, nbins=nbins)
+        # Assert - checking if correct object created
+        assert isinstance(self.result, matplotlib_figure_object), "Wrong object created"
