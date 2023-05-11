@@ -8,7 +8,7 @@ import pytest
 import numpy as np
 
 # Vertica
-from ..conftest import get_xaxis_label, get_yaxis_label
+from verticapy.tests_new.conftest import get_xaxis_label, get_yaxis_label
 
 # Testing variables
 col_name = "check 2"
