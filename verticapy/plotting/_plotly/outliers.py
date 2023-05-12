@@ -67,7 +67,7 @@ class OutliersPlot(PlotlyBase):
             X2 = self.data["outliers"][:, 0].flatten().tolist()
             cat_X1 = ["inliers"] * len(X1)
             cat_X2 = ["outliers"] * len(X2)
-            x_axis = ["age"] * (len(X1) + len(X2))
+            x_axis = [self.layout["columns"][0]] * (len(X1) + len(X2))
             df = pd.DataFrame(
                 {
                     self.layout["columns"][0]: X1 + X2,
@@ -137,7 +137,10 @@ class OutliersPlot(PlotlyBase):
                     dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
                     colorscale=colorscale,
-                    contours=dict(start=threshold, end=z_max,),
+                    contours=dict(
+                        start=threshold,
+                        end=z_max,
+                    ),
                 )
             )
             fig.add_trace(
@@ -150,7 +153,10 @@ class OutliersPlot(PlotlyBase):
                     colorscale=[[0, "blue"], [1, "blue"]],
                     contours_coloring="lines",
                     line_width=2,
-                    contours=dict(start=threshold, end=threshold,),
+                    contours=dict(
+                        start=threshold,
+                        end=threshold,
+                    ),
                 )
             )
             fig.update_xaxes(title_text=self.layout["columns"][0])

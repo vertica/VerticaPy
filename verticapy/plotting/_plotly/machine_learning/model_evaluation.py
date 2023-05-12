@@ -243,5 +243,4 @@ class LiftChart(ROCCurve):
             )
         )
         fig.update_layout(**self._update_dict(self.init_layout_style, style_kwargs))
-        fig.show()
         return fig
