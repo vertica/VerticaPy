@@ -126,16 +126,15 @@ class TestMatplotlibLinePlot:
             and result.get_figure().get_size_inches()[1] == custom_height
         ), "Custom width or height not working"
 
-    @pytest.mark.skip()
-    @pytest.mark.parametrize("method", ["count", "density"])
-    @pytest.mark.parametrize("max_cardinality", [3, 5])
+    @pytest.mark.parametrize("kind", ["spline", "area", "step"])
+    @pytest.mark.parametrize("start_date", ["1930"])
     def test_properties_output_type_for_all_options(
-        self, dummy_dist_vd, matplotlib_figure_object, max_cardinality, method
+        self, dummy_line_data_vd, matplotlib_figure_object, start_date, kind
     ):
         # Arrange
         # Act
         result = dummy_line_data_vd[col_name_1].plot(
-            ts=time_col, by=col_name_2, markers=True
+            ts=time_col, kind=kind, start_date=start_date
         )
         # Assert - checking if correct object created
         assert isinstance(self.result, matplotlib_figure_object), "Wrong object created"
