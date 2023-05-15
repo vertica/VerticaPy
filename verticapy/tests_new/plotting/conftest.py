@@ -18,7 +18,7 @@ def get_xaxis_label(obj):
     elif isinstance(obj, go.Figure):
         return obj.layout["xaxis"]["title"]["text"]
     elif isinstance(obj, Highchart):
-        return obj.options['xAxis'].title.text
+        return obj.options["xAxis"].title.text
     else:
         return None
 
@@ -29,6 +29,17 @@ def get_yaxis_label(obj):
     elif isinstance(obj, go.Figure):
         return obj.layout["yaxis"]["title"]["text"]
     elif isinstance(obj, Highchart):
-        return obj.options['yAxis'].title.text
+        return obj.options["yAxis"].title.text
+    else:
+        return None
+
+
+def get_zaxis_label(obj):
+    if isinstance(obj, plt.Axes):
+        return obj.get_zlabel()
+    elif isinstance(obj, go.Figure):
+        return obj.layout["zaxis"]["title"]["text"]
+    elif isinstance(obj, Highchart):
+        return obj.options["zAxis"].title.text
     else:
         return None
