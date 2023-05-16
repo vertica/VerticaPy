@@ -29,13 +29,13 @@ import verticapy._config.config as conf
 DUMMY_TEST_SIZE = 100
 
 
+@pytest.fixture(scope="module")
+def plotting_library_object(matplotlib_figure_object):
+    return plt.Axes
+
+
 @pytest.fixture(scope="session", autouse=True)
 def load_matplotlib():
     conf.set_option("plotting_lib", "matplotlib")
     yield
     conf.set_option("plotting_lib", "matplotlib")
-
-
-@pytest.fixture(scope="session")
-def matplotlib_figure_object():
-    yield plt.Axes
