@@ -121,8 +121,8 @@ class TestMatplotlibScatter2DPlot:
 
     def test_additional_options_custom_width_and_height(self, dummy_scatter_vd):
         # Arrange
-        custom_width = 300
-        custom_height = 400
+        custom_width = 3
+        custom_height = 4
         # Act
         result = dummy_scatter_vd.scatter(
             [col_name_1, col_name_2],
