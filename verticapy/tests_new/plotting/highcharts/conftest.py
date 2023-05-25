@@ -35,7 +35,7 @@ def plotting_library_object():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_matplotlib():
+def load_plotlib():
     """
     Set default plotting library to highcharts
     """
