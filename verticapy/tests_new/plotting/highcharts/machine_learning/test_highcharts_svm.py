@@ -102,7 +102,7 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
         # Arrange
         # Act
         # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        assert isinstance(self._2d, plotting_library_object), "Wrong object created"
 
     @pytest.mark.skip(reason="3d plot not supported in highcharts")
     def test_properties_output_type_for_3d(self, plotting_library_object):

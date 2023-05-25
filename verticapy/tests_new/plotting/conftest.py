@@ -15,12 +15,14 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Pytest
-
+import pytest
 
 # Standard Python Modules
 
 # VerticaPy
 from vertica_highcharts.highcharts.highcharts import Highchart
+from verticapy import drop
+from verticapy.learn.delphi import AutoML
 
 # Other Modules
 import matplotlib.pyplot as plt
@@ -103,3 +105,20 @@ def get_title(obj):
     if isinstance(obj, Highchart):
         return obj.options["title"].text
     return None
+
+
+# Expensive models
+@pytest.fixture(name="champion_challenger_plot", scope="package")
+def load_champion_Challenger_plot(schema_loader, dummy_dist_vd):
+    COL_NAME_1 = "binary"
+    COL_NAME_2 = "0"
+    model = AutoML(f"{schema_loader}.model_automl", lmax=10, print_info=False)
+    model.fit(
+        dummy_dist_vd,
+        [
+            COL_NAME_1,
+        ],
+        COL_NAME_2,
+    )
+    yield model
+    model.drop()
