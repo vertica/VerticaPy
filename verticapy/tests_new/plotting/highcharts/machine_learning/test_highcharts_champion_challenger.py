@@ -49,7 +49,8 @@ class TestHighchartsMachineLearningChampionChallengerPlot:
             ],
             COL_NAME_2,
         )
-        return model.plot()
+        yield model.plot()
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):

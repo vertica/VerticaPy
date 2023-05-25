@@ -50,7 +50,8 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
         """
         model = LinearSVC(name="public.SVC")
         model.fit(dummy_pred_data_vd, [COL_NAME_1], BY_COL)
-        return model.plot()
+        yield model.plot(), model
+        model.drop()
 
     @pytest.fixture(scope="class")
     def plot_result_2d(self, dummy_pred_data_vd):
@@ -59,7 +60,8 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
         """
         model = LinearSVC(name="public.SVC")
         model.fit(dummy_pred_data_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        return model.plot()
+        yield model.plot(), model
+        model.drop()
 
     @pytest.fixture(scope="class")
     def plot_result_3d(self, dummy_pred_data_vd):
@@ -72,15 +74,16 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
             [COL_NAME_1, COL_NAME_2, COL_NAME_3],
             BY_COL,
         )
-        return model.plot()
+        yield model.plot()
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result, plot_result_2d):
         """
         Get the plot results
         """
-        self.result = plot_result
-        self.result_2d = plot_result_2d
+        self.result = plot_result[0]
+        self.result_2d = plot_result_2d[0]
         # self.result_3d = plot_result_3d
 
     def test_properties_output_type_for_1d(self, plotting_library_object):
@@ -123,33 +126,29 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
         # Assert
         assert get_xaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, dummy_pred_data_vd):
+    def test_additional_options_custom_height(self, plot_result):
         """
         Test custom width and height
         """
         # rrange
         custom_height = 600
         custom_width = 300
-        model = LinearSVC(name="public.SVC")
-        model.fit(dummy_pred_data_vd, [COL_NAME_1], BY_COL)
         # Act
-        result = model.plot(width=custom_width, height=custom_height)
+        result = plot_result[1].plot(width=custom_width, height=custom_height)
         # Assert
         assert (
             get_width(result) == custom_width and get_height(result) == custom_height
         ), "Custom width or height not working"
 
-    def test_additional_options_custom_height_for_2d(self, dummy_pred_data_vd):
+    def test_additional_options_custom_height_for_2d(self, plot_result_2d):
         """
         Test custom width and height
         """
         # rrange
         custom_height = 600
         custom_width = 700
-        model = LinearSVC(name="public.SVC")
-        model.fit(dummy_pred_data_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
         # Act
-        result = model.plot(width=custom_width, height=custom_height)
+        result = plot_result_2d[1].plot(width=custom_width, height=custom_height)
         # Assert
         assert (
             get_width(result) == custom_width and get_height(result) == custom_height

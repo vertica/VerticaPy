@@ -51,7 +51,8 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         """
         model = LogisticRegression("log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1], COL_NAME_2)
-        return model.plot(), model
+        yield model.plot(), model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
@@ -89,7 +90,7 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, plot_result, titanic_vd):
+    def test_additional_options_custom_height(self, plot_result):
         """
         Test custom width and height
         """
@@ -97,7 +98,6 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         custom_height = 6
         custom_width = 7
         # Act
-        model = LogisticRegression("log_reg_test")
         result = plot_result[1].plot(height=custom_height, width=custom_width)
         # Assert
         assert (
@@ -107,7 +107,6 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
     @pytest.mark.parametrize("max_nb_points", [50])
     def test_properties_output_type_for_all_options(
         self,
-        titanic_vd,
         plotting_library_object,
         max_nb_points,
         plot_result,
@@ -117,7 +116,6 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         """
         # Arrange
         # Act
-        model = LogisticRegression("log_reg_test")
         result = plot_result[1].plot(
             max_nb_points=max_nb_points,
         )
@@ -138,7 +136,8 @@ class TestHighchartsMachineLearningLogisticRegressionPlot3D:
         """
         model = LogisticRegression("log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1, COL_NAME_3], COL_NAME_2)
-        return model.plot()
+        yield model.plot()
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result_2):

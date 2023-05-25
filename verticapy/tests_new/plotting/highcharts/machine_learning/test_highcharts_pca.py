@@ -51,14 +51,15 @@ class TestHighchartsMachineLearningPCACirclePlot:
         model = PCA("pca_circle_test")
         model.drop()
         model.fit(dummy_scatter_vd[COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        return model.plot_circle()
+        yield model.plot_circle(), model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         """
         Get the plot results
         """
-        self.result = plot_result
+        self.result = plot_result[0]
 
     def test_properties_output_type(self, plotting_library_object):
         """
@@ -89,7 +90,7 @@ class TestHighchartsMachineLearningPCACirclePlot:
         # Assert
         assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, dummy_scatter_vd):
+    def test_additional_options_custom_height(self, plot_result):
         """
         Test custom width and height
         """
@@ -97,10 +98,7 @@ class TestHighchartsMachineLearningPCACirclePlot:
         custom_height = 6
         custom_width = 7
         # Act
-        model = PCA("pca_circle_test")
-        model.drop()
-        model.fit(dummy_scatter_vd[COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        result = model.plot_circle(height=custom_height, width=custom_width)
+        result = plot_result[1].plot_circle(height=custom_height, width=custom_width)
         # Assert
         assert (
             get_width(result) == custom_width and get_height(result) == custom_height

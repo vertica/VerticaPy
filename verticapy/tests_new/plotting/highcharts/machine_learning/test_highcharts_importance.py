@@ -56,7 +56,8 @@ class TestHighchartsMachineLearningImportanceBarChartPlot:
             [COL_NAME_1, COL_NAME_2, COL_NAME_3, COL_NAME_4],
             BY_COL,
         )
-        return model.features_importance(), model
+        yield model.features_importance(), model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):

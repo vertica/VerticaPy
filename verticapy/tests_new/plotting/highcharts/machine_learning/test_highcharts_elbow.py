@@ -40,7 +40,7 @@ class TestHighchartsMachineLearningElbowCurvePlot:
     @pytest.fixture(scope="class")
     def plot_result(self, iris_vd):
         """
-        Create an elbow curve plot
+        Create a elbow curve plot
         """
         return elbow(input_relation=iris_vd, X=[COL_NAME_1, COL_NAME_2])
 

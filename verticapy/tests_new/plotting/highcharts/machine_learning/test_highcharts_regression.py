@@ -49,14 +49,15 @@ class TestHighchartsMachineLearningRegressionPlot:
         """
         model = LinearRegression("LR_churn")
         model.fit(dummy_scatter_vd, [COL_NAME_1], COL_NAME_2)
-        return model.plot()
+        yield model.plot(), model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         """
         Get the plot results
         """
-        self.result = plot_result
+        self.result = plot_result[0]
 
     def test_properties_output_type(self, plotting_library_object):
         """
@@ -98,7 +99,7 @@ class TestHighchartsMachineLearningRegressionPlot:
             dummy_scatter_vd
         ), "Discrepancy between points plotted and total number ofp oints"
 
-    def test_additional_options_custom_height(self, dummy_scatter_vd):
+    def test_additional_options_custom_height(self, plot_result):
         """
         Test custom width and height
         """
@@ -106,9 +107,7 @@ class TestHighchartsMachineLearningRegressionPlot:
         custom_height = 650
         custom_width = 700
         # Act
-        model = LinearRegression("LR_churn")
-        model.fit(dummy_scatter_vd, ["X"], "Y")
-        result = model.plot(height=custom_height, width=custom_width)
+        result = plot_result[1].plot(height=custom_height, width=custom_width)
         # Assert
         assert (
             get_width(result) == custom_width and get_height(result) == custom_height

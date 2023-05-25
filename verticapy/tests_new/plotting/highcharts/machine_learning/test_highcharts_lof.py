@@ -50,7 +50,8 @@ class TestHighchartsMachineLearningLOFPlot2D:
         """
         model = LocalOutlierFactor("lof_test")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2])
-        return model.plot(), model
+        yield model.plot(), model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
@@ -88,7 +89,7 @@ class TestHighchartsMachineLearningLOFPlot2D:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, plot_result, dummy_scatter_vd):
+    def test_additional_options_custom_height(self, plot_result):
         """
         Test custom width and height
         """
@@ -116,7 +117,8 @@ class TestHighchartsMachineLearningLOFPlot3D:
         """
         model = LocalOutlierFactor("lof_test_3d")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        return model.plot()
+        yield model.plot()
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result_2):

@@ -45,6 +45,7 @@ class TestHighchartsMachineLearningRegressionTreePlot:
     def __init__(self):
         self.x_col = None
         self.y_col = None
+        self.model = None
 
     @pytest.fixture(scope="class")
     def plot_result(self, dummy_dist_vd):
@@ -55,14 +56,15 @@ class TestHighchartsMachineLearningRegressionTreePlot:
         x_col = COL_NAME_1
         y_col = COL_NAME_2
         model.fit(dummy_dist_vd, x_col, y_col)
-        return model.plot(), x_col, y_col
+        yield model.plot(), x_col, y_col, model
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         """
         Get the plot results
         """
-        self.result, self.x_col, self.y_col = plot_result
+        self.result, self.x_col, self.y_col, self.model = plot_result
 
     def test_properties_output_type(self, plotting_library_object):
         """
@@ -93,17 +95,15 @@ class TestHighchartsMachineLearningRegressionTreePlot:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, dummy_dist_vd):
+    def test_additional_options_custom_height(self):
         """
         Test custom width and height
         """
         # Arrange
         custom_height = 650
         custom_width = 700
-        model = DecisionTreeRegressor(name="model_titanic")
-        model.fit(dummy_dist_vd, COL_NAME_1, COL_NAME_2)
         # Act
-        result = model.plot(
+        result = self.model.plot(
             height=custom_height,
             width=custom_width,
         )

@@ -41,20 +41,29 @@ BY_COL = "binary"
 POS_LABEL = "0"
 
 
+@pytest.fixture(name="model_result", scope="module")
+def load_model(dummy_dist_vd):
+    """
+    Load the Random Forest Classifier model
+    """
+    model = RandomForestClassifier("random_forest_plot_test")
+    model.drop()
+    model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
+    yield model
+    model.drop()
+
+
 class TestHighchartsMachineLearningROCPlot:
     """
     Testing different attributes of ROC plot
     """
 
     @pytest.fixture(scope="class")
-    def plot_result_roc(self, dummy_dist_vd):
+    def plot_result_roc(self, model_result):
         """
         Create an ROC plot
         """
-        model = RandomForestClassifier("roc_plot_test")
-        model.drop()
-        model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        return model.roc_curve()
+        return model_result.roc_curve()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result_roc):
@@ -102,18 +111,15 @@ class TestHighchartsMachineLearningROCPlot:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height_and_width(self, dummy_dist_vd):
+    def test_additional_options_custom_height_and_width(self, model_result):
         """
         Test custom width and height
         """
         # rrange
-        custom_height = 3
-        custom_width = 4
+        custom_height = 10
+        custom_width = 20
         # Act
-        model = RandomForestClassifier("roc_plot_test")
-        model.drop()
-        model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        result = model.cutoff_curve(
+        result = model_result.cutoff_curve(
             pos_label=POS_LABEL, width=custom_width, height=custom_height
         )
         # Assert
@@ -128,14 +134,11 @@ class TestHighchartsMachineLearningCutoffCurvePlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result_cutoff(self, dummy_dist_vd):
+    def plot_result_cutoff(self, model_result):
         """
         Create cutoff curve
         """
-        model = RandomForestClassifier("roc_plot_test_2")
-        model.drop()
-        model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        return model.cutoff_curve(pos_label=POS_LABEL)
+        return model_result.cutoff_curve(pos_label=POS_LABEL)
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result_cutoff):
@@ -174,7 +177,7 @@ class TestHighchartsMachineLearningCutoffCurvePlot:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, dummy_dist_vd):
+    def test_additional_options_custom_height(self, model_result):
         """
         Test custom width and height
         """
@@ -182,10 +185,7 @@ class TestHighchartsMachineLearningCutoffCurvePlot:
         custom_height = 2
         custom_width = 3
         # Act
-        model = RandomForestClassifier("cutoff_curve_plot_test")
-        model.drop()
-        model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        result = model.cutoff_curve(
+        result = model_result.cutoff_curve(
             pos_label=POS_LABEL, width=custom_width, height=custom_height
         )
         # Assert
