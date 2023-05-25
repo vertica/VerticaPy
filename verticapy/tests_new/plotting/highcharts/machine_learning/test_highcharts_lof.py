@@ -44,11 +44,11 @@ class TestHighchartsMachineLearningLOFPlot2D:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, dummy_scatter_vd):
+    def plot_result(self, schema_loader, dummy_scatter_vd):
         """
         Create a LOF plot
         """
-        model = LocalOutlierFactor("lof_test")
+        model = LocalOutlierFactor(f"{schema_loader}.lof_test")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2])
         yield model.plot(), model
         model.drop()
@@ -111,11 +111,11 @@ class TestHighchartsMachineLearningLOFPlot3D:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result_2(self, dummy_scatter_vd):
+    def plot_result_2(self, schema_loader, dummy_scatter_vd):
         """
         Create a 3D LOF plot
         """
-        model = LocalOutlierFactor("lof_test_3d")
+        model = LocalOutlierFactor(f"{schema_loader}.lof_test_3d")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2, COL_NAME_3])
         yield model.plot()
         model.drop()

@@ -64,11 +64,11 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
         model.drop()
 
     @pytest.fixture(scope="class")
-    def plot_result_3d(self, dummy_pred_data_vd):
+    def plot_result_3d(self, schema_loader, dummy_pred_data_vd):
         """
         Create 3D SVM classifier plot
         """
-        model = LinearSVC(name="public.SVC")
+        model = LinearSVC(name=f"{schema_loader}.SVC")
         model.fit(
             dummy_pred_data_vd,
             [COL_NAME_1, COL_NAME_2, COL_NAME_3],

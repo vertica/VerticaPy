@@ -48,11 +48,11 @@ class TestHighchartsMachineLearningRegressionTreePlot:
         self.model = None
 
     @pytest.fixture(scope="class")
-    def plot_result(self, dummy_dist_vd):
+    def plot_result(self, schema_loader, dummy_dist_vd):
         """
         Create a Regression Tree plot
         """
-        model = DecisionTreeRegressor(name="model_titanic")
+        model = DecisionTreeRegressor(name=f"{schema_loader}.model_titanic")
         x_col = COL_NAME_1
         y_col = COL_NAME_2
         model.fit(dummy_dist_vd, x_col, y_col)

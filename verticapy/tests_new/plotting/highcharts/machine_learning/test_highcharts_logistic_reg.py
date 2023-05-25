@@ -45,11 +45,11 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, titanic_vd):
+    def plot_result(self, schema_loader, titanic_vd):
         """
         Create a logistic regression plot
         """
-        model = LogisticRegression("log_reg_test")
+        model = LogisticRegression(f"{schema_loader}.log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1], COL_NAME_2)
         yield model.plot(), model
         model.drop()
@@ -130,11 +130,11 @@ class TestHighchartsMachineLearningLogisticRegressionPlot3D:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result_2(self, titanic_vd):
+    def plot_result_2(self, schema_loader, titanic_vd):
         """
         Create a 3D logistic regression plot
         """
-        model = LogisticRegression("log_reg_test")
+        model = LogisticRegression(f"{schema_loader}.log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1, COL_NAME_3], COL_NAME_2)
         yield model.plot()
         model.drop()

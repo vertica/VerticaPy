@@ -43,11 +43,11 @@ class TestHighchartsMachineLearningRegressionPlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, dummy_scatter_vd):
+    def plot_result(self, schema_loader, dummy_scatter_vd):
         """
         Create a regression plot
         """
-        model = LinearRegression("LR_churn")
+        model = LinearRegression(f"{schema_loader}.LR_churn")
         model.fit(dummy_scatter_vd, [COL_NAME_1], COL_NAME_2)
         yield model.plot(), model
         model.drop()

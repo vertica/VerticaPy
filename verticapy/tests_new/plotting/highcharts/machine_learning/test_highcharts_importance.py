@@ -46,11 +46,11 @@ class TestHighchartsMachineLearningImportanceBarChartPlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, iris_vd):
+    def plot_result(self, schema_loader, iris_vd):
         """
         Create an Importance Bar chart plot using RandomForest Classifier
         """
-        model = RandomForestClassifier("importance_test")
+        model = RandomForestClassifier(f"{schema_loader}.importance_test")
         model.fit(
             iris_vd,
             [COL_NAME_1, COL_NAME_2, COL_NAME_3, COL_NAME_4],

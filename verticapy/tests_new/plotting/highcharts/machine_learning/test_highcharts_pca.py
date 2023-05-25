@@ -44,11 +44,11 @@ class TestHighchartsMachineLearningPCACirclePlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, dummy_scatter_vd):
+    def plot_result(self, schema_loader, dummy_scatter_vd):
         """
         Create a PCA circle plot
         """
-        model = PCA("pca_circle_test")
+        model = PCA(f"{schema_loader}.pca_circle_test")
         model.drop()
         model.fit(dummy_scatter_vd[COL_NAME_1, COL_NAME_2, COL_NAME_3])
         yield model.plot_circle(), model

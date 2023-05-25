@@ -42,11 +42,11 @@ POS_LABEL = "0"
 
 
 @pytest.fixture(name="model_result", scope="module")
-def load_model(dummy_dist_vd):
+def load_model(schema_loader, dummy_dist_vd):
     """
     Load the Random Forest Classifier model
     """
-    model = RandomForestClassifier("random_forest_plot_test")
+    model = RandomForestClassifier(f"{schema_loader}.random_forest_plot_test")
     model.drop()
     model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
     yield model
@@ -119,7 +119,7 @@ class TestHighchartsMachineLearningROCPlot:
         custom_height = 10
         custom_width = 20
         # Act
-        result = model_result.cutoff_curve(
+        result = model_result.roc_curve(
             pos_label=POS_LABEL, width=custom_width, height=custom_height
         )
         # Assert
