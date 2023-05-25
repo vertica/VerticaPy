@@ -51,14 +51,14 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         """
         model = LogisticRegression("log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1], COL_NAME_2)
-        return model.plot()
+        return model.plot(), model
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):
         """
         Get the plot results
         """
-        self.result = plot_result
+        self.result = plot_result[0]
 
     def test_properties_output_type_for_2d(self, plotting_library_object):
         """
@@ -89,7 +89,7 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         # Assert
         assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
 
-    def test_additional_options_custom_height(self, titanic_vd):
+    def test_additional_options_custom_height(self, plot_result, titanic_vd):
         """
         Test custom width and height
         """
@@ -98,8 +98,7 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         custom_width = 7
         # Act
         model = LogisticRegression("log_reg_test")
-        model.fit(titanic_vd, [COL_NAME_1], COL_NAME_2)
-        result = model.plot(height=custom_height, width=custom_width)
+        result = plot_result[1].plot(height=custom_height, width=custom_width)
         # Assert
         assert (
             get_width(result) == custom_width and get_height(result) == custom_height
@@ -111,6 +110,7 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         titanic_vd,
         plotting_library_object,
         max_nb_points,
+        plot_result,
     ):
         """
         Test different number of maximum points
@@ -118,8 +118,7 @@ class TestHighchartsMachineLearningLogisticRegressionPlot2D:
         # Arrange
         # Act
         model = LogisticRegression("log_reg_test")
-        model.fit(titanic_vd, [COL_NAME_1], COL_NAME_2)
-        result = model.plot(
+        result = plot_result[1].plot(
             max_nb_points=max_nb_points,
         )
         # Assert - checking if correct object created
