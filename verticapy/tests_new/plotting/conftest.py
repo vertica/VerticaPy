@@ -107,6 +107,18 @@ def get_height(obj):
         return obj.options["chart"].height
     return None
 
+def get_title(obj):
+    """
+    Get title for given plotting object
+    """
+    if isinstance(obj, plt.Axes):
+        return obj.get_title()
+    if isinstance(obj, go.Figure):
+        return obj.layout["title"]["text"]
+    if isinstance(obj, Highchart):
+        return obj.options["title"].text
+    return None
+    
 # Expensive models
 @pytest.fixture(name="champion_challenger_plot", scope="package")
 def load_champion_Challenger_plot(schema_loader, dummy_dist_vd):

@@ -22,7 +22,7 @@ import pytest
 
 # Verticapy
 from verticapy.learn.svm import LinearSVC
-from verticapy.tests_new.exp.conftest import BasicPlotTests
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 
 # Testing variables
 COL_NAME_1 = "X"
