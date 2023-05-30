@@ -18,14 +18,10 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-from verticapy.tests_new.exp.conftest import BasicPlotTests
-
-# Other Modules
-
 
 # Verticapy
 from verticapy.learn.tree import DecisionTreeRegressor
-
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 
 # Testing variables
 COL_NAME_1 = "0"

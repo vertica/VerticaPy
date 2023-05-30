@@ -24,7 +24,7 @@ import pytest
 
 
 # Verticapy
-from verticapy.tests_new.exp.conftest import BasicPlotTests
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 from verticapy.learn.model_selection import elbow
 
 # Testing variables

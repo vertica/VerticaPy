@@ -20,10 +20,8 @@ import pytest
 # Standard Python Modules
 
 
-# Other Modules
-from verticapy.tests_new.exp.conftest import BasicPlotTests
-
 # Verticapy
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import lift_chart, prc_curve
 from verticapy.tests_new.plotting.conftest import get_title

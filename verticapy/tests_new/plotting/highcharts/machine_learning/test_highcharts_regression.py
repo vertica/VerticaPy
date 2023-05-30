@@ -18,13 +18,11 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-from verticapy.tests_new.exp.conftest import BasicPlotTests
-
-# Other Modules
 
 
 # Verticapy
 from verticapy.learn.linear_model import LinearRegression
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 
 
 # Testing variables

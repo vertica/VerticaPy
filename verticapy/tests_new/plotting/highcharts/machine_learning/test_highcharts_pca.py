@@ -18,12 +18,10 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-from verticapy.tests_new.exp.conftest import BasicPlotTests
-
-# Other Modules
 
 
 # Verticapy
+from verticapy.tests_new.plotting.conftest import BasicPlotTests
 from verticapy.learn.decomposition import PCA
 from verticapy.tests_new.plotting.conftest import (
     get_xaxis_label,
