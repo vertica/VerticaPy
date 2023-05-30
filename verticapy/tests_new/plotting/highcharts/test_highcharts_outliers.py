@@ -24,57 +24,41 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
+
 
 # Testing variables
 COL_NAME_1 = "0"
 COL_NAME_2 = "1"
 
 
-class TestHighchartsOutliersPlot:
+class TestHighchartsOutliersPlot(BasicPlotTests):
     """
     Testing different attributes of outliers plot on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_dist_vd):
-        """
-        Create an outlier plot for vDataColumn
-        """
-        return dummy_dist_vd.outliers_plot(columns=[COL_NAME_1])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type_for_1d(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME_1, ""]
 
-    def test_properties_xaxis_for_1d(
-        self,
-    ):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert -
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
+        return (
+            self.data.outliers_plot,
+            {"columns": COL_NAME_1},
+        )
 
     def test_data_all_scatter_points_for_1d(
         self,
@@ -92,71 +76,31 @@ class TestHighchartsOutliersPlot:
             plot_points_count == total_points
         ), "All points are not plotted for 1d plot"
 
-    def test_additional_options_custom_width_and_height(self, dummy_dist_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 300
-        custom_height = 300
-        # Act
-        result = dummy_dist_vd.outliers_plot(
-            columns=[COL_NAME_1, COL_NAME_2], width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
-
-class TestHighchartsOutliersPlot2D:
+class TestHighchartsOutliersPlot2D(BasicPlotTests):
     """
     Testing different attributes of outliers plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_2d(self, dummy_dist_vd):
-        """
-        Create an outlier plot for vDataFrame
-        """
-        return dummy_dist_vd.outliers_plot(columns=[COL_NAME_1, COL_NAME_2])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_2d):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_2d
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME_1, COL_NAME_2]
 
-    def test_properties_xaxis_label(
-        self,
-    ):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert -
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(
-        self,
-    ):
-        """
-        Testing y-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert -
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
+        return (
+            self.data.outliers_plot,
+            {"columns": [COL_NAME_1, COL_NAME_2]},
+        )

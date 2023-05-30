@@ -14,19 +14,33 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Standard Python Modules
+import random
+import tempfile
+import string
+from abc import abstractmethod
+
 # Pytest
 import pytest
 
-# Standard Python Modules
+# Other Modules
+from scipy.special import erfinv
+import numpy as np
+import pandas as pd
+
 
 # VerticaPy
-from vertica_highcharts.highcharts.highcharts import Highchart
+import verticapy
 from verticapy import drop
+from verticapy.datasets import load_titanic, load_iris, load_amazon
 from verticapy.learn.delphi import AutoML
 
 # Other Modules
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from vertica_highcharts.highcharts.highcharts import Highchart
+
+DUMMY_TEST_SIZE = 100
 
 
 def get_xaxis_label(obj):
@@ -93,20 +107,6 @@ def get_height(obj):
         return obj.options["chart"].height
     return None
 
-
-def get_title(obj):
-    """
-    Get title for given plotting object
-    """
-    if isinstance(obj, plt.Axes):
-        return obj.get_title()
-    if isinstance(obj, go.Figure):
-        return obj.layout["title"]["text"]
-    if isinstance(obj, Highchart):
-        return obj.options["title"].text
-    return None
-
-
 # Expensive models
 @pytest.fixture(name="champion_challenger_plot", scope="package")
 def load_champion_Challenger_plot(schema_loader, dummy_dist_vd):
@@ -122,3 +122,69 @@ def load_champion_Challenger_plot(schema_loader, dummy_dist_vd):
     )
     yield model
     model.drop()
+
+
+class BasicPlotTests:
+    """
+    Basic Tests for all plots
+    """
+
+    cols = []
+
+    # @property
+    @abstractmethod
+    def create_plot(self):
+        """
+        Abstract method to create the plot
+        """
+
+    @property
+    def result(self):
+        """
+        Create the plot
+        """
+        func, arg = self.create_plot()
+        return func(**arg)
+
+    def test_properties_output_type(self, plotting_library_object):
+        """
+        Test if correct object created
+        """
+        assert isinstance(self.result, plotting_library_object), "wrong object crated"
+
+    def test_properties_xaxis_label(self):
+        """
+        Testing x-axis label
+        """
+        test_title = self.cols[0]
+        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
+
+    def test_properties_yaxis_label(self):
+        """
+        Testing y-axis title
+        """
+        test_title = self.cols[1]
+        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
+
+    def test_properties_zaxis_label(self):
+        """
+        Testing y-axis title
+        """
+        if len(self.cols) > 2:
+            test_title = self.cols[2]
+            assert get_zaxis_label(self.result) == test_title, "Z axis label incorrect"
+        else:
+            pass
+
+    def test_additional_options_custom_width_and_height(self):
+        """
+        Test custom width and height
+        """
+        func, arg = self.create_plot()
+        custom_width = 300
+        custom_height = 400
+        result = func(width=custom_width, height=custom_height, **arg)
+        assert (
+            get_width(result) == custom_width and get_height(result) == custom_height
+        ), "Custom width or height not working"
+

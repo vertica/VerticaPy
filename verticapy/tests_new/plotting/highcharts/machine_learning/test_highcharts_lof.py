@@ -21,16 +21,11 @@ import pytest
 
 
 # Other Modules
-
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 
 # Verticapy
 from verticapy.learn.neighbors import LocalOutlierFactor
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+
 
 # Testing variables
 COL_NAME_1 = "X"
@@ -38,120 +33,68 @@ COL_NAME_2 = "Y"
 COL_NAME_3 = "Z"
 
 
-class TestHighchartsMachineLearningLOFPlot2D:
+class TestHighchartsMachineLearningLOFPlot2D(BasicPlotTests):
     """
     Testing different attributes of 2D LOF plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, schema_loader, dummy_scatter_vd):
+    @pytest.fixture(autouse=True)
+    def model(self, dummy_scatter_vd, schema_loader):
         """
-        Create a LOF plot
+        Load test model
         """
         model = LocalOutlierFactor(f"{schema_loader}.lof_test")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2])
-        yield model.plot(), model
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    @property
+    def cols(self):
         """
-        Get the plot results
+        Store labels for X,Y,Z axis to check.
         """
-        self.result = plot_result[0]
+        return [COL_NAME_1, COL_NAME_2]
 
-    def test_properties_output_type(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
-
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, plot_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 60
-        custom_width = 70
-        # Act
-        result = plot_result[1].plot(height=custom_height, width=custom_width)
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
+        return (
+            self.model.plot,
+            {},
+        )
 
 
 @pytest.mark.skip(reason="Currently highchart only supports 2D plot")
-class TestHighchartsMachineLearningLOFPlot3D:
+class TestHighchartsMachineLearningLOFPlot3D(BasicPlotTests):
     """
     Testing different attributes of 3D LOF plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_2(self, schema_loader, dummy_scatter_vd):
+    @pytest.fixture(autouse=True)
+    def model(self, dummy_scatter_vd, schema_loader):
         """
-        Create a 3D LOF plot
+        Load test model
         """
-        model = LocalOutlierFactor(f"{schema_loader}.lof_test_3d")
+        model = LocalOutlierFactor(f"{schema_loader}.lof_test")
         model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        yield model.plot()
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(autouse=True)
-    def result(self, plot_result_2):
+    @property
+    def cols(self):
         """
-        Get the plot results
+        Store labels for X,Y,Z axis to check.
         """
-        self.result = plot_result_2
+        return [COL_NAME_1, COL_NAME_2, COL_NAME_3]
 
-    def test_properties_output_type_for_3d(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
-
-    def test_properties_xaxis_label_for_3d(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label_for_3d(self):
-        """
-        Testing y-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
+        return (
+            self.model.plot,
+            {},
+        )

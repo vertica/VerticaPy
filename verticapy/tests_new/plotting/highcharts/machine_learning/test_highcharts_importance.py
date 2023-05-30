@@ -21,16 +21,11 @@ import pytest
 
 
 # Other Modules
-
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 
 # Verticapy
 from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+
 
 # Testing variables
 COL_NAME_1 = "PetalLengthCm"
@@ -40,15 +35,15 @@ COL_NAME_4 = "SepalLengthCm"
 BY_COL = "Species"
 
 
-class TestHighchartsMachineLearningImportanceBarChartPlot:
+class TestHighchartsMachineLearningImportanceBarChartPlot(BasicPlotTests):
     """
     Testing different attributes of Importance Bar Chart plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, schema_loader, iris_vd):
+    @pytest.fixture(autouse=True)
+    def model(self, iris_vd, schema_loader):
         """
-        Create an Importance Bar chart plot using RandomForest Classifier
+        Load test model
         """
         model = RandomForestClassifier(f"{schema_loader}.importance_test")
         model.fit(
@@ -56,44 +51,25 @@ class TestHighchartsMachineLearningImportanceBarChartPlot:
             [COL_NAME_1, COL_NAME_2, COL_NAME_3, COL_NAME_4],
             BY_COL,
         )
-        yield model.features_importance(), model
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    @property
+    def cols(self):
         """
-        Get the plot results
+        Store labels for X,Y,Z axis to check.
         """
-        self.result = plot_result[0]
+        return ["Features", "Importance (%)"]
 
-    def test_properties_output_type(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
-
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = "Importance (%)"
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "Features"
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "Y axis label incorrect"
+        return (
+            self.model.features_importance,
+            {},
+        )
 
     def test_data_no_of_columns(self):
         """
@@ -104,19 +80,3 @@ class TestHighchartsMachineLearningImportanceBarChartPlot:
         # Act
         # Assert
         assert len(self.result.data_temp[0].data) == total_items, "Some columns missing"
-
-    def test_additional_options_custom_height(self, plot_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 600
-        custom_width = 700
-        # Act
-        result = plot_result[1].features_importance(
-            height=custom_height, width=custom_width
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"

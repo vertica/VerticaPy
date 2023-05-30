@@ -24,7 +24,7 @@ import pytest
 
 
 # Verticapy
-from verticapy.learn.delphi import AutoML
+
 
 # Testing variables
 

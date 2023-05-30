@@ -24,12 +24,8 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
+
 
 # Testing variables
 COL_NAME_1 = "PetalLengthCm"
@@ -38,60 +34,33 @@ PIVOT_COL_1 = "survived"
 PIVOT_COL_2 = "pclass"
 
 
-class TestHighchartsVDFHeatMap:
+class TestHighchartsVDFPivotHeatMap(BasicPlotTests):
     """
     Testing different attributes of Heatmap plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, iris_vd):
-        """
-        Create a heatmap plot
-        """
-        return iris_vd.heatmap([COL_NAME_1, COL_NAME_2])
-
-    @pytest.fixture(scope="class")
-    def plot_result_pivot(self, titanic_vd):
-        """
-        Create a heatmap plot using pivot table
-        """
-        return titanic_vd.pivot_table([PIVOT_COL_1, PIVOT_COL_2])
-
-    @pytest.mark.skip("Error in highcharts need to be fixed")
-    @pytest.fixture(autouse=False)
-    def result(self, plot_result):
-        """
-        Get the plot results
-        """
-        self.result = plot_result
-
     @pytest.fixture(autouse=True)
-    def pivot_result(self, plot_result_pivot):
+    def data(self, titanic_vd):
         """
-        Get the plot results for pivot function
+        Load test data
         """
-        self.pivot_result = plot_result_pivot
+        self.data = titanic_vd
 
-    @pytest.mark.skip("Error in highcharts need to be fixed")
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [PIVOT_COL_1, PIVOT_COL_2]
 
-    def test_properties_output_type_for_pivot_table(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created for pivot table
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(
-            self.pivot_result, plotting_library_object
-        ), "Wrong object created"
+        return (
+            self.data.pivot_table,
+            {"columns": [PIVOT_COL_1, PIVOT_COL_2]},
+        )
 
     def test_properties_output_type_for_corr(
         self, dummy_scatter_vd, plotting_library_object
@@ -104,28 +73,6 @@ class TestHighchartsVDFHeatMap:
         result = dummy_scatter_vd.corr(method="spearman")
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "wrong object crated"
-
-    @pytest.mark.skip("Error in highcharts need to be fixed")
-    def test_properties_xaxis_title(self):
-        """
-        Testing x-axis title
-        """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    @pytest.mark.skip("Error in highcharts need to be fixed")
-    def test_properties_yaxis_title(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert - checking y axis label
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
 
     def test_properties_yaxis_labels_for_categorical_data(self, titanic_vd):
         """
@@ -147,24 +94,36 @@ class TestHighchartsVDFHeatMap:
         # Assert
         assert set(yaxis_labels).issubset(expected_labels), "Y-axis labels incorrect"
 
-    @pytest.mark.skip("Error in highcharts need to be fixed")
-    def test_additional_options_custom_width_and_height(self, iris_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = iris_vd.heatmap(
-            [COL_NAME_1, COL_NAME_2], width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
-    @pytest.mark.skip("Error in highcharts need to be fixed")
+@pytest.mark.skip("Error in highcharts need to be fixed")
+class TestHighchartsVDFHeatMap(BasicPlotTests):
+    """
+    Testing different attributes of Heatmap plot on a vDataFrame
+    """
+
+    @pytest.fixture(autouse=True)
+    def data(self, iris_vd):
+        """
+        Load test data
+        """
+        self.data = iris_vd
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [COL_NAME_1, COL_NAME_2]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.heatmap,
+            {"columns": [COL_NAME_1, COL_NAME_2]},
+        )
+
     @pytest.mark.parametrize("method", ["count", "density"])
     def test_properties_output_type_for_all_options(
         self, iris_vd, plotting_library_object, method

@@ -24,69 +24,38 @@ import pytest
 
 
 # Verticapy
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 from verticapy.learn.model_selection import elbow
-from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_width, get_height
 
 # Testing variables
 COL_NAME_1 = "PetalLengthCm"
 COL_NAME_2 = "PetalWidthCm"
 
 
-class TestHighchartsMachineLearningElbowCurvePlot:
+class TestHighchartsMachineLearningElbowCurvePlot(BasicPlotTests):
     """
     Testing different attributes of Elbow Curve plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, iris_vd):
-        """
-        Create a elbow curve plot
-        """
-        return elbow(input_relation=iris_vd, X=[COL_NAME_1, COL_NAME_2])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, iris_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = iris_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["Number of Clusters", "Elbow Score (Between-Cluster SS / Total SS)"]
 
-    def test_properties_xaxis_label(self):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = "Number of Clusters"
-        # Act
-        # Assert - checking if correct object created
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    @pytest.mark.slow
-    @pytest.mark.notcritical
-    def test_additional_options_custom_height(self, iris_vd):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 3
-        custom_width = 3
-        # Act
-        result = elbow(
-            input_relation=iris_vd,
-            X=[COL_NAME_1, COL_NAME_2],
-            width=custom_width,
-            height=custom_height,
+        return (
+            elbow,
+            {"input_relation": self.data, "X": [COL_NAME_1, COL_NAME_2]},
         )
-        # Assert - checking if correct object created
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"

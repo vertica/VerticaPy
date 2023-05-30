@@ -24,81 +24,41 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
+
 
 # Testing variables
 COL_NAME = "0"
 BY_COL = "binary"
 
 
-class TestHighchartsVDCDensityPlot:
+class TestHighchartsVDCDensityPlot(BasicPlotTests):
     """
     Testing different attributes of Density plot on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_dist_vd):
-        """
-        Create a density plot for vDataColumn
-        """
-        return dummy_dist_vd[COL_NAME].density()
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME, "density"]
 
-    def test_properties_xaxis_title(self):
+    def create_plot(self):
         """
-        Testing x-axis title
+        Create the plot
         """
-        # Arrange
-        test_title = COL_NAME
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_title(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "density"
-        # Act
-        # Assert - checking y axis label
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_additional_options_custom_width_and_height(self, dummy_dist_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = dummy_dist_vd[COL_NAME].density(
-            width=custom_width, height=custom_height
+        return (
+            self.data[COL_NAME].density,
+            {},
         )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
     @pytest.mark.parametrize("nbins", [10, 20])
     @pytest.mark.parametrize("kernel", ["logistic", "sigmoid", "silverman"])
@@ -116,33 +76,33 @@ class TestHighchartsVDCDensityPlot:
 
 
 @pytest.mark.skip("Error in this highchart plot")
-class TestHighchartVDCDensityMultiPlot:
+class TestHighchartVDCDensityMultiPlot(BasicPlotTests):
     """
     Testing different attributes of Multiple Density plots on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_multiplot(self, dummy_dist_vd):
-        """
-        Create a multi-density plot for vDataColumn
-        """
-        return dummy_dist_vd[COL_NAME].density(by=BY_COL)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_multiplot):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_multiplot
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type_for_multiplot(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "wrong object crated"
+        return [COL_NAME, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data[COL_NAME].density,
+            {"by": BY_COL},
+        )
 
     def test_properties_multiple_plots_produced_for_multiplot(
         self,
@@ -164,64 +124,28 @@ class TestHighchartsVDFDensityPlot:
     Testing different attributes of Density plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_vdf(self, dummy_dist_vd):
-        """
-        Create a density plot for vDataFrame
-        """
-        return dummy_dist_vd.density(columns=[COL_NAME])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_vdf):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_vdf
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME, "density"]
 
-    def test_properties_xaxis_title(self):
+    def create_plot(self):
         """
-        Testing x-axis title
+        Create the plot
         """
-        # Arrange
-        test_title = COL_NAME
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_title(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "density"
-        # Act
-        # Assert - checking y axis label
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_additional_options_custom_width_and_height(self, dummy_dist_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = dummy_dist_vd.density(
-            [COL_NAME], width=custom_width, height=custom_height
+        return (
+            self.data.density,
+            {"columns": COL_NAME},
         )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
     @pytest.mark.parametrize("nbins", [10, 20])
     @pytest.mark.parametrize("kernel", ["logistic", "sigmoid", "silverman"])

@@ -21,59 +21,45 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
 
 # Other Modules
 
 
-class TestHighchartsVDFACFPlot:
+class TestHighchartsVDFACFPlot(BasicPlotTests):
     """
     Testing different attributes of ACF plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def acf_plot_fixture(self, amazon_vd):
-        """
-        Create an ACF plot
-        """
-        return amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=12,
-            by=["state"],
-            unit="month",
-            method="spearman",
-        )
-
     @pytest.fixture(autouse=True)
-    def result(self, acf_plot_fixture):
+    def data(self, amazon_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = acf_plot_fixture
+        self.data = amazon_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "wrong object crated"
+        return ["lag", "value"]
 
-    def test_properties_xaxis_label(self):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = "lag"
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
+        return (
+            self.data.acf,
+            {
+                "ts": "date",
+                "column": "number",
+                "p": 12,
+                "by": ["state"],
+                "unit": "month",
+                "method": "spearman",
+            },
+        )
 
     def test_properties_vertical_lines_for_custom_lag(self, amazon_vd):
         """
@@ -108,26 +94,3 @@ class TestHighchartsVDFACFPlot:
         assert (
             len(self.result.data_temp[0].data) == lag_number
         ), "Number of lag points inconsistent"
-
-    def test_additional_options_custom_width_and_height(self, amazon_vd):
-        """
-        Test if custom width and height working
-        """
-        # Arrange
-        custom_width = 700
-        custom_height = 700
-        # Act
-        result = amazon_vd.acf(
-            ts="date",
-            column="number",
-            p=12,
-            by=["state"],
-            unit="month",
-            method="spearman",
-            width=custom_width,
-            height=custom_height,
-        )
-        # Assert - checking if correct object created
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"

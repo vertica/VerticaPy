@@ -24,7 +24,7 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_yaxis_label
+from ..conftest import BasicPlotTests
 
 # Testing variables
 TIME_COL = "date"
@@ -33,33 +33,39 @@ COL_NAME_2 = "category"
 CAT_OPTION = "A"
 
 
-class TestHighchartsVDCLinePlot:
+class TestHighchartsVDCLinePlot(BasicPlotTests):
     """
     Testing different attributes of Line plot on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_line_data_vd):
-        """
-        Create a line plot for vDataColumn
-        """
-        return dummy_line_data_vd[COL_NAME_1].plot(ts=TIME_COL, by=COL_NAME_2)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_line_data_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_line_data_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["date", COL_NAME_1]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data[COL_NAME_1].plot,
+            {"ts": TIME_COL, "by": COL_NAME_2},
+        )
+
+    @pytest.mark.skip(reason="The plot does not have label on y-axis yet")
+    def test_properties_yaxis_label(self):
+        """
+        Testing y-axis title
+        """
 
     def test_properties_output_type_for_one_trace(
         self, dummy_line_data_vd, plotting_library_object
@@ -75,31 +81,6 @@ class TestHighchartsVDCLinePlot:
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
-    def test_properties_x_axis_title(
-        self,
-    ):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_tile = "date"
-        # Act
-        # Assert - checking if correct object created
-        assert get_xaxis_label(self.result) == test_tile, "X axis title incorrect"
-
-    @pytest.mark.skip(reason="Highcharts does not have the label for y axis")
-    def test_properties_y_axis_title(
-        self,
-    ):
-        """
-        Testing y-axis label
-        """
-        # Arrange
-        test_tile = COL_NAME_1
-        # Act
-        # Assert - checking if correct object created
-        assert get_yaxis_label(self.result) == test_tile, "Y axis title incorrect"
-
     def test_data_count_of_all_values(self, dummy_line_data_vd):
         """
         Testing total points
@@ -111,23 +92,6 @@ class TestHighchartsVDCLinePlot:
             len(self.result.data_temp[0].data[0]) * len(self.result.data_temp[0].data)
             == total_count
         ), "The total values in the plot are not equal to the values in the dataframe."
-
-    def test_additional_options_custom_width_and_height(self, dummy_line_data_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 40
-        custom_height = 60
-        # Act
-        result = dummy_line_data_vd[COL_NAME_1].plot(
-            ts=TIME_COL, by=COL_NAME_2, width=custom_width, height=custom_height
-        )
-        # Assert - checking if correct object created
-        assert (
-            result.options["chart"].width == custom_width
-            and result.options["chart"].height == custom_height
-        ), "Custom width or height not working"
 
     @pytest.mark.parametrize("kind", ["spline", "area", "step"])
     @pytest.mark.parametrize("start_date", ["1930"])
@@ -146,32 +110,30 @@ class TestHighchartsVDCLinePlot:
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
-class TestHighchartsVDFLinePlot:
+class TestHighchartsVDFLinePlot(BasicPlotTests):
     """
     Testing different attributes of Line plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_vdf(self, dummy_line_data_vd):
-        """
-        Create a line plot for vDataFrame
-        """
-        return dummy_line_data_vd[dummy_line_data_vd[COL_NAME_2] == CAT_OPTION].plot(
-            ts=TIME_COL, columns=COL_NAME_1
-        )
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_vdf):
+    def data(self, dummy_line_data_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_vdf
+        self.data = dummy_line_data_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["date", COL_NAME_1]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data[self.data[COL_NAME_2] == CAT_OPTION].plot,
+            {"ts": TIME_COL, "columns": COL_NAME_1},
+        )

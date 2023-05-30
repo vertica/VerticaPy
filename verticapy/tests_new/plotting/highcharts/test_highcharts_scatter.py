@@ -24,13 +24,7 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_zaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
 
 
 # Testing variables
@@ -41,57 +35,33 @@ COL_NAME_4 = "Category"
 all_categories = ["A", "B", "C"]
 
 
-class TestHighchartsScatterVDF2DPlot:
+class TestHighchartsScatterVDF2DPlot(BasicPlotTests):
     """
     Testing different attributes of 2D scatter plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_scatter_vd):
-        """
-        Create a 2D scatter plot for vDataFrame
-        """
-        return dummy_scatter_vd.scatter([COL_NAME_1, COL_NAME_2])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_scatter_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_scatter_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME_1, COL_NAME_2]
 
-    def test_properties_xaxis_title(
-        self,
-    ):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_title(
-        self,
-    ):
-        """
-        Testing y-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
+        return (
+            self.data.scatter,
+            {"columns": [COL_NAME_1, COL_NAME_2]},
+        )
 
     def test_properties_all_unique_values_for_by(self, dummy_scatter_vd):
         """
@@ -122,25 +92,6 @@ class TestHighchartsScatterVDF2DPlot:
             dummy_scatter_vd
         ), "Number of points not consistent with data"
 
-    def test_additional_options_custom_width_and_height(self, dummy_scatter_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = dummy_scatter_vd.scatter(
-            [COL_NAME_1, COL_NAME_2],
-            width=custom_width,
-            height=custom_height,
-        )
-        # Assert - checking if correct object created
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
-
     @pytest.mark.parametrize("attributes", [[COL_NAME_3, 50, 2], [None, 1000, 4]])
     def test_properties_output_type_for_all_options(
         self,
@@ -164,99 +115,44 @@ class TestHighchartsScatterVDF2DPlot:
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
-class TestHighchartsScatterVDF3DPlot:
+class TestHighchartsScatterVDF3DPlot(BasicPlotTests):
     """
     Testing different attributes of 3D scatter plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_2(self, dummy_scatter_vd):
-        """
-        Create a 3D scatter plot for vDataFrame
-        """
-        return dummy_scatter_vd.scatter([COL_NAME_1, COL_NAME_2, COL_NAME_3])
-
-    @pytest.fixture(scope="class")
-    def plot_result_3(self, dummy_scatter_vd):
-        """
-        Create a 3D scatter plot for vDataFrame using "by" option
-        """
-        result = dummy_scatter_vd.scatter(
-            [
-                COL_NAME_1,
-                COL_NAME_2,
-                COL_NAME_3,
-            ],
-            by=COL_NAME_4,
-        )
-        return result
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_2):
+    def data(self, dummy_scatter_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_2
+        self.data = dummy_scatter_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [COL_NAME_1, COL_NAME_2, COL_NAME_3]
 
-    def test_properties_xaxis_title_3d_plot(
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.scatter,
+            {"columns": [COL_NAME_1, COL_NAME_2, COL_NAME_3], "by": COL_NAME_4},
+        )
+
+    def test_properties_all_unique_values_for_by_3d_plot(
         self,
     ):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_title_3d_plot(
-        self,
-    ):
-        """
-        Testing y-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_2
-        # Act
-        # Assert
-        assert (
-            get_yaxis_label(self.result) == test_title
-        ), "Y axis label incorrect in 3D plot"
-
-    def test_properties_zaxis_title_3d_plot(
-        self,
-    ):
-        """
-        Testing z-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_3
-        # Act
-        # Assert
-        assert (
-            get_zaxis_label(self.result) == test_title
-        ), "Z axis label incorrect in 3D plot"
-
-    def test_properties_all_unique_values_for_by_3d_plot(self, plot_result_3):
         """
         Test if all unique values plotted
         """
         # Arrange
         # Act
-        result = plot_result_3
         # Assert
-        # Assert
-        assert len(result.data_temp) == len(
+        assert len(self.result.data_temp) == len(
             all_categories
         ), "Some unique values were not found in the plot"
 

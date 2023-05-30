@@ -21,18 +21,12 @@ import pytest
 
 
 # Other Modules
-
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 
 # Verticapy
 from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import lift_chart, prc_curve
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-    get_title,
-)
+from verticapy.tests_new.plotting.conftest import get_title
 
 # Testing variables
 COL_NAME_1 = "0"
@@ -53,33 +47,36 @@ def load_model(schema_loader, dummy_dist_vd):
     model.drop()
 
 
-class TestHighchartsMachineLearningROCPlot:
+class TestHighchartsMachineLearningROCPlot(BasicPlotTests):
     """
     Testing different attributes of ROC plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_roc(self, model_result):
-        """
-        Create an ROC plot
-        """
-        return model_result.roc_curve()
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_roc):
+    def model(self, model_result):
         """
-        Get the plot results
+        Load test model
         """
-        self.result = plot_result_roc
+        self.model = model_result
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return [
+            "False Positive Rate (1-Specificity)",
+            "True Positive Rate (Sensitivity)",
+        ]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.roc_curve,
+            {},
+        )
 
     def test_properties_title(self):
         """
@@ -91,205 +88,104 @@ class TestHighchartsMachineLearningROCPlot:
         # Assert
         assert get_title(self.result) == test_title, "Plot Title Incorrect"
 
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = "False Positive Rate (1-Specificity)"
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
 
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "True Positive Rate (Sensitivity)"
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height_and_width(self, model_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 10
-        custom_width = 20
-        # Act
-        result = model_result.roc_curve(
-            pos_label=POS_LABEL, width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
-
-
-class TestHighchartsMachineLearningCutoffCurvePlot:
+class TestHighchartsMachineLearningCutoffCurvePlot(BasicPlotTests):
     """
     Testing different attributes of Curve plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_cutoff(self, model_result):
-        """
-        Create cutoff curve
-        """
-        return model_result.cutoff_curve(pos_label=POS_LABEL)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_cutoff):
+    def model(self, model_result):
         """
-        Get the plot results
+        Load test model
         """
-        self.result = plot_result_cutoff
+        self.model = model_result
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["Decision Boundary", "Values"]
 
-    def test_properties_xaxis_label(self):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = "Decision Boundary"
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
+        return (
+            self.model.cutoff_curve,
+            {"pos_label": POS_LABEL},
+        )
 
     @pytest.mark.skip(reason="Cannot extract y axis value from highchart")
     def test_properties_yaxis_label(self):
         """
         Testing y-axis title
         """
-        # Arrange
-        test_title = "Values"
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, model_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 2
-        custom_width = 3
-        # Act
-        result = model_result.cutoff_curve(
-            pos_label=POS_LABEL, width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
 
-class TestHighchartsMachineLearningPRCPlot:
+class TestHighchartsMachineLearningPRCPlot(BasicPlotTests):
     """
     Testing different attributes of PRC plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_prc(self, dummy_probability_data):
-        """
-        Create a PRC plot
-        """
-        return prc_curve("y_true", "y_score", dummy_probability_data)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_prc):
+    def data(self, dummy_probability_data):
         """
-        Get the plot results
+        Load test model
         """
-        self.result = plot_result_prc
+        self.data = dummy_probability_data
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["Recall", "Precision"]
 
-    def test_properties_xaxis_label(self):
+    def create_plot(self):
         """
-        Testing x-axis label
+        Create the plot
         """
-        # Arrange
-        test_title = "Recall"
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "Precision"
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, dummy_probability_data):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 650
-        custom_width = 700
-        # Act
-        result = prc_curve(
-            "y_true",
-            "y_score",
-            dummy_probability_data,
-            width=custom_width,
-            height=custom_height,
+        return (
+            prc_curve,
+            {"y_true": "y_true", "y_score": "y_score", "input_relation": self.data},
         )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
 
-class TestHighchartsMachineLearningLiftChartPlot:
+class TestHighchartsMachineLearningLiftChartPlot(BasicPlotTests):
     """
     Testing different attributes of Lift Chart plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_lift_chart(self, dummy_probability_data):
-        """
-        Create a lift chart
-        """
-        return lift_chart("y_true", "y_score", dummy_probability_data)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_lift_chart):
+    def data(self, dummy_probability_data):
         """
-        Get the plot results
+        Load test model
         """
-        self.result = plot_result_lift_chart
+        self.data = dummy_probability_data
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return ["Cumulative Data Fraction", "Values"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            lift_chart,
+            {"y_true": "y_true", "y_score": "y_score", "input_relation": self.data},
+        )
+
+    @pytest.mark.skip(reason="Need to fix y axis")
+    def test_properties_yaxis_label(self):
+        """
+        Testing y-axis title
+        """
 
     def test_properties_title(self):
         """
@@ -300,44 +196,3 @@ class TestHighchartsMachineLearningLiftChartPlot:
         # Act
         # Assert
         assert get_title(self.result) == test_title, "Plot Title Incorrect"
-
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = "Cumulative Data Fraction"
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    @pytest.mark.skip(reason="Need to fix y axis")
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "Values"
-        # Act
-        # Assert
-        assert get_yaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, dummy_probability_data):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 6
-        custom_width = 7
-        # Act
-        result = prc_curve(
-            "y_true",
-            "y_score",
-            dummy_probability_data,
-            width=custom_width,
-            height=custom_height,
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"

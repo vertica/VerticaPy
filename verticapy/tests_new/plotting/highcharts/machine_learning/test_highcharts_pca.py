@@ -18,7 +18,7 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 
 # Other Modules
 
@@ -28,8 +28,6 @@ from verticapy.learn.decomposition import PCA
 from verticapy.tests_new.plotting.conftest import (
     get_xaxis_label,
     get_yaxis_label,
-    get_width,
-    get_height,
 )
 
 # Testing variables
@@ -38,37 +36,41 @@ COL_NAME_2 = "Y"
 COL_NAME_3 = "Z"
 
 
-class TestHighchartsMachineLearningPCACirclePlot:
+class TestHighchartsMachineLearningPCACirclePlot(BasicPlotTests):
     """
     Testing different attributes of PCA circle plot
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, schema_loader, dummy_scatter_vd):
+    @pytest.fixture(autouse=True)
+    def model(self, schema_loader, dummy_scatter_vd):
         """
-        Create a PCA circle plot
+        Load test model
         """
         model = PCA(f"{schema_loader}.pca_circle_test")
         model.drop()
         model.fit(dummy_scatter_vd[COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        yield model.plot_circle(), model
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    @property
+    def cols(self):
         """
-        Get the plot results
+        Store labels for X,Y,Z axis to check.
         """
-        self.result = plot_result[0]
+        return [
+            "Dim1 (80%)",
+            "Dim2 (20%)",
+        ]
 
-    def test_properties_output_type(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
+        return (
+            self.model.plot_circle,
+            {},
+        )
 
     def test_properties_xaxis_label(self):
         """
@@ -89,17 +91,3 @@ class TestHighchartsMachineLearningPCACirclePlot:
         # Act
         # Assert
         assert test_title in get_yaxis_label(self.result), "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, plot_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 6
-        custom_width = 7
-        # Act
-        result = plot_result[1].plot_circle(height=custom_height, width=custom_width)
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"

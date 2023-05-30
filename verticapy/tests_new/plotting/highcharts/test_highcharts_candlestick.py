@@ -20,11 +20,10 @@ import pytest
 # Standard Python Modules
 
 
-# Other Modules
-
-
 # Vertica
 from vertica_highcharts.highstock.highstock import Highstock
+from ..conftest import BasicPlotTests
+
 
 # Testing variables
 COL_NAME_1 = "values"
@@ -33,26 +32,47 @@ COL_OF = "survived"
 BY_COL = "category"
 
 
-class TestHighChartsVDCCandlestick:
+class TestHighChartsVDCCandlestick(BasicPlotTests):
     """
     Testing different attributes of Candlestick plot on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_line_data_vd):
-        """
-        Create a candlestick plot for vDataColumn
-        """
-        return dummy_line_data_vd[COL_NAME_1].candlestick(ts=TIME_COL)
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_line_data_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_line_data_vd
 
-    def test_properties_output_type(self):
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [None, None]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data[COL_NAME_1].candlestick,
+            {"ts": TIME_COL},
+        )
+
+    @pytest.mark.skip(reason="The plot does not have label on x-axis yet")
+    def test_properties_xaxis_label(self):
+        """
+        Testing x-axis title
+        """
+
+    @pytest.mark.skip(reason="The plot does not have label on y-axis yet")
+    def test_properties_yaxis_label(self):
+        """
+        Testing x-axis title
+        """
+
+    def test_properties_output_type(self, plotting_library_object):
         """
         Test if correct object created
         """
@@ -61,7 +81,9 @@ class TestHighChartsVDCCandlestick:
         # Assert - checking if correct object created
         assert isinstance(self.result, Highstock), "Wrong object created"
 
-    def test_additional_options_custom_width_and_height(self, dummy_line_data_vd):
+    def test_additional_options_custom_width_and_height(
+        self,
+    ):
         """
         Testing custom width and height
         """
@@ -69,7 +91,7 @@ class TestHighChartsVDCCandlestick:
         custom_width = 3
         custom_height = 4
         # Act
-        result = dummy_line_data_vd[COL_NAME_1].candlestick(
+        result = self.data[COL_NAME_1].candlestick(
             ts=TIME_COL, width=custom_width, height=custom_height
         )
         # Assert

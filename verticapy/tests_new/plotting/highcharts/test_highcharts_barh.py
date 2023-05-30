@@ -24,12 +24,7 @@ import pytest
 
 
 # Vertica
-from verticapy.tests_new.plotting.conftest import (
-    get_xaxis_label,
-    get_yaxis_label,
-    get_width,
-    get_height,
-)
+from ..conftest import BasicPlotTests
 
 # Testing variables
 COL_NAME = "check 2"
@@ -38,33 +33,33 @@ COL_NAME_VDF_1 = "cats"
 COL_NAME_VDF_OF = "0"
 
 
-class TestHighchartsVDCBarhPlot:
+class TestHighchartsVDCBarhPlot(BasicPlotTests):
     """
     Testing different attributes of HHorizontal Bar plot on a vDataColumn
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_vd):
-        """
-        Create a horizontal bar plot for vDataColumn
-        """
-        return dummy_vd[COL_NAME].barh()
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result):
+    def data(self, dummy_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result
+        self.data = dummy_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "wrong object crated"
+        return [COL_NAME, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data[COL_NAME].barh,
+            {},
+        )
 
     def test_data_ratios(self, dummy_vd):
         """
@@ -77,26 +72,6 @@ class TestHighchartsVDCBarhPlot:
             set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
         )
 
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "density"
-        # Act
-        # Assert - checking y axis label
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
-
     def test_all_categories_created(self):
         """
         Test all categories
@@ -104,23 +79,6 @@ class TestHighchartsVDCBarhPlot:
         assert set(self.result.options["xAxis"].categories).issubset(
             set(["A", "B", "C"])
         )
-
-    def test_additional_options_custom_width_and_height(self, dummy_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = dummy_vd[COL_NAME].barh(
-            width=custom_width,
-            height=custom_height,
-        )
-        # Assert - checking if correct object created
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
     def test_additional_options_bargap(self, dummy_vd):
         """
@@ -159,33 +117,33 @@ class TestHighchartsVDCBarhPlot:
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
-class TestHighchartsVDFBarhPlot:
+class TestHighchartsVDFBarhPlot(BasicPlotTests):
     """
     Testing different attributes of HHorizontal Bar plot on a vDataFrame
     """
 
-    @pytest.fixture(scope="class")
-    def plot_result_vdf(self, dummy_dist_vd):
-        """
-        Create a horizontal bar plot for vDataFrame
-        """
-        return dummy_dist_vd.barh(columns=[COL_NAME_VDF_1])
-
     @pytest.fixture(autouse=True)
-    def result(self, plot_result_vdf):
+    def data(self, dummy_dist_vd):
         """
-        Get the plot results
+        Load test data
         """
-        self.result = plot_result_vdf
+        self.data = dummy_dist_vd
 
-    def test_properties_output_type(self, plotting_library_object):
+    @property
+    def cols(self):
         """
-        Test if correct object created
+        Store labels for X,Y,Z axis to check.
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "wrong object crated"
+        return [COL_NAME_VDF_1, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.barh,
+            {"columns": COL_NAME_VDF_1},
+        )
 
     def test_data_ratios(self, dummy_dist_vd):
         """
@@ -198,26 +156,6 @@ class TestHighchartsVDFBarhPlot:
             set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
         )
 
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_VDF_1
-        # Act
-        # Assert - checking x axis label
-        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = "density"
-        # Act
-        # Assert - checking y axis label
-        assert get_yaxis_label(self.result) == test_title, "X axis label incorrect"
-
     def test_all_categories_created(self):
         """
         Test all categories
@@ -225,24 +163,6 @@ class TestHighchartsVDFBarhPlot:
         assert set(self.result.options["xAxis"].categories).issubset(
             set(["A", "B", "C"])
         )
-
-    def test_additional_options_custom_width_and_height(self, dummy_dist_vd):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 300
-        custom_height = 400
-        # Act
-        result = dummy_dist_vd.barh(
-            columns=[COL_NAME_VDF_1],
-            width=custom_width,
-            height=custom_height,
-        )
-        # Assert - checking if correct object created
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
 
     @pytest.mark.parametrize(
         "of_col, method", [(COL_NAME_VDF_OF, "min"), (COL_NAME_VDF_OF, "max")]

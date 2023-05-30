@@ -18,14 +18,13 @@ permissions and limitations under the License.
 import pytest
 
 # Standard Python Modules
-
+from verticapy.tests_new.exp.conftest import BasicPlotTests
 
 # Other Modules
 
 
 # Verticapy
 from verticapy.learn.svm import LinearSVC
-from verticapy.tests_new.plotting.conftest import get_xaxis_label, get_width, get_height
 
 # Testing variables
 COL_NAME_1 = "X"
@@ -34,39 +33,88 @@ COL_NAME_3 = "Z"
 BY_COL = "Category"
 
 
-class TestHighchartsMachineLearningSVMClassifierPlot:
+class TestHighchartsMachineLearningSVMClassifier1DPlot(BasicPlotTests):
     """
     Testing different attributes of SVM classifier plot
     """
 
-    def __init__(self):
-        self.result_2d = None
-        self.result_3d = None
-
-    @pytest.fixture(scope="class")
-    def plot_result(self, dummy_pred_data_vd):
+    @pytest.fixture(autouse=True)
+    def model(self, schema_loader, dummy_pred_data_vd):
         """
-        Create 1D SVM classifier plot
+        Load test model
         """
-        model = LinearSVC(name="public.SVC")
+        model = LinearSVC(name=f"{schema_loader}.SVC")
         model.fit(dummy_pred_data_vd, [COL_NAME_1], BY_COL)
-        yield model.plot(), model
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(scope="class")
-    def plot_result_2d(self, dummy_pred_data_vd):
+    @property
+    def cols(self):
         """
-        Create 2D SVM classifier plot
+        Store labels for X,Y,Z axis to check.
         """
-        model = LinearSVC(name="public.SVC")
+        return [
+            COL_NAME_1,
+            BY_COL,
+        ]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.plot,
+            {},
+        )
+
+
+class TestHighchartsMachineLearningSVMClassifier2DPlot(BasicPlotTests):
+    """
+    Testing different attributes of SVM classifier plot
+    """
+
+    @pytest.fixture(autouse=True)
+    def model(self, schema_loader, dummy_pred_data_vd):
+        """
+        Load test model
+        """
+        model = LinearSVC(name=f"{schema_loader}.SVC")
         model.fit(dummy_pred_data_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        yield model.plot(), model
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(scope="class")
-    def plot_result_3d(self, schema_loader, dummy_pred_data_vd):
+    @property
+    def cols(self):
         """
-        Create 3D SVM classifier plot
+        Store labels for X,Y,Z axis to check.
+        """
+        return [
+            COL_NAME_1,
+            COL_NAME_2,
+        ]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.plot,
+            {},
+        )
+
+
+@pytest.mark.skip(reason="3d plot not supported in highcharts")
+class TestHighchartsMachineLearningSVMClassifier3DPlot(BasicPlotTests):
+    """
+    Testing different attributes of SVM classifier plot
+    """
+
+    @pytest.fixture(autouse=True)
+    def model(self, schema_loader, dummy_pred_data_vd):
+        """
+        Load test model
         """
         model = LinearSVC(name=f"{schema_loader}.SVC")
         model.fit(
@@ -74,82 +122,25 @@ class TestHighchartsMachineLearningSVMClassifierPlot:
             [COL_NAME_1, COL_NAME_2, COL_NAME_3],
             BY_COL,
         )
-        yield model.plot()
+        self.model = model
+        yield
         model.drop()
 
-    @pytest.fixture(autouse=True)
-    def result(self, plot_result, plot_result_2d):
+    @property
+    def cols(self):
         """
-        Get the plot results
+        Store labels for X,Y,Z axis to check.
         """
-        self.result = plot_result[0]
-        self.result_2d = plot_result_2d[0]
-        # self.result_3d = plot_result_3d
+        return [
+            COL_NAME_1,
+            COL_NAME_2,
+        ]
 
-    def test_properties_output_type_for_1d(self, plotting_library_object):
+    def create_plot(self):
         """
-        Test if correct object created for 1D plot
+        Create the plot
         """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self.result, plotting_library_object), "Wrong object created"
-
-    def test_properties_output_typefor_2d(self, plotting_library_object):
-        """
-        Test if correct object created for 2D plot
-        """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(self._2d, plotting_library_object), "Wrong object created"
-
-    @pytest.mark.skip(reason="3d plot not supported in highcharts")
-    def test_properties_output_type_for_3d(self, plotting_library_object):
-        """
-        Test if correct object created for 3D plot
-        """
-        # Arrange
-        # Act
-        # Assert - checking if correct object created
-        assert isinstance(
-            self.result_3d, plotting_library_object
-        ), "Wrong object created"
-
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis label
-        """
-        # Arrange
-        test_title = COL_NAME_1
-        # Act
-        # Assert
-        assert get_xaxis_label(self.result) == test_title, "Y axis label incorrect"
-
-    def test_additional_options_custom_height(self, plot_result):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 600
-        custom_width = 300
-        # Act
-        result = plot_result[1].plot(width=custom_width, height=custom_height)
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
-
-    def test_additional_options_custom_height_for_2d(self, plot_result_2d):
-        """
-        Test custom width and height
-        """
-        # rrange
-        custom_height = 600
-        custom_width = 700
-        # Act
-        result = plot_result_2d[1].plot(width=custom_width, height=custom_height)
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
+        return (
+            self.model.plot,
+            {},
+        )
