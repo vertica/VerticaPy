@@ -17,12 +17,9 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# Standard Python Modules
-
 
 # Verticapy
-from verticapy.tests_new.plotting.conftest import BasicPlotTests
-from verticapy.learn.neighbors import LocalOutlierFactor
+from verticapy.tests_new.plotting.base_test_files import LOFPlot2D, LOFPlot3D
 
 
 # Testing variables
@@ -31,68 +28,14 @@ COL_NAME_2 = "Y"
 COL_NAME_3 = "Z"
 
 
-class TestHighchartsMachineLearningLOFPlot2D(BasicPlotTests):
+class TestHighchartsMachineLearningLOFPlot2D(LOFPlot2D):
     """
     Testing different attributes of 2D LOF plot
     """
 
-    @pytest.fixture(autouse=True)
-    def model(self, dummy_scatter_vd, schema_loader):
-        """
-        Load test model
-        """
-        model = LocalOutlierFactor(f"{schema_loader}.lof_test")
-        model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2])
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, COL_NAME_2]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )
-
 
 @pytest.mark.skip(reason="Currently highchart only supports 2D plot")
-class TestHighchartsMachineLearningLOFPlot3D(BasicPlotTests):
+class TestHighchartsMachineLearningLOFPlot3D(LOFPlot3D):
     """
     Testing different attributes of 3D LOF plot
     """
-
-    @pytest.fixture(autouse=True)
-    def model(self, dummy_scatter_vd, schema_loader):
-        """
-        Load test model
-        """
-        model = LocalOutlierFactor(f"{schema_loader}.lof_test")
-        model.fit(dummy_scatter_vd, [COL_NAME_1, COL_NAME_2, COL_NAME_3])
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, COL_NAME_2, COL_NAME_3]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )

@@ -17,15 +17,11 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# Standard Python Modules
-
-
-# Other Modules
-
-
 # Vertica
-from ..conftest import BasicPlotTests
-
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCHistogramPlot,
+    VDFHistogramPlot,
+)
 
 # Testing variables
 COL_NAME_1 = "binary"
@@ -33,95 +29,14 @@ COL_OF = "0"
 
 
 @pytest.mark.skip(reason="Hist not available in Highcharts currently")
-class TestHighchartsVDCHistogramPlot(BasicPlotTests):
+class TestHighchartsVDCHistogramPlot(VDCHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataColumn
     """
 
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME_1].hist,
-            {},
-        )
-
-    @pytest.mark.parametrize("method", ["count", "density"])
-    @pytest.mark.parametrize("max_cardinality", [3, 5])
-    def test_properties_output_type_for_all_options(
-        self, dummy_dist_vd, plotting_library_object, max_cardinality, method
-    ):
-        """
-        Test different method types and number of max_cardinality
-        """
-        # Arrange
-        # Act
-        result = dummy_dist_vd[COL_NAME_1].hist(
-            of=COL_OF, method=method, max_cardinality=max_cardinality
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
-
 
 @pytest.mark.skip(reason="Hist not available in Highcharts currently")
-class TestHighchartsVDFHistogramPlot(BasicPlotTests):
+class TestHighchartsVDFHistogramPlot(VDFHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.hist,
-            {"columns": COL_NAME_1},
-        )
-
-    @pytest.mark.parametrize("method", ["min", "max"])
-    @pytest.mark.parametrize("max_cardinality", [3, 5])
-    def test_properties_output_type_for_all_options(
-        self, dummy_dist_vd, plotting_library_object, max_cardinality, method
-    ):
-        """
-        Test different method types and number of max_cardinality
-        """
-        # Arrange
-        # Act
-        result = dummy_dist_vd.hist(
-            columns=[COL_NAME_1],
-            of=COL_OF,
-            method=method,
-            max_cardinality=max_cardinality,
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"

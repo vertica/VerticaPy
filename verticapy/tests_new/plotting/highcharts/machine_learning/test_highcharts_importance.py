@@ -14,59 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
 # Verticapy
-from verticapy.tests_new.plotting.conftest import BasicPlotTests
-from verticapy.learn.ensemble import RandomForestClassifier
+from verticapy.tests_new.plotting.base_test_files import ImportanceBarChartPlot
 
 
-# Testing variables
-COL_NAME_1 = "PetalLengthCm"
-COL_NAME_2 = "PetalWidthCm"
-COL_NAME_3 = "SepalWidthCm"
-COL_NAME_4 = "SepalLengthCm"
-BY_COL = "Species"
-
-
-class TestHighchartsMachineLearningImportanceBarChartPlot(BasicPlotTests):
+class TestHighchartsMachineLearningImportanceBarChartPlot(ImportanceBarChartPlot):
     """
     Testing different attributes of Importance Bar Chart plot
     """
-
-    @pytest.fixture(autouse=True)
-    def model(self, iris_vd, schema_loader):
-        """
-        Load test model
-        """
-        model = RandomForestClassifier(f"{schema_loader}.importance_test")
-        model.fit(
-            iris_vd,
-            [COL_NAME_1, COL_NAME_2, COL_NAME_3, COL_NAME_4],
-            BY_COL,
-        )
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return ["Features", "Importance (%)"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.features_importance,
-            {},
-        )
 
     def test_data_no_of_columns(self):
         """

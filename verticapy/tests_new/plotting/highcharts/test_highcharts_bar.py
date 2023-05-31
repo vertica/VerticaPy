@@ -14,170 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
-# Other Modules
-
-
 # Vertica
-from ..conftest import BasicPlotTests
-
-# Testing variables
-COL_NAME = "check 2"
-COL_NAME_2 = "check 1"
-COL_NAME_VDF_1 = "cats"
-COL_NAME_VDF_OF = "0"
+from verticapy.tests_new.plotting.base_test_files import VDCBarPlot, VDFBarPlot
 
 
-class TestHighchartsVDCBarPlot(BasicPlotTests):
+class TestHighchartsVDCBarPlot(VDCBarPlot):
     """
     Testing different attributes of Bar plot on a vDataColumn
     """
 
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_vd
 
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME].bar,
-            {},
-        )
-
-    def test_data_ratios(self, dummy_vd):
-        """
-        Test data ratio plotted for bar chart
-        """
-        ### Checking if the density was plotted correctly
-        nums = dummy_vd.to_pandas()[COL_NAME].value_counts()
-        total = len(dummy_vd)
-        assert set(self.result.data_temp[0].data).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_all_categories_created(self):
-        """
-        Test all categories
-        """
-        assert set(self.result.options["xAxis"].categories).issubset(
-            set(["A", "B", "C"])
-        )
-
-    def test_additional_options_bargap(self, dummy_vd):
-        """
-        Test bargap option
-        """
-        # Arrange
-        # Act
-        result = dummy_vd[COL_NAME].bar(
-            bargap=0.5,
-        )
-        # Assert - checking if correct object created
-        assert result.data_temp[0].pointPadding == 0.25, "Custom bargap not working"
-
-    @pytest.mark.parametrize("max_cardinality, bargap", [(1, 0.1), (4, 0.4)])
-    def test_properties_output_type_for_all_options(
-        self,
-        dummy_vd,
-        plotting_library_object,
-        bargap,
-        max_cardinality,
-    ):
-        """
-        Test max_cardinatlity and bar gap
-        """
-        # Arrange
-        # Act
-        result = dummy_vd[COL_NAME].bar(
-            bargap=bargap,
-            max_cardinality=max_cardinality,
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
-
-
-class TestHighchartsVDFBarPlot(BasicPlotTests):
+class TestHighchartsVDFBarPlot(VDFBarPlot):
     """
     Testing different attributes of Bar plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_VDF_1, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.bar,
-            {"columns": COL_NAME_VDF_1},
-        )
-
-    def test_data_ratios(self, dummy_dist_vd):
-        """
-        Test data ratio
-        """
-        ### Checking if the density was plotted correctly
-        nums = dummy_dist_vd.to_pandas()[COL_NAME_VDF_1].value_counts()
-        total = len(dummy_dist_vd)
-        assert set(self.result.data_temp[0].data).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_all_categories_created(self):
-        """
-        Test all categories
-        """
-        assert set(self.result.options["xAxis"].categories).issubset(
-            set(["A", "B", "C"])
-        )
-
-    @pytest.mark.parametrize(
-        "of_col, method", [(COL_NAME_VDF_OF, "min"), (COL_NAME_VDF_OF, "max")]
-    )
-    def test_properties_output_type_for_all_options(
-        self,
-        dummy_dist_vd,
-        plotting_library_object,
-        of_col,
-        method,
-    ):
-        """
-        Test of and method combination
-        """
-        # Arrange
-        # Act
-        result = dummy_dist_vd[COL_NAME_VDF_1].bar(
-            of=of_col,
-            method=method,
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"

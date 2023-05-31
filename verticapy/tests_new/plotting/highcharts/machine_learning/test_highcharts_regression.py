@@ -14,64 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
 # Verticapy
-from verticapy.learn.linear_model import LinearRegression
-from verticapy.tests_new.plotting.conftest import BasicPlotTests
+from verticapy.tests_new.plotting.base_test_files import LearningRegressionPlot
 
 
-# Testing variables
-COL_NAME_1 = "X"
-COL_NAME_2 = "Y"
-
-
-class TestHighchartsMachineLearningRegressionPlot(BasicPlotTests):
+class TestHighchartsMachineLearningRegressionPlot(LearningRegressionPlot):
     """
     Testing different attributes of Regression plot
     """
-
-    @pytest.fixture(autouse=True)
-    def model(self, schema_loader, dummy_scatter_vd):
-        """
-        Load test model
-        """
-        model = LinearRegression(f"{schema_loader}.LR_churn")
-        model.fit(dummy_scatter_vd, [COL_NAME_1], COL_NAME_2)
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [
-            COL_NAME_1,
-            COL_NAME_2,
-        ]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )
-
-    def test_data_all_scatter_points(self, dummy_scatter_vd):
-        """
-        Test if all points are plotted
-        """
-        # Arrange
-        # Act
-        # Assert
-        assert len(self.result.data_temp[1].data) == len(
-            dummy_scatter_vd
-        ), "Discrepancy between points plotted and total number ofp oints"

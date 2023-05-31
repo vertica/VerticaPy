@@ -17,92 +17,26 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# Standard Python Modules
-
-
-# Other Modules
-
 
 # Vertica
-from ..conftest import BasicPlotTests
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCDensityPlot,
+    VDCDensityMultiPlot,
+    VDFDensityPlot,
+)
 
 
-# Testing variables
-COL_NAME = "0"
-BY_COL = "binary"
-
-
-class TestHighchartsVDCDensityPlot(BasicPlotTests):
+class TestHighchartsVDCDensityPlot(VDCDensityPlot):
     """
     Testing different attributes of Density plot on a vDataColumn
     """
 
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME].density,
-            {},
-        )
-
-    @pytest.mark.parametrize("nbins", [10, 20])
-    @pytest.mark.parametrize("kernel", ["logistic", "sigmoid", "silverman"])
-    def test_properties_output_type_for_all_options(
-        self, dummy_dist_vd, plotting_library_object, nbins, kernel
-    ):
-        """
-        Test different bin sizes and kernel types
-        """
-        # Arrange
-        # Act
-        result = dummy_dist_vd[COL_NAME].density(kernel=kernel, nbins=nbins)
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
-
 
 @pytest.mark.skip("Error in this highchart plot")
-class TestHighchartVDCDensityMultiPlot(BasicPlotTests):
+class TestHighchartVDCDensityMultiPlot(VDCDensityMultiPlot):
     """
     Testing different attributes of Multiple Density plots on a vDataColumn
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME].density,
-            {"by": BY_COL},
-        )
 
     def test_properties_multiple_plots_produced_for_multiplot(
         self,
@@ -119,44 +53,7 @@ class TestHighchartVDCDensityMultiPlot(BasicPlotTests):
         ), "Two plots not produced for two classes"
 
 
-class TestHighchartsVDFDensityPlot:
+class TestHighchartsVDFDensityPlot(VDFDensityPlot):
     """
     Testing different attributes of Density plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_dist_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_dist_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME, "density"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.density,
-            {"columns": COL_NAME},
-        )
-
-    @pytest.mark.parametrize("nbins", [10, 20])
-    @pytest.mark.parametrize("kernel", ["logistic", "sigmoid", "silverman"])
-    def test_properties_output_type_for_all_options(
-        self, dummy_dist_vd, plotting_library_object, nbins, kernel
-    ):
-        """
-        Test different bin sizes and kernel types
-        """
-        # Arrange
-        # Act
-        result = dummy_dist_vd["0"].density(kernel=kernel, nbins=nbins)
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"

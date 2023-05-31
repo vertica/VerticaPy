@@ -14,48 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
-# Other Modules
-
-
 # Verticapy
-from verticapy.tests_new.plotting.conftest import BasicPlotTests
-from verticapy.learn.model_selection import elbow
-
-# Testing variables
-COL_NAME_1 = "PetalLengthCm"
-COL_NAME_2 = "PetalWidthCm"
+from verticapy.tests_new.plotting.base_test_files import ElbowCurvePlot
 
 
-class TestHighchartsMachineLearningElbowCurvePlot(BasicPlotTests):
+class TestHighchartsMachineLearningElbowCurvePlot(ElbowCurvePlot):
     """
     Testing different attributes of Elbow Curve plot
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, iris_vd):
-        """
-        Load test data
-        """
-        self.data = iris_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return ["Number of Clusters", "Elbow Score (Between-Cluster SS / Total SS)"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            elbow,
-            {"input_relation": self.data, "X": [COL_NAME_1, COL_NAME_2]},
-        )

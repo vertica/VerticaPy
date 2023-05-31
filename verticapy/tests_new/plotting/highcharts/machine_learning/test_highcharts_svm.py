@@ -17,128 +17,28 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# Standard Python Modules
-
-
 # Verticapy
-from verticapy.learn.svm import LinearSVC
-from verticapy.tests_new.plotting.conftest import BasicPlotTests
-
-# Testing variables
-COL_NAME_1 = "X"
-COL_NAME_2 = "Y"
-COL_NAME_3 = "Z"
-BY_COL = "Category"
+from verticapy.tests_new.plotting.base_test_files import (
+    SVMClassifier1DPlot,
+    SVMClassifier2DPlot,
+    SVMClassifier3DPlot,
+)
 
 
-class TestHighchartsMachineLearningSVMClassifier1DPlot(BasicPlotTests):
+class TestHighchartsMachineLearningSVMClassifier1DPlot(SVMClassifier1DPlot):
     """
     Testing different attributes of SVM classifier plot
     """
 
-    @pytest.fixture(autouse=True)
-    def model(self, schema_loader, dummy_pred_data_vd):
-        """
-        Load test model
-        """
-        model = LinearSVC(name=f"{schema_loader}.SVC")
-        model.fit(dummy_pred_data_vd, [COL_NAME_1], BY_COL)
-        self.model = model
-        yield
-        model.drop()
 
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [
-            COL_NAME_1,
-            BY_COL,
-        ]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )
-
-
-class TestHighchartsMachineLearningSVMClassifier2DPlot(BasicPlotTests):
+class TestHighchartsMachineLearningSVMClassifier2DPlot(SVMClassifier2DPlot):
     """
     Testing different attributes of SVM classifier plot
     """
-
-    @pytest.fixture(autouse=True)
-    def model(self, schema_loader, dummy_pred_data_vd):
-        """
-        Load test model
-        """
-        model = LinearSVC(name=f"{schema_loader}.SVC")
-        model.fit(dummy_pred_data_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [
-            COL_NAME_1,
-            COL_NAME_2,
-        ]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )
 
 
 @pytest.mark.skip(reason="3d plot not supported in highcharts")
-class TestHighchartsMachineLearningSVMClassifier3DPlot(BasicPlotTests):
+class TestHighchartsMachineLearningSVMClassifier3DPlot(SVMClassifier3DPlot):
     """
     Testing different attributes of SVM classifier plot
     """
-
-    @pytest.fixture(autouse=True)
-    def model(self, schema_loader, dummy_pred_data_vd):
-        """
-        Load test model
-        """
-        model = LinearSVC(name=f"{schema_loader}.SVC")
-        model.fit(
-            dummy_pred_data_vd,
-            [COL_NAME_1, COL_NAME_2, COL_NAME_3],
-            BY_COL,
-        )
-        self.model = model
-        yield
-        model.drop()
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [
-            COL_NAME_1,
-            COL_NAME_2,
-        ]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.model.plot,
-            {},
-        )

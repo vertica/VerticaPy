@@ -14,52 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
 # Vertica
-from ..conftest import BasicPlotTests
-
-# Other Modules
+from verticapy.tests_new.plotting.base_test_files import ACFPlot
 
 
-class TestHighchartsVDFACFPlot(BasicPlotTests):
+class Testmatplotlib(ACFPlot):
     """
-    Testing different attributes of ACF plot on a vDataFrame
+    test
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, amazon_vd):
-        """
-        Load test data
-        """
-        self.data = amazon_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return ["lag", "value"]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.acf,
-            {
-                "ts": "date",
-                "column": "number",
-                "p": 12,
-                "by": ["state"],
-                "unit": "month",
-                "method": "spearman",
-            },
-        )
 
     def test_properties_vertical_lines_for_custom_lag(self, amazon_vd):
         """

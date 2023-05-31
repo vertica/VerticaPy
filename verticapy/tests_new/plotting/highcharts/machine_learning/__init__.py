@@ -14,27 +14,3 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Vertica
-from verticapy.tests_new.plotting.base_test_files import (
-    VDCBoxPlot,
-    VDCParitionBoxPlot,
-    VDFBoxPlot,
-)
-
-
-class TestHighchartsVDCBoxPlot(VDCBoxPlot):
-    """
-    Testing different attributes of Box plot on a vDataColumn
-    """
-
-
-class TestHighchartsParitionVDCBoxPlot(VDCParitionBoxPlot):
-    """
-    Testing different attributes of Box plot on a vDataColumn using "by" attribute
-    """
-
-
-class TestHighchartsVDFBoxPlot(VDFBoxPlot):
-    """
-    Testing different attributes of Box plot on a vDataFrame
-    """

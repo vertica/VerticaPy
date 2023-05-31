@@ -13,7 +13,7 @@ distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
-"""
+"""  
 # Standard Python Modules
 import random
 import tempfile
@@ -40,7 +40,7 @@ DUMMY_TEST_SIZE = 100
 @pytest.fixture(name="schema_loader", scope="session", autouse=True)
 def load_test_schema():
     """
-    Create a schema with a random name for test
+    Create a schema witha a random name for test
     """
     alphabet = string.ascii_letters
     random_string = "".join(random.choice(alphabet) for i in range(4))

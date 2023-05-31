@@ -17,12 +17,9 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# Standard Python Modules
-
-
 # Vertica
+from verticapy.tests_new.plotting.base_test_files import VDCCandlestick
 from vertica_highcharts.highstock.highstock import Highstock
-from ..conftest import BasicPlotTests
 
 
 # Testing variables
@@ -32,45 +29,10 @@ COL_OF = "survived"
 BY_COL = "category"
 
 
-class TestHighChartsVDCCandlestick(BasicPlotTests):
+class TestHighChartsVDCCandlestick(VDCCandlestick):
     """
     Testing different attributes of Candlestick plot on a vDataColumn
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_line_data_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_line_data_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [None, None]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME_1].candlestick,
-            {"ts": TIME_COL},
-        )
-
-    @pytest.mark.skip(reason="The plot does not have label on x-axis yet")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """
-
-    @pytest.mark.skip(reason="The plot does not have label on y-axis yet")
-    def test_properties_yaxis_label(self):
-        """
-        Testing x-axis title
-        """
 
     def test_properties_output_type(self, plotting_library_object):
         """
@@ -80,25 +42,6 @@ class TestHighChartsVDCCandlestick(BasicPlotTests):
         # Act
         # Assert - checking if correct object created
         assert isinstance(self.result, Highstock), "Wrong object created"
-
-    def test_additional_options_custom_width_and_height(
-        self,
-    ):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 3
-        custom_height = 4
-        # Act
-        result = self.data[COL_NAME_1].candlestick(
-            ts=TIME_COL, width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            result.options["chart"].width == custom_width
-            and result.options["chart"].height == custom_height
-        ), "Custom width or height not working"
 
     @pytest.mark.parametrize(
         "method, start_date", [("count", 1910), ("density", 1920), ("max", 1920)]

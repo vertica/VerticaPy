@@ -14,17 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
-# Other Modules
-
-
 # Vertica
-from ..conftest import BasicPlotTests
+from verticapy.tests_new.plotting.base_test_files import (
+    ScatterVDF2DPlot,
+    ScatterVDF3DPlot,
+)
 
 
 # Testing variables
@@ -35,33 +29,10 @@ COL_NAME_4 = "Category"
 all_categories = ["A", "B", "C"]
 
 
-class TestHighchartsScatterVDF2DPlot(BasicPlotTests):
+class TestHighchartsScatterVDF2DPlot(ScatterVDF2DPlot):
     """
     Testing different attributes of 2D scatter plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_scatter_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_scatter_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, COL_NAME_2]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.scatter,
-            {"columns": [COL_NAME_1, COL_NAME_2]},
-        )
 
     def test_properties_all_unique_values_for_by(self, dummy_scatter_vd):
         """
@@ -92,56 +63,11 @@ class TestHighchartsScatterVDF2DPlot(BasicPlotTests):
             dummy_scatter_vd
         ), "Number of points not consistent with data"
 
-    @pytest.mark.parametrize("attributes", [[COL_NAME_3, 50, 2], [None, 1000, 4]])
-    def test_properties_output_type_for_all_options(
-        self,
-        dummy_scatter_vd,
-        plotting_library_object,
-        attributes,
-    ):
-        """
-        Test different sizes, number of points and max_cardinality
-        """
-        # Arrange
-        # Act
-        size, max_nb_points, max_cardinality = attributes
-        result = dummy_scatter_vd.scatter(
-            [COL_NAME_1, COL_NAME_2],
-            size=size,
-            max_nb_points=max_nb_points,
-            max_cardinality=max_cardinality,
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
 
-
-class TestHighchartsScatterVDF3DPlot(BasicPlotTests):
+class TestHighchartsScatterVDF3DPlot(ScatterVDF3DPlot):
     """
     Testing different attributes of 3D scatter plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_scatter_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_scatter_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return [COL_NAME_1, COL_NAME_2, COL_NAME_3]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data.scatter,
-            {"columns": [COL_NAME_1, COL_NAME_2, COL_NAME_3], "by": COL_NAME_4},
-        )
 
     def test_properties_all_unique_values_for_by_3d_plot(
         self,

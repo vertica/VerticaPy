@@ -14,72 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-
-# Other Modules
-
-
 # Vertica
-from ..conftest import BasicPlotTests
 
-# Testing variables
-TIME_COL = "date"
-COL_NAME_1 = "values"
-COL_NAME_2 = "category"
-CAT_OPTION = "A"
+from verticapy.tests_new.plotting.base_test_files import VDCLinePlot, VDFLinePlot
 
 
-class TestHighchartsVDCLinePlot(BasicPlotTests):
+class TestHighchartsVDCLinePlot(VDCLinePlot):
     """
     Testing different attributes of Line plot on a vDataColumn
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_line_data_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_line_data_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return ["date", COL_NAME_1]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[COL_NAME_1].plot,
-            {"ts": TIME_COL, "by": COL_NAME_2},
-        )
-
-    @pytest.mark.skip(reason="The plot does not have label on y-axis yet")
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-
-    def test_properties_output_type_for_one_trace(
-        self, dummy_line_data_vd, plotting_library_object
-    ):
-        """
-        Test if correct object created
-        """
-        # Arrange
-        # Act
-        result = dummy_line_data_vd[dummy_line_data_vd[COL_NAME_2] == CAT_OPTION][
-            COL_NAME_1
-        ].plot(ts=TIME_COL)
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
 
     def test_data_count_of_all_values(self, dummy_line_data_vd):
         """
@@ -93,47 +36,8 @@ class TestHighchartsVDCLinePlot(BasicPlotTests):
             == total_count
         ), "The total values in the plot are not equal to the values in the dataframe."
 
-    @pytest.mark.parametrize("kind", ["spline", "area", "step"])
-    @pytest.mark.parametrize("start_date", ["1930"])
-    def test_properties_output_type_for_all_options(
-        self, dummy_line_data_vd, plotting_library_object, start_date, kind
-    ):
-        """
-        Testing different kinds and start date
-        """
-        # Arrange
-        # Act
-        result = dummy_line_data_vd[COL_NAME_1].plot(
-            ts=TIME_COL, kind=kind, start_date=start_date
-        )
-        # Assert - checking if correct object created
-        assert isinstance(result, plotting_library_object), "Wrong object created"
 
-
-class TestHighchartsVDFLinePlot(BasicPlotTests):
+class TestHighchartsVDFLinePlot(VDFLinePlot):
     """
     Testing different attributes of Line plot on a vDataFrame
     """
-
-    @pytest.fixture(autouse=True)
-    def data(self, dummy_line_data_vd):
-        """
-        Load test data
-        """
-        self.data = dummy_line_data_vd
-
-    @property
-    def cols(self):
-        """
-        Store labels for X,Y,Z axis to check.
-        """
-        return ["date", COL_NAME_1]
-
-    def create_plot(self):
-        """
-        Create the plot
-        """
-        return (
-            self.data[self.data[COL_NAME_2] == CAT_OPTION].plot,
-            {"ts": TIME_COL, "columns": COL_NAME_1},
-        )
