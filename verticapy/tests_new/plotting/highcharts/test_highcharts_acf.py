@@ -18,9 +18,9 @@ permissions and limitations under the License.
 from verticapy.tests_new.plotting.base_test_files import ACFPlot
 
 
-class Testmatplotlib(ACFPlot):
+class TestHighchartsVDFACFPlot(ACFPlot):
     """
-    test
+    Testing different attributes of ACF plot on a vDataFrame
     """
 
     def test_properties_vertical_lines_for_custom_lag(self, amazon_vd):
