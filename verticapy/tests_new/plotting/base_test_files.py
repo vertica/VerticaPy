@@ -306,8 +306,7 @@ class VDFBarPlot(BasicPlotTests):
             {"columns": self.COL_NAME_VDF_1},
         )
 
-    @staticmethod
-    def col_name_param() -> Literal["0"]:
+    def col_name_param():
         """
         Get column value to pass as pytest parameter
         """

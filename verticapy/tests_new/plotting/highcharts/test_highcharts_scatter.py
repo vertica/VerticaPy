@@ -71,7 +71,7 @@ class TestHighchartsScatterVDF3DPlot(ScatterVDF3DPlot):
         # Act
         # Assert
         assert len(self.result.data_temp) == len(
-            all_categories
+            self.all_categories
         ), "Some unique values were not found in the plot"
 
     def test_data_total_number_of_points_3d_plot(self, dummy_scatter_vd):
