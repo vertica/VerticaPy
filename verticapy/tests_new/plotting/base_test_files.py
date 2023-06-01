@@ -411,7 +411,7 @@ class VDCBoxPlot(BasicPlotTests):
     """
 
     COL_NAME_1 = "0"
-    COL_NAME_2 = "binary"
+
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -447,7 +447,7 @@ class VDCParitionBoxPlot(VDCBoxPlot):
     """
     Testing different attributes of Box plot on a vDataColumn using "by" attribute
     """
-
+    COL_NAME_2 = "binary"
     @property
     def cols(self):
         """
