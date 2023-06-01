@@ -17,25 +17,23 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import plotly
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import VornoiPlot
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestPlotlyMachineLearningKmeansPlot(VornoiPlot):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of Importance Bar Chart plot
     """
-    return plotly.graph_objs.Figure
 
-
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
-    """
-    Set default plotting library to highcharts
-    """
-    conf.set_option("plotting_lib", "plotly")
-    yield
+    def test_properties_no_of_elements(self):
+        """
+        Test if all objects plotted
+        """
+        # Arrange
+        total_items = 20
+        # Act
+        # Assert
+        assert len(self.result.data) == pytest.approx(
+            total_items, abs=2
+        ), "Some elements missing"

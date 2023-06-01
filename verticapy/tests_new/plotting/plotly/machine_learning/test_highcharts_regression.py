@@ -14,28 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import plotly
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import LearningRegressionPlot
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestHighchartsMachineLearningRegressionPlot(LearningRegressionPlot):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of Regression plot
     """
-    return plotly.graph_objs.Figure
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
-    """
-    Set default plotting library to highcharts
-    """
-    conf.set_option("plotting_lib", "plotly")
-    yield

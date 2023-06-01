@@ -17,25 +17,22 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# VerticaPy
-import verticapy._config.config as conf
 
-# Other Modules
-import plotly
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import (
+    LogisticRegressionPlot2D,
+    LogisticRegressionPlot3D,
+)
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestHighchartsMachineLearningLogisticRegressionPlot2D(LogisticRegressionPlot2D):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of 2D Logisti Regression plot
     """
-    return plotly.graph_objs.Figure
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
+@pytest.mark.skip(reason="Currently highchart only supports 2D plot")
+class TestHighchartsMachineLearningLogisticRegressionPlot3D(LogisticRegressionPlot3D):
     """
-    Set default plotting library to highcharts
+    Testing different attributes of 3D Logisti Regression plot
     """
-    conf.set_option("plotting_lib", "plotly")
-    yield

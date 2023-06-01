@@ -129,13 +129,14 @@ class TestPlotlyMachineLearningLogisticRegressionPlot3D:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result_2(self, titanic_vd):
+    def plot_result_2(self, schema_loader, titanic_vd):
         """
         Create a 3D logistic regression plot
         """
-        model = LogisticRegression("log_reg_test")
+        model = LogisticRegression(f"{schema_loader}.log_reg_test")
         model.fit(titanic_vd, [COL_NAME_1, COL_NAME_3], COL_NAME_2)
-        return model.plot()
+        yield model.plot()
+        model.drop()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result_2):

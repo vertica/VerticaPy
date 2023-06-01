@@ -14,28 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import plotly
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import ElbowCurvePlot
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestPlotlyMachineLearningElbowCurvePlot(ElbowCurvePlot):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of Elbow Curve plot
     """
-    return plotly.graph_objs.Figure
 
-
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
-    """
-    Set default plotting library to highcharts
-    """
-    conf.set_option("plotting_lib", "plotly")
-    yield
+    def test_data_all_scatter_points(self):
+        """
+        Test if both line and markers are displayed
+        """
+        # Arrange
+        mode = "markers+line"
+        # Act
+        # Assert - checking if correct object created
+        assert set(self.result.data[0]["mode"]) == set(
+            mode
+        ), "Either lines or marker missing"

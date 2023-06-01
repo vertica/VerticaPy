@@ -17,25 +17,28 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
-# VerticaPy
-import verticapy._config.config as conf
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import (
+    SVMClassifier1DPlot,
+    SVMClassifier2DPlot,
+    SVMClassifier3DPlot,
+)
 
-# Other Modules
-import plotly
 
-
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestHighchartsMachineLearningSVMClassifier1DPlot(SVMClassifier1DPlot):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of SVM classifier plot
     """
-    return plotly.graph_objs.Figure
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
+class TestHighchartsMachineLearningSVMClassifier2DPlot(SVMClassifier2DPlot):
     """
-    Set default plotting library to highcharts
+    Testing different attributes of SVM classifier plot
     """
-    conf.set_option("plotting_lib", "plotly")
-    yield
+
+
+@pytest.mark.skip(reason="3d plot not supported in highcharts")
+class TestHighchartsMachineLearningSVMClassifier3DPlot(SVMClassifier3DPlot):
+    """
+    Testing different attributes of SVM classifier plot
+    """

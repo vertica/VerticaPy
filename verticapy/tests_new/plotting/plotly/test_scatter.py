@@ -256,7 +256,7 @@ class TestPlotlyVDFScatter3DPlot:
         # Act
         # Assert
         assert (
-            self.result.layout["scene"]["xaxis"]["title"]["text"] == self.COL_NAME_1
+            self.result.layout["scene"]["xaxis"]["title"]["text"] == COL_NAME_1
         ), "X-axis title issue in 3D plot"
 
     def test_properties_yaxis_title_3d_plot(
@@ -269,7 +269,7 @@ class TestPlotlyVDFScatter3DPlot:
         # Act
         # Assert
         assert (
-            self.result.layout["scene"]["yaxis"]["title"]["text"] == self.COL_NAME_2
+            self.result.layout["scene"]["yaxis"]["title"]["text"] == COL_NAME_2
         ), "Y-axis title issue in 3D plot"
 
     def test_properties_zaxis_title_3d_plot(
@@ -282,22 +282,25 @@ class TestPlotlyVDFScatter3DPlot:
         # Act
         # Assert
         assert (
-            self.result.layout["scene"]["zaxis"]["title"]["text"] == self.COL_NAME_3
+            self.result.layout["scene"]["zaxis"]["title"]["text"] == COL_NAME_3
         ), "Z-axis title issue in 3D plot"
 
-    def test_properties_all_unique_values_for_by_3d_plot(self,):
+    def test_properties_all_unique_values_for_by_3d_plot(self, plot_result_3):
         """
         Test if all unique values plotted
         """
+        # Arrange
+        # Act
+        result = plot_result_3
         # Assert
         assert set(
             [
-                self.result.data[0]["name"],
-                self.result.data[1]["name"],
-                self.result.data[2]["name"],
+                result.data[0]["name"],
+                result.data[1]["name"],
+                result.data[2]["name"],
             ]
         ).issubset(
-            set(self.all_categories)
+            set(all_categories)
         ), "Some unique values were not found in the 3D plot"
 
     def test_data_total_number_of_points_3d_plot(self, dummy_scatter_vd):

@@ -14,28 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import plotly
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import ImportanceBarChartPlot
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestHighchartsMachineLearningImportanceBarChartPlot(ImportanceBarChartPlot):
     """
-    Set default plotting object to highcharts
+    Testing different attributes of Importance Bar Chart plot
     """
-    return plotly.graph_objs.Figure
 
-
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
-    """
-    Set default plotting library to highcharts
-    """
-    conf.set_option("plotting_lib", "plotly")
-    yield
+    def test_data_no_of_columns(self):
+        """
+        Test if four columns are produced
+        """
+        # Arrange
+        total_items = 4
+        # Act
+        # Assert
+        assert len(self.result.data_temp[0].data) == total_items, "Some columns missing"

@@ -37,19 +37,11 @@ class TestPlotlyMachineLearningChampionChallengerPlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, dummy_dist_vd):
+    def plot_result(self, champion_challenger_plot):
         """
         Create a champion challenger plot using AutoML
         """
-        model = AutoML("model_automl", lmax=10, print_info=False)
-        model.fit(
-            dummy_dist_vd,
-            [
-                COL_NAME_1,
-            ],
-            COL_NAME_2,
-        )
-        return model.plot()
+        return champion_challenger_plot.plot()
 
     @pytest.fixture(autouse=True)
     def result(self, plot_result):

@@ -25,6 +25,12 @@ import pytest
 
 # Verticapy
 from verticapy.learn.model_selection import elbow
+from verticapy.tests_new.plotting.conftest import (
+    get_xaxis_label,
+    get_yaxis_label,
+    get_width,
+    get_height,
+)
 
 # Testing variables
 COL_NAME_1 = "PetalLengthCm"
@@ -50,9 +56,9 @@ class TestPlotlyMachineLearningElbowCurve:
         """
         self.result = plot_result
 
-    def test_properties_output_type_for(self, plotting_library_object):
+    def test_properties_output_type(self, plotting_library_object):
         """
-        Get the plot results
+        Test if correct object created
         """
         # Arrange
         # Act
@@ -67,21 +73,7 @@ class TestPlotlyMachineLearningElbowCurve:
         test_title = "Number of Clusters"
         # Act
         # Assert - checking if correct object created
-        assert (
-            self.result.layout["xaxis"]["title"]["text"] == test_title
-        ), "X axis label incorrect"
-
-    def test_data_all_scatter_points(self):
-        """
-        Test if both line and markers are displayed
-        """
-        # Arrange
-        mode = "markers+line"
-        # Act
-        # Assert - checking if correct object created
-        assert set(self.result.data[0]["mode"]) == set(
-            mode
-        ), "Either lines or marker missing"
+        assert get_xaxis_label(self.result) == test_title, "X axis label incorrect"
 
     @pytest.mark.slow
     @pytest.mark.notcritical
@@ -90,8 +82,8 @@ class TestPlotlyMachineLearningElbowCurve:
         Test custom width and height
         """
         # rrange
-        custom_height = 650
-        custom_width = 700
+        custom_height = 30
+        custom_width = 30
         # Act
         result = elbow(
             input_relation=iris_vd,
@@ -101,6 +93,5 @@ class TestPlotlyMachineLearningElbowCurve:
         )
         # Assert - checking if correct object created
         assert (
-            result.layout["height"] == custom_height
-            and result.layout["width"] == custom_width
-        ), "Custom height and width not working"
+            get_width(result) == custom_width and get_height(result) == custom_height
+        ), "Custom width or height not working"

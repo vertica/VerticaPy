@@ -45,12 +45,15 @@ class TestMachineLearningStepwisePlot:
     """
 
     @pytest.fixture(scope="class")
-    def plot_result(self, titanic_vd):
+    def plot_result(self, schema_loader, titanic_vd):
         """
         Create a stepwise regression plot
         """
         model = LogisticRegression(
-            name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
+            name=f"{schema_loader}.test_LR_titanic",
+            tol=1e-4,
+            max_iter=100,
+            solver="Newton",
         )
         stepwise_result = stepwise(
             model,
