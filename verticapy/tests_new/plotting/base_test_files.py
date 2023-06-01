@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 
 from abc import abstractmethod
-from typing import Literal
 import pytest
 
 # Vertica
@@ -227,7 +226,6 @@ class VDCBarPlot(BasicPlotTests):
 
     # Testing variables
     COL_NAME = "check 2"
-    COL_NAME_2 = "check 1"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_vd):
@@ -281,7 +279,6 @@ class VDFBarPlot(BasicPlotTests):
     # Testing variables
 
     COL_NAME_VDF_1 = "cats"
-    COL_NAME_VDF_OF = "0"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
