@@ -21,14 +21,6 @@ from verticapy.tests_new.plotting.base_test_files import (
 )
 
 
-# Testing variables
-COL_NAME_1 = "X"
-COL_NAME_2 = "Y"
-COL_NAME_3 = "Z"
-COL_NAME_4 = "Category"
-all_categories = ["A", "B", "C"]
-
-
 class TestHighchartsScatterVDF2DPlot(ScatterVDF2DPlot):
     """
     Testing different attributes of 2D scatter plot on a vDataFrame
@@ -42,14 +34,14 @@ class TestHighchartsScatterVDF2DPlot(ScatterVDF2DPlot):
         # Act
         result = dummy_scatter_vd.scatter(
             [
-                COL_NAME_2,
-                COL_NAME_3,
+                self.COL_NAME_2,
+                self.COL_NAME_3,
             ],
-            by=COL_NAME_4,
+            by=self.COL_NAME_4,
         )
         # Assert
         assert len(result.data_temp) == len(
-            all_categories
+            self.all_categories
         ), "Some unique values were not found in the plot"
 
     def test_data_total_number_of_points(self, dummy_scatter_vd):

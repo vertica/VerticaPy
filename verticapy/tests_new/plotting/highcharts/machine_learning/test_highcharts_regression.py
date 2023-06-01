@@ -22,3 +22,14 @@ class TestHighchartsMachineLearningRegressionPlot(LearningRegressionPlot):
     """
     Testing different attributes of Regression plot
     """
+
+    def test_data_all_scatter_points(self, dummy_scatter_vd):
+        """
+        Test if all points are plotted
+        """
+        # Arrange
+        # Act
+        # Assert
+        assert len(self.result.data_temp[1].data) == len(
+            dummy_scatter_vd
+        ), "Discrepancy between points plotted and total number ofp oints"

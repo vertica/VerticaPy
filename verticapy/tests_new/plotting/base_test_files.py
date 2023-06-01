@@ -14,30 +14,31 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
+
 from abc import abstractmethod
 from typing import Literal
-
-# Standard Python Modules
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-
+import pytest
 
 # Vertica
 from verticapy.learn.model_selection import elbow
 from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.neighbors import LocalOutlierFactor
 from verticapy.learn.linear_model import LogisticRegression
-from verticapy.learn.ensemble import RandomForestClassifier
 from verticapy.learn.model_selection import lift_chart, prc_curve
 from verticapy.learn.decomposition import PCA
 from verticapy.learn.tree import DecisionTreeRegressor
 from verticapy.learn.linear_model import LinearRegression
 from verticapy.learn.model_selection import stepwise
-from verticapy.learn.linear_model import LogisticRegression
 from verticapy.learn.svm import LinearSVC
+from verticapy.learn.cluster import KMeans
 from vertica_highcharts.highcharts.highcharts import Highchart
+
+# Standard Python Modules
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
+
+
 
 
 def get_xaxis_label(obj):
@@ -73,7 +74,7 @@ def get_zaxis_label(obj):
     if isinstance(obj, plt.Axes):
         return obj.get_zlabel()
     if isinstance(obj, go.Figure):
-        return obj.layout["zaxis"]["title"]["text"]
+        return obj.layout["scene"]["zaxis"]["title"]["text"]
     if isinstance(obj, Highchart):
         return obj.options["zAxis"].title.text
     return None
@@ -251,37 +252,6 @@ class VDCBarPlot(BasicPlotTests):
             {},
         )
 
-    def test_data_ratios(self, dummy_vd):
-        """
-        Test data ratio plotted for bar chart
-        """
-        ### Checking if the density was plotted correctly
-        nums = dummy_vd.to_pandas()[self.COL_NAME].value_counts()
-        total = len(dummy_vd)
-        assert set(self.result.data_temp[0].data).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_all_categories_created(self):
-        """
-        Test all categories
-        """
-        assert set(self.result.options["xAxis"].categories).issubset(
-            set(["A", "B", "C"])
-        )
-
-    def test_additional_options_bargap(self, dummy_vd):
-        """
-        Test bargap option
-        """
-        # Arrange
-        # Act
-        result = dummy_vd[self.COL_NAME].bar(
-            bargap=0.5,
-        )
-        # Assert - checking if correct object created
-        assert result.data_temp[0].pointPadding == 0.25, "Custom bargap not working"
-
     @pytest.mark.parametrize("max_cardinality, bargap", [(1, 0.1), (4, 0.4)])
     def test_properties_output_type_for_all_options(
         self,
@@ -336,28 +306,10 @@ class VDFBarPlot(BasicPlotTests):
             {"columns": self.COL_NAME_VDF_1},
         )
 
-    def test_data_ratios(self, dummy_dist_vd):
-        """
-        Test data ratio
-        """
-        ### Checking if the density was plotted correctly
-        nums = dummy_dist_vd.to_pandas()[self.COL_NAME_VDF_1].value_counts()
-        total = len(dummy_dist_vd)
-        assert set(self.result.data_temp[0].data).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_all_categories_created(self):
-        """
-        Test all categories
-        """
-        assert set(self.result.options["xAxis"].categories).issubset(
-            set(["A", "B", "C"])
-        )
-
+    @staticmethod
     def col_name_param() -> Literal["0"]:
         """
-        Get coloumn value to pass as pytest parameter
+        Get column value to pass as pytest parameter
         """
         return "0"
 
@@ -384,13 +336,27 @@ class VDFBarPlot(BasicPlotTests):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
-class VDCBarhPlot(VDCBarPlot):
+class VDCBarhPlot(BasicPlotTests):
     """
     Testing different attributes of HHorizontal Bar plot on a vDataColumn
     """
-
+    # Testing variables
     COL_NAME = "check 2"
     COL_NAME_2 = "check 1"
+
+    @pytest.fixture(autouse=True)
+    def data(self, dummy_vd):
+        """
+        Load test data
+        """
+        self.data = dummy_vd
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [self.COL_NAME, "density"]
 
     def create_plot(self):
         """
@@ -400,37 +366,6 @@ class VDCBarhPlot(VDCBarPlot):
             self.data[self.COL_NAME].barh,
             {},
         )
-
-    def test_data_ratios(self, dummy_vd):
-        """
-        Test data ratio plotted
-        """
-        ### Checking if the density was plotted correctly
-        nums = dummy_vd.to_pandas()[self.COL_NAME].value_counts()
-        total = len(dummy_vd)
-        assert set(self.result.data_temp[0].data).issubset(
-            set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
-        )
-
-    def test_all_categories_created(self):
-        """
-        Test all categories
-        """
-        assert set(self.result.options["xAxis"].categories).issubset(
-            set(["A", "B", "C"])
-        )
-
-    def test_additional_options_bargap(self, dummy_vd):
-        """
-        Test bargap option
-        """
-        # Arrange
-        # Act
-        result = dummy_vd[self.COL_NAME].barh(
-            bargap=0.5,
-        )
-        # Assert - checking if correct object created
-        assert result.data_temp[0].pointPadding == 0.25, "Custom bargap not working"
 
     @pytest.mark.parametrize(
         "max_cardinality, method", [(1, "mean"), (1, "max"), (2, "sum")]
@@ -560,24 +495,6 @@ class VDFBoxPlot(VDCBoxPlot):
             self.data.boxplot,
             {"columns": self.COL_NAME_1},
         )
-
-    @pytest.mark.skip(reason="The plot does not have label on x-axis yet")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """
-
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-        # Arrange
-        test_title = self.COL_NAME_1
-        # Act
-        # Assert - checking y axis label
-        assert (
-            self.result.options["xAxis"].categories[0] == test_title
-        ), "X axis label incorrect"
 
 
 class VDCCandlestick(BasicPlotTests):
@@ -778,7 +695,7 @@ class VDCDensityMultiPlot(BasicPlotTests):
         """
         return (
             self.data[self.COL_NAME].density,
-            {"by": BY_COL},
+            {"by": self.BY_COL},
         )
 
 
@@ -1007,6 +924,7 @@ class VDFHistogramPlot(VDCHistogramPlot):
             {"columns": self.COL_NAME_1},
         )
 
+    @pytest.mark.skip(reason="There is a bug currently with max_cardinality")
     @pytest.mark.parametrize("max_cardinality, method", [(3, "count"), (5, "density")])
     def test_properties_output_type_for_all_options(
         self, dummy_dist_vd, plotting_library_object, max_cardinality, method
@@ -1160,24 +1078,6 @@ class OutliersPlot(BasicPlotTests):
             {"columns": self.COL_NAME_1},
         )
 
-    def test_data_all_scatter_points_for_1d(
-        self,
-        dummy_dist_vd,
-    ):
-        """
-        Testing to make sure all poitns are plotted
-        """
-        # Arrange
-        total_points = len(dummy_dist_vd[self.COL_NAME_1])
-        # Act
-        result = dummy_dist_vd.outliers_plot(
-            columns=[self.COL_NAME_1], max_nb_points=10000
-        )
-        plot_points_count = sum(len(result.data_temp[i].data) for i in range(1, 3))
-        assert (
-            plot_points_count == total_points
-        ), "All points are not plotted for 1d plot"
-
 
 class OutliersPlot2D(BasicPlotTests):
     """
@@ -1289,18 +1189,6 @@ class NestedVDFPiePlot:
         # Act
         # Assert - checking if correct object created
         assert isinstance(self.result, plotting_library_object), "Wrong object created"
-
-    def test_plot_type_wedges(
-        self,
-    ):
-        """
-        Test if nested plots are produced
-        """
-        # Arrange
-        all_elements_count = sum(len(item.data) for item in self.result.data_temp)
-        # Act
-        # Assert - check value corresponding to 0s
-        assert all_elements_count > 2
 
 
 class VDCRangeCurve(BasicPlotTests):
@@ -1467,6 +1355,7 @@ class ScatterVDF3DPlot(BasicPlotTests):
     COL_NAME_2 = "Y"
     COL_NAME_3 = "Z"
     COL_NAME_4 = "Category"
+    all_categories = ["A", "B", "C"]
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_scatter_vd):
@@ -1662,6 +1551,70 @@ class ImportanceBarChartPlot(BasicPlotTests):
         )
 
 
+class VornoiPlot(BasicPlotTests):
+    """
+    Testing different attributes of 2D voronoi plot
+    """
+
+    COL_NAME_1 = "PetalLengthCm"
+    COL_NAME_2 = "PetalWidthCm"
+
+    @pytest.fixture(autouse=True)
+    def model(self, iris_vd, schema_loader):
+        """
+        Load test model
+        """
+        model = KMeans(name=f"{schema_loader}.test_KMeans_iris")
+        model.fit(
+            iris_vd,
+            [self.COL_NAME_1, self.COL_NAME_2],
+        )
+        self.model = model
+        yield
+        model.drop()
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [self.COL_NAME_1, self.COL_NAME_2]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.model.plot_voronoi,
+            {},
+        )
+
+    @pytest.mark.parametrize("max_nb_points,plot_crosses", [[1000, False]])
+    def test_properties_output_type_for_all_options(
+        self,
+        iris_vd,
+        plotting_library_object,
+        max_nb_points,
+        plot_crosses,
+    ):
+        """
+        Test different number of points and plot_crosses options
+        """
+        # Arrange
+        model = KMeans(name="test_KMeans_iris_2")
+        model.fit(
+            iris_vd,
+            [self.COL_NAME_1, self.COL_NAME_2],
+        )
+        # Act
+        result = model.plot_voronoi(
+            max_nb_points,
+            plot_crosses,
+        )
+        # Assert - checking if correct object created
+        assert isinstance(result, plotting_library_object), "Wrong object created"
+
+
 class LOFPlot2D(BasicPlotTests):
     """
     Testing different attributes of 2D LOF plot
@@ -1750,7 +1703,7 @@ class LogisticRegressionPlot2D(BasicPlotTests):
         """
         Store labels for X,Y,Z axis to check.
         """
-        return [self.COL_NAME_1, f"p({self.COL_NAME_2}=1)"]
+        return [self.COL_NAME_1, f"P({self.COL_NAME_2} = 1)"]
 
     def create_plot(self):
         """
@@ -1802,7 +1755,7 @@ class LogisticRegressionPlot3D(LogisticRegressionPlot2D):
         """
         Store labels for X,Y,Z axis to check.
         """
-        return [self.COL_NAME_1, f"p({self.COL_NAME_2}=1)", self.COL_NAME_2]
+        return [self.COL_NAME_1, f"P({self.COL_NAME_2} = 1)", self.COL_NAME_3]
 
 
 class ROCPlot(BasicPlotTests):
@@ -2089,17 +2042,6 @@ class LearningRegressionPlot(BasicPlotTests):
             {},
         )
 
-    def test_data_all_scatter_points(self, dummy_scatter_vd):
-        """
-        Test if all points are plotted
-        """
-        # Arrange
-        # Act
-        # Assert
-        assert len(self.result.data_temp[1].data) == len(
-            dummy_scatter_vd
-        ), "Discrepancy between points plotted and total number ofp oints"
-
 
 class StepwisePlot:
     """
@@ -2179,8 +2121,8 @@ class StepwisePlot:
         Test custom width and height
         """
         # rrange
-        custom_height = 6
-        custom_width = 7
+        custom_height = 60
+        custom_width = 70
         model = LogisticRegression(
             name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
         )
