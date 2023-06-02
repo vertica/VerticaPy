@@ -14,4 +14,21 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Vertica
+from verticapy.tests_new.plotting.base_test_files import VDCRangeCurve, VDFRangeCurve
 
+# Testing variables
+TIME_COL = "date"
+COL_NAME_1 = "value"
+
+
+class TestHighchartsVDCRangeCurve(VDCRangeCurve):
+    """
+    Testing different attributes of range curve plot on a vDataColumn
+    """
+
+
+class TestHighchartsVDFRangeCurve(VDFRangeCurve):
+    """
+    Testing different attributes of range curve plot on a vDataFrame
+    """

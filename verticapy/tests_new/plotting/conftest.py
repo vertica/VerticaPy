@@ -20,14 +20,8 @@ import pytest
 # Standard Python Modules
 
 # VerticaPy
-from vertica_highcharts.highcharts.highcharts import Highchart
-from verticapy import drop
 from verticapy.learn.delphi import AutoML
 from verticapy.learn.ensemble import RandomForestClassifier
-
-# Other Modules
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 
 
 # Expensive models
