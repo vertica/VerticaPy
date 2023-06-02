@@ -1294,8 +1294,8 @@ def precision_score(
 
 
 def _prevalence_threshold(tn: int, fn: int, fp: int, tp: int) -> float:
-    fpr, tpr = _false_positive_rate(**locals()), np.sqrt(_recall_score(**locals()))
-    return np.sqrt(fpr) / (tpr + fpr) if ((tpr + fpr) != 0) else 0.0
+    fpr, tpr = _false_positive_rate(**locals()), _recall_score(**locals())
+    return np.sqrt(fpr) / (np.sqrt(tpr) + np.sqrt(fpr)) if ((tpr + fpr) != 0) else 0.0
 
 
 @save_verticapy_logs
