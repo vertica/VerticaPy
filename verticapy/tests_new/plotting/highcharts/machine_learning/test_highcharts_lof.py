@@ -14,4 +14,23 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Pytest
+import pytest
 
+
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import LOFPlot2D, LOFPlot3D
+
+
+
+class TestHighchartsMachineLearningLOFPlot2D(LOFPlot2D):
+    """
+    Testing different attributes of 2D LOF plot
+    """
+
+
+@pytest.mark.skip(reason="Currently highchart only supports 2D plot")
+class TestHighchartsMachineLearningLOFPlot3D(LOFPlot3D):
+    """
+    Testing different attributes of 3D LOF plot
+    """

@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 
 from abc import abstractmethod
-from typing import Literal
 import pytest
 
 # Vertica
@@ -227,7 +226,6 @@ class VDCBarPlot(BasicPlotTests):
 
     # Testing variables
     COL_NAME = "check 2"
-    COL_NAME_2 = "check 1"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_vd):
@@ -281,7 +279,6 @@ class VDFBarPlot(BasicPlotTests):
     # Testing variables
 
     COL_NAME_VDF_1 = "cats"
-    COL_NAME_VDF_OF = "0"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -306,8 +303,8 @@ class VDFBarPlot(BasicPlotTests):
             {"columns": self.COL_NAME_VDF_1},
         )
 
-    @staticmethod
-    def col_name_param() -> Literal["0"]:
+
+    def col_name_param():
         """
         Get column value to pass as pytest parameter
         """
@@ -415,7 +412,6 @@ class VDCBoxPlot(BasicPlotTests):
     """
 
     COL_NAME_1 = "0"
-    COL_NAME_2 = "binary"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -504,8 +500,7 @@ class VDCCandlestick(BasicPlotTests):
 
     COL_NAME_1 = "values"
     TIME_COL = "date"
-    COL_OF = "survived"
-    BY_COL = "category"
+
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_line_data_vd):
@@ -626,7 +621,6 @@ class VDCDensityPlot(BasicPlotTests):
     """
 
     COL_NAME = "0"
-    BY_COL = "binary"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -705,7 +699,7 @@ class VDFDensityPlot(BasicPlotTests):
     """
 
     COL_NAME = "0"
-    BY_COL = "binary"
+
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -747,8 +741,6 @@ class VDFDensityPlot(BasicPlotTests):
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
-
-# Testing variables
 
 
 class VDFPivotHeatMap(BasicPlotTests):
