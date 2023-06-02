@@ -24,7 +24,6 @@ from verticapy.tests_new.plotting.base_test_files import (
 )
 
 
-
 class TestPlotlyVDCHistogramPlot(VDCHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataColumn

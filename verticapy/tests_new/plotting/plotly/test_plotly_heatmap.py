@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 # Pytest
 import pytest
+import numpy as np
 
 # Vertica
 from verticapy.tests_new.plotting.base_test_files import VDFPivotHeatMap, VDFHeatMap

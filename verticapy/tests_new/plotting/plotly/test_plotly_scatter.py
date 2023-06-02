@@ -100,7 +100,8 @@ class TestPlotlyScatterVDF2DPlot(ScatterVDF2DPlot):
             dummy_scatter_vd.search(
                 conditions=[
                     f"{self.COL_NAME_1} = \
-                    {self.result.data[0]['x'][0]} and {self.COL_NAME_2}={self.result.data[0]['y'][0]}"
+                    {self.result.data[0]['x'][0]} and \
+                    {self.COL_NAME_2}={self.result.data[0]['y'][0]}"
                 ],
                 usecols=[self.COL_NAME_1, self.COL_NAME_2],
             )
@@ -186,7 +187,7 @@ class TestPlotlyScatterVDF3DPlot(ScatterVDF3DPlot):
         ), "Colors are not unique for three different cat_col parameter"
 
     @pytest.mark.skip(reason="Custom width not apt for 3D graphs")
-    def test_additional_options_custom_width_and_height(self, dummy_scatter_vd):
+    def test_additional_options_custom_width_and_height(self):
         """
         Testing custom width and height
         """
