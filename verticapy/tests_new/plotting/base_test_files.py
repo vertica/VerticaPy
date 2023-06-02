@@ -447,7 +447,7 @@ class VDCParitionBoxPlot(VDCBoxPlot):
     """
     Testing different attributes of Box plot on a vDataColumn using "by" attribute
     """
-
+    COL_NAME_2 = "binary"
     @property
     def cols(self):
         """
