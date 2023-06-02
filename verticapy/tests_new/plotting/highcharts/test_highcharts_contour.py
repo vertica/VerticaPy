@@ -14,4 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Vertica
+from verticapy.tests_new.plotting.base_test_files import VDFContourPlot
 
+
+class TestHighchartsVDFContourPlot(VDFContourPlot):
+    """
+    Testing different attributes of Contour plot on a vDataFrame
+    """

@@ -14,4 +14,26 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Pytest
+import pytest
 
+# Vertica
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCHistogramPlot,
+    VDFHistogramPlot,
+)
+
+
+
+@pytest.mark.skip(reason="Hist not available in Highcharts currently")
+class TestHighchartsVDCHistogramPlot(VDCHistogramPlot):
+    """
+    Testing different attributes of Histogram plot on a vDataColumn
+    """
+
+
+@pytest.mark.skip(reason="Hist not available in Highcharts currently")
+class TestHighchartsVDFHistogramPlot(VDFHistogramPlot):
+    """
+    Testing different attributes of Histogram plot on a vDataFrame
+    """

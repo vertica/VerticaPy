@@ -14,4 +14,22 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import LearningRegressionPlot
 
+
+class TestHighchartsMachineLearningRegressionPlot(LearningRegressionPlot):
+    """
+    Testing different attributes of Regression plot
+    """
+
+    def test_data_all_scatter_points(self, dummy_scatter_vd):
+        """
+        Test if all points are plotted
+        """
+        # Arrange
+        # Act
+        # Assert
+        assert len(self.result.data_temp[1].data) == len(
+            dummy_scatter_vd
+        ), "Discrepancy between points plotted and total number ofp oints"
