@@ -23,9 +23,6 @@ from verticapy.tests_new.plotting.base_test_files import (
     VDFHistogramPlot,
 )
 
-# Testing variables
-COL_NAME_1 = "binary"
-COL_OF = "0"
 
 
 class TestPlotlyVDCHistogramPlot(VDCHistogramPlot):

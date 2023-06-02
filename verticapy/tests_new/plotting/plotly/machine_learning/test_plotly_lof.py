@@ -22,12 +22,6 @@ import pytest
 from verticapy.tests_new.plotting.base_test_files import LOFPlot2D, LOFPlot3D
 
 
-# Testing variables
-COL_NAME_1 = "X"
-COL_NAME_2 = "Y"
-COL_NAME_3 = "Z"
-
-
 class TestPlotlyMachineLearningLOFPlot2D(LOFPlot2D):
     """
     Testing different attributes of 2D LOF plot
