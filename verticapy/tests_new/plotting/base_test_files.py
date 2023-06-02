@@ -500,8 +500,6 @@ class VDCCandlestick(BasicPlotTests):
 
     COL_NAME_1 = "values"
     TIME_COL = "date"
-    COL_OF = "survived"
-    BY_COL = "category"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_line_data_vd):
@@ -622,7 +620,6 @@ class VDCDensityPlot(BasicPlotTests):
     """
 
     COL_NAME = "0"
-    BY_COL = "binary"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -701,7 +698,6 @@ class VDFDensityPlot(BasicPlotTests):
     """
 
     COL_NAME = "0"
-    BY_COL = "binary"
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
@@ -743,8 +739,6 @@ class VDFDensityPlot(BasicPlotTests):
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
-
-# Testing variables
 
 
 class VDFPivotHeatMap(BasicPlotTests):
