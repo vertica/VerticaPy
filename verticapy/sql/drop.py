@@ -37,13 +37,13 @@ def drop(
     Parameters
     ----------
     name: str, optional
-        Relation name.  If empty, it will drop all 
-        VerticaPy temporary elements.
+        Relation name. If empty, the function drops
+        all VerticaPy temporary elements.
     method: str, optional
         Method used to drop.
             auto   : identifies the table / view /
                      index / model to drop. 
-                     It will  never drop an entire 
+                     It never drops an entire 
                      schema  unless the  method is 
                      set to 'schema'.
             model  : drops the input model.

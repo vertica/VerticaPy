@@ -77,12 +77,12 @@ class XGBoost(Tree):
 
     def _compute_prior(self) -> Union[float, list[float]]:
         """
-        Returns the XGB Priors.
+        Returns the XGB priors.
             
         Returns
         -------
         float / list
-            XGB Priors.
+            XGB priors.
         """
         condition = [f"{x} IS NOT NULL" for x in self.X] + [f"{self.y} IS NOT NULL"]
         query = f"""
@@ -107,7 +107,7 @@ class XGBoost(Tree):
 
     def _to_json_tree_dict(self, tree_id: int, c: str = None) -> dict:
         """
-        Method used to converts the model to JSON.
+        Method used to convert the model to JSON.
         """
         tree = self.get_tree(tree_id)
         attributes = self._compute_trees_arrays(tree, self.X)
@@ -171,7 +171,7 @@ class XGBoost(Tree):
 
     def _to_json_tree_dict_list(self) -> dict:
         """
-        Method used to converts the model to JSON.
+        Method used to convert the model to JSON.
         """
         if self._model_type == "XGBClassifier" and (
             len(self.classes_) > 2 or self.classes_[1] != 1 or self.classes_[0] != 0
@@ -200,7 +200,7 @@ class XGBoost(Tree):
 
     def _to_json_learner(self) -> dict:
         """
-        Method used to converts the model to JSON.
+        Method used to convert the model to JSON.
         """
         if self._model_type == "XGBRegressor" or (
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
@@ -314,7 +314,7 @@ class XGBoost(Tree):
         
         \u26A0 Warning :   For    multiclass   classifiers, 
         the   probabilities  returned   by  the   VerticaPy 
-        and  exported  model may  differ  slightly  because 
+        and  exported  models might differ slightly because 
         of  normalization;  while Vertica uses  multinomial 
         logistic  regression, XGBoost Python uses  Softmax. 
         This  difference does not affect the model's  final 
@@ -357,44 +357,45 @@ Algorithms used for regression.
 class RandomForestRegressor(RandomForest, Regressor):
     """
     Creates a RandomForestRegressor object using the 
-    Vertica  RF_REGRESSOR function. It is one of the 
-    ensemble  learning  methods for regression  that 
-    operates by constructing a multitude of decision 
-    trees  at  training-time and outputting a  class 
-    with the mode.
+    Vertica RF_REGRESSOR function. It is an ensemble
+    learning method for regression  that operates by
+    constructing a multitude of decision trees  at  
+    training-time and outputting a class with the
+    mode.
 
     Parameters
     ----------
     name: str
-        Name of the model. The model will be stored in 
-        the DB.
+        Name of the model. The model is stored in the
+        database.
     n_estimators: int, optional
         The number of trees  in the forest, an integer 
         between 1 and 1000, inclusive.
     max_features: int / str, optional
         The  number  of randomly chosen features  from 
-        which  to pick the best feature to split on  a 
+        which  to pick the best feature to split a 
         given  tree node. It can be an integer or  one 
         of the two following methods.
             auto : square root  of the total number of 
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes a tree in the 
-        forest can have, an integer between 1 and 1e9, 
+        The maximum number of leaf nodes for a tree in
+        the forest, an integer between 1 and 1e9, 
         inclusive.
     sample: float, optional
         The  portion  of  the  input  data set that  is 
-        randomly picked for training each tree, a float 
-        between 0.0 and 1.0, inclusive. 
+        randomly selected for training each tree, a 
+        float between 0.0 and 1.0, inclusive. 
     max_depth: int, optional
         The  maximum  depth  for growing each tree,  an 
         integer between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of  samples each branch must 
         have after splitting a node, an integer between 
-        1 and 1e6, inclusive. A split that causes fewer 
-        remaining samples is discarded. 
+        1 and 1e6, inclusive. A split that results in
+        remaining samples less than this value 
+        is discarded. 
     min_info_gain: PythonNumber, optional
         The  minimum threshold for including a split, a 
         float  between 0.0 and 1.0, inclusive. A  split 
@@ -497,8 +498,8 @@ class RandomForestRegressor(RandomForest, Regressor):
 
     def to_memmodel(self) -> Union[mm.RandomForestRegressor, mm.BinaryTreeRegressor]:
         """
-        Converts  the model  to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model  to an InMemory object  that
+        can be used for different types of predictions.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -514,43 +515,43 @@ class XGBRegressor(XGBoost, Regressor):
     Parameters
     ----------
     name: str
-        Name  of the  model.  The  model  will  be  stored 
+        Name  of the  model.  The  model  is  stored 
         in the DB.
     max_ntree: int, optional
-        Maximum  number  of trees that  will  be  created.
+        Maximum  number  of trees that  can be  created.
     max_depth: int, optional
         Maximum depth  of each tree, an  integer between 1 
         and 20, inclusive.
     nbins: int, optional
-        Number of bins to  use for finding  splits in each 
-        column,  more splits  leads to  longer runtime but 
-        more  fine-grained and possibly  better splits, an 
-        integer between 2 and 1000, inclusive.
+        Number of bins used to find splits in each column,
+        where more splits  leads to a longer runtime but 
+        more  fine-grained, possibly  better splits. Must
+        be an integer between 2 and 1000, inclusive.
     split_proposal_method: str, optional
-        approximate  splitting  strategy.  Can be 'global' 
-        or 'local' (not yet supported)
+        Approximate  splitting  strategy, either 'global' 
+        or 'local' (not yet supported).
     tol: float, optional
-        approximation error of quantile summary structures 
+        Approximation error of quantile summary structures 
         used in the approximate split finding method.
     learning_rate: float, optional
-        weight applied to each tree's prediction,  reduces 
-        each  tree's impact  allowing for  later trees  to 
-        contribute,  keeping earlier trees from  'hogging' 
-        all the improvements.
+        Weight applied to each tree's prediction. This
+        reduces each  tree's impact, allowing for  later 
+        trees  to contribute and keeping earlier trees from
+        dominating.
     min_split_loss: float, optional
-        Each  split  must improve the  objective  function 
-        value of the model by  at least this much in order 
-        to  not  be  pruned.  Value  of  0 is the same  as 
-        turning  off this  parameter (trees will still  be 
-        pruned   based  on  positive / negative  objective 
-        function values).
+        Each  split  must improve the model's objective
+        function value by  at least this much in order 
+        to avoid pruning.  A value  of  0 is the same  as 
+        turning off this parameter (trees are still pruned
+        based  on  positive / negative  objective function
+        values).
     weight_reg: float, optional
         Regularization term that is applied to the weights 
-        of  the leaves in the regression tree. The  higher 
-        this value is, the more sparse/smooth the  weights 
-        will be, which often helps prevent overfitting.
+        of  the leaves in the regression tree. A higher
+        value leads to more sparse/smooth weights, which
+        often helps to prevent overfitting.
     sample: float, optional
-        Fraction of rows to use in training per iteration.
+        Fraction of rows used per iteration in training.
     col_sample_by_tree: float, optional
         Float  in  the  range  (0,1]  that  specifies  the 
         fraction of columns (features), chosen at  random, 
@@ -670,8 +671,8 @@ class XGBRegressor(XGBoost, Regressor):
 
     def to_memmodel(self) -> mm.XGBRegressor:
         """
-        Converts  the  model to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the  model to an InMemory object  that
+        can be used for different types of predictions.
         """
         return mm.XGBRegressor(self.trees_, self.mean_, self.eta_)
 
@@ -684,44 +685,44 @@ Algorithms used for classification.
 class RandomForestClassifier(RandomForest, MulticlassClassifier):
     """
     Creates a RandomForestClassifier object using the 
-    Vertica  RF_CLASSIFIER function. It is one of the 
-    ensemble learning methods for classification that 
-    operates  by constructing a multitude of decision 
-    trees  at  training-time  and outputting a  class 
-    with the mode.
+    Vertica  RF_CLASSIFIER function. It is an ensemble
+    learning method for classification that operates
+    by constructing a multitude of decision trees  at  
+    training-time and outputting a class with the mode.
 
     Parameters
     ----------
     name: str
-        Name of the model. The model will be stored in 
-        the DB.
+        Name of the model. The model is stored in the
+        database.
     n_estimators: int, optional
         The number of trees  in the forest, an integer 
         between 1 and 1000, inclusive.
     max_features: int / str, optional
         The  number  of randomly chosen features  from 
-        which  to pick the best feature to split on  a 
+        which  to pick the best feature to split  a 
         given  tree node. It can be an integer or  one 
         of the two following methods.
             auto : square root  of the total number of 
                    predictors.
             max  : number of predictors.
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes a tree in the 
-        forest can have, an integer between 1 and 1e9, 
+        The maximum number of leaf nodes for a tree in
+        the forest, an integer between 1 and 1e9, 
         inclusive.
     sample: float, optional
         The  portion  of  the  input  data set that  is 
-        randomly picked for training each tree, a float 
-        between 0.0 and 1.0, inclusive. 
+        randomly selected for training each tree, a 
+        float between 0.0 and 1.0, inclusive. 
     max_depth: int, optional
         The  maximum  depth  for growing each tree,  an 
         integer between 1 and 100, inclusive.
     min_samples_leaf: int, optional
         The minimum number of  samples each branch must 
         have after splitting a node, an integer between 
-        1 and 1e6, inclusive. A split that causes fewer 
-        remaining samples is discarded. 
+        1 and 1e6, inclusive. A split that results in
+        remaining samples less than this value
+        is discarded. 
     min_info_gain: PythonNumber, optional
         The  minimum threshold for including a split, a 
         float  between 0.0 and 1.0, inclusive. A  split 
@@ -841,8 +842,8 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
 
     def to_memmodel(self) -> Union[mm.RandomForestClassifier, mm.BinaryTreeClassifier]:
         """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
+        Converts the model to an InMemory object that
+        can be used for different types of predictions.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -858,43 +859,43 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
     Parameters
     ----------
     name: str
-        Name  of the  model.  The  model  will  be  stored 
-        in the DB.
+        Name  of the  model. The model  is  stored in the
+        database.
     max_ntree: int, optional
-        Maximum  number  of trees that  will  be  created.
+        Maximum  number  of trees that can be  created.
     max_depth: int, optional
         Maximum depth  of each tree, an  integer between 1 
         and 20, inclusive.
     nbins: int, optional
-        Number of bins to  use for finding  splits in each 
-        column,  more splits  leads to  longer runtime but 
-        more  fine-grained and possibly  better splits, an 
-        integer between 2 and 1000, inclusive.
+        Number of bins used to find splits in each column,
+        where more splits  leads to a longer runtime but 
+        more  fine-grained, possibly  better splits. Must
+        be an integer between 2 and 1000, inclusive.
     split_proposal_method: str, optional
-        approximate  splitting  strategy.  Can be 'global' 
+        Approximate  splitting  strategy, either 'global' 
         or 'local' (not yet supported)
     tol: float, optional
-        approximation error of quantile summary structures 
+        Approximation error of quantile summary structures 
         used in the approximate split finding method.
     learning_rate: float, optional
-        weight applied to each tree's prediction,  reduces 
-        each  tree's impact  allowing for  later trees  to 
-        contribute,  keeping earlier trees from  'hogging' 
-        all the improvements.
+        Weight applied to each tree's prediction. This
+        reduces each  tree's impact, allowing for  later 
+        trees  to contribute and keeping earlier trees from
+        dominating.
     min_split_loss: float, optional
-        Each  split  must improve the  objective  function 
-        value of the model by  at least this much in order 
-        to  not  be  pruned.  Value  of  0 is the same  as 
-        turning  off this  parameter (trees will still  be 
-        pruned   based  on  positive / negative  objective 
-        function values).
+        Each  split  must improve the model's objective
+        function value by  at least this much in order 
+        to avoid pruning.  A value  of  0 is the same  as 
+        turning off this parameter (trees are still pruned
+        based  on  positive / negative  objective function
+        values).
     weight_reg: float, optional
         Regularization term that is applied to the weights 
-        of  the leaves in the regression tree. The  higher 
-        this value is, the more sparse/smooth the  weights 
-        will be, which often helps prevent overfitting.
+        of  the leaves in the regression tree. A higher
+        value leads to more sparse/smooth weights, which
+        often helps to prevent overfitting.
     sample: float, optional
-        Fraction of rows to use in training per iteration.
+        Fraction of rows used per iteration in training.
     col_sample_by_tree: float, optional
         Float  in  the  range  (0,1]  that  specifies  the 
         fraction of columns (features), chosen at  random, 
@@ -1044,8 +1045,8 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
 
     def to_memmodel(self) -> mm.XGBClassifier:
         """
-        Converts the model  to an InMemory  object  which
-        can be used to do different types of predictions.
+        Converts the model  to an InMemory  object  that
+        can be used for different types of predictions.
         """
         return mm.XGBClassifier(self.trees_, self.logodds_, self.classes_, self.eta_)
 
@@ -1064,7 +1065,7 @@ class IsolationForest(Clustering, Tree):
     ----------
     name: str
         Name  of  the model. The model  is stored in the 
-        DB.
+        database.
     n_estimators: int, optional
         The number  of  trees in the forest,  an integer 
         between 1 and 1000, inclusive.
@@ -1072,19 +1073,18 @@ class IsolationForest(Clustering, Tree):
         Maximum  depth of each tree,  an integer between 
         1 and 100, inclusive.
     nbins: int, optional
-        Number  of bins used for  finding splits in each 
-        column.  A  larger number  of splits leads to  a 
-        longer runtime but  results in more fine-grained 
-        and possibly  better splits,  an integer between 
-        2 and 1000, inclusive.
+        Number of bins used to find splits in each column,
+        where more splits  leads to a longer runtime but 
+        more  fine-grained, possibly  better splits. Must
+        be an integer between 2 and 1000, inclusive.
     sample: float, optional
         The  portion  of  the input  data  set  that  is 
         randomly  selected  for  training  each tree,  a 
         float between 0.0 and 1.0, inclusive. 
     col_sample_by_tree: float, optional
         Float  in  the  range (0,1] that  specifies  the 
-        fraction of columns (features), which are chosen 
-        at random, used when building each tree.
+        fraction of columns (features), chosen at random,
+        used when building each tree.
     """
 
     # Properties.
@@ -1237,8 +1237,8 @@ class IsolationForest(Clustering, Tree):
 
     def to_memmodel(self) -> Union[mm.IsolationForest, mm.BinaryTreeAnomaly]:
         """
-        Converts  the model  to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model  to an InMemory object  that
+        can be used for different types of predictions.
         """
         if self.n_estimators_ == 1:
             return self.trees_[0]
@@ -1264,8 +1264,8 @@ class IsolationForest(Clustering, Tree):
             Object to use for the prediction. You can 
             specify  a customized  relation if it  is 
             enclosed  with  an  alias.  For  example, 
-            "(SELECT 1) x"   is   correct,    whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            "(SELECT 1) x"   is   valid,    whereas 
+            "(SELECT 1)" and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of columns used to deploy the models. 
             If empty,  the model  predictors are used.
@@ -1311,8 +1311,8 @@ class IsolationForest(Clustering, Tree):
             Object to use for the prediction. You can 
             specify  a customized  relation if it  is 
             enclosed  with  an  alias.  For  example, 
-            "(SELECT 1) x"   is   correct,    whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            "(SELECT 1) x"   is   valid,    whereas 
+            "(SELECT 1)" and "SELECT 1" are invalid.
         X: list, optional
             List of columns used to deploy the models. 
             If empty,  the model  predictors are used.

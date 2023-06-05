@@ -45,7 +45,7 @@ class ROCCurve(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Roc Curve using the Matplotlib API.
+        Draws a machine learning ROC curve using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
@@ -111,7 +111,7 @@ class CutoffCurve(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Cutoff Curve using the Matplotlib API.
+        Draws a machine cutoff curve using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
@@ -151,7 +151,7 @@ class PRCCurve(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning PRC Curve using the Matplotlib API.
+        Draws a machine learning PRC curve using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
@@ -205,7 +205,7 @@ class LiftChart(ROCCurve):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Machine Learning Lift Chart using the Matplotlib API.
+        Draws a machine learning lift chart using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs

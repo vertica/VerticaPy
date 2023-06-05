@@ -101,7 +101,7 @@ class vDFAgg(vDFEval):
                 percent        : percent of non-missing elements 
                 q%             : q quantile (ex: 50% for the median)
                                  Use the 'approx_q%' (approximate quantile) 
-                                 aggregation to get better performances.
+                                 aggregation to get better performance.
                 prod           : product
                 range          : difference between the max and the min
                 sem            : standard error of the mean
@@ -113,16 +113,16 @@ class vDFAgg(vDFEval):
                 topk_percent   : kth most occurent element density
                 unique         : cardinality (count distinct)
                 var            : variance
-            Other aggregations will work if supported by your version of 
-            the database.
+            Other aggregations will work if supported by your database
+            version.
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the 
-            aggregations, all or only numerical vDataColumns will be used.
+            aggregations, all or only numerical vDataColumns are used.
         ncols_block: int, optional
             Number  of columns  used per query.  Setting  this  parameter 
             divides  what  would otherwise be  one large query into  many 
-            smaller  queries  called "blocks." The size of each block  is 
-            determined by the ncols_block parameter.
+            smaller  queries  called "blocks", whose size is determine by 
+            the size of ncols_block.
         processes: int, optional
             Number  of child processes  to  create. Setting  this  with  the 
             ncols_block  parameter lets you parallelize a  single query into 
@@ -657,9 +657,9 @@ class vDFAgg(vDFEval):
         ----------
         method: str, optional
             The describe method.
-                all         : Aggregates   all  selected   vDataFrame  vDataColumns 
-                              different   methods   depending  on  the  vDataColumn 
-                              type  (numerical  dtype:  numerical; timestamp  dtype: 
+                all         : Aggregates all statistics for all vDataColumns. The
+                              exact method depends on the vDataColumn type 
+                              (numerical  dtype:  numerical; timestamp  dtype: 
                               range; categorical dtype: length)
                 auto        : Sets  the  method  to  'numerical' if  at  least  one 
                               vDataColumn   of   the   vDataFrame    is   numerical, 
@@ -667,23 +667,22 @@ class vDFAgg(vDFEval):
                 categorical : Uses only categorical aggregations.
                 length      : Aggregates the vDataFrame using numerical aggregation 
                               on the length of all selected vDataColumns.
-                numerical   : Uses  only  numerical  descriptive  statistics  which 
-                              are  computed  in a faster  way  than the  'aggregate' 
-                              method.
+                numerical   : Uses  only  numerical  descriptive  statistics, which 
+                              are  computed faster than the  'aggregate' method.
                 range       : Aggregates the vDataFrame using multiple  statistical
                               aggregations - min, max, range...
                 statistics  : Aggregates the vDataFrame using  multiple statistical 
                               aggregations - kurtosis, skewness, min, max...
         columns: SQLColumns, optional
-            List of the vDataColumns names.  If empty, the  vDataColumns will 
-            be selected depending on the parameter 'method'.
+            List of the vDataColumns names.  If empty, the  vDataColumns are
+            selected depending on the parameter 'method'.
         unique: bool, optional
-            If set to True, the cardinality of each element will  be computed.
+            If set to True, computes the cardinality of each element.
         ncols_block: int, optional
             Number of columns used per query.  Setting this parameter divides
             what would otherwise be one large query into many smaller queries 
-            called "blocks". The  size of  each block  is  determined by  the 
-            ncols_block parmeter.
+            called "blocks", whose size is determined by the ncols_block 
+            parmeter.
         processes: int, optional
             Number  of child  processes to  create.  Setting  this with  the 
             ncols_block  parameter lets you parallelize a single query  into 
@@ -1058,7 +1057,7 @@ class vDFAgg(vDFEval):
         expr: SQLExpression, optional
             List of  the  different  aggregations  in  pure SQL.  Aliases 
             can  be  used.  For  example, 'SUM(column)'  or  'AVG(column) 
-            AS  my_new_alias'  are  correct  whereas 'AVG'  is  incorrect. 
+            AS  my_new_alias'  are  valid  whereas 'AVG'  is  invalid. 
             Aliases  are recommended to keep the track  of  the  features 
             and  to  prevent  ambiguous  names.  For  example,  the  MODE 
             function  does  not exist,  but can  be replicated  by  using 
@@ -1180,7 +1179,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
+            vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1201,7 +1200,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
+            vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1223,7 +1222,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
+            vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1245,7 +1244,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
+            vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1269,7 +1268,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            vDataColumns will be used.
+            vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1292,7 +1291,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            will be used.
+            are used.
         **agg_kwargs
             Any  optional parameter to pass to the Aggregate  function.
 
@@ -1315,7 +1314,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            will be used.
+            are used.
         **agg_kwargs
             Any  optional parameter to pass to the Aggregate  function.
 
@@ -1335,7 +1334,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            will be used.
+            are used.
         **agg_kwargs
             Any optional parameter  to pass to  the Aggregate function.
 
@@ -1356,7 +1355,7 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all numerical vDataColumns will be 
+            List of the vDataColumns names. If empty, all numerical vDataColumns are 
             used.
         approx: bool, optional
             If set to True, the approximate median is returned. By setting this 
@@ -1379,7 +1378,7 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all numerical vDataColumns will be 
+            List of the vDataColumns names. If empty, all numerical vDataColumns are 
             used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate function.
@@ -1402,7 +1401,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumn  names.  If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1436,7 +1435,7 @@ class vDFAgg(vDFEval):
             For example [0.25, 0.75] will return  Q1 and Q3.
         columns: SQLColumns, optional
             List  of  the   vDataColumns  names.  If  empty, 
-            all numerical vDataColumns will be used.
+            all numerical vDataColumns are used.
         approx: bool, optional
             If  set  to  True,  the approximate quantile is 
             returned. By  setting  this parameter to  False, 
@@ -1470,7 +1469,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names. If empty,  all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1493,7 +1492,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1517,7 +1516,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names.  If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1540,7 +1539,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns names.  If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1561,7 +1560,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the  vDataColumns  names. If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate 
             function.
@@ -1594,12 +1593,12 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of vDataColumn names. If empty, all vDataColumns 
-            will be used.
+            are used.
         sort_result: bool, optional
-            If set to True, the result will be sorted.
+            If set to True, the result is sorted.
         desc: bool, optional
             If  set  to  True and 'sort_result' is  set  to  True, 
-            the result will be sorted in descending order.
+            the result is sorted in descending order.
         **agg_kwargs
             Any  optional  parameter  to  pass  to  the Aggregate 
             function.
@@ -1630,7 +1629,7 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            will be used.
+            are used.
         approx: bool, optional
             If set to True, the  approximate cardinality  is  returned. 
             By  setting  this  parameter   to  False,  the  function's 
@@ -1660,12 +1659,12 @@ class vDFAgg(vDFEval):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            will be selected.
+            are selected.
         count: bool, optional
-            If set to  True, the  method will also return the count of 
-            each duplicates.
+            If set to  True, the  method also returns the count of 
+            each duplicate.
         limit: int, optional
-            The limited number of elements to be displayed.
+            Sets a limit on the number of elements to be displayed.
 
         Returns
         -------
@@ -1764,7 +1763,7 @@ class vDCAgg(vDCEval):
                 topk_percent   : kth most occurent element density
                 unique         : cardinality (count distinct)
                 var            : variance
-            Other aggregations could work if it is part of the DB 
+            Other aggregations might work if they are part of the DB 
             version you are using.
 
         Returns
@@ -1805,7 +1804,7 @@ class vDCAgg(vDCEval):
                               during the computation.
         max_cardinality: int, optional
             Cardinality  threshold  to  use  to  determine  if the 
-            vDataColumn will be considered as categorical.
+            vDataColumn is considered as categorical.
         numcol: str, optional
             Numerical  vDataColumn  to  use  when  the   parameter 
             method is set to 'cat_stats'.
@@ -2178,12 +2177,12 @@ class vDCAgg(vDCEval):
         Parameters
         ----------
         dropna: bool, optional
-            If set to True, NULL values will not be considered 
+            If set to True, NULL values are not considered 
             during the computation.
         n: int, optional
             Integer  corresponding to the offset. For  example, 
-            if n = 1 then this method  will return the mode of 
-            the vDataColumn.
+            if n = 1, this method returns the mode of the 
+            vDataColumn.
 
         Returns
         -------
@@ -2253,7 +2252,7 @@ class vDCAgg(vDCEval):
         k: int, optional
             Number of most occurent elements to return.
         dropna: bool, optional
-            If  set to True, NULL  values  will not be 
+            If  set to True, NULL  values  are not 
             considered during the computation.
 
         Returns

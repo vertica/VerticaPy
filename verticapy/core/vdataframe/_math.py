@@ -82,7 +82,7 @@ class vDFMath(vDFFilter):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names. If empty, all  numerical 
-            vDataColumns will be used.
+            vDataColumns are used.
 
         Returns
         -------
@@ -115,10 +115,10 @@ class vDFMath(vDFFilter):
 
         \u26A0 Warning : Some analytical  functions can make the vDataFrame 
                          structure  more resource intensive. It is best  to 
-                         check  the structure of  the vDataFrame using  the 
-                         'current_relation' method and to save it using the 
-                         'to_db' method with the parameters 'inplace = True' 
-                         and 'relation_type = table'
+                         check  the structure of  the vDataFrame with  the 
+                         'current_relation' method and save it with the 
+                         'to_db'  method,  uisng  the  parameters 
+                         'inplace = True' and 'relation_type = table'.
 
         Parameters
         ----------
@@ -157,28 +157,28 @@ class vDFMath(vDFFilter):
                 std          : standard deviation
                 unique       : cardinality (count distinct)
                 var          : variance
-            Other analytical functions could work if it is part of the DB 
-            version you are using.
+            Other analytical functions could work if they are part of your DB 
+            version.
         columns: SQLColumns, optional
-            Input vDataColumns. It can be a list of one or two elements.
+            Input vDataColumns. Must be a list of one or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns to use to sort the data using asc order or
-            dictionary of all sorting methods. For example, to sort by "column1"
-            ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+            Either a list of the vDataColumns used to sort (in ascending order) 
+            the data, or a dictionary of vDataColumns and their sorting 
+            methods. For example, to sort by "column1" ASC and "column2" DESC, 
+            write: {"column1": "asc", "column2": "desc"}
         name: str, optional
-            Name of  the new vDataColumn.  If empty a default name based on the 
-            other parameters will be generated.
+            Name of  the new vDataColumn. If empty, a default name based on the 
+            other parameters is generated.
         offset: int, optional
-            Lead/Lag  offset  if parameter  'func' is the function  'lead'/'lag'.
+            Lead/Lag  offset  if parameter 'func' is the function  'lead'/'lag'.
         x_smoothing: float, optional
             The  smoothing parameter of the 'ema' if the  function is 'ema'. It 
-            must be in [0;1]
+            must be a float in the range [0;1].
         add_count: bool, optional
-            If the function is the 'mode' and this parameter is True then another 
-            column  will  be added  to the  vDataFrame  with  the mode number  of 
-            occurences.
+            If the 'func' is set to 'mode' and this parameter is True, a column
+            with the mode number of occurences is added to the vDataFrame. 
 
         Returns
         -------
@@ -463,10 +463,10 @@ class vDFMath(vDFFilter):
          ----------
          func: dict
             Dictionary of functions.
-            The dictionary must be like the following: 
+            The dictionary must be in the following format: 
             {column1: func1, ..., columnk: funck}. Each function variable 
-            must be  composed of two  flower brackets {}. For example  to 
-            apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
+            must be  composed of two  flower brackets {}. For example, to 
+            apply the function x -> x^2 + 2, use "POWER({}, 2) + 2".
 
          Returns
          -------
@@ -486,14 +486,13 @@ class vDFMath(vDFFilter):
         Parameters
         ----------
         func: str
-            The function.
+            Function to apply.
             The function variable must be composed of two flower 
             brackets {}. 
-            For example to  apply the function: x -> x^2 + 2 use 
+            For example to  apply the function x -> x^2 + 2, use 
             "POWER({}, 2) + 2".
         numeric_only: bool, optional
-            If set to True,  only the  numerical columns will be 
-            used.
+            If set to True,  only the  numerical columns is used. 
 
         Returns
         -------
@@ -536,9 +535,9 @@ class vDCMath(vDCFilter):
         Parameters
         ----------
         x: float
-            If the vDataColumn type is date like (date, datetime ...), 
-            the parameter  'x' will represent the  number  of seconds, 
-            otherwise it will represent a number.
+            If the vDataColumn type is date (date, datetime ...), 
+            the parameter  'x' represents the  number  of seconds, 
+            otherwise it represents a number.
 
         Returns
         -------
@@ -562,11 +561,10 @@ class vDCMath(vDCFilter):
         func: str,
             Function in pure SQL used to transform the vDataColumn.
             The  function variable must be composed of two  flower 
-            brackets {}. For example to apply the function: 
-            x -> x^2 + 2 use "POWER({}, 2) + 2".
+            brackets {}. For example, to apply the function 
+            x -> x^2 + 2, use "POWER({}, 2) + 2".
         copy_name: str, optional
-            If  not empty, a copy will be created using the  input 
-            Name.
+            If non-empty, a copy is created using the input name.
 
         Returns
         -------
@@ -753,7 +751,7 @@ class vDCMath(vDCFilter):
     def date_part(self, field: str) -> "vDataFrame":
         """
         Extracts a specific TS field  from the vDataColumn (only if 
-        the vDataColumn type is date like). The vDataColumn will be 
+        the vDataColumn type is date like). The vDataColumn is 
         transformed.
 
         Parameters
@@ -823,12 +821,12 @@ class vDCMath(vDCFilter):
     def round(self, n: int) -> "vDataFrame":
         """
         Rounds the vDataColumn by keeping only the input number 
-        of digits after the comma.
+        of digits after the decimal point.
 
         Parameters
         ----------
         n: int
-            Number of digits to keep after the comma.
+            Number of digits to keep after the decimal point.
 
         Returns
         -------
@@ -867,9 +865,9 @@ class vDCMath(vDCFilter):
         length: int
             Slice size.
         unit: str, optional
-            Slice size unit. For example, it can be 'minute' 'hour'...
+            Slice size unit. For example, 'minute', 'hour'...
         start: bool, optional
-            If set to True, the record will be sliced using the floor 
+            If set to True, the record is sliced using the floor 
             of the slicing instead of the ceiling.
 
         Returns
@@ -891,9 +889,9 @@ class vDCMath(vDCFilter):
         Parameters
         ----------
         x: PythonNumber
-            If the vDataColumn type is date like (date, datetime ...), 
-            the parameter 'x' will  represent  the number of seconds, 
-            otherwise it will represent a number.
+            If the vDataColumn type is date (date, datetime ...), 
+            the parameter 'x' represents  the number of seconds, 
+            otherwise it represents a number.
 
         Returns
         -------

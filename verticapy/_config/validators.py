@@ -20,6 +20,10 @@ from verticapy._typing import NoneType
 
 
 def bool_validator(val: bool) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    a boolean.
+    """
     if isinstance(val, bool):
         return True
     else:
@@ -27,6 +31,10 @@ def bool_validator(val: bool) -> Literal[True]:
 
 
 def in_validator(values: list) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    in a specified set of values.
+    """
     def in_list(val: str):
         if isinstance(val, str) and val in values:
             return True
@@ -37,6 +45,10 @@ def in_validator(values: list) -> Literal[True]:
 
 
 def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    a boolean or None.
+    """
     if isinstance(val, bool) or isinstance(val, NoneType):
         return True
     else:
@@ -44,6 +56,10 @@ def optional_bool_validator(val: Optional[bool]) -> Literal[True]:
 
 
 def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    a positive integer or None.
+    """
     if (isinstance(val, int) and val >= 0) or isinstance(val, NoneType):
         return True
     else:
@@ -51,6 +67,10 @@ def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
 
 
 def str_validator(val: str) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    a string.
+    """
     if isinstance(val, str):
         return True
     else:
@@ -58,6 +78,10 @@ def str_validator(val: str) -> Literal[True]:
 
 
 def st_positive_int_validator(val: int) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    an integer greater than zero.
+    """
     if isinstance(val, int) and val > 0:
         return True
     else:

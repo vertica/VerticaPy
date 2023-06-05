@@ -33,13 +33,13 @@ def generate_lib_udf(
 ) -> tuple[str, str]:
     """
     Generates the code needed to install a library of 
-    Python functions.  It will use the Vertica SDK to 
-    create UDF of the input functions.
+    Python functions.  It uses the Vertica SDK to 
+    create UDFs of the input functions.
 
     Parameters
     ----------
     udf_list: list
-    	List  of tuples including the different  functions.
+    	List of tuples that includes the different functions.
     		function     : [function]   Python    Function.
     	    arg_types    : [dict/list] List  or  dictionary 
                            of  the  function  input  types.
@@ -47,9 +47,10 @@ def generate_lib_udf(
                                      "input2": float}    or 
                            [int, float]
     	    return_type  : [type/dict] Function output type. 
-                           In case of many outputs,  it must 
-                           be a dictionary including all the 
-                           outputs types and names. Example: 
+                           In the case of many outputs, it 
+                           must be a dictionary including 
+                           all the outputs types and names, 
+                           for example: 
                            {"result1": int, "result2": float}
     	    parameters   : [dict] Dictionary of the function 
                            input optional parameters.
@@ -60,14 +61,14 @@ def generate_lib_udf(
     library_name: str
     	Library Name.
     include_dependencies: str / list, optional
-    	Library files dependencies. The function will copy paste 
-        the different files in the UDF definition.
+    	Library files dependencies. The function copies and
+        pastes the different files in the UDF definition.
     file_path: str, optional
     	Path to the UDF file.
     create_file: bool, optional
     	If set to True,  instead of returning the str of the UDx, 
-        the function will  create two files:  one UDF py file and 
-        one SQL file to install it.
+        the function creates two files:  a UDF py file and 
+        a SQL file to install it.
 
     Returns
     -------

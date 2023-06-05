@@ -74,13 +74,13 @@ def randomized_search_cv(
     estimator: VerticaModel
         Vertica estimator with a fit method.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used for the model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:
@@ -225,13 +225,13 @@ def grid_search_cv(
         Dictionary of the parameters to test. It can 
         also be a list of the different combinations.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used for the model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:
@@ -303,11 +303,11 @@ def grid_search_cv(
     cutoff: float, optional
         The  model   cutoff  (classification  only).
     training_score: bool, optional
-        If set to True,  the  training score will be 
+        If set to True,  the  training score is 
         computed with the validation score.
     skip_error: bool, optional
-        If set to True and an error occurs,  it will 
-        be displayed and not raised.
+        If set to True and an error occurs, the error 
+        is displayed but not raised.
     print_info: bool, optional
         If set to True, prints the model information 
         at each step.
@@ -517,7 +517,7 @@ def bayesian_search_cv(
 ) -> TableSample:
     """
     Computes the k-fold bayesian search of an estimator 
-    using a random forest  model to estimate a probable 
+    using a random forest model to estimate a probably 
     optimal set of parameters.
 
     Parameters
@@ -525,13 +525,13 @@ def bayesian_search_cv(
     estimator: object
         Vertica estimator with a fit method.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used for the model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:
@@ -592,7 +592,7 @@ def bayesian_search_cv(
     param_grid: dict/list, optional
         Dictionary of the parameters to test. It can 
         also be a list of the different combinations. 
-        If empty, a parameter grid will be generated.
+        If empty, a parameter grid is generated.
     random_nbins: int, optional
         Number of bins used to compute the different 
         parameters    categories   in   the   random 
@@ -603,8 +603,8 @@ def bayesian_search_cv(
         generation.
     random_grid: bool, optional
         If  True,  the rows used to find the optimal 
-        function  will be used randomnly.  Otherwise, 
-        they will be regularly spaced. 
+        function  are used randomnly.  Otherwise, 
+        they are regularly spaced. 
     lmax: int, optional
         Maximum length of each parameter list.
     nrows: int, optional
@@ -612,13 +612,13 @@ def bayesian_search_cv(
         bayesian search.
     k_tops: int, optional
         When  performing  the bayesian  search,  the 
-        final  stage  will  be  to  retrain  the top
+        final  stage  is to  retrain  the top
         possible  combinations. 'k_tops'  represents 
         the number of  models to train at this stage 
-        to find the most efficient model.
+        in order to find the most efficient model.
     RFmodel_params: dict, optional
         Dictionary   of   the  random  forest  model 
-        parameters  used  to   estimate  a  probable 
+        parameters  used  to   estimate  a  probably 
         optimal set of parameters.
     print_info: bool, optional
         If True, prints the model information at each 
@@ -811,13 +811,13 @@ def enet_search_cv(
     Parameters
     ----------
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used for the model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:

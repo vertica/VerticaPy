@@ -234,6 +234,9 @@ class PlottingBase(PlottingBaseSQL):
     def get_colors(
         self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:
+        """
+        Missing function description?
+        """
         d = format_type(d, dtype=dict)
         if "color" in d:
             if isinstance(d["color"], str):

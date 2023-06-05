@@ -126,7 +126,7 @@ class PCAScreePlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a PCA Scree Plot using the Matplotlib API.
+        Draws a PCA Scree plot using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,
@@ -219,7 +219,7 @@ class PCAVarPlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a PCA Variance Plot using the Matplotlib API.
+        Draws a PCA variance plot using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(6, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs

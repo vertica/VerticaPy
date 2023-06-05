@@ -31,12 +31,12 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
         Number of rows retrieved from the remote database 
         during each SQLFetch() cycle.
     symbol: str, optional
+        A special character to identify the connection.
         One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "?", "!"
-        A special character, to identify the connection. 
-        For example,  if the symbol is '$', you can call 
-        external tables  with the  input cid by  writing
-        $$$QUERY$$$,  where  QUERY  represents a  custom 
+        "$", "€", "£", "%", "@", "&", "§", "?", "!" 
+        For example, if the symbol is '$', you can call 
+        external tables with the input cid by writing
+        $$$QUERY$$$, where QUERY represents a custom 
         query.
     """
     gb_conn = get_global_connection()

@@ -22,8 +22,8 @@ from verticapy._utils._sql._format import format_type, quote_ident
 def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
     """
     Excludes the input lists of prefixes from the 
-    input name and returns it.
-    When there is a match,  the other elements of 
+    input name and then returns the new name.
+    When there is a match, the other elements of 
     the list are ignored.
 
     Parameters
@@ -51,8 +51,8 @@ def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
 def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
     """
     Excludes the input lists of suffixes from the
-    input name and returns it.
-    When there is a match,  the other elements of 
+    input name and then returns the new name.
+    When there is a match, the other elements of 
     the list are ignored.
 
     Parameters
@@ -80,8 +80,8 @@ def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
 def erase_word_in_name(name: str, word: Optional[list] = None) -> str:
     """
     Excludes the input lists of words from the 
-    input name and returns it.
-    When there is a match,  the other elements 
+    input name and then returns the new name.
+    When there is a match, the other elements 
     of the list are ignored.
 
     Parameters
@@ -113,9 +113,9 @@ def erase_in_name(
 ) -> str:
     """
     Excludes the input lists of suffixes and 
-    prefixes from the input name and returns 
-    it.  When  there is a match,  the  other 
-    elements of the list are ignored.
+    prefixes from the input name and then 
+    returns the new name. When there is a match,  
+    the other elements of the list are ignored.
 
     Parameters
     ---------- 
@@ -132,9 +132,9 @@ def erase_in_name(
             s: suffix
             p: prefix
             w: word
-        For example the list ["p", "s", "w"] will 
-        start  by  excluding  the prefixes,  then 
-        suffixes and finally the input words.
+        For example, the list ["p", "s", "w"] will 
+        start by excluding the prefixes, then 
+        suffixes, and finally the input words.
 
     Returns
     -------
@@ -165,7 +165,8 @@ def is_similar_name(
 ) -> bool:
     """
     Excludes the input lists of suffixes, prefixes 
-    and words from the input name and returns it.
+    and words from the input names and then returns
+    a boolean for whether the new names are similar.
 
     Parameters
     ---------- 
@@ -184,8 +185,8 @@ def is_similar_name(
             s: suffix
             p: prefix
             w: word
-        For example the list ["p", "s", "w"] will start 
-        by  excluding the prefixes,  then suffixes  and 
+        For example, the list ["p", "s", "w"] will start 
+        by excluding the prefixes, then suffixes, and 
         finally the input words.
         
 
@@ -238,9 +239,9 @@ def belong_to_group(
             s: suffix
             p: prefix
             w: word
-        For example the list ["p", "s", "w"] will 
-        start  by excluding  the  prefixes,  then 
-        suffixes and finally the input words.
+        For example, the list ["p", "s", "w"] will 
+        start by excluding the prefixes, then 
+        suffixes, and finally the input words.
 
     Returns
     -------
@@ -273,8 +274,8 @@ def group_similar_names(
     order: Optional[list] = None,
 ) -> dict:
     """
-    Creates similar group using the input column 
-    names.
+    Creates groups of similar names using the input 
+    column names.
 
     Parameters
     ---------- 
@@ -291,9 +292,9 @@ def group_similar_names(
             s: suffix
             p: prefix
             w: word
-        For  example  the list ["p", "s", "w"] will 
-        start  by   excluding  the  prefixes,  then 
-        suffixes and finally the input words.
+        For example, the list ["p", "s", "w"] will 
+        start by excluding the prefixes, then 
+        suffixes, and finally the input words.
 
     Returns
     -------
@@ -328,7 +329,7 @@ def gen_coalesce(group_dict: dict) -> str:
     Parameters
     ---------- 
     group_dict: dict
-        Dictionary  including the  different 
+        Dictionary including the different 
         groups.
 
     Returns

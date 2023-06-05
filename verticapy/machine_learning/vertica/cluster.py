@@ -87,24 +87,24 @@ class Clustering(Unsupervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Predicts using the input relation.
+        Makes predictions using the input relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object  to use to run the prediction.  You can 
+            Object  used to run the prediction.  You can 
             also  specify a  customized relation,  but you 
-            must  enclose  it with an alias.  For  example 
-            "(SELECT 1) x" is correct whereas "(SELECT 1)" 
-            and "SELECT 1" are incorrect.
+            must  enclose  it with an alias. For  example: 
+            "(SELECT 1) x" is valid whereas "(SELECT 1)" 
+            and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns used to deploy the models. 
-            If empty, the model predictors will be used.
+            If empty, the model predictors are used.
         name: str, optional
             Name  of  the added  vDataColumn. If empty,  a 
-            name will be generated.
+            name is generated.
         inplace: bool, optional
-            If  set to True, the prediction will be  added 
+            If  set to True, the prediction is  added 
             to the vDataFrame.
 
         Returns
@@ -197,31 +197,30 @@ KMeans Algorithms & Extensions.
 class KMeans(Clustering):
     """
     Creates  a  KMeans object using the  Vertica  k-means 
-    algorithm  on  the  data.  k-means  clustering  is  a 
-    method of vector quantization, originally from signal 
-    processing,  that  aims to partition  n  observations 
-    into  k clusters in  which  each observation  belongs 
-    to the cluster with the nearest mean (cluster centers 
-    or  cluster centroid), serving as a prototype of  the 
-    cluster.  This results in a partitioning of the  data 
-    space into Voronoi cells.
+    algorithm.  k-means  clustering is a method of vector
+    quantization, originally from signal processing, that
+    aims to partition  n  observations into k clusters in
+    which each observation belongs to the cluster with the
+    nearest mean (cluster centers or cluster centroid),
+    serving as a prototype of  the cluster.  This results 
+    in a partitioning of the data space into Voronoi cells.
 
     Parameters
     ----------
     name: str
-    	Name  of  the model. The model will be stored in 
-        the database.
+    	Name  of  the model. The model is stored in the 
+        database.
     n_cluster: int, optional
     	Number of clusters
     init: str / list, optional
-    	The  method  to use to find the initial  cluster 
+    	The  method  used to find the initial  cluster 
         centers.
     		kmeanspp : Uses   the  KMeans++  method   to 
                        initialize the centers.
     		random   : The   centers   are   initialized 
                        randomly.
-    	It  can be also a list with the initial  cluster 
-        centers to use.
+    	You can also provide a list with the initial 
+        cluster centers.
     max_iter: int, optional
     	The  maximum number of iterations  the algorithm 
         performs.
@@ -335,8 +334,8 @@ class KMeans(Clustering):
 
     def to_memmodel(self) -> mm.KMeans:
         """
-        Converts the  model to an InMemory  object  which
-        can be used to do different types of predictions.
+        Converts the  model to an InMemory  object  that
+        can be used for different types of predictions.
         """
         return mm.KMeans(self.clusters_, self.p_,)
 
@@ -390,15 +389,14 @@ class KMeans(Clustering):
 class KPrototypes(KMeans):
     """
     Creates a KPrototypes object by using the Vertica 
-    k-prototypes algorithm on the data. The algorithm 
-    combines  the k-means and k-modes  algorithms  in 
-    order  to  handle both numerical and  categorical 
-    data.
+    k-prototypes algorithm. The algorithm combines 
+    the k-means and k-modes  algorithms  in order to 
+    handle both numerical and  categorical data.
 
     Parameters
     ----------
     name: str
-        Name  of the model. The model is  stored in  the 
+        Name  of the model. The model is stored in  the 
         database.
     n_cluster: int, optional
         Number of clusters.
@@ -492,8 +490,8 @@ class KPrototypes(KMeans):
 
     def to_memmodel(self) -> mm.KPrototypes:
         """
-        Converts the  model to an InMemory  object which
-        can be used to do different types of predictions.
+        Converts the  model to an InMemory  object that
+        can be used for different types of predictions.
         """
         return mm.KPrototypes(
             self.clusters_, self.p_, self.gamma_, self.is_categorical_
@@ -503,23 +501,22 @@ class KPrototypes(KMeans):
 class BisectingKMeans(KMeans, Tree):
     """
     Creates   a  BisectingKMeans  object  using   the 
-    Vertica   bisecting  k-means  algorithm  on   the 
-    data.   k-means  clustering   is   a  method   of 
-    vector   quantization,  originally  from   signal 
-    processing, that aims to partition n observations 
-    into k  clusters.  Each  observation  belongs  to 
-    the  cluster  with  the  nearest  mean   (cluster 
-    centers  or  cluster centroid),  which serves  as 
-    a  prototype  of the  cluster.  This  results  in 
-    a  partitioning  of the  data space into  Voronoi
-    cells.  Bisecting  k-means  combines k-means  and 
-    hierarchical clustering.
+    Vertica   bisecting  k-means  algorithm.  k-means
+    clustering is a method of vector quantization,  
+    originally  from  signal processing, that aims to
+    partition n observations into k  clusters. Each 
+    observation  belongs  to the  cluster  with  the
+    nearest  mean   (cluster centers  or  cluster 
+    centroid),  which serves  as a  prototype  of the
+    cluster.  This  results  in a partitioning of the
+    data space into  Voronoi cells. Bisecting k-means
+    combines k-means  and hierarchical clustering.
 
     Parameters
     ----------
     name: str
-        Name of the model.  The  model will be stored 
-        in the DB.
+        Name of the model.  The  model is stored in 
+        the database.
     n_cluster: int, optional
         Number of clusters
     bisection_iterations: int, optional
@@ -527,15 +524,14 @@ class BisectingKMeans(KMeans, Tree):
         algorithm  performs for each bisection  step. 
         This   corresponds  to  how   many  times  a 
         standalone  KMeans  algorithm runs  in  each 
-        bisection step. 
-        Setting  to more than 1 allows the algorithm 
-        to run and choose the best KMeans run within 
-        each  bisection  step.  Note that if you are 
-        using  kmeanspp   the   bisection_iterations 
-        value is always 1,  because kmeanspp is more 
-        costly  to run  but  also  better  than  the 
-        alternatives,   so  it   does  not   require 
-        multiple runs.
+        bisection step. Setting to a value greater 
+        than 1 allows the algorithm to run and choose
+        the best KMeans run within each bisection 
+        step.  If you are using  kmeanspp,   the
+        bisection_iterations value is always 1  
+        because kmeanspp is more costly  to run  but
+        also  better  than  the alternatives,  so it
+        does  not   require multiple runs.
     split_method: str, optional
         The method used to choose a cluster to 
         bisect/split.
@@ -547,11 +543,11 @@ class BisectingKMeans(KMeans, Tree):
         The minimum number of points of a divisible 
         cluster. Must be greater than or equal to 2.
     distance_method: str, optional
-        The  measure for  distance between two  data 
+        The  distance measure between two  data 
         points. Only Euclidean distance is supported 
         at this time.
     init: str / list, optional
-        The method to use to find the initial KMeans 
+        The method used to find the initial KMeans 
         cluster centers.
             kmeanspp : Uses  the KMeans++ method  to 
                        initialize the centers.
@@ -559,8 +555,8 @@ class BisectingKMeans(KMeans, Tree):
                        used by Spark,  bisects given 
                        center without iterating over 
                        points.
-        It  can be also  a  list  with  the  initial 
-        cluster centers to use.
+        You can also provide a list with the initial 
+        cluster centers.
     max_iter: int, optional
         The maximum number of iterations the KMeans 
         algorithm performs.
@@ -676,8 +672,8 @@ class BisectingKMeans(KMeans, Tree):
 
     def to_memmodel(self) -> mm.BisectingKMeans:
         """
-        Converts  the model to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model to an InMemory object  that
+        can be used for different types of predictions.
         """
         return mm.BisectingKMeans(
             self.clusters_,
@@ -713,7 +709,7 @@ class BisectingKMeans(KMeans, Tree):
         ----------
         round_score: int, optional
             The number of  decimals to round the  node's 
-            score to. 0 rounds to an integer.
+            score to. Zero rounds to an integer.
         percent: bool, optional
             If set to True, the scores are  returned  as 
             a percent.
@@ -780,7 +776,7 @@ class DBSCAN(VerticaModel):
     Creates a DBSCAN object by  using the DBSCAN algorithm 
     as defined by Martin  Ester,  Hans-Peter Kriegel, Jörg 
     Sander, and Xiaowei Xu.  This  object uses pure SQL to 
-    compute the distances and neighbors and uses Python to 
+    compute the distances and neighbors, and uses Python to 
     compute the cluster propagation (non-scalable phase).
 
     \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
@@ -791,19 +787,19 @@ class DBSCAN(VerticaModel):
                      table in order to be optimal  (the CROSS 
                      JOIN will happen only with IDs which are 
                      integers). 
-                     Since  DBSCAN is uses  the  p-distance, it 
+                     Since  DBSCAN uses  the  p-distance, it 
                      is highly sensitive  to unnormalized data. 
                      However,  DBSCAN is robust to outliers and 
                      can find non-linear clusters. It is a very 
-                     powerful algorithm for outliers  detection 
-                     and clustering. A table will be created at 
+                     powerful algorithm for outlier  detection 
+                     and clustering. A table is created at 
                      the end of the learning phase.
 
     Parameters
     ----------
     name: str
         Name  of the model.  This is  not a  built-in 
-        model, so this name will be used to build the 
+        model, so this name is  used to build the 
         final table.
     eps: float, optional
         The radius of a  neighborhood with respect to 
@@ -887,10 +883,10 @@ class DBSCAN(VerticaModel):
             Training relation.
         X: SQLColumns, optional
             List of the predictors. If empty, all the 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         key_columns: SQLColumns, optional
             Columns  not  used  during  the  algorithm 
-            computation  but  which  will be  used  to 
+            computation  but  which  are  used  to 
             create the final relation.
         index: str, optional
             Index  used to identify each row  separately. 
@@ -1206,7 +1202,7 @@ class NearestCentroid(MulticlassClassifier):
 
     def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
         """
-        Returns the input which represents the model's 
+        Returns the input that represents the model's 
         probabilities.
         """
         idx = self.get_match_index(pos_label, self.classes_, False)
@@ -1216,7 +1212,7 @@ class NearestCentroid(MulticlassClassifier):
 
     def to_memmodel(self) -> mm.NearestCentroid:
         """
-        Converts  the  model to  an InMemory object which
-        can be used to do different types of predictions.
+        Converts  the  model to  an InMemory object that
+        can be used for different types of predictions.
         """
         return mm.NearestCentroid(self.clusters_, self.classes_, self.p_,)

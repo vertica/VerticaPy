@@ -52,9 +52,9 @@ class vDFFilter(vDFAgg):
         Parameters
         ----------
         ts: str
-            TS (Time Series) vDataColumn to use to filter the data. 
-            The vDataColumn type must be date like (date, datetime, 
-            timestamp...)
+            TS (Time Series) vDataColumn used to filter the data. 
+            The vDataColumn type must be date (date, datetime, 
+            timestamp...).
         time: TimeInterval
             Input Time. For example, time = '12:00' will filter the 
             data when time('ts') is equal to 12:00.
@@ -86,7 +86,7 @@ class vDFFilter(vDFAgg):
         column: str
             Column used to compute the different categories.
         method: str, optional
-            The method with which to sample the data
+            The method with which to sample the data:
                 over   : oversampling
                 under  : undersampling
         x: float, optional
@@ -149,15 +149,15 @@ class vDFFilter(vDFAgg):
         Parameters
         ----------
         column: str
-            TS (Time  Series)  vDataColumn  to use to filter the  data. 
-            The vDataColumn  type  must be date like  (date,  datetime, 
+            TS (Time  Series)  vDataColumn  used to filter the  data. 
+            The vDataColumn  type  must be date (date,  datetime, 
             timestamp...)
         start: PythonScalar, optional
             Input Python Scalar used to filter.
         end: PythonScalar, optional
             Input Python Scalar used to filter.
         inplace: bool, optional
-            If  set  to  True, the  filtering  will be applied  to  the 
+            If  set  to  True, the  filtering  is applied  to  the 
             vDataFrame.
 
         Returns
@@ -191,9 +191,9 @@ class vDFFilter(vDFAgg):
         Parameters
         ----------
         ts: str
-            TS   (Time Series) vDataColumn to use to filter the  data. 
-            The  vDataColumn type must be date  like (date,  datetime, 
-            timestamp...)
+            TS   (Time Series) vDataColumn used to filter the  data. 
+            The  vDataColumn type must be date (date,  datetime, 
+            timestamp...).
         start_time: TimeInterval
             Input Start Time. For example, time = '12:00' will  filter 
             the data when time('ts') is lesser than 12:00.
@@ -201,8 +201,7 @@ class vDFFilter(vDFAgg):
             Input  End Time. For  example, time = '14:00' will  filter 
             the data when time('ts') is greater than 14:00.
         inplace: bool, optional
-            If  set  to  True, the  filtering  will be applied to  the 
-            vDataFrame.
+            If set to True, the filtering is applied to the vDataFrame.
 
         Returns
         -------
@@ -228,10 +227,10 @@ class vDFFilter(vDFAgg):
     def drop(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
         Drops  the input vDataColumns  from the vDataFrame.  Dropping 
-        vDataColumns  means not selecting them  in the final SQL code 
+        vDataColumns means they are not selected in the final SQL code 
         generation.
-        Be Careful when using this method. It can make the vDataFrame 
-        structure  heavier if some  other  vDataColumns are  computed 
+        Be careful when using this method. It can make the vDataFrame 
+        structure  heavier if other  vDataColumns are  computed 
         using the dropped vDataColumns.
 
         Parameters
@@ -253,21 +252,21 @@ class vDFFilter(vDFAgg):
     @save_verticapy_logs
     def drop_duplicates(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
-        Filters the duplicated using a partition by the input
+        Filters the duplicates using a partition by the input
         vDataColumns.
 
         \u26A0 Warning : Dropping  duplicates  will make the  vDataFrame 
-                         structure heavier.  It is recommended to always 
-                         check   the   current   structure   using   the 
-                         'current_relation'  method and to save it using 
-                         the 'to_db' method with the parameters 'inplace 
-                         = True' and 'relation_type = table'
+                         structure heavier. It is recommended that you
+                         check the   current   structure   using   the 
+                         'current_relation'  method and save it using 
+                         the 'to_db' method, using the parameters 
+                         'inplace = True' and 'relation_type = table'.
 
         Parameters
         ----------
         columns: SQLColumns, optional
             List  of  the vDataColumns names.  If empty,  all 
-            vDataColumns will be selected.
+            vDataColumns are selected.
 
         Returns
         -------
@@ -298,14 +297,14 @@ class vDFFilter(vDFAgg):
     @save_verticapy_logs
     def dropna(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
-        Filters the vDataFrame where the input vDataColumns are 
-        missing.
+        Filters the specified vDataColumns in a vDataFrame for
+        missing values.
 
         Parameters
         ----------
         columns: SQLColumns, optional
             List  of  the vDataColumns  names. If  empty,  all 
-            vDataColumns will be selected.
+            vDataColumns are selected.
 
         Returns
         -------
@@ -341,9 +340,9 @@ class vDFFilter(vDFAgg):
         Parameters
         ---------- 
         conditions: SQLExpression, optional
-            List of expressions. For example to keep only the 
+            List of expressions. For example, to keep only the 
             records where the vDataColumn 'column' is greater 
-            than 5 and lesser than 10 you can write 
+            than 5 and less than 10, you can write: 
             ['"column" > 5', '"column" < 10'].
 
         Returns
@@ -427,8 +426,8 @@ class vDFFilter(vDFAgg):
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn  to use to filter the 
-            data. The vDataColumn  type  must be date like (date, 
+            TS  (Time Series)  vDataColumn  used to filter the 
+            data. The vDataColumn  type  must be date (date, 
             datetime, timestamp...)
         offset: str
             Interval offset. For example, to filter and keep only 
@@ -458,8 +457,8 @@ class vDFFilter(vDFAgg):
     @save_verticapy_logs
     def isin(self, val: dict) -> "vDataFrame":
         """
-        Looks if some specific records are in the vDataFrame and 
-        it returns the new vDataFrame of the search.
+        Checks whether specific records are in the vDataFrame  
+        and returns the new vDataFrame of the search.
 
         Parameters
         ----------
@@ -498,8 +497,8 @@ class vDFFilter(vDFAgg):
         Parameters
         ----------
         ts: str
-            TS (Time Series)  vDataColumn to use to filter the 
-            data. The vDataColumn type must be date like (date, 
+            TS (Time Series)  vDataColumn used to filter the 
+            data. The vDataColumn type must be date (date, 
             datetime, timestamp...)
         offset: str
             Interval  offset.  For example, to filter and  keep 
@@ -537,19 +536,18 @@ class vDFFilter(vDFAgg):
         """
         Downsamples the input vDataFrame.
 
-        \u26A0 Warning : The result may be inconsistent between 
+        \u26A0 Warning : The result might be inconsistent between 
                          attempts at SQL code generation if the 
                          data is not ordered.
 
         Parameters
          ----------
          n: PythonNumber, optional
-            Approximate  number  of element to consider in  the 
+            Approximate  number of elements to consider in  the 
             sample.
          x: float, optional
-            The sample size.  For example it has to be equal to 
-            0.33  to downsample to  approximatively 33% of  the 
-            relation.
+            The sample size. For example, if set to 0.33, it
+            downsamples to approximatively 33% of the relation.
         method: str, optional
             The Sample method.
                 random     : random sampling.
@@ -631,7 +629,7 @@ class vDFFilter(vDFAgg):
         order_by: Union[None, str, dict, list] = None,
     ) -> "vDataFrame":
         """
-        Searches the elements which matches with the input 
+        Searches for elements that match the input 
         conditions.
         
         Parameters
@@ -642,15 +640,15 @@ class vDFFilter(vDFAgg):
         usecols: SQLColumns, optional
             vDataColumns   to    select   from  the   final
             vDataFrame relation. If empty, all vDataColumns
-            will be selected.
+            are selected.
         expr: SQLExpression, optional
             List  of  customized  expressions  in  pure SQL.
             For example: 'column1 * column2 AS my_name'.
         order_by: str / dict / list, optional
-            List of the vDataColumns to use to sort the data 
-            using  asc  order or  dictionary  of all sorting 
+            List of the vDataColumns used to sort the data, 
+            using  asc order or a dictionary of all sorting 
             methods.  For  example,  to  sort  by  "column1"
-            ASC and "column2" DESC, write 
+            ASC and "column2" DESC, write:
             {"column1": "asc", 
              "column2": "desc"}
 
@@ -677,7 +675,7 @@ class vDCFilter(vDCAgg):
     def drop(self, add_history: bool = True) -> "vDataFrame":
         """
         Drops the  vDataColumn from the vDataFrame. Dropping a 
-        vDataColumn means simply not selecting it in the final 
+        vDataColumn means it is not selected in the final 
         generated SQL code.
         
         Note:  Dropping a vDataColumn  can make the vDataFrame 
@@ -686,7 +684,7 @@ class vDCFilter(vDCAgg):
         Parameters
         ----------
         add_history: bool, optional
-            If set to True,  the information will be stored in 
+            If set to True,  the information is stored in 
             the vDataFrame history.
 
         Returns
@@ -734,13 +732,13 @@ class vDCFilter(vDCAgg):
             Uses the  Gaussian distribution  to identify outliers. 
             After normalizing the data (Z-Score), if the absolute 
             value of the record is greater than the threshold, it 
-            will be considered as an outlier.
+            is considered as an outlier.
         use_threshold: bool, optional
             Uses  the threshold instead of the  'alpha' parameter.
         alpha: PythonNumber, optional
             Number  representing  the outliers threshold.  Values 
-            lesser   than   quantile(alpha)   or   greater   than 
-            quantile(1-alpha) will be dropped.
+            less   than   quantile(alpha)   or   greater   than 
+            quantile(1-alpha) are be dropped.
 
         Returns
         -------
@@ -779,14 +777,14 @@ class vDCFilter(vDCAgg):
     @save_verticapy_logs
     def isin(self, val: Union[PythonScalar, list], *args,) -> "vDataFrame":
         """
-        Looks if some specific records are in the vDataColumn and it 
+        Checks whether specific records are in the vDataColumn and 
         returns the new vDataFrame of the search.
 
         Parameters
         ----------
         val: PythonScalar / list
             List of the different  records. For example, to check if 
-            Badr and Fouad are in the vDataColumn. You can write the 
+            Badr and Fouad are in the vDataColumn, you can write the 
             following list: ["Fouad", "Badr"]
 
         Returns

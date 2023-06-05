@@ -46,13 +46,13 @@ class vDFRolling(vDFCorr):
         advanced  analytical  window function on one or  two 
         specific vDataColumns.
 
-        \u26A0 Warning : Some   window  functions   can  make   the 
-                         vDataFrame   structure   heavier.  It   is 
-                         recommended  to  always check the  current 
-                         structure   using  the   'current_relation' 
-                         method  and to  save  it using the  'to_db' 
-                         method with the parameters 'inplace = True' 
-                         and 'relation_type = table'
+        \u26A0 Warning : Some window functions can make the 
+                         vDataFrame structure heavier. It is 
+                         recommended to always check the current 
+                         structure with the 'current_relation' 
+                         method and to save it with the 'to_db' 
+                         method, using the parameters 'inplace 
+                         = True' and 'relation_type = table'.
 
         Parameters
         ----------
@@ -79,24 +79,25 @@ class vDFRolling(vDFCorr):
                     the DB version you are using.
         window: list / tuple
             Window Frame Range.
-            If two integers,  it will compute a Row Window, otherwise 
-            it  will  compute a Time  Window. For example, if set  to 
+            If set to two integers, computes a Row Window, otherwise 
+            it computes a Time  Window. For example, if set  to 
             (-5, 1),  the moving  windows will take 5 rows  preceding 
             and one following. If set to ('- 5 minutes', '0 minutes'),
             the  moving window  will take all elements of the last  5 
             minutes.
         columns: SQLColumns
-            Input vDataColumns. It can be a list of one or two elements.
+            Input vDataColumns. Must be a list of one or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of  the vDataColumns to use to sort the data using asc 
-            order or dictionary of all sorting methods. For example, to 
-            sort by "column1" ASC and "column2" DESC, write:
-            {"column1": "asc", "column2": "desc"}
+            List of the vDataColumns used to sort the data using 
+            ascending/descending order or a dictionary of all the 
+            sorting methods. 
+            For example, to sort by "column1" ASC and "column2" DESC, 
+            use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name will 
-            be generated.
+            Name of the new vDataColumn.  If empty, a default name is
+            generated.
 
         Returns
         -------
@@ -260,13 +261,14 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List  of  the  vDataColumns to  use to sort the data  using 
-            asc  order  or  dictionary  of  all  sorting  methods.  For 
-            example, to sort by "column1" ASC and "column2" DESC, write: 
-            {"column1": "asc", "column2": "desc"}
+            List of the vDataColumns used to sort the data using 
+            ascending/descending order or a dictionary of all the 
+            sorting methods. 
+            For example, to sort by "column1" ASC and "column2" DESC, 
+            use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name will 
-            be generated.
+            Name of the new vDataColumn. If empty, a default name is 
+            generated.
 
         Returns
         -------
@@ -301,13 +303,14 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List  of  the  vDataColumns to  use to sort the data  using 
-            asc  order  or  dictionary  of  all  sorting  methods.  For 
-            example, to sort by "column1" ASC and "column2" DESC, write: 
-            {"column1": "asc", "column2": "desc"}
+            List of the vDataColumns used to sort the data using 
+            ascending/descending order or a dictionary of all the 
+            sorting methods. 
+            For example, to sort by "column1" ASC and "column2" DESC, 
+            use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name will 
-            be generated.
+            Name of the new vDataColumn. If empty, a default name is 
+            generated.
 
         Returns
         -------
@@ -342,13 +345,14 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List  of  the  vDataColumns to  use to sort the data  using 
-            asc  order  or  dictionary  of  all  sorting  methods.  For 
-            example, to sort by "column1" ASC and "column2" DESC, write: 
-            {"column1": "asc", "column2": "desc"}
+            List of the vDataColumns used to sort the data using 
+            ascending/descending order or a dictionary of all the 
+            sorting methods. 
+            For example, to sort by "column1" ASC and "column2" DESC, 
+            use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name will 
-            be generated.
+            Name of the new vDataColumn. If empty, a default name is 
+            generated.
 
         Returns
         -------
@@ -383,13 +387,14 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List  of  the  vDataColumns to  use to sort the data  using 
-            asc  order  or  dictionary  of  all  sorting  methods.  For 
-            example, to sort by "column1" ASC and "column2" DESC, write: 
-            {"column1": "asc", "column2": "desc"}
+            List of the vDataColumns used to sort the data using 
+            ascending/descending order or a dictionary of all the 
+            sorting methods. 
+            For example, to sort by "column1" ASC and "column2" DESC, 
+            use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name will 
-            be generated.
+            Name of the new vDataColumn. If empty, a default name is 
+            generated.
 
         Returns
         -------

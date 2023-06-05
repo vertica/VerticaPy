@@ -24,12 +24,12 @@ from verticapy.connection.utils import get_confparser
 
 def available_connections() -> list[str]:
     """
-    Displays all the available connections.
+    Displays all available connections.
 
     Returns
     -------
     list
-        all the available connections.
+        all available connections.
     """
     gb_conn = get_global_connection()
 
@@ -46,17 +46,18 @@ available_auto_connection = available_connections
 def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     """
     Reads the DSN information from the VERTICAPY_
-    CONNECTION environment variable  or the input 
+    CONNECTION environment variable or the input 
     file.
 
     Parameters
     ----------
     section: str
-        Name of the section in  the configuration file.
+        Name of the section in the configuration file
+        that contains the credentials.
     dsn: str, optional
-        Path to the file  containing  the  credentials. 
+        Path to the file containing the credentials. 
         If empty, the VERTICAPY_CONNECTION environment 
-        variable will be used.
+        variable is used.
 
     Returns
     -------

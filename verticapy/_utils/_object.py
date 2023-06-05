@@ -26,24 +26,37 @@ if TYPE_CHECKING:
 
 
 def create_new_vdc(*args, **kwargs) -> "vDataColumn":
+    """
+    Creates a vDataColumn.
+    """
     from verticapy.core.vdataframe.base import vDataColumn
 
     return vDataColumn(*args, **kwargs)
 
 
 def create_new_vdf(*args, **kwargs) -> "vDataFrame":
+    """
+    Creates a vDataFrame.
+    """
     from verticapy.core.vdataframe.base import vDataFrame
 
     return vDataFrame(*args, **kwargs)
 
 
 def get_vertica_mllib() -> Literal["vml"]:
+    """
+    Gets the Vertica machine learning module.
+    """
     import verticapy.machine_learning.vertica as vml
 
     return vml
 
 
 def read_pd(*args, **kwargs) -> "vDataFrame":
+    """
+    Reads a Pandas DataFrame into a VerticaPy
+    vDataFrame.
+    """
     from verticapy.core.parsers.pandas import read_pandas
 
     return read_pandas(*args, **kwargs)

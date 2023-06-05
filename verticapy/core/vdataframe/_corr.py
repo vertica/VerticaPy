@@ -57,7 +57,7 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Global method to use to compute the Correlation/Cov/Regr Matrix.
+        Global method used to compute the Correlation/Cov/Regr Matrix.
         """
         method_name = "Correlation"
         method_type = f" using the method = '{method}'"
@@ -533,7 +533,7 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Global method to use to compute the Correlation/Cov/Beta Vector.
+        Global method used to compute the Correlation/Cov/Beta Vector.
         """
         if not columns:
             if method == "cramer":
@@ -744,7 +744,7 @@ class vDFCorr(vDFEncode):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         method: str, optional
             Method to use to compute the correlation.
                 pearson   : Pearson's  correlation coefficient 
@@ -755,8 +755,8 @@ class vDFCorr(vDFEncode):
                             using  the   DENSE  RANK  function 
                             instead of the RANK function.
                 kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method will 
-                            compute the Tau-B coefficient.
+                            (similar trends).  The method  
+                            computes the Tau-B coefficient.
                             \u26A0 Warning : This method  uses a CROSS 
                                              JOIN  during  computation 
                                              and      is     therefore 
@@ -771,15 +771,15 @@ class vDFCorr(vDFEncode):
                             numericals).
         mround: int, optional
             Rounds  the coefficient using  the input number of 
-            digits. It is only used to display the correlation 
+            digits. This is only used to display the correlation 
             matrix.
         focus: str, optional
-            Focus  the  computation  on  only one  vDataColumn.
+            Focus  the  computation  on  one  vDataColumn.
         show: bool, optional
-            If  set  to  True,  the  Plotting  object  will be 
+            If  set  to  True,  the  Plotting  object  is 
             returned.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any  optional  parameter  to pass to the  plotting 
             functions.
@@ -844,8 +844,8 @@ class vDFCorr(vDFEncode):
                             using  the   DENSE  RANK  function 
                             instead of the RANK function.
                 kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method will 
-                            compute the Tau-B coefficient.
+                            (similar trends).  The method 
+                            computes the Tau-B coefficient.
                             \u26A0 Warning : This method  uses a CROSS 
                                              JOIN  during  computation 
                                              and      is     therefore 
@@ -1032,14 +1032,14 @@ class vDFCorr(vDFEncode):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all numerical 
-            vDataColumns will be used.
+            vDataColumns are used.
         focus: str, optional
-            Focus the computation on only one vDataColumn.
+            Focus the computation on one vDataColumn.
         show: bool, optional
-            If   set  to   True,  the   Plotting   object  will  be 
+            If   set  to   True,  the   Plotting   object  is 
             returned.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any   optional  parameter  to  pass  to  the   plotting 
             functions.
@@ -1096,7 +1096,7 @@ class vDFCorr(vDFEncode):
         ----------
         columns: SQLColumns, optional
             List  of the  vDataColumns names. If empty, all numerical 
-            vDataColumns will be used.
+            vDataColumns are used.
         method: str, optional
             Method to use to compute the regression matrix.
                 avgx  : Average  of  the  independent  expression  in 
@@ -1118,9 +1118,9 @@ class vDFCorr(vDFEncode):
                 syy   : Returns  the sum of squares of the  dependent 
                         expression in an expression pair.
         show: bool, optional
-            If set to True, the Plotting object will be returned.
+            If set to True, the Plotting object is returned.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any optional parameter to pass to the plotting functions.
 
@@ -1266,27 +1266,27 @@ class vDFCorr(vDFEncode):
         Parameters
         ----------
         column: str
-            Input vDataColumn  to use to compute the Auto 
+            Input vDataColumn used to compute the Auto 
             Correlation Plot.
         ts: str
-            TS (Time Series)  vDataColumn to use to order 
+            TS (Time Series)  vDataColumn used to order 
             the  data.  It  can  be  of type  date  or  a 
             numerical vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         p: int | list, optional
-            Int  equals  to  the  maximum  number  of lag  to 
+            Int  equal  to  the  maximum  number  of lag  to 
             consider  during the  computation or  List of the 
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
-            Unit to use to compute the lags.
-                rows: Natural lags
-                else : Any time unit,  for  example  you  can 
+            Unit used to compute the lags.
+                rows : Natural lags
+                else : Any time unit.  For example,  you  can 
                        write 'hour' to compute the hours lags 
                        or 'day' to compute the days lags.
         method: str, optional
-            Method to use to compute the correlation.
+            Method used to compute the correlation.
                 pearson   : Pearson's  correlation coefficient 
                             (linear).
                 spearman  : Spearman's correlation coefficient 
@@ -1295,8 +1295,8 @@ class vDFCorr(vDFEncode):
                             using  the   DENSE  RANK  function 
                             instead of the RANK function.
                 kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method will 
-                            compute the Tau-B coefficient.
+                            (similar trends).  The method  
+                            computes the Tau-B coefficient.
                             \u26A0 Warning : This method  uses a CROSS 
                                              JOIN  during  computation 
                                              and      is     therefore 
@@ -1315,7 +1315,7 @@ class vDFCorr(vDFEncode):
             Significance Level. Probability to accept H0. Only 
             used   to  compute   the  confidence  band   width.
         show: bool, optional
-                If  set  to True,  the Plotting object will be 
+                If  set  to True,  the Plotting object is 
                 returned.
         kind: str, optional
             ACF Type.
@@ -1328,7 +1328,7 @@ class vDFCorr(vDFEncode):
             digits. It is used only to display the ACF  Matrix 
             (kind must be set to 'heatmap').
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any optional parameter  to  pass  to  the plotting 
             functions.
@@ -1432,23 +1432,23 @@ class vDFCorr(vDFEncode):
         Parameters
         ----------
         column: str
-            Input vDataColumn  to use to compute the Auto 
+            Input vDataColumn  used to compute the Auto 
             Correlation Plot.
         ts: str
-            TS (Time Series)  vDataColumn to use to order 
+            TS (Time Series)  vDataColumn used to order 
             the  data.  It  can  be  of type  date  or  a 
             numerical vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         p: int | list, optional
-            Int  equals  to  the  maximum  number  of lag  to 
+            Int  equal  to  the  maximum  number  of lag  to 
             consider  during the  computation or  List of the 
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
             Unit to use to compute the lags.
-                rows: Natural lags
-                else : Any time unit,  for  example  you  can 
+                rows : Natural lags.
+                else : Any time unit.  For  example, you  can 
                        write 'hour' to compute the hours lags 
                        or 'day' to compute the days lags.
         method: str, optional
@@ -1461,8 +1461,8 @@ class vDFCorr(vDFEncode):
                             using  the   DENSE  RANK  function 
                             instead of the RANK function.
                 kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method will 
-                            compute the Tau-B coefficient.
+                            (similar trends).  The method  
+                            computes the Tau-B coefficient.
                             \u26A0 Warning : This method  uses a CROSS 
                                              JOIN  during  computation 
                                              and      is     therefore 
@@ -1481,7 +1481,7 @@ class vDFCorr(vDFEncode):
             Significance Level. Probability to accept H0. Only 
             used   to  compute   the  confidence  band   width.
         show: bool, optional
-                If  set  to True,  the Plotting object will be 
+                If  set  to True,  the Plotting object is 
                 returned.
         kind: str, optional
             ACF Type.
@@ -1489,7 +1489,7 @@ class vDFCorr(vDFEncode):
                        using bars.
                 line : Draws  the   PACF  using  a  Line  Plot.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any optional parameter  to  pass  to  the plotting 
             functions.
@@ -1613,7 +1613,7 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the Information Value (IV) Table. It tells 
+        Computes the Information Value (IV) Table. This shows 
         the predictive power  of an independent variable in 
         relation to the dependent variable.
 
@@ -1623,15 +1623,15 @@ class vDFCorr(vDFEncode):
             Response vDataColumn.
         columns: SQLColumns, optional
             List  of  the  vDataColumns names. If  empty,  all 
-            vDataColumns  except  the response  will  be used.
+            vDataColumns  except  the response  are used.
         nbins: int, optional
             Maximum number of bins used for the discretization 
             (must be > 1).
         show: bool, optional
-            If  set  to True,  the  Plotting  object  will  be 
+            If  set  to True,  the  Plotting  object  is 
             returned.
         chart: PlottingObject, optional
-            The chart object to plot on.
+            The chart object used to plot.
         **style_kwargs
             Any  optional  parameter to  pass to the  plotting 
             functions.
@@ -1670,7 +1670,7 @@ class vDCCorr(vDCEncode):
     def iv_woe(self, y: str, nbins: int = 10) -> TableSample:
         """
         Computes the Information Value (IV) / Weight Of 
-        Evidence  (WOE) Table.  It tells the predictive 
+        Evidence  (WOE) Table. This shows the predictive 
         power of an independent variable in relation to 
         the dependent variable.
 

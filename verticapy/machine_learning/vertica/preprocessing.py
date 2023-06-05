@@ -65,28 +65,28 @@ def Balance(
     name: str
         Name of the view.
     input_relation: str
-        Relation to use to create the new relation.
+        Relation used to create the new relation.
     y: str
         Response column.
     method: str, optional
-        Method to use to do the balancing.
+        Method used to do the balancing.
             hybrid : Performs  over-sampling   and 
                      under-sampling  on  different 
-                     classes  so   each  class  is 
+                     classes so that each class is 
                      equally represented.
             over   : Over-samples on  all classes, 
-                     with  the  exception  of  the 
-                     most  majority class, towards 
-                     the  most   majority  class's 
-                     cardinality. 
+                     except the most represented 
+                     class, towards the  most  
+                     represented class's cardinality. 
             under  : Under-samples on  all classes,
-                     with the exception of the most 
-                     minority  class,  towards  the 
-                     most minority class's cardinality.
+                     except the least represented
+                     class,  towards  the least 
+                     represented class's cardinality.
     ratio: float, optional
-        The  desired ratio between the majority  class 
-        and  the  minority  class.  This value has  no 
-        effect when used with balance method 'hybrid'.
+        The desired ratio between the majority class 
+        and the minority class. This value has no 
+        effect when used with the 'hybrid' balance 
+        method.
 
     Returns
     -------
@@ -139,12 +139,12 @@ class Preprocessing(Unsupervised):
         Parameters
         ----------
         inverse: bool, optional
-            If set to True, it returns the inverse transform 
+            If set to True, returns the inverse transform 
             output names.
         X: list, optional
             List of the columns used to get the model output 
-            names. If empty, the model predictors names will 
-            be used.
+            names. If empty, the model predictors names are 
+            used.
 
         Returns
         -------
@@ -211,7 +211,7 @@ class Preprocessing(Unsupervised):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty,  the model predictors will be used.
+            If empty,  the model predictors are used.
         key_columns: SQLColumns, optional
             Predictors   used   during   the   algorithm 
             computation which will  be deployed with the 
@@ -284,8 +284,7 @@ class Preprocessing(Unsupervised):
             Columns to exclude from the prediction.
         X: SQLColumns, optional
             List  of the columns used to deploy the  inverse 
-            model.  If empty,  the model predictors will  be 
-            used.
+            model. If empty, the model predictors are used.
 
         Returns
         -------
@@ -330,8 +329,8 @@ class Preprocessing(Unsupervised):
         vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a customized 
             relation,  but you must  enclose it with an  alias. 
-            For  example   "(SELECT 1) x"  is  correct  whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            For  example:  "(SELECT 1) x"  is  valid  whereas 
+            "(SELECT 1)" and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 
@@ -365,8 +364,8 @@ class Preprocessing(Unsupervised):
         vdf: SQLRelation
             Input vDataFrame. You can also specify a customized 
             relation,  but you must  enclose it with an  alias. 
-            For  example   "(SELECT 1) x"  is  correct  whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            For  example:  "(SELECT 1) x"  is  valid  whereas 
+            "(SELECT 1)" and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 
@@ -403,7 +402,7 @@ Algorithms used for text analytics.
 
 class CountVectorizer(VerticaModel):
     """
-    Creates a Text Index which will count the occurences 
+    Creates a Text Index that counts the occurences 
     of each word in the data.
      
     Parameters
@@ -414,20 +413,19 @@ class CountVectorizer(VerticaModel):
     	Converts  all  the elements to lowercase  before 
         processing.
     max_df: float, optional
-    	Keeps  the words which represent less than  this 
+    	Keeps  the words that represent less than  this 
         float in the total dictionary distribution.
     min_df: float, optional
-    	Keeps  the words which represent more than  this 
+    	Keeps  the words that represent more than  this 
         float in the total dictionary distribution.
     max_features: int, optional
     	Keeps only the top words of the dictionary.
     ignore_special: bool, optional
-    	Ignores all the special  characters to build the 
-        dictionary.
+    	Ignores all the special characters when building
+        the dictionary.
     max_text_size: int, optional
-    	The maximum  size  of  the  column which is  the 
-        concatenation  of  all the  text columns  during 
-        the fitting.
+    	The maximum size of the column that concatenates 
+        all of the  text columns during fitting.
 	"""
 
     # Properties.
@@ -573,7 +571,7 @@ class CountVectorizer(VerticaModel):
     		Training relation.
     	X: SQLColumns
     		List of the predictors. If empty, all the 
-            columns will be used.
+            columns are used.
 		"""
         X = format_type(X, dtype=list)
         if conf.get_option("overwrite_model"):
@@ -650,7 +648,7 @@ class Scaler(Preprocessing):
     name: str
     	Name of the model.
     method: str, optional
-    	Method to use to normalize.
+    	Method used to normalize.
     		zscore        : Normalization   using   the   Z-Score.
                             (x - avg) / std
     		robust_zscore : Normalization using the Robust Z-Score.
@@ -726,8 +724,8 @@ class Scaler(Preprocessing):
 
     def to_memmodel(self) -> mm.Scaler:
         """
-        Converts the model to an InMemory object which can 
-        be used to do different types of predictions.
+        Converts the model to an InMemory object that can 
+        be used for different types of predictions.
         """
         if self.parameters["method"] == "minmax":
             return mm.MinMaxScaler(self.min_, self.max_)
@@ -777,7 +775,7 @@ Algorithms used for encoding.
 
 class OneHotEncoder(Preprocessing):
     """
-    Creates a Vertica One Hot Encoder object.
+    Creates a Vertica OneHotEncoder object.
      
     Parameters
     ----------
@@ -787,7 +785,7 @@ class OneHotEncoder(Preprocessing):
     	Additional levels in each  category that are not 
         in the input relation.
     drop_first: bool, optional
-        If set to True,  it treats the first level of the 
+        If set to True,  treats the first level of the 
         categorical variable as the reference level. 
         Otherwise, every level of the categorical variable 
         has a corresponding column in the output view.
@@ -942,7 +940,7 @@ class OneHotEncoder(Preprocessing):
 
     def to_memmodel(self) -> mm.OneHotEncoder:
         """
-        Converts the model to an InMemory object which
-        can be used to do different types of predictions.
+        Converts the model to an InMemory object that
+        can be used for different types of predictions.
         """
         return mm.OneHotEncoder(self.categories_, self.column_naming_, self.drop_first_)

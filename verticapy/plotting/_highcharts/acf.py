@@ -81,7 +81,7 @@ class ACFPlot(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws an ACF Time Series plot using the HC API.
+        Draws an ACF time series plot using the HC API.
         """
         kind = "PACF" if self.layout["pacf"] else "ACF"
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
@@ -124,7 +124,7 @@ class ACFPACFPlot(ACFPlot):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws an ACF-PACF Time Series plot using the HC API.
+        Draws an ACF-PACF time series plot using the HC API.
         """
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)

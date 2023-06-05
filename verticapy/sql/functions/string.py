@@ -114,7 +114,7 @@ def upper(expr: SQLExpression) -> StringSQL:
 def edit_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
     """
     Calculates and returns the Levenshtein 
-    distance  between   the  two  strings.
+    distance  between two  strings.
 
     Parameters
     ----------

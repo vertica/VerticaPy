@@ -71,7 +71,7 @@ class HexbinMap(MatplotlibBase):
         **style_kwargs,
     ) -> Axes:
         """
-        Draws an hexbin plot using the Matplotlib API.
+        Draws a hexbin plot using the Matplotlib API.
         """
         bbox = format_type(bbox, dtype=list)
         matrix = self.data["X"]

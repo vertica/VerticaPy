@@ -48,7 +48,7 @@ class BoxPlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a multi box plot using the Matplotlib API.
+        Draws a multi-box plot using the Matplotlib API.
         """
         m = self.data["X"].shape[1]
         if m == 1 and "vert" not in style_kwargs:

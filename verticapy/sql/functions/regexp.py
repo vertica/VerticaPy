@@ -24,7 +24,7 @@ def regexp_count(
     expr: SQLExpression, pattern: SQLExpression, position: int = 1,
 ) -> StringSQL:
     """
-    Returns  the number times a regular  expression 
+    Returns the number of times a regular expression 
     matches a string.
 
     Parameters
@@ -33,7 +33,7 @@ def regexp_count(
         Expression.
     pattern: SQLExpression
         The regular expression to search for within 
-        string.
+        the string.
     position: int, optional
         The number of characters from the start  of 
         the  string where the function should start 

@@ -65,7 +65,7 @@ class ChampionChallengerPlot(MatplotlibBase):
         self, plt_text: bool = True, ax: Optional[Axes] = None, **style_kwargs,
     ) -> Axes:
         """
-        Draws a Machine Learning Bubble Plot using the Matplotlib API.
+        Draws a machine learning bubble plot using the Matplotlib API.
         """
         n = len(self.data["x"])
         if len(self.data["s"]) > 0:

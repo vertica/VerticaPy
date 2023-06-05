@@ -44,8 +44,8 @@ class vDFSystem(vDFTyping):
 
     def _add_to_history(self, message: str) -> "vDataFrame":
         """
-        VERTICAPY stores the user modification and help the user to 
-        look  at what  he/she did.  This method is to use  to add a 
+        VERTICAPY stores the user modification and helps the user
+        to look at what they did. This method is used to add a 
         customized message in the vDataFrame history attribute.
         """
         self._vars["history"] += ["{" + time.strftime("%c") + "}" + " " + message]
@@ -58,21 +58,21 @@ class vDFSystem(vDFTyping):
         force_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Method to use  to generate the SQL final relation. It will 
-        look at all transformations  to build a nested query where 
-        each transformation will be associated to a specific floor.
+        Method used to generate the SQL final relation. It  
+        looks at all transformations and builds a nested query where 
+        each transformation is associated to a specific floor.
 
         Parameters
         ----------
         split: bool, optional
-            Adds a split  column __verticapy_split__  in the relation 
-            which can be to use to downsample the data.
+            Adds a split  column __verticapy_split__ in the relation, 
+            which can be used to downsample the data.
         transformations: dict, optional
             Dictionary of columns and their respective transformation. 
-            It will be to use to test if an expression is correct and 
-            can be added it in the final relation.
+            It can be used to test if an expression is correct and 
+            can be added in the final relation.
         force_columns: SQLColumns, optional
-            Columns to use to generate the final relation.
+            Columns used to generate the final relation.
 
         Returns
         -------
@@ -247,7 +247,7 @@ class vDFSystem(vDFTyping):
 
     def _get_sort_syntax(self, columns: SQLColumns) -> str:
         """
-        Returns the SQL syntax to use to sort the input columns.
+        Returns the SQL syntax used to sort the input columns.
         """
         if not columns:
             return ""
@@ -345,7 +345,7 @@ class vDFSystem(vDFTyping):
             Reindent the text to be more readable.
         split: bool, optional
             Adds a split  column __verticapy_split__  
-            in the  relation which can be to  use to 
+            in the  relation, which can be used to 
             downsample the data.
 
         Returns
@@ -389,7 +389,7 @@ class vDFSystem(vDFTyping):
         Parameters
         ----------
         unit: str, optional
-            unit used for the computation
+            Unit used for the computation.
             b : byte
             kb: kilo byte
             gb: giga byte

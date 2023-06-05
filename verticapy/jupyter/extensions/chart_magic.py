@@ -202,8 +202,7 @@ def chart_magic(
                      if  you  want to execute the  input 
                      file.
 
-    -k  /  --kind  : Chart  Type.  Can  be  one  of  the 
-                     following.
+    -k  /  --kind  : Chart Type, one  of  the following:
                      area  / area_range  / area_ts / bar
                      biserial   /   boxplot   /   bubble 
                      candlestick   /   cramer  /   donut 
@@ -216,7 +215,6 @@ def chart_magic(
      -o / --output : Output File. You can use this option 
                      if  you want to export the result of 
                      the query to the HTML format.
-
     """
 
     # Initialization

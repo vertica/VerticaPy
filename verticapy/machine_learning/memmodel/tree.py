@@ -34,7 +34,7 @@ if conf.get_import_success("graphviz"):
 
 class Tree(InMemoryModel):
     """
-    Base Class for Tree representation.
+    Base Class for tree representation.
     """
 
     # System & Special Methods.
@@ -89,7 +89,7 @@ class Tree(InMemoryModel):
         self, X: ArrayLike, node_id: int = 0, return_proba: bool = False
     ) -> float:
         """
-        Function used recursively to get the Tree 
+        Function used recursively to get the tree 
         prediction.
         """
         if self.children_left_[node_id] == self.children_right_[node_id]:
@@ -449,8 +449,8 @@ class Tree(InMemoryModel):
 
 class BinaryTreeRegressor(Tree):
     """
-    InMemoryModel  Implementation  of  Binary  Trees  for 
-    Regression.
+    InMemoryModel  implementation  of  binary  trees  for 
+    regression.
 
     Parameters
     ----------
@@ -468,7 +468,7 @@ class BinaryTreeRegressor(Tree):
         threshold for the internal node i.
     value: ArrayLike
         Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and   if 
+        node.   If  used  for   classification   and   
         return_proba is set to True,  each element of the 
         list must be a sublist  with the probabilities of 
         each class.
@@ -511,8 +511,8 @@ class BinaryTreeRegressor(Tree):
 
 class BinaryTreeAnomaly(Tree):
     """
-    InMemoryModel  Implementation  of  Binary  Trees  for 
-    Anomaly Detection.
+    InMemoryModel  implementation  of  binary  trees  for 
+    anomaly detection.
 
     Parameters
     ----------
@@ -530,7 +530,7 @@ class BinaryTreeAnomaly(Tree):
         threshold for the internal node i.
     value: ArrayLike
         Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and   if 
+        node.   If  used  for   classification   and   
         return_proba is set to True,  each element of the 
         list must be a sublist  with the probabilities of 
         each class.
@@ -585,8 +585,8 @@ class BinaryTreeAnomaly(Tree):
 
 class BinaryTreeClassifier(Tree):
     """
-    InMemoryModel  Implementation  of  Binary  Trees  for 
-    Classification.
+    InMemoryModel  implementation  of  binary  trees  for 
+    classification.
 
     Parameters
     ----------
@@ -604,7 +604,7 @@ class BinaryTreeClassifier(Tree):
         threshold for the internal node i.
     value: ArrayLike
         Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and   if 
+        node.   If  used  for   classification   and    
         return_proba is set to True,  each element of the 
         list must be a sublist  with the probabilities of 
         each class.
@@ -668,16 +668,15 @@ class BinaryTreeClassifier(Tree):
 
 class NonBinaryTree(Tree):
     """
-    InMemoryModel Implementation of Non Binary Trees.
+    InMemoryModel implementation of non-binary trees.
 
     Parameters
     ----------
     tree: dict
-        A  NonBinaryTree  tree.  Non Binary Trees  can 
+        A  NonBinaryTree  tree.  NonBinaryTrees  can 
         be generated with the vDataFrame.chaid method.
     classes: ArrayLike, optional
-        The  p  corresponding   to  the   one  of  the 
-        p-distances.
+        The  p  corresponding   to  the  p-distances.
     """
 
     # Properties.
@@ -703,7 +702,7 @@ class NonBinaryTree(Tree):
         self, X: ArrayLike, tree: dict, return_proba: bool = False
     ) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the Tree 
+        Function used recursively to get the tree 
         prediction.
         """
         if tree["is_leaf"]:

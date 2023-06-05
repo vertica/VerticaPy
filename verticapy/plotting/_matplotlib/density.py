@@ -84,7 +84,7 @@ class MultiDensityPlot(DensityPlot):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a multi density plot using the Matplotlib API.
+        Draws a multi-density plot using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(7, 5), set_axis_below=True, grid=True, style_kwargs=style_kwargs

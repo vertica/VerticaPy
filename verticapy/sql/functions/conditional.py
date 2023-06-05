@@ -30,7 +30,7 @@ def case_when(*args) -> StringSQL:
     Parameters
     ----------
     args: SQLExpression
-        Infinite Number of Expressions.
+        Infinite number of Expressions.
         The expression generated will look like:
         even: CASE ... WHEN args[2 * i] 
                        THEN args[2 * i + 1] ... END
@@ -69,15 +69,14 @@ def case_when(*args) -> StringSQL:
 
 def decode(expr: SQLExpression, *args) -> StringSQL:
     """
-    Compares expression to each search value one 
-    by one.
+    Compares the expressions to each search value.
 
     Parameters
     ----------
     expr: SQLExpression
         Expression.
     args: SQLExpression
-        Infinite Number of Expressions.
+        Infinite number of Expressions.
         The expression generated will look like:
         even: CASE ... WHEN expr = args[2 * i] 
                        THEN args[2 * i + 1] ... END

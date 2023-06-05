@@ -70,7 +70,7 @@ class LogisticRegressionPlot(PlotlyBase):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a Logistic Regression plot using the Plotly API.
+        Draws a logistic regression plot using the Plotly API.
         """
         fig = self._get_fig(fig)
         logit = lambda x: 1 / (1 + np.exp(-x))

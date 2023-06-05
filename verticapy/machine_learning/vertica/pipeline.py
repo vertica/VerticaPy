@@ -36,9 +36,9 @@ General Class.
 
 class Pipeline:
     """
-    Creates a Pipeline object. Sequentially apply a 
-    list  of  transforms and a final estimator. The 
-    intermediate  steps must  implement a transform 
+    Creates a Pipeline object, which sequentially 
+    applies a list of transforms and a final estimator.
+    The intermediate steps must  implement a transform 
     method.
 
     Parameters
@@ -46,8 +46,8 @@ class Pipeline:
     steps: list
         List of (name, transform)  tuples (implementing 
         fit/transform) that  are chained, in  the order 
-        in which they are chained, with the last object 
-        an estimator.
+        in which they are chained, where the last object 
+        is an estimator.
 	"""
 
     # Properties.
@@ -128,12 +128,12 @@ class Pipeline:
 
     def get_params(self) -> dict[dict]:
         """
-        Returns the models Parameters.
+        Returns the model's Parameters.
 
         Returns
         -------
         dict
-            models parameters.
+            model's parameters.
         """
         params = {}
         for step in self.steps:
@@ -148,10 +148,10 @@ class Pipeline:
         ----------
         parameters: dict, optional
             New parameters.  It must be a  dictionary with 
-            as  keys the  Pipeline  names and as value the 
-            parameters dictionary.
+            the  Pipeline names as keys and the parameter
+            dictionary as values.
         **kwargs
-            New parameters can also be passed as arguments
+            New parameters can also be passed as arguments.
             Example: set_params(pipeline1 = dict1, 
                                 pipeline2 = dict2)
         """
@@ -238,8 +238,8 @@ class Pipeline:
         Parameters
         ----------
         metric: str, optional
-            The metric to use to compute the score.
-            Depends  on  the  final estimator  type 
+            The metric used to compute the score.
+            Depends  on  the  final estimator type 
             (classification or regression).
 
         Returns
@@ -270,9 +270,9 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a 
             customized  relation,  but  you  must  enclose 
-            it with an alias.  For example  "(SELECT 1) x" 
-            is correct whereas "(SELECT 1)" and "SELECT 1" 
-            are incorrect.
+            it with an alias.  For example: "(SELECT 1) x" 
+            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
         name: str, optional
@@ -319,9 +319,9 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a 
             customized  relation,  but  you  must  enclose 
-            it with an alias. For  example  "(SELECT 1) x" 
-            is correct whereas "(SELECT 1)" and "SELECT 1" 
-            are incorrect.
+            it with an alias. For  example: "(SELECT 1) x" 
+            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 
@@ -359,9 +359,9 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a 
             customized  relation,  but  you  must  enclose 
-            it with an alias. For  example  "(SELECT 1) x" 
-            is correct whereas "(SELECT 1)" and "SELECT 1" 
-            are incorrect.
+            it with an alias. For  example: "(SELECT 1) x" 
+            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 

@@ -31,7 +31,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
     expr: SQLExpression
         Expression.
     args: SQLExpression
-        Infinite Number of Expressions.
+        A number of expressions.
 
     Returns
     -------

@@ -54,7 +54,7 @@ class ElbowCurve(PlotlyBase):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a Machine Learning Bubble Plot using the Plotly API.
+        Draws a machine learning bubble plot using the Plotly API.
         """
         fig_base = self._get_fig(fig)
         fig = px.line(x=self.data["x"], y=self.data["y"], markers=True)

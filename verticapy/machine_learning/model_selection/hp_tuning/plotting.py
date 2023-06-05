@@ -65,13 +65,13 @@ def validation_curve(
     param_range: list
         Parameter Range.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used to for model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:
@@ -244,19 +244,18 @@ def plot_acf_pacf(
     column: str
         Response column.
     ts: str
-        vDataColumn  used as timeline. It will be to use 
-        to order the data. It can be a numerical or type 
-        date   like   (date,   datetime,   timestamp...) 
-        vDataColumn.
+        vDataColumn used as timeline to order the data.
+        It can be a numerical or date-like type (date,
+        datetime,   timestamp...) vDataColumn.
     by: list, optional
         vDataColumns used in the partition.
     p: int | list, optional
-        Int  equals  to  the  maximum  number  of lag to 
-        consider during the computation or  List of  the 
+        Integer equal to the maximum  number  of lags to 
+        consider during the computation or a list of the 
         different lags to include during the computation.
         p must be positive or a list of positive integers.
     show: bool, optional
-        If  set to  True,  the  Plotting  object will  be 
+        If  set to  True,  the  Plotting  object is
         returned.
     **style_kwargs
         Any optional  parameter to pass to the Plotting 

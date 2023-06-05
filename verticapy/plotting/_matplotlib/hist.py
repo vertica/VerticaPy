@@ -41,7 +41,7 @@ class Histogram(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws an histogram using the Matplotlib API.
+        Draws a histogram using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs

@@ -28,7 +28,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    InMemoryModel Implementation of Scalers.
+    InMemoryModel implementation of scalers.
 
     Parameters
     ----------
@@ -58,7 +58,7 @@ class Scaler(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms  and applies the Scaler model to  the 
+        Transforms  and applies the scaler model to  the 
         input matrix.
 
         Parameters
@@ -100,7 +100,7 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    InMemoryModel Implementation of Standard Scaler.
+    InMemoryModel implementation of standard scaler.
 
     Parameters
     ----------
@@ -125,7 +125,7 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    InMemoryModel Implementation of MinMax Scaler.
+    InMemoryModel implementation of MinMax scaler.
 
     Parameters
     ----------
@@ -150,7 +150,7 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    InMemoryModel Implementation of OneHotEncoder.
+    InMemoryModel implementation of one-hot encoder.
 
     Parameters
     ----------
@@ -168,7 +168,7 @@ class OneHotEncoder(InMemoryModel):
                                where  n  is a zero-based  integer 
                                index (_0, _1,…).
     drop_first: bool, optional
-        If set to False, the first dummy of each category will be 
+        If set to False, the first dummy of each category is 
         dropped.
     """
 

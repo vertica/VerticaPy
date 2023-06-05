@@ -58,15 +58,14 @@ def load_model(
     name: str
         Model Name.
     input_relation: str, optional
-        Some automated functions may depend on the 
+        Some automated functions depend on the 
         input relation. If the load_model function 
         cannot  find the  input relation from  the 
         call string, you should fill it manually.
     test_relation: str, optional
-        Relation to use to do the testing. All the 
-        methods  will  use this  relation for  the 
-        scoring.  If empty, the training  relation 
-        will be used as testing.
+        Relation used for testing. All the methods
+        use this  relation for scoring. If empty,
+        the training relation is used for testing.
 
     Returns
     -------

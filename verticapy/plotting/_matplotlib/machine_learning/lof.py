@@ -73,7 +73,7 @@ class LOFPlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Local Outlier Plot using the Matplotlib API.
+        Draws a local outlier plot using the Matplotlib API.
         """
         colors = self._get_colors(style_kwargs=style_kwargs)
         param = {

@@ -248,7 +248,7 @@ def quantile_error(
     y_true: str, y_score: str, input_relation: SQLRelation, q: PythonNumber,
 ) -> float:
     """
-    Computes the input Quantile of the Error.
+    Computes the input quantile of the Error.
 
     Parameters
     ----------
@@ -262,7 +262,7 @@ def quantile_error(
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     q: PythonNumber
-        Input Quantile.
+        Input quantile.
 
     Returns
     -------
@@ -281,7 +281,7 @@ def r2_score(
     adj: bool = True,
 ) -> float:
     """
-    Computes the R2 Score.
+    Computes the R2 score.
 
     Parameters
     ----------
@@ -295,10 +295,10 @@ def r2_score(
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     k: int, optional
-        Number  of predictors. Only used to compute the  R2 
-        adjusted.
+        Number  of predictors. Only used to compute the  
+        adjusted R2.
     adj: bool, optional
-        If set to True, computes the R2 adjusted.
+        If set to True, computes the adjusted R2.
 
     Returns
     -------
@@ -322,7 +322,7 @@ def anova_table(
     y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
 ) -> TableSample:
     """
-    Computes the Anova Table.
+    Computes the ANOVA table.
 
     Parameters
     ----------
@@ -341,7 +341,7 @@ def anova_table(
     Returns
     -------
     TableSample
-        anova table.
+        ANOVA table.
     """
     n, avg = _executeSQL(
         query=f"""
@@ -409,7 +409,7 @@ def regression_report(
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     metrics: list, optional
-        List of the metrics to use to compute the final 
+        List of the metrics used to compute the final 
         report.
             aic    : Akaike’s Information Criterion
             bic    : Bayesian Information Criterion

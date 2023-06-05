@@ -42,7 +42,7 @@ def create_index(
     Parameters
     ----------
     vdf: SQLRelation
-        vDataFrame to use to compute the spatial join.
+        vDataFrame used to compute the spatial join.
     gid: str
         Name  of  an   integer  column  that  uniquely 
         identifies the polygon. 
@@ -64,9 +64,9 @@ def create_index(
         can allocate during index construction.
     skip_nonindexable_polygons: bool, optional
         In rare cases, intricate polygons (for instance, 
-        with  too high  resolution or anomalous  spikes) 
-        cannot be indexed. These polygons are considered 
-        non-indexable. 
+        those with too high resolution or anomalous 
+        spikes) cannot be indexed. These polygons are
+        considered non-indexable. 
         When set to False,  non-indexable polygons cause 
         the  index creation  to fail. When set to  True, 
         index   creation  can   succeed   by   excluding 
@@ -108,7 +108,7 @@ def describe_index(
     list_polygons: bool, optional
         Boolean that specifies whether to list 
         the polygons  in the index.  If set to 
-        True,   the  function  will  return  a 
+        True,   the  function  returns  a 
         vDataFrame instead of a TableSample.
 
     Returns

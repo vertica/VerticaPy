@@ -108,7 +108,7 @@ class MultiDensityPlot(DensityPlot):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a multi density plot using the HC API.
+        Draws a multi-density plot using the HC API.
         """
         labels = self._clean_quotes(self.layout["labels"])
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)

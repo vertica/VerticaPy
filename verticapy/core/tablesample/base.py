@@ -47,30 +47,29 @@ if TYPE_CHECKING:
 
 class TableSample:
     """
-    The TableSample  is the  transition  from  'Big Data' 
+    TableSample sits at the transition from 'Big Data'
     to 'Small Data'. 
     This object allows you to  conveniently  display your 
-    results without any dependencies on any other module. 
-    It stores the aggregated  result in memory  which can 
-    then  be  transformed   into  a  pandas.DataFrame  or 
+    results without dependencies on any other modules. 
+    It stores the aggregated  result in-memory and can 
+    then be transformed   into  a  pandas.DataFrame  or 
     vDataFrame.
 
     Parameters
     ----------
     values: dict, optional
     	Dictionary of columns (keys) and their values. The 
-        dictionary must be similar to the following one:
+        dictionary must be in the following format:
     	{"column1": [val1, ..., valm], ... 
          "columnk": [val1, ..., valm]}
     dtype: dict, optional
     	Columns data types.
     count: int, optional
-    	Number  of  elements if we had to  load the  entire 
-        dataset. It is used only for rendering purposes.
+    	Number of elements to render when loading the entire 
+        dataset. This is used only for rendering purposes.
     offset: int, optional
-    	Number of  elements that were skipped if we had  to 
-        load  the  entire  dataset.  It  is  used only  for 
-        rendering purposes.
+    	Number of  elements to skip when loading the entire 
+        dataset. This is used only for rendering purposes.
     percent: dict, optional
         Dictionary  of missing values  (Used to display the 
         percent bars)
@@ -316,6 +315,20 @@ class TableSample:
     ) -> Literal[
         "bool", "date", "float", "int", "undefined", "text",
     ]:
+        """
+        Returns the category of data in a specified 
+        TableSample column.
+
+        Parameters
+        ----------
+        column: str
+            Tablesample column.
+
+        Returns
+        -------
+        Literal
+            Category of the specified column.
+        """
         x = np.array(self[column])
         for xi in x:
             if isinstance(xi, (str, np.str_)):
@@ -453,9 +466,9 @@ class TableSample:
             For instance, some DBs might not support the same 
             SQL as Vertica.
         symbol: str, optional
+            Symbol used to identify the external connection.
             One of the following:
             "$", "€", "£", "%", "@", "&", "§", "%", "?", "!"
-            Symbol used to identify the external connection.
 
         Returns
         -------
@@ -592,7 +605,7 @@ class TableSample:
 
     def to_numpy(self) -> np.ndarray:
         """
-        Converts the TableSample to a numpy array.
+        Converts the TableSample to a Numpy array.
 
         Returns
         -------

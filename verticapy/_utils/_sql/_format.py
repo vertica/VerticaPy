@@ -31,8 +31,8 @@ from verticapy.errors import ParsingError
 
 def clean_query(query: SQLExpression) -> SQLExpression:
     """
-    Cleans  the input query by erasing comments, spaces
-    and other useless characters.
+    Cleans the input query by erasing comments, spaces,
+    and other unnecessary characters.
     Comments using '/*' and '*/' are left in the query.
     """
     if isinstance(query, list):
@@ -97,7 +97,7 @@ def extract_and_rename_subquery(query: str, alias: str) -> str:
 def extract_precision_scale(ctype: str) -> tuple:
     """
     Extracts the precision and scale from the
-    input sql type.
+    input SQL type.
     """
     if "(" not in ctype:
         return (0, 0)
@@ -114,8 +114,8 @@ def format_magic(
     x: Any, return_cat: bool = False, cast_float_int_to_str: bool = False
 ) -> Any:
     """
-    Formats  the input element using SQL  rules.
-    Ex: None values  are represented by NULL and
+    Formats  the input element using SQL rules.
+    Ex: None values are represented by NULL and
         string are enclosed by single quotes "'"
     """
     object_type = None
@@ -142,8 +142,8 @@ def format_magic(
 
 def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None) -> Any:
     """
-    Format the input objects  by using the input type. It is
-    used to simplify the code as many functions are checking
+    Format the input objects by using the input type. This
+    simplifies the code because many functions check
     types and instantiate the corresponding object.
     """
     res = ()
@@ -229,7 +229,7 @@ def list_strip(L: list) -> list:
 def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns:
     """
     Returns the specified string argument in the format 
-    that is required in  order to use that string as an 
+    that is required in order to use that string as an 
     identifier in an SQL statement.
 
     Parameters
@@ -240,7 +240,7 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
     Returns
     -------
     str
-        Formatted column' name.
+        Formatted column name.
     """
     if isinstance(column, str):
         tmp_column = str(column)
@@ -263,9 +263,10 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
 
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     """
-    Replaces the input variables by their SQL respective 
-    representations.  If they do not have one, they will
-    be materialised by a temporary local table.
+    Replaces the input variables with their respective SQL 
+    representations. If a input variable does not have a 
+    SQL representation, it is materialised by a temporary 
+    local table.
     """
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -314,8 +315,8 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
 def schema_relation(relation: Any) -> tuple[str, str]:
     """
     Extracts the schema and the table from the input
-    relation.  If  it does  not  have a schema,  the
-    temporary schema is used.
+    relation. If the input relation does not have a schema, 
+    the temporary schema is used.
     """
     if isinstance(relation, str):
         quote_nb = relation.count('"')

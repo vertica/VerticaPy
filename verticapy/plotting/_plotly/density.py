@@ -73,7 +73,7 @@ class DensityPlot(PlotlyBase):
 class MultiDensityPlot(DensityPlot):
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a multi density plot using the Plotly API.
+        Draws a multi-density plot using the Plotly API.
         """
         fig = self._get_fig(fig)
         for i in range(self.data["X"].shape[1]):

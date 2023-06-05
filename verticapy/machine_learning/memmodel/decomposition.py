@@ -26,7 +26,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class PCA(InMemoryModel):
     """
-    InMemoryModel Implementation of PCA Algorithm.
+    InMemoryModel implementation of the PCA algorithm.
 
     Parameters
     ----------
@@ -116,8 +116,8 @@ class PCA(InMemoryModel):
         Phi: ArrayLike, gamma: float = 1.0, q: int = 20, tol: float = 1e-6
     ) -> None:
         """
-        Performs a Oblimin  (Varimax, Quartimax)  rotation on 
-        the input Matrix.
+        Performs an Oblimin  (Varimax, Quartimax) rotation on 
+        the input matrix.
         """
         # This piece of code was taken from
         # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
@@ -144,7 +144,7 @@ class PCA(InMemoryModel):
 
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
         """
-        Performs  a Oblimin (Varimax, Quartimax) rotation on the  PCA 
+        Performs an Oblimin (Varimax, Quartimax) rotation on the  PCA 
         matrix.
 
         Parameters
@@ -166,7 +166,7 @@ class PCA(InMemoryModel):
 
 class SVD(InMemoryModel):
     """
-    InMemoryModel Implementation of SVD Algorithm.
+    InMemoryModel implementation of the SVD Algorithm.
 
     Parameters
     ----------

@@ -91,7 +91,7 @@ class AnimatedLinePlot(AnimatedBase):
         **style_kwargs,
     ) -> animation.Animation:
         """
-        Draws an animated Time Series plot using the Matplotlib API.
+        Draws an animated time series plot using the Matplotlib API.
         """
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs

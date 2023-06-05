@@ -53,30 +53,31 @@ class vDFFill(vDFPivot):
         numeric_only: bool = False,
     ) -> "vDataFrame":
         """
-        Fills the vDataColumns missing elements using specific rules.
+        Fills missing elements in vDataColumns using specific rules.
 
         Parameters
         ----------
         val: dict, optional
             Dictionary of values. The dictionary must be similar to the 
             following:
-            {"column1": val1 ..., "columnk": valk}.  Each  key  of  the 
-            dictionary must be a vDataColumn. The missing values of the 
-            input vDataColumns will be replaced by the input value.
+            {"column1": val1 ..., "columnk": valk}.  
+            Each  key  of  the dictionary must be a vDataColumn. The 
+            missing values of the input vDataColumns are replaced by
+            the input value.
         method: dict, optional
-            Method to use to impute the missing values.
+            Method used to impute the missing values.
                 auto    : Mean for the numerical and Mode for the 
                           categorical vDataColumns.
                 mean    : Average.
                 median  : Median.
                 mode    : Mode (most occurent element).
                 0ifnull : 0 when the vDataColumn is null, 1 otherwise.
-            More Methods are available on the vDataFrame[].fillna method.
+            More Methods are available in the vDataFrame[].fillna method.
         numeric_only: bool, optional
             If parameters 'val' and 'method' are empty and 'numeric_only' 
-            is  set  to True then  all numerical  vDataColumns  will  be 
-            imputed by their average.  If set to False, all  categorical 
-            vDataColumns will be also imputed by their mode.
+            is  set  to True, all numerical  vDataColumns are imputed by 
+            their average. If set to False, all categorical vDataColumns 
+            are also imputed by their mode.
 
         Returns
         -------
@@ -119,17 +120,16 @@ class vDFFill(vDFPivot):
         Parameters
         ----------
         ts: str
-            TS (Time Series)  vDataColumn to use to order the  data. The 
-            vDataColumn   type  must  be   date  like  (date,   datetime, 
-            timestamp...)
+            TS (Time Series)  vDataColumn used to order the  data. The 
+            vDataColumn type must be date (date, datetime, timestamp...).
         rule: TimeInterval
             Interval  used   to  create   the  time  slices.  The  final 
             interpolation  is divided  by these intervals.  For  example, 
             specifying  '5 minutes'  creates records separated  by  time 
-            intervals of '5 minutes' 
+            intervals of '5 minutes'.
         method: dict, optional
-            Dictionary,  with  the following  format,  of  interpolation 
-            methods:
+            Dictionary of  interpolation methods. Must be in the following
+            format:
             {"column1": "interpolation1" ..., "columnk": "interpolationk"}
             Interpolation methods must be one of the following:
                 bfill  : Interpolates with the final value of the time slice.
@@ -190,10 +190,9 @@ class vDCFill(vDCMath):
         upper: Optional[PythonScalar] = None,
     ) -> "vDataFrame":
         """
-        Clips  the vDataColumn by  transforming the values lesser  than 
-        the lower bound to the lower bound itself and the values higher 
-        than the upper bound to the upper 
-        bound itself.
+        Clips  the vDataColumn by  transforming the values less  than 
+        the lower bound to the lower bound value and the values higher 
+        than the upper bound to the upper bound value.
 
         Parameters
         ----------
@@ -238,25 +237,24 @@ class vDCFill(vDCMath):
         Parameters
         ----------
         method: str, optional
-            Method to use to fill the vDataColumn outliers.
+            Method used to fill the vDataColumn outliers.
                 mean      : Replaces  the  upper and lower outliers  by 
                             their respective average. 
                 null      : Replaces  the  outliers  by the NULL  value.
-                winsorize : Clips the vDataColumn  using as lower bound 
-                            quantile(alpha)   and   as   upper    bound 
-                            quantile(1-alpha) if 'use_threshold' is set 
-                            to False else the lower and upper ZScores.
+                winsorize : If 'use_threshold' is set to False, clips the
+                            vDataColumn using quantile(alpha) as lower 
+                            bound and quantile(1-alpha) as upper bound; 
+                            otherwise uses the lower and upper ZScores.
         threshold: PythonNumber, optional
             Uses the Gaussian distribution  to define the outliers. After 
             normalizing the data (Z-Score),  if the absolute value of the 
-            record is greater than the threshold it will be considered as 
+            record is greater than the threshold, it will be considered as 
             an outlier.
         use_threshold: bool, optional
             Uses the threshold instead of the 'alpha' parameter.
         alpha: PythonNumber, optional
-            Number representing the outliers threshold. Values lesser than 
-            quantile(alpha)  or  greater  than  quantile(1-alpha) will  be 
-            filled.
+            Number representing the outliers threshold. Values less than 
+            quantile(alpha) or greater than quantile(1-alpha) are filled. 
 
         Returns
         -------
@@ -354,9 +352,9 @@ class vDCFill(vDCMath):
         Parameters
         ----------
         val: PythonScalar / date, optional
-            Value to use to impute the vDataColumn.
+            Value used to impute the vDataColumn.
         method: dict, optional
-            Method to use to impute the missing values.
+            Method used to impute the missing values.
                 auto    : Mean  for  the  numerical  and  Mode  for  the 
                           categorical vDataColumns.
                 bfill   : Back Propagation of the next element (Constant 
@@ -372,7 +370,7 @@ class vDCFill(vDCMath):
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: SQLColumns, optional
-            List of the vDataColumns to use to sort the data when using 
+            List of the vDataColumns used to sort the data when using 
             TS methods.
 
         Returns

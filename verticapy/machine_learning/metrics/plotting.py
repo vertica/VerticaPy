@@ -52,15 +52,15 @@ def lift_chart(
     y_true: str
         Response column.
     y_score: str
-        Prediction Probability.
+        Prediction probability.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias  is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
         To compute the Lift Chart, one of the response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter  'pos_label' represents this  class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -136,15 +136,15 @@ def prc_curve(
     y_true: str
         Response column.
     y_score: str
-        Prediction Probability.
+        Prediction probability.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias  is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
         To compute the PRC Curve,  one of the response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter  'pos_label' represents this  class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -152,7 +152,7 @@ def prc_curve(
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
     show: bool, optional
-        If set to True,  the  Plotting object  will be 
+        If set to True, the Plotting object is 
         returned.
     chart: PlottingObject, optional
        The chart object to plot on.
@@ -211,15 +211,15 @@ def roc_curve(
     y_true: str
         Response column.
     y_score: str
-        Prediction Probability.
+        Prediction probability.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias  is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
         To compute the ROC Curve,  one of the response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter  'pos_label' represents this  class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -227,7 +227,7 @@ def roc_curve(
         set at equally-spaced intervals  between 0 and 
         1, inclusive.
     show: bool, optional
-        If set to True,  the  Plotting object  will be 
+        If set to True,  the  Plotting object  is 
         returned.
     chart: PlottingObject, optional
        The chart object to plot on.

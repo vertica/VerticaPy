@@ -94,9 +94,9 @@ class vDataFrame(vDFAnimatedPlot):
         generated SQL code of multiple UNIONs. 
     usecols: SQLColumns, optional
         When input_relation is not an array-like type:
-        List of columns to use to create the object. As Vertica 
-        is  a  columnar DB  including  less columns  makes  the 
-        process faster.  Do not hesitate to not include useless 
+        List of columns used to create the object. As Vertica 
+        is  a  columnar DB, including  less columns  makes  the 
+        process faster.  Do not hesitate to exclude useless 
         columns.
         Otherwise:
         List of column names.
@@ -111,9 +111,9 @@ class vDataFrame(vDFAnimatedPlot):
         If set to True, a Connection Identifier Database must be 
         defined.
     symbol: str, optional
-        One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "?", "!"
         Symbol used to identify the external connection.
+        One of the following:
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"      
     sql_push_ext: bool, optional
         If  set to True, the  external vDataFrame attempts to  push 
         the entire query to the external table (only DQL statements 
@@ -355,10 +355,10 @@ class vDataFrame(vDFAnimatedPlot):
 
 class vDataColumn(vDCPlot, StringSQL):
     """
-    Python  object  which  that  stores all user  transformations. 
-    If   the  vDataFrame   represents  the  entire  relation,   a 
-    vDataColumn  can  be seen  as  one  column of  that  relation. 
-    vDataColumns simplify several processes with its abstractions.
+    Python object that stores all user transformations. If   the  
+    vDataFrame  represents the entire relation, a vDataColumn can
+    be seen  as  one  column of  that  relation. Through its 
+    abstractions, vDataColumns simplify several processes.
 
     Parameters
     ----------
@@ -369,12 +369,12 @@ class vDataColumn(vDCPlot, StringSQL):
         must be similar to the following: (function, type, category)  
     parent: vDataFrame, optional
         Parent of the vDataColumn. One vDataFrame can have multiple 
-        children vDataColumns whereas one vDataColumn can only have 
+        children vDataColumns, whereas one vDataColumn can only have 
         one parent.
     catalog: dict, optional
         Catalog where each key corresponds to an aggregation. 
         vDataColumns will memorize the already computed aggregations 
-        to gain in performance. The catalog will be updated when the 
+        to increase performance. The catalog is updated when the 
         parent vDataFrame is modified.
 
     Attributes

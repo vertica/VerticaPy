@@ -54,15 +54,15 @@ class vDFText(vDFRolling):
         Parameters
         ----------
         column: str
-            Input vDataColumn  to  use  to compute the  regular 
+            Input vDataColumn  used  to compute the  regular 
             expression.
         pattern: str
             The regular expression.
         method: str, optional
-            Method  to use to compute the regular  expressions.
-                count     : Returns the number times a regular 
-                            expression matches each element of 
-                            the input vDataColumn. 
+            Method used to compute the regular  expressions.
+                count     : Returns the number of times a 
+                            regular expression matches each 
+                            element of the input vDataColumn. 
                 ilike     : Returns  True if  the  vDataColumn 
                             element  contains a match for  the 
                             regular expression.
@@ -95,7 +95,7 @@ class vDFText(vDFRolling):
         return_position: int, optional
             Sets the position within the string to return.
         name: str, optional
-            New feature name. If empty, a name will be generated.
+            New feature name. If empty, a name is generated.
 
         Returns
         -------
