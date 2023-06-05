@@ -303,6 +303,7 @@ class VDFBarPlot(BasicPlotTests):
             {"columns": self.COL_NAME_VDF_1},
         )
 
+
     def col_name_param():
         """
         Get column value to pass as pytest parameter
@@ -412,7 +413,6 @@ class VDCBoxPlot(BasicPlotTests):
 
     COL_NAME_1 = "0"
 
-
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
         """
@@ -500,6 +500,7 @@ class VDCCandlestick(BasicPlotTests):
 
     COL_NAME_1 = "values"
     TIME_COL = "date"
+
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_line_data_vd):
@@ -698,6 +699,7 @@ class VDFDensityPlot(BasicPlotTests):
     """
 
     COL_NAME = "0"
+
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
