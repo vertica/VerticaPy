@@ -74,7 +74,7 @@ class BoxPlot(HighchartsBase):
 
     def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
         """
-        Draws a multi box plot using the HC API.
+        Draws a multi-box plot using the HC API.
         """
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)

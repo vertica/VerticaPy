@@ -66,21 +66,21 @@ def randomized_features_search_cv(
 ) -> TableSample:
     """
     Computes  the k-fold grid search of an estimator  using 
-    different features combinations. It can be used to find 
-    the set of variables which will optimize the model.
+    different feature combinations. It can be used to find 
+    the set of variables that will optimize the model.
 
     Parameters
     ----------
     estimator: VerticaModel
         Vertica estimator with a fit method.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
         Response Column.
     metric: str, optional
-        Metric used to do the model evaluation.
+        Metric used for the model evaluation.
             auto: logloss for classification & rmse for 
                   regression.
         For Classification:
@@ -152,14 +152,14 @@ def randomized_features_search_cv(
     cutoff: float, optional
         The  model   cutoff  (classification  only).
     training_score: bool, optional
-        If set to True,  the training score  will be 
+        If set to True,  the training score  is 
         computed   with    the   validation   score.
     comb_limit: int, optional
         Maximum number of features combinations used 
         to train the model.
     skip_error: bool, optional
-        If set to True and an error occurs,  it will 
-        be displayed and not raised.
+        If set to True and an error occurs, the error 
+        is displayed but not raised.
     print_info: bool, optional
         If set to True, prints the model information 
         at each step.
@@ -360,7 +360,7 @@ def stepwise(
         Vertica estimator with a fit method. It must be a 
         Binary Classifier or a Regressor.
     input_relation: SQLRelation
-        Relation to use to train the model.
+        Relation used to train the model.
     X: SQLColumns
         List of the predictor columns.
     y: str
@@ -370,18 +370,18 @@ def stepwise(
             aic : Akaike’s Information Criterion
             bic : Bayesian Information Criterion
     direction: str, optional
-        How  to  start the stepwise search. Can  be  done 
+        Method for starting the stepwise search, either 
         'backward' or 'forward'.
     max_steps: int, optional
         The maximum number of steps to be considered.
     criterion_threshold: int, optional
         Threshold used when comparing the models criterions. 
-        If the difference is lesser than the threshold then 
+        If the difference is less than the threshold, then 
         the current 'best' model is changed.
     drop_final_estimator: bool, optional
-        If set to True, the final estimator will be dropped.
+        If set to True, the final estimator is dropped.
     x_order: str, optional
-        How  to  preprocess  X  before  using  the  stepwise 
+        Method for preprocessing X before using the stepwise 
         algorithm.
             pearson  : X  is ordered based on the  Pearson's 
                        correlation coefficient.
@@ -394,7 +394,7 @@ def stepwise(
         If set to True, prints the model information at each 
         step.
     show: bool, optional
-        If  set to True, the stepwise graphic will be drawn.
+        If  set to True, the stepwise graphic is drawn.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs

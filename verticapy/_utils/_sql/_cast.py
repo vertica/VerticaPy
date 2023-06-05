@@ -22,7 +22,7 @@ import numpy as np
 
 def to_varchar(category: str, column: str = "{}",) -> str:
     """
-    Uses the right SQL function to convert
+    Uses the correct SQL function to convert
     the input column to VARCHAR.
     """
     map_dict = {

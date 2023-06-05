@@ -66,6 +66,9 @@ class PlottingUtils:
         highchart_kwargs: Optional[dict] = None,
         style_kwargs: Optional[dict] = None,
     ) -> tuple[Literal[vpy_highcharts_plt, vpy_matplotlib_plt, vpy_plotly_plt], dict]:
+        """
+        Missing function description?
+        """
         highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs = format_type(
             highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs, dtype=dict
         )

@@ -39,7 +39,7 @@ class AutoClustering(VerticaModel):
         Name of the model.
     n_cluster: int, optional
         Number  of clusters. If empty, an optimal number  of 
-        clusters  will be determined using multiple  k-means 
+        clusters  are determined using multiple  k-means 
         models.
     init: str / list, optional
         The method for finding the initial cluster  centers.
@@ -72,7 +72,7 @@ class AutoClustering(VerticaModel):
         If True, the data will be preprocessed.
     preprocess_dict: dict, optional
         Dictionary  to pass to  the  AutoDataPrep class  in 
-        order to preprocess the data before the clustering.
+        order to preprocess the data before clustering.
     print_info: bool
         If True, prints the model information at each step.
 
@@ -81,7 +81,7 @@ class AutoClustering(VerticaModel):
     preprocess_: object
         Model used to preprocess the data.
     model_: object
-        Final model used for the clustering.
+        Final model used for clustering.
     """
 
     # Properties.

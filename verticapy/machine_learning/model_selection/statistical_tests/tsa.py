@@ -172,9 +172,9 @@ def adfuller(
     column: str
         Input vDataColumn to test.
     ts: str
-        vDataColumn used as timeline. It will be to use to 
-        order the data. It can be a numerical or type date 
-        like (date, datetime, timestamp...) vDataColumn.
+        vDataColumn used as timeline to order the data.
+        It can be a numerical or type date like 
+        (date, datetime, timestamp...) vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     p: int, optional
@@ -273,8 +273,8 @@ def mkt(
     """
     Mann Kendall test (Time Series trend).
 
-    \u26A0 Warning : This Test is  computationally  expensive. 
-                     It  is  using  a  CROSS  JOIN  during the 
+    \u26A0 Warning : This Test is  computationally  expensive 
+                     because it uses a CROSS  JOIN  during the 
                      computation.  The complexity is O(n * k), 
                      n being the total count of the vDataFrame 
                      and k the number of rows to use to do the 
@@ -287,9 +287,9 @@ def mkt(
     column: str
         Input vDataColumn to test.
     ts: str
-        vDataColumn used as timeline. It will be to use to order 
-        the data. It can be a numerical or type date like (date, 
-        datetime, timestamp...) vDataColumn.
+        vDataColumn used as timeline used to order 
+        the data. It can be a numerical or type date like 
+        (date, datetime, timestamp...) vDataColumn.
     alpha: PythonNumber, optional
         Significance Level. Probability to accept H0.
 
@@ -400,12 +400,12 @@ def cochrane_orcutt(
         datetime, timestamp, etc.) used as the timeline 
         and to order the data.
     prais_winsten: bool, optional
-        If true,  retains  the  first  observation of the 
+        If True,  retains  the  first  observation of the 
         time series, increasing precision and efficiency. 
         This  configuration is  called the  Prais–Winsten 
         estimation.
     drop_tmp_model: bool, optional
-        If true, it drops the temporary model.
+        If true, drops the temporary model.
 
     Returns
     -------
@@ -478,10 +478,9 @@ def durbin_watson(
     eps: str
         Input residual vDataColumn.
     ts: str
-        vDataColumn used as timeline.  It will be to use 
-        to order the data. It can be a numerical or type 
-        date   like   (date,   datetime,   timestamp...) 
-        vDataColumn.
+        vDataColumn used as timeline to order the data.
+        It can be a numerical or date-like type
+        (date,   datetime,   timestamp...) vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
 
@@ -537,9 +536,9 @@ def ljungbox(
     column: str
         Input vDataColumn to test.
     ts: str
-        vDataColumn used as timeline. It will be to use to order 
-        the data.  It can be a numerical or type date like (date, 
-        datetime, timestamp...) vDataColumn.
+        vDataColumn used as timeline to order the data.
+        It can be a numerical or date-like type
+        (date, datetime, timestamp...) vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     p: int, optional
@@ -547,7 +546,7 @@ def ljungbox(
     alpha: PythonNumber, optional
         Significance Level. Probability to accept H0.
     box_pierce: bool
-        If set to True, the Box-Pierce statistic will be used.
+        If set to True, the Box-Pierce statistic is used.
 
     Returns
     -------
@@ -608,9 +607,9 @@ def het_arch(
     eps: str
         Input residual vDataColumn.
     ts: str
-        vDataColumn used as timeline.  It will be to use to order the 
-        data. It can be a numerical or type date like (date, datetime, 
-        timestamp...) vDataColumn.
+        vDataColumn used as timeline to to order the data.
+        It can be a numerical or date-like type
+        (date, datetime, timestamp...) vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     p: int, optional
@@ -686,37 +685,37 @@ def seasonal_decompose(
     column: str
         Input vDataColumn to decompose.
     ts: str
-        TS  (Time Series)  vDataColumn to use to  order 
-        the data. It can be of type date or a numerical 
+        Time series vDataColumn used to order the data.
+        It can be of type date or a numerical 
         vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     period: int, optional
-    	Time Series period. It is used to retrieve the 
+    	Time series period. It is used to retrieve the 
         seasonality  component.  If  period <= 0,  the 
-        seasonal component will be estimated using ACF. 
+        seasonal component is estimated using ACF. 
         In this case, polynomial_order must be greater 
         than 0.
     polynomial_order: int, optional
-        If greater than 0,  the trend will be estimated 
-        using a polynomial of degree 'polynomial_order'. 
-        The parameter 'two_sided' will be ignored.
-        If equal to 0, the trend will be estimated using 
+        If greater than 0,  the trend is estimated 
+        using a polynomial of degree 'polynomial_order' 
+        and the parameter 'two_sided' is ignored.
+        If equal to 0, the trend is estimated using 
         Moving Averages.
     estimate_seasonality: bool, optional
-        If set to True, the seasonality will be estimated 
+        If set to True, the seasonality is estimated 
         using cosine and sine functions.
     rule: TimeInterval, optional
-        Interval  to use  to slice the time. For example, 
-        '5 minutes'  will  create  records  separated  by 
+        Interval  used to slice the time. For example, 
+        '5 minutes'  creates  records  separated  by 
         '5 minutes' time interval.
     mult: bool, optional
-    	If  set  to  True, the decomposition type will be 
-        'multiplicative'. Otherwise, it is 'additive'.
+    	If  set  to  True, the decomposition type is 
+        'multiplicative'. Otherwise,  'additive'.
     two_sided: bool, optional
-        If set to True, a centered moving average is used 
-        for  the  trend  isolation.  Otherwise only  past 
-        values are used.
+        If set to True, a centered moving average is 
+        used for the trend isolation. Otherwise, only
+        past values are used.
 
     Returns
     -------

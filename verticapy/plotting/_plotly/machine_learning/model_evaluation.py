@@ -67,7 +67,7 @@ class ROCCurve(PlotlyBase):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a Machine Learning Roc Curve using the Plotly API.
+        Draws a machine learning ROC curve using the Plotly API.
         """
         fig = self._get_fig(fig)
         fig.add_trace(
@@ -115,7 +115,7 @@ class CutoffCurve(PlotlyBase):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a Machine Cutoff Curve using the Matplotlib API.
+        Draws a machine cutoff curve using the Plotly API.
         """
         fig = self._get_fig(fig)
         fig.add_trace(
@@ -178,7 +178,7 @@ class PRCCurve(ROCCurve):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a Machine Learning PRC Curve using the Plotly API.
+        Draws a machine learning PRC curve using the Plotly API.
         """
         fig = self._get_fig(fig)
         fig.add_trace(
@@ -219,7 +219,7 @@ class LiftChart(ROCCurve):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a Machine Cutoff Curve using the Matplotlib API.
+        Draws a machine cutoff curve using the Plotly API.
         """
         fig = self._get_fig(fig)
         fig.add_trace(

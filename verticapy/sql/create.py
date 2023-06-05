@@ -75,16 +75,16 @@ def create_table(
     schema: str, optional
         Schema name.
     temporary_table: bool, optional
-        If set to True, a temporary table will be 
+        If set to True, a temporary table is 
         created.
     temporary_local_table: bool, optional
         If  set to True,  a temporary local table 
-        will be created.  The  parameter 'schema' 
+        is be created.  The  parameter 'schema' 
         must be empty,  otherwise  this parameter 
         is ignored.
     genSQL: bool, optional
         If set to True, the SQL code for creating 
-        the final table will be generated but not 
+        the final table is generated but not 
         executed.
     raise_error: bool, optional
         If  the  relation  couldn't  be  created, 

@@ -44,7 +44,7 @@ def coordinate_converter(
     Parameters
     ----------
     vdf: SQLRelation
-        input vDataFrame.
+        Input vDataFrame.
     x: str
         vDataColumn used as the abscissa (longitude).
     y: str
@@ -97,7 +97,7 @@ def intersect(
     Parameters
     ----------
     vdf: SQLRelation
-        vDataFrame to use to compute the spatial join.
+        vDataFrame used to compute the spatial join.
     index: str
         Name of the index.
     gid: str

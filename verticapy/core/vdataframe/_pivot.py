@@ -102,7 +102,7 @@ class vDFPivot(vDFJoinUnionSort):
             List  of words to  exclude  from  the provided column  names. 
             For example,     if      two      columns      are     named 
             'age.information.phone'  and  'age.phone' AND  skip_word  is 
-            set  to  ['.information'],  then  the  two  columns will  be 
+            set  to  ['.information'],  then  the  two  columns are 
             merged  together  with  the   following  COALESCE  statement:
             COALESCE("age.phone", "age.information.phone") AS "age.phone"
 
@@ -135,7 +135,7 @@ class vDFPivot(vDFJoinUnionSort):
             Index(es) used to identify the Row.
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all vDataColumns 
-            except the index(es) will be used.
+            except the index(es) are used.
         col_name: str, optional
             Alias of the vDataColumn  representing the different input 
             vDataColumns names as categories.
@@ -195,7 +195,7 @@ class vDFPivot(vDFJoinUnionSort):
         Parameters
         ----------
         index: str
-            vDataColumn to use to group the elements.
+            vDataColumn used to group the elements.
         columns: str
             The vDataColumn used to compute the different categories, 
             which then act as the columns in the pivot table.

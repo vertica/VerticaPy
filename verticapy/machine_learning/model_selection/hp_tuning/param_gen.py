@@ -28,7 +28,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 @save_verticapy_logs
 def parameter_grid(param_grid: dict) -> list[dict]:
     """
-    Generates the list of the different combinations 
+    Generates a list of the different combinations 
     of input parameters.
 
     Parameters

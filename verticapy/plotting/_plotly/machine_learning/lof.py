@@ -99,7 +99,7 @@ class LOFPlot(PlotlyBase):
         **style_kwargs,
     ) -> Figure:
         """
-        Draws a Local Outlier Plot using the Plotly API.
+        Draws a local outlier plot using the Plotly API.
         """
         X = self.data["X"][:, 0]
         Y = self.data["X"][:, 1]

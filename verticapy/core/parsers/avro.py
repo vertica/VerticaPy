@@ -42,7 +42,7 @@ def read_avro(
     use_complex_dt: bool = False,
 ) -> vDataFrame:
     """
-    Ingests a AVRO file using flex tables.
+    Ingests an AVRO file using flex tables.
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ def read_avro(
         Final relation name.
     usecols: list, optional
         List  of the  AVRO parameters to ingest.  The 
-        other ones will be ignored.  If empty all the 
+        other ones will be ignored.  If empty, all the 
         AVRO parameters will be ingested.
     new_name: dict, optional
         Dictionary  of the new  columns name. If  the 
@@ -73,8 +73,8 @@ def read_avro(
         If set to True, the  data will be ingested to the 
         input relation.  The AVRO  parameters must be the 
         same  as the input  relation otherwise they  will 
-        not be ingested. Also, table_name cannot be empty 
-        if this is true.
+        not be ingested. If set to True, table_name cannot 
+        be empty.
     reject_on_materialized_type_error: bool, optional
         Boolean, whether to reject a data row that contains 
         a materialized column  value that cannot be coerced 
@@ -95,9 +95,9 @@ def read_avro(
         Boolean,  whether  to convert lists to sub-maps with 
         integer keys. 
         When lists are flattened,  key names are concatenated 
-        as for maps. Lists are not flattened by default. This 
-        value affects all data  in the load, including nested 
-        lists.
+        in the same way as maps. Lists are not flattened by 
+        default. This value affects all data  in the load, 
+        including nested lists.
     temporary_table: bool, optional
         If set to True, a temporary table will be created.
     temporary_local_table: bool, optional
@@ -119,10 +119,9 @@ def read_avro(
         data ingestion.
     materialize: bool, optional
         If  set to True, the flex table is materialized into a 
-        table.
-        Otherwise,  it  will  remain a flex table. Flex tables 
-        simplify the data ingestion but have worse  performace 
-        compared to regular tables.
+        table. Otherwise,  it  will  remain a flex table. Flex 
+        tables simplify the data ingestion but have worse  
+        performace compared to regular tables.
     use_complex_dt: bool, optional
         Boolean,  whether  the  input data  file  has  complex 
         structure.  When  this  is  true,  most of  the  other 

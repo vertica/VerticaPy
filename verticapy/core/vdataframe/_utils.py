@@ -66,12 +66,12 @@ class vDFUtils(PlottingUtils):
         Parameters
         ----------
         *args: str / list / dict, optional
-            List  of columns' names to format. It allows  to 
-            use as input multiple  objects and to get all of 
-            them formatted.
-            Example:  self.format_colnames(x0, x1, x2) will 
-            return x0_f, x1_f, x2_f where xi_f represents xi 
-            correctly formatted.
+            List of columns' names to format. This allows you 
+            to use multiple objects as input and to format all 
+            of them.
+            Example:  self.format_colnames(x0, x1, x2) returns 
+            x0_f, x1_f, x2_f 
+            where xi_f represents xi correctly formatted.
         columns: SQLColumns / dict, optional
             List of columns' names to format.
         expected_nb_of_cols: int | list
@@ -82,8 +82,8 @@ class vDFUtils(PlottingUtils):
             args  should   have   exactly  2  or  3  elements. 
             Otherwise, the function will raise an error.
         raise_error: bool, optional
-            If  set to True and if there is an error, it will 
-            be raised.
+            If set to True and there is an error, the function 
+            raises the error.
 
         Returns
         -------
@@ -188,7 +188,7 @@ class vDFUtils(PlottingUtils):
         Returns
         -------
         bool
-            True if the  column is used by the vDataFrame False 
+            True if the  column is used by the vDataFrame; false 
             otherwise.
         """
         columns = self.get_columns()

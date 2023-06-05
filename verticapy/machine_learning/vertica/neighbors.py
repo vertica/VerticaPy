@@ -85,8 +85,8 @@ class KNeighborsRegressor(Regressor):
         Number of neighbors to consider when computing 
         the score.
     p: int, optional
-        The p corresponding to the one of the p-distances 
-        (distance metric used during the model computation).
+        The p of the p-distances (distance metric used 
+        during the model computation).
     """
 
     # Properties.
@@ -155,7 +155,7 @@ class KNeighborsRegressor(Regressor):
         X: SQLColumns
             List of the predictors.
         test_relation: str, optional
-            Relation to use to do the predictions.
+            Relation used to do the predictions.
         key_columns: SQLColumns, optional
             A  list  of columns  to  include in  the  results, 
             but to exclude from computation of the prediction.
@@ -301,8 +301,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         Number  of neighbors to consider when computing  the 
         score.
     p: int, optional
-        The  p corresponding  to the one of the  p-distances 
-        (distance metric used during the model computation).
+        The p of the p-distances (distance metric used 
+        during the model computation).
 	"""
 
     # Properties.
@@ -389,7 +389,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         X: SQLColumns
             List of the predictors.
         test_relation: str, optional
-            Relation to use to do the predictions.
+            Relation used to do the predictions.
         predict: bool, optional
             If set to True, returns the prediction instead 
             of the probability.
@@ -495,7 +495,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         allSQL: bool = False,
     ) -> str:
         """
-        Returns the input which represents the model's scoring.
+        Returns the input that represents the model's scoring.
         """
         cutoff = self._check_cutoff(cutoff=cutoff)
         return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
@@ -733,7 +733,7 @@ class KernelDensity(Regressor, Tree):
     ----------
     name: str
         Name of the model. This is not a built-in model, so 
-        this name will be used  to build the final table.
+        this name is used  to build the final table.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -743,8 +743,8 @@ class KernelDensity(Regressor, Tree):
             sigmoid   : Sigmoid Kernel.
             silverman : Silverman Kernel.
     p: int, optional
-        The  p corresponding to  the  one of the  p-distances 
-        (distance metric used  during the model computation).
+        The p of the p-distances (distance metric used 
+        during the model computation).
     max_leaf_nodes: PythonNumber, optional
         The maximum number of leaf nodes,  an integer between 
         1 and 1e9, inclusive.
@@ -754,13 +754,13 @@ class KernelDensity(Regressor, Tree):
     min_samples_leaf: int, optional
         The  minimum number of  samples each branch must  have 
         after splitting a node,  an integer between 1 and 1e6, 
-        inclusive. A split that causes fewer remaining samples 
-        is discarded.
+        inclusive. A split that results in fewer remaining 
+        samples is discarded.
     nbins: int, optional 
-        The  number  of  bins to use to discretize  the  input 
+        The  number  of  bins used to discretize  the  input 
         features.
     xlim: list, optional
-        List of tuples use to compute the kernel window.
+        List of tuples used to compute the kernel window.
     """
 
     # Properties.
@@ -1145,14 +1145,14 @@ class LocalOutlierFactor(VerticaModel):
                      Since  LocalOutlierFactor   uses  the p-
                      distance,  it  is  highly  sensitive  to 
                      unnormalized data. 
-                     A  table  will be created at the  end of 
+                     A  table  is created at the  end of 
                      the learning phase.
 
     Parameters
     ----------
     name: str
     	Name  of the  model.  This is not a  built-in 
-        model, so this name will be used to build the 
+        model, so this name is used to build the 
         final table.
     n_neighbors: int, optional
     	Number of neighbors to consider when computing 
@@ -1247,13 +1247,13 @@ class LocalOutlierFactor(VerticaModel):
     		List of the predictors.
     	key_columns: SQLColumns, optional
     		Columns  not  used   during  the   algorithm 
-            computation  but   which  will  be  used  to 
+            computation  but   which  are  used  to 
             create the final relation.
     	index: str, optional
-    		Index  used to identify each row  separately. 
-            It is highly  recommanded to have one already 
-            in the main table to avoid creating temporary 
-            tables.
+    		Index  used to seperately identify each row. 
+            To avoid the creation of temporary tables,
+            it is recommended that you already have an
+            index in the main table.
 		"""
         X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)

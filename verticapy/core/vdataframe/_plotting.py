@@ -65,7 +65,7 @@ class vDFPlot(vDFMachineLearning):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names.  If  empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         q: tuple, optional
             Tuple including the 2 quantiles used to draw the 
             BoxPlot.
@@ -118,7 +118,7 @@ class vDFPlot(vDFMachineLearning):
             List of  the vDataColumns names.  The list must 
             have one or two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage  of  the  distribution.
                 mean    : Average  of the  vDataColumn 'of'.
@@ -127,17 +127,17 @@ class vDFPlot(vDFMachineLearning):
                 sum     : Sum of the vDataColumn 'of'.
                 q%      : q Quantile of the vDataColumn 'of' 
                           (ex: 50% to get the median).
-            It can also be a cutomized aggregation 
-            (ex: AVG(column1) + 5).
+            It can also be a cutomized aggregation, for example: 
+            AVG(column1) + 5
         of: str, optional
-            The  vDataColumn to use to compute the  aggregation.
+            The  vDataColumn used to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns 
-            1  and  2  to be used as categorical (No  h will  be 
-            picked or computed)
+            1  and  2  to be used as categorical. For these 
+            elements, no  h is picked or computed.
         h: tuple, optional
-            Interval width of  the vDataColumns 1 and 2 bars. It 
-            is  only  valid if the  vDataColumns are  numerical. 
+            Interval width of  the vDataColumns 1 and 2 bars. 
+            Only  valid if the  vDataColumns are  numerical. 
             Optimized  h will be  computed  if the parameter  is 
             empty or invalid.
         kind: str, optional
@@ -225,7 +225,7 @@ class vDFPlot(vDFMachineLearning):
             List of  the vDataColumns names.  The list must 
             have one or two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage  of  the  distribution.
                 mean    : Average  of the  vDataColumn 'of'.
@@ -234,17 +234,17 @@ class vDFPlot(vDFMachineLearning):
                 sum     : Sum of the vDataColumn 'of'.
                 q%      : q Quantile of the vDataColumn 'of' 
                           (ex: 50% to get the median).
-            It can also be a cutomized aggregation 
-            (ex: AVG(column1) + 5).
+            It can also be a cutomized aggregation, for example: 
+            AVG(column1) + 5
         of: str, optional
-            The  vDataColumn to use to compute the  aggregation.
+            The  vDataColumn used to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns 
-            1  and  2  to be used as categorical (No  h will  be 
-            picked or computed)
+            1  and  2  to be used as categorical. For these
+            elements, no  h is picked or computed.
         h: tuple, optional
-            Interval width of  the vDataColumns 1 and 2 bars. It 
-            is  only  valid if the  vDataColumns are  numerical. 
+            Interval width of  the vDataColumns 1 and 2 bars. 
+            Only  valid if the  vDataColumns are  numerical. 
             Optimized  h will be  computed  if the parameter  is 
             empty or invalid.
         kind: str, optional
@@ -333,16 +333,17 @@ class vDFPlot(vDFMachineLearning):
         columns: SQLColumns
             List of the vDataColumns names.
         max_cardinality: int / tuple, optional
-            Maximum number of the vDataColumn distinct 
-            elements  to  be   used   as   categorical 
-            (No h will be picked or computed).
-            If  of type tuple,  it must represent each 
-            column 'max_cardinality'.
+            Maximum number of distinct elements for 
+            vDataColumns 1  and  2  to be used as 
+            categorical. For these elements, no  h 
+            is picked or computed.
+            If  of type tuple, represents the 
+            'max_cardinality' of each column.
         h: int / tuple, optional
             Interval  width  of the bar. If empty,  an 
             optimized h will be computed.
             If  of type tuple, it must represent  each 
-            column 'h'.
+            column's 'h'.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -387,7 +388,7 @@ class vDFPlot(vDFMachineLearning):
             List of  the vDataColumns names.  The list must 
             have less than 5 elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage  of  the  distribution.
                 mean    : Average  of the  vDataColumn 'of'.
@@ -396,14 +397,14 @@ class vDFPlot(vDFMachineLearning):
                 sum     : Sum of the vDataColumn 'of'.
                 q%      : q Quantile of the vDataColumn 'of' 
                           (ex: 50% to get the median).
-            It can also be a cutomized aggregation 
-            (ex: AVG(column1) + 5).
+            It can also be a cutomized aggregation, for example: 
+            AVG(column1) + 5
         of: str, optional
-            The  vDataColumn to use to compute the  aggregation.
+            The  vDataColumn used to compute the  aggregation.
         max_cardinality: tuple, optional
             Maximum number of distinct elements for vDataColumns 
-            1  and  2  to be used as categorical (No  h will  be 
-            picked or computed)
+            to be used as categorical. For these elements, no  
+            h is picked or computed.
         h: tuple, optional
             Interval width of the  input vDataColumns. Optimized 
             h  will be  computed if  the  parameter  is empty or 
@@ -444,7 +445,7 @@ class vDFPlot(vDFMachineLearning):
         ----------
         columns: SQLColumns, optional
             List  of the vDataColumns names.  If  empty, 
-            all numerical vDataColumns will be selected.
+            all numerical vDataColumns are selected.
         bandwidth: float, optional
             The bandwidth of the kernel.
         kernel: str, optional
@@ -454,11 +455,11 @@ class vDFPlot(vDFMachineLearning):
                 sigmoid   : Sigmoid Kernel.
                 silverman : Silverman Kernel.
         nbins: int, optional
-            Maximum  number of  points to use to  evaluate 
+            Maximum  number of  points used to  evaluate 
             the approximate density function.
-            Increasing  this  parameter will increase  the 
-            precision  but will  also increase the time of 
-            the learning and the scoring phases.
+            Increasing  this  parameter increases  the 
+            precision  but also increases the time of the 
+            learning and the scoring phases.
         xlim: list of tuple, optional
             Set the x limits of the current axes.
         chart: PlottingObject, optional
@@ -548,21 +549,20 @@ class vDFPlot(vDFMachineLearning):
         Parameters
         ----------
         ts: str
-            TS (Time Series)  vDataColumn to use to order 
+            TS (Time Series)  vDataColumn used to order 
             the data.  The vDataColumn type must be  date 
-            like   (date,   datetime,   timestamp...)  or 
-            numerical.
+            (date, datetime, timestamp...) or numerical.
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, all 
-            numerical vDataColumns will be used.
+            numerical vDataColumns are used.
         start_date: PythonScalar, optional
             Input   Start  Date.  For  example,   time  = 
             '03-11-1993'  will  filter the data when 'ts' 
-            is lesser than November 1993 the 3rd.
+            is less than the 3rd of November 1993.
         end_date: PythonScalar, optional
             Input   End   Date.   For   example,   time = 
             '03-11-1993'   will  filter  the  data   when 
-            'ts'  is greater than November 1993 the  3rd.
+            'ts' is greater than the 3rd of November 1993.
         kind: str, optional
             The plot type.
                 line         : Line Plot.
@@ -607,31 +607,31 @@ class vDFPlot(vDFMachineLearning):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws the range plot of the input vDataColumns. The 
-        aggregations  used  are  the median and  two  input 
-        quantiles.
+        Draws the range plot of the input vDataColumns. The
+        aggregations used to draw the plot are the median
+        and the two user-specified quantiles.
 
         Parameters
         ----------
         columns: SQLColumns
             List of vDataColumns names.
         ts: str
-            TS (Time Series) vDataColumn to use to order the 
-            data.  The  vDataColumn  type must be date  like 
+            TS (Time Series) vDataColumn used to order the 
+            data.  The  vDataColumn  type must be date  
             (date, datetime, timestamp...) or numerical.
         q: tuple, optional
-            Tuple including the 2 quantiles used to draw the 
-            Plot.
+            Tuple that includes the 2 quantiles used to draw 
+            the Plot.
         start_date: str / PythonNumber / date, optional
             Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the data when 'ts' is  lesser  than 
-            November 1993 the 3rd.
+            will  filter  the data when 'ts' is  less  than 
+            the 3rd of November 1993.
         end_date: str / PythonNumber / date, optional
             Input End Date.  For example, time = '03-11-1993' 
             will  filter the  data when 'ts' is greater than 
-            November 1993 the 3rd.
+            the 3rd of November 1993.
         plot_median: bool, optional
-            If set to True, the Median will be drawn.
+            If set to True, the Median is drawn.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -681,7 +681,7 @@ class vDFPlot(vDFMachineLearning):
             List  of the vDataColumns names.  The list  must 
             have one or two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the vDataColumn 'of'.
@@ -690,23 +690,21 @@ class vDFPlot(vDFMachineLearning):
                 sum     : Sum of the vDataColumn 'of'.
                 q%      : q Quantile of the vDataColumn 'of 
                           (ex: 50% to get the median).
-            It can also be a cutomized aggregation 
+            It can also be a cutomized aggregation, 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The   vDataColumn   to   use  to  compute   the 
-            aggregation.
+            The vDataColumn used to compute the aggregation.
         max_cardinality: tuple, optional
-            Maximum   number   of  distinct  elements   for 
-            vDataColumns 1 and 2 to  be used as categorical 
-            (No h will be picked or computed)
+            Maximum number of distinct elements for vDataColumns 
+            1  and  2  to be used as categorical. For these
+            elements, no  h is picked or computed.
         h: tuple, optional
             Interval width of the vDataColumns 1 and 2 bars. 
-            It  is  only  valid   if  the  vDataColumns  are 
-            numerical. 
+            Only valid if  the  vDataColumns  are numerical. 
             Optimized h will be computed if the parameter is 
             empty or invalid.
         fill_none: float, optional
-            The  empty  values  of the pivot table  will  be 
+            The  empty  values  of the pivot table are 
             filled by this number.
 
         Returns
@@ -760,7 +758,7 @@ class vDFPlot(vDFMachineLearning):
             List  of the vDataColumns names.  The list  must 
             have one or two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the vDataColumn 'of'.
@@ -772,27 +770,25 @@ class vDFPlot(vDFMachineLearning):
             It can also be a cutomized aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The   vDataColumn   to   use  to  compute   the 
-            aggregation.
+            The vDataColumn used to compute the aggregation.
         max_cardinality: tuple, optional
-            Maximum   number   of  distinct  elements   for 
-            vDataColumns 1 and 2 to  be used as categorical 
-            (No h will be picked or computed)
+            Maximum number of distinct elements for vDataColumns 
+            1  and  2  to be used as categorical. For these
+            elements, no  h is picked or computed.
         h: tuple, optional
             Interval width of the vDataColumns 1 and 2 bars. 
-            It  is  only  valid   if  the  vDataColumns  are 
-            numerical. 
+            Only valid if the vDataColumns  are numerical. 
             Optimized h will be computed if the parameter is 
             empty or invalid.
         fill_none: float, optional
-            The  empty  values  of the pivot table  will  be 
+            The  empty  values  of the pivot table  are 
             filled by this number.
         mround: int, optional
             Rounds the coefficient using the input number of 
             digits.  It  is only  used to display the  final 
             pivot table.
         with_numbers: bool, optional
-            If  set to True, no number will be  displayed in 
+            If  set to True, no number is displayed in 
             the final drawing.
         chart: PlottingObject, optional
             The chart object to plot on.
@@ -831,8 +827,8 @@ class vDFPlot(vDFMachineLearning):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws  the  contour  plot of the input function  two 
-        input vDataColumns.
+        Draws  the  contour  plot of the input function 
+        using two input vDataColumns.
 
         Parameters
         ----------
@@ -886,7 +882,7 @@ class vDFPlot(vDFMachineLearning):
             List of the vDataColumns names. The list must 
             have two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the vDataColumn 'of'.
@@ -898,8 +894,7 @@ class vDFPlot(vDFMachineLearning):
             It can also be a cutomized aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The   vDataColumn  to   use  to  compute   the 
-            aggregation.
+            The vDataColumn used to compute the aggregation.
         h: tuple, optional
             Interval width  of  the vDataColumns 1  and  2 
             bars.  Optimized  h  will  be computed if  the 
@@ -960,7 +955,7 @@ class vDFPlot(vDFMachineLearning):
             List of the vDataColumns names. The list must 
             have two elements.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of  the vDataColumn 'of'.
@@ -970,14 +965,13 @@ class vDFPlot(vDFMachineLearning):
                 q%      : q Quantile of the vDataColumn 'of 
                           (ex: 50% to get the median).
         of: str, optional
-            The   vDataColumn   to  use  to   compute   the 
-            aggregation.
+            The vDataColumn used to compute the aggregation.
         bbox: list, optional
             List of 4 elements  to delimit the boundaries of 
             the final Plot. It must be similar the following 
             list: [xmin, xmax, ymin, ymax]
         img: str, optional
-            Path  to the  image to  display  as  background.
+            Path  to the  image used as a background.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1027,10 +1021,9 @@ class vDFPlot(vDFMachineLearning):
         columns: SQLColumns
             List of the vDataColumns names. 
         by: str, optional
-            Categorical  vDataColumn  to  use to label  the 
-            data.
+            Categorical vDataColumn used to label the data.
         size: str
-            Numerical  vDataColumn to use to represent  the 
+            Numerical  vDataColumn used to represent  the 
             Bubble size.
         cmap_col: str, optional
             Numerical  column used  to represent the  color 
@@ -1038,19 +1031,20 @@ class vDFPlot(vDFMachineLearning):
         max_cardinality: int, optional
             Maximum  number  of  distinct elements for  'by' 
             to  be  used as categorical.  The less  frequent 
-            elements will  be gathered together  to create a 
+            elements are gathered together  to create a 
             new category: 'Others'.
         cat_priority: PythonScalar / ArrayLike, optional
-            ArrayLike of the different categories to consider 
-            when  labeling  the  data using  the  vDataColumn 
-            'by'.  The  other  categories  will be  filtered.
+            ArrayLike list of the different categories to 
+            consider when  labeling  the  data using  the  
+            vDataColumn 'by'.  The  other  categories  are 
+            filtered.
         max_nb_points: int, optional
             Maximum number of points to display.
         dimensions: tuple, optional
             Tuple of two  elements representing the IDs of the 
             PCA's components. If empty and the number of input 
             columns  is greater  than 3, the first and  second 
-            PCA will be drawn.
+            PCA are drawn.
         bbox: list, optional
             Tuple  of 4 elements to delimit the boundaries  of 
             the  final Plot. It must be similar the  following 
@@ -1141,7 +1135,7 @@ class vDFPlot(vDFMachineLearning):
         ----------
         columns: SQLColumns, optional
             List of the vDataColumns names. If empty, 
-            all numerical  vDataColumns will be used.
+            all numerical  vDataColumns are used.
         max_nb_points: int, optional
             Maximum  number of points to display for 
             each scatter plot.
@@ -1237,7 +1231,7 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         method: str, optional
-            Method to use to compute the optimal h.
+            Method used to compute the optimal h.
                 auto              : Combination of Freedman Diaconis 
                                     and Sturges.
                 freedman_diaconis : Freedman Diaconis 
@@ -1346,28 +1340,28 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         by: str, optional
-            vDataColumn  to use to partition  the  data.
+            vDataColumn used to partition  the  data.
         q: tuple, optional
             Tuple including the 2 quantiles used to draw 
             the BoxPlot.
         h: PythonNumber, optional
             Interval  width  if  the 'by'  vDataColumn is 
-            numerical or 'of type  date like. Optimized h 
+            numerical or of a date-like type. Optimized h 
             will be computed if the parameter is empty or 
             invalid.
         max_cardinality: int, optional
-            Maximum   number   of   vDataColumn  distinct 
+            Maximum   number   of   distinct vDataColumn 
             elements to be used as categorical. 
-            The less frequent  elements  will be gathered 
+            The less frequent  elements  are gathered 
             together to create a new category : 'Others'.
         cat_priority: PythonScalar / ArrayLike, optional
-            ArrayLike  of  the  different  categories  to 
+            ArrayLike list of the different categories to 
             consider when drawing the box plot. The other 
-            categories will be filtered.
+            categories are filtered.
         max_nb_fliers: int, optional
-            Maximum  number of points to use to represent 
+            Maximum  number of points used to represent 
             the fliers of each category.
-            Drawing  fliers  will  slow down the  graphic 
+            Drawing fliers slows down the  graphic 
             computation.
         whis: float, optional
             The position of the whiskers.
@@ -1419,7 +1413,7 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the  vDataColumn 'of'.
@@ -1431,27 +1425,26 @@ class vDCPlot(vDCNorm):
             It can also be a cutomized aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The vDataColumn  to use to compute the aggregation.
+            The vDataColumn  used to compute the aggregation.
         max_cardinality: int, optional
-            Maximum number of the vDataColumn distinct elements 
-            to be used as categorical (No  h will  be picked or 
-            computed)
+            Maximum number of distinct vDataColumns elements 
+            to be used as categorical. For these elements, no  
+            h is picked or computed.
         nbins: int, optional
             Number  of  bins. If empty, an  optimized number of 
-            bins will be computed.
+            bins is computed.
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized h 
-            will be computed.
+            is computed.
         categorical: bool, optional
             If  set to False and the  vDataColumn is numerical,
-            the parmater  'max_cardinality' will be ignored and
-            the bar  chart will be represented as an histogram.
+            the parmater  'max_cardinality' is ignored and
+            the bar  chart is represented as a histogram.
         bargap: float, optional
-            A float between  0 exclusive and 1 inclusive which
-            represents the proportion  taken out from each bar
-            to render the chart.  This proportion  will create
-            gaps  between  each bar.  The  bigger  it is,  the 
-            bigger the gap will be.
+            A float between  (0, 1] that represents the 
+            proportion  taken out of each bar to render the 
+            chart. This proportion creates gaps between each
+            bar. The bigger the value, the bigger the gap.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1497,7 +1490,7 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the  vDataColumn 'of'.
@@ -1509,27 +1502,26 @@ class vDCPlot(vDCNorm):
             It can also be a cutomized aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The vDataColumn  to use to compute the aggregation.
+            The vDataColumn  used to compute the aggregation.
         max_cardinality: int, optional
-            Maximum number of the vDataColumn distinct elements 
-            to be used as categorical (No  h will  be picked or 
-            computed)
+            Maximum number of distinct elements for vDataColumns 
+            to be used as categorical. For these elements, no  
+            h is picked or computed.
         nbins: int, optional
             Number  of  bins. If empty, an  optimized number of 
-            bins will be computed.
+            bins is computed.
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized h 
-            will be computed.
+            is computed.
         categorical: bool, optional
             If  set to False and the  vDataColumn is numerical,
-            the parmater  'max_cardinality' will be ignored and
-            the bar  chart will be represented as an histogram.
+            the parmater  'max_cardinality' is ignored and
+            the bar  chart is represented as a histogram.
         bargap: float, optional
-            A float between  0 exclusive and 1 inclusive which
-            represents the proportion  taken out from each bar
-            to render the chart.  This proportion  will create
-            gaps  between  each bar.  The  bigger  it is,  the 
-            bigger the gap will be.
+            A float between  (0, 1] that represent the 
+            proportion  taken out of each bar to render the 
+            chart. This proportion creates between  each bar. 
+            The  bigger the value,  the bigger the gap.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1573,7 +1565,7 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the vDataColumn 'of'.
@@ -1585,14 +1577,14 @@ class vDCPlot(vDCNorm):
             It   can  also  be  a  cutomized   aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The vDataColumn to use to compute the aggregation.
+            The vDataColumn used to compute the aggregation.
         max_cardinality: int, optional
-            Maximum   number  of  the  vDataColumn   distinct 
-            elements to be used as  categorical (No h will be 
-            picked or computed)
+            Maximum number of distinct elements for vDataColumns 
+            to be used as categorical. For these elements, no  
+            h is picked or computed.
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized 
-            h will be computed.
+            h is computed.
         kind: str, optional
             The type of pie chart.
                 auto   : Regular pie chart.
@@ -1643,9 +1635,9 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         by: str, optional
-            vDataColumn to use to partition the data.
+            vDataColumn used to partition the data.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the vDataColumn 'of'.
@@ -1657,14 +1649,14 @@ class vDCPlot(vDCNorm):
             It   can  also  be  a  cutomized   aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The vDataColumn to use to compute the aggregation.
+            The vDataColumn used to compute the aggregation.
         max_cardinality: int, optional
-            Maximum   number  of  the  vDataColumn   distinct 
-            elements to be used as  categorical (No h will be 
-            picked or computed)
+            Maximum number of distinct elements for vDataColumns 
+            to be used as categorical. For these elements, no  
+            h is picked or computed.
         h: PythonNumber, optional
             Interval width of the bar. If empty, an optimized 
-            h will be computed.
+            h is computed.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1714,9 +1706,9 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         by: str, optional
-            vDataColumn  to  use  to  partition  the  data.
+            vDataColumn  used  to  partition  the  data.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
                 mean    : Average of the  vDataColumn 'of'.
@@ -1728,24 +1720,24 @@ class vDCPlot(vDCNorm):
             It can also be a cutomized aggregation 
             (ex: AVG(column1) + 5).
         of: str, optional
-            The  vDataColumn  to use to compute the  aggregation.
+            The  vDataColumn  used to compute the  aggregation.
         h: PythonNumber, optional
             Interval  width of the  input vDataColumns. Optimized 
             h  will be  computed  if  the  parameter is empty  or 
             invalid.
         h_by: PythonNumber, optional
             Interval  width if the 'by' vDataColumn is  numerical 
-            or of type  date like.  Optimized  h will be computed 
+            or of a date-like type. Optimized  h will be computed 
             if the parameter is empty or invalid.
         max_cardinality: int, optional
-            Maximum  number  of vDataColumn distinct  elements to 
-            be used as categorical. 
-            The less frequent  elements will be gathered together 
+            Maximum number of distinct elements for vDataColumns 
+            to be used as categorical. 
+            The less frequent  elements are gathered together 
             to create a new category : 'Others'.
         cat_priority: PythonScalar / ArrayLike, optional
-            ArrayLike  of  the different  categories to  consider 
-            when drawing the box plot.  The other categories will 
-            be filtered.
+            ArrayLike list of the different categories to consider 
+            when drawing the box plot.  The other categories are 
+            filtered.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1789,7 +1781,7 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         by: str, optional
-            vDataColumn  to use to partition  the data.
+            vDataColumn used to partition  the data.
         bandwidth: PythonNumber, optional
             The bandwidth of the kernel.
         kernel: str, optional
@@ -1799,10 +1791,10 @@ class vDCPlot(vDCNorm):
                 sigmoid   : Sigmoid kernel.
                 silverman : Silverman kernel.
         nbins: int, optional
-            Maximum number of points  to use to evaluate 
+            Maximum number of points  used to evaluate 
             the approximate density function.
-            Increasing this  parameter will increase the 
-            precision but will also increase the time of 
+            Increasing this  parameter increases the 
+            precision but also increases the time of 
             the learning and scoring phases.
         xlim: tuple, optional
             Set the x limits of the current axes.
@@ -1884,11 +1876,11 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn  to use   to order 
-            the  data.  The  vDataColumn  type must  be  date 
+            TS  (Time Series)  vDataColumn used to order the
+            data.  The  vDataColumn  type must  be  date 
             like (date, datetime, timestamp...) or  numerical.
         method: str, optional
-            The method to use to aggregate the data.
+            The method used to aggregate the data.
                 count   : Number of elements.
                 mean    : Average of the vDataColumn 'of'.
                 min     : Minimum of the vDataColumn 'of'.
@@ -1903,12 +1895,12 @@ class vDCPlot(vDCNorm):
             Plot.
         start_date: str / PythonNumber / date, optional
             Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the  data  when 'ts' is lesser than 
-            November 1993 the 3rd.
+            will  filter  the  data  when 'ts' is less than 
+            the 3rd of November 1993.
         end_date: str / PythonNumber / date, optional
             Input  End  Date. For example, time = '03-11-1993' 
             will filter  the data when 'ts' is  greater  than 
-            November 1993 the 3rd.
+            the 3rd of November 1993.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -1953,19 +1945,19 @@ class vDCPlot(vDCNorm):
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn  to use   to order 
-            the  data.  The  vDataColumn  type must  be  date 
+            TS  (Time Series)  vDataColumn used to order the
+            data.  The  vDataColumn  type must  be  date 
             like (date, datetime, timestamp...) or  numerical.
         by: str, optional
-            vDataColumn to use to partition the TS.
+            vDataColumn used to partition the TS.
         start_date: str / PythonNumber / date, optional
             Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the  data  when 'ts' is lesser than 
-            November 1993 the 3rd.
+            will  filter  the  data  when 'ts' is less than 
+            the 3rd of November 1993.
         end_date: str / PythonNumber / date, optional
             Input  End  Date. For example, time = '03-11-1993' 
             will filter  the data when 'ts' is  greater  than 
-            November 1993 the 3rd.
+            the 3rd of November 1993.
         kind: str, optional
             The plot type.
                 area_stacked : Stacked Area Plot.
@@ -2011,13 +2003,13 @@ class vDCPlot(vDCNorm):
     ) -> PlottingObject:
         """
         Draws  the  range   plot  of  the  vDataColumn.  The 
-        aggregations  used  are  the  median  and two  input 
-        quantiles.
+        aggregations  used  to draw the plot are  the  median
+        and the two user-specified quantiles.
 
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn  to use   to order 
+            TS  (Time Series)  vDataColumn  used  to order 
             the  data.  The  vDataColumn  type must  be  date 
             like (date, datetime, timestamp...) or  numerical.
         q: tuple, optional
@@ -2025,14 +2017,14 @@ class vDCPlot(vDCNorm):
             Plot.
         start_date: str / PythonNumber / date, optional
             Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the  data  when 'ts' is lesser than 
-            November 1993 the 3rd.
+            will  filter  the  data  when 'ts' is less than 
+            the 3rd of November 1993.
         end_date: str / PythonNumber / date, optional
             Input  End  Date. For example, time = '03-11-1993' 
             will filter  the data when 'ts' is  greater  than 
-            November 1993 the 3rd.
+            the 3rd of November 1993.
         plot_median: bool, optional
-            If set to True, the Median will be drawn.
+            If set to True, the Median is drawn.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs

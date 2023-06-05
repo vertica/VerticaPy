@@ -58,10 +58,10 @@ class Decomposition(Preprocessing):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty,  the model predictors will be used.
+            If empty,  the model predictors are used.
         n_components: int, optional
             Number  of  components to return.  If  set to 
-            0,  all  the  components  will  be  deployed.
+            0,  all  the  components  are deployed.
         cutoff: PythonNumber, optional
             Specifies  the minimum accumulated  explained 
             variance.  Components  are  taken  until  the 
@@ -69,7 +69,7 @@ class Decomposition(Preprocessing):
             value.
         key_columns: SQLColumns, optional
             Predictors   used    during   the   algorithm 
-            computation  which will be deployed with  the 
+            computation  that will be deployed with  the 
             principal components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
@@ -121,10 +121,10 @@ class Decomposition(Preprocessing):
         ----------
         X: SQLColumns, optional
             List of the columns used to deploy the model. 
-            If empty, the model  predictors will be used.
+            If empty, the model  predictors are used.
         input_relation: str, optional
             Input  Relation.  If  empty,  the model input 
-            relation will be used.
+            relation are used.
         metric: str, optional
             Distance metric used to do the scoring.
                 avg    : The average is used as 
@@ -208,14 +208,14 @@ class Decomposition(Preprocessing):
         vdf: SQLRelation, optional
             Input  vDataFrame.   You can  also  specify 
             a  customized   relation,   but   you  must 
-            enclose  it  with  an  alias.  For  example 
-            "(SELECT 1) x"    is     correct    whereas 
-            "(SELECT 1)" and "SELECT 1" are incorrect.
+            enclose  it  with  an  alias.  For example: 
+            "(SELECT 1) x"    is     valid    whereas 
+            "(SELECT 1)" and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
         n_components: int, optional
             Number  of components to return.  If set to 
-            0, all the components will be deployed.
+            0, all the components are deployed.
         cutoff: PythonNumber, optional
             Specifies the minimum accumulated explained 
             variance.  Components  are taken until  the 
@@ -387,13 +387,13 @@ Algorithms used for decomposition.
 class PCA(Decomposition):
     """
     Creates a PCA  (Principal Component Analysis) object 
-    using the Vertica PCA algorithm on the data.
+    using the Vertica PCA algorithm.
      
     Parameters
     ----------
     name: str
-    	Name  of the  model.  The  model will be  stored 
-        in the DB.
+    	Name  of the  model. The model is stored in the 
+        database.
     n_components: int, optional
     	The  number of  components to keep in the model. 
         If  this value  is not provided,  all components 
@@ -407,7 +407,7 @@ class PCA(Decomposition):
         standardize  the columns during the  preparation 
         step.
     method: str, optional
-    	The method to use to calculate PCA.
+    	The method used to calculate PCA.
     		lapack: Lapack definition.
 	"""
 
@@ -490,8 +490,8 @@ class PCA(Decomposition):
 
     def to_memmodel(self) -> mm.PCA:
         """
-        Converts  the model  to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model  to an InMemory object  that
+        can be used for different types of predictions.
         """
         return mm.PCA(self.principal_components_, self.mean_)
 
@@ -499,16 +499,15 @@ class PCA(Decomposition):
 class MCA(PCA):
     """
     Creates a MCA  (multiple correspondence analysis) object 
-    using  the Vertica PCA  algorithm  on the data. It  uses 
-    the property that the MCA is a PCA applied to a complete 
-    disjunctive  table.  The  input relation is  transformed 
-    to  a  TCDT  (transformed  complete  disjunctive  table) 
-    before applying the PCA.
+    using  the Vertica PCA  algorithm. MCA is a PCA applied
+    to a complete disjunctive table.  The  input relation is
+    transformed to a TCDT (transformed  complete  disjunctive
+    table) before applying the PCA.
      
     Parameters
     ----------
     name: str
-        Name of the model.  The model will be stored in the 
+        Name of the model.  The model is stored in the 
         database.
     """
 
@@ -743,13 +742,13 @@ class MCA(PCA):
 class SVD(Decomposition):
     """
     Creates  an  SVD  (Singular  Value  Decomposition) 
-    object using the Vertica SVD algorithm on the data.
+    object using the Vertica SVD algorithm.
      
     Parameters
     ----------
     name: str
-    	Name  of  the model.  The model will be stored 
-        in the DB.
+    	Name  of the model. The model is stored in the 
+        database.
     n_components: int, optional
     	The number  of components to keep in the model. 
         If this value  is not provided,  all components 
@@ -759,7 +758,7 @@ class SVD(Decomposition):
         less  than or equal to SVD (number of  columns, 
         number of rows).
     method: str, optional
-    	The method to use to calculate SVD.
+    	The method used to calculate SVD.
     		lapack: Lapack definition.
 	"""
 
@@ -823,7 +822,7 @@ class SVD(Decomposition):
 
     def to_memmodel(self) -> mm.SVD:
         """
-        Converts  the model  to an InMemory object  which
-        can be used to do different types of predictions.
+        Converts  the model  to an InMemory object  that
+        can be used for different types of predictions.
         """
         return mm.SVD(self.vectors_, self.values_)

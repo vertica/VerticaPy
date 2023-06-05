@@ -28,6 +28,7 @@ from verticapy._typing import (
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy._utils._map import param_docstring
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -37,6 +38,36 @@ if TYPE_CHECKING:
 """
 Confusion Matrix Functions.
 """
+
+
+PARAMETER_DESCRIPTIONS = {
+    'y_true': '''    y_true: str
+        Response column.''',
+    'y_score': '''    y_score: str
+        Prediction.''',
+    'input_relation': '''    input_relation: SQLRelation
+        Relation used for scoring. This relation can 
+        be a view, table, or a customized relation (if 
+        an alias is used at the end of the relation). 
+        For example: (SELECT ... FROM ...) x''',
+    'average': '''    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values 
+                    globally.
+            macro    : average  of  the  score of  each 
+                    class.
+            weighted : weighted average of the score of 
+                    each class.
+            scores   : scores  for   all  the  classes.''',
+    'labels': '''    labels: ArrayLike
+        List   of   the  response  column   categories.''',
+    'cm_pos_label': '''    pos_label: str / PythonNumber, optional
+        To compute the one dimensional confusion 
+        matrix, one  of the response column classes must
+        be the positive class. The parameter 'pos_label' 
+        represents this class.'''
+}
 
 
 def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
@@ -68,9 +99,9 @@ def _compute_tn_fn_fp_tp(
         is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
-        To  compute the Confusion Matrix, one of the  response 
-        column classes must be the positive one. The parameter 
-        'pos_label' represents this class.
+        To  compute the confusion matrix, one of the  response 
+        column classes must be the positive class. The 
+        parameter 'pos_label' represents this class.
 
     Returns
     -------
@@ -216,6 +247,7 @@ def _compute_final_score(
     return _compute_final_score_from_cm(metric, cm, average=average, multi=multi)
 
 
+@param_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'labels', 'cm_pos_label')
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
@@ -226,26 +258,7 @@ def confusion_matrix(
     pos_label: Optional[PythonScalar] = None,
 ) -> np.ndarray:
     """
-    Computes the Confusion Matrix.
-
-    Parameters
-    ----------
-    y_true: str
-        Response column.
-    y_score: str
-        Prediction.
-    input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x
-    labels: ArrayLike
-        List  of  the   response   column  categories.
-    pos_label: str / PythonNumber, optional
-        To compute the one dimension Confusion Matrix, 
-        one  of the response column class must  be the 
-        positive   one.  The   parameter   'pos_label' 
-        represents this class.
+    Computes the confusion matrix.
 
     Returns
     -------
@@ -311,7 +324,7 @@ def accuracy_score(
     pos_label: Optional[PythonScalar] = None,
 ) -> float:
     """
-    Computes the Accuracy Score.
+    Computes the Accuracy score.
 
     Parameters
     ----------
@@ -320,7 +333,7 @@ def accuracy_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation  to  use  for  scoring.  This  relation 
+        Relation  used for  scoring.  This  relation 
         can  be a view, table, or a customized  relation 
         (if an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -342,8 +355,8 @@ def accuracy_score(
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        Label to use to identify the positive class. If 
-        pos_label is NULL then the global accuracy will 
+        Label used to identify the positive class. If 
+        pos_label is NULL then the global accuracy is 
         be computed.
 
     Returns
@@ -377,7 +390,7 @@ def balanced_accuracy_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -400,7 +413,7 @@ def balanced_accuracy_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -434,7 +447,7 @@ def critical_success_index(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -458,7 +471,7 @@ def critical_success_index(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -496,7 +509,7 @@ def diagnostic_odds_ratio(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -520,7 +533,7 @@ def diagnostic_odds_ratio(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -546,7 +559,7 @@ def f1_score(
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
     """
-    Computes the F1 Score.
+    Computes the F1 score.
 
     Parameters
     ----------
@@ -555,7 +568,7 @@ def f1_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -579,7 +592,7 @@ def f1_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -613,7 +626,7 @@ def false_negative_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -637,7 +650,7 @@ def false_negative_rate(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -671,7 +684,7 @@ def false_positive_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -695,7 +708,7 @@ def false_positive_rate(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -729,7 +742,7 @@ def false_discovery_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -753,7 +766,7 @@ def false_discovery_rate(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -787,7 +800,7 @@ def false_omission_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -811,7 +824,7 @@ def false_omission_rate(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -845,7 +858,7 @@ def fowlkes_mallows_index(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -869,7 +882,7 @@ def fowlkes_mallows_index(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -903,7 +916,7 @@ def informedness(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
+        Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
@@ -927,7 +940,7 @@ def informedness(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -987,7 +1000,7 @@ def markedness(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1049,7 +1062,7 @@ def matthews_corrcoef(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1107,7 +1120,7 @@ def negative_predictive_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1165,7 +1178,7 @@ def negative_likelihood_ratio(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1224,7 +1237,7 @@ def positive_likelihood_ratio(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1282,7 +1295,7 @@ def precision_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1294,8 +1307,8 @@ def precision_score(
 
 
 def _prevalence_threshold(tn: int, fn: int, fp: int, tp: int) -> float:
-    fpr, tpr = _false_positive_rate(**locals()), np.sqrt(_recall_score(**locals()))
-    return np.sqrt(fpr) / (tpr + fpr) if ((tpr + fpr) != 0) else 0.0
+    fpr, tpr = _false_positive_rate(**locals()), _recall_score(**locals())
+    return np.sqrt(fpr) / (np.sqrt(tpr) + np.sqrt(fpr)) if ((tpr + fpr) != 0) else 0.0
 
 
 @save_verticapy_logs
@@ -1341,7 +1354,7 @@ def prevalence_threshold(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1366,7 +1379,7 @@ def recall_score(
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
     """
-    Computes the Recall Score.
+    Computes the Recall score.
 
     Parameters
     ----------
@@ -1399,7 +1412,7 @@ def recall_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1424,7 +1437,7 @@ def specificity_score(
     pos_label: Optional[PythonScalar] = None,
 ) -> Union[float, list[float]]:
     """
-    Computes the Specificity Score.
+    Computes the Specificity score.
 
     Parameters
     ----------
@@ -1457,7 +1470,7 @@ def specificity_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1654,7 +1667,7 @@ def best_cutoff(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -1741,7 +1754,7 @@ def roc_auc_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -1826,7 +1839,7 @@ def prc_auc_score(
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
         To  compute  the metric, one of  the  response 
-        column  classes must be the positive one.  The 
+        column classes must be the positive class. The 
         parameter 'pos_label' represents this class.
     nbins: int, optional
         An integer value that determines the number of 
@@ -1912,7 +1925,7 @@ def log_loss(
         List   of    the    response   column    categories.
     pos_label: PythonScalar, optional
         To compute the log loss,  one of the response column 
-        classes  must  be  the  positive one.  The parameter 
+        classes must  be  the  positive class. The parameter 
         'pos_label' represents this class.
 
     Returns
@@ -2019,9 +2032,10 @@ def classification_report(
 ) -> Union[float, TableSample]:
     """
     Computes  a classification  report using  multiple 
-    metrics  (AUC, accuracy, PRC AUC, F1...).  It will 
-    consider  each category as positive and switch  to 
-    the next one during the computation.
+    metrics (AUC, accuracy, PRC AUC, F1...). In the case
+    of multiclass classification, it  considers each 
+    category as positive and switches to the next one 
+    during the computation.
 
     Parameters
     ----------
@@ -2035,7 +2049,7 @@ def classification_report(
         an alias is used at the end of the relation). 
         For example: (SELECT ... FROM ...) x
     metrics: list, optional
-        List of the metrics to use to compute the final 
+        List of the metrics used to compute the final 
         report.
             accuracy    : Accuracy
             aic         : Akaike’s  Information  Criterion
@@ -2089,7 +2103,7 @@ def classification_report(
         999,999.  If negative,  the  maximum value  is 
         used.
     estimator: object, optional
-        Estimator to use to compute the classification 
+        Estimator used to compute the classification 
         report.
 
     Returns

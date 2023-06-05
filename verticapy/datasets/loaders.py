@@ -113,14 +113,14 @@ def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
     database. 
     This  dataset  is  ideal  for  data exploration.  
     If  a  table  with  the  same  name  and  schema  
-    already  exists, this  function  will  create  a 
+    already  exists, this  function  creates  a 
     vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema of the new relation. If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -150,13 +150,13 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
     This  dataset  is  ideal  for  classification and 
     clustering  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If  empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -193,15 +193,15 @@ def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
     Ingests the titanic dataset into the Vertica 
     database. 
     This  dataset  is  ideal  for classification 
-    models.  If a  able  with the  same name and  
-    schema  already exists,  this  function will 
-    create a vDataFrame from the input relation.
+    models.  If a table  with the  same name and  
+    schema  already exists,  this  function  
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema of  the new relation. If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -246,13 +246,13 @@ def load_winequality(schema: str = "public", name: str = "winequality") -> vData
     This   dataset  is  ideal  for   regression   and 
     classification  models. If a table with the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -299,13 +299,13 @@ def load_airline_passengers(
     This  dataset  is  ideal  for  time   series  and 
     regression  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema of the new relation. If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -330,13 +330,13 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
     This  dataset  is  ideal  for  time   series  and 
     regression  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If  empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -361,13 +361,13 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
     This  dataset  is  ideal  for  time   series  and 
     regression  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If  empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -400,13 +400,13 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
     This  dataset  is  ideal  for  time   series  and 
     regression  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If  empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -438,13 +438,13 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
     This  dataset  is  ideal  for  time   series  and 
     geospatial  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema of the new relation. If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -477,13 +477,13 @@ def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDa
     This  dataset  is  ideal  for  time   series  and 
     regression  models.  If a  table  with  the  same 
     name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    creates a vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation. If  empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -512,14 +512,14 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
     database. 
     This  dataset  is  ideal  for  geospatial models.  
     If  a  table  with   the  same  name  and  schema  
-    already  exists,  this  function  will  create  a 
+    already  exists,  this  function  creates  a 
     vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -547,15 +547,15 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
     Ingests  the  World  dataset  into  the  Vertica 
     database. 
     This  dataset  is  ideal  for  geospatial models.  
-    If a  table  with  the  same 
-    name  and  schema  already exists, this  function 
-    will create a vDataFrame from the input relation.
+    If a  table  with  the  same name  and  schema  
+    already exists, this  function creates a 
+    vDataFrame from the input relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema  of  the  new  relation.  If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 
@@ -594,16 +594,17 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
     """
     Ingests the  LaLiga dataset into the Vertica 
     database. 
-    This dataset is  ideal to test  complex data 
-    types.  If a table  with  the same name  and  
-    schema  already exists,  this  function will 
-    create a vDataFrame from the input relation.
+    This dataset is  ideal for testing  complex 
+    data types. If a table  with  the same name
+    and  schema  already exists, this  function 
+    creates a vDataFrame from the input 
+    relation.
 
     Parameters
     ----------
     schema: str, optional
         Schema of the new relation. If empty, a 
-        temporary local table will be created.
+        temporary local table is created.
     name: str, optional
         Name of the new relation.
 

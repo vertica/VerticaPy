@@ -308,8 +308,8 @@ def variance_inflation_factor(
     X: list
         Input Variables.
     X_idx: int
-        Index of the exogenous variable in X. If left to None, 
-        a TableSample will be returned with all the  variables 
+        Index of the exogenous variable in X. If empty, 
+        a TableSample is returned with all the  variables 
         VIF.
 
     Returns

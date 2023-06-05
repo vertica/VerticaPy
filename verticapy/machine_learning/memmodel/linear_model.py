@@ -25,8 +25,8 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    InMemoryModel  Implementation  of  Linear 
-    Algorithms.
+    InMemoryModel  implementation  of  linear 
+    algorithms.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ class LinearModel(InMemoryModel):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input Matrix.
+        Computes the model's probabilites using the input matrix.
 
         Parameters
         ----------
@@ -104,7 +104,7 @@ class LinearModel(InMemoryModel):
     def _predict_regression_sql(self, X: ArrayLike) -> str:
         """
         Returns the model's SQL score using the input 
-        Matrix.
+        matrix.
         """
         if len(X) != len(self.coef_):
             raise ValueError(
@@ -160,8 +160,8 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    InMemoryModel Implementation of Linear Algorithms for 
-    Classification.
+    InMemoryModel Implementation of linear algorithms for 
+    classification.
 
     Parameters
     ----------
@@ -181,7 +181,7 @@ class LinearModelClassifier(LinearModel):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the input Matrix.
+        Predicts using the input matrix.
 
         Parameters
         ----------

@@ -55,7 +55,7 @@ def get_header_names(path: str, sep: str) -> list[str]:
 
 def guess_sep(file_str: str) -> str:
     """
-    Guess the file's separator.
+    Guesses the file's separator.
     """
     sep = ","
     max_occur = file_str.count(",")

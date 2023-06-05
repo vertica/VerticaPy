@@ -36,7 +36,7 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 
 class Ensemble(InMemoryModel):
     """
-    InMemoryModel Implementation of Ensemble Algorithms.
+    InMemoryModel implementation of ensemble algorithms.
     """
 
     # Prediction / Transformation Methods - IN MEMORY.
@@ -61,7 +61,7 @@ class Ensemble(InMemoryModel):
         self, pic_path: Optional[str] = None, tree_id: int = 0, *args, **kwargs,
     ) -> "Source":
         """
-        Draws the input tree. Requires the graphviz module.
+        Draws the input tree. Requires the Graphviz module.
 
         Parameters
         ----------
@@ -76,20 +76,20 @@ class Ensemble(InMemoryModel):
         Returns
         -------
         graphviz.Source
-            graphviz object.
+            Graphviz object.
         """
         return self.trees_[tree_id].plot_tree(pic_path, *args, **kwargs)
 
 
 class RandomForestRegressor(Ensemble):
     """
-    InMemoryModel Implementation of the Random 
-    Forest Regressor Algorithm.
+    InMemoryModel implementation of the random 
+    forest regressor algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        list of BinaryTrees for Regression.
+        list of BinaryTrees for regression.
     """
 
     # Properties.
@@ -111,7 +111,7 @@ class RandomForestRegressor(Ensemble):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Random Forest Regressor model.
+        Predicts using the Random Forest regressor model.
 
         Parameters
         ----------
@@ -147,13 +147,13 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel Implementation of the Random 
-    Forest Classifier Algorithm.
+    InMemoryModel implementation of the random 
+    forest classifier algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeClassifier]
-        List of BinaryTrees for Classification.
+        List of BinaryTrees for classification.
     classes: ArrayLike, optional
     	The model's classes.
     """
@@ -185,7 +185,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
         Computes  the model's probabilites using  the 
-        input Matrix.
+        input matrix.
 
         Parameters
         ----------
@@ -252,13 +252,13 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    InMemoryModel Implementation of the XGBoost 
-    Regressor Algorithm.
+    InMemoryModel implementation of the XGBoost 
+    regressor algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List  of  BinaryTrees  for  Regression.
+        List  of  BinaryTrees  for  regression.
     mean: float, optional
         Average   of   the   response   column.
     eta: float, optional
@@ -325,13 +325,13 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel Implementation of the XGBoost 
-    Classifier Algorithm.
+    InMemoryModel implementation of the XGBoost 
+    classifier algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeRegressor]
-        List  of   BinaryTrees  for  Regression.
+        List  of   BinaryTrees  for  regression.
     logodds: ArrayLike[float], optional
         ArrayLike of the logodds of the response 
         classes.
@@ -374,7 +374,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
         Computes the model's probabilites using the input 
-        Matrix.
+        matrix.
 
         Parameters
         ----------
@@ -425,13 +425,13 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    InMemoryModel  Implementation of the Isolation 
-    Forest Algorithm.
+    InMemoryModel  implementation of the isolation 
+    forest algorithm.
 
     Parameters
     ----------
     trees: list[BinaryTreeAnomaly]
-        list of BinaryTrees for Anomaly Detection.
+        list of BinaryTrees for anomaly detection.
     """
 
     # Properties.
@@ -453,7 +453,7 @@ class IsolationForest(Ensemble):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts using the Random Forest Regressor model.
+        Predicts using the random forest regressor model.
 
         Parameters
         ----------

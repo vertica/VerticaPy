@@ -33,13 +33,13 @@ def import_lib_udf(
 ) -> bool:
     """
     Install a library of Python functions in Vertica. 
-    This function will work only  when it is executed 
+    This function will only work when it is executed 
     directly in the server.
 
     Parameters
     ----------
     udf_list: list
-    	List of tuples including the different functions.
+    	List of tuples that includes the different functions.
     		function     : [function]  Python   Function.
     	    arg_types    : [dict/list] List or dictionary 
                            of  the function input  types.
@@ -47,9 +47,9 @@ def import_lib_udf(
                                      "input2": float}  or 
                            [int, float]
     	    return_type  : [type/dict] Function output type. 
-                           In case of many  outputs, it must 
-                           be a dictionary including all the 
-                           outputs types and names. 
+                           In the case of many  outputs, it
+                           must be a dictionary including 
+                           all the outputs types and names. 
                            Example: {"result1": int, 
                                      "result2": float}
     	    parameters   : [dict] Dictionary of the function 
@@ -61,8 +61,8 @@ def import_lib_udf(
     library_name: str
     	Library Name.
     include_dependencies: str / list, optional
-    	Library files  dependencies.  The function will copy 
-        paste  the  different files in the  UDF  definition.
+    	Library files  dependencies. The function copies and 
+        pastes the  different files in the  UDF  definition.
 
     Returns
     -------

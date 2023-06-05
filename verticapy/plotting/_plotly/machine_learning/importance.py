@@ -54,7 +54,7 @@ class ImportanceBarChart(PlotlyBase):
 
     def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
         """
-        Draws a coeff importance bar chart using the Plotly API.
+        Draws a coefficient importance bar chart using the Plotly API.
         """
         fig = self._get_fig(fig)
         importances_pos = copy.deepcopy(self.data["importance"])

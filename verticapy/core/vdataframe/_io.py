@@ -67,7 +67,8 @@ class vDFInOut(vDFSystem):
         Parameters
         ----------
         offset: int, optional
-            offset of the saving. Example: -1 to load the last saving.
+            Offset of the saving. For example, setting to
+            -1 loads the last saving.
 
         Returns
         -------
@@ -114,25 +115,25 @@ class vDFInOut(vDFSystem):
         ----------
         path: str, optional
             File/Folder system path.  Be  careful:  if a CSV file with 
-            the same name exists, it will over-write it.
+            the same name exists, it will be overwritten.
         sep: str, optional
             Column separator.
         na_rep: str, optional
             Missing values representation.
         quotechar: str, optional
-            Char which will enclose the str values.
+            Char that will enclose the str values.
         usecols: SQLColumns, optional
             vDataColumns to select  from the final vDataFrame relation. 
-            If empty, all vDataColumns will be selected.
+            If empty, all vDataColumns are selected.
         header: bool, optional
-            If set to False, no header will be written in the CSV file.
+            If set to False, no header is written in the CSV file.
         new_header: list, optional
-            List of columns to use to replace vDataColumns name in the 
+            List of columns used to replace vDataColumns name in the 
             CSV.
         order_by: str / dict / list, optional
-            List of the vDataColumns to use to sort  the data using asc 
-            order or dictionary of all sorting methods. For example, to 
-            sort by "column1" ASC and "column2" DESC, write:
+            List of the vDataColumns used to sort  the data, using asc 
+            order or a dictionary of all sorting methods. For example, 
+            to sort by "column1" ASC and "column2" DESC, write:
             {"column1": "asc", "column2": "desc"}
         n_files: int, optional
             Integer  greater than or equal to 1,  the number of CSV files 
@@ -254,12 +255,12 @@ class vDFInOut(vDFSystem):
         ----------
         name: str
             Name of the relation.  To save the relation in a specific 
-            schema you can write '"my_schema"."my_relation"'. 
+            schema, you can write '"my_schema"."my_relation"'. 
             Use  double  quotes '"' to  avoid errors due  to  special 
             characters.
         usecols: SQLColumns, optional
             vDataColumns to select from the final vDataFrame relation. 
-            If empty, all vDataColumns will be selected.
+            If empty, all vDataColumns are selected.
         relation_type: str, optional
             Type of the relation.
                 view      : View
@@ -268,17 +269,17 @@ class vDFInOut(vDFSystem):
                 local     : Local Temporary Table
                 insert    : Inserts into an existing table
         inplace: bool, optional
-            If set to True, the vDataFrame will be replaced using the 
-            new relation.
+            If set to True, the vDataFrame is replaced with the new
+            relation.
         db_filter: SQLExpression, optional
             Filter used before  creating the relation in the DB. It can 
             be a list of conditions or an expression. This parameter is 
-            very useful to create train and test sets on TS.
+            useful for creating train and test sets on TS.
         nb_split: int, optional
-            If this parameter is greater than 0, it will add to the final 
-            relation a new column '_verticapy_split_'  which will contain 
-            values in [0;nb_split - 1] where each category will represent 
-            1 / nb_split of the entire distribution. 
+            If this parameter is greater than 0, it adds a new column
+            '_verticapy_split_' to the final relation. This column 
+            contains values in [0;nb_split - 1] where each category 
+            represents 1 / nb_split of the entire distribution. 
 
         Returns
         -------
@@ -378,7 +379,7 @@ class vDFInOut(vDFSystem):
         ----------
         geometry: str
             Geometry object used to create the GeoDataFrame.
-            It can also be a Geography object but it will be 
+            It can also be a Geography object, which will be 
             casted to Geometry.
 
         Returns
@@ -429,12 +430,12 @@ class vDFInOut(vDFSystem):
         ----------
         path: str, optional
             File/Folder system path. Be careful: if a JSON file with 
-            the same name exists, it will over-write it.
+            the same name exists, it is overwritten.
         usecols: SQLColumns, optional
             vDataColumns to select from the final vDataFrame relation. 
-            If empty, all vDataColumns will be selected.
+            If empty, all vDataColumns are selected.
         order_by: str / dict / list, optional
-            List of the vDataColumns to use to sort the data using asc 
+            List of the vDataColumns used to sort the data, using asc 
             order or dictionary  of all sorting  methods.  For example, 
             to   sort   by   "column1"    ASC   and   "column2"   DESC, 
             write: {"column1": "asc", "column2": "desc"}
@@ -618,8 +619,8 @@ class vDFInOut(vDFSystem):
     ) -> TableSample:
         """
         Exports  a  table, columns from a  table, or query results  to 
-        Parquet  files.  You  can  partition  data  instead  of or  in 
-        addition to exporting the column data, which enables partition 
+        Parquet  files.  You  can  partition  data  instead of, or  in 
+        addition to, exporting the column data, which enables partition 
         pruning and improves query performance. 
 
         Parameters
@@ -725,7 +726,7 @@ class vDFInOut(vDFSystem):
         name: str
             Name of the file. 
             Be careful: if a file with the same name 
-            exists, it will over-write it.
+            exists, it is overwritten.
 
         Returns
         -------
@@ -761,14 +762,14 @@ class vDFInOut(vDFSystem):
         name: str
             Name of the SHP file.
         path: str
-            Absolute path where the SHP file will be created.
+            Absolute path where the SHP file is created.
         usecols: list, optional
             vDataColumns  to select from the final  vDataFrame 
-            relation.  If  empty,  all  vDataColumns  will  be 
+            relation.  If  empty,  all  vDataColumns  are 
             selected.
         overwrite: bool, optional
-            If set to True,  the  function will  overwrite the 
-            index if an index exists.
+            If set to True,  the  function overwrites the 
+            index (if an index exists).
         shape: str, optional
             Must be one of the following spatial classes: 
                 Point, Polygon, Linestring, Multipoint, 

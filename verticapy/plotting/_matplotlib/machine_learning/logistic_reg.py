@@ -69,7 +69,7 @@ class LogisticRegressionPlot(MatplotlibBase):
 
     def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
         """
-        Draws a Logistic Regression plot using the Matplotlib API.
+        Draws a logistic regression plot using the Matplotlib API.
         """
 
         def logit(x: float) -> float:

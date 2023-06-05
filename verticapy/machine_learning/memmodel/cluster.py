@@ -28,14 +28,14 @@ from verticapy.machine_learning.memmodel.tree import Tree
 
 class Clustering(InMemoryModel):
     """
-    InMemoryModel Implementation of Clustering Algorithms.
+    InMemoryModel implementation of clustering algorithms.
 
     Parameters
     ----------
     clusters: ArrayLike
         ArrayLike   of   the   model's  cluster   centers.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to one of the p-distances.
     clusters_names: ArrayLike, optional
         Names of the clusters.
     """
@@ -67,7 +67,7 @@ class Clustering(InMemoryModel):
 
     def predict(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts  clusters  using  the input  Matrix.
+        Predicts  clusters  using  the input  matrix.
 
         Parameters
         ----------
@@ -234,14 +234,14 @@ class Clustering(InMemoryModel):
 
 class KMeans(Clustering):
     """
-    InMemoryModel Implementation of KMeans.
+    InMemoryModel implementation of KMeans.
 
     Parameters
     ----------
     clusters: ArrayLike
         List of the model's cluster centers.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to one of the p-distances.
     """
 
     # Properties.
@@ -259,8 +259,8 @@ class KMeans(Clustering):
 
 class NearestCentroid(Clustering):
     """
-    InMemoryModel   Implementation  of   NearestCentroid 
-    Algorithm.
+    InMemoryModel   implementation  of   NearestCentroid 
+    algorithm.
 
     Parameters
     ----------
@@ -269,7 +269,7 @@ class NearestCentroid(Clustering):
     classes: ArrayLike
         Names of the classes.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to  one of the p-distances.
     """
 
     # Properties.
@@ -292,7 +292,7 @@ class NearestCentroid(Clustering):
 
 class BisectingKMeans(Clustering, Tree):
     """
-    InMemoryModel Implementation of BisectingKMeans.
+    InMemoryModel implementation of BisectingKMeans.
 
     Parameters
     ----------
@@ -314,8 +314,7 @@ class BisectingKMeans(Clustering, Tree):
         of the node and the total within-cluster sum of 
         squares.
     p: int, optional
-        The   p  corresponding  to  the  one   of   the 
-        p-distances.
+        The p corresponding to one of the p-distances.
     """
 
     # Properties.
@@ -371,7 +370,7 @@ class BisectingKMeans(Clustering, Tree):
 
     def _predict_tree(self, X: ArrayLike, node_id: int,) -> int:
         """
-        Function used recursively to get the Tree prediction 
+        Function used recursively to get the tree prediction 
         starting at the input node.
         """
         if isinstance(self.children_left_[node_id], NoneType) and isinstance(
@@ -390,7 +389,7 @@ class BisectingKMeans(Clustering, Tree):
 
     def _predict_row(self, X: ArrayLike) -> int:
         """
-        Function used recursively to get the Tree prediction.
+        Function used recursively to get the tree prediction.
         """
         return self._predict_tree(X, 0)
 
@@ -581,14 +580,14 @@ class BisectingKMeans(Clustering, Tree):
 
 class KPrototypes(Clustering):
     """
-    InMemoryModel Implementation of KPrototypes.
+    InMemoryModel implementation of KPrototypes.
 
     Parameters
     ----------
     clusters: ArrayLike
         List of the model's cluster centers.
     p: int, optional
-        The p corresponding to the one of the p-distances.
+        The p corresponding to  one of the p-distances.
     gamma: float, optional
         Weighting  factor  for  categorical columns.  This 
         determines  relative  importance of numerical  and 

@@ -71,7 +71,7 @@ class vDFEval(vDFInOut):
         name: str
             Name of the new vDataColumn.
         expr: str
-            Expression  in pure SQL to use to compute the new 
+            Expression  in pure SQL used to compute the new 
             feature.
             For example: 
             'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
