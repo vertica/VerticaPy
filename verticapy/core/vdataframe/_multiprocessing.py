@@ -28,7 +28,7 @@ def aggregate_parallel_block(
     vdf: "vDataFrame", func: list, columns: SQLColumns, ncols_block: int, i: int
 ) -> TableSample:
     """
-    Missing function description?
+    Missing docstring?
     """
     return vdf.aggregate(
         func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
@@ -44,7 +44,7 @@ def describe_parallel_block(
     i: int,
 ) -> TableSample:
     """
-    Missing function description?
+    Missing docstring?
     """
     return vdf.describe(
         method=method,

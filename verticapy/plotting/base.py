@@ -235,7 +235,7 @@ class PlottingBase(PlottingBaseSQL):
         self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:
         """
-        Missing function description?
+        Missing docstring?
         """
         d = format_type(d, dtype=dict)
         if "color" in d:
