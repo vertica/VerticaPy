@@ -6,6 +6,10 @@ This release includes some major changes, including:
 
 All the documentation containing copyright information have been updated to represent the new ownership of Vertica and its associated products. 
 
+- Version number change
+
+Instead of continuing the previous version style (0.12.0), the new version numbering will follow the OpenText version style. That means instead of 0.13.0 or 1.0.0, we will have 23.3 as the new version number. All the OpenText products follow the same version numbers for consistensy. 
+
 - Requirements update
 
 Now python version 3.8 is required.
