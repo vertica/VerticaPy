@@ -6,15 +6,11 @@ This release includes some major changes, including:
 
 All the documentation containing copyright information have been updated to represent the new ownership of Vertica and its associated products. 
 
-- Version number change
-
-Instead of continuing the previous version style (0.12.0), the new version numbering will follow the OpenText version style. That means instead of 0.13.0 or 1.0.0, we will have 23.3 as the new version number. All the OpenText products follow the same version numbers for consistensy. 
-
 - Requirements update
 
 Now python version 3.8 is required.
 
-Note: Now an internal minimum function python decorator (@check_minimum_version) warns the users if any of the Vertica modules does not meet the requirement for the function in use.
+Note: Now an internal minimum function python decorator (@check_minimum_version) warns the users if any of the Vertica modules do not meet the requirement for the function in use.
 
 - Bug Fixes
 
@@ -28,6 +24,8 @@ Note: Now an internal minimum function python decorator (@check_minimum_version)
 
 - Machine Learning Support
   - KPrototypes is now supported in VerticaPy
+  - Feature Importance for XGBoost now available
+  - Classification metrics now available for multiclass data/model using three methods: micro, macro and weighted.
 
 - `vDataFramesSQL` is deprecated. Now `vDataFrame` can be used directly to create `vDataFrames` from SQL.
 
@@ -44,11 +42,12 @@ Note: Now an internal minimum function python decorator (@check_minimum_version)
   vp.vDataFrame({"X":[1,2,3],"Y":['a','b','c']})
   ```
 
-- Plotly integration
+- Ploting
+--Plotly integration
 
   The new release comes with better visualization using Plotly as the default plotting library. Now the plots are more interactive to enhance the user experience.
 
-- Convenient switching of plotting libraries
+-- Convenient switching of plotting libraries
 
   The plotting libraries can now easily be switched using the following syntax:
 
@@ -58,6 +57,10 @@ Note: Now an internal minimum function python decorator (@check_minimum_version)
   ```
 
   Note that the function "Hchart" will also be deprecated as the Highcharts plots can be plotted using the regular SQL plotting syntax mentioned below while Highcharts is set as the default the plotting library.
+
+-- Custom width and height
+
+Two very convenient parameters, "custom_height" and "custom_width", have been added to all the plots so that the sizes can be changed as per the user requirement.
 
 - Validators for options
 
@@ -114,8 +117,10 @@ Validators now ensure that only allowed options are selected for the verticapy o
   - Jupyter [includes extensions such as magic SQL and magic chart]
   - Datasets [includes loaders and sample datasets]
   - Connection [includes connect, read, write, etc.]
-  - _config [includes configurations]
+  - _config [includes configurations] 
   - _utils [icnludes all utilities]
+
+  *Note that the folders with "_" subscript are internal
 
   So now, in order to use Vertica's `LinearRegression`, it should be imported as follows:
 
@@ -141,6 +146,11 @@ Other changes that do not affect the user experience include:
 Slighlt modification to allow smooth integration of upcoming VerticaPyLab.
 
 ## Internal
+
+- Added hints in most of the functions
+
+Hints have been added to make sure the correct inputs are passed to all the functions.
+
 - A better method to collect usage statistics
 
 A python decorator (@save_verticapy_logs) is used to effectively log the usage statistics of all the functions.
@@ -149,9 +159,15 @@ A python decorator (@save_verticapy_logs) is used to effectively log the usage s
 
 A set of common classes are created for effective collaboration and incorporation of other plotting libraries int he future
 
-- 
+- Check data type decorator
 
+A new decorator (@check_dtypes) is used to ensure correct input for the functions.
 
+- Updated Github actions
+
+Update the workflow to use the latest version of Github actions
+Added tox.ini file
+Added CONTRIBUTING.md file
 
 #####################
 
