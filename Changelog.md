@@ -2,6 +2,26 @@
 
 This release includes some major changes, including:
 
+- Micro Focus is now Opentext
+
+All the documentation containing copyright information have been updated to represent the new ownership of Vertica and its associated products. 
+
+- Requirements update
+
+Now python version 3.8 is required.
+
+Note: Now an internal minimum function python decorator (@check_minimum_version) warns the users if any of the Vertica modules does not meet the requirement for the function in use.
+
+- Bug Fixes
+
+-- Adjusted-R squared now works with "K" parameter
+-- Calculation of Prevalence Threshold is corrected
+-- Nested pie plots have been fixed
+-- vDataFrame.balance() function is improved
+-- load_model can now accept feature names with parentheses
+-- pandas_to_vertica() works even if a dataframe has a column full of NaN values
+-- CountVectorizer now works for larger datasets
+
 - Machine Learning Support
   - KPrototypes is now supported in VerticaPy
 
@@ -29,11 +49,15 @@ This release includes some major changes, including:
   The plotting libraries can now easily be switched using the following syntax:
 
   ```python
-  import verticapy._config.config as conf
-  conf.set_option("plotting_lib","matplotlib")
+  from verticapy import set_option
+  set_option("plotting_lib","matplotlib")
   ```
 
   Note that the function "Hchart" will also be deprecated as the Highcharts plots can be plotted using the regular SQL plotting syntax mentioned below while Highcharts is set as the default the plotting library.
+
+- Validators for options
+
+Validators now ensure that only allowed options are selected for the verticapy options. 
 
 - Direct plotting from SQL queries
 
@@ -74,7 +98,7 @@ This release includes some major changes, including:
   - Mean Squared Log Error
   - Quantile Error
 
-- Import structures
+- Import structures have changed
 
   Another major change is that the code has been completely restructured. This means that, going forward, all the imports will now be done differently. Note that currently, we still allow the previous structure of import as well, but it will gradually get deprecated.
 
@@ -86,6 +110,8 @@ This release includes some major changes, including:
   - Jupyter [includes extensions such as magic SQL and magic chart]
   - Datasets [includes loaders and sample datasets]
   - Connection [includes connect, read, write, etc.]
+  - _config [includes configurations]
+  - _utils [icnludes all utilities]
 
   So now, in order to use Vertica's `LinearRegression`, it should be imported as follows:
 
@@ -106,9 +132,44 @@ Other changes that do not affect the user experience include:
 - Improved thorough Unit Tests that require considerably less time to compute, making the CI/CD pipeline more efficient.
 
 
+- Verticapylab autoconnection
+
+Slighlt modification to allow smooth integration of upcoming VerticaPyLab.
+
+## Internal
+- A better method to collect usage statistics
+
+A python decorator (@save_verticapy_logs) is used to effectively log the usage statistics of all the functions.
+
+- Plotting class
+
+A set of common classes are created for effective collaboration and incorporation of other plotting libraries int he future
+
+- 
+
+
+
 #####################
 
 ######################
+- Other configurations
+
+Apart from plotting libraries, users can now change the default configurations very conveniently using the config module. Some of the options that can be change include: number of maximum columns, maximum rows, turning sql on etc. 
+
+For example, below the temperory schema is change from "public" to "private".
+
+```python
+from verticapy import set_option
+set_option("temp_schema", "private")
+```
+
+The current state can also be easily fetched using get_option:
+
+```python
+from verticapy import set_option
+get_option("temp_schema")
+
+```
 
 # Change log
 
