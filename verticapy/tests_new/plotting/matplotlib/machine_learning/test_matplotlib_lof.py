@@ -14,31 +14,17 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import matplotlib.pyplot as plt
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import LOFPlot2D, LOFPlot3D
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestMatplotlibMachineLearningLOFPlot2D(LOFPlot2D):
     """
-    Set default plotting object to matplotlib
+    Testing different attributes of 2D LOF plot
     """
-    return plt.Axes
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
+class TestMatplotlibMachineLearningLOFPlot3D(LOFPlot3D):
     """
-    Set default plotting library to matplotlib
+    Testing different attributes of 3D LOF plot
     """
-    conf.set_option("plotting_lib", "matplotlib")
-    yield
-    conf.set_option("plotting_lib", "plotly")

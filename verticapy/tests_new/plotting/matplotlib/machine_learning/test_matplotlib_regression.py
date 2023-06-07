@@ -14,31 +14,22 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import matplotlib.pyplot as plt
+# Verticapy
+from verticapy.tests_new.plotting.base_test_files import LearningRegressionPlot
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestMatplotlibMachineLearningRegressionPlot(LearningRegressionPlot):
     """
-    Set default plotting object to matplotlib
+    Testing different attributes of Regression plot
     """
-    return plt.Axes
 
-
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
-    """
-    Set default plotting library to matplotlib
-    """
-    conf.set_option("plotting_lib", "matplotlib")
-    yield
-    conf.set_option("plotting_lib", "plotly")
+    def test_data_all_scatter_points(self, dummy_scatter_vd):
+        """
+        Test if all points are plotted
+        """
+        # Arrange
+        # Act
+        # Assert
+        assert len(self.result.collections[0].get_offsets()) == len(
+            dummy_scatter_vd
+        ), "Discrepancy between points plotted and total number ofp oints"

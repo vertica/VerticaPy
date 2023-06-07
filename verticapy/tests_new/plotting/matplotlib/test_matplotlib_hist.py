@@ -14,31 +14,20 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-# Pytest
-import pytest
-
-# Standard Python Modules
-
-# VerticaPy
-import verticapy._config.config as conf
-
-# Other Modules
-import matplotlib.pyplot as plt
+# Vertica
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCHistogramPlot,
+    VDFHistogramPlot,
+)
 
 
-@pytest.fixture(scope="module")
-def plotting_library_object():
+class TestMatplotlibVDCHistogramPlot(VDCHistogramPlot):
     """
-    Set default plotting object to matplotlib
+    Testing different attributes of Histogram plot on a vDataColumn
     """
-    return plt.Axes
 
 
-@pytest.fixture(scope="session", autouse=True)
-def load_plotlib():
+class TestMatplotlibVDFHistogramPlot(VDFHistogramPlot):
     """
-    Set default plotting library to matplotlib
+    Testing different attributes of Histogram plot on a vDataFrame
     """
-    conf.set_option("plotting_lib", "matplotlib")
-    yield
-    conf.set_option("plotting_lib", "plotly")
