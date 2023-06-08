@@ -18,7 +18,7 @@ permissions and limitations under the License.
 from verticapy.tests_new.plotting.base_test_files import VDFContourPlot
 
 
-class TestmatplotlibVDFContourPlot(VDFContourPlot):
+class TestMatplotlibVDFContourPlot(VDFContourPlot):
     """
     Testing different attributes of Contour plot on a vDataFrame
     """
