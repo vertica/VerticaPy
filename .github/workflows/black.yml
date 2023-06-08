@@ -1,0 +1,17 @@
+name: Black
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable
+        with:
+          options: "--check --diff --verbose"
+          src: "./verticapy"
+          version: "~=23.0"
