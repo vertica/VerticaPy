@@ -54,26 +54,26 @@ def lift_chart(
     y_score: str
         Prediction probability.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias  is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias  is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
-        To compute the Lift Chart, one of the response 
-        column classes must be the positive class. The 
+        To compute the Lift Chart, one of the response
+        column classes must be the positive class. The
         parameter  'pos_label' represents this  class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision  boundaries.  Decision boundaries are 
-        set at equally-spaced intervals  between 0 and 
+        An integer value that determines the number of
+        decision  boundaries.  Decision boundaries are
+        set at equally-spaced intervals  between 0 and
         1, inclusive.
     show: bool, optional
-        If set to True,  the  Plotting object  will be 
+        If set to True,  the  Plotting object  will be
         returned.
     chart: PlottingObject, optional
        The chart object to plot on.
     **style_kwargs
-        Any   optional  parameter  to  pass  to   the 
+        Any   optional  parameter  to  pass  to   the
         Plotting functions.
 
     Returns
@@ -100,7 +100,9 @@ def lift_chart(
             }
         )
     vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-        class_name="LiftChart", chart=chart, style_kwargs=style_kwargs,
+        class_name="LiftChart",
+        chart=chart,
+        style_kwargs=style_kwargs,
     )
     data = {
         "x": np.array(decision_boundary),
@@ -138,26 +140,26 @@ def prc_curve(
     y_score: str
         Prediction probability.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias  is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias  is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
-        To compute the PRC Curve,  one of the response 
-        column classes must be the positive class. The 
+        To compute the PRC Curve,  one of the response
+        column classes must be the positive class. The
         parameter  'pos_label' represents this  class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision  boundaries.  Decision boundaries are 
-        set at equally-spaced intervals  between 0 and 
+        An integer value that determines the number of
+        decision  boundaries.  Decision boundaries are
+        set at equally-spaced intervals  between 0 and
         1, inclusive.
     show: bool, optional
-        If set to True, the Plotting object is 
+        If set to True, the Plotting object is
         returned.
     chart: PlottingObject, optional
        The chart object to plot on.
     **style_kwargs
-        Any   optional  parameter  to  pass  to   the 
+        Any   optional  parameter  to  pass  to   the
         Plotting functions.
 
     Returns
@@ -175,11 +177,17 @@ def prc_curve(
     )
     if not show:
         return TableSample(
-            values={"threshold": threshold, "recall": recall, "precision": precision,}
+            values={
+                "threshold": threshold,
+                "recall": recall,
+                "precision": precision,
+            }
         )
     auc = _compute_area(precision, recall)
     vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-        class_name="PRCCurve", chart=chart, style_kwargs=style_kwargs,
+        class_name="PRCCurve",
+        chart=chart,
+        style_kwargs=style_kwargs,
     )
     data = {"x": np.array(recall), "y": np.array(precision), "auc": auc}
     layout = {
@@ -213,26 +221,26 @@ def roc_curve(
     y_score: str
         Prediction probability.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias  is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias  is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
-        To compute the ROC Curve,  one of the response 
-        column classes must be the positive class. The 
+        To compute the ROC Curve,  one of the response
+        column classes must be the positive class. The
         parameter  'pos_label' represents this  class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision  boundaries.  Decision boundaries are 
-        set at equally-spaced intervals  between 0 and 
+        An integer value that determines the number of
+        decision  boundaries.  Decision boundaries are
+        set at equally-spaced intervals  between 0 and
         1, inclusive.
     show: bool, optional
-        If set to True,  the  Plotting object  is 
+        If set to True,  the  Plotting object  is
         returned.
     chart: PlottingObject, optional
        The chart object to plot on.
     **style_kwargs
-        Any   optional  parameter  to  pass  to   the 
+        Any   optional  parameter  to  pass  to   the
         Plotting functions.
 
     Returns
@@ -259,7 +267,9 @@ def roc_curve(
     auc = _compute_area(true_positive, false_positive)
     if cutoff_curve:
         vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-            class_name="CutoffCurve", chart=chart, style_kwargs=style_kwargs,
+            class_name="CutoffCurve",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": np.array(threshold),
@@ -276,7 +286,9 @@ def roc_curve(
         return vpy_plt.CutoffCurve(data=data, layout=layout).draw(**kwargs)
     else:
         vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-            class_name="ROCCurve", chart=chart, style_kwargs=style_kwargs,
+            class_name="ROCCurve",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {"x": np.array(false_positive), "y": np.array(true_positive), "auc": auc}
         layout = {

@@ -25,7 +25,7 @@ def verticapy_logo_html(size: str = "50%") -> str:
 
 def verticapy_logo_str() -> str:
     """
-    Generates the Python string that represents the 
+    Generates the Python string that represents the
     VerticaPy logo.
     """
     img = "              ____________       ______\n"

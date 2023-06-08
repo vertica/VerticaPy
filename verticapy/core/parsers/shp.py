@@ -26,10 +26,12 @@ from verticapy.core.vdataframe.base import vDataFrame
 
 @save_verticapy_logs
 def read_shp(
-    path: str, schema: str = "public", table_name: Optional[str] = None,
+    path: str,
+    schema: str = "public",
+    table_name: Optional[str] = None,
 ) -> vDataFrame:
     """
-    Ingests a SHP file.  At the moment, only files 
+    Ingests a SHP file.  At the moment, only files
     located in  the Vertica server can be ingested.
 
     Parameters

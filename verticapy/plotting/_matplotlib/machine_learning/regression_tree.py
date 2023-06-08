@@ -22,7 +22,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RegressionTreePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -64,7 +63,11 @@ class RegressionTreePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a regression tree plot using the Matplotlib API.
         """

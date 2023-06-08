@@ -50,7 +50,9 @@ def model(tr_data_vd):
     )
 
     # I could use load_model but it is buggy
-    model_class = DummyTreeRegressor("tr_model_test",)
+    model_class = DummyTreeRegressor(
+        "tr_model_test",
+    )
     model_class.input_relation = "public.tr_data"
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
@@ -65,7 +67,9 @@ def model(tr_data_vd):
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 class TestDummyTreeRegressor:
@@ -73,10 +77,14 @@ class TestDummyTreeRegressor:
         assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
-        model_test = DummyTreeRegressor("model_contour",)
+        model_test = DummyTreeRegressor(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -90,7 +98,9 @@ class TestDummyTreeRegressor:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS tr_model_test_drop")
-        model_test = DummyTreeRegressor("tr_model_test_drop",)
+        model_test = DummyTreeRegressor(
+            "tr_model_test_drop",
+        )
         model_test.fit(
             "public.tr_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -294,7 +304,9 @@ class TestDummyTreeRegressor:
 
     def test_model_from_vDF(self, tr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tr_from_vDF")
-        model_test = DummyTreeRegressor("tr_from_vDF",)
+        model_test = DummyTreeRegressor(
+            "tr_from_vDF",
+        )
         model_test.fit(tr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(

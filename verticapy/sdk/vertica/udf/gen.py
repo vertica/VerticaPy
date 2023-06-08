@@ -32,49 +32,49 @@ def generate_lib_udf(
     create_file: bool = False,
 ) -> tuple[str, str]:
     """
-    Generates the code needed to install a library of 
-    Python functions.  It uses the Vertica SDK to 
+    Generates the code needed to install a library of
+    Python functions.  It uses the Vertica SDK to
     create UDFs of the input functions.
 
     Parameters
     ----------
     udf_list: list
-    	List of tuples that includes the different functions.
-    		function     : [function]   Python    Function.
-    	    arg_types    : [dict/list] List  or  dictionary 
+        List of tuples that includes the different functions.
+                function     : [function]   Python    Function.
+            arg_types    : [dict/list] List  or  dictionary
                            of  the  function  input  types.
-    	    			   Example: {"input1": int, 
-                                     "input2": float}    or 
+                                   Example: {"input1": int,
+                                     "input2": float}    or
                            [int, float]
-    	    return_type  : [type/dict] Function output type. 
-                           In the case of many outputs, it 
-                           must be a dictionary including 
-                           all the outputs types and names, 
-                           for example: 
+            return_type  : [type/dict] Function output type.
+                           In the case of many outputs, it
+                           must be a dictionary including
+                           all the outputs types and names,
+                           for example:
                            {"result1": int, "result2": float}
-    	    parameters   : [dict] Dictionary of the function 
+            parameters   : [dict] Dictionary of the function
                            input optional parameters.
-    	    			   Example: {"param1": int, 
+                                   Example: {"param1": int,
                                      "param2": str}
-    	    new_name     : [str] New function name when 
+            new_name     : [str] New function name when
                            installed in Vertica.
     library_name: str
-    	Library Name.
+        Library Name.
     include_dependencies: str / list, optional
-    	Library files dependencies. The function copies and
+        Library files dependencies. The function copies and
         pastes the different files in the UDF definition.
     file_path: str, optional
-    	Path to the UDF file.
+        Path to the UDF file.
     create_file: bool, optional
-    	If set to True,  instead of returning the str of the UDx, 
-        the function creates two files:  a UDF py file and 
+        If set to True,  instead of returning the str of the UDx,
+        the function creates two files:  a UDF py file and
         a SQL file to install it.
 
     Returns
     -------
     udx_str, sql
         UDF py file, str needed to install the library.
-	"""
+    """
     include_dependencies = format_type(include_dependencies, dtype=list)
     if not isinstance(include_dependencies, (list)):
         raise ValueError(

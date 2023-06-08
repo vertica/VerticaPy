@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ContourPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -104,7 +103,9 @@ class ContourPlot(HighchartsBase):
         }
         self.init_style_matrix = {
             "series_type": "heatmap",
-            "dataLabels": {"enabled": False,},
+            "dataLabels": {
+                "enabled": False,
+            },
         }
 
     # Draw.

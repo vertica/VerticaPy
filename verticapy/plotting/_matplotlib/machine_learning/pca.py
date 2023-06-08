@@ -27,7 +27,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class PCACirclePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -55,7 +54,11 @@ class PCACirclePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a PCA circle plot using the Matplotlib API.
         """
@@ -70,7 +73,11 @@ class PCACirclePlot(MatplotlibBase):
         ax.add_patch(circle1)
         for i in range(n):
             ax.arrow(
-                0, 0, self.data["x"][i], self.data["y"][i], **self.init_style,
+                0,
+                0,
+                self.data["x"][i],
+                self.data["y"][i],
+                **self.init_style,
             )
             ax.text(self.data["x"][i], self.data["y"][i], self.layout["columns"][i])
         ax.plot([-1.1, 1.1], [0.0, 0.0], **self.init_style_plot)
@@ -93,7 +100,6 @@ class PCACirclePlot(MatplotlibBase):
 
 
 class PCAScreePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -124,7 +130,11 @@ class PCAScreePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a PCA Scree plot using the Matplotlib API.
         """
@@ -159,7 +169,9 @@ class PCAScreePlot(MatplotlibBase):
         for i in range(n):
             text_str = f"{round(self.data['y'][i], 1)}%"
             ax.text(
-                i + dt, self.data["y"][i] + 1, text_str,
+                i + dt,
+                self.data["y"][i] + 1,
+                text_str,
             )
         ax.set_xlim(0.5, n + 0.5)
         ax.set_title(self.layout["title"])
@@ -167,7 +179,6 @@ class PCAScreePlot(MatplotlibBase):
 
 
 class PCAVarPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -217,7 +228,11 @@ class PCAVarPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a PCA variance plot using the Matplotlib API.
         """

@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
 class AnimatedLinePlot(AnimatedBase):
-
     # Properties.
 
     @property

@@ -45,7 +45,7 @@ def check_file_readable(filename):
 
 def check_file_writable(filename):
     """Ensure this is a writable file. If the file doesn't exist,
-       ensure its directory is writable.
+    ensure its directory is writable.
     """
     if os.path.exists(filename):
         if not os.path.isfile(filename):

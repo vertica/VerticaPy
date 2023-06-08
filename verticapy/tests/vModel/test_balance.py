@@ -31,7 +31,9 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 class TestBalance:

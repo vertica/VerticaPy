@@ -23,7 +23,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ROCCurve(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -43,7 +42,11 @@ class ROCCurve(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a machine learning ROC curve using the Matplotlib API.
         """
@@ -92,7 +95,6 @@ class ROCCurve(MatplotlibBase):
 
 
 class CutoffCurve(ROCCurve):
-
     # Properties.
 
     @property
@@ -109,7 +111,11 @@ class CutoffCurve(ROCCurve):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a machine cutoff curve using the Matplotlib API.
         """
@@ -129,7 +135,10 @@ class CutoffCurve(ROCCurve):
             **self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=1),
         )
         ax.fill_between(
-            self.data["x"], self.data["y"], self.data["z"], **self.init_style,
+            self.data["x"],
+            self.data["y"],
+            self.data["z"],
+            **self.init_style,
         )
         ax.set_xlabel(self.layout["x_label"])
         ax.set_title(self.layout["title"])
@@ -140,7 +149,6 @@ class CutoffCurve(ROCCurve):
 
 
 class PRCCurve(ROCCurve):
-
     # Properties.
 
     @property
@@ -149,7 +157,11 @@ class PRCCurve(ROCCurve):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a machine learning PRC curve using the Matplotlib API.
         """
@@ -187,7 +199,6 @@ class PRCCurve(ROCCurve):
 
 
 class LiftChart(ROCCurve):
-
     # Properties.
 
     @property
@@ -203,7 +214,11 @@ class LiftChart(ROCCurve):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a machine learning lift chart using the Matplotlib API.
         """

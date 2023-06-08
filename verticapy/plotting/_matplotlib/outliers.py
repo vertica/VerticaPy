@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
 class OutliersPlot(ScatterPlot):
-
     # Properties.
 
     @property
@@ -69,7 +68,10 @@ class OutliersPlot(ScatterPlot):
     # Draw.
 
     def draw(
-        self, cmap: str = None, ax: Optional[Axes] = None, **style_kwargs,
+        self,
+        cmap: str = None,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws an outliers contour plot using the Matplotlib API.
@@ -112,7 +114,13 @@ class OutliersPlot(ScatterPlot):
             (self.data["outliers"], self.layout["outliers_color"]),
         ]:
             ax.scatter(
-                x[:, 0], x[:, 1], color=c, **{**self.init_style, **style_kwargs,},
+                x[:, 0],
+                x[:, 1],
+                color=c,
+                **{
+                    **self.init_style,
+                    **style_kwargs,
+                },
             )
         fig.colorbar(cp).set_label("ZSCORE")
         args = [[0], [0]]

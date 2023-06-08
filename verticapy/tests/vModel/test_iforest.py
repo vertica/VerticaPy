@@ -65,21 +65,27 @@ def model(iforest_data_vd):
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.mark.skipif(
-    get_version()[0] < 12, reason="requires vertica 12.0 or higher",
+    get_version()[0] < 12,
+    reason="requires vertica 12.0 or higher",
 )
 class TestIsolationForest:
     def test_repr(self, model):
         assert model.__repr__() == "<IsolationForest>"
 
     def test_contour(self, titanic_vd):
-        model_test = IsolationForest("model_contour_iF",)
+        model_test = IsolationForest(
+            "model_contour_iF",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"],
+            titanic_vd,
+            ["age", "fare"],
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) > 30
@@ -116,7 +122,9 @@ class TestIsolationForest:
 
     def test_drop(self, iforest_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS iforest_model_test_drop")
-        model_test = IsolationForest("iforest_model_test_drop",)
+        model_test = IsolationForest(
+            "iforest_model_test_drop",
+        )
         model_test.fit(
             iforest_data_vd,
             ["Gender", '"owned cars"', "cost", "income", "TransPortation"],
@@ -200,7 +208,8 @@ class TestIsolationForest:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python()([["Male", 0, "Cheap", "Low", 1]])[0], 10e-2,
+            model.to_python()([["Male", 0, "Cheap", "Low", 1]])[0],
+            10e-2,
         )
 
     def test_to_sql(self, model):
@@ -260,7 +269,9 @@ class TestIsolationForest:
 
     def test_model_from_vDF(self, iforest_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS iForest_from_vdf")
-        model_test = IsolationForest("iForest_from_vdf",)
+        model_test = IsolationForest(
+            "iForest_from_vdf",
+        )
         model_test.fit(iforest_data_vd, ["gender"])
 
         current_cursor().execute(

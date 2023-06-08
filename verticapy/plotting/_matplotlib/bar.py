@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BarChart(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -46,7 +45,11 @@ class BarChart(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a histogram using the Matplotlib API.
         """
@@ -79,7 +82,6 @@ class BarChart(MatplotlibBase):
 
 
 class BarChart2D(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -101,7 +103,11 @@ class BarChart2D(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a 2D BarChart using the Matplotlib API.
         """

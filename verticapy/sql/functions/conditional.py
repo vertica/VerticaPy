@@ -24,7 +24,7 @@ from verticapy.core.string_sql.base import StringSQL
 
 def case_when(*args) -> StringSQL:
     """
-    Returns the conditional statement of the input 
+    Returns the conditional statement of the input
     arguments.
 
     Parameters
@@ -32,10 +32,10 @@ def case_when(*args) -> StringSQL:
     args: SQLExpression
         Infinite number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN args[2 * i] 
+        even: CASE ... WHEN args[2 * i]
                        THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN args[2 * i] 
-                       THEN args[2 * i + 1] ... 
+        odd : CASE ... WHEN args[2 * i]
+                       THEN args[2 * i + 1] ...
                        ELSE args[n] END
 
     Returns
@@ -78,10 +78,10 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     args: SQLExpression
         Infinite number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN expr = args[2 * i] 
+        even: CASE ... WHEN expr = args[2 * i]
                        THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN expr = args[2 * i] 
-                       THEN args[2 * i + 1] ... 
+        odd : CASE ... WHEN expr = args[2 * i]
+                       THEN args[2 * i + 1] ...
                        ELSE args[n] END
 
     Returns

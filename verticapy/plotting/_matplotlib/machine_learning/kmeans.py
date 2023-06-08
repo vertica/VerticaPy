@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class VoronoiPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -67,7 +66,10 @@ class VoronoiPlot(MatplotlibBase):
     # Draw.
 
     def draw(
-        self, plot_crosses: bool = True, ax: Optional[Axes] = None, **style_kwargs,
+        self,
+        plot_crosses: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a KMeans Voronoi plot using the Matplotlib API.
@@ -108,7 +110,9 @@ class VoronoiPlot(MatplotlibBase):
         ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
         if len(self.data["X"]) > 0:
             ax.scatter(
-                self.data["X"][:, 0], self.data["X"][:, 1], **self.init_style_scatter,
+                self.data["X"][:, 0],
+                self.data["X"][:, 1],
+                **self.init_style_scatter,
             )
             if plot_crosses:
                 ax.scatter(

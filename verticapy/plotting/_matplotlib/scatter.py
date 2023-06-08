@@ -26,7 +26,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ScatterMatrix(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -69,13 +68,19 @@ class ScatterMatrix(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a scatter matrix using the Matplotlib API.
         """
         n = len(self.layout["columns"])
         fig, axes = plt.subplots(
-            nrows=n, ncols=n, figsize=self._get_matrix_fig_size(n=n),
+            nrows=n,
+            ncols=n,
+            figsize=self._get_matrix_fig_size(n=n),
         )
         for i in range(n):
             axes[-1][i].set_xlabel(self.layout["columns"][i], rotation=90)
@@ -101,7 +106,6 @@ class ScatterMatrix(MatplotlibBase):
 
 
 class ScatterPlot(MatplotlibBase):
-
     # Properties.
 
     @property

@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class BoxPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -46,7 +45,11 @@ class BoxPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a multi-box plot using the Matplotlib API.
         """
@@ -79,7 +82,8 @@ class BoxPlot(MatplotlibBase):
         set_tick(self.layout["labels"], rotation=90)
         for median in box["medians"]:
             median.set(
-                color="black", linewidth=1,
+                color="black",
+                linewidth=1,
             )
         for i, patch in enumerate(box["boxes"]):
             patch.set_facecolor(self.get_colors(idx=i))

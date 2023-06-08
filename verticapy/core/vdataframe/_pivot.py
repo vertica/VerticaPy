@@ -41,10 +41,10 @@ class vDFPivot(vDFJoinUnionSort):
     ) -> "vDataFrame":
         """
         Flatten the selected VMap. A new vDataFrame is returned.
-        
-        \u26A0 Warning : This  function  might  have  a  long  runtime 
-                         and can make your  vDataFrame less performant. 
-                         It makes many calls to the MAPLOOKUP function, 
+
+        \u26A0 Warning : This  function  might  have  a  long  runtime
+                         and can make your  vDataFrame less performant.
+                         It makes many calls to the MAPLOOKUP function,
                          which can be slow if your VMap is large.
 
         Parameters
@@ -52,7 +52,7 @@ class vDFPivot(vDFJoinUnionSort):
         vmap_col: SQLColumns, optional
             List of VMap columns to flatten.
         limit: int, optional
-            Maximum number of keys to consider for each VMap. Only the 
+            Maximum number of keys to consider for each VMap. Only the
             most occurent keys are used.
         exclude_columns: SQLColumns, optional
             List of VMap columns to exclude.
@@ -90,19 +90,19 @@ class vDFPivot(vDFJoinUnionSort):
     @save_verticapy_logs
     def merge_similar_names(self, skip_word: Union[str, list[str]]) -> "vDataFrame":
         """
-        Merges  columns with  similar names.  The function  generates 
-        a COALESCE  statement that  merges the columns into a  single 
-        column that excludes  the input words. Note that the order of 
-        the variables in the COALESCE statement is based on the order 
+        Merges  columns with  similar names.  The function  generates
+        a COALESCE  statement that  merges the columns into a  single
+        column that excludes  the input words. Note that the order of
+        the variables in the COALESCE statement is based on the order
         of the 'get_columns' method.
-        
+
         Parameters
-        ---------- 
+        ----------
         skip_word: str / list, optional
-            List  of words to  exclude  from  the provided column  names. 
-            For example,     if      two      columns      are     named 
-            'age.information.phone'  and  'age.phone' AND  skip_word  is 
-            set  to  ['.information'],  then  the  two  columns are 
+            List  of words to  exclude  from  the provided column  names.
+            For example,     if      two      columns      are     named
+            'age.information.phone'  and  'age.phone' AND  skip_word  is
+            set  to  ['.information'],  then  the  two  columns are
             merged  together  with  the   following  COALESCE  statement:
             COALESCE("age.phone", "age.information.phone") AS "age.phone"
 
@@ -126,7 +126,7 @@ class vDFPivot(vDFJoinUnionSort):
         val_name: str = "value",
     ) -> "vDataFrame":
         """
-        Returns the Narrow Table of the vDataFrame using the input 
+        Returns the Narrow Table of the vDataFrame using the input
         vDataColumns.
 
         Parameters
@@ -134,13 +134,13 @@ class vDFPivot(vDFJoinUnionSort):
         index: SQLColumns
             Index(es) used to identify the Row.
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             except the index(es) are used.
         col_name: str, optional
-            Alias of the vDataColumn  representing the different input 
+            Alias of the vDataColumn  representing the different input
             vDataColumns names as categories.
         val_name: str, optional
-            Alias of the vDataColumn  representing the different input 
+            Alias of the vDataColumn  representing the different input
             vDataColumns values.
 
         Returns
@@ -197,13 +197,13 @@ class vDFPivot(vDFJoinUnionSort):
         index: str
             vDataColumn used to group the elements.
         columns: str
-            The vDataColumn used to compute the different categories, 
+            The vDataColumn used to compute the different categories,
             which then act as the columns in the pivot table.
         values: str
             The vDataColumn whose values populate the new vDataFrame.
         aggr: str, optional
-            Aggregation to use on 'values'.  To use complex aggregations, 
-            you must use braces: {}. For example, to aggregate using the 
+            Aggregation to use on 'values'.  To use complex aggregations,
+            you must use braces: {}. For example, to aggregate using the
             aggregation: x -> MAX(x) - MIN(x), write "MAX({}) - MIN({})".
         prefix: str, optional
             The prefix for the pivot table's column names.

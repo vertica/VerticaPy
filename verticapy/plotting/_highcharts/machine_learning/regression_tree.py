@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.machine_learning.regression import Regressio
 
 
 class RegressionTreePlot(RegressionPlot):
-
     # Properties.
 
     @property

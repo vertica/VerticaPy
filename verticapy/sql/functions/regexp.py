@@ -21,10 +21,12 @@ from verticapy.core.string_sql.base import StringSQL
 
 
 def regexp_count(
-    expr: SQLExpression, pattern: SQLExpression, position: int = 1,
+    expr: SQLExpression,
+    pattern: SQLExpression,
+    position: int = 1,
 ) -> StringSQL:
     """
-    Returns the number of times a regular expression 
+    Returns the number of times a regular expression
     matches a string.
 
     Parameters
@@ -32,11 +34,11 @@ def regexp_count(
     expr: SQLExpression
         Expression.
     pattern: SQLExpression
-        The regular expression to search for within 
+        The regular expression to search for within
         the string.
     position: int, optional
-        The number of characters from the start  of 
-        the  string where the function should start 
+        The number of characters from the start  of
+        the  string where the function should start
         searching for matches.
 
     Returns
@@ -59,7 +61,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
     expr: SQLExpression
         Expression.
     pattern: SQLExpression
-        A  string containing the regular expression 
+        A  string containing the regular expression
         to match against the string.
 
     Returns
@@ -80,7 +82,7 @@ def regexp_instr(
     return_position: int = 0,
 ) -> StringSQL:
     """
-    Returns the  starting or  ending position  in a 
+    Returns the  starting or  ending position  in a
     string  where  a  regular  expression  matches.
 
     Parameters
@@ -88,17 +90,17 @@ def regexp_instr(
     expr: SQLExpression
         Expression.
     pattern: SQLExpression
-        The regular  expression to search for within 
+        The regular  expression to search for within
         the string.
     position: int, optional
-        The number  of characters from the start  of 
-        the string where the  function should  start 
+        The number  of characters from the start  of
+        the string where the  function should  start
         searching for matches.
     occurrence: int, optional
-        Controls which occurrence of a pattern match 
+        Controls which occurrence of a pattern match
         in the string to return.
     return_position: int, optional
-        Sets  the  position  within  the  string  to 
+        Sets  the  position  within  the  string  to
         return.
 
     Returns
@@ -115,7 +117,7 @@ def regexp_instr(
 
 def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
     """
-    Returns true if the string matches the regular 
+    Returns true if the string matches the regular
     expression.
 
     Parameters
@@ -123,7 +125,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
     expr: SQLExpression
         Expression.
     pattern: SQLExpression
-        A string containing the regular expression 
+        A string containing the regular expression
         to match against the string.
 
     Returns
@@ -144,7 +146,7 @@ def regexp_replace(
     occurrence: int = 1,
 ) -> StringSQL:
     """
-    Replace all occurrences of a substring that  match 
+    Replace all occurrences of a substring that  match
     a  regular   expression  with  another  substring.
 
     Parameters
@@ -152,16 +154,16 @@ def regexp_replace(
     expr: SQLExpression
         Expression.
     target: SQLExpression
-        The  regular  expression to search for  within 
+        The  regular  expression to search for  within
         the string.
     replacement: SQLExpression
         The string to replace matched substrings.
     position: int, optional
-        The number of characters from the start of the 
-        string   where  the   function  should   start 
+        The number of characters from the start of the
+        string   where  the   function  should   start
         searching for matches.
     occurrence: int, optional
-        Controls  which occurrence of a pattern  match 
+        Controls  which occurrence of a pattern  match
         in the string to return.
 
     Returns
@@ -181,7 +183,7 @@ def regexp_substr(
     expr: SQLExpression, pattern: SQLExpression, position: int = 1, occurrence: int = 1
 ) -> StringSQL:
     """
-    Returns the  substring  that matches a regular 
+    Returns the  substring  that matches a regular
     expression within a string.
 
     Parameters
@@ -189,14 +191,14 @@ def regexp_substr(
     expr: SQLExpression
         Expression.
     pattern: SQLExpression
-        The regular expression to find a substring 
+        The regular expression to find a substring
         to extract.
     position: int, optional
-        The number of characters from the start of 
-        the string where the function should start 
+        The number of characters from the start of
+        the string where the function should start
         searching for matches.
     occurrence: int, optional
-        Controls  which  occurrence  of a  pattern 
+        Controls  which  occurrence  of a  pattern
         match in the string to return.
 
     Returns

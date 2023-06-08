@@ -57,7 +57,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
 @save_verticapy_logs
 def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-    Test whether the kurtosis is different from the 
+    Test whether the kurtosis is different from the
     Normal distribution.
 
     Parameters
@@ -80,9 +80,9 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
-    gamma1 = 6 * (n ** 2 - 5 * n + 2) / ((n + 7) * (n + 9))
+    gamma1 = 6 * (n**2 - 5 * n + 2) / ((n + 7) * (n + 9))
     gamma1 = gamma1 * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
-    A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1 ** 2)))
+    A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1**2)))
     B = (1 - 2 / A) / (1 + (g2 - mu1) / math.sqrt(mu2) * math.sqrt(2 / (A - 4)))
     B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
@@ -93,7 +93,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 @save_verticapy_logs
 def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-    Test whether a sample differs from a normal 
+    Test whether a sample differs from a normal
     distribution.
 
     Parameters
@@ -114,7 +114,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         vdf = vDataFrame(input_relation)
     Z1 = skewtest(vdf, column)[0]
     Z2 = kurtosistest(vdf, column)[0]
-    Z = Z1 ** 2 + Z2 ** 2
+    Z = Z1**2 + Z2**2
     pvalue = chi2.sf(Z, 2)
     return Z, pvalue
 
@@ -122,7 +122,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 @save_verticapy_logs
 def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-    Test whether the skewness is different from the 
+    Test whether the skewness is different from the
     normal distribution.
 
     Parameters
@@ -144,7 +144,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
-    gamma2 = 36 * (n - 7) * (n ** 2 + 2 * n - 5)
+    gamma2 = 36 * (n - 7) * (n**2 + 2 * n - 5)
     gamma2 = gamma2 / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
     W2 = math.sqrt(2 * gamma2 + 4) - 1
     delta = 1 / math.sqrt(math.log(math.sqrt(W2)))

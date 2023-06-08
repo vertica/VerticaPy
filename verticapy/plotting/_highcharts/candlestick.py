@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.line import LinePlot
 
 
 class CandleStick(LinePlot):
-
     # Properties.
 
     @property
@@ -66,7 +65,11 @@ class CandleStick(LinePlot):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a candlestick plot using the HC API.
         """

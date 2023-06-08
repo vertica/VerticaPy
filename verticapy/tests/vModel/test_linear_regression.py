@@ -35,15 +35,21 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
-    model_class = LinearRegression("linreg_model_test",)
+    model_class = LinearRegression(
+        "linreg_model_test",
+    )
     model_class.drop()
     model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality",
+        "public.winequality",
+        ["citric_acid", "residual_sugar", "alcohol"],
+        "quality",
     )
     yield model_class
     model_class.drop()
@@ -54,10 +60,14 @@ class TestLinearRegression:
         assert model.__repr__() == "<LinearRegression>"
 
     def test_contour(self, winequality_vd):
-        model_test = LinearRegression("model_contour",)
+        model_test = LinearRegression(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            winequality_vd, ["citric_acid", "residual_sugar"], "quality",
+            winequality_vd,
+            ["citric_acid", "residual_sugar"],
+            "quality",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 32
@@ -71,7 +81,9 @@ class TestLinearRegression:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS linreg_model_test_drop")
-        model_test = LinearRegression("linreg_model_test_drop",)
+        model_test = LinearRegression(
+            "linreg_model_test_drop",
+        )
         model_test.fit("public.winequality", ["alcohol"], "quality")
 
         current_cursor().execute(
@@ -168,7 +180,9 @@ class TestLinearRegression:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LinearRegression("model_test_plot",)
+        model_test = LinearRegression(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -305,7 +319,9 @@ class TestLinearRegression:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS linreg_from_vDF")
-        model_test = LinearRegression("linreg_from_vDF",)
+        model_test = LinearRegression(
+            "linreg_from_vDF",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
 
         current_cursor().execute(

@@ -44,7 +44,6 @@ from verticapy.sql.drop import drop
 
 
 class vDFCorr(vDFEncode):
-
     # System Methods.
 
     def _aggregate_matrix(
@@ -89,7 +88,11 @@ class vDFCorr(vDFEncode):
                 return pre_comp_val
             cast_0 = "::int" if (self[columns[0]].isbool()) else ""
             cast_1 = "::int" if (self[columns[1]].isbool()) else ""
-            if method in ("pearson", "spearman", "spearmand",):
+            if method in (
+                "pearson",
+                "spearman",
+                "spearmand",
+            ):
                 if columns[1] == columns[0]:
                     return 1
                 if method == "pearson":
@@ -301,7 +304,12 @@ class vDFCorr(vDFEncode):
             try:
                 vertica_version(condition=[9, 2, 1])
                 assert (nb_precomputed <= n * n / 3) and (
-                    method in ("pearson", "spearman", "spearmand",)
+                    method
+                    in (
+                        "pearson",
+                        "spearman",
+                        "spearmand",
+                    )
                 )
                 fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                 if method == "pearson":
@@ -483,7 +491,9 @@ class vDFCorr(vDFEncode):
                     else None
                 )
                 vpy_plt, kwargs = self.get_plotting_lib(
-                    class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
+                    class_name="HeatMap",
+                    chart=chart,
+                    style_kwargs=style_kwargs,
                 )
                 data = {"X": matrix}
                 layout = {
@@ -519,7 +529,11 @@ class vDFCorr(vDFEncode):
                     "No numerical column found in the vDataFrame."
                 )
             return self._aggregate_matrix(
-                method=method, columns=cols, mround=mround, show=show, **style_kwargs,
+                method=method,
+                columns=cols,
+                mround=mround,
+                show=show,
+                **style_kwargs,
             )
 
     def _aggregate_vector(
@@ -697,7 +711,9 @@ class vDFCorr(vDFEncode):
                 else None
             )
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
+                class_name="HeatMap",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
             layout = {
@@ -738,50 +754,50 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the Correlation Matrix of the vDataFrame. 
+        Computes the Correlation Matrix of the vDataFrame.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all 
+            List of the vDataColumns names. If empty, all
             numerical vDataColumns are used.
         method: str, optional
             Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient 
+                pearson   : Pearson's  correlation coefficient
                             (linear).
-                spearman  : Spearman's correlation coefficient 
+                spearman  : Spearman's correlation coefficient
                             (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient 
-                            using  the   DENSE  RANK  function 
+                spearmanD : Spearman's correlation coefficient
+                            using  the   DENSE  RANK  function
                             instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method  
+                kendall   : Kendall's  correlation coefficient
+                            (similar trends).  The method
                             computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS 
-                                             JOIN  during  computation 
-                                             and      is     therefore 
-                                             computationally expensive 
-                                             at  O(n * n),  where n is 
-                                             the  total  count of  the 
+                            \u26A0 Warning : This method  uses a CROSS
+                                             JOIN  during  computation
+                                             and      is     therefore
+                                             computationally expensive
+                                             at  O(n * n),  where n is
+                                             the  total  count of  the
                                              vDataFrame.
-                cramer    : Cramer's V 
+                cramer    : Cramer's V
                             (correlation between categories).
-                biserial  : Biserial Point 
-                            (correlation between binaries and a 
+                biserial  : Biserial Point
+                            (correlation between binaries and a
                             numericals).
         mround: int, optional
-            Rounds  the coefficient using  the input number of 
-            digits. This is only used to display the correlation 
+            Rounds  the coefficient using  the input number of
+            digits. This is only used to display the correlation
             matrix.
         focus: str, optional
             Focus  the  computation  on  one  vDataColumn.
         show: bool, optional
-            If  set  to  True,  the  Plotting  object  is 
+            If  set  to  True,  the  Plotting  object  is
             returned.
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any  optional  parameter  to pass to the  plotting 
+            Any  optional  parameter  to pass to the  plotting
             functions.
 
         Returns
@@ -825,8 +841,8 @@ class vDFCorr(vDFEncode):
         ] = "pearson",
     ) -> tuple[float, float]:
         """
-        Computes  the Correlation Coefficient of the two input 
-        vDataColumns and its pvalue. 
+        Computes  the Correlation Coefficient of the two input
+        vDataColumns and its pvalue.
 
         Parameters
         ----------
@@ -836,27 +852,27 @@ class vDFCorr(vDFEncode):
             Input vDataColumn.
         method: str, optional
             Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient 
+                pearson   : Pearson's  correlation coefficient
                             (linear).
-                spearman  : Spearman's correlation coefficient 
+                spearman  : Spearman's correlation coefficient
                             (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient 
-                            using  the   DENSE  RANK  function 
+                spearmanD : Spearman's correlation coefficient
+                            using  the   DENSE  RANK  function
                             instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method 
+                kendall   : Kendall's  correlation coefficient
+                            (similar trends).  The method
                             computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS 
-                                             JOIN  during  computation 
-                                             and      is     therefore 
-                                             computationally expensive 
-                                             at  O(n * n),  where n is 
-                                             the  total  count of  the 
+                            \u26A0 Warning : This method  uses a CROSS
+                                             JOIN  during  computation
+                                             and      is     therefore
+                                             computationally expensive
+                                             at  O(n * n),  where n is
+                                             the  total  count of  the
                                              vDataFrame.
-                cramer    : Cramer's V 
+                cramer    : Cramer's V
                             (correlation between categories).
-                biserial  : Biserial Point 
-                            (correlation between binaries and a 
+                biserial  : Biserial Point
+                            (correlation between binaries and a
                             numericals).
 
         Returns
@@ -1026,22 +1042,22 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the covariance matrix of the vDataFrame. 
+        Computes the covariance matrix of the vDataFrame.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all numerical 
+            List of the vDataColumns names. If empty, all numerical
             vDataColumns are used.
         focus: str, optional
             Focus the computation on one vDataColumn.
         show: bool, optional
-            If   set  to   True,  the   Plotting   object  is 
+            If   set  to   True,  the   Plotting   object  is
             returned.
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any   optional  parameter  to  pass  to  the   plotting 
+            Any   optional  parameter  to  pass  to  the   plotting
             functions.
 
         Returns
@@ -1095,27 +1111,27 @@ class vDFCorr(vDFEncode):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the  vDataColumns names. If empty, all numerical 
+            List  of the  vDataColumns names. If empty, all numerical
             vDataColumns are used.
         method: str, optional
             Method to use to compute the regression matrix.
-                avgx  : Average  of  the  independent  expression  in 
+                avgx  : Average  of  the  independent  expression  in
                         an expression pair.
-                avgy  : Average  of  the dependent  expression in  an 
+                avgy  : Average  of  the dependent  expression in  an
                         expression pair.
                 count : Count  of  all  rows  in  an expression  pair.
-                alpha : Intercept  of the regression line  determined 
+                alpha : Intercept  of the regression line  determined
                         by a set of expression pairs.
-                r2    : Square  of  the correlation  coefficient of a 
+                r2    : Square  of  the correlation  coefficient of a
                         set of expression pairs.
-                beta  : Slope of  the regression  line, determined by 
+                beta  : Slope of  the regression  line, determined by
                         a set of expression pairs.
-                sxx   : Sum of squares of  the independent expression 
+                sxx   : Sum of squares of  the independent expression
                         in an expression pair.
-                sxy   : Sum of products of the independent expression 
-                        multiplied by the  dependent expression in an 
+                sxy   : Sum of products of the independent expression
+                        multiplied by the  dependent expression in an
                         expression pair.
-                syy   : Returns  the sum of squares of the  dependent 
+                syy   : Returns  the sum of squares of the  dependent
                         expression in an expression pair.
         show: bool, optional
             If set to True, the Plotting object is returned.
@@ -1217,7 +1233,9 @@ class vDFCorr(vDFEncode):
                 matrix[i][j] = current
         if show:
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="HeatMap", chart=chart, style_kwargs=style_kwargs,
+                class_name="HeatMap",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             data = {"X": matrix}
             layout = {
@@ -1260,77 +1278,77 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the correlations of the input vDataColumn 
-        and its lags. 
+        Computes the correlations of the input vDataColumn
+        and its lags.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn used to compute the Auto 
+            Input vDataColumn used to compute the Auto
             Correlation Plot.
         ts: str
-            TS (Time Series)  vDataColumn used to order 
-            the  data.  It  can  be  of type  date  or  a 
+            TS (Time Series)  vDataColumn used to order
+            the  data.  It  can  be  of type  date  or  a
             numerical vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         p: int | list, optional
-            Int  equal  to  the  maximum  number  of lag  to 
-            consider  during the  computation or  List of the 
+            Int  equal  to  the  maximum  number  of lag  to
+            consider  during the  computation or  List of the
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
             Unit used to compute the lags.
                 rows : Natural lags
-                else : Any time unit.  For example,  you  can 
-                       write 'hour' to compute the hours lags 
+                else : Any time unit.  For example,  you  can
+                       write 'hour' to compute the hours lags
                        or 'day' to compute the days lags.
         method: str, optional
             Method used to compute the correlation.
-                pearson   : Pearson's  correlation coefficient 
+                pearson   : Pearson's  correlation coefficient
                             (linear).
-                spearman  : Spearman's correlation coefficient 
+                spearman  : Spearman's correlation coefficient
                             (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient 
-                            using  the   DENSE  RANK  function 
+                spearmanD : Spearman's correlation coefficient
+                            using  the   DENSE  RANK  function
                             instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method  
+                kendall   : Kendall's  correlation coefficient
+                            (similar trends).  The method
                             computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS 
-                                             JOIN  during  computation 
-                                             and      is     therefore 
-                                             computationally expensive 
-                                             at  O(n * n),  where n is 
-                                             the  total  count of  the 
+                            \u26A0 Warning : This method  uses a CROSS
+                                             JOIN  during  computation
+                                             and      is     therefore
+                                             computationally expensive
+                                             at  O(n * n),  where n is
+                                             the  total  count of  the
                                              vDataFrame.
-                cramer    : Cramer's V 
+                cramer    : Cramer's V
                             (correlation between categories).
-                biserial  : Biserial Point 
-                            (correlation between binaries and a 
+                biserial  : Biserial Point
+                            (correlation between binaries and a
                             numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
         alpha: float, optional
-            Significance Level. Probability to accept H0. Only 
+            Significance Level. Probability to accept H0. Only
             used   to  compute   the  confidence  band   width.
         show: bool, optional
-                If  set  to True,  the Plotting object is 
+                If  set  to True,  the Plotting object is
                 returned.
         kind: str, optional
             ACF Type.
-                bar     : Classical Autocorrelation Plot using 
+                bar     : Classical Autocorrelation Plot using
                           bars.
                 heatmap : Draws the ACF heatmap.
                 line    : Draws the ACF using a Line Plot.
         mround: int, optional
-            Round  the  coefficient using the input number  of 
-            digits. It is used only to display the ACF  Matrix 
+            Round  the  coefficient using the input number  of
+            digits. It is used only to display the ACF  Matrix
             (kind must be set to 'heatmap').
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any optional parameter  to  pass  to  the plotting 
+            Any optional parameter  to  pass  to  the plotting
             functions.
 
         Returns
@@ -1394,7 +1412,9 @@ class vDFCorr(vDFEncode):
                 result.values["confidence"] = acf_band
             if show:
                 vpy_plt, kwargs = self.get_plotting_lib(
-                    class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
+                    class_name="ACFPlot",
+                    chart=chart,
+                    style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
@@ -1426,72 +1446,72 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ):
         """
-        Computes the partial autocorrelations of the input 
+        Computes the partial autocorrelations of the input
         vDataColumn.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn  used to compute the Auto 
+            Input vDataColumn  used to compute the Auto
             Correlation Plot.
         ts: str
-            TS (Time Series)  vDataColumn used to order 
-            the  data.  It  can  be  of type  date  or  a 
+            TS (Time Series)  vDataColumn used to order
+            the  data.  It  can  be  of type  date  or  a
             numerical vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         p: int | list, optional
-            Int  equal  to  the  maximum  number  of lag  to 
-            consider  during the  computation or  List of the 
+            Int  equal  to  the  maximum  number  of lag  to
+            consider  during the  computation or  List of the
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
             Unit to use to compute the lags.
                 rows : Natural lags.
-                else : Any time unit.  For  example, you  can 
-                       write 'hour' to compute the hours lags 
+                else : Any time unit.  For  example, you  can
+                       write 'hour' to compute the hours lags
                        or 'day' to compute the days lags.
         method: str, optional
             Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient 
+                pearson   : Pearson's  correlation coefficient
                             (linear).
-                spearman  : Spearman's correlation coefficient 
+                spearman  : Spearman's correlation coefficient
                             (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient 
-                            using  the   DENSE  RANK  function 
+                spearmanD : Spearman's correlation coefficient
+                            using  the   DENSE  RANK  function
                             instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient 
-                            (similar trends).  The method  
+                kendall   : Kendall's  correlation coefficient
+                            (similar trends).  The method
                             computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS 
-                                             JOIN  during  computation 
-                                             and      is     therefore 
-                                             computationally expensive 
-                                             at  O(n * n),  where n is 
-                                             the  total  count of  the 
+                            \u26A0 Warning : This method  uses a CROSS
+                                             JOIN  during  computation
+                                             and      is     therefore
+                                             computationally expensive
+                                             at  O(n * n),  where n is
+                                             the  total  count of  the
                                              vDataFrame.
-                cramer    : Cramer's V 
+                cramer    : Cramer's V
                             (correlation between categories).
-                biserial  : Biserial Point 
-                            (correlation between binaries and a 
+                biserial  : Biserial Point
+                            (correlation between binaries and a
                             numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
         alpha: float, optional
-            Significance Level. Probability to accept H0. Only 
+            Significance Level. Probability to accept H0. Only
             used   to  compute   the  confidence  band   width.
         show: bool, optional
-                If  set  to True,  the Plotting object is 
+                If  set  to True,  the Plotting object is
                 returned.
         kind: str, optional
             ACF Type.
-                bar  : Classical  Partial Autocorrelation Plot 
+                bar  : Classical  Partial Autocorrelation Plot
                        using bars.
                 line : Draws  the   PACF  using  a  Line  Plot.
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any optional parameter  to  pass  to  the plotting 
+            Any optional parameter  to  pass  to  the plotting
             functions.
 
         Returns
@@ -1557,7 +1577,8 @@ class vDFCorr(vDFEncode):
                 model.predict(vdf, name="prediction_p")
                 vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
                 vdf.eval(
-                    expr=f"lag_{p}_{gen_name([column])} - prediction_p", name="eps_p",
+                    expr=f"lag_{p}_{gen_name([column])} - prediction_p",
+                    name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"], method=method)
             finally:
@@ -1587,7 +1608,9 @@ class vDFCorr(vDFEncode):
                 result.values["confidence"] = pacf_band
             if show:
                 vpy_plt, kwargs = self.get_plotting_lib(
-                    class_name="ACFPlot", chart=chart, style_kwargs=style_kwargs,
+                    class_name="ACFPlot",
+                    chart=chart,
+                    style_kwargs=style_kwargs,
                 )
                 data = {
                     "x": np.array(result.values["index"]),
@@ -1613,8 +1636,8 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the Information Value (IV) Table. This shows 
-        the predictive power  of an independent variable in 
+        Computes the Information Value (IV) Table. This shows
+        the predictive power  of an independent variable in
         relation to the dependent variable.
 
         Parameters
@@ -1622,18 +1645,18 @@ class vDFCorr(vDFEncode):
         y: str
             Response vDataColumn.
         columns: SQLColumns, optional
-            List  of  the  vDataColumns names. If  empty,  all 
+            List  of  the  vDataColumns names. If  empty,  all
             vDataColumns  except  the response  are used.
         nbins: int, optional
-            Maximum number of bins used for the discretization 
+            Maximum number of bins used for the discretization
             (must be > 1).
         show: bool, optional
-            If  set  to True,  the  Plotting  object  is 
+            If  set  to True,  the  Plotting  object  is
             returned.
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any  optional  parameter to  pass to the  plotting 
+            Any  optional  parameter to  pass to the  plotting
             functions.
 
         Returns
@@ -1654,24 +1677,31 @@ class vDFCorr(vDFEncode):
             }
             layout = {"columns": copy.deepcopy(columns), "x_label": "IV"}
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
-        return TableSample({"index": copy.deepcopy(columns), "iv": importance,}).sort(
-            column="iv", desc=True,
+        return TableSample(
+            {
+                "index": copy.deepcopy(columns),
+                "iv": importance,
+            }
+        ).sort(
+            column="iv",
+            desc=True,
         )
 
 
 class vDCCorr(vDCEncode):
-
     # Weight of Evidence.
 
     @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10) -> TableSample:
         """
-        Computes the Information Value (IV) / Weight Of 
-        Evidence  (WOE) Table. This shows the predictive 
-        power of an independent variable in relation to 
+        Computes the Information Value (IV) / Weight Of
+        Evidence  (WOE) Table. This shows the predictive
+        power of an independent variable in relation to
         the dependent variable.
 
         Parameters
@@ -1679,7 +1709,7 @@ class vDCCorr(vDCEncode):
         y: str
             Response vDataColumn.
         nbins: int, optional
-            Maximum  number  of   nbins  used  for  the 
+            Maximum  number  of   nbins  used  for  the
             discretization (must be > 1)
 
         Returns

@@ -33,29 +33,29 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     ----------
     features_ranges: dict,
         Dictionary including the features types and ranges.
-            For str      : The  subdictionary must  include 
-                           two keys: 'type' must be set  to 
-                           'str'  and 'value' must  include 
+            For str      : The  subdictionary must  include
+                           two keys: 'type' must be set  to
+                           'str'  and 'value' must  include
                            the feature categories.
-            For int      : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'int' and 'range'  must  include 
-                           two integers  that represent the 
+            For int      : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'int' and 'range'  must  include
+                           two integers  that represent the
                            lower and the upper bounds.
-            For float    : The  subdictionary must  include 
-                           two keys:  'type' must be set to 
-                           'float' and 'range' must include 
-                           two  floats that  represent  the 
+            For float    : The  subdictionary must  include
+                           two keys:  'type' must be set to
+                           'float' and 'range' must include
+                           two  floats that  represent  the
                            lower and the upper bounds.
-            For date     : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'date' and 'range'  must include 
-                           the start date and the number of 
+            For date     : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'date' and 'range'  must include
+                           the start date and the number of
                            days after.
-            For datetime : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'date' and 'range'  must include 
-                           the start date and the number of 
+            For datetime : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'date' and 'range'  must include
+                           the start date and the number of
                            days after.
     nrows: int, optional
         The maximum number of rows in the dataset.
@@ -68,9 +68,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     sql = []
 
     for param in features_ranges:
-
         if features_ranges[param]["type"] == str:
-
             val = features_ranges[param]["values"]
             if isinstance(val, str):
                 sql += [f"'{val}' AS \"{param}\""]
@@ -80,7 +78,6 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
                 sql += [f'(ARRAY[{val}])[RANDOMINT({n})] AS "{param}"']
 
         elif features_ranges[param]["type"] == float:
-
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
             sql += [
@@ -89,7 +86,6 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
             ]
 
         elif features_ranges[param]["type"] == int:
-
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
             sql += [
@@ -98,7 +94,6 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
             ]
 
         elif features_ranges[param]["type"] == datetime.date:
-
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             sql += [
@@ -107,7 +102,6 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
             ]
 
         elif features_ranges[param]["type"] == datetime.datetime:
-
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             sql += [
@@ -116,11 +110,9 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
             ]
 
         elif features_ranges[param]["type"] == bool:
-
             sql += [f'RANDOMINT(2)::BOOL AS "{param}"']
 
         else:
-
             ptype = features_ranges[param]["type"]
             raise ValueError(f"Parameter {param}: Type {ptype} is not supported.")
 
@@ -148,33 +140,33 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     ----------
     features_ranges: dict,
         Dictionary including the features types and ranges.
-            For str      : The  subdictionary must  include 
-                           two keys: 'type' must be set  to 
-                           'str'  and 'value' must  include 
+            For str      : The  subdictionary must  include
+                           two keys: 'type' must be set  to
+                           'str'  and 'value' must  include
                            the feature categories.
-            For int      : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'int' and 'range'  must  include 
-                           two integers  that represent the 
+            For int      : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'int' and 'range'  must  include
+                           two integers  that represent the
                            lower and the upper bounds.
-            For float    : The  subdictionary must  include 
-                           two keys:  'type' must be set to 
-                           'float' and 'range' must include 
-                           two  floats that  represent  the 
+            For float    : The  subdictionary must  include
+                           two keys:  'type' must be set to
+                           'float' and 'range' must include
+                           two  floats that  represent  the
                            lower and the upper bounds.
-            For date     : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'date' and 'range'  must include 
-                           the start date and the number of 
+            For date     : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'date' and 'range'  must include
+                           the start date and the number of
                            days after.
-            For datetime : The  subdictionary must  include 
-                           two keys: 'type'  must be set to 
-                           'date' and 'range'  must include 
-                           the start date and the number of 
+            For datetime : The  subdictionary must  include
+                           two keys: 'type'  must be set to
+                           'date' and 'range'  must include
+                           the start date and the number of
                            days after.
-        Numerical and date-like features must have an extra 
-        key in the  dictionary named 'nbins', which 
-        corresponds to the number of bins used to compute 
+        Numerical and date-like features must have an extra
+        key in the  dictionary named 'nbins', which
+        corresponds to the number of bins used to compute
         the different categories.
 
     Returns
@@ -185,7 +177,6 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     sql = []
 
     for idx, param in enumerate(features_ranges):
-
         nbins = 100
         if "nbins" in features_ranges[param]:
             nbins = features_ranges[param]["nbins"]

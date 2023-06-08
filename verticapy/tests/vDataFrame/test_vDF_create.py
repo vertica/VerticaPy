@@ -51,7 +51,10 @@ class TestvDFCreate:
         assert tvdf["pclass"].count() == 1234
 
     def test_creating_vDF_using_input_relation_vDataColumns(self, titanic_vd):
-        tvdf = vDataFrame(input_relation="public.titanic", usecols=["age", "survived"],)
+        tvdf = vDataFrame(
+            input_relation="public.titanic",
+            usecols=["age", "survived"],
+        )
 
         assert tvdf["survived"].count() == 1234
 
@@ -82,7 +85,9 @@ class TestvDFCreate:
         tb = TableSample(
             {"id": [1, 2], "fname": ["Badr", "Arash"], "lname": ["Ouali", "Fard"]}
         )
-        tvdf = vDataFrame(input_relation=tb,)
+        tvdf = vDataFrame(
+            input_relation=tb,
+        )
 
         assert tvdf.shape() == (2, 3)
         assert tvdf["id"].avg() == 1.5
@@ -94,7 +99,9 @@ class TestvDFCreate:
 
     def test_creating_vDF_using_dict(self):
         tb = {"id": [1, 2], "fname": ["Badr", "Arash"], "lname": ["Ouali", "Fard"]}
-        tvdf = vDataFrame(input_relation=tb,)
+        tvdf = vDataFrame(
+            input_relation=tb,
+        )
 
         assert tvdf.shape() == (2, 3)
         assert tvdf["id"].avg() == 1.5

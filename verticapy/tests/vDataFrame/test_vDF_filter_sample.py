@@ -101,7 +101,9 @@ class TestvDFFilterSample:
 
     def test_vDF_between_time(self, smart_meters_vd):
         result = smart_meters_vd.copy().between_time(
-            ts="time", start_time="12:00", end_time="14:00",
+            ts="time",
+            start_time="12:00",
+            end_time="14:00",
         )
         assert result.shape() == (1151, 3)
 
@@ -119,7 +121,10 @@ class TestvDFFilterSample:
         # testing vDataFrame.isin
         assert amazon_vd.isin(
             {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
-        ).shape() == (90, 3,)
+        ).shape() == (
+            90,
+            3,
+        )
 
         # testing vDataFrame[].isin
         assert amazon_vd["state"].isin(
@@ -150,7 +155,8 @@ class TestvDFFilterSample:
 
         # testing without threshold
         result2 = titanic_vd.copy()["age"].drop_outliers(
-            use_threshold=False, alpha=0.05,
+            use_threshold=False,
+            alpha=0.05,
         )
         assert result2.shape() == (900, 14)
 

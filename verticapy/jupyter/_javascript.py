@@ -34,7 +34,7 @@ Utils Functions.
 
 def find_package_file(*path) -> str:
     """
-    Returns the full path to a file from the itables 
+    Returns the full path to a file from the itables
     package.
     """
     current_path = os.path.dirname(__file__)
@@ -85,7 +85,9 @@ Main Functions.
 
 
 def beautiful_header(
-    header: str, dtype: Optional[dict] = None, percent: Optional[dict] = None,
+    header: str,
+    dtype: Optional[dict] = None,
+    percent: Optional[dict] = None,
 ) -> str:
     """
     Transforms the header columns according to the type.
@@ -150,13 +152,20 @@ def beautiful_header(
 
 
 def _table_header(
-    head: list, table_id: str, style: str, classes: str, dtype: Optional[dict] = None,
+    head: list,
+    table_id: str,
+    style: str,
+    classes: str,
+    dtype: Optional[dict] = None,
 ) -> str:
     """
     Returns the HTML table header. Rows are not included.
     """
     dtype = format_type(dtype, dtype=dict)
-    head = beautiful_header(head, dtype=dtype,)
+    head = beautiful_header(
+        head,
+        dtype=dtype,
+    )
     thead = "<thead>"
     thead += "<tr>"
     thead_style = "border: 1px solid #AAAAAA;"
@@ -247,7 +256,13 @@ def datatables_repr(
     if isinstance(classes, list):
         classes = " ".join(classes)
     tableId = str(uuid.uuid4())
-    table_header = _table_header(columns, tableId, style, classes, dtype=dtype,)
+    table_header = _table_header(
+        columns,
+        tableId,
+        style,
+        classes,
+        dtype=dtype,
+    )
     output = replace_value(
         output,
         '<table id="table_id"><thead><tr><th>A</th></tr></thead></table>',

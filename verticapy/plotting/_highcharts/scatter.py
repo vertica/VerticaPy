@@ -24,7 +24,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ScatterPlot(HighchartsBase):
-
     # Properties.
 
     @property

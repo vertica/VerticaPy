@@ -34,12 +34,16 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    model_class = KNeighborsRegressor("knn_model_test",)
+    model_class = KNeighborsRegressor(
+        "knn_model_test",
+    )
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
@@ -59,10 +63,14 @@ class TestKNeighborsRegressor:
         assert m_att == model.parameters["p"]
 
     def test_contour(self, titanic_vd):
-        model_test = KNeighborsRegressor("model_contour",)
+        model_test = KNeighborsRegressor(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -80,7 +88,10 @@ class TestKNeighborsRegressor:
     def test_get_predicts(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
         titanic_copy = model.predict(
-            titanic_copy, X=["age", "fare"], name="predicted_quality", inplace=False,
+            titanic_copy,
+            X=["age", "fare"],
+            name="predicted_quality",
+            inplace=False,
         )
 
         assert titanic_copy["predicted_quality"].mean() == pytest.approx(
@@ -169,7 +180,9 @@ class TestKNeighborsRegressor:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, titanic_vd):
-        model_test = KNeighborsRegressor("knn_from_vDF",)
+        model_test = KNeighborsRegressor(
+            "knn_from_vDF",
+        )
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
         assert model_test.score() == pytest.approx(-0.122616967579114)

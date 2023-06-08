@@ -43,8 +43,8 @@ def read_pandas(
     insert: bool = False,
 ) -> vDataFrame:
     """
-    Ingests a pandas DataFrame into the Vertica 
-    database  by  creating a CSV file and  then 
+    Ingests a pandas DataFrame into the Vertica
+    database  by  creating a CSV file and  then
     using flex tables to load the data.
 
     Parameters
@@ -52,42 +52,42 @@ def read_pandas(
     df: pandas.DataFrame
         The pandas.DataFrame to ingest.
     name: str, optional
-        Name  of  the new  relation or the  relation 
-        in which to insert the data. If unspecified, 
-        a  temporary  local  table is created.  This 
-        temporary table is dropped at the end of the 
+        Name  of  the new  relation or the  relation
+        in which to insert the data. If unspecified,
+        a  temporary  local  table is created.  This
+        temporary table is dropped at the end of the
         local session.
     schema: str, optional
-        Schema  of  the new  relation.  If  empty, a 
-        temporary  schema  is  used.  To modify  the 
-        temporary   schema,  use  the   'set_option' 
+        Schema  of  the new  relation.  If  empty, a
+        temporary  schema  is  used.  To modify  the
+        temporary   schema,  use  the   'set_option'
         function.
     dtype: dict, optional
-        Dictionary   of  input  types.  Providing  a 
-        dictionary can increase  ingestion speed and 
-        precision. If specified, rather than parsing 
-        the intermediate CSV and  guessing the input 
-        types,  VerticaPy uses  the specified  input 
+        Dictionary   of  input  types.  Providing  a
+        dictionary can increase  ingestion speed and
+        precision. If specified, rather than parsing
+        the intermediate CSV and  guessing the input
+        types,  VerticaPy uses  the specified  input
         types instead.
     parse_nrows: int, optional
-        If    this parameter  is  greater  than  zero, 
-        VerticaPy  creates  and  ingests  a  temporary 
-        file containing  'parse_nrows'  number of rows 
-        to  determine  the  input  data types   before 
-        ingesting the intermediate CSV file containing 
-        the rest of the data. This method of data type 
-        identification  is less accurate, but is  much 
+        If    this parameter  is  greater  than  zero,
+        VerticaPy  creates  and  ingests  a  temporary
+        file containing  'parse_nrows'  number of rows
+        to  determine  the  input  data types   before
+        ingesting the intermediate CSV file containing
+        the rest of the data. This method of data type
+        identification  is less accurate, but is  much
         faster for large datasets.
     temp_path: str, optional
-        The path to which to write the intermediate CSV 
-        file.  This is  useful in cases where the  user 
-        does not have write  permissions on the current 
+        The path to which to write the intermediate CSV
+        file.  This is  useful in cases where the  user
+        does not have write  permissions on the current
         directory.
     insert: bool, optional
-        If set to True, the data are ingested into the 
-        input relation. The column names of your table 
+        If set to True, the data are ingested into the
+        input relation. The column names of your table
         and the pandas.DataFrame must match.
-        
+
     Returns
     -------
     vDataFrame
@@ -134,7 +134,11 @@ def read_pandas(
         else:
             tmp_df = df
         tmp_df.to_csv(
-            path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027",
+            path,
+            index=False,
+            quoting=csv.QUOTE_NONE,
+            quotechar="",
+            escapechar="\027",
         )
 
         if len(str_cols) > 0 or len(null_columns) > 0:

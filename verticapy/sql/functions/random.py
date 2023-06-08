@@ -48,7 +48,7 @@ def randomint(n: int) -> StringSQL:
 
 def seeded_random(random_state: int) -> StringSQL:
     """
-    Returns a Seeded Random Number using the input 
+    Returns a Seeded Random Number using the input
     random state.
 
     Parameters

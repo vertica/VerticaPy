@@ -52,7 +52,12 @@ class TestStats:
     def test_adfuller(self, amazon_vd):
         # testing without trend
         result = st.adfuller(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=False,
+            amazon_vd,
+            column="number",
+            ts="date",
+            by=["state"],
+            p=40,
+            with_trend=False,
         )
         assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
         assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
@@ -60,7 +65,12 @@ class TestStats:
 
         # testing with trend
         result = st.adfuller(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=True,
+            amazon_vd,
+            column="number",
+            ts="date",
+            by=["state"],
+            p=40,
+            with_trend=True,
         )
         assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
@@ -74,7 +84,12 @@ class TestStats:
         drop("lin_cochrane_orcutt_model_test", method="model")
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")
-        result = st.cochrane_orcutt(model, airline_copy, ts="date", prais_winsten=True,)
+        result = st.cochrane_orcutt(
+            model,
+            airline_copy,
+            ts="date",
+            prais_winsten=True,
+        )
         assert result.intercept_ == pytest.approx(25.8582027191416, 1e-2)
         assert result.coef_[0] == pytest.approx(0.00123563974547625, 1e-2)
         model.drop()
@@ -132,7 +147,10 @@ class TestStats:
         result3 = st.het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="two-sided"
         )
-        assert result3 == (pytest.approx(30.17263128858259), pytest.approx(0.0),)
+        assert result3 == (
+            pytest.approx(30.17263128858259),
+            pytest.approx(0.0),
+        )
 
     def test_het_white(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
@@ -163,7 +181,12 @@ class TestStats:
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
         result = st.ljungbox(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False,
+            amazon_vd,
+            column="number",
+            ts="date",
+            by=["state"],
+            p=40,
+            box_pierce=False,
         )
         assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
@@ -173,7 +196,12 @@ class TestStats:
 
         # testing Box-Pierce
         result = st.ljungbox(
-            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True,
+            amazon_vd,
+            column="number",
+            ts="date",
+            by=["state"],
+            p=40,
+            box_pierce=True,
         )
         assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
@@ -193,7 +221,12 @@ class TestStats:
 
     def test_seasonal_decompose(self, airline_vd):
         result = st.seasonal_decompose(
-            airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1,
+            airline_vd,
+            "Passengers",
+            "date",
+            period=12,
+            mult=True,
+            polynomial_order=-1,
         )
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)

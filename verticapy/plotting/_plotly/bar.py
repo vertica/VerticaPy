@@ -23,7 +23,6 @@ from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class BarChart(PlotlyBase):
-
     # Properties.
 
     @property
@@ -51,7 +50,11 @@ class BarChart(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a bar chart using the Plotly API.
         """
@@ -68,5 +71,4 @@ class BarChart(PlotlyBase):
 
 
 class BarChart2D(PlotlyBase):
-
     ...

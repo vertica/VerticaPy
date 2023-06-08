@@ -48,34 +48,34 @@ if TYPE_CHECKING:
 class TableSample:
     """
     TableSample sits at the transition from 'Big Data'
-    to 'Small Data'. 
-    This object allows you to  conveniently  display your 
-    results without dependencies on any other modules. 
-    It stores the aggregated  result in-memory and can 
-    then be transformed   into  a  pandas.DataFrame  or 
+    to 'Small Data'.
+    This object allows you to  conveniently  display your
+    results without dependencies on any other modules.
+    It stores the aggregated  result in-memory and can
+    then be transformed   into  a  pandas.DataFrame  or
     vDataFrame.
 
     Parameters
     ----------
     values: dict, optional
-    	Dictionary of columns (keys) and their values. The 
+        Dictionary of columns (keys) and their values. The
         dictionary must be in the following format:
-    	{"column1": [val1, ..., valm], ... 
+        {"column1": [val1, ..., valm], ...
          "columnk": [val1, ..., valm]}
     dtype: dict, optional
-    	Columns data types.
+        Columns data types.
     count: int, optional
-    	Number of elements to render when loading the entire 
+        Number of elements to render when loading the entire
         dataset. This is used only for rendering purposes.
     offset: int, optional
-    	Number of  elements to skip when loading the entire 
+        Number of  elements to skip when loading the entire
         dataset. This is used only for rendering purposes.
     percent: dict, optional
-        Dictionary  of missing values  (Used to display the 
+        Dictionary  of missing values  (Used to display the
         percent bars)
     max_columns: int, optional
         Maximum number of columns to display.
-	"""
+    """
 
     @property
     def object_type(self) -> Literal["TableSample"]:
@@ -243,7 +243,7 @@ class TableSample:
 
     def _get_correct_format_and_cast(self, val: Any) -> str:
         """
-        Casts the input value to the correct SQL data 
+        Casts the input value to the correct SQL data
         types.
         """
         if isinstance(val, str):
@@ -312,11 +312,9 @@ class TableSample:
 
     def category(
         self, column: str
-    ) -> Literal[
-        "bool", "date", "float", "int", "undefined", "text",
-    ]:
+    ) -> Literal["bool", "date", "float", "int", "undefined", "text",]:
         """
-        Returns the category of data in a specified 
+        Returns the category of data in a specified
         TableSample column.
 
         Parameters
@@ -447,7 +445,7 @@ class TableSample:
         symbol: str = "$",
     ) -> "TableSample":
         """
-        Returns the result of a SQL query as a TableSample 
+        Returns the result of a SQL query as a TableSample
         object.
 
         Parameters
@@ -459,11 +457,11 @@ class TableSample:
         max_columns: int, optional
             Maximum number of columns to display.
         sql_push_ext: bool, optional
-            If set to True, the entire query is pushed to the 
-            external table. 
-            This can increase  performance but might increase 
-            the error rate. 
-            For instance, some DBs might not support the same 
+            If set to True, the entire query is pushed to the
+            external table.
+            This can increase  performance but might increase
+            the error rate.
+            For instance, some DBs might not support the same
             SQL as Vertica.
         symbol: str, optional
             Symbol used to identify the external connection.
@@ -504,7 +502,9 @@ class TableSample:
         for column in data_columns:
             values[column[0]] = column[1 : len(column)]
         return cls(
-            values=values, dtype=dtype, max_columns=max_columns,
+            values=values,
+            dtype=dtype,
+            max_columns=max_columns,
         ).decimal_to_float()
 
     def shape(self) -> tuple[int, int]:
@@ -529,7 +529,7 @@ class TableSample:
         column: str, optional
             Column used to sort the data.
         desc: bool, optional
-            If  set to True, the  result is sorted in 
+            If  set to True, the  result is sorted in
             descending order.
 
         Returns
@@ -560,13 +560,13 @@ class TableSample:
 
     def transpose(self) -> "TableSample":
         """
-    	Transposes the TableSample.
+        Transposes the TableSample.
 
-     	Returns
-     	-------
-     	TableSample
-     		transposed TableSample.
-		"""
+        Returns
+        -------
+        TableSample
+                transposed TableSample.
+        """
         index = [column for column in self.values]
         first_item = list(self.values.keys())[0]
         columns = [[] for i in range(len(self.values[first_item]))]
@@ -616,13 +616,13 @@ class TableSample:
 
     def to_pandas(self) -> pd.DataFrame:
         """
-    	Converts the TableSample to a pandas DataFrame.
+        Converts the TableSample to a pandas DataFrame.
 
-     	Returns
-     	-------
-     	pandas.DataFrame
-     		pandas DataFrame of the TableSample.
-		"""
+        Returns
+        -------
+        pandas.DataFrame
+                pandas DataFrame of the TableSample.
+        """
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
             return df.drop(columns=["index"])
@@ -652,11 +652,11 @@ class TableSample:
 
     def to_vdf(self) -> "vDataFrame":
         """
-    	Converts the TableSample to a vDataFrame.
+        Converts the TableSample to a vDataFrame.
 
-     	Returns
-     	-------
-     	vDataFrame
-     		vDataFrame of the TableSample.
-		"""
+        Returns
+        -------
+        vDataFrame
+                vDataFrame of the TableSample.
+        """
         return create_new_vdf(self.to_sql())

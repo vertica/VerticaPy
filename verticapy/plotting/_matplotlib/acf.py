@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ACFPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -57,7 +56,11 @@ class ACFPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws an ACF time series plot using the Matplotlib API.
         """
@@ -92,7 +95,9 @@ class ACFPlot(MatplotlibBase):
             ax.set_xlim(-1, self.data["x"][-1] + 1)
         else:
             ax.plot(
-                self.data["x"], self.data["y"], **style_kwargs,
+                self.data["x"],
+                self.data["y"],
+                **style_kwargs,
             )
         ax.set_xticks(self.data["x"])
         ax.set_xticklabels(self.data["x"], rotation=90)
@@ -109,7 +114,6 @@ class ACFPlot(MatplotlibBase):
 
 
 class ACFPACFPlot(ACFPlot):
-
     # Properties.
 
     @property
@@ -137,7 +141,10 @@ class ACFPACFPlot(ACFPlot):
 
     # Draw.
 
-    def draw(self, **style_kwargs,) -> plt.Figure:
+    def draw(
+        self,
+        **style_kwargs,
+    ) -> plt.Figure:
         """
         Draws an ACF-PACF time series plot using the Matplotlib API.
         """

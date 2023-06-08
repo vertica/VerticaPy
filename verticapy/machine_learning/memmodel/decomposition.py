@@ -56,7 +56,7 @@ class PCA(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the PCA model to the input 
+        Transforms and applies the PCA model to the input
         matrix.
 
         Parameters
@@ -81,7 +81,7 @@ class PCA(InMemoryModel):
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy 
+        Transforms and returns the SQL needed to deploy
         the PCA.
 
         Parameters
@@ -116,7 +116,7 @@ class PCA(InMemoryModel):
         Phi: ArrayLike, gamma: float = 1.0, q: int = 20, tol: float = 1e-6
     ) -> None:
         """
-        Performs an Oblimin  (Varimax, Quartimax) rotation on 
+        Performs an Oblimin  (Varimax, Quartimax) rotation on
         the input matrix.
         """
         # This piece of code was taken from
@@ -144,7 +144,7 @@ class PCA(InMemoryModel):
 
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6) -> None:
         """
-        Performs an Oblimin (Varimax, Quartimax) rotation on the  PCA 
+        Performs an Oblimin (Varimax, Quartimax) rotation on the  PCA
         matrix.
 
         Parameters
@@ -157,7 +157,7 @@ class PCA(InMemoryModel):
         q: int, optional
             Maximum number of iterations.
         tol: float, optional
-            The  algorithm stops when the Frobenius norm of  gradient 
+            The  algorithm stops when the Frobenius norm of  gradient
             is less than tol.
         """
         res = self.matrix_rotation(self.principal_components_, gamma, q, tol)
@@ -173,7 +173,7 @@ class SVD(InMemoryModel):
     vectors: ArrayLike
         Matrix of the right singular vectors.
     values: ArrayLike
-        List of the singular values for each input 
+        List of the singular values for each input
         feature.
     """
 
@@ -219,7 +219,7 @@ class SVD(InMemoryModel):
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy 
+        Transforms and returns the SQL needed to deploy
         the PCA.
 
         Parameters

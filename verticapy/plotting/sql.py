@@ -189,7 +189,9 @@ class PlottingBaseSQL:
     # SAMPLE: SCATTERS / OUTLIERS / ML PLOTS ...
 
     def _sample_sql(
-        self, query: str, kind: Literal["scatter", "bubble"] = "scatter",
+        self,
+        query: str,
+        kind: Literal["scatter", "bubble"] = "scatter",
     ) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
@@ -284,7 +286,10 @@ class PlottingBaseSQL:
             "kind": kind,
         }
 
-    def _compute_range_sql(self, query: str,) -> None:
+    def _compute_range_sql(
+        self,
+        query: str,
+    ) -> None:
         tbs = TableSample().read_sql(query)
         columns = tbs.get_columns()
         order_by = columns[0]

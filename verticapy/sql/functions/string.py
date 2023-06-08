@@ -43,8 +43,8 @@ def length(expr: SQLExpression) -> StringSQL:
 
 def lower(expr: SQLExpression) -> StringSQL:
     """
-    Returns  a VARCHAR value containing  the 
-    argument converted to lowercase letters. 
+    Returns  a VARCHAR value containing  the
+    argument converted to lowercase letters.
 
     Parameters
     ----------
@@ -64,8 +64,8 @@ def substr(
     expr: SQLExpression, position: int, extent: Optional[int] = None
 ) -> StringSQL:
     """
-    Returns   VARCHAR  or  VARBINARY  value 
-    representing a substring of a specified 
+    Returns   VARCHAR  or  VARBINARY  value
+    representing a substring of a specified
     string.
 
     Parameters
@@ -90,8 +90,8 @@ def substr(
 
 def upper(expr: SQLExpression) -> StringSQL:
     """
-    Returns  a VARCHAR value containing  the 
-    argument converted to uppercase letters. 
+    Returns  a VARCHAR value containing  the
+    argument converted to uppercase letters.
 
     Parameters
     ----------
@@ -111,9 +111,12 @@ def upper(expr: SQLExpression) -> StringSQL:
 
 
 @check_minimum_version
-def edit_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
+def edit_distance(
+    expr1: SQLExpression,
+    expr2: SQLExpression,
+) -> StringSQL:
     """
-    Calculates and returns the Levenshtein 
+    Calculates and returns the Levenshtein
     distance  between two  strings.
 
     Parameters
@@ -139,7 +142,7 @@ levenshtein = edit_distance
 @check_minimum_version
 def soundex(expr: SQLExpression) -> StringSQL:
     """
-    Returns Soundex encoding of a varchar 
+    Returns Soundex encoding of a varchar
     strings  as a four character  string.
 
     Parameters
@@ -157,11 +160,14 @@ def soundex(expr: SQLExpression) -> StringSQL:
 
 
 @check_minimum_version
-def soundex_matches(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
+def soundex_matches(
+    expr1: SQLExpression,
+    expr2: SQLExpression,
+) -> StringSQL:
     """
-    Generates and compares Soundex encodings of 
-    two  strings,  and  returns a count of  the 
-    matching characters  (ranging from 0 for no 
+    Generates and compares Soundex encodings of
+    two  strings,  and  returns a count of  the
+    matching characters  (ranging from 0 for no
     match to 4 for an exact match).
 
     Parameters
@@ -185,9 +191,12 @@ def soundex_matches(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
 
 
 @check_minimum_version
-def jaro_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
+def jaro_distance(
+    expr1: SQLExpression,
+    expr2: SQLExpression,
+) -> StringSQL:
     """
-    Calculates and returns the Jaro distance 
+    Calculates and returns the Jaro distance
     between two strings.
 
     Parameters
@@ -208,9 +217,12 @@ def jaro_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
 
 
 @check_minimum_version
-def jaro_winkler_distance(expr1: SQLExpression, expr2: SQLExpression,) -> StringSQL:
+def jaro_winkler_distance(
+    expr1: SQLExpression,
+    expr2: SQLExpression,
+) -> StringSQL:
     """
-    Calculates and returns the Jaro-Winkler 
+    Calculates and returns the Jaro-Winkler
     distance between two strings.
 
     Parameters

@@ -69,7 +69,9 @@ class MatplotlibBase(PlottingBase):
             return ax, plt, kwargs
 
     @staticmethod
-    def _get_matrix_fig_size(n: int,) -> tuple[int, int]:
+    def _get_matrix_fig_size(
+        n: int,
+    ) -> tuple[int, int]:
         if conf.get_import_success("IPython"):
             return min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)
         else:
