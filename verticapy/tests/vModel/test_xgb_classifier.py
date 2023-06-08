@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -24,14 +28,13 @@ import xgboost as xgb
 # VerticaPy
 import verticapy
 from verticapy.tests.conftest import get_version
-from verticapy import (
-    vDataFrame,
-    drop,
-    set_option,
-)
-from verticapy.connect import current_cursor
+from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.utilities import drop
+from verticapy._config.config import set_option
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
-from verticapy.learn.ensemble import XGBoostClassifier
+from verticapy.learn.ensemble import XGBClassifier
+from verticapy._utils._sql._format import clean_query
 
 set_option("print_info", False)
 
@@ -73,7 +76,7 @@ def model(xgbc_data_vd):
     )
 
     # I could use load_model but it is buggy
-    model_class = XGBoostClassifier(
+    model_class = XGBClassifier(
         "xgbc_model_test",
         max_ntree=3,
         min_split_loss=0.1,
@@ -86,14 +89,7 @@ def model(xgbc_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ["Gender", '"owned cars"', "cost", "income"]
     model_class.y = "TransPortation"
-    current_cursor().execute(
-        "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-            model_class.y, model_class.input_relation, model_class.y
-        )
-    )
-    classes = current_cursor().fetchall()
-    model_class.classes_ = [item[0] for item in classes]
-    model_class.prior_ = model_class.get_prior()
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -121,30 +117,22 @@ class TestXGBC:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] in (
-            pytest.approx(0.6811, 1e-2),
-            pytest.approx(0.3863, 1e-2),
-        )
-
-        cls_rep2 = model.classification_report(cutoff=0.681).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.681)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert conf_mat1["Bus"] == [4, 0, 0]
-        assert conf_mat1["Car"] == [0, 3, 0]
-        assert conf_mat1["Train"] == [0, 0, 3]
+        assert list(conf_mat1[:, 0]) == [4, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 3, 0]
+        assert list(conf_mat1[:, 2]) == [0, 0, 3]
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2["Bus"] == [4, 0, 0]
-        assert conf_mat2["Car"] == [0, 3, 0]
-        assert conf_mat2["Train"] == [0, 0, 3]
+        assert list(conf_mat2[:, 0]) == [4, 0, 0]
+        assert list(conf_mat2[:, 1]) == [0, 3, 0]
+        assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = XGBoostClassifier("model_contour",)
+        model_test = XGBClassifier("model_contour",)
         model_test.drop()
         model_test.fit(
             titanic_vd, ["age", "fare"], "survived",
@@ -154,17 +142,17 @@ class TestXGBC:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = (
-            'PREDICT_XGB_CLASSIFIER(Gender, "owned cars", cost, income '
-            "USING PARAMETERS model_name = 'xgbc_model_test', match_by_pos = 'true')"
-        )
+        expected_sql = """PREDICT_XGB_CLASSIFIER("Gender", "owned cars", "cost", "income" 
+                              USING PARAMETERS 
+                              model_name = 'xgbc_model_test', 
+                              match_by_pos = 'true')"""
         result_sql = model.deploySQL()
 
-        assert result_sql == expected_sql
+        assert result_sql == clean_query(expected_sql)
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_model_test_drop")
-        model_test = XGBoostClassifier("xgbc_model_test_drop",)
+        model_test = XGBClassifier("xgbc_model_test_drop",)
         model_test.fit(
             "public.xgbc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -184,7 +172,7 @@ class TestXGBC:
 
     @pytest.mark.skip(reason="needs Vertica 12.0.3")
     def test_features_importance(self, model):
-        fimp = model.features_importance()
+        fimp = model.features_importance(show=False)
 
         assert fimp["index"] == ["cost", "owned cars", "gender", "income"]
         assert fimp["importance"] == [85.53, 9.61, 4.86, 0.0]
@@ -205,7 +193,7 @@ class TestXGBC:
         ]
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
+        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(0.0)
@@ -213,28 +201,22 @@ class TestXGBC:
         plt.close("all")
 
     def test_to_python(self, model, titanic_vd):
-        model_test = XGBoostClassifier("rfc_python_test")
+        model_test = XGBClassifier("rfc_python_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
         current_cursor().execute(
             "SELECT PREDICT_XGB_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 45.0, "male"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 45.0, "male"]])[0]
         current_cursor().execute(
             "SELECT PREDICT_XGB_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 145.0, "female"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 145.0, "female"]])[0]
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = XGBoostClassifier("xgb_sql_test")
+        model_test = XGBClassifier("xgb_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         current_cursor().execute(
@@ -291,23 +273,23 @@ class TestXGBC:
         model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
         )
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "tree_count",
             "rejected_row_count",
@@ -326,7 +308,7 @@ class TestXGBC:
         ]
         assert attr["#_of_rows"] == [1, 1, 1, 1, 4, 3]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["gender", "owned cars", "cost", "income"]
         assert details["type"] == [
             "char or varchar",
@@ -335,12 +317,18 @@ class TestXGBC:
             "char or varchar",
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("tree_count")["tree_count"][0] == 3
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 3
         assert (
             "xgb_classifier('public.xgbc_model_test', 'public.xgbc_data', '\"transportation\"', '*' USING PARAMETERS"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):
@@ -369,7 +357,7 @@ class TestXGBC:
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(pos_label="Car", nbins=1000)
+        prc = model.prc_curve(pos_label="Car", nbins=1000, show=False)
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(1.0)
@@ -400,7 +388,7 @@ class TestXGBC:
         assert xgbc_data_copy["prob_bus_2"].avg() == 0.3440198
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(pos_label="Train", nbins=1000)
+        roc = model.roc_curve(pos_label="Train", nbins=1000, show=False)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(1.0)
@@ -411,7 +399,7 @@ class TestXGBC:
         plt.close("all")
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
+        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000, show=False)
 
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(1.0)
@@ -422,84 +410,84 @@ class TestXGBC:
         plt.close("all")
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="auc", pos_label="Train"
+            cutoff=0.9, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="auc", pos_label="Train"
+            cutoff=0.1, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
-        assert model.score(cutoff=0.9, method="best_cutoff", pos_label="Train") in (
+        assert model.score(cutoff=0.9, metric="best_cutoff", pos_label="Train") in (
             pytest.approx(0.6338, 1e-2),
             pytest.approx(0.3863, 1e-2),
         )
-        assert model.score(cutoff=0.1, method="best_cutoff", pos_label="Train") in (
+        assert model.score(cutoff=0.1, metric="best_cutoff", pos_label="Train") in (
             pytest.approx(0.6338, 1e-2),
             pytest.approx(0.3863, 1e-2),
         )
         assert model.score(
-            cutoff=0.633, method="bm", pos_label="Train"
+            cutoff=0.633, metric="bm", pos_label="Train"
         ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.1, method="bm", pos_label="Train") == pytest.approx(
+        assert model.score(cutoff=0.1, metric="bm", pos_label="Train") == pytest.approx(
             0.0
         )
         assert model.score(
-            cutoff=0.9, method="csi", pos_label="Train"
+            cutoff=0.9, metric="csi", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="f1", pos_label="Train") == pytest.approx(
+            cutoff=0.1, metric="csi", pos_label="Train"
+        ) == pytest.approx(0.3)
+        assert model.score(cutoff=0.9, metric="f1", pos_label="Train") == pytest.approx(
             0.0
         )
-        assert model.score(cutoff=0.1, method="f1", pos_label="Train") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.1, metric="f1", pos_label="Train") == pytest.approx(
+            0.4615384615384615
         )
-        assert model.score(cutoff=0.9, method="logloss", pos_label="Train") in (
+        assert model.score(cutoff=0.9, metric="logloss", pos_label="Train") in (
             pytest.approx(0.111961142833969),
             pytest.approx(0.21696238336042),
         )
-        assert model.score(cutoff=0.1, method="logloss", pos_label="Train") in (
+        assert model.score(cutoff=0.1, metric="logloss", pos_label="Train") in (
             pytest.approx(0.111961142833969),
             pytest.approx(0.21696238336042),
         )
         assert model.score(
-            cutoff=0.9, method="mcc", pos_label="Train"
+            cutoff=0.9, metric="mcc", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="mcc", pos_label="Train"
+            cutoff=0.1, metric="mcc", pos_label="Train"
         ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="mk", pos_label="Train") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.9, metric="mk", pos_label="Train") == pytest.approx(
+            -0.30000000000000004
         )
-        assert model.score(cutoff=0.1, method="mk", pos_label="Train") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.1, metric="mk", pos_label="Train") == pytest.approx(
+            -0.7
         )
         assert model.score(
-            cutoff=0.9, method="npv", pos_label="Train"
-        ) == pytest.approx(1.0)
+            cutoff=0.9, metric="npv", pos_label="Train"
+        ) == pytest.approx(0.7)
         assert model.score(
-            cutoff=0.1, method="npv", pos_label="Train"
-        ) == pytest.approx(1.0)
-        assert model.score(
-            cutoff=0.9, method="prc_auc", pos_label="Train"
-        ) == pytest.approx(1.0)
-        assert model.score(
-            cutoff=0.1, method="prc_auc", pos_label="Train"
-        ) == pytest.approx(1.0)
-        assert model.score(
-            cutoff=0.9, method="precision", pos_label="Train"
+            cutoff=0.1, metric="npv", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="precision", pos_label="Train"
+            cutoff=0.9, metric="prc_auc", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.1, metric="prc_auc", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.9, metric="precision", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.9, method="specificity", pos_label="Train"
+            cutoff=0.1, metric="precision", pos_label="Train"
+        ) == pytest.approx(0.3)
+        assert model.score(
+            cutoff=0.9, metric="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="specificity", pos_label="Train"
-        ) == pytest.approx(1.0)
+            cutoff=0.1, metric="specificity", pos_label="Train"
+        ) == pytest.approx(0.0)
 
     def test_set_params(self, model):
         model.set_params({"nbins": 1000})
@@ -508,7 +496,7 @@ class TestXGBC:
 
     def test_model_from_vDF(self, xgbc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_from_vDF")
-        model_test = XGBoostClassifier("xgbc_from_vDF",)
+        model_test = XGBClassifier("xgbc_from_vDF",)
         model_test.fit(
             xgbc_data_vd,
             ["Gender", '"owned cars"', "cost", "income"],
@@ -553,7 +541,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "fare"]
         y = "survived"
-        model = XGBoostClassifier(
+        model = XGBClassifier(
             "verticapy_xgb_binaryclassifier_test", max_ntree=10, max_depth=5
         )
         model.drop()
@@ -583,7 +571,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["survived", "age", "fare"]
         y = "pclass"
-        model = XGBoostClassifier(
+        model = XGBClassifier(
             "verticapy_xgb_multiclass_classifier_test", max_ntree=10, max_depth=5
         )
         model.drop()

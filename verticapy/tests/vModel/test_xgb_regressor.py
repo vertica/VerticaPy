@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -22,15 +26,16 @@ import matplotlib.pyplot as plt
 import xgboost as xgb
 
 # VerticaPy
+from verticapy._typing import NoneType
 from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
     set_option,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic, load_dataset_reg
-from verticapy.learn.ensemble import XGBoostRegressor
+from verticapy.learn.ensemble import XGBRegressor
 
 set_option("print_info", False)
 
@@ -65,7 +70,7 @@ def model(xgbr_data_vd):
     )
 
     # I could use load_model but it is buggy
-    model_class = XGBoostRegressor(
+    model_class = XGBRegressor(
         "xgbr_model_test",
         max_ntree=3,
         min_split_loss=0.1,
@@ -78,7 +83,7 @@ def model(xgbr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
-    model_class.prior_ = model_class.get_prior()
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -90,7 +95,7 @@ def model(xgbr_data_vd):
 )
 class TestXGBR:
     def test_contour(self, titanic_vd):
-        model_test = XGBoostRegressor("model_contour",)
+        model_test = XGBRegressor("model_contour",)
         model_test.drop()
         model_test.fit(
             titanic_vd, ["age", "fare"], "survived",
@@ -107,7 +112,7 @@ class TestXGBR:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbr_model_test_drop")
-        model_test = XGBoostRegressor("xgbr_model_test_drop",)
+        model_test = XGBRegressor("xgbr_model_test_drop",)
         model_test.fit(
             "public.xgbr_data",
             ['"Gender"', '"owned cars"', '"cost"', '"income"'],
@@ -128,7 +133,7 @@ class TestXGBR:
     def test_to_python(self, model, titanic_vd):
         current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
@@ -139,7 +144,7 @@ class TestXGBR:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
-                model.name, model.to_sql()
+                model.model_name, model.to_sql()
             )
         )
         prediction = current_cursor().fetchone()
@@ -160,12 +165,12 @@ class TestXGBR:
             ['"Gender"', '"owned cars"', '"cost"', '"income"']
         )
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="r2")
         assert score == pytest.approx(1.0)
 
     @pytest.mark.skip(reason="needs Vertica 12.0.3")
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [91.85, 7.18, 0.97, 0.0]
@@ -185,8 +190,8 @@ class TestXGBR:
             pytest.approx(0.0),
         ]
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "tree_count",
@@ -206,7 +211,7 @@ class TestXGBR:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 4, 1]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "gender",
@@ -221,12 +226,18 @@ class TestXGBR:
             "char or varchar",
         ]
 
-        assert model.get_attr("tree_count")["tree_count"][0] == 3
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 3
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
         assert (
             "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):
@@ -314,16 +325,13 @@ class TestXGBR:
             pytest.approx(0.5281407999999999, abs=1e-6),
             pytest.approx(0.2878827634076987, abs=1e-6),
         )
-        assert reg_rep["value"][8] in (
-            pytest.approx(7.900750107239094, abs=1e-6),
-            pytest.approx(12.016369307174802, abs=1e-6),
-        )
+        assert reg_rep["value"][8] == pytest.approx(24.5163693071748, abs=1e-6)
         assert reg_rep["value"][9] in (
             pytest.approx(-5.586324427790675, abs=1e-6),
             pytest.approx(-1.4707052278549675, abs=1e-6),
         )
 
-        reg_rep_details = model.regression_report("details")
+        reg_rep_details = model.regression_report(metrics="details")
         assert reg_rep_details["value"][2:] == [
             10.0,
             4,
@@ -346,7 +354,7 @@ class TestXGBR:
             pytest.approx(3.76564442746721),
         ]
 
-        reg_rep_anova = model.regression_report("anova")
+        reg_rep_anova = model.regression_report(metrics="anova")
         assert reg_rep_anova["SS"] == [
             pytest.approx(1.6431936),
             pytest.approx(1.8087936),
@@ -366,32 +374,32 @@ class TestXGBR:
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") in (
+        assert model.score(metric="max") in (
             pytest.approx(0.5632, abs=1e-6),
             pytest.approx(0.6755375, abs=1e-6),
         )
         # method = "mae"
-        assert model.score(method="mae") in (
-            pytest.approx(0.36864, abs=1e-6),
+        assert model.score(metric="mae") in (
+            pytest.approx(0.5527125, abs=1e-6),
             pytest.approx(0.454394259259259, abs=1e-6),
         )
         # method = "median"
-        assert model.score(method="median") in (
+        assert model.score(metric="median") in (
             pytest.approx(0.4608, abs=1e-6),
             pytest.approx(0.5527125, abs=1e-6),
         )
         # method = "mse"
-        assert model.score(method="mse") in (
+        assert model.score(metric="mse") in (
             pytest.approx(0.18087936, abs=1e-6),
             pytest.approx(0.272978274027049, abs=1e-6),
         )
         # method = "rmse"
-        assert model.score(method="rmse") in (
+        assert model.score(metric="rmse") in (
             pytest.approx(0.42529914178140543, abs=1e-6),
             pytest.approx(0.5224732280481451, abs=1e-6),
         )
         # method = "msl"
-        assert model.score(method="msle") in (
+        assert model.score(metric="msle") in (
             pytest.approx(0.0133204031846029, abs=1e-6),
             pytest.approx(0.0195048419826687, abs=1e-6),
         )
@@ -401,22 +409,19 @@ class TestXGBR:
             pytest.approx(0.604379313004277, abs=1e-6),
         )
         # method = "r2a"
-        assert model.score(method="r2a") in (
+        assert model.score(metric="r2a") in (
             pytest.approx(0.5281407999999999, abs=1e-6),
             pytest.approx(0.2878827634076987, abs=1e-6),
         )
         # method = "var"
-        assert model.score(method="var") in (
+        assert model.score(metric="var") in (
             pytest.approx(0.737856, abs=1e-6),
             pytest.approx(0.60448287427822, abs=1e-6),
         )
         # method = "aic"
-        assert model.score(method="aic") in (
-            pytest.approx(7.900750107239094, abs=1e-6),
-            pytest.approx(12.016369307174802, abs=1e-6),
-        )
+        assert model.score(metric="aic") == pytest.approx(24.5163693071748, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") in (
+        assert model.score(metric="bic") in (
             pytest.approx(-5.586324427790675, abs=1e-6),
             pytest.approx(-1.4707052278549675, abs=1e-6),
         )
@@ -428,7 +433,7 @@ class TestXGBR:
 
     def test_model_from_vDF(self, xgbr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS xgbr_from_vDF")
-        model_test = XGBoostRegressor("xgbr_from_vDF",)
+        model_test = XGBRegressor("xgbr_from_vDF",)
         model_test.fit(xgbr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(
@@ -454,19 +459,19 @@ class TestXGBR:
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
-        assert tree_1["prediction"][0] == None
+        assert isinstance(tree_1["prediction"][0], NoneType)
         assert tree_1["prediction"][1] in ("0.880000", "0.701250")
-        assert tree_1["prediction"][2] == None
-        assert tree_1["prediction"][3] == None
+        assert isinstance(tree_1["prediction"][2], NoneType)
+        assert isinstance(tree_1["prediction"][3], NoneType)
         assert tree_1["prediction"][4] in ("0.080000", "0.057778")
-        assert tree_1["prediction"][5] == None
+        assert isinstance(tree_1["prediction"][5], NoneType)
         assert tree_1["prediction"][6] in ("-0.720000", "-0.573750")
         assert tree_1["prediction"][7] in ("-0.720000", "-0.405000")
         assert tree_1["prediction"][8] in ("0.080000", "0.045000")
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = XGBoostRegressor("model_test_plot",)
+        model_test = XGBRegressor("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) in (9, 12)
@@ -483,9 +488,7 @@ class TestXGBR:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "survived"]
         y = "fare"
-        model = XGBoostRegressor(
-            "verticapy_xgb_regressor_test", max_ntree=10, max_depth=5
-        )
+        model = XGBRegressor("verticapy_xgb_regressor_test", max_ntree=10, max_depth=5)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()

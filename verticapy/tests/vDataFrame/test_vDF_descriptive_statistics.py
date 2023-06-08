@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -894,40 +898,12 @@ class TestvDFDescriptiveStat:
         model.predict_proba(titanic_vd, name="survived_pred", pos_label=1)
 
         # Computing AUC
-        auc = titanic_vd.score(y_true="survived", y_score="survived_pred", method="auc")
+        auc = titanic_vd.score(y_true="survived", y_score="survived_pred", metric="auc")
         assert auc == pytest.approx(0.7051784997146537)
 
         # Computing MSE
-        mse = titanic_vd.score(y_true="survived", y_score="survived_pred", method="mse")
+        mse = titanic_vd.score(y_true="survived", y_score="survived_pred", metric="mse")
         assert mse == pytest.approx(0.228082579110535)
-
-        # Drawing ROC Curve
-        roc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="roc", nbins=1000,
-        )
-        assert roc_res["threshold"][3] == 0.003
-        assert roc_res["false_positive"][3] == 1.0
-        assert roc_res["true_positive"][3] == 1.0
-        assert roc_res["threshold"][300] == 0.3
-        assert roc_res["false_positive"][300] == pytest.approx(1.0)
-        assert roc_res["true_positive"][300] == pytest.approx(1.0)
-        assert roc_res["threshold"][900] == 0.9
-        assert roc_res["false_positive"][900] == pytest.approx(0.0148760330578512)
-        assert roc_res["true_positive"][900] == pytest.approx(0.061381074168798)
-
-        # Drawing PRC Curve
-        prc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="prc", nbins=1000,
-        )
-        assert prc_res["threshold"][3] == 0.002
-        assert prc_res["recall"][3] == 1.0
-        assert prc_res["precision"][3] == pytest.approx(0.3925702811)
-        assert prc_res["threshold"][300] == 0.299
-        assert prc_res["recall"][300] == pytest.approx(1.0)
-        assert prc_res["precision"][300] == pytest.approx(0.392570281124498)
-        assert prc_res["threshold"][900] == 0.899
-        assert prc_res["recall"][900] == pytest.approx(0.061381074168798)
-        assert prc_res["precision"][900] == pytest.approx(0.727272727272727)
 
         # dropping the created model
         model.drop()

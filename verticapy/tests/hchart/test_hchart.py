@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -18,14 +22,14 @@ import pytest
 import os
 
 # Other Modules
-from highcharts.highcharts.highcharts import Highchart
-from highcharts.highstock.highstock import Highstock
+from vertica_highcharts.highcharts.highcharts import Highchart
+from vertica_highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_amazon
-from verticapy.hchart import hchart
+from verticapy.jupyter.extensions.chart_magic import chart_magic as hchart
 
 set_option("print_info", False)
 
@@ -45,6 +49,9 @@ def amazon_vd():
 
 
 class Test_hchart:
+    @pytest.mark.skip(
+        reason="Deprecated, we need to implement the functions for each graphic"
+    )
     def test_hchart(self, titanic_vd, amazon_vd):
 
         # Test -k
@@ -109,7 +116,7 @@ class Test_hchart:
             "SELECT date, number, state FROM amazon;",
         )
         try:
-            file = open("verticapy_test_hchart.html", "r")
+            file = open("verticapy_test_hchart.html", "r", encoding="utf-8")
             result = file.read()
             assert "<!DOCTYPE html>" in result
         except:
@@ -124,7 +131,7 @@ class Test_hchart:
             "  -o   verticapy_test_hchart", "SELECT date, number, state FROM amazon;",
         )
         try:
-            file = open("verticapy_test_hchart.html", "r")
+            file = open("verticapy_test_hchart.html", "r", encoding="utf-8")
             result = file.read()
             assert "<!DOCTYPE html>" in result
         except:

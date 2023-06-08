@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -24,16 +28,16 @@ import pandas
 # VerticaPy
 from verticapy import (
     vDataFrame,
-    get_session,
     drop,
     set_option,
     read_shp,
     read_csv,
     read_json,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
+from verticapy.sql.sys import current_session, username
 
 set_option("print_info", False)
 
@@ -188,7 +192,7 @@ class TestvDFUtilities:
         os.rmdir("titanic_verticapy_test_to_csv")
 
     def test_vDF_to_parquet(self, titanic_vd):
-        session_id = get_session()
+        session_id = f"{current_session()}_{username()}"
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
@@ -286,7 +290,7 @@ class TestvDFUtilities:
         drop("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
-        session_id = get_session()
+        session_id = f"{current_session()}_{username()}"
         titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
             0:2
         ].to_json("verticapy_test_to_json.json")
@@ -368,29 +372,29 @@ class TestvDFUtilities:
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()
         result.describe(method="numerical")
-        assert "max" in result["age"].catalog
-        assert "avg" in result["age"].catalog
+        assert "max" in result["age"]._catalog
+        assert "avg" in result["age"]._catalog
         result.del_catalog()
-        assert "max" not in result["age"].catalog
-        assert "avg" not in result["age"].catalog
+        assert "max" not in result["age"]._catalog
+        assert "avg" not in result["age"]._catalog
 
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._vars["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._vars["saving"]) == 1
         result.filter("age < 40")
         result["embarked"].drop()
         assert result.shape() == (760, 13)
         result = result.load()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 0
+        assert len(result._vars["saving"]) == 0
         assert result.shape() == (1234, 14)
 
     def test_vDF_save(self, titanic_vd):
         result = titanic_vd.copy()
-        result._VERTICAPY_VARIABLES_["saving"] = []
+        result._vars["saving"] = []
         result.save()
-        assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
+        assert len(result._vars["saving"]) == 1
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -458,11 +462,11 @@ class TestvDFUtilities:
     def test_vDF_empty(self, amazon_vd):
         # test for non-empty vDataFrame
         result = amazon_vd.empty()
-        assert result == False
+        assert not result
 
         # test for empty vDataFrame
         result2 = amazon_vd.copy().drop(["number", "date", "state"]).empty()
-        assert result2 == True
+        assert result2
 
     def test_vDF_expected_store_usage(self, titanic_vd):
         # test expected_size
@@ -530,28 +534,28 @@ class TestvDFUtilities:
         assert result == 2
 
     def test_vDF_isdate(self, amazon_vd):
-        # test for date-like vcolumn
+        # test for date-like vDataColumn
         result = amazon_vd["date"].isdate()
-        assert result == True
+        assert result
 
-        # test for non-date-like vcolumn
+        # test for non-date-like vDataColumn
         result2 = amazon_vd["number"].isdate()
-        assert result2 == False
+        assert not result2
 
         result2 = amazon_vd["state"].isdate()
-        assert result2 == False
+        assert not result2
 
     def test_vDF_isnum(self, amazon_vd):
-        # test for numerical vcolumn
+        # test for numerical vDataColumn
         result = amazon_vd["number"].isnum()
-        assert result == True
+        assert result
 
-        # test for non-numerical vcolumn
+        # test for non-numerical vDataColumn
         result = amazon_vd["date"].isnum()
-        assert result == False
+        assert not result
 
         result = amazon_vd["state"].isnum()
-        assert result == False
+        assert not result
 
     @pytest.mark.skip(reason="test not stable")
     def test_vDF_memory_usage(self, amazon_vd):
@@ -597,9 +601,9 @@ class TestvDFUtilities:
                     fare 
                  FROM titanic 
                  WHERE age IS NOT NULL;;"""
-        vdf = vDataFrame(sql=sql)
+        vdf = vDataFrame(sql)
         assert vdf.shape() == (997, 2)
-        vdf = vDataFrame(sql=sql, usecols=["age"])
+        vdf = vDataFrame(sql, usecols=["age"])
         assert vdf.shape() == (997, 1)
 
     def test_vDF_store_usage(self, titanic_vd):
@@ -615,9 +619,3 @@ class TestvDFUtilities:
         result.swap("pclass", "sex")
         assert result.get_columns()[0].replace('"', "") == "pclass"
         assert result.get_columns()[1].replace('"', "") == "sex"
-
-    def test_vDF_vertica_version(self, titanic_vd):
-        result = titanic_vd.vertica_version()
-        assert 3 <= len(result) <= 4
-        assert 6 < result[0] < 20
-        assert 0 <= result[1] < 5

@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -65,19 +69,22 @@ class TestDelphi:
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
         model.drop()
-        model2 = AutoDataPrep("AutoML_test_dp", num_method="same_freq")
+        model2 = AutoDataPrep("AutoML_test_dp_2", num_method="same_freq")
         model2.drop()
         model2.fit(titanic_vd)
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
         model3 = AutoDataPrep(
-            "AutoML_test_dp", num_method="same_width", na_method="drop", apply_pca=True,
+            "AutoML_test_dp_3",
+            num_method="same_width",
+            na_method="drop",
+            apply_pca=True,
         )
         model3.drop()
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
-        model4 = AutoDataPrep("AutoML_test_dp",)
+        model4 = AutoDataPrep("AutoML_test_dp_4",)
         model4.drop()
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)

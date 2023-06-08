@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -52,7 +56,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
         assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
-        assert result["value"][-1] == False
+        assert not result["value"][-1]
 
         # testing with trend
         result = st.adfuller(
@@ -60,7 +64,7 @@ class TestStats:
         )
         assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
-        assert result["value"][-1] == False
+        assert not result["value"][-1]
 
     def test_cochrane_orcutt(self, airline_vd):
         airline_copy = airline_vd.copy()
@@ -71,10 +75,8 @@ class TestStats:
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")
         result = st.cochrane_orcutt(model, airline_copy, ts="date", prais_winsten=True,)
-        assert result.coef_["coefficient"][0] == pytest.approx(25.8582027191416, 1e-2)
-        assert result.coef_["coefficient"][1] == pytest.approx(
-            0.00123563974547625, 1e-2
-        )
+        assert result.intercept_ == pytest.approx(25.8582027191416, 1e-2)
+        assert result.coef_[0] == pytest.approx(0.00123563974547625, 1e-2)
         model.drop()
 
     def test_durbin_watson(self, amazon_vd):
@@ -85,89 +87,85 @@ class TestStats:
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.endogtest(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
-            pytest.approx(110.77204182524278),
-            pytest.approx(6.638132056570419e-26),
-            pytest.approx(204.73673827671277),
-            pytest.approx(6.836198697261425e-34),
-        ]
+        assert result == (
+            pytest.approx(110.77336789258061),
+            pytest.approx(6.633693190527767e-26),
+            pytest.approx(204.74130653722867),
+            pytest.approx(6.827786109983712e-34),
+        )
 
     def test_het_arch(self, amazon_vd):
         result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
-        assert result["value"] == [
-            pytest.approx(883.1042774059952),
-            pytest.approx(1.7232277858576802e-192),
-            pytest.approx(511.3347213420665),
-            pytest.approx(7.463757606288815e-207),
-        ]
+        assert result == (
+            pytest.approx(883.1114423462593),
+            pytest.approx(1.7170654186230018e-192),
+            pytest.approx(511.33952787255066),
+            pytest.approx(7.432857276079368e-207),
+        )
 
     def test_het_breuschpagan(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
-            pytest.approx(68.30346484950417),
-            pytest.approx(1.4017446778018072e-16),
-            pytest.approx(94.83450355369129),
-            pytest.approx(4.572276908758215e-19),
-        ]
+        assert result == (
+            pytest.approx(68.30399583311137),
+            pytest.approx(1.4013672773820152e-16),
+            pytest.approx(94.83553579040095),
+            pytest.approx(4.570574529673344e-19),
+        )
 
     def test_het_goldfeldquandt(self, amazon_vd):
         vdf = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         vdf["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"])
-        assert result["value"] == [
+        assert result == (
             pytest.approx(30.17263128858259),
             pytest.approx(1.3988910574921388e-55),
-        ]
+        )
         result2 = st.het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="decreasing"
         )
-        assert result2["value"] == [
+        assert result2 == (
             pytest.approx(30.17263128858259),
             pytest.approx(0.9999999999999999),
-        ]
+        )
         result3 = st.het_goldfeldquandt(
             vdf, y="number", X=["lag_number"], alternative="two-sided"
         )
-        assert result3["value"] == [
-            pytest.approx(30.17263128858259),
-            pytest.approx(0.0),
-        ]
+        assert result3 == (pytest.approx(30.17263128858259), pytest.approx(0.0),)
 
     def test_het_white(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
         result = st.het_white(result, eps="number", X=["lag_number"])
-        assert result["value"] == [
-            pytest.approx(72.93515335650999),
-            pytest.approx(1.3398039866815678e-17),
-            pytest.approx(104.08964747730063),
-            pytest.approx(1.7004013245871353e-20),
-        ]
+        assert result == (
+            pytest.approx(72.93566993238099),
+            pytest.approx(1.3394533546740618e-17),
+            pytest.approx(104.09070850396219),
+            pytest.approx(1.6997687814870292e-20),
+        )
 
     def test_jarque_bera(self, amazon_vd):
         result = st.jarque_bera(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(930829.520860999, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
-        assert result["value"][-1] == False
+        assert result[0] == pytest.approx(930829.520860999, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_kurtosistest(self, amazon_vd):
         result = st.kurtosistest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(47.31605467852915, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(47.31605467852915, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_normaltest(self, amazon_vd):
         result = st.normaltest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(7645.980976250067, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(7645.980976250067, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
         result = st.ljungbox(
             amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False,
         )
-        assert result["Serial Correlation"][-1] == True
+        assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Ljung–Box Test Statistic"][-1] == pytest.approx(
             33724.41181636157, 1e-2
@@ -177,7 +175,7 @@ class TestStats:
         result = st.ljungbox(
             amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True,
         )
-        assert result["Serial Correlation"][-1] == True
+        assert result["Serial Correlation"][-1]
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Box-Pierce Test Statistic"][-1] == pytest.approx(
             33601.96361200001, 1e-2
@@ -190,7 +188,7 @@ class TestStats:
         assert result["value"][1] == pytest.approx(3188.0, 1e-2)
         assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
         assert result["value"][3] == pytest.approx(0.009889912917327177, 1e-2)
-        assert result["value"][4] == True
+        assert result["value"][4]
         assert result["value"][5] == "increasing"
 
     def test_seasonal_decompose(self, airline_vd):
@@ -228,8 +226,8 @@ class TestStats:
 
     def test_skewtest(self, amazon_vd):
         result = st.skewtest(amazon_vd, column="number")
-        assert result["value"][0] == pytest.approx(73.53347500226347, 1e-2)
-        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result[0] == pytest.approx(73.53347500226347, 1e-2)
+        assert result[1] == pytest.approx(0.0, 1e-2)
 
     def test_variance_inflation_factor(self, titanic_vd):
         result = st.variance_inflation_factor(
@@ -610,8 +608,8 @@ class TestStats:
         assert str(st.zeroifnull(amazon_vd["date"])) == 'ZEROIFNULL("date")'
 
     def test_constants(self):
-        assert str(st.pi) == "PI()"
-        assert str(st.e) == "EXP(1)"
-        assert str(st.tau) == "2 * PI()"
-        assert str(st.inf) == "'inf'::float"
-        assert str(st.nan) == "'nan'::float"
+        assert str(st.PI) == "PI()"
+        assert str(st.E) == "EXP(1)"
+        assert str(st.TAU) == "2 * PI()"
+        assert str(st.INF) == "'inf'::float"
+        assert str(st.NAN) == "'nan'::float"

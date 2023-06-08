@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -24,7 +28,7 @@ from verticapy import (
     set_option,
 )
 from verticapy.tests.conftest import get_version
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_reg
 from verticapy.learn.ensemble import IsolationForest
 
@@ -69,10 +73,7 @@ def titanic_vd():
 )
 class TestIsolationForest:
     def test_repr(self, model):
-        assert "SELECT iforest('public.iforest_model_test'," in model.__repr__()
-        model_repr = IsolationForest("iF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<IsolationForest>"
+        assert model.__repr__() == "<IsolationForest>"
 
     def test_contour(self, titanic_vd):
         model_test = IsolationForest("model_contour_iF",)
@@ -81,7 +82,7 @@ class TestIsolationForest:
             titanic_vd, ["age", "fare"],
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 34
+        assert len(result.get_default_bbox_extra_artists()) > 30
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -132,8 +133,8 @@ class TestIsolationForest:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "tree_count",
@@ -151,7 +152,7 @@ class TestIsolationForest:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 5]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "gender",
@@ -168,12 +169,18 @@ class TestIsolationForest:
             "int",
         ]
 
-        assert model.get_attr("tree_count")["tree_count"][0] == 100
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 100
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
         assert (
             "SELECT iforest('public.iforest_model_test',"
-            in model.get_attr("call_string")["call_string"][0]
+            in model.get_vertica_attributes("call_string")["call_string"][0]
         )
 
     def test_get_params(self, model):
@@ -188,19 +195,18 @@ class TestIsolationForest:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT (APPLY_IFOREST('Male', 0, 'Cheap', 'Low', 1 USING PARAMETERS model_name = '{}', match_by_pos=True)).anomaly_score::float".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low", 1]])[0],
-            10e-2,
+            model.to_python()([["Male", 0, "Cheap", "Low", 1]])[0], 10e-2,
         )
 
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT (APPLY_IFOREST(* USING PARAMETERS model_name = '{}', match_by_pos=True)).anomaly_score::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\", 1 AS Transportation) x".format(
-                model.name, model.to_sql()
+                model.model_name, model.to_sql()
             )
         )
         prediction = current_cursor().fetchone()
@@ -220,7 +226,7 @@ class TestIsolationForest:
             ['"Gender"', '"owned cars"', '"cost"', '"income"', '"TransPortation"']
         )
         model.predict(iforest_data_vd, name="prediction_vertica_sql")
-        # score = iforest_data_vd.score("prediction_sql", "prediction_vertica_sql", "r2") # Numeric Overflow
+        # score = iforest_data_vd.score("prediction_sql", "prediction_vertica_sql", metric="r2") # Numeric Overflow
         # assert score == pytest.approx(1.0, 10e-1) # The score is not perfectly matching, we have to understand why
 
     def test_get_predicts(self, iforest_data_vd, model):

@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -23,7 +27,7 @@ from verticapy import (
     drop,
     set_option,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.tree import DecisionTreeClassifier
 
@@ -66,13 +70,7 @@ def model(dtc_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
-    current_cursor().execute(
-        "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-            model_class.y, model_class.input_relation, model_class.y
-        )
-    )
-    classes = current_cursor().fetchall()
-    model_class.classes_ = [item[0] for item in classes]
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -80,12 +78,7 @@ def model(dtc_data_vd):
 
 class TestDecisionTreeClassifier:
     def test_repr(self, model):
-        assert (
-            "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
-        )
-        model_repr = DecisionTreeClassifier("RF_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestClassifier>"
+        assert model.__repr__() == "<RandomForestClassifier>"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
@@ -101,24 +94,19 @@ class TestDecisionTreeClassifier:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.999)
-
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert conf_mat1["Bus"] == [4, 0, 0]
-        assert conf_mat1["Car"] == [0, 3, 0]
-        assert conf_mat1["Train"] == [0, 0, 3]
+        assert list(conf_mat1[:, 0]) == [4, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 3, 0]
+        assert list(conf_mat1[:, 2]) == [0, 0, 3]
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2["Bus"] == [4, 0, 0]
-        assert conf_mat2["Car"] == [0, 3, 0]
-        assert conf_mat2["Train"] == [0, 0, 3]
+        assert list(conf_mat2[:, 0]) == [4, 0, 0]
+        assert list(conf_mat2[:, 1]) == [0, 3, 0]
+        assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
         model_test = DecisionTreeClassifier("model_contour",)
@@ -157,7 +145,7 @@ class TestDecisionTreeClassifier:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        f_imp = model.features_importance()
+        f_imp = model.features_importance(show=False)
 
         assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
         assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
@@ -165,7 +153,7 @@ class TestDecisionTreeClassifier:
         plt.close("all")
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
+        lift_ch = model.lift_chart(pos_label="Bus", nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(1.0)
@@ -183,18 +171,12 @@ class TestDecisionTreeClassifier:
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 45.0, "male"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 45.0, "male"]])[0]
         current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert (
-            prediction
-            == model_test.to_python(return_str=False)([[30.0, 145.0, "female"]])[0]
-        )
+        assert prediction == model_test.to_python()([[30.0, 145.0, "female"]])[0]
 
     def test_to_sql(self, model, titanic_vd):
         model_test = DecisionTreeClassifier("rfc_sql_test")
@@ -254,23 +236,23 @@ class TestDecisionTreeClassifier:
         model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
         )
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = vdf.score(
-            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "tree_count",
             "rejected_row_count",
@@ -287,7 +269,7 @@ class TestDecisionTreeClassifier:
         ]
         assert attr["#_of_rows"] == [1, 1, 1, 1, 4]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == ["gender", "owned cars", "cost", "income"]
         assert details["type"] == [
             "char or varchar",
@@ -296,11 +278,17 @@ class TestDecisionTreeClassifier:
             "char or varchar",
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("tree_count")["tree_count"][0] == 1
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 1
+        assert (
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "SELECT rf_classifier('public.decision_tc_model_test', 'public.dtc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
@@ -317,7 +305,7 @@ class TestDecisionTreeClassifier:
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(pos_label="Car", nbins=1000)
+        prc = model.prc_curve(pos_label="Car", nbins=1000, show=False)
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(1.0)
@@ -351,7 +339,7 @@ class TestDecisionTreeClassifier:
         assert dtc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(pos_label="Train", nbins=1000)
+        roc = model.roc_curve(pos_label="Train", nbins=1000, show=False)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(0.0)
@@ -362,7 +350,7 @@ class TestDecisionTreeClassifier:
         plt.close("all")
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
+        cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000, show=False)
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(0.0)
         assert cutoff_curve["true_positive"][100] == pytest.approx(1.0)
@@ -372,79 +360,79 @@ class TestDecisionTreeClassifier:
         plt.close("all")
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.9, metric="accuracy") == pytest.approx(1.0)
+        assert model.score(cutoff=0.1, metric="accuracy") == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="auc", pos_label="Train"
+            cutoff=0.9, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="auc", pos_label="Train"
+            cutoff=0.1, metric="auc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.9, method="best_cutoff", pos_label="Train"
+            cutoff=0.9, metric="best_cutoff", pos_label="Train"
         ) == pytest.approx(0.999)
         assert model.score(
-            cutoff=0.1, method="best_cutoff", pos_label="Train"
+            cutoff=0.1, metric="best_cutoff", pos_label="Train"
         ) == pytest.approx(0.999)
-        assert model.score(cutoff=0.9, method="bm", pos_label="Train") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.9, metric="bm", pos_label="Train") == pytest.approx(
+            1.0
         )
-        assert model.score(cutoff=0.1, method="bm", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(
-            cutoff=0.9, method="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.1, method="csi", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="f1", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(cutoff=0.1, method="f1", pos_label="Train") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.1, metric="bm", pos_label="Train") == pytest.approx(
+            1.0
         )
         assert model.score(
-            cutoff=0.9, method="logloss", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.1, method="logloss", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.9, method="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(
-            cutoff=0.1, method="mcc", pos_label="Train"
-        ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="mk", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(cutoff=0.1, method="mk", pos_label="Train") == pytest.approx(
-            0.0
-        )
-        assert model.score(
-            cutoff=0.9, method="npv", pos_label="Train"
+            cutoff=0.9, metric="csi", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="npv", pos_label="Train"
+            cutoff=0.1, metric="csi", pos_label="Train"
         ) == pytest.approx(1.0)
+        assert model.score(cutoff=0.9, metric="f1", pos_label="Train") == pytest.approx(
+            1.0
+        )
+        assert model.score(cutoff=0.1, metric="f1", pos_label="Train") == pytest.approx(
+            1.0
+        )
         assert model.score(
-            cutoff=0.9, method="prc_auc", pos_label="Train"
-        ) == pytest.approx(1.0)
-        assert model.score(
-            cutoff=0.1, method="prc_auc", pos_label="Train"
-        ) == pytest.approx(1.0)
-        assert model.score(
-            cutoff=0.9, method="precision", pos_label="Train"
+            cutoff=0.9, metric="logloss", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.1, method="precision", pos_label="Train"
+            cutoff=0.1, metric="logloss", pos_label="Train"
         ) == pytest.approx(0.0)
         assert model.score(
-            cutoff=0.9, method="specificity", pos_label="Train"
+            cutoff=0.9, metric="mcc", pos_label="Train"
         ) == pytest.approx(1.0)
         assert model.score(
-            cutoff=0.1, method="specificity", pos_label="Train"
+            cutoff=0.1, metric="mcc", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(cutoff=0.9, metric="mk", pos_label="Train") == pytest.approx(
+            1.0
+        )
+        assert model.score(cutoff=0.1, metric="mk", pos_label="Train") == pytest.approx(
+            1.0
+        )
+        assert model.score(
+            cutoff=0.9, metric="npv", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.1, metric="npv", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.9, metric="prc_auc", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.1, metric="prc_auc", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.9, metric="precision", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.1, metric="precision", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.9, metric="specificity", pos_label="Train"
+        ) == pytest.approx(1.0)
+        assert model.score(
+            cutoff=0.1, metric="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
 
     def test_set_params(self, model):

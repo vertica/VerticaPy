@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -19,7 +23,7 @@ import math, os
 
 # VerticaPy
 import verticapy
-from verticapy.udf import create_lib_udf
+from verticapy.udf import generate_lib_udf
 
 
 def normalize_titanic(age, fare):
@@ -27,10 +31,10 @@ def normalize_titanic(age, fare):
 
 
 class TestUdf:
-    def test_create_lib_udf(self):
+    def test_generate_lib_udf(self):
         file_path = os.path.dirname(verticapy.__file__) + "/python_math_lib.py"
         pmath_path = os.path.dirname(verticapy.__file__) + "/tests/udf/pmath.py"
-        udx_str, udx_sql = create_lib_udf(
+        udx_str, udx_sql = generate_lib_udf(
             [
                 (math.exp, [float], float, {}, "python_exp"),
                 (

@@ -1,22 +1,30 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
-from verticapy import vDataFrame, drop, errors, set_option, tablesample
+from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.utilities import drop, TableSample
+from verticapy.errors import ConversionError
 from verticapy.datasets import load_titanic, load_iris, load_market
+from verticapy._config.config import set_option
+
 
 set_option("print_info", False)
 
@@ -51,7 +59,7 @@ class TestvDFPreprocessing:
         assert test.shape() == (pytest.approx(407), 14)
 
     def test_vDF_add_duplicates(self):
-        names = tablesample(
+        names = TableSample(
             {"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}
         ).to_vdf()
         result = (
@@ -159,7 +167,7 @@ class TestvDFPreprocessing:
             "rare",
         ]
 
-        ### method = "auto" for numerical vcolumn
+        ### method = "auto" for numerical vDataColumn
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].discretize()
         assert titanic_copy["age"].distinct() == [
@@ -239,7 +247,7 @@ class TestvDFPreprocessing:
         assert titanic_copy["embarked"].distinct() == [0, 1, 2, 3]
 
     def test_vDF_merge_similar_names(self):
-        x = tablesample(
+        x = TableSample(
             {
                 "age": [50, None, None, None],
                 "information.age": [None, None, 30, None],
@@ -433,7 +441,7 @@ class TestvDFPreprocessing:
 
         ### Testing vDataFrame[].astype
         # expected exception
-        with pytest.raises(errors.ConversionError) as exception_info:
+        with pytest.raises(ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
         assert exception_info.match(
@@ -448,7 +456,7 @@ class TestvDFPreprocessing:
 
         # STR to VMAP
         # tests on JSONs vdf
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
@@ -458,17 +466,17 @@ class TestvDFPreprocessing:
         vdf["str_test"].astype("vmap")
         assert int(vdf["str_test"]["information"]["age"][0]) == 29
         # tests on CSVs strings
-        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf = TableSample({"str_test": ["a,b,c,d"]}).to_vdf()
         vdf["str_test"].astype("vmap(val1,val2,val3,val4)")
         assert vdf["str_test"]["val2"][0] == "b"
 
         # STR to ARRAY
-        vdf = tablesample({"str_test": ["a,b,c,d"]}).to_vdf()
+        vdf = TableSample({"str_test": ["a,b,c,d"]}).to_vdf()
         vdf["str_test"].astype("array")
         assert vdf["str_test"][1][0] == "b"
 
         # VMAP to STR
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'
@@ -481,7 +489,7 @@ class TestvDFPreprocessing:
             vdf["str_test"][0]
             == '{\n\t"information": {\n\t\t"age": "29",\n\t\t"numero": {\n\t\t\t"0": "0",\n\t\t\t"1": "6",\n\t\t\t"2": "3"\n\t\t}\n\t},\n\t"name": "Badr"\n}'
         )
-        vdf = tablesample(
+        vdf = TableSample(
             {
                 "str_test": [
                     '{"name": "Badr", "information": {"age": 29, "numero": [0, 6, 3]}}'

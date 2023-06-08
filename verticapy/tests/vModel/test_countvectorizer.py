@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -18,11 +22,11 @@ import pytest
 from verticapy import (
     drop,
     set_option,
-    create_verticapy_schema,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import CountVectorizer
+from verticapy._utils._sql._format import clean_query
 
 set_option("print_info", False)
 
@@ -36,7 +40,6 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    create_verticapy_schema()
     model_class = CountVectorizer("model_test_countvectorizer",)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
@@ -46,39 +49,11 @@ def model(titanic_vd):
 
 class TestCountVectorizer:
     def test_repr(self, model):
-        assert "Vocabulary" in model.__repr__()
-        model_repr = CountVectorizer("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<CountVectorizer>"
+        assert model.__repr__() == "<CountVectorizer>"
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
-        assert m_att["attr_name"] == [
-            "lowercase",
-            "max_df",
-            "min_df",
-            "max_features",
-            "ignore_special",
-            "max_text_size",
-            "vocabulary",
-            "stop_words",
-        ]
-        m_att = model.get_attr("lowercase")
-        assert m_att == model.parameters["lowercase"]
-        m_att = model.get_attr("max_df")
-        assert m_att == model.parameters["max_df"]
-        m_att = model.get_attr("min_df")
-        assert m_att == model.parameters["min_df"]
-        m_att = model.get_attr("max_features")
-        assert m_att == model.parameters["max_features"]
-        m_att = model.get_attr("ignore_special")
-        assert m_att == model.parameters["ignore_special"]
-        m_att = model.get_attr("max_text_size")
-        assert m_att == model.parameters["max_text_size"]
-        m_att = model.get_attr("vocabulary")
-        assert m_att == model.parameters["vocabulary"]
-        m_att = model.get_attr("stop_words")
-        assert m_att == model.parameters["stop_words"]
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_attributes()
+        assert m_att == ["stop_words_", "vocabulary_", "n_errors_"]
 
     def test_deploySQL(self, model):
         expected_sql = (
@@ -96,28 +71,11 @@ class TestCountVectorizer:
         )
         result_sql = model.deploySQL()
 
-        assert result_sql == expected_sql
+        assert result_sql == clean_query(expected_sql)
 
-    def test_drop(self, titanic_vd):
-        model_test = CountVectorizer("model_test_drop")
-        model_test.drop()
-        model_test.fit(titanic_vd, ["name"])
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone()[0] in (
-            "model_test_drop",
-            '"model_test_drop"',
-        )
-        model_test.drop()
-        current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
-        )
-        assert current_cursor().fetchone() is None
-
-    def test_get_attr(self, model):
+    def test_get_attributes(self, model):
         assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]
-        assert model.stop_words_ == []
+        assert len(model.stop_words_) == 0
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -139,9 +97,9 @@ class TestCountVectorizer:
 
     def test_set_params(self, model):
         model.set_params({"lowercase": False})
-        assert model.get_params()["lowercase"] == False
+        assert not model.get_params()["lowercase"]
         model.set_params({"lowercase": True})
-        assert model.get_params()["lowercase"] == True
+        assert model.get_params()["lowercase"]
 
     def test_model_from_vDF(self, titanic_vd):
         model_class = CountVectorizer("model_test_vdf",)

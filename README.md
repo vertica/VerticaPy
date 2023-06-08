@@ -11,6 +11,7 @@
 # VerticaPy
 
 [![PyPI version](https://badge.fury.io/py/verticapy.svg)](https://badge.fury.io/py/verticapy)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/verticapy?color=yellowgreen)](https://anaconda.org/conda-forge/verticapy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/pypi/pyversions/verticapy.svg)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/vertica/VerticaPy/branch/master/graph/badge.svg?token=a6GiFYI9at)](https://codecov.io/gh/vertica/VerticaPy)

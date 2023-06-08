@@ -1,53 +1,140 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# |_     |~) _  _| _  /~\    _ |.
-# |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /
-#              ____________       ______
-#             / __        `\     /     /
-#            |  \/         /    /     /
-#            |______      /    /     /
-#                   |____/    /     /
-#          _____________     /     /
-#          \           /    /     /
-#           \         /    /     /
-#            \_______/    /     /
-#             ______     /     /
-#             \    /    /     /
-#              \  /    /     /
-#               \/    /     /
-#                    /     /
-#                   /     /
-#                   \    /
-#                    \  /
-#                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /
-# VerticaPy is a Python library with scikit-like functionality for conducting
-# data science projects on data stored in Vertica, taking advantage Vertica’s
-# speed and built-in analytics and machine learning features. It supports the
-# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
-# data transformation operations, and offers beautiful graphical options.
-#
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving
-# data around for processing, VerticaPy brings the logic to the data.
-#
-#
-# Modules
-#
-# VerticaPy Modules
-from verticapy.stats.tools import *
-from verticapy.stats.math import *
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+from verticapy.sql.functions.analytic import (
+    avg,
+    bool_and,
+    bool_or,
+    bool_xor,
+    conditional_change_event,
+    conditional_true_event,
+    count,
+    lag,
+    lead,
+    max,
+    median,
+    min,
+    nth_value,
+    quantile,
+    rank,
+    row_number,
+    std,
+    sum,
+    var,
+)
+from verticapy.sql.functions.conditional import case_when, decode
+from verticapy.sql.functions.date import (
+    date,
+    day,
+    dayofweek,
+    dayofyear,
+    extract,
+    getdate,
+    getutcdate,
+    hour,
+    interval,
+    minute,
+    microsecond,
+    month,
+    overlaps,
+    quarter,
+    round_date,
+    second,
+    timestamp,
+    week,
+    year,
+)
+from verticapy.sql.functions.math import E, INF, PI, NAN, TAU
+from verticapy.sql.functions.math import (
+    apply,
+    abs,
+    acos,
+    asin,
+    atan,
+    atan2,
+    cbrt,
+    ceil,
+    comb,
+    cos,
+    cosh,
+    cot,
+    degrees,
+    distance,
+    exp,
+    factorial,
+    floor,
+    gamma,
+    hash,
+    isfinite,
+    isinf,
+    isnan,
+    lgamma,
+    ln,
+    log,
+    radians,
+    round,
+    sign,
+    sin,
+    sinh,
+    sqrt,
+    tan,
+    tanh,
+    trunc,
+)
+from verticapy.sql.functions.null_handling import coalesce, nullifzero, zeroifnull
+from verticapy.sql.functions.random import random, randomint, seeded_random
+from verticapy.sql.functions.regexp import (
+    regexp_count,
+    regexp_ilike,
+    regexp_instr,
+    regexp_like,
+    regexp_replace,
+    regexp_substr,
+)
+from verticapy.sql.functions.string import (
+    edit_distance,
+    jaro_distance,
+    jaro_winkler_distance,
+    length,
+    lower,
+    upper,
+    soundex,
+    soundex_matches,
+    substr,
+)
+
+from verticapy.machine_learning.model_selection.statistical_tests.ols import (
+    endogtest,
+    het_breuschpagan,
+    het_goldfeldquandt,
+    het_white,
+    variance_inflation_factor,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.norm import (
+    jarque_bera,
+    kurtosistest,
+    normaltest,
+    skewtest,
+)
+from verticapy.machine_learning.model_selection.statistical_tests.tsa import (
+    adfuller,
+    cochrane_orcutt,
+    durbin_watson,
+    het_arch,
+    ljungbox,
+    mkt,
+    seasonal_decompose,
+)

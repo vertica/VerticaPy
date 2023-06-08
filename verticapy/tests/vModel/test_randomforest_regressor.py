@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -23,7 +27,7 @@ from verticapy import (
     drop,
     set_option,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_winequality, load_dataset_reg
 from verticapy.learn.ensemble import RandomForestRegressor
 
@@ -75,6 +79,7 @@ def model(rfr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -82,10 +87,7 @@ def model(rfr_data_vd):
 
 class TestRFR:
     def test_repr(self, model):
-        assert "rf_regressor" in model.__repr__()
-        model_repr = RandomForestRegressor("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<RandomForestRegressor>"
+        assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
         model_test = RandomForestRegressor("model_contour",)
@@ -124,7 +126,7 @@ class TestRFR:
         assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
-        fim = model.features_importance()
+        fim = model.features_importance(show=False)
 
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
@@ -142,8 +144,8 @@ class TestRFR:
             pytest.approx(0.0),
         ]
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "tree_count",
@@ -161,7 +163,7 @@ class TestRFR:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 4]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "gender",
@@ -176,11 +178,17 @@ class TestRFR:
             "char or varchar",
         ]
 
-        assert model.get_attr("tree_count")["tree_count"][0] == 3
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
+        assert model.get_vertica_attributes("tree_count")["tree_count"][0] == 3
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 10
+        )
+        assert (
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "SELECT rf_regressor('public.rfr_model_test', 'public.rfr_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
@@ -208,18 +216,18 @@ class TestRFR:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+            model.to_python()([["Male", 0, "Cheap", "Low"]])[0]
         )
 
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
-                model.name, model.to_sql()
+                model.model_name, model.to_sql()
             )
         )
         prediction = current_cursor().fetchone()
@@ -240,7 +248,7 @@ class TestRFR:
             ['"Gender"', '"owned cars"', '"cost"', '"income"']
         )
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="r2")
         assert score == pytest.approx(1.0)
 
     def test_get_predicts(self, rfr_data_vd, model):
@@ -279,7 +287,7 @@ class TestRFR:
         assert reg_rep["value"][8] == pytest.approx(-float("inf"), abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-float("inf"), abs=1e-6)
 
-        reg_rep_details = model.regression_report("details")
+        reg_rep_details = model.regression_report(metrics="details")
         assert reg_rep_details["value"][2:] == [
             10.0,
             4,
@@ -292,7 +300,7 @@ class TestRFR:
             pytest.approx(3.76564442746721),
         ]
 
-        reg_rep_anova = model.regression_report("anova")
+        reg_rep_anova = model.regression_report(metrics="anova")
         assert reg_rep_anova["SS"] == [
             pytest.approx(6.9),
             pytest.approx(0.0),
@@ -305,27 +313,27 @@ class TestRFR:
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(0, abs=1e-6)
+        assert model.score(metric="max") == pytest.approx(0, abs=1e-6)
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0, abs=1e-6)
+        assert model.score(metric="mae") == pytest.approx(0, abs=1e-6)
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0, abs=1e-6)
+        assert model.score(metric="median") == pytest.approx(0, abs=1e-6)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.0, abs=1e-6)
+        assert model.score(metric="mse") == pytest.approx(0.0, abs=1e-6)
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(0.0, abs=1e-6)
+        assert model.score(metric="rmse") == pytest.approx(0.0, abs=1e-6)
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(0.0, abs=1e-6)
+        assert model.score(metric="msle") == pytest.approx(0.0, abs=1e-6)
         # method = "r2"
         assert model.score() == pytest.approx(1.0, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(1.0, abs=1e-6)
+        assert model.score(metric="r2a") == pytest.approx(1.0, abs=1e-6)
         # method = "var"
-        assert model.score(method="var") == pytest.approx(1.0, abs=1e-6)
+        assert model.score(metric="var") == pytest.approx(1.0, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-float("inf"), abs=1e-6)
+        assert model.score(metric="aic") == pytest.approx(-float("inf"), abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
+        assert model.score(metric="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
     def test_set_params(self, model):
         model.set_params({"max_features": 1000})

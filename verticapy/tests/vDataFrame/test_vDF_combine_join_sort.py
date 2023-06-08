@@ -1,22 +1,26 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
 from verticapy.errors import MissingColumn
-from verticapy import drop, set_option, tablesample
+from verticapy import drop, set_option, TableSample
 from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
 set_option("print_info", False)
@@ -96,7 +100,7 @@ class TestvDFCombineJoinSort:
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
             )
         assert exception_info.match(
-            "The Virtual Column 'For' doesn't exist\nDid you mean '\"Form\"' ?"
+            "The Virtual Column 'For' doesn't exist.\nDid you mean '\"Form\"' ?"
         )
         # with rollup
         result3 = market_vd.groupby(
@@ -245,7 +249,7 @@ class TestvDFCombineJoinSort:
         assert table_join.shape() == (194, 2)
         drop("v_temp_schema.not_dried")
         # testing different operators
-        d1 = tablesample(
+        d1 = TableSample(
             {
                 "name1": ["Badr", "Umar", "Arash"],
                 "email1": ["b.ouali@me.fr", "umar@me.com", "a.farad@me.com"],
@@ -253,7 +257,7 @@ class TestvDFCombineJoinSort:
                 "fav_car1": ["BM", "Audi", "Merc"],
             }
         ).to_vdf()
-        d2 = tablesample(
+        d2 = TableSample(
             {
                 "name2": ["Badr", "Umar", "Arash"],
                 "email2": ["badr.ouali@me.fr", "umar.f@me.com", "arash.farad@me.com",],

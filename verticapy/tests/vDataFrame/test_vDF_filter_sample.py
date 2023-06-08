@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -82,23 +86,18 @@ class TestvDFFilterSample:
         assert result.shape() == (140, 3)
 
     def test_vDF_balance(self, titanic_vd):
-        # hybrid
-        result = titanic_vd.balance("embarked", method="hybrid")["embarked"].topk()
-        assert 30 < result["percent"][0] < 40
-        assert 30 < result["percent"][1] < 40
-        assert 30 < result["percent"][2] < 40
         # under
-        result = titanic_vd.balance("embarked", method="under", x=0.5)[
+        result = titanic_vd.balance("embarked", method="under", x=1.0)[
             "embarked"
         ].topk()
-        assert 35 < result["percent"][0] < 55
-        assert 35 < result["percent"][1] < 55
-        assert 15 < result["percent"][2] < 30
+        assert 30 < result["percent"][0] < 36
+        assert 30 < result["percent"][1] < 36
+        assert 30 < result["percent"][2] < 36
         # over
-        result = titanic_vd.balance("embarked", method="over", x=0.5)["embarked"].topk()
-        assert 40 < result["percent"][0] < 55
-        assert 15 < result["percent"][1] < 35
-        assert 15 < result["percent"][2] < 35
+        result = titanic_vd.balance("embarked", method="over", x=1.0)["embarked"].topk()
+        assert 30 < result["percent"][0] < 36
+        assert 30 < result["percent"][1] < 36
+        assert 30 < result["percent"][2] < 36
 
     def test_vDF_between_time(self, smart_meters_vd):
         result = smart_meters_vd.copy().between_time(

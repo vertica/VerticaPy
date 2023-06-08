@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -19,16 +23,18 @@ import warnings, os
 
 # VerticaPy
 import verticapy
-from verticapy.connect import set_external_connection
+from verticapy.connection import set_external_connection
 from verticapy import (
     drop,
     set_option,
-    tablesample,
-    replace_external_queries_in_query,
+    TableSample,
+)
+from verticapy._utils._sql._dblink import (
     get_dblink_fun,
+    replace_external_queries,
 )
 from verticapy.datasets import load_titanic
-from verticapy.sql import sql
+from verticapy.jupyter.extensions.sql_magic import sql_magic as sql
 
 set_option("print_info", False)
 
@@ -47,8 +53,8 @@ class TestSQL:
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
         assert (
-            result._VERTICAPY_VARIABLES_["main_relation"]
-            == "(SELECT * FROM titanic) VSQL_MAGIC"
+            result._vars["main_relation"]
+            == "(SELECT * FROM titanic) VERTICAPY_SUBTABLE"
         )
 
         # SQL line Test --command
@@ -62,14 +68,14 @@ class TestSQL:
         # SQL line Test -nrows -ncols
         result = sql('  -c "SELECT * FROM titanic;"   -ncols 4    -nrows 70', "")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["max_columns"] == 4
-        assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
+        assert result._vars["max_columns"] == 4
+        assert result._vars["max_rows"] == 70
 
         # SQL Cell Test -nrows -ncols
         result = sql("  -ncols 4    -nrows 70", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["max_columns"] == 4
-        assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
+        assert result._vars["max_columns"] == 4
+        assert result._vars["max_rows"] == 70
 
         # SQL cell Test
         result = sql(
@@ -174,30 +180,30 @@ class TestSQL:
         os.remove("verticapy_test_sql.csv")
         file.close()
 
-        # Testing the replace_external_queries_in_query function
+        # Testing the replace_external_queries function
         set_external_connection("my_external_cid")
 
         assert (
-            get_dblink_fun("  My TEsT QUERY  ")
-            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='  My TEsT QUERY  ', rowset=500) OVER ()"
+            get_dblink_fun(" My TEsT QUERY ")
+            == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query=' My TEsT QUERY ', rowset=500) OVER ()"
         )
 
         query = "SELECT * FROM $$$my_external_table$$$"
-        result = replace_external_queries_in_query(query)
+        result = replace_external_queries(query)
         assert (
             result
             == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) AS \"my_external_table\""
         )
 
         query = "SELECT * FROM ($$$SELECT * FROM my_external_table$$$) x"
-        result = replace_external_queries_in_query(query)
+        result = replace_external_queries(query)
         assert (
             result
             == "SELECT * FROM (SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='SELECT * FROM my_external_table', rowset=500) OVER ()) x"
         )
 
         query = "$$$INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)$$$"
-        result = replace_external_queries_in_query(query)
+        result = replace_external_queries(query)
         assert (
             result
             == "SELECT DBLINK(USING PARAMETERS cid='my_external_cid', query='INSERT INTO films (code, title, did, date_prod, kind) VALUES (1, 2, 3, 4, 5)', rowset=500) OVER ()"
@@ -209,7 +215,7 @@ class TestSQL:
         # table = "titanic"
         # result = sql("", "SELECT * FROM :titanic;")
         # assert result.shape() == (1234, 14)
-        # tb = tablesample({"x": [4, 5, 6], "y": [1, 2, 3]})
+        # tb = TableSample({"x": [4, 5, 6], "y": [1, 2, 3]})
         # result = sql("", "SELECT AVG(x) FROM :tb;")
         # assert result == 5
 

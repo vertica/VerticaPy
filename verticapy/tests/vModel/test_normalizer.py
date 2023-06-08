@@ -1,25 +1,29 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.preprocessing import (
-    Normalizer,
+    Scaler,
     StandardScaler,
     RobustScaler,
     MinMaxScaler,
@@ -38,20 +42,17 @@ def winequality_vd():
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     current_cursor().execute("DROP MODEL IF EXISTS norm_model_test")
-    model_class = Normalizer("norm_model_test",)
+    model_class = Scaler("norm_model_test",)
     model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
 
 
-class TestNormalizer:
+class TestScaler:
     def test_repr(self, model):
-        assert "column_name  |  avg   |std_dev" in model.__repr__()
-        model_repr = Normalizer("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<Normalizer>"
+        assert model.__repr__() == "<Scaler>"
 
-    def test_Normalizer_subclasses(self):
+    def test_Scaler_subclasses(self):
         result = StandardScaler("model_test")
         assert result.parameters["method"] == "zscore"
         result = RobustScaler("model_test")
@@ -73,7 +74,7 @@ class TestNormalizer:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS norm_model_test_drop")
-        model_test = Normalizer("norm_model_test_drop",)
+        model_test = Scaler("norm_model_test_drop",)
         model_test.fit("public.winequality", ["alcohol", "quality"])
 
         current_cursor().execute(
@@ -87,8 +88,8 @@ class TestNormalizer:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "details",
@@ -98,7 +99,7 @@ class TestNormalizer:
         ]
         assert m_att["#_of_rows"] == [3]
 
-        m_att_details = model.get_attr(attr_name="details")
+        m_att_details = model.get_vertica_attributes(attr_name="details")
 
         assert m_att_details["column_name"] == [
             "citric_acid",
@@ -119,39 +120,37 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
-        )
+        assert prediction == pytest.approx(model.to_python()([[3.0, 11.0, 93.0]])[0][0])
         # Minmax
-        model2 = Normalizer("norm_model_test2", method="minmax")
+        model2 = Scaler("norm_model_test2", method="minmax")
         model2.drop()
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model2.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+            model2.to_python()([[3.0, 11.0, 93.0]])[0][0]
         )
         model2.drop()
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", method="robust_zscore")
+        model3 = Scaler("norm_model_test2", method="robust_zscore")
         model3.drop()
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model3.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+            model3.to_python()([[3.0, 11.0, 93.0]])[0][0]
         )
         model3.drop()
 
@@ -159,7 +158,7 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -171,12 +170,12 @@ class TestNormalizer:
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
         # Minmax
-        model2 = Normalizer("norm_model_test2", method="minmax")
+        model2 = Scaler("norm_model_test2", method="minmax")
         model2.drop()
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -189,12 +188,12 @@ class TestNormalizer:
         assert prediction == pytest.approx(prediction2)
         model2.drop()
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", method="robust_zscore")
+        model3 = Scaler("norm_model_test2", method="robust_zscore")
         model3.drop()
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -211,7 +210,7 @@ class TestNormalizer:
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -231,12 +230,12 @@ class TestNormalizer:
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
         # Minmax
-        model2 = Normalizer("norm_model_test2", method="minmax")
+        model2 = Scaler("norm_model_test2", method="minmax")
         model2.drop()
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.name
+                model2.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -257,12 +256,12 @@ class TestNormalizer:
         assert prediction[2] == pytest.approx(prediction3[0][2])
         model2.drop()
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", method="robust_zscore")
+        model3 = Scaler("norm_model_test2", method="robust_zscore")
         model3.drop()
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.name
+                model3.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -294,7 +293,7 @@ class TestNormalizer:
         )
         assert winequality_trans["alcohol"].mean() == pytest.approx(0.0, abs=1e-6)
         # Minmax
-        model2 = Normalizer("norm_model_test2", method="minmax")
+        model2 = Scaler("norm_model_test2", method="minmax")
         model2.drop()
         model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         winequality_trans = model2.transform(
@@ -305,7 +304,7 @@ class TestNormalizer:
         assert winequality_trans["alcohol"].min() == pytest.approx(0.0, abs=1e-6)
         model2.drop()
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", method="robust_zscore")
+        model3 = Scaler("norm_model_test2", method="robust_zscore")
         model3.drop()
         model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         winequality_trans = model3.transform(
@@ -340,7 +339,7 @@ class TestNormalizer:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS norm_vDF")
-        model_test = Normalizer("norm_vDF",)
+        model_test = Scaler("norm_vDF",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'norm_vDF'"

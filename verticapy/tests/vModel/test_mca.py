@@ -1,22 +1,26 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_market
 from verticapy.learn.decomposition import MCA
 
@@ -41,13 +45,7 @@ def model(market_vd):
 
 class TestMCA:
     def test_repr(self, model):
-        assert (
-            "index|                name                 |  mean  |   sd   "
-            in model.__repr__()
-        )
-        model_repr = MCA("mca_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<MCA>"
+        assert model.__repr__() == "<MCA>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_PCA("Form_Boiled", "Form_Canned",'
@@ -77,8 +75,8 @@ class TestMCA:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "columns",
@@ -96,7 +94,7 @@ class TestMCA:
         ]
         assert m_att["#_of_rows"] == [52, 52, 52, 3, 1]
 
-        m_att_details = model.get_attr(attr_name="principal_components")
+        m_att_details = model.get_vertica_attributes(attr_name="principal_components")
 
         assert m_att_details["PC1"][0] == pytest.approx(-8.40681285066429e-18, abs=1)
         assert m_att_details["PC1"][1] == pytest.approx(6.69930488797486e-17, abs=1)
@@ -129,19 +127,19 @@ class TestMCA:
 
     def test_plot_contrib(self, model):
         result = model.plot_contrib()
-        assert len(result.get_default_bbox_extra_artists()) == 113
+        assert len(result.get_default_bbox_extra_artists()) == 114
         result = model.plot_contrib(dimension=2)
-        assert len(result.get_default_bbox_extra_artists()) == 113
+        assert len(result.get_default_bbox_extra_artists()) == 114
 
     def test_plot_cos2(self, model):
         result = model.plot_cos2()
-        assert len(result.get_default_bbox_extra_artists()) == 59
+        assert len(result.get_default_bbox_extra_artists()) == 111
         result = model.plot_cos2(dimensions=(2, 3))
-        assert len(result.get_default_bbox_extra_artists()) == 59
+        assert len(result.get_default_bbox_extra_artists()) == 111
 
     def test_plot_scree(self, model):
         result = model.plot_scree()
-        assert len(result.get_default_bbox_extra_artists()) == 112
+        assert len(result.get_default_bbox_extra_artists()) == 113
 
     def test_plot_circle(self, model):
         result = model.plot_circle()

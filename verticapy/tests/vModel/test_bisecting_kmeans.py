@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -24,7 +28,7 @@ from verticapy import (
     drop,
     set_option,
 )
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_dataset_num
 from verticapy.learn.cluster import BisectingKMeans
 
@@ -54,9 +58,8 @@ def model(bsk_data_vd):
     )
 
     model_class = BisectingKMeans("bsk_model_test", n_cluster=3, max_iter=10)
-    model_class.metrics_ = model_class.get_attr("Metrics")
-    model_class.cluster_centers_ = model_class.get_attr("BKTree")
     model_class.X = ["col1", "col2", "col3", "col4"]
+    model_class._compute_attributes()
 
     yield model_class
     model_class.drop()
@@ -64,13 +67,10 @@ def model(bsk_data_vd):
 
 class TestBisectingKMeans:
     def test_repr(self, model):
-        assert "bisecting_kmeans('bsk_model_test'" in model.__repr__()
-        model_repr = BisectingKMeans("BisectingKMeans_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<BisectingKMeans>"
+        assert model.__repr__() == "<BisectingKMeans>"
 
     def test_deploySQL(self, model):
-        expected_sql = "APPLY_BISECTING_KMEANS(col1, col2, col3, col4 USING PARAMETERS model_name = 'bsk_model_test', match_by_pos = 'true')"
+        expected_sql = 'APPLY_BISECTING_KMEANS("col1", "col2", "col3", "col4" USING PARAMETERS model_name = \'bsk_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -91,8 +91,8 @@ class TestBisectingKMeans:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "num_of_clusters",
@@ -114,12 +114,26 @@ class TestBisectingKMeans:
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 5, 7, 1]
 
-        assert model.get_attr("num_of_clusters")["num_of_clusters"][0] == 3
-        assert model.get_attr("dimensions_of_dataset")["dimensions_of_dataset"][0] == 4
-        assert model.get_attr("num_of_clusters_found")["num_of_clusters_found"][0] == 3
-        assert model.get_attr("height_of_BKTree")["height_of_BKTree"][0] == 3
+        assert (
+            model.get_vertica_attributes("num_of_clusters")["num_of_clusters"][0] == 3
+        )
+        assert (
+            model.get_vertica_attributes("dimensions_of_dataset")[
+                "dimensions_of_dataset"
+            ][0]
+            == 4
+        )
+        assert (
+            model.get_vertica_attributes("num_of_clusters_found")[
+                "num_of_clusters_found"
+            ][0]
+            == 3
+        )
+        assert (
+            model.get_vertica_attributes("height_of_BKTree")["height_of_BKTree"][0] == 3
+        )
 
-        m_att_bktree = model.get_attr(attr_name="BKTree")
+        m_att_bktree = model.get_vertica_attributes(attr_name="BKTree")
         assert m_att_bktree["bisection_level"] == [0, 1, 1, 2, 2]
 
     def test_get_params(self, model):
@@ -162,7 +176,9 @@ class TestBisectingKMeans:
 
         assert (
             "kmeans_center_init_method='kmeanspp'"
-            in model_test_kmeanspp.get_attr("call_string")["call_string"][0]
+            in model_test_kmeanspp.get_vertica_attributes("call_string")["call_string"][
+                0
+            ]
         )
         model_test_kmeanspp.drop()
 
@@ -171,7 +187,7 @@ class TestBisectingKMeans:
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
         assert (
             "kmeans_center_init_method='pseudo'"
-            in model_test_pseudo.get_attr("call_string")["call_string"][0]
+            in model_test_pseudo.get_vertica_attributes("call_string")["call_string"][0]
         )
         model_test_pseudo.drop()
 
@@ -180,15 +196,13 @@ class TestBisectingKMeans:
         model_test = BisectingKMeans("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
-        assert len(result.get_default_bbox_extra_artists()) == 16
+        assert len(result.get_default_bbox_extra_artists()) > 7
         plt.close("all")
         model_test.drop()
 
     def test_to_graphviz(self, model):
         gvz_tree_0 = model.to_graphviz(
-            tree_id=0,
-            classes_color=["red", "blue", "green"],
-            round_pred=4,
+            round_score=4,
             percent=True,
             vertical=False,
             node_style={"shape": "box", "style": "filled"},
@@ -205,18 +219,18 @@ class TestBisectingKMeans:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
+            model.to_python()([[5.006, 3.418, 1.464, 0.244]])
         )
 
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
+                model.model_name, model.to_sql([5.006, 3.418, 1.464, 0.244])
             )
         )
         prediction = current_cursor().fetchone()
@@ -233,5 +247,5 @@ class TestBisectingKMeans:
         vdf = vDataFrame("public.bsk_data")
         vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)

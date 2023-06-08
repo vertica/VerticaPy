@@ -1,22 +1,26 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.decomposition import PCA
 
@@ -41,10 +45,7 @@ def model(winequality_vd):
 
 class TestPCA:
     def test_repr(self, model):
-        assert "index|     name     |  mean  |   sd" in model.__repr__()
-        model_repr = PCA("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<PCA>"
+        assert model.__repr__() == "<PCA>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_PCA("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'pca_model_test\', match_by_pos = \'true\', cutoff = 1)'
@@ -74,8 +75,8 @@ class TestPCA:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "columns",
@@ -93,7 +94,7 @@ class TestPCA:
         ]
         assert m_att["#_of_rows"] == [3, 3, 3, 3, 1]
 
-        m_att_details = model.get_attr(attr_name="principal_components")
+        m_att_details = model.get_vertica_attributes(attr_name="principal_components")
 
         assert m_att_details["PC1"][0] == pytest.approx(0.00430584055130197, abs=1e-6)
         assert m_att_details["PC1"][1] == pytest.approx(0.995483456627961, abs=1e-6)
@@ -120,7 +121,7 @@ class TestPCA:
 
     def test_plot_scree(self, model):
         result = model.plot_scree()
-        assert len(result.get_default_bbox_extra_artists()) == 14
+        assert len(result.get_default_bbox_extra_artists()) == 15
 
     def test_plot_circle(self, model):
         result = model.plot_circle()
@@ -131,18 +132,16 @@ class TestPCA:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()
-        assert prediction == pytest.approx(
-            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0]
-        )
+        assert prediction == pytest.approx(model.to_python()([[3.0, 11.0, 93.0]])[0])
 
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -157,7 +156,7 @@ class TestPCA:
     def test_to_memmodel(self, model):
         current_cursor().execute(
             "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]

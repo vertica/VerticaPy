@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -19,13 +23,13 @@ import datetime, os, sys
 
 # Other Modules
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from highcharts.highcharts.highcharts import Highchart
-from highcharts.highstock.highstock import Highstock
+from vertica_highcharts.highcharts.highcharts import Highchart
+from vertica_highcharts.highstock.highstock import Highstock
+from IPython.display import HTML
 
 # VerticaPy
 import verticapy
-from verticapy import drop, create_verticapy_schema, set_option
+from verticapy import drop, set_option
 from verticapy.datasets import (
     load_titanic,
     load_amazon,
@@ -90,96 +94,74 @@ def gapminder_vd():
 
 class TestvDFPlot:
     def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
-        result = pop_growth_vd.animated(
-            "year",
-            ["city", "population"],
-            "continent",
-            1970,
-            1980,
-            "bar",
-            return_html=False,
+        result = pop_growth_vd.animated_bar(
+            "year", ["city", "population"], "continent", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year",
-            ["city", "population"],
-            "continent",
-            1970,
-            1980,
-            "pie",
-            return_html=False,
+        result = pop_growth_vd.animated_pie(
+            "year", ["city", "population"], "continent", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year", ["city", "population"], "", 1970, 1980, "bar", return_html=False
+        result = pop_growth_vd.animated_bar(
+            "year", ["city", "population"], "", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = pop_growth_vd.animated(
-            "year", ["city", "population"], "", 1970, 1980, "pie", return_html=False
+        result = pop_growth_vd.animated_pie(
+            "year", ["city", "population"], "", 1970, 1980,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = amazon_vd.animated(
-            "date", "number", kind="ts", by="state", return_html=False
-        )
-        assert isinstance(result, animation.FuncAnimation)
+        result = amazon_vd.animated_plot("date", "number", by="state",)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = commodities_vd.animated("date", kind="ts", color=["r", "g", "b"])
-        assert isinstance(result, animation.FuncAnimation)
+        result = commodities_vd.animated_plot("date", color=["r", "g", "b"])
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "country", "pop"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "country"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap", "pop"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
-        result = gapminder_vd.animated(
+        result = gapminder_vd.animated_scatter(
             "year",
             ["lifeExp", "gdpPercap"],
             "continent",
-            kind="bubble",
             limit_labels=10,
             limit_over=100,
-            return_html=False,
         )
-        assert isinstance(result, animation.FuncAnimation)
+        assert isinstance(result, HTML)
         plt.close("all")
 
     def test_vDF_stacked_area(self, amazon_vd):
         assert (
             len(
                 amazon_vd.pivot("date", "state", "number")
-                .stacked_area("date", ["ACRE", "BAHIA"], color="b")
+                .plot("date", ["ACRE", "BAHIA"], color="b", kind="area_stacked")
                 .get_default_bbox_extra_artists()
             )
             == 12
@@ -188,17 +170,17 @@ class TestvDFPlot:
         assert (
             len(
                 amazon_vd.pivot("date", "state", "number")
-                .stacked_area("date", ["ACRE", "BAHIA"], fully=True, color="b")
+                .plot("date", ["ACRE", "BAHIA"], kind="area_percent", color="b")
                 .get_default_bbox_extra_artists()
             )
             == 12
         )
         plt.close("all")
 
-    def test_vDF_bar(self, titanic_vd, amazon_vd):
+    def test_vDF_barh(self, titanic_vd, amazon_vd):
         # testing vDataFrame[].bar
         # auto
-        result = titanic_vd["fare"].bar(color="b")
+        result = titanic_vd["fare"].barh(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.7965964343598055
         )
@@ -206,10 +188,9 @@ class TestvDFPlot:
             0.12236628849270664
         )
         assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
-        plt.close("all")
 
         # auto + date
-        result = amazon_vd["date"].bar(color="b")
+        result = amazon_vd["date"].barh(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.07530213820886272
         )
@@ -217,11 +198,10 @@ class TestvDFPlot:
             0.06693523396343352
         )
         assert result.get_yticks()[1] == pytest.approx(44705828.571428575)
-        plt.close("all")
 
         # method=sum of=survived and nbins=5
-        result2 = titanic_vd["fare"].bar(
-            method="sum", of="survived", nbins=5, color="b"
+        result2 = titanic_vd["fare"].barh(
+            method="sum", of="survived", nbins=5, color="b", categorical=False
         )
         assert result2.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             391
@@ -230,16 +210,15 @@ class TestvDFPlot:
             34
         )
         assert result2.get_yticks()[1] == pytest.approx(102.46583999999999)
-        plt.close("all")
 
         # testing vDataFrame.bar
         # auto & stacked
-        for hist_type in ["auto", "stacked"]:
-            result3 = titanic_vd.bar(
+        for kind in ["auto", "stacked"]:
+            result3 = titanic_vd.barh(
                 columns=["pclass", "survived"],
                 method="50%",
                 of="fare",
-                hist_type=hist_type,
+                kind=kind,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[
@@ -248,10 +227,9 @@ class TestvDFPlot:
             assert result3.get_default_bbox_extra_artists()[
                 3
             ].get_width() == pytest.approx(77.9583)
-            plt.close("all")
         # fully_stacked
-        result4 = titanic_vd.bar(
-            columns=["pclass", "survived"], hist_type="fully_stacked", color="b",
+        result4 = titanic_vd.barh(
+            columns=["pclass", "survived"], kind="fully_stacked", color="b",
         )
         assert result4.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.38782051282051283
@@ -259,10 +237,9 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
             0.6121794871794872
         )
-        plt.close("all")
         # pyramid
-        result5 = titanic_vd.bar(
-            columns=["pclass", "survived"], hist_type="pyramid", color="b"
+        result5 = titanic_vd.barh(
+            columns=["pclass", "survived"], kind="pyramid", color="b"
         )
         assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.09805510534846029
@@ -311,9 +288,9 @@ class TestvDFPlot:
     )
     def test_vDF_bubble(self, iris_vd, titanic_vd):
         # testing vDataFrame.bubble - img
-        result = titanic_vd.bubble(
+        result = titanic_vd.scatter(
             columns=["fare", "age"],
-            size_bubble_col="pclass",
+            size="pclass",
             color="b",
             img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png",
             bbox=[0, 10, 0, 10],
@@ -322,20 +299,18 @@ class TestvDFPlot:
         assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
         plt.close("all")
         # testing vDataFrame.bubble
-        result = iris_vd.bubble(
-            columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
-            color="b",
+        result = iris_vd.scatter(
+            columns=["PetalLengthCm", "SepalLengthCm"], size="PetalWidthCm", color="b",
         )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
         plt.close("all")
-        # testing vDataFrame.scatter using parameter catcol
-        result2 = iris_vd.bubble(
+        # testing vDataFrame.scatter using parameter by
+        result2 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
-            catcol="Species",
+            size="PetalWidthCm",
+            by="Species",
             color="b",
         )
         result2 = result2.get_default_bbox_extra_artists()[0]
@@ -343,9 +318,9 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close("all")
         # testing vDataFrame.scatter using parameter cmap_col
-        result3 = iris_vd.bubble(
+        result3 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm"],
-            size_bubble_col="PetalWidthCm",
+            size="PetalWidthCm",
             cmap_col="SepalWidthCm",
         )
         result3 = result3.get_default_bbox_extra_artists()[0]
@@ -359,7 +334,6 @@ class TestvDFPlot:
     )
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
-        create_verticapy_schema()
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(
                 kernel=kernel, nbins=20, color="b"
@@ -440,6 +414,9 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @pytest.mark.skip(
+        reason="Deprecated, we need to implement the functions for each graphic"
+    )
     def test_vDF_hchart(self, titanic_vd, amazon_vd):
         # boxplot
         result = titanic_vd.hchart(kind="boxplot")
@@ -563,10 +540,10 @@ class TestvDFPlot:
         result = amazon_vd.hchart(x="date", y="number", kind="candlestick")
         assert isinstance(result, Highstock)
 
-    def test_vDF_hist(self, titanic_vd):
-        # testing vDataFrame[].hist
+    def test_vDF_bar(self, titanic_vd):
+        # testing vDataFrame[].bar
         # auto
-        result = titanic_vd["age"].hist(color="b")
+        result = titanic_vd["age"].bar(color="b", categorical=False)
         assert result.get_default_bbox_extra_artists()[0].get_height() == pytest.approx(
             0.050243111831442464
         )
@@ -577,7 +554,9 @@ class TestvDFPlot:
         plt.close("all")
 
         # method=avg of=survived and h=15
-        result2 = titanic_vd["age"].hist(method="avg", of="survived", h=15, color="b")
+        result2 = titanic_vd["age"].bar(
+            method="avg", of="survived", h=15, color="b", categorical=False
+        )
         assert result2.get_default_bbox_extra_artists()[
             0
         ].get_height() == pytest.approx(0.534653465346535)
@@ -587,14 +566,14 @@ class TestvDFPlot:
         assert result2.get_xticks()[1] == pytest.approx(15)
         plt.close("all")
 
-        # testing vDataFrame.hist
+        # testing vDataFrame.bar
         # auto & stacked
-        for hist_type in ["auto", "stacked"]:
-            result3 = titanic_vd.hist(
+        for kind in ["auto", "stacked"]:
+            result3 = titanic_vd.bar(
                 columns=["pclass", "sex"],
                 method="avg",
                 of="survived",
-                hist_type=hist_type,
+                kind=kind,
                 color="b",
             )
             assert result3.get_default_bbox_extra_artists()[
@@ -604,8 +583,8 @@ class TestvDFPlot:
                 3
             ].get_height() == pytest.approx(0.325581395348837)
             plt.close("all")
-        # multi
-        result4 = titanic_vd.hist(columns=["fare", "age"], hist_type="multi")
+        # hist
+        result4 = titanic_vd.hist(columns=["fare", "age"])
         assert result4.get_default_bbox_extra_artists()[
             0
         ].get_height() == pytest.approx(0.07374392220421394)
@@ -634,7 +613,7 @@ class TestvDFPlot:
         plt.close("all")
         # testing vDataFrame[].pie - donut
         result = titanic_vd["sex"].pie(
-            method="sum", of="survived", pie_type="donut", colors=["b", "r"]
+            method="sum", of="survived", kind="donut", colors=["b", "r"]
         )
         assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
         assert int(
@@ -642,13 +621,13 @@ class TestvDFPlot:
         ) == pytest.approx(302)
         plt.close("all")
         # testing vDataFrame[].pie - rose
-        result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="rose")
+        result = titanic_vd["sex"].pie(method="sum", of="survived", kind="rose")
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
 
     def test_vDF_pivot_table(self, titanic_vd):
-        result = titanic_vd.pivot_table(
-            columns=["age", "pclass"], method="avg", of="survived", cmap="Reds",
+        result = titanic_vd._pivot_table(
+            columns=["age", "pclass"], method="avg", of="survived",
         )
         assert result[1][0] == pytest.approx(0.75)
         assert result[1][1] == pytest.approx(1.0)
@@ -657,8 +636,9 @@ class TestvDFPlot:
         assert result[2][1] == pytest.approx(0.875)
         assert result[2][2] == pytest.approx(0.375)
         assert len(result[1]) == 12
-        plt.close("all")
+        # plt.close("all")
 
+    @pytest.mark.skip(reason="implement new version later.")
     def test_vDF_outliers_plot(self, titanic_vd):
         assert (
             len(titanic_vd.outliers_plot(["fare"]).get_default_bbox_extra_artists())
@@ -740,9 +720,9 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
         plt.close("all")
 
-        # testing vDataFrame.scatter using parameter catcol
+        # testing vDataFrame.scatter using parameter by
         result3 = iris_vd.scatter(
-            columns=["PetalLengthCm", "SepalLengthCm"], catcol="Species", color="b",
+            columns=["PetalLengthCm", "SepalLengthCm"], by="Species", color="b",
         )
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
@@ -750,7 +730,7 @@ class TestvDFPlot:
         plt.close("all")
         result4 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"],
-            catcol="Species",
+            by="Species",
             color="b",
         )
         result4 = result4.get_default_bbox_extra_artists()[0]

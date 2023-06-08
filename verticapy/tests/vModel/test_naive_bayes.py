@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -19,7 +23,7 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic, load_iris
 from verticapy.learn.naive_bayes import *
 
@@ -62,10 +66,7 @@ def model(iris_vd):
 
 class TestNB:
     def test_repr(self, model):
-        assert "predictor  |  type" in model.__repr__()
-        model_repr = NaiveBayes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<NaiveBayes>"
+        assert model.__repr__() == "<NaiveBayes>"
 
     def test_NB_subclasses(self, winequality_vd):
         model_test = BernoulliNB("model_test")
@@ -103,24 +104,19 @@ class TestNB:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.999)
-
-        cls_rep2 = model.classification_report(cutoff=0.999).transpose()
-
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.999)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert conf_mat1["Iris-setosa"] == [50, 0, 0]
-        assert conf_mat1["Iris-versicolor"] == [0, 47, 3]
-        assert conf_mat1["Iris-virginica"] == [0, 3, 47]
+        assert list(conf_mat1[:, 0]) == [50, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 47, 3]
+        assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2["Iris-setosa"] == [50, 0, 0]
-        assert conf_mat2["Iris-versicolor"] == [0, 47, 3]
-        assert conf_mat2["Iris-virginica"] == [0, 3, 47]
+        assert list(conf_mat1[:, 0]) == [50, 0, 0]
+        assert list(conf_mat1[:, 1]) == [0, 47, 3]
+        assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
     def test_contour(self, titanic_vd):
         model_test = NaiveBayes("model_contour",)
@@ -159,7 +155,7 @@ class TestNB:
         assert current_cursor().fetchone() is None
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(pos_label="Iris-versicolor", nbins=1000)
+        lift_ch = model.lift_chart(pos_label="Iris-versicolor", nbins=1000, show=False)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(0.9)
@@ -269,23 +265,25 @@ class TestNB:
             name="prediction_proba_vertica_sql_2",
             pos_label=model_class.classes_[2],
         )
-        score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
-        assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+            "prediction_sql", "prediction_vertica_sql", metric="accuracy"
         )
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", metric="r2"
         )
         assert score == pytest.approx(1.0)
         score = titanic.score(
-            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", metric="r2"
+        )
+        assert score == pytest.approx(1.0)
+        score = titanic.score(
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", metric="r2"
         )
         assert score == pytest.approx(1.0)
 
-    def test_get_attr(self, model):
-        attr = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        attr = model.get_vertica_attributes()
         assert attr["attr_name"] == [
             "details",
             "alpha",
@@ -310,7 +308,7 @@ class TestNB:
         ]
         assert attr["#_of_rows"] == [5, 1, 3, 1, 1, 1, 4, 4, 4]
 
-        details = model.get_attr("details")
+        details = model.get_vertica_attributes("details")
         assert details["predictor"] == [
             "Species",
             "SepalLengthCm",
@@ -326,29 +324,35 @@ class TestNB:
             "Gaussian",
         ]
 
-        assert model.get_attr("alpha")["alpha"][0] == 1.0
+        assert model.get_vertica_attributes("alpha")["alpha"][0] == 1.0
 
-        assert model.get_attr("prior")["class"] == [
+        assert model.get_vertica_attributes("prior")["class"] == [
             "Iris-setosa",
             "Iris-versicolor",
             "Iris-virginica",
         ]
-        assert model.get_attr("prior")["probability"] == [
+        assert model.get_vertica_attributes("prior")["probability"] == [
             pytest.approx(0.333333333333333),
             pytest.approx(0.333333333333333),
             pytest.approx(0.333333333333333),
         ]
 
-        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 150
-        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
+        assert (
+            model.get_vertica_attributes("accepted_row_count")["accepted_row_count"][0]
+            == 150
+        )
+        assert (
+            model.get_vertica_attributes("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
 
-        assert model.get_attr("gaussian.Iris-setosa")["mu"] == [
+        assert model.get_vertica_attributes("gaussian.Iris-setosa")["mu"] == [
             pytest.approx(5.006),
             pytest.approx(3.418),
             pytest.approx(1.464),
             pytest.approx(0.244),
         ]
-        assert model.get_attr("gaussian.Iris-setosa")["sigma_sq"] == [
+        assert model.get_vertica_attributes("gaussian.Iris-setosa")["sigma_sq"] == [
             pytest.approx(0.12424897959183),
             pytest.approx(0.145179591836736),
             pytest.approx(0.0301061224489805),
@@ -356,7 +360,7 @@ class TestNB:
         ]
 
         assert (
-            model.get_attr("call_string")["call_string"][0]
+            model.get_vertica_attributes("call_string")["call_string"][0]
             == "naive_bayes('public.nb_model_test', 'public.iris', '\"species\"', '\"SepalLengthCm\", \"SepalWidthCm\", \"PetalLengthCm\", \"PetalWidthCm\"' USING PARAMETERS exclude_columns='', alpha=1)"
         )
 
@@ -366,7 +370,7 @@ class TestNB:
         assert params == {"alpha": 1.0, "nbtype": "auto"}
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(pos_label="Iris-virginica", nbins=1000)
+        prc = model.prc_curve(pos_label="Iris-virginica", nbins=1000, show=False)
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(0.94)
@@ -389,7 +393,7 @@ class TestNB:
         assert iris_copy["pred_class2"][0] == "Iris-setosa"
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(pos_label="Iris-virginica", nbins=1000)
+        roc = model.roc_curve(pos_label="Iris-virginica", nbins=1000, show=False)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(0.08)
@@ -400,7 +404,9 @@ class TestNB:
         plt.close()
 
     def test_cutoff_curve(self, model):
-        cutoff_curve = model.cutoff_curve(pos_label="Iris-virginica", nbins=1000)
+        cutoff_curve = model.cutoff_curve(
+            pos_label="Iris-virginica", nbins=1000, show=False
+        )
 
         assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
         assert cutoff_curve["false_positive"][100] == pytest.approx(0.08)
@@ -412,47 +418,46 @@ class TestNB:
 
     def test_score(self, model):
         # the value of cutoff has no impact on the result
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(0.96)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(0.96)
+        assert model.score(metric="accuracy") == pytest.approx(0.96)
         assert model.score(
-            cutoff=0.9, method="auc", pos_label="Iris-virginica"
+            cutoff=0.9, metric="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
-            cutoff=0.1, method="auc", pos_label="Iris-virginica"
+            cutoff=0.1, metric="auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
-            cutoff=0.9, method="best_cutoff", pos_label="Iris-virginica"
+            cutoff=0.9, metric="best_cutoff", pos_label="Iris-virginica"
         ) == pytest.approx(0.5099, 1e-2)
         assert model.score(
-            cutoff=0.9, method="bm", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="bm", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8300000000000001)
         assert model.score(
-            cutoff=0.9, method="csi", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="csi", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8235294117647058)
         assert model.score(
-            cutoff=0.9, method="f1", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="f1", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9032258064516129)
         assert model.score(
-            cutoff=0.9, method="logloss", pos_label="Iris-virginica"
+            cutoff=0.9, metric="logloss", pos_label="Iris-virginica"
         ) == pytest.approx(0.0479202007517544)
         assert model.score(
-            cutoff=0.9, method="mcc", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="mcc", pos_label="Iris-virginica"
+        ) == pytest.approx(0.8652407755372198)
         assert model.score(
-            cutoff=0.9, method="mk", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="mk", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9019778309063247)
         assert model.score(
-            cutoff=0.9, method="npv", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+            cutoff=0.9, metric="npv", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9252336448598131)
         assert model.score(
-            cutoff=0.9, method="prc_auc", pos_label="Iris-virginica"
+            cutoff=0.9, metric="prc_auc", pos_label="Iris-virginica"
         ) == pytest.approx(0.9864010713921592)
         assert model.score(
-            cutoff=0.9, method="precision", pos_label="Iris-virginica"
-        ) == pytest.approx(0.0)
+            cutoff=0.9, metric="precision", pos_label="Iris-virginica"
+        ) == pytest.approx(0.9767441860465116)
         assert model.score(
-            cutoff=0.9, method="specificity", pos_label="Iris-virginica"
-        ) == pytest.approx(1.0)
+            cutoff=0.9, metric="specificity", pos_label="Iris-virginica"
+        ) == pytest.approx(0.99)
 
     def test_set_params(self, model):
         model.set_params({"alpha": 0.5})

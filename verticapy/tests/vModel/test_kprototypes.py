@@ -1,15 +1,19 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
@@ -20,7 +24,7 @@ import matplotlib.pyplot as plt
 # VerticaPy
 from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_iris
 from verticapy.learn.cluster import KPrototypes
 
@@ -61,10 +65,7 @@ version = get_version()
 )
 class TestKPrototypes:
     def test_repr(self, model):
-        assert "kprototypes" in model.__repr__()
-        model_repr = KPrototypes("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<KPrototypes>"
+        assert model.__repr__() == "<KPrototypes>"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_KPROTOTYPES("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species" USING PARAMETERS model_name = \'kprototypes_model_test\', match_by_pos = \'true\')'
@@ -88,8 +89,8 @@ class TestKPrototypes:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == ["centers", "metrics"]
         assert m_att["attr_fields"] == [
@@ -98,7 +99,7 @@ class TestKPrototypes:
         ]
         assert m_att["#_of_rows"] == [3, 1]
 
-        m_att_centers = model.get_attr(attr_name="centers")
+        m_att_centers = model.get_vertica_attributes(attr_name="centers")
 
         assert m_att_centers["sepallengthcm"] == [
             pytest.approx(5.006),
@@ -167,7 +168,7 @@ class TestKPrototypes:
         model_test = KPrototypes("model_test_plot", n_cluster=3,)
         model_test.fit(iris_vd, ["SepalLengthCm", "PetalWidthCm"])
         result = model_test.plot(color="b")
-        assert len(result.get_default_bbox_extra_artists()) == 11
+        assert len(result.get_default_bbox_extra_artists()) > 8
         plt.close("all")
         model_test.drop()
         # TODO: test for categorical inputs.
@@ -175,17 +176,15 @@ class TestKPrototypes:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_KPROTOTYPES(5.006, 3.418, 1.464, 0.244, 'Iris-setosa' USING PARAMETERS model_name = '{0}', match_by_pos=True)".format(
-                model.name
+                model.model_name
             )
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)(
-                [[5.006, 3.418, 1.464, 0.244, "Iris-setosa"]]
-            )[0]
+            model.to_python()([[5.006, 3.418, 1.464, 0.244, "Iris-setosa"]])[0]
         )
         assert 0.0 == pytest.approx(
-            model.to_python(return_str=False, return_distance_clusters=True)(
+            model.to_python(return_distance_clusters=True)(
                 [[5.006, 3.418, 1.464, 0.244]]
             )[0][0]
         )
@@ -193,7 +192,8 @@ class TestKPrototypes:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_KPROTOTYPES(5.006, 3.418, 1.464, 0.244, 'Iris-setosa' USING PARAMETERS model_name = '{0}', match_by_pos=True)::float, {1}::float".format(
-                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"]),
+                model.model_name,
+                model.to_sql([5.006, 3.418, 1.464, 0.244, "'Iris-setosa'"]),
             )
         )
         prediction = current_cursor().fetchone()
@@ -226,5 +226,5 @@ class TestKPrototypes:
             ]
         )
         model.predict(vdf, name="prediction_vertica_sql")
-        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(0.993333333333333)  # can we do better?

@@ -1,22 +1,26 @@
-# (c) Copyright [2018-2023] Micro Focus or one of its affiliates.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
 
 # Pytest
 import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import current_cursor
+from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import OneHotEncoder
 
@@ -41,13 +45,10 @@ def model(titanic_vd):
 
 class TestOneHotEncoder:
     def test_repr(self, model):
-        assert "one_hot_encoder_fit" in model.__repr__()
-        model_repr = OneHotEncoder("model_repr")
-        model_repr.drop()
-        assert model_repr.__repr__() == "<OneHotEncoder>"
+        assert model.__repr__() == "<OneHotEncoder>"
 
     def test_deploySQL(self, model):
-        expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = False, ignore_null = True, separator = '_', column_naming = 'indices')"
+        expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = 'false', ignore_null = 'true', separator = '_', column_naming = 'indices')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -68,8 +69,8 @@ class TestOneHotEncoder:
         )
         assert current_cursor().fetchone() is None
 
-    def test_get_attr(self, model):
-        m_att = model.get_attr()
+    def test_get_vertica_attributes(self, model):
+        m_att = model.get_vertica_attributes()
 
         assert m_att["attr_name"] == [
             "call_string",
@@ -83,7 +84,7 @@ class TestOneHotEncoder:
         ]
         assert m_att["#_of_rows"] == [1, 3, 6]
 
-        m_att_details = model.get_attr(attr_name="integer_categories")
+        m_att_details = model.get_vertica_attributes(attr_name="integer_categories")
 
         assert m_att_details["category_name"] == [
             "pclass",
@@ -110,7 +111,7 @@ class TestOneHotEncoder:
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=True) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -125,7 +126,7 @@ class TestOneHotEncoder:
     def test_to_memmodel(self, model):
         current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [float(elem) for elem in current_cursor().fetchone()]
@@ -156,11 +157,11 @@ class TestOneHotEncoder:
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
+                model.model_name
             )
         )
         prediction = [int(elem) for elem in current_cursor().fetchone()]
-        prediction2 = model.to_python(return_str=False)([[1, "female", "S"]])[0]
+        prediction2 = model.to_python()([[1, "female", "S"]])[0]
         assert len(prediction) == len(prediction2)
         assert prediction[0] == prediction2[0]
         assert prediction[1] == prediction2[1]
@@ -189,7 +190,7 @@ class TestOneHotEncoder:
 
     def test_set_params(self, model):
         model.set_params({"ignore_null": False})
-        assert model.get_params()["ignore_null"] == False
+        assert not model.get_params()["ignore_null"]
 
     def test_model_from_vDF(self, titanic_vd):
         current_cursor().execute("DROP MODEL IF EXISTS ohe_vDF")
