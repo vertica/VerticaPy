@@ -563,6 +563,7 @@ git push -f origin my-fix-branch
 When you think your work is ready to be pulled into *VerticaPy*, you should create a pull request(PR) at GitHub.
 
 A good pull request means:
+ - a self-explanatory title (and the content of the PR should not go beyond the original title/scope)
  - commits with one logical change in each
  - well-formed messages for each commit
  - documentation and tests, if needed
