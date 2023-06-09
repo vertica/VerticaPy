@@ -262,7 +262,7 @@ Examples of such hints are all over the code. Please have a look at the rest of 
 
 **********ADD IMAGE FOR AN EXAMPLE FUNCTION WITH ALL THREE OPERATORS ************
 <p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/function.png' width="60%">
+<img src='https://github.com/vertica/VerticaPy/assets/46414488/149e4265-62e9-4d09-a58f-1f62fcd354cc' width="60%">
 </p>
 
 Be sure to write a detailed description for each function that explains how it works.
@@ -495,7 +495,10 @@ pytest -n auto --dist=loadscope
 ```
 Note that in order to use above, you will have to install pytest-xdist.
 
-You are now ready to create your first contribution!
+
+Add appropriate tests for the bug’s or feature's behavior, run the test suite again and ensure that all tests pass. Here are additional guidelines for writing test:
+ - Tests should be easy for any contributor to run. Contributors may not get complete access to their Vertica database, for example, they may only have a non-admin user with write privileges to a single schema, and the database may not be the latest version. We encourage tests to use only what they need and nothing more.
+ - If there are requirements to the database for running a test, the test should adapt to different situations and never report a failure. For example, if a test depends on a multi-node database, it should check the number of DB nodes first, and skip itself when it connects to a single-node database (see helper function `require_DB_nodes_at_least()` in `verticapy/tests/integration_tests/base.py`).
 
 ### Code formatting as per PEP 8
 
@@ -525,6 +528,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 ```
+You are now ready to create your first contribution!
 
 ### Commits
 
@@ -537,11 +541,6 @@ git commit -m 'Added two more tests for #166'
 
 When writing the commit message, try to describe precisely what the commit does. The commit message should be in lines of 72 chars maximum. Include the issue number `#N`, if the commit is related to an issue.
 
-### Tests
-
-Add appropriate tests for the bug’s or feature's behavior, run the test suite again and ensure that all tests pass. Here is the guideline for writing test:
- - Tests should be easy for any contributor to run. Contributors may not get complete access to their Vertica database, for example, they may only have a non-admin user with write privileges to a single schema, and the database may not be the latest version. We encourage tests to use only what they need and nothing more.
- - If there are requirements to the database for running a test, the test should adapt to different situations and never report a failure. For example, if a test depends on a multi-node database, it should check the number of DB nodes first, and skip itself when it connects to a single-node database (see helper function `require_DB_nodes_at_least()` in `verticapy/tests/integration_tests/base.py`).
 
 ## Step 6: Push and Rebase
 
