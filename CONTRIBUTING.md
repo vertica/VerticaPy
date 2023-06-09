@@ -488,7 +488,7 @@ def titanic_vd(schema_loader):
 ```
 Note that we do not necessarily have to drop the dataset as the schema will automatically be dropped at the end of the unit test as we are using "schema_loader" fixture.
 
-Last, but not least, double check to make sure that your test allows parallel exeution by using the following pytest command:
+Lastly, double check to make sure that your test allows parallel exeution by using the following pytest command:
 
 ```python
 pytest -n auto --dist=loadscope
@@ -496,6 +496,14 @@ pytest -n auto --dist=loadscope
 Note that in order to use above, you will have to install pytest-xdist.
 
 You are now ready to create your first contribution!
+
+### Code formatting as per PEP 8
+
+Once you are satisfied with your code, please run black [https://black.readthedocs.io/en/stable/] for your code. Black will automatically format all your code to make it professional and consistent with PEP 8.
+
+Next please run pylint [https://pypi.org/project/pylint/] and ensure that your score is above the miinimum threshold of 5. Pylint will automatically provide you with the improvement opportunities that you can adjust to increaes your score.
+
+As per the updated CI/CD, no code will be accepted that requires formatting using black or has a lower pylint score than the threshold stated above. 
 
 ### License Headers
 
