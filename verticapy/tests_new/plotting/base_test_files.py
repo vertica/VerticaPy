@@ -582,7 +582,7 @@ class VDFContourPlot(BasicPlotTests):
         Create the plot
         """
 
-        def func(param_a, param_b):
+        def func_tmp(param_a, param_b):
             """
             Arbitrary custom function for testing
             """
@@ -590,7 +590,7 @@ class VDFContourPlot(BasicPlotTests):
 
         return (
             self.data.contour,
-            {"columns": [self.COL_NAME_1, self.COL_NAME_2], "func": func},
+            {"columns": [self.COL_NAME_1, self.COL_NAME_2], "func": func_tmp},
         )
 
     @pytest.mark.parametrize("nbins", [10, 20])
