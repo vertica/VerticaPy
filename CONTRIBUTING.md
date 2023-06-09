@@ -299,7 +299,7 @@ titanic.get_columns()
 
 
 
-Use the \_genSQL\_ method to get the current vDataFrame relation.
+Use the \_genSQL method to get the current vDataFrame relation.
 ```python
 titanic._genSQL()
 ```
