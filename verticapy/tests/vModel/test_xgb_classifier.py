@@ -50,7 +50,9 @@ def xgbc_data_vd():
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -132,10 +134,14 @@ class TestXGBC:
         assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = XGBClassifier("model_contour",)
+        model_test = XGBClassifier(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) in (38, 40, 43)
@@ -152,7 +158,9 @@ class TestXGBC:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_model_test_drop")
-        model_test = XGBClassifier("xgbc_model_test_drop",)
+        model_test = XGBClassifier(
+            "xgbc_model_test_drop",
+        )
         model_test.fit(
             "public.xgbc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -496,7 +504,9 @@ class TestXGBC:
 
     def test_model_from_vDF(self, xgbc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS xgbc_from_vDF")
-        model_test = XGBClassifier("xgbc_from_vDF",)
+        model_test = XGBClassifier(
+            "xgbc_from_vDF",
+        )
         model_test.fit(
             xgbc_data_vd,
             ["Gender", '"owned cars"', "cost", "income"],

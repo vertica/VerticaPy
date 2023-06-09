@@ -33,20 +33,34 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     model_class = Pipeline(
         [
-            ("ScalerWine", Scaler("std_model_test",)),
-            ("LinearRegressionWine", LinearRegression("linreg_model_test",)),
+            (
+                "ScalerWine",
+                Scaler(
+                    "std_model_test",
+                ),
+            ),
+            (
+                "LinearRegressionWine",
+                LinearRegression(
+                    "linreg_model_test",
+                ),
+            ),
         ]
     )
     model_class.drop()
     model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality",
+        "public.winequality",
+        ["citric_acid", "residual_sugar", "alcohol"],
+        "quality",
     )
     yield model_class
     model_class.drop()
@@ -60,8 +74,18 @@ class TestPipeline:
     def test_drop(self, winequality_vd):
         model_class = Pipeline(
             [
-                ("ScalerWine", Scaler("std_model_test_drop",),),
-                ("LinearRegressionWine", LinearRegression("linreg_model_test_drop",),),
+                (
+                    "ScalerWine",
+                    Scaler(
+                        "std_model_test_drop",
+                    ),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression(
+                        "linreg_model_test_drop",
+                    ),
+                ),
             ]
         )
         model_class.drop()
@@ -132,8 +156,14 @@ class TestPipeline:
 
         model_class = Pipeline(
             [
-                ("ScalerWine", Scaler("logstd_model_test"),),
-                ("LogisticRegressionWine", LogisticRegression("logreg_model_test"),),
+                (
+                    "ScalerWine",
+                    Scaler("logstd_model_test"),
+                ),
+                (
+                    "LogisticRegressionWine",
+                    LogisticRegression("logreg_model_test"),
+                ),
             ]
         )
         model_class.drop()
@@ -179,8 +209,14 @@ class TestPipeline:
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("ScalerWine", Scaler("logstd_model_test"),),
-                ("ScalerWine", MinMaxScaler("logmm_model_test"),),
+                (
+                    "ScalerWine",
+                    Scaler("logstd_model_test"),
+                ),
+                (
+                    "ScalerWine",
+                    MinMaxScaler("logmm_model_test"),
+                ),
             ]
         )
         model_class.drop()
@@ -196,15 +232,22 @@ class TestPipeline:
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                ("ScalerWine", Scaler("logstd_model_test"),),
-                ("ScalerWine", MinMaxScaler("logmm_model_test"),),
+                (
+                    "ScalerWine",
+                    Scaler("logstd_model_test"),
+                ),
+                (
+                    "ScalerWine",
+                    MinMaxScaler("logmm_model_test"),
+                ),
             ]
         )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"])
         winequality_copy = winequality_vd.copy()
         winequality_copy = model_class.inverse_transform(
-            winequality_copy, X=["alcohol"],
+            winequality_copy,
+            X=["alcohol"],
         )
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             80.3934257349546, abs=1e-6
@@ -215,8 +258,18 @@ class TestPipeline:
     def test_model_from_vDF(self, winequality_vd):
         model_test = Pipeline(
             [
-                ("ScalerWine", Scaler("std_model_test_vdf",),),
-                ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf",),),
+                (
+                    "ScalerWine",
+                    Scaler(
+                        "std_model_test_vdf",
+                    ),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression(
+                        "linreg_model_test_vdf",
+                    ),
+                ),
             ]
         )
         model_test.drop()

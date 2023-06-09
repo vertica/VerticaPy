@@ -35,12 +35,16 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    model_class = CountVectorizer("model_test_countvectorizer",)
+    model_class = CountVectorizer(
+        "model_test_countvectorizer",
+    )
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
     yield model_class
@@ -102,7 +106,9 @@ class TestCountVectorizer:
         assert model.get_params()["lowercase"]
 
     def test_model_from_vDF(self, titanic_vd):
-        model_class = CountVectorizer("model_test_vdf",)
+        model_class = CountVectorizer(
+            "model_test_vdf",
+        )
         model_class.drop()
         model_class.fit(titanic_vd, ["name"])
         assert model_class.transform().shape() == (1841, 4)

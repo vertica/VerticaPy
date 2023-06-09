@@ -67,66 +67,66 @@ from verticapy.sql.flex import (
 
 class vDataFrame(vDFAnimatedPlot):
     """
-    An  object that  records  all  user modifications, allowing 
-    users to  manipulate  the  relation  without  mutating  the 
-    underlying  data in  Vertica.  When  changes are  made, the 
-    vDataFrame queries the Vertica database,  which  aggregates 
-    and returns  the final result. The vDataFrame  creates, for 
-    each column of the relation, a Virtual Column (vDataColumn) 
-    that stores the column alias an all user transformations. 
+    An  object that  records  all  user modifications, allowing
+    users to  manipulate  the  relation  without  mutating  the
+    underlying  data in  Vertica.  When  changes are  made, the
+    vDataFrame queries the Vertica database,  which  aggregates
+    and returns  the final result. The vDataFrame  creates, for
+    each column of the relation, a Virtual Column (vDataColumn)
+    that stores the column alias an all user transformations.
 
     Parameters
     ----------
-    input_relation: str / TableSample / pandas.DataFrame 
+    input_relation: str / TableSample / pandas.DataFrame
                        / list / numpy.ndarray / dict, optional
-        If the input_relation is of type str, it must represent 
-        the relation  (view, table, or temporary table) used to 
-        create the object. 
-        To  get a  specific  schema relation,  your string must 
-        include both the relation and schema: 'schema.relation' 
-        or '"schema"."relation"'. 
-        Alternatively, you can use  the  'schema' parameter, in 
-        which  case the input_relation must exclude the  schema 
-        name.  It can also be the SQL query used to create  the 
+        If the input_relation is of type str, it must represent
+        the relation  (view, table, or temporary table) used to
+        create the object.
+        To  get a  specific  schema relation,  your string must
+        include both the relation and schema: 'schema.relation'
+        or '"schema"."relation"'.
+        Alternatively, you can use  the  'schema' parameter, in
+        which  case the input_relation must exclude the  schema
+        name.  It can also be the SQL query used to create  the
         vDataFrame.
-        If it is a pandas.DataFrame, a temporary local table is 
-        created. Otherwise, the vDataFrame is created using the 
-        generated SQL code of multiple UNIONs. 
+        If it is a pandas.DataFrame, a temporary local table is
+        created. Otherwise, the vDataFrame is created using the
+        generated SQL code of multiple UNIONs.
     usecols: SQLColumns, optional
         When input_relation is not an array-like type:
-        List of columns used to create the object. As Vertica 
-        is  a  columnar DB, including  less columns  makes  the 
-        process faster.  Do not hesitate to exclude useless 
+        List of columns used to create the object. As Vertica
+        is  a  columnar DB, including  less columns  makes  the
+        process faster.  Do not hesitate to exclude useless
         columns.
         Otherwise:
         List of column names.
     schema: str, optional
-        The  schema of the relation. Specifying a schema  allows 
-        you to specify a table within a particular schema, or to 
-        specify  a schema and relation name that contain  period 
-        '.' characters. If specified, the input_relation  cannot 
+        The  schema of the relation. Specifying a schema  allows
+        you to specify a table within a particular schema, or to
+        specify  a schema and relation name that contain  period
+        '.' characters. If specified, the input_relation  cannot
         include a schema.
     external: bool, optional
-        A  boolean  to indicate whether it is an external table. 
-        If set to True, a Connection Identifier Database must be 
+        A  boolean  to indicate whether it is an external table.
+        If set to True, a Connection Identifier Database must be
         defined.
     symbol: str, optional
         Symbol used to identify the external connection.
         One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "?", "!"      
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"
     sql_push_ext: bool, optional
-        If  set to True, the  external vDataFrame attempts to  push 
-        the entire query to the external table (only DQL statements 
-        - SELECT;  for other statements,  use SQL Magic  directly). 
-        This can increase performance  but might increase the error 
-        rate. For instance, some DBs might not support the same SQL 
+        If  set to True, the  external vDataFrame attempts to  push
+        the entire query to the external table (only DQL statements
+        - SELECT;  for other statements,  use SQL Magic  directly).
+        This can increase performance  but might increase the error
+        rate. For instance, some DBs might not support the same SQL
         as Vertica.
 
     Attributes
     ----------
     vDataColumns : vDataColumn
         Each   vDataColumn  of  the  vDataFrame  is  accessible   by
-        specifying its name between brackets. For example, to access 
+        specifying its name between brackets. For example, to access
         the vDataColumn "myVC": vDataFrame["myVC"].
     """
 
@@ -165,9 +165,7 @@ class vDataFrame(vDFAnimatedPlot):
         usecols = format_type(usecols, dtype=list)
 
         if external:
-
             if isinstance(input_relation, str) and input_relation:
-
                 if schema:
                     input_relation = (
                         f"{quote_ident(schema)}.{quote_ident(input_relation)}"
@@ -178,7 +176,6 @@ class vDataFrame(vDFAnimatedPlot):
                 query = f"SELECT {cols} FROM {input_relation}"
 
             else:
-
                 raise ValueError(
                     "Parameter 'input_relation' must be a nonempty str "
                     "when using external tables."
@@ -190,7 +187,6 @@ class vDataFrame(vDFAnimatedPlot):
                 query = symbol * 3 + query + symbol * 3
 
             else:
-
                 raise ConnectionError(
                     "No corresponding Connection Identifier Database is "
                     f"defined (Using the symbol '{symbol}'). Use the "
@@ -199,17 +195,13 @@ class vDataFrame(vDFAnimatedPlot):
                 )
 
         if isinstance(input_relation, (TableSample, list, np.ndarray, dict)):
-
             return self._from_object(input_relation, usecols)
 
         elif isinstance(input_relation, pd.DataFrame):
-
             return self._from_pandas(input_relation, usecols)
 
         elif not _empty:
-
             if isinstance(input_relation, str) and is_dql(input_relation):
-
                 # Cleaning the Query
                 sql = clean_query(input_relation)
                 sql = extract_subquery(sql)
@@ -225,7 +217,6 @@ class vDataFrame(vDFAnimatedPlot):
                 isflex = False
 
             else:
-
                 if not schema:
                     schema, input_relation = schema_relation(input_relation)
                 schema = quote_ident(schema)
@@ -270,7 +261,8 @@ class vDataFrame(vDFAnimatedPlot):
                 category = to_category(ctype)
                 if is_longvar(ctype):
                     if isflex or isvmap(
-                        expr=self._vars["main_relation"], column=column,
+                        expr=self._vars["main_relation"],
+                        column=column,
                     ):
                         category = "vmap"
                         precision = extract_precision_scale(ctype)[0]
@@ -281,7 +273,13 @@ class vDataFrame(vDFAnimatedPlot):
                 new_vDataColumn = vDataColumn(
                     column_ident,
                     parent=self,
-                    transformations=[(quote_ident(column), ctype, category,)],
+                    transformations=[
+                        (
+                            quote_ident(column),
+                            ctype,
+                            category,
+                        )
+                    ],
                 )
                 setattr(self, column_ident, new_vDataColumn)
                 setattr(self, column_ident[1:-1], new_vDataColumn)
@@ -298,7 +296,6 @@ class vDataFrame(vDFAnimatedPlot):
         columns = format_type(columns, dtype=list)
 
         if isinstance(object_, (list, np.ndarray)):
-
             if isinstance(object_, list):
                 object_ = np.array(object_)
 
@@ -316,15 +313,12 @@ class vDataFrame(vDFAnimatedPlot):
             tb = TableSample(d)
 
         elif isinstance(object_, dict):
-
             tb = TableSample(object_)
 
         else:
-
             tb = object_
 
         if len(columns) > 0:
-
             tb_final = {}
             for col in columns:
                 tb_final[col] = tb[col]
@@ -333,7 +327,9 @@ class vDataFrame(vDFAnimatedPlot):
         return self.__init__(input_relation=tb.to_sql())
 
     def _from_pandas(
-        self, object_: pd.DataFrame, usecols: Optional[SQLColumns] = None,
+        self,
+        object_: pd.DataFrame,
+        usecols: Optional[SQLColumns] = None,
     ) -> None:
         """
         Creates a vDataFrame from a pandas.DataFrame.
@@ -355,9 +351,9 @@ class vDataFrame(vDFAnimatedPlot):
 
 class vDataColumn(vDCPlot, StringSQL):
     """
-    Python object that stores all user transformations. If   the  
+    Python object that stores all user transformations. If   the
     vDataFrame  represents the entire relation, a vDataColumn can
-    be seen  as  one  column of  that  relation. Through its 
+    be seen  as  one  column of  that  relation. Through its
     abstractions, vDataColumns simplify several processes.
 
     Parameters
@@ -365,16 +361,16 @@ class vDataColumn(vDCPlot, StringSQL):
     alias: str
         vDataColumn alias.
     transformations: list, optional
-        List of the different  transformations. Each transformation 
-        must be similar to the following: (function, type, category)  
+        List of the different  transformations. Each transformation
+        must be similar to the following: (function, type, category)
     parent: vDataFrame, optional
-        Parent of the vDataColumn. One vDataFrame can have multiple 
-        children vDataColumns, whereas one vDataColumn can only have 
+        Parent of the vDataColumn. One vDataFrame can have multiple
+        children vDataColumns, whereas one vDataColumn can only have
         one parent.
     catalog: dict, optional
-        Catalog where each key corresponds to an aggregation. 
-        vDataColumns will memorize the already computed aggregations 
-        to increase performance. The catalog is updated when the 
+        Catalog where each key corresponds to an aggregation.
+        vDataColumns will memorize the already computed aggregations
+        to increase performance. The catalog is updated when the
         parent vDataFrame is modified.
 
     Attributes

@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class DensityPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -66,7 +65,10 @@ class DensityPlot(HighchartsBase):
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
+                            "hover": {
+                                "enabled": True,
+                                "lineColor": "rgb(100,100,100)",
+                            }
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},
@@ -77,7 +79,11 @@ class DensityPlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a density plot using the HC API.
         """
@@ -91,7 +97,6 @@ class DensityPlot(HighchartsBase):
 
 
 class MultiDensityPlot(DensityPlot):
-
     # Styling Methods.
 
     def _init_style(self) -> None:
@@ -106,7 +111,11 @@ class MultiDensityPlot(DensityPlot):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a multi-density plot using the HC API.
         """

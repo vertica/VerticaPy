@@ -39,7 +39,9 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -77,7 +79,9 @@ class TestBisectingKMeans:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS bsk_model_test_drop")
-        model_test = BisectingKMeans("bsk_model_test_drop",)
+        model_test = BisectingKMeans(
+            "bsk_model_test_drop",
+        )
         model_test.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
         current_cursor().execute(
@@ -161,7 +165,9 @@ class TestBisectingKMeans:
 
     def test_model_from_vDF(self, bsk_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS bsk_vDF")
-        model_test = BisectingKMeans("bsk_vDF",)
+        model_test = BisectingKMeans(
+            "bsk_vDF",
+        )
         model_test.fit(bsk_data_vd, ["col1", "col2", "col3", "col4"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'bsk_vDF'"
@@ -193,7 +199,9 @@ class TestBisectingKMeans:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = BisectingKMeans("model_test_plot",)
+        model_test = BisectingKMeans(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) > 7

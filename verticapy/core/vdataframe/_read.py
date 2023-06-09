@@ -174,7 +174,7 @@ class vDFRead(vDFUtils):
 
     def idisplay(self) -> None:
         """
-        This  method  displays  the interactive  table. It is used  when 
+        This  method  displays  the interactive  table. It is used  when
         you don't want to activate interactive tables for all vDataFrames.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
@@ -186,8 +186,8 @@ class vDFRead(vDFUtils):
         Parameters
         ----------
         exclude_columns: SQLColumns, optional
-            List of the vDataColumns names to exclude from 
-            the final list. 
+            List of the vDataColumns names to exclude from
+            the final list.
 
         Returns
         -------
@@ -225,7 +225,7 @@ class vDFRead(vDFUtils):
         self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
     ) -> TableSample:
         """
-        Returns a part of the vDataFrame (delimited by an offset 
+        Returns a part of the vDataFrame (delimited by an offset
         and a limit).
 
         Parameters
@@ -235,8 +235,8 @@ class vDFRead(vDFUtils):
         offset: int, optional
             Number of elements to skip.
         columns: SQLColumns, optional
-            A list containing the names of the vDataColumns to 
-            include in the result.  If empty, all vDataColumns 
+            A list containing the names of the vDataColumns to
+            include in the result.  If empty, all vDataColumns
             are selected.
 
         Returns
@@ -334,7 +334,7 @@ class vDFRead(vDFUtils):
     @save_verticapy_logs
     def select(self, columns: SQLColumns) -> "vDataFrame":
         """
-        Returns a copy of the vDataFrame with only the selected 
+        Returns a copy of the vDataFrame with only the selected
         vDataColumns.
 
         Parameters
@@ -515,7 +515,7 @@ class vDCRead:
 
     def iloc(self, limit: int = 5, offset: int = 0) -> TableSample:
         """
-        Returns a part of the vDataColumn (delimited by an offset 
+        Returns a part of the vDataColumn (delimited by an offset
         and a limit).
 
         Parameters

@@ -43,7 +43,6 @@ General Classes.
 
 
 class LinearModel:
-
     # Properties.
 
     @property
@@ -127,7 +126,7 @@ class LinearModel:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -142,7 +141,9 @@ class LinearModel:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -179,7 +180,7 @@ class LinearModel:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -188,7 +189,9 @@ class LinearModel:
             Plotting Object.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="RegressionPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="RegressionPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.RegressionPlot(
             vdf=vDataFrame(self.input_relation),
@@ -199,7 +202,6 @@ class LinearModel:
 
 
 class LinearModelClassifier(LinearModel):
-
     # Properties.
 
     @property
@@ -255,7 +257,7 @@ class LinearModelClassifier(LinearModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -264,7 +266,9 @@ class LinearModelClassifier(LinearModel):
             Plotting Object.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="LogisticRegressionPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="LogisticRegressionPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.LogisticRegressionPlot(
             vdf=vDataFrame(self.input_relation),
@@ -281,8 +285,8 @@ Algorithms used for regression.
 
 class ElasticNet(Regressor, LinearModel):
     """
-    Creates an ElasticNet object using the Vertica 
-    Linear Regression  algorithm. The Elastic Net 
+    Creates an ElasticNet object using the Vertica
+    Linear Regression  algorithm. The Elastic Net
     is a regularized regression method that linearly
     combines the L1 and L2 penalties of the Lasso and
     Ridge methods.
@@ -290,33 +294,33 @@ class ElasticNet(Regressor, LinearModel):
     Parameters
     ----------
     name: str
-    	Name of the  model.  The model is stored in
+        Name of the  model.  The model is stored in
         the database.
     tol: float, optional
-    	Determines  whether the algorithm has reached 
+        Determines  whether the algorithm has reached
         the specified accuracy result.
     C: PythonNumber, optional
-    	The regularization parameter value. The value 
+        The regularization parameter value. The value
         must be zero or non-negative.
     max_iter: int, optional
-    	Determines  the maximum number of  iterations 
-        the  algorithm performs before  achieving the 
+        Determines  the maximum number of  iterations
+        the  algorithm performs before  achieving the
         specified accuracy result.
     solver: str, optional
-    	The optimizer method used to train the model. 
-    		newton : Newton Method.
-    		bfgs   : Broyden Fletcher Goldfarb Shanno.
-    		cgd    : Coordinate Gradient Descent.
+        The optimizer method used to train the model.
+                newton : Newton Method.
+                bfgs   : Broyden Fletcher Goldfarb Shanno.
+                cgd    : Coordinate Gradient Descent.
     l1_ratio: float, optional
-    	ENet mixture parameter that defines the provided
+        ENet mixture parameter that defines the provided
         ratio of L1 versus L2 regularization.
     fit_intercept: bool, optional
-        Boolean,  specifies whether the model includes an 
-        intercept. If set to false, no intercept is used 
-        in training the model.  Note that setting 
-        fit_intercept  to false does  not work well with 
+        Boolean,  specifies whether the model includes an
+        intercept. If set to false, no intercept is used
+        in training the model.  Note that setting
+        fit_intercept  to false does  not work well with
         the BFGS optimizer.
-	"""
+    """
 
     # Properties.
 
@@ -374,38 +378,38 @@ class ElasticNet(Regressor, LinearModel):
 
 class Lasso(Regressor, LinearModel):
     """
-    Creates  a  Lasso  object using the  Vertica 
-    Linear  Regression  algorithm. 
-    Lasso is a regularized regression method 
+    Creates  a  Lasso  object using the  Vertica
+    Linear  Regression  algorithm.
+    Lasso is a regularized regression method
     that uses an L1 penalty.
 
     Parameters
     ----------
     name: str
-    	Name of the model. The  model is stored in the 
+        Name of the model. The  model is stored in the
         database.
     tol: float, optional
-    	Determines  whether the  algorithm has reached 
+        Determines  whether the  algorithm has reached
         the specified accuracy result.
     C: PythonNumber, optional
-        The regularization  parameter value. The value 
+        The regularization  parameter value. The value
         must be zero or non-negative.
     max_iter: int, optional
-    	Determines  the  maximum number of  iterations 
-        the  algorithm  performs before achieving  the 
+        Determines  the  maximum number of  iterations
+        the  algorithm  performs before achieving  the
         specified accuracy result.
     solver: str, optional
-    	The optimizer method used to train the model. 
-    		newton : Newton Method.
-    		bfgs   : Broyden Fletcher Goldfarb Shanno.
-    		cgd    : Coordinate Gradient Descent.
+        The optimizer method used to train the model.
+                newton : Newton Method.
+                bfgs   : Broyden Fletcher Goldfarb Shanno.
+                cgd    : Coordinate Gradient Descent.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether the model includes an 
-        intercept.  If set to false, no intercept is 
-        used in  training the model.  Note that setting 
-        fit_intercept to false does not work well with the 
+        Boolean,  specifies  whether the model includes an
+        intercept.  If set to false, no intercept is
+        used in  training the model.  Note that setting
+        fit_intercept to false does not work well with the
         BFGS optimizer.
-	"""
+    """
 
     # Properties.
 
@@ -461,32 +465,32 @@ class Lasso(Regressor, LinearModel):
 
 class LinearRegression(Regressor, LinearModel):
     """
-    Creates a LinearRegression object using the Vertica 
+    Creates a LinearRegression object using the Vertica
     Linear Regression algorithm.
 
     Parameters
     ----------
     name: str
-    	Name of the model. The  model is stored  in the
+        Name of the model. The  model is stored  in the
         database.
     tol: float, optional
-    	Determines whether the  algorithm has reached the 
+        Determines whether the  algorithm has reached the
         specified accuracy result.
     max_iter: int, optional
-    	Determines the  maximum number of  iterations the 
-        algorithm performs before achieving the specified 
+        Determines the  maximum number of  iterations the
+        algorithm performs before achieving the specified
         accuracy result.
     solver: str, optional
-    	The optimizer method used to train the model. 
-    		newton : Newton Method.
-    		bfgs   : Broyden Fletcher Goldfarb Shanno.
+        The optimizer method used to train the model.
+                newton : Newton Method.
+                bfgs   : Broyden Fletcher Goldfarb Shanno.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether the model includes an 
-        intercept. If set to false,  no intercept is 
-        used in  training the model.  Note that setting 
-        fit_intercept to false does not work well with the 
+        Boolean,  specifies  whether the model includes an
+        intercept. If set to false,  no intercept is
+        used in  training the model.  Note that setting
+        fit_intercept to false does not work well with the
         BFGS optimizer.
-	"""
+    """
 
     # Properties.
 
@@ -540,37 +544,37 @@ class LinearRegression(Regressor, LinearModel):
 
 class Ridge(Regressor, LinearModel):
     """
-    Creates  a  Ridge  object using the  Vertica 
-    Linear  Regression  algorithm. 
-    Ridge is a regularized regression method 
-    which uses an L2 penalty. 
+    Creates  a  Ridge  object using the  Vertica
+    Linear  Regression  algorithm.
+    Ridge is a regularized regression method
+    which uses an L2 penalty.
 
     Parameters
     ----------
     name: str
-    	Name of the model. The model is stored in the 
+        Name of the model. The model is stored in the
         database.
     tol: float, optional
-    	Determines whether  the algorithm has reached 
+        Determines whether  the algorithm has reached
         the specified accuracy result.
     C: PythonNumber, optional
-        The regularization parameter value. The value 
+        The regularization parameter value. The value
         must be zero or non-negative.
     max_iter: int, optional
-    	Determines  the maximum number of  iterations 
-        the  algorithm performs before  achieving the 
+        Determines  the maximum number of  iterations
+        the  algorithm performs before  achieving the
         specified accuracy result.
     solver: str, optional
-    	The optimizer method used to train the model. 
-    		newton : Newton Method.
-    		bfgs   : Broyden Fletcher Goldfarb Shanno.
+        The optimizer method used to train the model.
+                newton : Newton Method.
+                bfgs   : Broyden Fletcher Goldfarb Shanno.
     fit_intercept: bool, optional
-        Boolean,  specifies whether the model  includes 
-        an intercept. If set to false, no intercept 
-        is used in training the model. 
-        Note  that setting fit_intercept to false  does 
+        Boolean,  specifies whether the model  includes
+        an intercept. If set to false, no intercept
+        is used in training the model.
+        Note  that setting fit_intercept to false  does
         not work well with the BFGS optimizer.
-	"""
+    """
 
     # Properties.
 
@@ -631,7 +635,7 @@ Algorithms used for classification.
 
 class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     """
-    Creates a LogisticRegression  object using the Vertica 
+    Creates a LogisticRegression  object using the Vertica
     Logistic Regression algorithm.
 
     Parameters
@@ -646,17 +650,17 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
             l2   : L2 Regularization.
             enet : Combination between L1 and L2.
     tol: float, optional
-        Determines  whether  the  algorithm has reached  the 
+        Determines  whether  the  algorithm has reached  the
         specified accuracy result.
     C: PythonNumber, optional
-        The  regularization parameter value.  The value must 
+        The  regularization parameter value.  The value must
         be zero or non-negative.
     max_iter: int, optional
-        Determines  the  maximum number  of  iterations  the 
-        algorithm  performs  before achieving  the specified 
+        Determines  the  maximum number  of  iterations  the
+        algorithm  performs  before achieving  the specified
         accuracy result.
     solver: str, optional
-        The  optimizer method  used to train the  model. 
+        The  optimizer method  used to train the  model.
             newton : Newton Method.
             bfgs   : Broyden Fletcher Goldfarb Shanno.
             cgd    : Coordinate Gradient Descent.
@@ -664,10 +668,10 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         ENet  mixture parameter  that  defines the provided
         ratio of L1 versus L2 regularization.
     fit_intercept: bool, optional
-        Boolean,  specifies  whether  the model  includes an 
-        intercept. 
-        If set to false,  no intercept is used in 
-        training the model.  Note that setting fit_intercept 
+        Boolean,  specifies  whether  the model  includes an
+        intercept.
+        If set to false,  no intercept is used in
+        training the model.  Note that setting fit_intercept
         to false does not work well with the BFGS optimizer.
     """
 

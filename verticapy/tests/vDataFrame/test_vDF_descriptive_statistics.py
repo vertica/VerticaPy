@@ -804,7 +804,8 @@ class TestvDFDescriptiveStat:
     def test_vDF_nunique(self, titanic_vd):
         # Exact Cardinality
         result = titanic_vd.nunique(
-            columns=["pclass", "embarked", "survived", "cabin"], approx=False,
+            columns=["pclass", "embarked", "survived", "cabin"],
+            approx=False,
         )
 
         assert result["unique"][0] == 3.0
@@ -814,7 +815,8 @@ class TestvDFDescriptiveStat:
 
         # Approximate Cardinality
         result = titanic_vd.nunique(
-            columns=["pclass", "embarked", "survived", "cabin"], approx=True,
+            columns=["pclass", "embarked", "survived", "cabin"],
+            approx=True,
         )
 
         assert result["approx_unique"][0] == 3.0

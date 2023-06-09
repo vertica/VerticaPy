@@ -59,16 +59,16 @@ def sql_magic(
 
     -c / --command : SQL Command to execute.
 
-    -f  /   --file : Input  File. You  can use this option 
-                     if  you  want  to  execute the  input 
+    -f  /   --file : Input  File. You  can use this option
+                     if  you  want  to  execute the  input
                      file.
 
             -ncols : Maximum number of columns to display.
 
             -nrows : Maximum  number  of rows to  display.
 
-     -o / --output : Output File. You  can use this option 
-                     if  you want to export the  result of 
+     -o / --output : Output File. You  can use this option
+                     if  you want to export the  result of
                      the query to  the CSV or JSON format.
     """
 
@@ -81,7 +81,6 @@ def sql_magic(
     conf.set_option("time_on", False)
 
     try:
-
         # Initialization
         queries = "" if (not cell and (line)) else cell
 
@@ -90,7 +89,6 @@ def sql_magic(
         options_dict = get_magic_options(line)
 
         for option in options_dict:
-
             if option.lower() in (
                 "-f",
                 "--file",
@@ -101,7 +99,6 @@ def sql_magic(
                 "-c",
                 "--command",
             ):
-
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
                         raise ValueError("Duplicate option '-f'.")
@@ -154,7 +151,6 @@ def sql_magic(
         # Looking at very specific external queries symbols
         gb_conn = get_global_connection()
         for s in gb_conn.special_symbols:
-
             external_queries = re.findall(
                 f"\\{s}\\{s}\\{s}(.*?)\\{s}\\{s}\\{s}", queries
             )
@@ -177,7 +173,6 @@ def sql_magic(
         i, n = 0, n - i
 
         while i < n:
-
             if queries[i] == '"':
                 i += 1
                 while i < n and queries[i] != '"':
@@ -196,7 +191,6 @@ def sql_magic(
         n = len(queries)
 
         for i in range(n):
-
             query = queries[i]
             while len(query) > 0 and query.endswith((";", " ")):
                 query = query[0:-1]
@@ -207,7 +201,6 @@ def sql_magic(
         queries_tmp, i = [], 0
 
         while i < n:
-
             query = queries[i]
             if (i < n - 1) and (queries[i + 1].lower() == "end"):
                 query += f"; {queries[i + 1]}"
@@ -221,7 +214,6 @@ def sql_magic(
         # Executing the Queries
 
         for i in range(n):
-
             query = queries[i]
 
             if query.split(" ")[0]:
@@ -234,7 +226,6 @@ def sql_magic(
                 query_type = "undefined"
 
             if (query_type == "COPY") and ("from local" in query.lower()):
-
                 query = re.split("from local", query, flags=re.IGNORECASE)
                 if query[1].split(" ")[0]:
                     file_name = query[1].split(" ")[0]
@@ -254,7 +245,6 @@ def sql_magic(
                 (i == n - 1)
                 and (query_type.lower() not in ("select", "with", "undefined"))
             ):
-
                 error = ""
 
                 try:
@@ -277,11 +267,13 @@ def sql_magic(
                     print(query_type)
 
             else:
-
                 error = ""
 
                 try:
-                    result = create_new_vdf(query, _is_sql_magic=True,)
+                    result = create_new_vdf(
+                        query,
+                        _is_sql_magic=True,
+                    )
                     result._vars["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
@@ -290,7 +282,6 @@ def sql_magic(
                         result._vars["max_columns"] = options["-ncols"]
 
                 except:
-
                     try:
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
@@ -310,7 +301,6 @@ def sql_magic(
                     in error
                     and "DBLINK" in error
                 ):
-
                     if conf.get_option("print_info"):
                         print(query_type)
 
@@ -324,7 +314,6 @@ def sql_magic(
             and (result.object_type == "vDataFrame")
             and ("-o" in options)
         ):
-
             if options["-o"][-4:] == "json":
                 result.to_json(options["-o"])
             else:
@@ -340,7 +329,6 @@ def sql_magic(
         return result
 
     finally:
-
         # we load the previous configuration before returning the result.
         conf.set_option("sql_on", sql_on)
         conf.set_option("time_on", time_on)

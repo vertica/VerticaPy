@@ -38,12 +38,16 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    model_class = DBSCAN("DBSCAN_model_test",)
+    model_class = DBSCAN(
+        "DBSCAN_model_test",
+    )
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"])
     yield model_class

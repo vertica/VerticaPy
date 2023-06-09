@@ -28,7 +28,6 @@ from verticapy.plotting._matplotlib.animated.base import AnimatedBase
 
 
 class AnimatedBarChart(AnimatedBase):
-
     # Properties.
 
     @property

@@ -25,7 +25,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class LinePlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -96,7 +95,10 @@ class LinePlot(HighchartsBase):
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
+                            "hover": {
+                                "enabled": True,
+                                "lineColor": "rgb(100,100,100)",
+                            }
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},
@@ -129,7 +131,11 @@ class LinePlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a time series plot using the HC API.
         """
@@ -158,7 +164,6 @@ class LinePlot(HighchartsBase):
 
 
 class MultiLinePlot(LinePlot):
-
     # Properties.
 
     @property
@@ -175,7 +180,11 @@ class MultiLinePlot(LinePlot):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a multi-time series plot using the HC API.
         """

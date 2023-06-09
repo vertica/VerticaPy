@@ -48,7 +48,6 @@ def titanic_vd():
 
 class TestSQL:
     def test_sql(self, titanic_vd):
-
         # SQL line Test -c
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)

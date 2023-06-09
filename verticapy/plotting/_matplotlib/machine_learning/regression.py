@@ -23,7 +23,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RegressionPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -54,7 +53,11 @@ class RegressionPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a regression plot using the Matplotlib API.
         """
@@ -75,7 +78,9 @@ class RegressionPlot(MatplotlibBase):
             ]
             ax.plot(x_reg, y_reg, alpha=1, color="black")
             ax.scatter(
-                x0, y0, **self._update_dict(self.init_style, style_kwargs, 0),
+                x0,
+                y0,
+                **self._update_dict(self.init_style, style_kwargs, 0),
             )
             ax.set_xlabel(self.layout["columns"][0])
             ax.set_ylabel(self.layout["columns"][1])
@@ -107,7 +112,10 @@ class RegressionPlot(MatplotlibBase):
                 X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
             )
             ax.scatter(
-                x0, y0, z0, **self._update_dict(self.init_style, style_kwargs, 0),
+                x0,
+                y0,
+                z0,
+                **self._update_dict(self.init_style, style_kwargs, 0),
             )
             ax.set_xlabel(self.layout["columns"][0])
             ax.set_ylabel(self.layout["columns"][1])

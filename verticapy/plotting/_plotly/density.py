@@ -60,7 +60,11 @@ class DensityPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a density plot using the Plotly API.
         """
@@ -71,7 +75,11 @@ class DensityPlot(PlotlyBase):
 
 
 class MultiDensityPlot(DensityPlot):
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a multi-density plot using the Plotly API.
         """

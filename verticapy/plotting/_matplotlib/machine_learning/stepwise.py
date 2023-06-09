@@ -22,7 +22,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class StepwisePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -40,7 +39,11 @@ class StepwisePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a stepwise plot using the Matplotlib API.
         """

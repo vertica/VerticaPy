@@ -36,43 +36,43 @@ Algorithms used for regression.
 
 class LinearSVR(Regressor, LinearModel):
     """
-    Creates  a  LinearSVR  object  using the Vertica  SVM 
-    (Support Vector Machine)  algorithm.  This  algorithm 
-    finds the hyperplane used to approximate distribution 
+    Creates  a  LinearSVR  object  using the Vertica  SVM
+    (Support Vector Machine)  algorithm.  This  algorithm
+    finds the hyperplane used to approximate distribution
     of the data.
 
     Parameters
     ----------
     name: str
-        Name of the model. The model is stored in 
+        Name of the model. The model is stored in
         the database.
     tol: float, optional
         Tolerance for stopping criteria. This is
         used to control accuracy.
     C: float, optional
         Weight  for  misclassification  cost. The
-        algorithm minimizes the regularization 
+        algorithm minimizes the regularization
         cost and the misclassification cost.
     intercept_scaling: float
-        A  float value, serves  as the value of a 
-        dummy feature  whose  coefficient Vertica  
-        uses to calculate the model intercept. 
-        Because  the dummy feature is not in  the 
-        training data,  its values  are  set to a 
-        constant, by default set to 1. 
+        A  float value, serves  as the value of a
+        dummy feature  whose  coefficient Vertica
+        uses to calculate the model intercept.
+        Because  the dummy feature is not in  the
+        training data,  its values  are  set to a
+        constant, by default set to 1.
     intercept_mode: str, optional
         Specify how to treat the intercept.
-            regularized   : Fits  the intercept  and 
+            regularized   : Fits  the intercept  and
                             applies a regularization.
-            unregularized : Fits  the  intercept but 
-                            does not include it in  
-                            regularization. 
+            unregularized : Fits  the  intercept but
+                            does not include it in
+                            regularization.
     acceptable_error_margin: float, optional
-        Defines the acceptable error margin. Any data 
-        points  outside this region add a penalty  to 
-        the cost function. 
+        Defines the acceptable error margin. Any data
+        points  outside this region add a penalty  to
+        the cost function.
     max_iter: int, optional
-        The  maximum  number of iterations  that  the 
+        The  maximum  number of iterations  that  the
         algorithm performs.
     """
 
@@ -142,51 +142,51 @@ Algorithms used for classification.
 class LinearSVC(BinaryClassifier, LinearModelClassifier):
     """
     Creates  a LinearSVC object  using the  Vertica
-    Support Vector Machine  (SVM)  algorithm on the 
-    data. Given a set of training examples, where 
-    each is marked as belonging to one of two 
-    categories, an SVM training algorithm builds a 
-    model that assigns new examples to one category 
-    or  the other,  making it  a  non-probabilistic 
+    Support Vector Machine  (SVM)  algorithm on the
+    data. Given a set of training examples, where
+    each is marked as belonging to one of two
+    categories, an SVM training algorithm builds a
+    model that assigns new examples to one category
+    or  the other,  making it  a  non-probabilistic
     binary linear classifier.
 
     Parameters
     ----------
     name: str
-    	Name  of the  model. The model is stored 
+        Name  of the  model. The model is stored
         in the database.
     tol: float, optional
-    	Tolerance for stopping criteria. This is
+        Tolerance for stopping criteria. This is
         used to control accuracy.
     C: float, optional
-    	Weight for misclassification cost.  The 
-        algorithm minimizes the regularization cost 
+        Weight for misclassification cost.  The
+        algorithm minimizes the regularization cost
         and the misclassification cost.
     intercept_scaling: float
-    	A  float  value,  serves as  the  value of a 
+        A  float  value,  serves as  the  value of a
         dummy feature whose coefficient Vertica uses
-        to calculate the model intercept. 
-    	Because  the  dummy  feature  is not in  the 
-        training  data,  its  values  are  set to  a 
-        constant, by default set to 1. 
+        to calculate the model intercept.
+        Because  the  dummy  feature  is not in  the
+        training  data,  its  values  are  set to  a
+        constant, by default set to 1.
     intercept_mode: str, optional
-    	Specify how to treat the intercept.
-    		regularized   : Fits  the intercept  and 
+        Specify how to treat the intercept.
+                regularized   : Fits  the intercept  and
                             applies a regularization.
-    		unregularized : Fits the  intercept  but 
-                            does not  include  it in 
-                            regularization. 
+                unregularized : Fits the  intercept  but
+                            does not  include  it in
+                            regularization.
     class_weight: str / list, optional
-    	Specifies how to determine weights for the two 
-        classes.  It can be a  list of 2 elements  or 
+        Specifies how to determine weights for the two
+        classes.  It can be a  list of 2 elements  or
         one of the following methods:
-    		auto : Weights  each class  according  to 
+                auto : Weights  each class  according  to
                    the number of samples.
-    		none : No weights are used.
+                none : No weights are used.
     max_iter: int, optional
-    	The  maximum  number of iterations  that  the 
+        The  maximum  number of iterations  that  the
         algorithm performs.
-	"""
+    """
 
     # Properties.
 
@@ -263,7 +263,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -272,7 +272,9 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
             Plotting Object.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="SVMClassifierPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="SVMClassifierPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.SVMClassifierPlot(
             vdf=vDataFrame(self.input_relation),

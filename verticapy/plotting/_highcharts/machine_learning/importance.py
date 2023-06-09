@@ -22,7 +22,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ImportanceBarChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -64,7 +63,11 @@ class ImportanceBarChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a coefficient importance bar chart using the HC API.
         """

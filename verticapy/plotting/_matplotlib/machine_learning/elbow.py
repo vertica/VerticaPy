@@ -22,7 +22,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ElbowCurve(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -46,7 +45,11 @@ class ElbowCurve(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a machine learning bubble plot using the Matplotlib API.
         """

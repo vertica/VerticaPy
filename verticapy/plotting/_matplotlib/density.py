@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class DensityPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -48,7 +47,11 @@ class DensityPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a density plot using the Matplotlib API.
         """
@@ -62,7 +65,10 @@ class DensityPlot(MatplotlibBase):
         )
         color = self._get_final_color(style_kwargs=style_kwargs)
         ax.fill_between(
-            self.data["x"], self.data["y"], facecolor=color, **self.init_style_alpha,
+            self.data["x"],
+            self.data["y"],
+            facecolor=color,
+            **self.init_style_alpha,
         )
         ax.set_xlim(np.nanmin(self.data["x"]), np.nanmax(self.data["x"]))
         ax.set_ylim(bottom=0)
@@ -72,7 +78,6 @@ class DensityPlot(MatplotlibBase):
 
 
 class MultiDensityPlot(DensityPlot):
-
     # Styling Methods.
 
     def _init_style(self) -> None:
@@ -82,7 +87,11 @@ class MultiDensityPlot(DensityPlot):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a multi-density plot using the Matplotlib API.
         """
@@ -95,7 +104,9 @@ class MultiDensityPlot(DensityPlot):
             color = self._get_final_color(style_kwargs=style_kwargs, idx=i)
             kwargs = self._get_final_style_kwargs(style_kwargs=style_kwargs, idx=i)
             ax.plot(
-                self.data["X"][:, i], self.data["Y"][:, i], **kwargs,
+                self.data["X"][:, i],
+                self.data["Y"][:, i],
+                **kwargs,
             )
             ax.fill_between(
                 self.data["X"][:, i],
@@ -104,7 +115,12 @@ class MultiDensityPlot(DensityPlot):
                 **self.init_style_alpha,
             )
             custom_lines += [
-                Line2D([0], [0], color=color, lw=4,),
+                Line2D(
+                    [0],
+                    [0],
+                    color=color,
+                    lw=4,
+                ),
             ]
         ax.set_title(self.layout["title"])
         ax.set_xlim(np.nanmin(self.data["X"]), np.nanmax(self.data["X"]))
@@ -122,7 +138,6 @@ class MultiDensityPlot(DensityPlot):
 
 
 class DensityPlot2D(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -144,7 +159,11 @@ class DensityPlot2D(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a density plot using the Matplotlib API.
         """

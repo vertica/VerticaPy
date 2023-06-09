@@ -22,7 +22,10 @@ from verticapy._utils._sql._format import format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
 
 
-def create_schema(schema: str, raise_error: bool = False,) -> bool:
+def create_schema(
+    schema: str,
+    raise_error: bool = False,
+) -> bool:
     """
     Creates a new schema.
 
@@ -31,13 +34,13 @@ def create_schema(schema: str, raise_error: bool = False,) -> bool:
     schema: str
         Schema name.
     raise_error: bool, optional
-        If the schema couldn't be created, the 
+        If the schema couldn't be created, the
         function raises an error.
 
     Returns
     -------
     bool
-        True  if  the schema was  successfully 
+        True  if  the schema was  successfully
         created, False otherwise.
     """
     try:
@@ -59,7 +62,7 @@ def create_table(
     raise_error: bool = False,
 ) -> bool:
     """
-    Creates a new table using the input columns' 
+    Creates a new table using the input columns'
     names and data types.
 
     Parameters
@@ -67,33 +70,33 @@ def create_table(
     table_name: str, optional
         The final table name.
     dtype: dict
-        Dictionary  of the user types. Each  key 
-        represents  a column name and each value 
-        represents its data type. 
-        Example: {"age": "int", 
+        Dictionary  of the user types. Each  key
+        represents  a column name and each value
+        represents its data type.
+        Example: {"age": "int",
                   "name": "varchar"}
     schema: str, optional
         Schema name.
     temporary_table: bool, optional
-        If set to True, a temporary table is 
+        If set to True, a temporary table is
         created.
     temporary_local_table: bool, optional
-        If  set to True,  a temporary local table 
-        is be created.  The  parameter 'schema' 
-        must be empty,  otherwise  this parameter 
+        If  set to True,  a temporary local table
+        is be created.  The  parameter 'schema'
+        must be empty,  otherwise  this parameter
         is ignored.
     genSQL: bool, optional
-        If set to True, the SQL code for creating 
-        the final table is generated but not 
+        If set to True, the SQL code for creating
+        the final table is generated but not
         executed.
     raise_error: bool, optional
-        If  the  relation  couldn't  be  created, 
+        If  the  relation  couldn't  be  created,
         raises the entire error.
 
     Returns
     -------
     bool
-        True   if  the  table  was   successfully 
+        True   if  the  table  was   successfully
         created, False otherwise.
     """
     if schema.lower() == "v_temp_schema":

@@ -36,7 +36,7 @@ def print_table(
     percent: Optional[dict] = None,
 ) -> str:
     """
-    Returns the HTML code or string used to display the final 
+    Returns the HTML code or string used to display the final
     relation.
     """
     dtype, percent = format_type(dtype, percent, dtype=dict)

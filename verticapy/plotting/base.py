@@ -97,7 +97,6 @@ Plotting Base Class.
 
 
 class PlottingBase(PlottingBaseSQL):
-
     # Properties.
 
     @property
@@ -213,7 +212,11 @@ class PlottingBase(PlottingBaseSQL):
         """Must be overridden in child class"""
         self.init_style = {}
 
-    def _get_final_color(self, style_kwargs: dict, idx: int = 0,) -> str:
+    def _get_final_color(
+        self,
+        style_kwargs: dict,
+        idx: int = 0,
+    ) -> str:
         for key in ["colors", "color", "c"]:
             if key in style_kwargs:
                 if isinstance(style_kwargs[key], list):
@@ -223,12 +226,19 @@ class PlottingBase(PlottingBaseSQL):
                     return style_kwargs[key]
         return self.get_colors(idx=idx)
 
-    def _get_final_style_kwargs(self, style_kwargs: dict, idx: int,) -> dict:
+    def _get_final_style_kwargs(
+        self,
+        style_kwargs: dict,
+        idx: int,
+    ) -> dict:
         kwargs = copy.deepcopy(style_kwargs)
         for key in ["colors", "color", "c"]:
             if key in kwargs:
                 del kwargs[key]
-        kwargs["color"] = self._get_final_color(style_kwargs=style_kwargs, idx=idx,)
+        kwargs["color"] = self._get_final_color(
+            style_kwargs=style_kwargs,
+            idx=idx,
+        )
         return kwargs
 
     def get_colors(
@@ -271,7 +281,7 @@ class PlottingBase(PlottingBaseSQL):
     ]:
         """
         Returns the CMAP associated to the input color.
-        If  empty, VerticaPy uses  the colors stored as 
+        If  empty, VerticaPy uses  the colors stored as
         a global variable.
         """
         cmap_from_list = plt_colors.LinearSegmentedColormap.from_list
@@ -368,7 +378,11 @@ class PlottingBase(PlottingBaseSQL):
             return copy.deepcopy(D)
 
     @staticmethod
-    def _update_dict(d1: dict, d2: dict, color_idx: int = 0,) -> dict:
+    def _update_dict(
+        d1: dict,
+        d2: dict,
+        color_idx: int = 0,
+    ) -> dict:
         """
         Updates the input dictionary using another one.
         """
@@ -667,7 +681,8 @@ class PlottingBase(PlottingBaseSQL):
                 vdf_tmp[by].discretize(h=h_by)
             else:
                 vdf_tmp[by].discretize(
-                    k=max_cardinality, method="topk",
+                    k=max_cardinality,
+                    method="topk",
                 )
             uniques = vdf_tmp[by].distinct()
             for category in uniques:
@@ -760,7 +775,14 @@ class PlottingBase(PlottingBaseSQL):
             if cat_priority:
                 vdf_tmp = vdf_tmp[by].isin(cat_priority)
             vdf_tmp = vdf_tmp[[_by] + columns]
-            X = vdf_tmp.groupby(columns=[by], expr=expr,).sort(columns=[by]).to_numpy()
+            X = (
+                vdf_tmp.groupby(
+                    columns=[by],
+                    expr=expr,
+                )
+                .sort(columns=[by])
+                .to_numpy()
+            )
             if is_num_transf:
                 try:
                     X_num = np.array(
@@ -1352,7 +1374,10 @@ class PlottingBase(PlottingBaseSQL):
         self.data["outliers"] = np.array(outliers)
 
     def _compute_scatter_matrix(
-        self, vdf: "vDataFrame", columns: SQLColumns, max_nb_points: int = 20000,
+        self,
+        vdf: "vDataFrame",
+        columns: SQLColumns,
+        max_nb_points: int = 20000,
     ) -> None:
         if not columns:
             columns = vdf.numcol()
@@ -1458,7 +1483,10 @@ class PlottingBase(PlottingBaseSQL):
             vdf.between(
                 column=order_by, start=order_by_start, end=order_by_end, inplace=False
             )
-            .groupby(columns=[order_by], expr=expr,)
+            .groupby(
+                columns=[order_by],
+                expr=expr,
+            )
             .sort(columns=[order_by])
             .to_numpy()
         )

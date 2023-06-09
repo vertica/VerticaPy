@@ -29,7 +29,6 @@ from verticapy.core.vdataframe._plotting import vDFPlot
 
 
 class vDFAnimatedPlot(vDFPlot):
-
     # 1D CHARTS.
 
     @save_verticapy_logs
@@ -57,35 +56,35 @@ class vDFAnimatedPlot(vDFPlot):
         Parameters
         ----------
         ts: str
-            TS (Time Series) vDataColumn used to order the data. 
-            The vDataColumn type must be date (date, datetime, 
+            TS (Time Series) vDataColumn used to order the data.
+            The vDataColumn type must be date (date, datetime,
             timestamp...) or numerical.
         columns: SQLColumns
             List of the vDataColumns names.
         by: str, optional
             Categorical vDataColumn used in the partition.
         start_date: PythonScalar, optional
-            Input Start Date. For example, time = '03-11-1993' will 
-            filter the data when  'ts' is less than the 3rd of 
+            Input Start Date. For example, time = '03-11-1993' will
+            filter the data when  'ts' is less than the 3rd of
             November 1993.
         end_date: PythonScalar, optional
-            Input End Date.  For  example, time = '03-11-1993' will 
+            Input End Date.  For  example, time = '03-11-1993' will
             filter the data when 'ts' is greater than the 3rd of
             November 1993.
         limit_over: int, optional
-            Limits the number of elements to consider for each 
+            Limits the number of elements to consider for each
             category.
         limit: int, optional
             Maximum number of data points to use.
         fixed_xy_lim: bool, optional
             If set to True, the xlim and ylim are fixed.
         date_in_title: bool, optional
-            If  set to True, the ts vDataColumn is displayed in 
+            If  set to True, the ts vDataColumn is displayed in
             the title section.
         date_f: function, optional
             Function used to display the ts vDataColumn.
         date_style_dict: dict, optional
-            Style Dictionary used to display the ts vDataColumn when 
+            Style Dictionary used to display the ts vDataColumn when
             date_in_title = False.
         interval: int, optional
             Number of ms between each update.
@@ -155,20 +154,20 @@ class vDFAnimatedPlot(vDFPlot):
         Parameters
         ----------
         ts: str
-            TS (Time Series) vDataColumn used to order the data. 
-            The vDataColumn type must be date (date, datetime, 
+            TS (Time Series) vDataColumn used to order the data.
+            The vDataColumn type must be date (date, datetime,
             timestamp...) or numerical.
         columns: SQLColumns
             List of the vDataColumns names.
         by: str, optional
             Categorical vDataColumn used in the partition.
         start_date: PythonScalar, optional
-            Input Start Date. For example, time = '03-11-1993' will 
+            Input Start Date. For example, time = '03-11-1993' will
             filter the data when  'ts' is less than the 3rd of
             November 1993.
         end_date: PythonScalar, optional
-            Input End Date.  For  example, time = '03-11-1993' will 
-            filter the data when 'ts' is greater than the 3rd of 
+            Input End Date.  For  example, time = '03-11-1993' will
+            filter the data when 'ts' is greater than the 3rd of
             November 1993.
         limit_over: int, optional
             Limited number of elements to consider for each category.
@@ -177,12 +176,12 @@ class vDFAnimatedPlot(vDFPlot):
         fixed_xy_lim: bool, optional
             If set to True, the xlim and ylim are fixed.
         date_in_title: bool, optional
-            If  set to True, the ts vDataColumn is displayed in 
+            If  set to True, the ts vDataColumn is displayed in
             the title section.
         date_f: function, optional
             Function used to display the ts vDataColumn.
         date_style_dict: dict, optional
-            Style Dictionary used to display the ts vDataColumn when 
+            Style Dictionary used to display the ts vDataColumn when
             date_in_title = False.
         interval: int, optional
             Number of ms between each update.
@@ -253,23 +252,23 @@ class vDFAnimatedPlot(vDFPlot):
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn used to order the 
-            data. The vDataColumn type must be date (date, 
+            TS  (Time Series)  vDataColumn used to order the
+            data. The vDataColumn type must be date (date,
             datetime, timestamp...) or numerical.
         columns: SQLColumns, optional
             List of the vDataColumns names.
         by: str, optional
             Categorical  vDataColumn  used  in  the partition.
         start_date: PythonScalar, optional
-            Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the data when  'ts' is less  than 
+            Input Start Date. For example, time = '03-11-1993'
+            will  filter  the data when  'ts' is less  than
             the 3rd of November 1993.
         end_date: PythonScalar, optional
-            Input  End Date. For example,  time = '03-11-1993' 
-            will  filter  the data when 'ts' is greater  than 
+            Input  End Date. For example,  time = '03-11-1993'
+            will  filter  the data when 'ts' is greater  than
             the 3rd of November 1993.
         limit_over: int, optional
-            Limited number of  elements to consider for  each 
+            Limited number of  elements to consider for  each
             category.
         limit: int, optional
             Maximum number of data points to use.
@@ -286,7 +285,7 @@ class vDFAnimatedPlot(vDFPlot):
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any  optional  parameter to pass to the  plotting 
+            Any  optional  parameter to pass to the  plotting
             functions.
 
         Returns
@@ -359,23 +358,23 @@ class vDFAnimatedPlot(vDFPlot):
         Parameters
         ----------
         ts: str
-            TS  (Time Series)  vDataColumn used to order the 
-            data. The vDataColumn type must be date (date, 
+            TS  (Time Series)  vDataColumn used to order the
+            data. The vDataColumn type must be date (date,
             datetime, timestamp...) or numerical.
         columns: SQLColumns, optional
             List of the vDataColumns names.
         by: str, optional
             Categorical  vDataColumn  used  in  the partition.
         start_date: PythonScalar, optional
-            Input Start Date. For example, time = '03-11-1993' 
-            will  filter  the data when  'ts' is less  than 
+            Input Start Date. For example, time = '03-11-1993'
+            will  filter  the data when  'ts' is less  than
             the 3rd of November 1993.
         end_date: PythonScalar, optional
-            Input  End Date. For example,  time = '03-11-1993' 
-            will  filter  the data when 'ts' is greater  than 
+            Input  End Date. For example,  time = '03-11-1993'
+            will  filter  the data when 'ts' is greater  than
             the 3rd of November 1993.
         limit_over: int, optional
-            Limited number of  elements to consider for  each 
+            Limited number of  elements to consider for  each
             category.
         limit: int, optional
             Maximum   number   of    data   points   to   use.
@@ -384,18 +383,18 @@ class vDFAnimatedPlot(vDFPlot):
         img: str, optional
             Path  to  the  image  to  display  as  background.
         bbox: list, optional
-            List  of 4 elements to delimit the boundaries  of 
-            the final Plot.  It must be similar the following 
+            List  of 4 elements to delimit the boundaries  of
+            the final Plot.  It must be similar the following
             list: [xmin, xmax, ymin, ymax]
         fixed_xy_lim: bool, optional
             If  set to True, the xlim  and ylim are fixed.
         date_in_title: bool, optional
-            If  set  to  True,  the  ts  vDataColumn  is 
+            If  set  to  True,  the  ts  vDataColumn  is
             displayed in the title section.
         date_f: function, optional
             Function  used  to  display  the  ts  vDataColumn.
         date_style_dict: dict, optional
-            Style   Dictionary   used   to   display  the  ts 
+            Style   Dictionary   used   to   display  the  ts
             vDataColumn when date_in_title = False.
         interval: int, optional
             Number of ms between each update.
@@ -404,7 +403,7 @@ class vDFAnimatedPlot(vDFPlot):
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
-            Any  optional parameter  to  pass to the plotting 
+            Any  optional parameter  to  pass to the plotting
             functions.
 
         Returns

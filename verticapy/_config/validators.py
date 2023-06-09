@@ -35,6 +35,7 @@ def in_validator(values: list) -> Literal[True]:
     Validates that the value of a given option is
     in a specified set of values.
     """
+
     def in_list(val: str):
         if isinstance(val, str) and val in values:
             return True

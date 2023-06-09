@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.machine_learning.svm import SVMClassifierPlo
 
 
 class LogisticRegressionPlot(SVMClassifierPlot):
-
     # Properties.
 
     @property

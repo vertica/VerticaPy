@@ -65,8 +65,8 @@ def randomized_features_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes  the k-fold grid search of an estimator  using 
-    different feature combinations. It can be used to find 
+    Computes  the k-fold grid search of an estimator  using
+    different feature combinations. It can be used to find
     the set of variables that will optimize the model.
 
     Parameters
@@ -81,25 +81,25 @@ def randomized_features_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -107,19 +107,19 @@ def randomized_features_search_cv(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -140,28 +140,28 @@ def randomized_features_search_cv(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
     pos_label: PythonScalar, optional
-        The main class to be  considered as positive 
+        The main class to be  considered as positive
         (classification only).
     cutoff: float, optional
         The  model   cutoff  (classification  only).
     training_score: bool, optional
-        If set to True,  the training score  is 
+        If set to True,  the training score  is
         computed   with    the   validation   score.
     comb_limit: int, optional
-        Maximum number of features combinations used 
+        Maximum number of features combinations used
         to train the model.
     skip_error: bool, optional
-        If set to True and an error occurs, the error 
+        If set to True and an error occurs, the error
         is displayed but not raised.
     print_info: bool, optional
-        If set to True, prints the model information 
+        If set to True, prints the model information
         at each step.
 
     Returns
@@ -272,7 +272,12 @@ def randomized_features_search_cv(
             )
         else:
             return TableSample(
-                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
+                {
+                    "parameters": [],
+                    "avg_score": [],
+                    "avg_time": [],
+                    "score_std": [],
+                }
             )
     reverse = True
     if metric in [
@@ -351,13 +356,13 @@ def stepwise(
     **style_kwargs,
 ) -> TableSample:
     """
-    Uses the Stepwise algorithm to find the most suitable 
+    Uses the Stepwise algorithm to find the most suitable
     number of features when fitting the estimator.
 
     Parameters
     ----------
     estimator: VerticaModel
-        Vertica estimator with a fit method. It must be a 
+        Vertica estimator with a fit method. It must be a
         Binary Classifier or a Regressor.
     input_relation: SQLRelation
         Relation used to train the model.
@@ -370,35 +375,35 @@ def stepwise(
             aic : Akaike’s Information Criterion
             bic : Bayesian Information Criterion
     direction: str, optional
-        Method for starting the stepwise search, either 
+        Method for starting the stepwise search, either
         'backward' or 'forward'.
     max_steps: int, optional
         The maximum number of steps to be considered.
     criterion_threshold: int, optional
-        Threshold used when comparing the models criterions. 
-        If the difference is less than the threshold, then 
+        Threshold used when comparing the models criterions.
+        If the difference is less than the threshold, then
         the current 'best' model is changed.
     drop_final_estimator: bool, optional
         If set to True, the final estimator is dropped.
     x_order: str, optional
-        Method for preprocessing X before using the stepwise 
+        Method for preprocessing X before using the stepwise
         algorithm.
-            pearson  : X  is ordered based on the  Pearson's 
+            pearson  : X  is ordered based on the  Pearson's
                        correlation coefficient.
-            spearman : X is ordered  based on the Spearman's 
+            spearman : X is ordered  based on the Spearman's
                        correlation coefficient.
-            random   : Shuffles the vector X before applying 
+            random   : Shuffles the vector X before applying
                        the stepwise algorithm.
             none     : Does  not  change  the  order  of  X.
     print_info: bool, optional
-        If set to True, prints the model information at each 
+        If set to True, prints the model information at each
         step.
     show: bool, optional
         If  set to True, the stepwise graphic is drawn.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs
-        Any  optional  parameter  to pass to the  Plotting 
+        Any  optional  parameter  to pass to the  Plotting
         functions.
 
     Returns
@@ -536,7 +541,9 @@ def stepwise(
     res.best_list_ = X_current
     if show:
         vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-            class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="StepwisePlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": np.array([len(x) for x in res["features"]]).astype(int),

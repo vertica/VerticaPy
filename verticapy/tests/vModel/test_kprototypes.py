@@ -35,7 +35,9 @@ set_option("print_info", False)
 def iris_vd():
     iris = load_iris()
     yield iris
-    drop(name="public.iris",)
+    drop(
+        name="public.iris",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -165,7 +167,10 @@ class TestKPrototypes:
 
     def test_get_plot(self, iris_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = KPrototypes("model_test_plot", n_cluster=3,)
+        model_test = KPrototypes(
+            "model_test_plot",
+            n_cluster=3,
+        )
         model_test.fit(iris_vd, ["SepalLengthCm", "PetalWidthCm"])
         result = model_test.plot(color="b")
         assert len(result.get_default_bbox_extra_artists()) > 8

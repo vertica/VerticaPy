@@ -66,7 +66,13 @@ class HeatMap(PlotlyBase):
             and "method" in self.layout
             and (
                 self.layout["method"]
-                in ("pearson", "spearman", "spearmand", "kendall", "biserial",)
+                in (
+                    "pearson",
+                    "spearman",
+                    "spearmand",
+                    "kendall",
+                    "biserial",
+                )
             )
         ):
             return {
@@ -136,6 +142,8 @@ class HeatMap(PlotlyBase):
         fig.update_yaxes(type="category")
         fig.layout.yaxis.automargin = True
         fig.layout.xaxis.automargin = True
-        fig.update_traces(**trace_params,)
+        fig.update_traces(
+            **trace_params,
+        )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig

@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 
 class vDFEval(vDFInOut):
     def __setattr__(self, attr: str, val: Any) -> None:
-
         obj_type = None
         if hasattr(val, "object_type"):
             obj_type = val.object_type
@@ -71,9 +70,9 @@ class vDFEval(vDFInOut):
         name: str
             Name of the new vDataColumn.
         expr: str
-            Expression  in pure SQL used to compute the new 
+            Expression  in pure SQL used to compute the new
             feature.
-            For example: 
+            For example:
             'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
             'POWER("column", 2)' will work.
 
@@ -93,7 +92,10 @@ class vDFEval(vDFInOut):
             )
         try:
             query = f"SELECT {expr} AS {name} FROM {self} LIMIT 0"
-            ctype = get_data_types(query, name[1:-1].replace("'", "''"),)
+            ctype = get_data_types(
+                query,
+                name[1:-1].replace("'", "''"),
+            )
         except QueryError:
             raise vQueryError(
                 f"The expression '{expr}' seems to be incorrect.\nBy "
@@ -105,7 +107,10 @@ class vDFEval(vDFInOut):
             ctype = "undefined"
         elif (ctype.lower().startswith(("long varbina", "long varchar"))) and (
             self._vars["isflex"]
-            or isvmap(expr=f"({query}) VERTICAPY_SUBTABLE", column=name,)
+            or isvmap(
+                expr=f"({query}) VERTICAPY_SUBTABLE",
+                column=name,
+            )
         ):
             category = "vmap"
             ctype = "VMAP(" + "(".join(ctype.split("(")[1:]) if "(" in ctype else "VMAP"

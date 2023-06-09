@@ -35,11 +35,11 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
 def get_connection_file() -> str:
     """
     Gets (and creates, if necessary) the auto
-    -connection file. If the environment variable 
-    'VERTICAPY_CONNECTION' is set, it is assumed 
+    -connection file. If the environment variable
+    'VERTICAPY_CONNECTION' is set, it is assumed
     to be the full path to the auto-connection file.
-    Otherwise, we reference "connections.verticapy" 
-    in the hidden ".verticapy" folder in the user's 
+    Otherwise, we reference "connections.verticapy"
+    in the hidden ".verticapy" folder in the user's
     home directory.
 
     Returns

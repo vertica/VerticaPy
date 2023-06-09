@@ -45,7 +45,9 @@ def rfc_data_vd():
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -111,10 +113,14 @@ class TestRFC:
         assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = RandomForestClassifier("model_contour",)
+        model_test = RandomForestClassifier(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
@@ -128,7 +134,9 @@ class TestRFC:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS rfc_model_test_drop")
-        model_test = RandomForestClassifier("rfc_model_test_drop",)
+        model_test = RandomForestClassifier(
+            "rfc_model_test_drop",
+        )
         model_test.fit(
             "public.rfc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -458,9 +466,13 @@ class TestRFC:
 
     def test_model_from_vDF(self, rfc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS rfc_from_vDF")
-        model_test = RandomForestClassifier("rfc_from_vDF",)
+        model_test = RandomForestClassifier(
+            "rfc_from_vDF",
+        )
         model_test.fit(
-            rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
+            rfc_data_vd,
+            ["Gender", '"owned cars"', "cost", "income"],
+            "TransPortation",
         )
 
         current_cursor().execute(

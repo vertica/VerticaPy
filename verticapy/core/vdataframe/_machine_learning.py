@@ -53,8 +53,8 @@ class vDFMachineLearning(vDFNorm):
         weight: str / integer
             vDataColumn or integer representing the weight.
         use_gcd: bool
-            If set to True,  uses the GCD (Greatest Common 
-            Divisor) to reduce all common weights to avoid 
+            If set to True,  uses the GCD (Greatest Common
+            Divisor) to reduce all common weights to avoid
             unnecessary duplicates.
 
         Returns
@@ -109,11 +109,11 @@ class vDFMachineLearning(vDFNorm):
         """
         Returns the complete  disjunctive table of  the vDataFrame.
         Numerical  features  are transformed  to categorical using
-        the 'discretize' method. Applying PCA on TCDT leads to MCA 
+        the 'discretize' method. Applying PCA on TCDT leads to MCA
         (Multiple correspondence analysis).
 
-        \u26A0 Warning : This method can become computationally 
-                         expensive  when used with  categorical 
+        \u26A0 Warning : This method can become computationally
+                         expensive  when used with  categorical
                          variables with many categories.
 
         Parameters
@@ -121,16 +121,16 @@ class vDFMachineLearning(vDFNorm):
         columns: SQLColumns, optional
             List of the vDataColumns names.
         max_cardinality: int, optional
-            For  any categorical variable, keeps the most  frequent 
-            categories and merges the less frequent categories into 
+            For  any categorical variable, keeps the most  frequent
+            categories and merges the less frequent categories into
             a new unique category.
         nbins: int, optional
             Number of bins used for the discretization (must be > 1).
         tcdt: bool, optional
-            If  set  to  True,   returns  the  transformed  complete 
-            disjunctive table (TCDT). 
+            If  set  to  True,   returns  the  transformed  complete
+            disjunctive table (TCDT).
         drop_transf_cols: bool, optional
-            If  set  to  True,  drops the  columns used  during  the 
+            If  set  to  True,  drops the  columns used  during  the
             transformation.
 
         Returns
@@ -182,8 +182,8 @@ class vDFMachineLearning(vDFNorm):
         **kwargs,
     ) -> NonBinaryTree:
         """
-        Returns a CHAID (Chi-square Automatic Interaction Detector) 
-        tree. CHAID is a decision tree technique based on adjusted 
+        Returns a CHAID (Chi-square Automatic Interaction Detector)
+        tree. CHAID is a decision tree technique based on adjusted
         significance testing (Bonferroni test).
 
         Parameters
@@ -191,28 +191,28 @@ class vDFMachineLearning(vDFNorm):
         response: str
             Categorical response vDataColumn.
         columns: SQLColumns
-            List of the vDataColumn names. The maximum number of 
-            categories  for  each   categorical   column  is  16; 
-            categorical  columns  with a higher cardinality  are 
+            List of the vDataColumn names. The maximum number of
+            categories  for  each   categorical   column  is  16;
+            categorical  columns  with a higher cardinality  are
             discarded.
         nbins: int, optional
-            Integer in the range [2,16], the number of bins used 
+            Integer in the range [2,16], the number of bins used
             to discretize the numerical features.
         method: str, optional
-            The  method  with which to discretize the  numerical 
+            The  method  with which to discretize the  numerical
             vDataColumns, one of the following:
                 same_width : Computes  bins of regular  width.
-                smart      : Uses a  random forest model on a 
+                smart      : Uses a  random forest model on a
                              response column to find the best
                              interval for discretization.
         RFmodel_params: dict, optional
-            Dictionary  of the  parameters of the random  forest 
-            model used to compute  the best splits  when 'method' 
-            is 'smart'. If the response column is numerical (but 
-            not  of type int or bool), this function trains  and 
-            uses  a random  forest  regressor.  Otherwise,  this 
+            Dictionary  of the  parameters of the random  forest
+            model used to compute  the best splits  when 'method'
+            is 'smart'. If the response column is numerical (but
+            not  of type int or bool), this function trains  and
+            uses  a random  forest  regressor.  Otherwise,  this
             function trains a random forest classifier.
-            For example,  to train a random forest with 20 trees 
+            For example,  to train a random forest with 20 trees
             and a maximum depth of 10, use:
                 {"n_estimators": 20, "max_depth": 10}
 
@@ -360,7 +360,7 @@ class vDFMachineLearning(vDFNorm):
         self, columns: Optional[SQLColumns] = None, max_cardinality: int = 16
     ) -> list[str]:
         """
-        Function used to simplify the code. It returns the columns 
+        Function used to simplify the code. It returns the columns
         picked by the CHAID algorithm.
 
         Parameters
@@ -368,8 +368,8 @@ class vDFMachineLearning(vDFNorm):
         columns: SQLColumns
             List of the vDataColumn names.
         max_cardinality: int, optional
-            The maximum number of categories for each categorical 
-            column. Categorical columns with a higher cardinality 
+            The maximum number of categories for each categorical
+            column. Categorical columns with a higher cardinality
             are discarded.
 
         Returns
@@ -428,14 +428,14 @@ class vDFMachineLearning(vDFNorm):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns names. If empty, all  numerical 
+            List  of the vDataColumns names. If empty, all  numerical
             vDataColumns are used.
         name: str, optional
             Name of the new vDataColumn.
         threshold: float, optional
             Threshold equal to the critical score.
         robust: bool
-            If set to True, uses the Robust Z-Score instead of the 
+            If set to True, uses the Robust Z-Score instead of the
             Z-Score.
 
         Returns
@@ -480,7 +480,7 @@ class vDFMachineLearning(vDFNorm):
         RFmodel_params: Optional[dict] = None,
     ) -> TableSample:
         """
-        Returns the chi-square term using the pivot table of the 
+        Returns the chi-square term using the pivot table of the
         response vDataColumn against the input vDataColumns.
 
         Parameters
@@ -488,28 +488,28 @@ class vDFMachineLearning(vDFNorm):
         response: str
             Categorical response vDataColumn.
         columns: SQLColumns
-            List of the vDataColumn names. The maximum number of 
-            categories  for  each   categorical   column  is  16; 
-            categorical  columns  with a higher cardinality  are 
+            List of the vDataColumn names. The maximum number of
+            categories  for  each   categorical   column  is  16;
+            categorical  columns  with a higher cardinality  are
             discarded.
         nbins: int, optional
-            Integer in the range [2,16], the number of bins used 
+            Integer in the range [2,16], the number of bins used
             to discretize the numerical features.
         method: str, optional
-            The  method  with which to discretize the  numerical 
+            The  method  with which to discretize the  numerical
             vDataColumns, one of the following:
                 same_width : Computes  bins of regular  width.
-                smart      : Uses a  random forest model on a 
+                smart      : Uses a  random forest model on a
                              response column to find the best
                              interval for discretization.
         RFmodel_params: dict, optional
-            Dictionary  of the  parameters of the random  forest 
-            model used to compute  the best splits  when 'method' 
-            is 'smart'. If the response column is numerical (but 
-            not  of type int or bool), this function trains  and 
-            uses  a random  forest  regressor.  Otherwise,  this 
+            Dictionary  of the  parameters of the random  forest
+            model used to compute  the best splits  when 'method'
+            is 'smart'. If the response column is numerical (but
+            not  of type int or bool), this function trains  and
+            uses  a random  forest  regressor.  Otherwise,  this
             function trains a random forest classifier.
-            For example,  to train a random forest with 20 trees 
+            For example,  to train a random forest with 20 trees
             and a maximum depth of 10, use:
                 {"n_estimators": 20, "max_depth": 10}
 
@@ -561,7 +561,7 @@ class vDFMachineLearning(vDFNorm):
                 j = 0
                 for col_in_row in row:
                     all_chi2 += [
-                        col_in_row ** 2 / (sum(tmp_res[i]) * sum(tmp_res[:, j]))
+                        col_in_row**2 / (sum(tmp_res[i]) * sum(tmp_res[:, j]))
                     ]
                     j += 1
                 i += 1
@@ -586,14 +586,14 @@ class vDFMachineLearning(vDFNorm):
         self, columns: Optional[SQLColumns] = None, r: int = 2
     ) -> "vDataFrame":
         """
-        Returns a vDataFrame containing thedifferent product 
-        combinations  of   the  input  vDataColumns.  This 
+        Returns a vDataFrame containing thedifferent product
+        combinations  of   the  input  vDataColumns.  This
         function is ideal for bivariate analysis.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all 
+            List of the vDataColumns names. If empty, all
             numerical vDataColumns are used.
         r: int, optional
             Degree of the polynomial.
@@ -627,53 +627,53 @@ class vDFMachineLearning(vDFNorm):
         end_date: PythonScalar = "",
     ) -> "vDataFrame":
         """
-        Recommend items based on the Collaborative Filtering 
-        (CF) technique.  The implementation  is the  same as 
+        Recommend items based on the Collaborative Filtering
+        (CF) technique.  The implementation  is the  same as
         APRIORI algorithm,  but is limited to pairs of items.
 
         Parameters
         ----------
         unique_id: str
-            Input  vDataColumn corresponding  to a unique  ID. 
+            Input  vDataColumn corresponding  to a unique  ID.
             It is a primary key.
         item_id: str
-            Input vDataColumn corresponding to an item ID. It 
-            is a secondary key  used to compute the different 
+            Input vDataColumn corresponding to an item ID. It
+            is a secondary key  used to compute the different
             pairs.
         method: str, optional
             Method used to recommend.
-                count  : Each item will be recommended based on 
-                         frequencies of the  different pairs of 
+                count  : Each item will be recommended based on
+                         frequencies of the  different pairs of
                          items.
-                avg    : Each item will be recommended based on 
-                         the  average rating of  the  different 
-                         item  pairs  with  a differing  second 
+                avg    : Each item will be recommended based on
+                         the  average rating of  the  different
+                         item  pairs  with  a differing  second
                          element.
-                median : Each item will be recommended based on 
-                         the  median  rating of  the  different 
-                         item  pairs  with a  differing  second 
+                median : Each item will be recommended based on
+                         the  median  rating of  the  different
+                         item  pairs  with a  differing  second
                          element.
         rating: str / tuple, optional
             Input vDataColumn including the items rating.
-            If the 'rating' type is 'tuple', it must be composed 
-            of 3 elements: 
+            If the 'rating' type is 'tuple', it must be composed
+            of 3 elements:
                 (r_vdf, r_item_id, r_name) where:
                      - r_vdf is an input vDataFrame.
-                     - r_item_id is an  input vDataColumn which 
+                     - r_item_id is an  input vDataColumn which
                        must includes the same id as 'item_id'.
                      - r_name is an input vDataColumn including
-                       the items rating. 
+                       the items rating.
         ts: str, optional
-            TS (Time Series)  vDataColumn used to order the data. 
-            The vDataColumn type must be date (date, datetime, 
+            TS (Time Series)  vDataColumn used to order the data.
+            The vDataColumn type must be date (date, datetime,
             timestamp...) or numerical.
         start_date: str / PythonNumber / date, optional
-            Input Start Date. For example, time = '03-11-1993' will 
-            filter the data when 'ts'  is less than November 1993 
+            Input Start Date. For example, time = '03-11-1993' will
+            filter the data when 'ts'  is less than November 1993
             the 3rd.
         end_date: str / PythonNumber / date, optional
-            Input End Date.  For example,  time = '03-11-1993' will 
-            filter the data when 'ts' is greater than November 1993 
+            Input End Date.  For example,  time = '03-11-1993' will
+            filter the data when 'ts' is greater than November 1993
             the 3rd.
 
         Returns
@@ -740,10 +740,13 @@ class vDFMachineLearning(vDFNorm):
 
     @save_verticapy_logs
     def score(
-        self, y_true: str, y_score: str, metric: Literal[tuple(FUNCTIONS_DICTIONNARY)],
+        self,
+        y_true: str,
+        y_score: str,
+        metric: Literal[tuple(FUNCTIONS_DICTIONNARY)],
     ) -> float:
         """
-        Computes the score using the input columns and the 
+        Computes the score using the input columns and the
         input metric.
 
         Parameters
@@ -756,24 +759,24 @@ class vDFMachineLearning(vDFNorm):
             The metric used to compute the score.
                 --- For Classification ---
                 accuracy    : Accuracy
-                auc         : Area Under the Curve 
+                auc         : Area Under the Curve
                               (ROC)
                 ba          : Balanced Accuracy
                               = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which  optimised 
+                best_cutoff : Cutoff  which  optimised
                               the ROC Curve prediction.
-                bm          : Informedness 
+                bm          : Informedness
                               = tpr + tnr - 1
-                csi         : Critical  Success  Index 
+                csi         : Critical  Success  Index
                               = tp / (tp + fn + fp)
                 f1          : F1 Score
                 fdr         : False Discovery Rate = 1 - ppv
                 fm          : Fowlkes–Mallows index
                               = sqrt(ppv * tpr)
-                fnr         : False Negative Rate 
+                fnr         : False Negative Rate
                               = fn / (fn + tp)
                 for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate 
+                fpr         : False Positive Rate
                               = fp / (fp + tn)
                 logloss     : Log Loss
                 lr+         : Positive Likelihood Ratio
@@ -781,21 +784,21 @@ class vDFMachineLearning(vDFNorm):
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
                 dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation 
-                              Coefficient 
-                mk          : Markedness 
+                mcc         : Matthews Correlation
+                              Coefficient
+                mk          : Markedness
                               = ppv + npv - 1
-                npv         : Negative Predictive Value 
+                npv         : Negative Predictive Value
                               = tn / (tn + fn)
-                prc_auc     : Area Under the Curve 
+                prc_auc     : Area Under the Curve
                               (PRC)
-                precision   : Precision 
+                precision   : Precision
                               = tp / (tp + fp)
                 pt          : Prevalence Threshold
                               = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall 
+                recall      : Recall
                               = tp / (tp + fn)
-                specificity : Specificity 
+                specificity : Specificity
                               = tn / (tn + fp)
                 --- For Regression ---
                 max    : Max Error
@@ -824,23 +827,23 @@ class vDFMachineLearning(vDFNorm):
         name: str = "session_id",
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame that 
-        corresponds to  sessions  (user  activity during  a 
-        specific  time). A  session  ends when  ts - lag(ts) 
+        Adds a new vDataColumn to the vDataFrame that
+        corresponds to  sessions  (user  activity during  a
+        specific  time). A  session  ends when  ts - lag(ts)
         is greater than a specific threshold.
 
         Parameters
         ----------
         ts: str
             vDataColumn used  as timeline. It is used to
-            order the data. It can be a numerical or type 
+            order the data. It can be a numerical or type
             date (date,   datetime,   timestamp...) vDataColumn.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         session_threshold: str, optional
-            This parameter is the threshold that determines 
-            the end of the session. For example, if it is set to 
-            '10 minutes', the session  ends after 10 minutes  of 
+            This parameter is the threshold that determines
+            the end of the session. For example, if it is set to
+            '10 minutes', the session  ends after 10 minutes  of
             inactivity.
         name: str, optional
             The session name.
@@ -869,23 +872,23 @@ class vDFMachineLearning(vDFNorm):
         random_state: int = None,
     ) -> tuple["vDataframe", "vDataFrame"]:
         """
-        Creates two vDataFrames (train/test), which can be used 
-        to  evaluate a model. The intersection between the train 
+        Creates two vDataFrames (train/test), which can be used
+        to  evaluate a model. The intersection between the train
         and test set is empty only if you speicfy a unique order_by.
 
         Parameters
         ----------
         test_size: float, optional
-            Proportion of the test set  compared to the training 
+            Proportion of the test set  compared to the training
             set.
         order_by: str / dict / list, optional
-            List of the vDataColumns used to sort the data, using 
-            asc order or a dictionary of all sorting methods.  For 
-            example,  to sort by "column1" ASC and "column2"  DESC, 
+            List of the vDataColumns used to sort the data, using
+            asc order or a dictionary of all sorting methods.  For
+            example,  to sort by "column1" ASC and "column2"  DESC,
             write: {"column1": "asc", "column2": "desc"}
-            Without this parameter,  the seeded random number used 
-            to split the data into train and test cannot guarantee  
-            that no collision will occur. Using this parameter 
+            Without this parameter,  the seeded random number used
+            to split the data into train and test cannot guarantee
+            that no collision will occur. Using this parameter
             avoids the possibility of collisions.
         random_state: int, optional
             Integer used to seed the randomness.

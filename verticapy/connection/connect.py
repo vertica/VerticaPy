@@ -34,7 +34,7 @@ Connecting to the DB.
 
 def auto_connect() -> None:
     """
-    Automatically creates a connection using the 
+    Automatically creates a connection using the
     auto-connection.
     """
     gb_conn = get_global_connection()
@@ -61,10 +61,10 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     Parameters
     ----------
     section: str
-        Name  of the  section in the  configuration 
+        Name  of the  section in the  configuration
         file.
     dsn: str, optional
-        Path to the file containing the credentials. 
+        Path to the file containing the credentials.
         If empty, the  Connection File will be used.
     """
     gb_conn = get_global_connection()
@@ -90,10 +90,10 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
 def set_connection(conn: Connection) -> None:
     """
-    Saves a custom  connection to the VerticaPy object. 
-    This allows you to specify,  for example, a JDBC or 
-    ODBC connection. This should not be confused with a 
-    native   VerticaPy   connection  created   by   the 
+    Saves a custom  connection to the VerticaPy object.
+    This allows you to specify,  for example, a JDBC or
+    ODBC connection. This should not be confused with a
+    native   VerticaPy   connection  created   by   the
     'new_connection' function.
     """
     try:
@@ -130,15 +130,15 @@ Connections & Cursors Objects.
 
 def current_connection() -> GlobalConnection:
     """
-    Returns the current  database connection. If the 
-    connection  is  closed,  VerticaPy  attempts  to 
+    Returns the current  database connection. If the
+    connection  is  closed,  VerticaPy  attempts  to
     reconnect with the existing connection.
 
-    If  the  connection   attempt  fails,  VerticaPy 
-    attempts to reconnect using  stored  credentials. 
-    If  this  also  fails,   VerticaPy  attempts  to 
-    connect  using  an  auto  connection.  Otherwise, 
-    VerticaPy  attempts  to connect to a  VerticaLab 
+    If  the  connection   attempt  fails,  VerticaPy
+    attempts to reconnect using  stored  credentials.
+    If  this  also  fails,   VerticaPy  attempts  to
+    connect  using  an  auto  connection.  Otherwise,
+    VerticaPy  attempts  to connect to a  VerticaLab
     Environment.
     """
     gb_conn = get_global_connection()
@@ -149,24 +149,19 @@ def current_connection() -> GlobalConnection:
     # Look if the connection does not exist or is closed
 
     if not conn or conn.closed():
-
         # Connection using the existing credentials
 
         if (section) and (dsn):
             connect(section, dsn)
 
         else:
-
             try:
-
                 # Connection using the Auto Connection
 
                 auto_connect()
 
             except Exception as e:
-
                 try:
-
                     # Connection to the VerticaLab environment
 
                     conn = verticapylab_connection()
@@ -190,7 +185,7 @@ def current_cursor() -> Cursor:
 
 def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     """
-    Reads the input DSN and creates a Vertica Database 
+    Reads the input DSN and creates a Vertica Database
     connection.
 
     Parameters
@@ -198,8 +193,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     section: str
         Name of the section in  the configuration file.
     dsn: str, optional
-        Path  to the file containing  the  credentials. 
-        If empty, the VERTICAPY_CONNECTION environment 
+        Path  to the file containing  the  credentials.
+        If empty, the VERTICAPY_CONNECTION environment
         variable will be used.
 
     Returns

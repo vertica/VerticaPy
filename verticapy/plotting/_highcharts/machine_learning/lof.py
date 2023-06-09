@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class LOFPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -80,7 +79,11 @@ class LOFPlot(HighchartsBase):
             self.init_style["yAxis"]["title"]["text"] = columns[1]
         self.init_style_sc = {
             "zIndex": 1,
-            "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "black",},
+            "marker": {
+                "fillColor": "white",
+                "lineWidth": 1,
+                "lineColor": "black",
+            },
             "tooltip": tooltip,
         }
         tooltip["pointFormat"] += "<b>" + str(columns[-1]) + "</b>: {point.z}<br>"

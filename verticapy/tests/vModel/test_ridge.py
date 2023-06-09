@@ -41,9 +41,13 @@ def winequality_vd():
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     current_cursor().execute("DROP MODEL IF EXISTS ridge_model_test")
-    model_class = Ridge("ridge_model_test",)
+    model_class = Ridge(
+        "ridge_model_test",
+    )
     model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality",
+        "public.winequality",
+        ["citric_acid", "residual_sugar", "alcohol"],
+        "quality",
     )
     yield model_class
     model_class.drop()
@@ -54,10 +58,14 @@ class TestRidge:
         assert model.__repr__() == "<LinearRegression>"
 
     def test_contour(self, winequality_vd):
-        model_test = Ridge("model_contour",)
+        model_test = Ridge(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            winequality_vd, ["citric_acid", "residual_sugar"], "quality",
+            winequality_vd,
+            ["citric_acid", "residual_sugar"],
+            "quality",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 30
@@ -71,7 +79,9 @@ class TestRidge:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS ridge_model_test_drop")
-        model_test = Ridge("ridge_model_test_drop",)
+        model_test = Ridge(
+            "ridge_model_test_drop",
+        )
         model_test.fit("public.winequality", ["alcohol"], "quality")
 
         current_cursor().execute(
@@ -178,7 +188,9 @@ class TestRidge:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = Ridge("model_test_plot",)
+        model_test = Ridge(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -314,7 +326,9 @@ class TestRidge:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS ridge_from_vDF")
-        model_test = Ridge("ridge_from_vDF",)
+        model_test = Ridge(
+            "ridge_from_vDF",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
 
         current_cursor().execute(

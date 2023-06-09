@@ -461,7 +461,11 @@ class TestUtilities:
     def test_read_avro(self):
         drop("public.variants", method="table")
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/variants.avro"
-        result = read_avro(path, table_name="variants", schema="public",)
+        result = read_avro(
+            path,
+            table_name="variants",
+            schema="public",
+        )
         assert result.shape() == (731, 34)
         assert result["end"].avg() == pytest.approx(16074719.005472)
         drop("public.variants", method="table")
@@ -477,12 +481,14 @@ class TestUtilities:
         assert result.shape() == (891, 15)
         assert drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(
-            path + "titanic-passengers.json", table_name="titanic_verticapy_test_json",
+            path + "titanic-passengers.json",
+            table_name="titanic_verticapy_test_json",
         )
         assert result.shape() == (891, 15)
         assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
         result = read_json(
-            path + "json_many/*.json", table_name="titanic_verticapy_test_json",
+            path + "json_many/*.json",
+            table_name="titanic_verticapy_test_json",
         )
         assert result.shape() == (1782, 15)
         assert drop("v_temp_schema.titanic_verticapy_test_json", method="table")
@@ -554,7 +560,10 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert drop("public.laliga_verticapy_test_json", method="table",)
+        assert drop(
+            "public.laliga_verticapy_test_json",
+            method="table",
+        )
 
         # testing local temporary table
         vdf = read_json(
@@ -564,7 +573,10 @@ class TestUtilities:
             ingest_local=True,
             use_complex_dt=False,
         )
-        assert drop("v_temp_schema.laliga_verticapy_test_json2", method="table",)
+        assert drop(
+            "v_temp_schema.laliga_verticapy_test_json2",
+            method="table",
+        )
 
         # Checking flextables and materialize option
         path = os.path.dirname(verticapy.__file__) + "/tests/utilities/"
@@ -623,7 +635,10 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         # insert
         result = read_csv(
-            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True,
+            path,
+            table_name="titanic_verticapy_test_csv",
+            schema="public",
+            insert=True,
         )
         assert result.shape() == (2468, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
@@ -657,12 +672,19 @@ class TestUtilities:
             "body": "varchar",
             "home.dest": "varchar",
         }
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", dtype=dtype,)
+        result = read_csv(
+            path,
+            table_name="titanic_verticapy_test_csv",
+            dtype=dtype,
+        )
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
         result = read_csv(
-            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True,
+            path,
+            schema="public",
+            table_name="titanic_verticapy_test_csv",
+            genSQL=True,
         )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
@@ -715,7 +737,9 @@ class TestUtilities:
         for i in range(1, 4):
             drop(f"public.csv_test{i}")
             result3 = read_csv(
-                path + f"csv_test{i}.csv", table_name=f"csv_test{i}", schema="public",
+                path + f"csv_test{i}.csv",
+                table_name=f"csv_test{i}",
+                schema="public",
             )
             assert result3.shape() == (4, 4)
             assert result3.get_columns() == ['"a"', '"b"', '"c"', '"d"']
@@ -772,7 +796,11 @@ class TestUtilities:
 
         # testing insert
         vdf = read_file(path)
-        vdf = read_file(path, table_name=vdf._vars["main_relation"], insert=True,)
+        vdf = read_file(
+            path,
+            table_name=vdf._vars["main_relation"],
+            insert=True,
+        )
         assert vdf.shape() == (904, 14)
 
     def test_read_shp(self, cities_vd):
@@ -789,7 +817,9 @@ class TestUtilities:
         drop(name="public.cities_test")
 
     def test_save_to_query_profile(self):
-        model = LinearRegression("model_test",)
+        model = LinearRegression(
+            "model_test",
+        )
         iris = load_iris()
         q = save_to_query_profile(
             name="test",
@@ -799,8 +829,17 @@ class TestUtilities:
                 "X1": None,
                 "X2": True,
                 "X3": False,
-                "X4": ["x0", "x1", "x2", "x3",],
-                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "X4": [
+                    "x0",
+                    "x1",
+                    "x2",
+                    "x3",
+                ],
+                "X5": {
+                    "Y0": 3,
+                    1: ["y0", "y1"],
+                    None: 4,
+                },
                 "vdf": iris,
                 "model": model,
             },
@@ -821,8 +860,17 @@ class TestUtilities:
                 "X1": None,
                 "X2": True,
                 "X3": False,
-                "X4": ["x0", "x1", "x2", "x3",],
-                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "X4": [
+                    "x0",
+                    "x1",
+                    "x2",
+                    "x3",
+                ],
+                "X5": {
+                    "Y0": 3,
+                    1: ["y0", "y1"],
+                    None: 4,
+                },
                 "vdf": iris,
                 "model": model,
             },
@@ -864,8 +912,17 @@ class TestUtilities:
                 "X1": None,
                 "X2": True,
                 "X3": False,
-                "X4": ["x0", "x1", "x2", "x3",],
-                "X5": {"Y0": 3, 1: ["y0", "y1"], None: 4,},
+                "X4": [
+                    "x0",
+                    "x1",
+                    "x2",
+                    "x3",
+                ],
+                "X5": {
+                    "Y0": 3,
+                    1: ["y0", "y1"],
+                    None: 4,
+                },
                 "vdf": iris,
                 "model": model,
             },
@@ -910,7 +967,9 @@ class TestUtilities:
         assert result['verticapy test *+"'] == [1]
 
     def test_vDataFrame_sql(self):
-        result = vDataFrame('(SELECT 1 AS "verticapy test *+") x',)
+        result = vDataFrame(
+            '(SELECT 1 AS "verticapy test *+") x',
+        )
         assert result["verticapy test *+"].avg() == 1.0
 
     @pytest.mark.skip(reason="this test will be implemented later")

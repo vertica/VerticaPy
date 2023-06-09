@@ -46,7 +46,7 @@ available_auto_connection = available_connections
 def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     """
     Reads the DSN information from the VERTICAPY_
-    CONNECTION environment variable or the input 
+    CONNECTION environment variable or the input
     file.
 
     Parameters
@@ -55,8 +55,8 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
         Name of the section in the configuration file
         that contains the credentials.
     dsn: str, optional
-        Path to the file containing the credentials. 
-        If empty, the VERTICAPY_CONNECTION environment 
+        Path to the file containing the credentials.
+        If empty, the VERTICAPY_CONNECTION environment
         variable is used.
 
     Returns
@@ -67,7 +67,6 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     confparser = get_confparser(dsn)
 
     if confparser.has_section(section):
-
         options = confparser.items(section)
 
         gb_conn = get_global_connection()
@@ -86,7 +85,6 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                 break
 
         for option_name, option_val in options:
-
             option_name = option_name.lower()
 
             if option_name in ("pwd", "password", "uid", "user") and env:
@@ -150,5 +148,4 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
         return conn_info
 
     else:
-
         raise NameError(f"The DSN Section '{section}' doesn't exist.")

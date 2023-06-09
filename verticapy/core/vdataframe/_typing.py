@@ -45,10 +45,10 @@ class vDFTyping(vDFRead):
         Parameters
         ----------
         dtype: dict
-            Dictionary of the different types. Each key 
-            of   the   dictionary  must   represent   a 
-            vDataColumn. The dictionary must be similar 
-            to the following: 
+            Dictionary of the different types. Each key
+            of   the   dictionary  must   represent   a
+            vDataColumn. The dictionary must be similar
+            to the following:
             {"column1": "type1", ... "columnk": "typek"}
 
         Returns
@@ -79,11 +79,11 @@ class vDFTyping(vDFRead):
     def catcol(self, max_cardinality: int = 12) -> list:
         """
         Returns the vDataFrame categorical vDataColumns.
-        
+
         Parameters
         ----------
         max_cardinality: int, optional
-            Maximum number of unique values to consider 
+            Maximum number of unique values to consider
             integer vDataColumns as categorical.
 
         Returns
@@ -115,7 +115,7 @@ class vDFTyping(vDFRead):
 
     def datecol(self) -> list:
         """
-        Returns a list of the vDataColumns of type 
+        Returns a list of the vDataColumns of type
         date in the vDataFrame.
 
         Returns
@@ -148,14 +148,14 @@ class vDFTyping(vDFRead):
 
     def numcol(self, exclude_columns: Optional[SQLColumns] = None) -> list:
         """
-        Returns a list of names of the numerical vDataColumns 
+        Returns a list of names of the numerical vDataColumns
         in the vDataFrame.
 
         Parameters
         ----------
         exclude_columns: SQLColumns, optional
-            List  of the  vDataColumns names to exclude  from 
-            the final list. 
+            List  of the  vDataColumns names to exclude  from
+            the final list.
 
         Returns
         -------
@@ -181,10 +181,10 @@ class vDCTyping(vDCRead):
             New type. One of the following values:
                 'json' : Converts to a JSON string.
                 'array': Converts to an array.
-                'vmap' : Converts to a VMap.  If converting a 
-                         delimited  string,  you can add  the 
-                         header_names  as   follows:  dtype = 
-                         'vmap(age,name,date)',   where   the 
+                'vmap' : Converts to a VMap.  If converting a
+                         delimited  string,  you can add  the
+                         header_names  as   follows:  dtype =
+                         'vmap(age,name,date)',   where   the
                          header_names are age, name, and date.
 
         Returns
@@ -206,7 +206,9 @@ class vDCTyping(vDCRead):
                     ORDER BY LENGTH({self}) DESC 
                     LIMIT 1"""
                 biggest_str = _executeSQL(
-                    query, title="getting the biggest string", method="fetchfirstelem",
+                    query,
+                    title="getting the biggest string",
+                    method="fetchfirstelem",
                 )
                 biggest_str = biggest_str.strip()
                 sep = guess_sep(biggest_str)
@@ -279,7 +281,13 @@ class vDCTyping(vDCRead):
                 sql_push_ext=self._parent._vars["sql_push_ext"],
                 symbol=self._parent._vars["symbol"],
             )
-            self._transf += [(transformation[1], dtype, to_category(ctype=dtype),)]
+            self._transf += [
+                (
+                    transformation[1],
+                    dtype,
+                    to_category(ctype=dtype),
+                )
+            ]
             self._parent._add_to_history(
                 f"[AsType]: The vDataColumn {self} was converted to {dtype}."
             )
@@ -291,9 +299,9 @@ class vDCTyping(vDCRead):
 
     def category(self) -> str:
         """
-        Returns the category of the vDataColumn. The category 
+        Returns the category of the vDataColumn. The category
         will be one of the following:
-        date / int / float / text / binary / spatial / uuid 
+        date / int / float / text / binary / spatial / uuid
         / undefined
 
         Returns
@@ -318,7 +326,7 @@ class vDCTyping(vDCRead):
 
     def isarray(self) -> bool:
         """
-        Returns True if the vDataColumn is an array, 
+        Returns True if the vDataColumn is an array,
         False otherwise.
 
         Returns
@@ -330,7 +338,7 @@ class vDCTyping(vDCRead):
 
     def isbool(self) -> bool:
         """
-        Returns True if the vDataColumn is boolean, 
+        Returns True if the vDataColumn is boolean,
         False otherwise.
 
         Returns
@@ -342,7 +350,7 @@ class vDCTyping(vDCRead):
 
     def isdate(self) -> bool:
         """
-        Returns True if the vDataColumn category is date, 
+        Returns True if the vDataColumn category is date,
         False otherwise.
 
         Returns
@@ -354,7 +362,7 @@ class vDCTyping(vDCRead):
 
     def isnum(self) -> bool:
         """
-        Returns True if the vDataColumn is numerical, 
+        Returns True if the vDataColumn is numerical,
         False otherwise.
 
         Returns
@@ -366,7 +374,7 @@ class vDCTyping(vDCRead):
 
     def isvmap(self) -> bool:
         """
-        Returns True if the vDataColumn category is VMap, 
+        Returns True if the vDataColumn category is VMap,
         False otherwise.
 
         Returns

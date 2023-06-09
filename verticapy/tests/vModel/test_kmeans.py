@@ -34,14 +34,18 @@ set_option("print_info", False)
 def iris_vd():
     iris = load_iris()
     yield iris
-    drop(name="public.iris",)
+    drop(
+        name="public.iris",
+    )
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -73,7 +77,9 @@ class TestKMeans:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS kmeans_model_test_drop")
-        model_test = KMeans("kmeans_model_test_drop",)
+        model_test = KMeans(
+            "kmeans_model_test_drop",
+        )
         model_test.fit("public.iris", ["SepalLengthCm", "SepalWidthCm"])
 
         current_cursor().execute(
@@ -110,7 +116,11 @@ class TestKMeans:
             "max_iter": 10,
             "tol": 0.0001,
             "n_cluster": 3,
-            "init": [[7.2, 3.0, 5.8, 1.6], [6.9, 3.1, 4.9, 1.5], [5.7, 4.4, 1.5, 0.4],],
+            "init": [
+                [7.2, 3.0, 5.8, 1.6],
+                [6.9, 3.1, 4.9, 1.5],
+                [5.7, 4.4, 1.5, 0.4],
+            ],
         }
 
     def test_get_predict(self, iris_vd, model):
@@ -162,7 +172,9 @@ class TestKMeans:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = KMeans("model_test_plot",)
+        model_test = KMeans(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot(color="b")
         assert len(result.get_default_bbox_extra_artists()) > 8
@@ -212,7 +224,9 @@ class TestKMeans:
 
     def test_get_voronoi_plot(self, iris_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = KMeans("model_test_plot",)
+        model_test = KMeans(
+            "model_test_plot",
+        )
         model_test.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
         result = model_test.plot_voronoi(color="b")
         assert len(result.gca().get_default_bbox_extra_artists()) == 21

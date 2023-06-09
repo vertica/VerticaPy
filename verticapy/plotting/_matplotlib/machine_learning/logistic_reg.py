@@ -23,7 +23,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LogisticRegressionPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -67,7 +66,11 @@ class LogisticRegressionPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a logistic regression plot using the Matplotlib API.
         """
@@ -147,7 +150,10 @@ class LogisticRegressionPlot(MatplotlibBase):
                 ax, size=(8, 6), dim=3, style_kwargs=style_kwargs
             )
             ax.plot_surface(
-                X_logit, Y_logit, Z_logit, **self.init_style_Z,
+                X_logit,
+                Y_logit,
+                Z_logit,
+                **self.init_style_Z,
             )
             all_scatter = []
             for i, x, y, s in [

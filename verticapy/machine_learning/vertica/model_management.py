@@ -50,7 +50,7 @@ def load_model(
     name: str, input_relation: SQLRelation = "", test_relation: SQLRelation = ""
 ) -> VerticaModel:
     """
-    Loads a Vertica model and returns the associated 
+    Loads a Vertica model and returns the associated
     object.
 
     Parameters
@@ -58,9 +58,9 @@ def load_model(
     name: str
         Model Name.
     input_relation: str, optional
-        Some automated functions depend on the 
-        input relation. If the load_model function 
-        cannot  find the  input relation from  the 
+        Some automated functions depend on the
+        input relation. If the load_model function
+        cannot  find the  input relation from  the
         call string, you should fill it manually.
     test_relation: str, optional
         Relation used for testing. All the methods
@@ -79,7 +79,10 @@ def load_model(
     schema, model_name = schema[1:-1], name[1:-1]
     if not model_type:
         raise NameError(f"The model '{name}' doesn't exist.")
-    if model_type.lower() in ("kmeans", "kprototypes",):
+    if model_type.lower() in (
+        "kmeans",
+        "kprototypes",
+    ):
         info = (
             _executeSQL(
                 query=f"""

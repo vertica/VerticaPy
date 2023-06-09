@@ -32,7 +32,7 @@ def compute_flextable_keys(
     flex_name: str, usecols: Optional[list] = None
 ) -> list[tuple]:
     """
-    Computes the flex table keys and returns the 
+    Computes the flex table keys and returns the
     predicted data types.
 
     Parameters
@@ -45,7 +45,7 @@ def compute_flextable_keys(
     Returns
     -------
     List of tuples
-        List  of virtual column names and  their 
+        List  of virtual column names and  their
         respective data types.
     """
     usecols = format_type(usecols, dtype=list)
@@ -75,7 +75,9 @@ def compute_flextable_keys(
 
 @save_verticapy_logs
 def compute_vmap_keys(
-    expr: Union[str, StringSQL], vmap_col: str, limit: int = 100,
+    expr: Union[str, StringSQL],
+    vmap_col: str,
+    limit: int = 100,
 ) -> list[tuple]:
     """
     Computes the most frequent keys in the input VMap.
@@ -83,10 +85,10 @@ def compute_vmap_keys(
     Parameters
     ----------
     expr: SQLRelation
-        Input  expression.   You  can  also  specify  a 
-        vDataFrame  or a customized  relation, but  you 
-        must  enclose it  with an  alias.  For example, 
-        "(SELECT 1) x" is allowed, whereas "(SELECT 1)" 
+        Input  expression.   You  can  also  specify  a
+        vDataFrame  or a customized  relation, but  you
+        must  enclose it  with an  alias.  For example,
+        "(SELECT 1) x" is allowed, whereas "(SELECT 1)"
         and "SELECT 1" are not.
     vmap_col: str
         VMap column.
@@ -96,7 +98,7 @@ def compute_vmap_keys(
     Returns
     -------
     List of tuples
-        List of virtual column names and their respective 
+        List of virtual column names and their respective
         frequencies.
     """
     vmap = quote_ident(vmap_col)
@@ -155,15 +157,18 @@ def isflextable(table_name: str, schema: str) -> bool:
     return bool(res)
 
 
-def isvmap(expr: Union[str, StringSQL], column: str,) -> bool:
+def isvmap(
+    expr: Union[str, StringSQL],
+    column: str,
+) -> bool:
     """
     Checks if the input column is a VMap.
 
     Parameters
     ----------
     expr: SQLRelation
-        Any relation or expression. If you enter 
-        an  expression,  you must enclose it  in 
+        Any relation or expression. If you enter
+        an  expression,  you must enclose it  in
         parentheses and provide an alias.
     column: str
         Name of the column to check.

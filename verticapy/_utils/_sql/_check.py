@@ -35,6 +35,6 @@ def is_dql(query: str) -> bool:
     query = erase_comment(query)
     for idx, q in enumerate(query):
         if q not in (" ", "("):
-            result = query[idx : ].lower().startswith(("select ", "with "))
+            result = query[idx:].lower().startswith(("select ", "with "))
             break
     return result

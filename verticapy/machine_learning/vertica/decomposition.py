@@ -40,7 +40,6 @@ General Classes.
 
 
 class Decomposition(Preprocessing):
-
     # I/O Methods.
 
     def deploySQL(
@@ -52,24 +51,24 @@ class Decomposition(Preprocessing):
         exclude_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model. 
+            List of the columns used to deploy the model.
             If empty,  the model predictors are used.
         n_components: int, optional
-            Number  of  components to return.  If  set to 
+            Number  of  components to return.  If  set to
             0,  all  the  components  are deployed.
         cutoff: PythonNumber, optional
-            Specifies  the minimum accumulated  explained 
-            variance.  Components  are  taken  until  the 
-            accumulated  explained  variance reaches this 
+            Specifies  the minimum accumulated  explained
+            variance.  Components  are  taken  until  the
+            accumulated  explained  variance reaches this
             value.
         key_columns: SQLColumns, optional
-            Predictors   used    during   the   algorithm 
-            computation  that will be deployed with  the 
+            Predictors   used    during   the   algorithm
+            computation  that will be deployed with  the
             principal components.
         exclude_columns: SQLColumns, optional
             Columns to exclude from the prediction.
@@ -111,25 +110,25 @@ class Decomposition(Preprocessing):
         p: int = 2,
     ) -> TableSample:
         """
-        Returns  the  decomposition  score  on  a  dataset 
-        for  each  transformed column.  It is the  average 
-        / median of the p-distance between the real column 
-        and  its  result after applying the  decomposition 
-        model and its inverse.  
+        Returns  the  decomposition  score  on  a  dataset
+        for  each  transformed column.  It is the  average
+        / median of the p-distance between the real column
+        and  its  result after applying the  decomposition
+        model and its inverse.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model. 
+            List of the columns used to deploy the model.
             If empty, the model  predictors are used.
         input_relation: str, optional
-            Input  Relation.  If  empty,  the model input 
+            Input  Relation.  If  empty,  the model input
             relation are used.
         metric: str, optional
             Distance metric used to do the scoring.
-                avg    : The average is used as 
+                avg    : The average is used as
                          aggregation.
-                median : The median  is used as 
+                median : The median  is used as
                          aggregation.
         p: int, optional
             The p of the p-distance.
@@ -206,20 +205,20 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input  vDataFrame.   You can  also  specify 
-            a  customized   relation,   but   you  must 
-            enclose  it  with  an  alias.  For example: 
-            "(SELECT 1) x"    is     valid    whereas 
+            Input  vDataFrame.   You can  also  specify
+            a  customized   relation,   but   you  must
+            enclose  it  with  an  alias.  For example:
+            "(SELECT 1) x"    is     valid    whereas
             "(SELECT 1)" and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
         n_components: int, optional
-            Number  of components to return.  If set to 
+            Number  of components to return.  If set to
             0, all the components are deployed.
         cutoff: PythonNumber, optional
-            Specifies the minimum accumulated explained 
-            variance.  Components  are taken until  the 
-            accumulated explained variance reaches this 
+            Specifies the minimum accumulated explained
+            variance.  Components  are taken until  the
+            accumulated explained variance reaches this
             value.
 
         Returns
@@ -238,7 +237,11 @@ class Decomposition(Preprocessing):
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         columns = self.deploySQL(
-            all_columns, n_components, cutoff, exclude_columns, exclude_columns,
+            all_columns,
+            n_components,
+            cutoff,
+            exclude_columns,
+            exclude_columns,
         )
         main_relation = f"(SELECT {columns} FROM {vdf}) VERTICAPY_SUBTABLE"
         return vDataFrame(main_relation)
@@ -257,12 +260,12 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two elements representing the 
+            Tuple of two elements representing the
             IDs of the model's components.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional  parameter to pass to the 
+            Any optional  parameter to pass to the
             Plotting functions.
 
         Returns
@@ -278,7 +281,9 @@ class Decomposition(Preprocessing):
             else:
                 dim_perc += [f" ({round(self.explained_variance_[d - 1] * 100, 1)}%)"]
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="ScatterPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="ScatterPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.ScatterPlot(
             vdf=vdf,
@@ -304,12 +309,12 @@ class Decomposition(Preprocessing):
         Parameters
         ----------
         dimensions: tuple, optional
-            Tuple of two elements representing the IDs 
+            Tuple of two elements representing the IDs
             of the model's components.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass to  the 
+            Any  optional  parameter  to  pass to  the
             Plotting functions.
 
         Returns
@@ -324,7 +329,9 @@ class Decomposition(Preprocessing):
             x = self.principal_components_[:, dimensions[0] - 1]
             y = self.principal_components_[:, dimensions[1] - 1]
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="PCACirclePlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="PCACirclePlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
@@ -351,7 +358,7 @@ class Decomposition(Preprocessing):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -360,7 +367,9 @@ class Decomposition(Preprocessing):
             Plotting Object.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="PCAScreePlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
         data = {
@@ -386,30 +395,30 @@ Algorithms used for decomposition.
 
 class PCA(Decomposition):
     """
-    Creates a PCA  (Principal Component Analysis) object 
+    Creates a PCA  (Principal Component Analysis) object
     using the Vertica PCA algorithm.
-     
+
     Parameters
     ----------
     name: str
-    	Name  of the  model. The model is stored in the 
+        Name  of the  model. The model is stored in the
         database.
     n_components: int, optional
-    	The  number of  components to keep in the model. 
-        If  this value  is not provided,  all components 
-        are kept.  The  maximum number of components  is 
-        the number of  non-zero singular values returned 
-        by the internal call to SVD. This number is less 
-        than or equal to SVD  (number of columns, number 
-        of rows). 
+        The  number of  components to keep in the model.
+        If  this value  is not provided,  all components
+        are kept.  The  maximum number of components  is
+        the number of  non-zero singular values returned
+        by the internal call to SVD. This number is less
+        than or equal to SVD  (number of columns, number
+        of rows).
     scale: bool, optional
-    	A  Boolean  value  that  specifies   whether  to 
-        standardize  the columns during the  preparation 
+        A  Boolean  value  that  specifies   whether  to
+        standardize  the columns during the  preparation
         step.
     method: str, optional
-    	The method used to calculate PCA.
-    		lapack: Lapack definition.
-	"""
+        The method used to calculate PCA.
+                lapack: Lapack definition.
+    """
 
     # Properties.
 
@@ -475,7 +484,7 @@ class PCA(Decomposition):
         )
         cos2 = self.get_vertica_attributes("principal_components").to_list()
         for i in range(len(cos2)):
-            cos2[i] = [v ** 2 for v in cos2[i]]
+            cos2[i] = [v**2 for v in cos2[i]]
             total = sum(cos2[i])
             cos2[i] = [v / total for v in cos2[i]]
         values = {"index": self.X}
@@ -498,16 +507,16 @@ class PCA(Decomposition):
 
 class MCA(PCA):
     """
-    Creates a MCA  (multiple correspondence analysis) object 
+    Creates a MCA  (multiple correspondence analysis) object
     using  the Vertica PCA  algorithm. MCA is a PCA applied
     to a complete disjunctive table.  The  input relation is
     transformed to a TCDT (transformed  complete  disjunctive
     table) before applying the PCA.
-     
+
     Parameters
     ----------
     name: str
-        Name of the model.  The model is stored in the 
+        Name of the model.  The model is stored in the
         database.
     """
 
@@ -559,18 +568,18 @@ class MCA(PCA):
         self, dimension: int = 1, chart: Optional[PlottingObject] = None, **style_kwargs
     ) -> PlottingObject:
         """
-        Draws a decomposition  contribution plot of the input 
+        Draws a decomposition  contribution plot of the input
         dimension.
 
         Parameters
         ----------
         dimension: int, optional
-            Integer  representing  the  IDs  of the  model's 
+            Integer  representing  the  IDs  of the  model's
             component.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -584,7 +593,9 @@ class MCA(PCA):
             *sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True)
         )
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="PCAScreePlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         n = len(contribution)
         data = {
@@ -609,7 +620,7 @@ class MCA(PCA):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws a MCA (multiple correspondence analysis) cos2 
+        Draws a MCA (multiple correspondence analysis) cos2
         plot of the two input dimensions.
 
         Parameters
@@ -619,7 +630,7 @@ class MCA(PCA):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -637,7 +648,9 @@ class MCA(PCA):
             *sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True)
         )
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="PCAScreePlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="PCAScreePlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         n = len(self.explained_variance_)
         data = {
@@ -663,7 +676,7 @@ class MCA(PCA):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Draws  the  MCA  (multiple correspondence analysis) 
+        Draws  the  MCA  (multiple correspondence analysis)
         graph.
 
         Parameters
@@ -674,12 +687,12 @@ class MCA(PCA):
             Method used to draw the plot.
                 auto    : Only the  variables are displayed.
                 cos2    : The cos2 is used as CMAP.
-                contrib : The feature  contribution is  used 
+                contrib : The feature  contribution is  used
                           as CMAP.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -719,7 +732,9 @@ class MCA(PCA):
                     ]
                 )
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="PCAVarPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="PCAVarPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": x,
@@ -741,26 +756,26 @@ class MCA(PCA):
 
 class SVD(Decomposition):
     """
-    Creates  an  SVD  (Singular  Value  Decomposition) 
+    Creates  an  SVD  (Singular  Value  Decomposition)
     object using the Vertica SVD algorithm.
-     
+
     Parameters
     ----------
     name: str
-    	Name  of the model. The model is stored in the 
+        Name  of the model. The model is stored in the
         database.
     n_components: int, optional
-    	The number  of components to keep in the model. 
-        If this value  is not provided,  all components 
-        are kept.  The maximum number of  components is 
-        the number of non-zero singular values returned 
-        by  the  internal call to SVD. This  number  is 
-        less  than or equal to SVD (number of  columns, 
+        The number  of components to keep in the model.
+        If this value  is not provided,  all components
+        are kept.  The maximum number of  components is
+        the number of non-zero singular values returned
+        by  the  internal call to SVD. This  number  is
+        less  than or equal to SVD (number of  columns,
         number of rows).
     method: str, optional
-    	The method used to calculate SVD.
-    		lapack: Lapack definition.
-	"""
+        The method used to calculate SVD.
+                lapack: Lapack definition.
+    """
 
     # Properties.
 

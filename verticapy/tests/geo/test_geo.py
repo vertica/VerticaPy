@@ -51,7 +51,9 @@ class TestGeo:
         assert result["max_x"][0] == pytest.approx(180.0)
         assert result["max_y"][0] == pytest.approx(83.64513)
         rename_index(
-            "world_polygons", "world_polygons_rename", True,
+            "world_polygons",
+            "world_polygons_rename",
+            True,
         )
         result2 = describe_index("world_polygons_rename", True)
         assert result2.shape() == (177, 3)

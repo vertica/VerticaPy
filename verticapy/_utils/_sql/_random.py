@@ -22,8 +22,8 @@ import verticapy._config.config as conf
 def _current_random(rand_int: Optional[int] = None) -> str:
     """
     Returns the 'random' function to be used in the
-    query. The returned function depends on the input 
-    parameter 'rand_int' and whether the random state has 
+    query. The returned function depends on the input
+    parameter 'rand_int' and whether the random state has
     been changed.
     """
     random_state = conf.get_option("random_state")

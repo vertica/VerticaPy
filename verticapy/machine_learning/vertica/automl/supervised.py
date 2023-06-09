@@ -68,7 +68,7 @@ from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 
 class AutoML(VerticaModel):
     """
-    Tests multiple models to find those that maximize 
+    Tests multiple models to find those that maximize
     the input score.
 
     Parameters
@@ -77,42 +77,42 @@ class AutoML(VerticaModel):
         Name of the model.
     estimator: list / 'native' / 'all' / 'fast' / object
         List  of Vertica  estimators with a fit  method.
-        Alternatively,  you can specify 'native' for all 
-        native  Vertica models, 'all' for all  VerticaPy 
+        Alternatively,  you can specify 'native' for all
+        native  Vertica models, 'all' for all  VerticaPy
         models, and 'fast' for quick modeling.
     estimator_type: str, optional
         Estimator Type.
-            auto      : Automatically     detects     the 
+            auto      : Automatically     detects     the
                         estimator type.
-            regressor : The estimator  is  used  to 
+            regressor : The estimator  is  used  to
                         perform a regression.
-            binary    : The  estimator is used  to 
+            binary    : The  estimator is used  to
                         perform  a binary classification.
-            multi     : The  estimator  is  used  to 
-                        perform  a multiclass 
+            multi     : The  estimator  is  used  to
+                        perform  a multiclass
                         classification.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for  classification & RMSE for 
+            auto: logloss for  classification & RMSE for
                   regression.
         For Classification:
             accuracy    : Accuracy
-            auc         : Area Under the Curve 
+            auc         : Area Under the Curve
                           (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -120,20 +120,20 @@ class AutoML(VerticaModel):
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
-            prc_auc     : Area Under the Curve 
+            prc_auc     : Area Under the Curve
                           (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -148,25 +148,25 @@ class AutoML(VerticaModel):
     cv: int, optional
         Number of folds.
     pos_label: PythonScalar, optional
-        The main class to  be considered as positive 
+        The main class to  be considered as positive
         (classification only).
     cutoff: float, optional
         The model cutoff (classification only).
     nbins: int, optional
-        Number of bins used to compute the different 
+        Number of bins used to compute the different
         parameter categories.
     lmax: int, optional
         Maximum length of each parameter list.
     optimized_grid: int, optional
-        If set to zero, the randomness is based on the 
+        If set to zero, the randomness is based on the
         input parameters.
-        If set to one, the randomness  is limited  to 
-        some parameters while others are picked based 
+        If set to one, the randomness  is limited  to
+        some parameters while others are picked based
         on a default grid.
-        If  set to two, no randomness is used  and  a 
+        If  set to two, no randomness is used  and  a
         default grid is returned.
     stepwise: bool, optional
-        If True, the stepwise algorithm is used to 
+        If True, the stepwise algorithm is used to
         determine the final model list of parameters.
     stepwise_criterion: str, optional
         Criterion used when performing the final
@@ -174,33 +174,33 @@ class AutoML(VerticaModel):
             aic : Akaike’s information criterion
             bic : Bayesian information criterion
     stepwise_direction: str, optional
-        Direction to start the stepwise search, 
+        Direction to start the stepwise search,
         either 'backward' or 'forward'.
     stepwise_max_steps: int, optional
-        The maximum number of steps to be considered 
+        The maximum number of steps to be considered
         when performing the final estimator stepwise.
     x_order: str, optional
-        Method for preprocessing  X before using the 
+        Method for preprocessing  X before using the
         stepwise algorithm.
-            pearson  : X  is ordered  based  on  the 
-                       Pearson's         correlation 
+            pearson  : X  is ordered  based  on  the
+                       Pearson's         correlation
                        coefficient.
-            spearman : X   is   ordered   based   on 
-                       Spearman's  rank  correlation 
+            spearman : X   is   ordered   based   on
+                       Spearman's  rank  correlation
                        coefficient.
-            random   : Shuffles the  vector X before 
-                       applying     the     stepwise 
+            random   : Shuffles the  vector X before
+                       applying     the     stepwise
                        algorithm.
-            none     : Does not  change the order of 
+            none     : Does not  change the order of
                        X.
     preprocess_data: bool, optional
         If True, the data will be preprocessed.
     preprocess_dict: dict, optional
-        Dictionary to pass to the AutoDataPrep class 
-        in  order to preprocess the data before  
+        Dictionary to pass to the AutoDataPrep class
+        in  order to preprocess the data before
         clustering.
     print_info: bool
-        If  True,  prints the model  information  at 
+        If  True,  prints the model  information  at
         each step.
 
     Attributes
@@ -208,10 +208,10 @@ class AutoML(VerticaModel):
     preprocess_: object
         Model used to preprocess the data.
     best_model_: object
-        Most  efficient   models  found  during  the 
+        Most  efficient   models  found  during  the
         search.
     model_grid_ : TableSample
-        Grid   containing   the   different   models 
+        Grid   containing   the   different   models
         information.
     """
 
@@ -314,7 +314,7 @@ class AutoML(VerticaModel):
 
     def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
@@ -668,7 +668,7 @@ class AutoML(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -682,7 +682,9 @@ class AutoML(VerticaModel):
             }
             layout = {"columns": copy.deepcopy(self.stepwise_["variable"])}
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         return self.best_model_.features_importance(**kwargs)
@@ -707,7 +709,7 @@ class AutoML(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional  parameter  to pass to  the 
+            Any optional  parameter  to pass to  the
             Plotting functions.
 
         Returns
@@ -740,7 +742,9 @@ class AutoML(VerticaModel):
             )
         else:
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="StepwisePlot", chart=chart, style_kwargs=style_kwargs,
+                class_name="StepwisePlot",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             data = {
                 "x": np.array([len(x) for x in self.stepwise_["features"]]).astype(int),

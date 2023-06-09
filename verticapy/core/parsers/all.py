@@ -55,65 +55,65 @@ def read_file(
     max_files: int = 100,
 ) -> vDataFrame:
     """
-    Inspects and ingests a file in CSV, Parquet, ORC, 
+    Inspects and ingests a file in CSV, Parquet, ORC,
     JSON, or Avro format.
     This function uses the Vertica complex data type.
-    For new table creation, the file must be located 
+    For new table creation, the file must be located
     in the server.
 
     Parameters
     ----------
     path: str
-        Path to a file or glob. Valid  paths include  any 
-        path that is valid  for COPY  and that uses a  file 
-        format supported by this function. 
-        When inferring  the data type, only  one file  will 
-        be read,  even if a glob specifies  multiple files. 
-        However,  in the case of  JSON, more than one  file 
+        Path to a file or glob. Valid  paths include  any
+        path that is valid  for COPY  and that uses a  file
+        format supported by this function.
+        When inferring  the data type, only  one file  will
+        be read,  even if a glob specifies  multiple files.
+        However,  in the case of  JSON, more than one  file
         may be read to infer the data type.
     schema: str, optional
         Schema in which to create the table.
     table_name: str, optional
-        Name of the table to create. If empty, the file name 
+        Name of the table to create. If empty, the file name
         is used.
     dtype: dict, optional
-        Dictionary of customised  data  type.  The predicted 
-        data  types  will  be  replaced  by  the input  data 
-        types. The  dictionary must include the name  of the 
+        Dictionary of customised  data  type.  The predicted
+        data  types  will  be  replaced  by  the input  data
+        types. The  dictionary must include the name  of the
         column as key and the new data type as value.
     unknown: str, optional
         Type used to replace unknown data types.
     varchar_varbinary_length: int, optional
         Default  length  of  varchar  and  varbinary columns.
     insert: bool, optional
-        If set to True, the  data is ingested into  the input 
+        If set to True, the  data is ingested into  the input
         relation.
-        When  you  set this  parameter to True, most  of  the 
+        When  you  set this  parameter to True, most  of  the
         parameters are ignored.
     temporary_table: bool, optional
         If set to True, a temporary table is created.
     temporary_local_table: bool, optional
-        If set to True, a  temporary local table is  created. 
-        The  parameter  'schema'  must  be  empty,  otherwise 
+        If set to True, a  temporary local table is  created.
+        The  parameter  'schema'  must  be  empty,  otherwise
         this parameter is ignored.
     gen_tmp_table_name: bool, optional
-        Sets the name of the temporary table.  This parameter 
-        is     only      used      when     the     parameter 
-        'temporary_local_table'  is  set  to  True  and   the 
+        Sets the name of the temporary table.  This parameter
+        is     only      used      when     the     parameter
+        'temporary_local_table'  is  set  to  True  and   the
         parameters "table_name" and "schema" are unspecified.
     ingest_local: bool, optional
-        If set to True,  the  file is ingested from  the local 
+        If set to True,  the  file is ingested from  the local
         machine. This currently only works for data insertion.
     genSQL: bool, optional
-        If set to True,  the SQL  code for creating the  final 
-        table  is generated but  not executed. This is a  good 
-        way to change the final relation types or to customize 
+        If set to True,  the SQL  code for creating the  final
+        table  is generated but  not executed. This is a  good
+        way to change the final relation types or to customize
         the data ingestion.
     max_files: int, optional
-        (JSON only.)  If  path  is a  glob, specifies  maximum 
-        number of files in path to inspect. Use this parameter 
-        to increase the amount of data  the function considers. 
-        This can be beneficial  if you suspect variation among 
+        (JSON only.)  If  path  is a  glob, specifies  maximum
+        number of files in path to inspect. Use this parameter
+        to increase the amount of data  the function considers.
+        This can be beneficial  if you suspect variation among
         files.  Files  are  chosen  arbitrarily  from the glob.
         The default value is 100.
 
@@ -216,7 +216,10 @@ def read_file(
             result[0] += " ON COMMIT PRESERVE ROWS;"
         else:
             result[0] += ";"
-        result[1] = "copy" + result[1].replace('"x_verticapy"."y_verticapy"', relation,)
+        result[1] = "copy" + result[1].replace(
+            '"x_verticapy"."y_verticapy"',
+            relation,
+        )
     else:
         if temporary_local_table:
             end = result.split(")")[-1]
@@ -249,15 +252,18 @@ def read_file(
         return result
     if len(result) == 1:
         _executeSQL(
-            result, title="Creating the table and ingesting the data.",
+            result,
+            title="Creating the table and ingesting the data.",
         )
     else:
         _executeSQL(
-            result[0], title="Creating the table.",
+            result[0],
+            title="Creating the table.",
         )
         try:
             _executeSQL(
-                result[1], title="Ingesting the data.",
+                result[1],
+                title="Ingesting the data.",
             )
         except:
             drop(f'"{schema}"."{table_name}"', method="table")

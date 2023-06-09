@@ -77,10 +77,10 @@ def save_to_query_profile(
     add_identifier: bool = True,
 ) -> bool:
     """
-    Saves information about the specified VerticaPy 
-    method to the QUERY_PROFILES table in the Vertica 
-    database. It is used to collect usage statistics 
-    on methods and their parameters. This function 
+    Saves information about the specified VerticaPy
+    method to the QUERY_PROFILES table in the Vertica
+    database. It is used to collect usage statistics
+    on methods and their parameters. This function
     generates a JSON string.
 
     Parameters
@@ -90,16 +90,16 @@ def save_to_query_profile(
     path: str, optional
         Path to the function or method.
     json_dict: dict, optional
-        Dictionary of the different parameters to 
+        Dictionary of the different parameters to
         store.
     query_label: str, optional
-        Name to give to the identifier in the query 
-        profile table. If unspecified, the name of the 
+        Name to give to the identifier in the query
+        profile table. If unspecified, the name of the
         method is used.
     return_query: bool, optional
         If set to True, the query is returned.
     add_identifier: bool, optional
-        If set to True, the VerticaPy identifier is 
+        If set to True, the VerticaPy identifier is
         added to the generated json.
 
     Returns
@@ -127,14 +127,13 @@ def save_to_query_profile(
 
 def save_verticapy_logs(func: Callable) -> Callable:
     """
-    save_verticapy_logs decorator. It simplifies the code 
-    and automatically identifies which function to save to 
+    save_verticapy_logs decorator. It simplifies the code
+    and automatically identifies which function to save to
     the QUERY_PROFILES table.
     """
 
     @wraps(func)
     def func_prec_save_logs(*args, **kwargs) -> Any:
-
         name = func.__name__
         path = func.__module__.replace("verticapy.", "")
         json_dict = {}

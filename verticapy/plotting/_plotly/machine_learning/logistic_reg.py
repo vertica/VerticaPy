@@ -68,7 +68,11 @@ class LogisticRegressionPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a logistic regression plot using the Plotly API.
         """
@@ -88,10 +92,20 @@ class LogisticRegressionPlot(PlotlyBase):
         y_logit = logit(self.data["coef"][0] + self.data["coef"][1] * x_logit)
         if len(self.layout["columns"]) == 2:
             fig.add_trace(
-                go.Scatter(x=x0, y=logit(y0 + slope * x0), name="-1", mode="markers",)
+                go.Scatter(
+                    x=x0,
+                    y=logit(y0 + slope * x0),
+                    name="-1",
+                    mode="markers",
+                )
             )
             fig.add_trace(
-                go.Scatter(x=x1, y=logit(y0 + slope * x1), name="+1", mode="markers",)
+                go.Scatter(
+                    x=x1,
+                    y=logit(y0 + slope * x1),
+                    name="+1",
+                    mode="markers",
+                )
             )
             fig.add_trace(
                 go.Scatter(
@@ -152,7 +166,11 @@ class LogisticRegressionPlot(PlotlyBase):
                         mode="markers",
                     )
                 )
-            fig = fig.add_trace(go.Surface(z=Z_logit,))
+            fig = fig.add_trace(
+                go.Surface(
+                    z=Z_logit,
+                )
+            )
             self.init_layout_style["scene"] = dict(
                 aspectmode="cube",
                 xaxis_title=self.layout["columns"][0],

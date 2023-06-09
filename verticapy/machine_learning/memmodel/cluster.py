@@ -88,7 +88,7 @@ class Clustering(InMemoryModel):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Predicts the probability of each input to belong 
+        Predicts the probability of each input to belong
         to the model clusters.
 
         Parameters
@@ -131,7 +131,7 @@ class Clustering(InMemoryModel):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model using 
+        Returns the SQL code needed to deploy the model using
         its attributes.
 
         Parameters
@@ -175,7 +175,7 @@ class Clustering(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns  the SQL code needed to deploy the model 
+        Returns  the SQL code needed to deploy the model
         probabilities.
 
         Parameters
@@ -204,7 +204,7 @@ class Clustering(InMemoryModel):
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms  and returns the SQL distance to each 
+        Transforms  and returns the SQL distance to each
         cluster.
 
         Parameters
@@ -259,7 +259,7 @@ class KMeans(Clustering):
 
 class NearestCentroid(Clustering):
     """
-    InMemoryModel   implementation  of   NearestCentroid 
+    InMemoryModel   implementation  of   NearestCentroid
     algorithm.
 
     Parameters
@@ -284,7 +284,12 @@ class NearestCentroid(Clustering):
 
     # System & Special Methods.
 
-    def __init__(self, clusters: ArrayLike, classes: ArrayLike, p: int = 2,) -> None:
+    def __init__(
+        self,
+        clusters: ArrayLike,
+        classes: ArrayLike,
+        p: int = 2,
+    ) -> None:
         self.clusters_ = np.array(clusters)
         self.classes_ = np.array(classes)
         self.p_ = p
@@ -299,19 +304,19 @@ class BisectingKMeans(Clustering, Tree):
     clusters: ArrayLike
         List of the model's cluster centers.
     children_left: ArrayLike
-        A list  of node IDs, where  children_left[i] is 
+        A list  of node IDs, where  children_left[i] is
         the node ID of the left child of node i.
     children_right: ArrayLike
-        A list of node IDs, where  children_right[i] is 
+        A list of node IDs, where  children_right[i] is
         the node ID of the right child of node i.
     cluster_size: ArrayLike
-        A list of sizes,  where  cluster_size[i] is the 
+        A list of sizes,  where  cluster_size[i] is the
         number of elements in node i.
     cluster_score: ArrayLike
-        A list of scores, where cluster_score[i] is the 
-        score  for internal  node i.  The score is  the 
-        ratio between the within-cluster sum of squares 
-        of the node and the total within-cluster sum of 
+        A list of scores, where cluster_score[i] is the
+        score  for internal  node i.  The score is  the
+        ratio between the within-cluster sum of squares
+        of the node and the total within-cluster sum of
         squares.
     p: int, optional
         The p corresponding to one of the p-distances.
@@ -368,9 +373,13 @@ class BisectingKMeans(Clustering, Tree):
 
     # Prediction / Transformation Methods - IN MEMORY.
 
-    def _predict_tree(self, X: ArrayLike, node_id: int,) -> int:
+    def _predict_tree(
+        self,
+        X: ArrayLike,
+        node_id: int,
+    ) -> int:
         """
-        Function used recursively to get the tree prediction 
+        Function used recursively to get the tree prediction
         starting at the input node.
         """
         if isinstance(self.children_left_[node_id], NoneType) and isinstance(
@@ -419,7 +428,7 @@ class BisectingKMeans(Clustering, Tree):
         clusters_distance: ArrayLike,
     ) -> Union[int, str]:
         """
-        Function used recursively to do the final SQL code 
+        Function used recursively to do the final SQL code
         generation.
         """
         if isinstance(children_left[node_id], NoneType) and isinstance(
@@ -441,7 +450,7 @@ class BisectingKMeans(Clustering, Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the bisecting 
+        Returns the SQL code needed to deploy the bisecting
         k-means model using its attributes.
 
         Parameters
@@ -495,24 +504,24 @@ class BisectingKMeans(Clustering, Tree):
         Parameters
         ----------
         round_score: int, optional
-            The number of decimals to round the node's score to 0 
+            The number of decimals to round the node's score to 0
             rounds to an integer.
         percent: bool, optional
             If set to True, the scores are returned as a percent.
         vertical: bool, optional
-            If  set to True,  the function  generates a  vertical 
+            If  set to True,  the function  generates a  vertical
             tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node of  the 
-            tree. For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each node of  the
+            tree. For a list of options, see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of the 
-            tree. For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each arrow of the
+            tree. For a list of options, see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf of  the 
-            tree. For a list of options, see the Graphviz API: 
+            Dictionary  of options to customize each leaf of  the
+            tree. For a list of options, see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
 
         Returns
@@ -589,12 +598,12 @@ class KPrototypes(Clustering):
     p: int, optional
         The p corresponding to  one of the p-distances.
     gamma: float, optional
-        Weighting  factor  for  categorical columns.  This 
-        determines  relative  importance of numerical  and 
+        Weighting  factor  for  categorical columns.  This
+        determines  relative  importance of numerical  and
         categorical attributes.
     is_categorical: list / numpy.array, optional
-        ArrayLike  of booleans to indicate whether  X[idx] 
-        is  a categorical  variable, where True  indicates 
+        ArrayLike  of booleans to indicate whether  X[idx]
+        is  a categorical  variable, where True  indicates
         categorical  and  False numerical.  If empty,  all
         the variables are considered categorical.
     """
@@ -628,7 +637,7 @@ class KPrototypes(Clustering):
 
     def _transform_row(self, X: ArrayLike) -> list:
         """
-        Transforms and returns the distance to each cluster 
+        Transforms and returns the distance to each cluster
         for one row.
         """
         distance = []

@@ -65,15 +65,15 @@ def cross_validate(
     Parameters
     ----------
     estimator: object
-    	Vertica estimator with a fit method.
+        Vertica estimator with a fit method.
     input_relation: SQLRelation
-    	Relation  used to train the model.
+        Relation  used to train the model.
     X: SQLColumns
-    	List   of  the  predictor   columns.
+        List   of  the  predictor   columns.
     y: str
-    	Response Column.
+        Response Column.
     metrics: str / list, optional
-        Metrics used to do the model evaluation. It can also 
+        Metrics used to do the model evaluation. It can also
         be a list of metrics. If empty, most of the estimator
         metrics are computed.
         For Classification:
@@ -81,20 +81,20 @@ def cross_validate(
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            best_cutoff : Cutoff which optimised the ROC 
+            best_cutoff : Cutoff which optimised the ROC
                           Curve prediction.
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -102,19 +102,19 @@ def cross_validate(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision     
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             aic    : Akaike’s Information Criterion
@@ -126,7 +126,7 @@ def cross_validate(
             msle   : Mean Squared Log Error
             qe     : quantile  error,  the quantile must be
                      included in the name. Example:
-                     qe50.1% will return the quantile error 
+                     qe50.1% will return the quantile error
                      using q=0.501.
             r2     : R squared coefficient
             r2a    : R2 adjusted
@@ -134,7 +134,7 @@ def cross_validate(
             var    : Explained Variance
 
     cv: int, optional
-    	Number of folds.
+        Number of folds.
     average: str, optional
             The method used to  compute the final score for
             multiclass-classification.
@@ -142,29 +142,29 @@ def cross_validate(
                            positive  and  use  the   binary
                            confusion  matrix to compute the
                            score.
-                micro    : positive  and   negative  values 
+                micro    : positive  and   negative  values
                            globally.
-                macro    : average  of  the  score of  each 
+                macro    : average  of  the  score of  each
                            class.
-                weighted : weighted average of the score of 
+                weighted : weighted average of the score of
                            each class.
     pos_label: PythonScalar, optional
-    	The main class to be considered as positive 
+        The main class to be considered as positive
         (classification only).
     cutoff: PythonNumber, optional
-    	The model cutoff (classification only).
+        The model cutoff (classification only).
     show_time: bool, optional
-        If set to True,  the  time  and the average 
+        If set to True,  the  time  and the average
         time   are    added  to   the   report.
     training_score: bool, optional
-        If set to True,  the training score is 
+        If set to True,  the training score is
         computed   with   the   validation   score.
 
     Returns
     -------
     TableSample
-     	result of the cross validation.
-	"""
+        result of the cross validation.
+    """
     X = format_type(X, dtype=list)
     if isinstance(input_relation, str):
         input_relation = vDataFrame(input_relation)
@@ -308,38 +308,38 @@ def learning_curve(
     y: str
         Response Column.
     sizes: list, optional
-        Different sizes of the dataset used 
+        Different sizes of the dataset used
         to train the model. Multiple models
-        are trained using the different 
+        are trained using the different
         sizes.
     method: str, optional
         Method used to plot the curve.
-            efficiency  : draws train/test score 
+            efficiency  : draws train/test score
                           vs sample size.
             performance : draws score  vs  time.
-            scalability : draws time  vs  sample 
+            scalability : draws time  vs  sample
                           size.
     metric: str, optional
         Metric used to do the model evaluation.
-            auto: logloss for classification & RMSE 
+            auto: logloss for classification & RMSE
                   for regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -347,19 +347,19 @@ def learning_curve(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -380,26 +380,26 @@ def learning_curve(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive 
+        The main class to be considered as positive
         (classification only).
     cutoff: PythonNumber, optional
         The  model  cutoff  (classification  only).
     std_coeff: PythonNumber, optional
-        Value of the standard deviation coefficient 
+        Value of the standard deviation coefficient
         used to compute the area plot around each
         score.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the 
+        Any  optional  parameter  to  pass  to  the
         Plotting functions.
 
     Returns
@@ -533,7 +533,9 @@ def learning_curve(
         y_label = None
         columns = ["time"]
     vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-        class_name="RangeCurve", chart=chart, style_kwargs=style_kwargs,
+        class_name="RangeCurve",
+        chart=chart,
+        style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
     layout = {"columns": columns, "order_by": order_by, "y_label": y_label}

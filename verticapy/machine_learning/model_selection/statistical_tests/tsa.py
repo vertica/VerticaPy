@@ -173,7 +173,7 @@ def adfuller(
         Input vDataColumn to test.
     ts: str
         vDataColumn used as timeline to order the data.
-        It can be a numerical or type date like 
+        It can be a numerical or type date like
         (date, datetime, timestamp...) vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
@@ -273,11 +273,11 @@ def mkt(
     """
     Mann Kendall test (Time Series trend).
 
-    \u26A0 Warning : This Test is  computationally  expensive 
-                     because it uses a CROSS  JOIN  during the 
-                     computation.  The complexity is O(n * k), 
-                     n being the total count of the vDataFrame 
-                     and k the number of rows to use to do the 
+    \u26A0 Warning : This Test is  computationally  expensive
+                     because it uses a CROSS  JOIN  during the
+                     computation.  The complexity is O(n * k),
+                     n being the total count of the vDataFrame
+                     and k the number of rows to use to do the
                      test.
 
     Parameters
@@ -287,8 +287,8 @@ def mkt(
     column: str
         Input vDataColumn to test.
     ts: str
-        vDataColumn used as timeline used to order 
-        the data. It can be a numerical or type date like 
+        vDataColumn used as timeline used to order
+        the data. It can be a numerical or type date like
         (date, datetime, timestamp...) vDataColumn.
     alpha: PythonNumber, optional
         Significance Level. Probability to accept H0.
@@ -396,13 +396,13 @@ def cochrane_orcutt(
     input_relation: SQLRelation
         Input relation.
     ts: str
-        vDataColumn of numeric  or date-like type (date, 
-        datetime, timestamp, etc.) used as the timeline 
+        vDataColumn of numeric  or date-like type (date,
+        datetime, timestamp, etc.) used as the timeline
         and to order the data.
     prais_winsten: bool, optional
-        If True,  retains  the  first  observation of the 
-        time series, increasing precision and efficiency. 
-        This  configuration is  called the  Prais–Winsten 
+        If True,  retains  the  first  observation of the
+        time series, increasing precision and efficiency.
+        This  configuration is  called the  Prais–Winsten
         estimation.
     drop_tmp_model: bool, optional
         If true, drops the temporary model.
@@ -410,7 +410,7 @@ def cochrane_orcutt(
     Returns
     -------
     model_tmp
-        A Linear Model with the different information 
+        A Linear Model with the different information
         stored as attributes:
          - intercept_   : Model's intercept.
          - coef_        : Model's coefficients.
@@ -511,7 +511,9 @@ def durbin_watson(
                    FROM {vdf}) VERTICAPY_SUBTABLE) 
                    VERTICAPY_SUBTABLE"""
     return _executeSQL(
-        query=query, title="Computing the Durbin Watson d.", method="fetchfirstelem",
+        query=query,
+        title="Computing the Durbin Watson d.",
+        method="fetchfirstelem",
     )
 
 
@@ -526,7 +528,7 @@ def ljungbox(
     box_pierce: bool = False,
 ) -> TableSample:
     """
-    Ljung–Box test (whether any of a group of autocorrelations 
+    Ljung–Box test (whether any of a group of autocorrelations
     of a time series are different from zero).
 
     Parameters
@@ -597,7 +599,7 @@ def het_arch(
     p: int = 1,
 ) -> tuple[float, float, float, float]:
     """
-    Engle’s Test for Autoregressive Conditional Heteroscedasticity 
+    Engle’s Test for Autoregressive Conditional Heteroscedasticity
     (ARCH).
 
     Parameters
@@ -618,7 +620,7 @@ def het_arch(
     Returns
     -------
     tuple
-        Lagrange Multiplier statistic, LM pvalue, 
+        Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
     """
     if isinstance(input_relation, vDataFrame):
@@ -686,41 +688,41 @@ def seasonal_decompose(
         Input vDataColumn to decompose.
     ts: str
         Time series vDataColumn used to order the data.
-        It can be of type date or a numerical 
+        It can be of type date or a numerical
         vDataColumn.
     by: SQLColumns, optional
         vDataColumns used in the partition.
     period: int, optional
-    	Time series period. It is used to retrieve the 
-        seasonality  component.  If  period <= 0,  the 
-        seasonal component is estimated using ACF. 
-        In this case, polynomial_order must be greater 
+        Time series period. It is used to retrieve the
+        seasonality  component.  If  period <= 0,  the
+        seasonal component is estimated using ACF.
+        In this case, polynomial_order must be greater
         than 0.
     polynomial_order: int, optional
-        If greater than 0,  the trend is estimated 
-        using a polynomial of degree 'polynomial_order' 
+        If greater than 0,  the trend is estimated
+        using a polynomial of degree 'polynomial_order'
         and the parameter 'two_sided' is ignored.
-        If equal to 0, the trend is estimated using 
+        If equal to 0, the trend is estimated using
         Moving Averages.
     estimate_seasonality: bool, optional
-        If set to True, the seasonality is estimated 
+        If set to True, the seasonality is estimated
         using cosine and sine functions.
     rule: TimeInterval, optional
-        Interval  used to slice the time. For example, 
-        '5 minutes'  creates  records  separated  by 
+        Interval  used to slice the time. For example,
+        '5 minutes'  creates  records  separated  by
         '5 minutes' time interval.
     mult: bool, optional
-    	If  set  to  True, the decomposition type is 
+        If  set  to  True, the decomposition type is
         'multiplicative'. Otherwise,  'additive'.
     two_sided: bool, optional
-        If set to True, a centered moving average is 
+        If set to True, a centered moving average is
         used for the trend isolation. Otherwise, only
         past values are used.
 
     Returns
     -------
     vDataFrame
-        object containing 
+        object containing
         ts, column, TS seasonal part, TS trend, TS noise.
     """
     assert period > 0 or polynomial_order > 0, ValueError(

@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ACFPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -67,19 +66,29 @@ class ACFPlot(HighchartsBase):
             "zIndex": 2,
         }
         self.init_style_confidence = {
-            "plotOptions": {"series": {"opacity": 0.1,}},
+            "plotOptions": {
+                "series": {
+                    "opacity": 0.1,
+                }
+            },
             "tooltip": {
                 "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
                 "pointFormat": "<b>lag</b>: {point.x} <br/> <b>value</b>: {point.high}",
             },
             "zIndex": 0,
             "fillOpacity": 0.3,
-            "marker": {"enabled": False,},
+            "marker": {
+                "enabled": False,
+            },
         }
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws an ACF time series plot using the HC API.
         """
@@ -106,7 +115,6 @@ class ACFPlot(HighchartsBase):
 
 
 class ACFPACFPlot(ACFPlot):
-
     # Properties.
 
     @property
@@ -122,7 +130,11 @@ class ACFPACFPlot(ACFPlot):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws an ACF-PACF time series plot using the HC API.
         """

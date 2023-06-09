@@ -21,7 +21,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class SpiderChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -49,12 +48,18 @@ class SpiderChart(HighchartsBase):
                 "tickmarkPlacement": "on",
                 "lineWidth": 0,
             },
-            "yAxis": {"gridLineInterpolation": "polygon", "lineWidth": 0, "min": 0,},
+            "yAxis": {
+                "gridLineInterpolation": "polygon",
+                "lineWidth": 0,
+                "min": 0,
+            },
             "tooltip": {
                 "shared": True,
                 "pointFormat": '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>',
             },
-            "legend": {"enabled": False,},
+            "legend": {
+                "enabled": False,
+            },
             "colors": self.get_colors(),
         }
         if len(self.layout["columns"]) > 1:
@@ -68,7 +73,11 @@ class SpiderChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a spider plot using the HC API.
         """
