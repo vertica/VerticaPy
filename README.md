@@ -28,7 +28,11 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
 - [Installation](#installation)
 - [Documentation](#documentation)
 - [Use-cases](#use-cases)
-- [Highllighted Features](#highllighted-features)
+- [Highlighted Features](#highllighted-features)
+-- [SQL Magic](#sql-magic)
+-- [SQL Plots](#sql-plots)
+-- [Multiple DataBase Connection](#multiple-database-connection-using-dblink)
+-- [Pythoon and SQL combo](#python-and-sql-combo)
 - [Charts](#charts)
 - [Connecting to the Database](#connecting-to-the-database)
 - [Quick start](#quickstart)
@@ -95,7 +99,7 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
-## Highllighted Features
+## Highlighted Features
 
 ### SQL Magic
 You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation_last/extensions/sql/'>SQL Magic</a>:
