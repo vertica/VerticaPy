@@ -162,22 +162,19 @@ To check if a list of columns belongs to the vDataFrame:
 from verticapy import vDataFrame
 
 # Function
-vDataFrame.are_namecols_in(columns: Union[str, list]):
+vDataFrame.get_columns():
     """
----------------------------------------------------------------------------
-Method used to check if the input column names are used by the vDataFrame.
-If not, the function raises an error.
+    Returns the TableSample columns.
 
-Parameters
-----------
-columns: list/str
-    List of columns names.
+    Returns
+    -------
+    list
+        columns.
     """
 
 # Example
 # if vDataFrame 'vdf' has two columns named respectively 'A' and 'B'
-# vDataFrame.are_namecols_in(['A', 'B']) will work.
-# vDataFrame.are_namecols_in(['A', 'C']) will raise an error.
+# vDataFrame.get_columns()) will return a list: ["A","B"].
 ```
 
 To format a list using the columns of the vDataFrame:
@@ -239,28 +236,31 @@ str
 The two following functions will generate the VerticaPy logo as a string or as an HTML object.
 ```python
 # import
-from verticapy.logo import gen_verticapy_logo_html
-from verticapy.logo import gen_verticapy_logo_str
+from verticapy._utils._logo import verticapy_logo_html 
+from verticapy._utils._logo import verticapy_logo_str
 
 # Functions
-def gen_verticapy_logo_html() # VerticaPy HTML Logo
-def gen_verticapy_logo_str()  # VerticaPy Python STR Logo
+def verticapy_logo_html() # VerticaPy HTML Logo
+def verticapy_logo_str()  # VerticaPy Python STR Logo
 ```
 
 ### Feature Example
 
 The vDataFrame a powerful Python object that lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.
 
-You can find the vDataFrame's many methods in vdataframe.py under the '# Methods' comment.
+You can find all vDataFrame's methods inside the folder verticapy/core/vdataframe. Note that similar methods have been clubbed together inside one module/file. For examples, all methods pertaining to aggregates are in the '_aggregate.py' file.
 
-<p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/vdf_file.png' width="60%">
-</p>
 
-You can define any new vDataFrame method after this comment. The same applies to vColumns.
+You can define any new vDataFrame method inside these modules depending on the nature of the method. The same applies to vColumns. You can use any of the developed classes to inherit properties.
 
-For any method definition, you should note the type hints for every variable. For variables of multiple types, use the union operator.
+When defining a function, you should mention the 'type' hints for every variable. 
 
+For variables of multiple types, use the Union operator.
+For variables that are optional, use Optional operator. 
+And for variables that require literal input, use Literal operator. 
+Examples of such hints are all over the code. Please have a look at the rest of code if you want to get examples. 
+
+**********ADD IMAGE FOR AN EXAMPLE FUNCTION WITH ALL THREE OPERATORS ************
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/function.png' width="60%">
 </p>
@@ -277,45 +277,6 @@ Uses the check_types() function to verify the types of each parameter, vDataFram
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/check_types.png' width="60%">
 </p>
 
-When using check_types(), create tuples with the variable name, the variable, and a list of the different types:
-
-```python
-from verticapy import *
-
-x = 1
-
-# Correct Type
-check_types([("x", x, [int])])
-```
-
-```python
-# Incorrect Type
-check_types([("x", x, [str])])
-```
-```
-/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py:252: Warning: Parameter 'x' must be of type <class 'str'>, found type <class 'int'>
-  warnings.warn(warning_message, Warning)
-```
-
-To add a parameter with specific values, use a list:
-
-```python
-x = "apple"
-
-# Correct parameter
-check_types([("x", x, ["apple", "banana", "lemon"])])
-```
-
-```python
-x = "apple"
-
-# Incorrect parameter
-check_types([("x", x, ["potato", "tomato", "salad"])])
-```
-```
-/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py:236: Warning: Parameter 'x' must be in [potato|tomato|salad], found 'apple'
-  warnings.warn(warning_message, Warning)
-```
 
 Remember: the vDataFrame.are_namecols_in() and vDataFrame.format_colnames() functions are essential for correctly formated input column names.
 
@@ -341,54 +302,27 @@ titanic.get_columns()
  '"body"',
  '"home.dest"']
 ```
-```python
-# Verify that the 'boat' column is inside the vDataFrame
-titanic.are_namecols_in(["boat"])
-```
-```python
-# Verify that the 'wrong_name' column is not inside the vDataFrame
-titanic.are_namecols_in(["wrong_name"])
-```
-```
----------------------------------------------------------------------------
-MissingColumn                             Traceback (most recent call last)
-<ipython-input-5-532ff8a7a7a7> in <module>()
-----> 1 titanic.are_namecols_in(["wrong_name"])
 
-/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/verticapy/vdataframe.py in are_namecols_in(self, columns)
-   1456                 raise MissingColumn(
-   1457                     "The Virtual Column '{}' doesn't exist{}.".format(
--> 1458                         column.lower().replace('"', ""), e
-   1459                     )
-   1460                 )
 
-MissingColumn: The Virtual Column 'wrong_name' doesn't exist.
-```
-```python
-# vDataFrame.format_colnames() automatically formats names
-titanic.format_colnames(["BoAt"])
-```
-```
-['"boat"']
-```
+
 Use the \_genSQL\_ method to get the current vDataFrame relation.
 ```python
-titanic.__genSQL__()
+titanic._genSQL()
 ```
 ```
 '"public"."titanic"'
 ```
 And the \_executeSQL\_ function to execute a SQL query.
 ```python
-from verticapy import executeSQL
-executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()))
+from verticapy._utils._sql._sys import _executeSQL
+_executeSQL(f"SELECT * FROM {titanic._genSQL()} LIMIT 2")
 ```
 ```
 <vertica_python.vertica.cursor.Cursor at 0x115f972e8>
 ```
 The result of the query is accessible using one of the methods of the 'executeSQL' parameter.
 ```python
-executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fetchall")
+_executeSQL(f"SELECT * FROM {titanic._genSQL()} LIMIT 2",method="fetchall")
 ```
 ```
 [[1,
@@ -451,18 +385,14 @@ def pearson(self, column1: str, column2: str):
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
     # Check data types
-    check_types([("column1", column1, [str]),
-                 ("column2", column2, [str]),])
-    # Check if the columns belong to the vDataFrame
-    self.are_namecols_in([column1, column2])
     # Format the columns
     column1, column2 = self.format_colnames([column1, column2])
     # Get the current vDataFrame relation
-    table = self.__genSQL__()
+    table = self._genSQL()
     # Create the SQL statement - Label the query when possible
     query = f"SELECT /*+LABEL(vDataFrame.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
-    result = executeSQL(query, 
+    result = _executeSQL(query, 
                         title = "Computing Pearson coefficient", 
                         method="fetchfirstelem")
     # Return the result
@@ -495,17 +425,12 @@ def pearson(self, column: str,):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
-    # Check data types
-    check_types([("column", column, [str]),])
-    # Check if the column belongs to the vDataFrame 
-    # self.parent represents the vColumn parent
-    self.parent.are_namecols_in([column])
     # Format the column
     column1 = self.parent.format_colnames([column])[0]
     # Get the current vColumn name
     column2 = self.alias
     # Get the current vDataFrame relation
-    table = self.parent.__genSQL__()
+    table = self.parent._genSQL()
     # Create the SQL statement - Label the query when possible
     query = f"SELECT /*+LABEL(vColumn.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
@@ -516,56 +441,21 @@ def pearson(self, column: str,):
     return result
 ```
 Functions will work exactly the same.
+
+### Unit Tests
+
+Functions must include unit tests. Unit tests are located in the 'tests' folder. The test files follow the same folder structure as the original veritcapy directory. So for each file there will be a test file. That means if a function is added in core/vdataframe/_aggregate.py file then its respective test will be added in the test file test/core/vdataframe/test_aggregate.py.
+
+Unit tests can be tested with the default VerticaPy datasets or the smaller efficient datasets creted inside the tests/conftest.py file. Be sure to look at all the datasets before creating your own. All these datasets can be imported as fixtures:
+
 ```python
-# Example function
-
-# Add type hints + @save_verticapy_logs decorator
-@save_verticapy_logs
-def pearson(vdf: vDataFrame, column1: str, column2: str):
-    # Describe the function
-    """
-    ---------------------------------------------------------------------------
-    Computes the Pearson Correlation Coefficient of the two input vColumns. 
-
-    Parameters
-    ----------
-    vdf: vDataFrame
-        Input vDataFrame.
-    column1: str
-        Input vColumn.
-    column2: str
-        Input vColumn.
-
-    Returns
-    -------
-    Float
-        Pearson Correlation Coefficient
-
-    See Also
-    --------
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-        """
-    # Check data types
-    check_types([("vdf", vdf, [vDataFrame]),
-                 ("column1", column1, [str]),
-                 ("column2", column2, [str]),])
-    # Check if the columns belong to the vDataFrame
-    vdf.are_namecols_in([column1, column2])
-    # Format the columns
-    column1, column2 = vdf.format_colnames([column1, column2])
-    # Get the current vDataFrame relation
-    table = vdf.__genSQL__()
-    # Create the SQL statement - Label the query when possible
-    query = f"SELECT /*+LABEL(pearson)*/ CORR({column1}, {column2}) FROM {table};"
-    # Execute the SQL query and get the result
-    result = executeSQL(query, 
-                        title = "Computing Pearson coefficient", 
-                        method="fetchfirstelem")
-    # Return the result
-    return result
+def test_properties_type(self, titanic_vd):
+    result=titanic_vd["survived"].bar()
+    assert(type(result)==plotly.graph_objs._figure.Figure)
 ```
+Above titanic_vd is a fixture that is defined in the conftest file. 
 
-Functions must include unit tests. Unit tests are located in the 'tests' folder and sorted by theme. Unit tests can be tested with the default VerticaPy datasets.
+In order to make the coodes efficient, it is highly encouraged to use fixtures and sharing results across the scope. This ensures that the result will be shared. For every test i.e. assert, there should be a separate function. To combine multiple tests for the same method, feel free to use classes. 
 
 For the function we just created, we would place the unit tests 'test_vDF_correlation.py' in the 'vDataFrame' directory.
 
@@ -573,13 +463,37 @@ A unit test might look like this:
 ```python
 # Example unit test function
 
-def test_pearson(self, titanic_vd):
-  result_1 = titanic_vd.pearson("age", "fare")
-  result_2 = titanic_vd.pearson("age", "survived")
-  # we can test approximately the result of our function for some known values
-  assert result == pytest.approx(0.178575164117464, 1e-2)
-  assert result == pytest.approx(-0.0422446185581737, 1e-2)
+class TestPearson(self):
+    def test_age_and_fare(titanic_vd):
+        result= titanic_vd.pearson("age", "fare")
+        assert result == pytest.approx(0.178575164117464, 1e-2)
+
+    def test_age_and_survived(titanic_vd):
+        result_2 = titanic_vd.pearson("age", "survived")
+        assert result == pytest.approx(-0.0422446185581737, 1e-2)  
 ```
+
+A fixture by the name of "schema_loader" has been defined in the conftest file which creates a schema with a random name. This schema is dropped at the end of the unit test. You are encouraged to make use of this fixture to name your models/datasets if you have to. 
+For example, below if we load a dataset and give it a name from the schema.
+
+```python
+@pytest.fixture(scope="module")
+def titanic_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for titanic dataset
+    """
+    titanic = load_titanic(schema_loader, "titanic")
+    yield titanic
+    drop(name=f"{schema_loader}.titanic")
+```
+Note that we do not necessarily have to drop the dataset as the schema will automatically be dropped at the end of the unit test as we are using "schema_loader" fixture.
+
+Last, but not least, double check to make sure that your test allows parallel exeution by using the following pytest command:
+
+```python
+pytest -n auto --dist=loadscope
+```
+Note that in order to use above, you will have to install pytest-xdist.
 
 You are now ready to create your first contribution!
 
@@ -588,19 +502,20 @@ You are now ready to create your first contribution!
 Every file in this project must use the following Apache 2.0 header (with the appropriate year or years in the "[yyyy]" box; if a copyright statement from another party is already present in the code, you may add the statement on top of the existing copyright statement):
 
 ```
-Copyright (c) [yyyy] Micro Focus or one of its affiliates.
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
 
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
 ```
 
 ### Commits
