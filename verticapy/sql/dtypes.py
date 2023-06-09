@@ -33,7 +33,7 @@ def vertica_python_dtype(
     type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
 ) -> str:
     """
-    Takes as input the Vertica Python type code and 
+    Takes as input the Vertica Python type code and
     returns its corresponding data type.
     """
     res = type_name
@@ -57,36 +57,36 @@ def get_data_types(
     usecols: Optional[list] = None,
 ) -> Union[tuple, list[tuple]]:
     """
-    Returns customized relation columns and the 
-    respective data types. This process creates 
+    Returns customized relation columns and the
+    respective data types. This process creates
     a temporary table.
 
-    If table_name is defined, the expression is 
+    If table_name is defined, the expression is
     ignored and the function returns the table/
     view column names and data types.
 
     Parameters
     ----------
     expr: str, optional
-        An expression in pure SQL. If empty, the 
+        An expression in pure SQL. If empty, the
         parameter 'table_name' must be defined.
     column: str, optional
         If  not empty, the function returns only
-        the data type of the input column if it 
+        the data type of the input column if it
         is in the relation.
     table_name: str, optional
         Input table Name.
     schema: str, optional
         Table schema.
     usecols: list, optional
-        List   of  columns   to  consider.   This 
-        parameter can not be  used if 'column' is 
+        List   of  columns   to  consider.   This
+        parameter can not be  used if 'column' is
         defined.
 
     Returns
     -------
     list of tuples
-        The  list  of the  different columns  and 
+        The  list  of the  different columns  and
         their respective type.
     """
     usecols = format_type(usecols, dtype=list)

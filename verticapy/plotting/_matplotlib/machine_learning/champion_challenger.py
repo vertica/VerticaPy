@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ChampionChallengerPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -62,7 +61,10 @@ class ChampionChallengerPlot(MatplotlibBase):
     # Draw.
 
     def draw(
-        self, plt_text: bool = True, ax: Optional[Axes] = None, **style_kwargs,
+        self,
+        plt_text: bool = True,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws a machine learning bubble plot using the Matplotlib API.
@@ -88,7 +90,13 @@ class ChampionChallengerPlot(MatplotlibBase):
             ]
             X.sort(key=lambda tup: str(tup[2]))
         else:
-            X = [[self.data["x"][i], self.data["y"][i],] for i in range(n)]
+            X = [
+                [
+                    self.data["x"][i],
+                    self.data["y"][i],
+                ]
+                for i in range(n)
+            ]
         X = np.array(X)
         x, y = X[:, 0].astype(float), X[:, 1].astype(float)
         if len(self.data["c"]) > 0 and len(self.data["s"]) > 0:
@@ -126,7 +134,12 @@ class ChampionChallengerPlot(MatplotlibBase):
                     idx += 1
             ax.legend(
                 [
-                    Line2D([0], [0], markerfacecolor=color, **self.init_style_line,)
+                    Line2D(
+                        [0],
+                        [0],
+                        markerfacecolor=color,
+                        **self.init_style_line,
+                    )
                     for color in tmp_colors
                 ],
                 all_categories,

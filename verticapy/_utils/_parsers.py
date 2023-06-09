@@ -21,7 +21,7 @@ from verticapy._utils._sql._format import list_strip
 
 def get_header_names(path: str, sep: str) -> list[str]:
     """
-    Returns the input CSV file's header columns' 
+    Returns the input CSV file's header columns'
     names.
     """
     with open(path, "r", encoding="utf-8") as f:

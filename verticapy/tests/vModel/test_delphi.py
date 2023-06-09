@@ -53,7 +53,9 @@ def winequality_vd():
 
 class TestDelphi:
     def test_AutoML(self, titanic_vd):
-        model = AutoML("AutoML_test_ml",)
+        model = AutoML(
+            "AutoML_test_ml",
+        )
         model.drop()
         model.fit(titanic_vd, y="survived")
         assert model.model_grid_["avg_score"][0] < 0.1
@@ -64,7 +66,9 @@ class TestDelphi:
         model.drop()
 
     def test_AutoDataPrep(self, titanic_vd, amazon_vd):
-        model = AutoDataPrep("AutoML_test_dp",)
+        model = AutoDataPrep(
+            "AutoML_test_dp",
+        )
         model.drop()
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
@@ -84,14 +88,18 @@ class TestDelphi:
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
-        model4 = AutoDataPrep("AutoML_test_dp_4",)
+        model4 = AutoDataPrep(
+            "AutoML_test_dp_4",
+        )
         model4.drop()
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)
         model4.drop()
 
     def test_AutoClustering(self, titanic_vd):
-        model = AutoClustering("AutoML_test_cluster",)
+        model = AutoClustering(
+            "AutoML_test_cluster",
+        )
         model.drop()
         model.fit(titanic_vd)
         assert model.model_.parameters["n_cluster"] < 100

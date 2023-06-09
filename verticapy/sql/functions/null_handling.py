@@ -23,7 +23,7 @@ from verticapy.core.string_sql.base import StringSQL
 
 def coalesce(expr: SQLExpression, *args) -> StringSQL:
     """
-    Returns the value of the first non-null 
+    Returns the value of the first non-null
     expression in the list.
 
     Parameters
@@ -48,7 +48,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
 
 def nullifzero(expr: SQLExpression) -> StringSQL:
     """
-    Evaluates to NULL if the value in the 
+    Evaluates to NULL if the value in the
     expression is 0.
 
     Parameters

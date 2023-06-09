@@ -41,16 +41,16 @@ Confusion Matrix Functions.
 
 
 PARAMETER_DESCRIPTIONS = {
-    'y_true': '''    y_true: str
-        Response column.''',
-    'y_score': '''    y_score: str
-        Prediction.''',
-    'input_relation': '''    input_relation: SQLRelation
+    "y_true": """    y_true: str
+        Response column.""",
+    "y_score": """    y_score: str
+        Prediction.""",
+    "input_relation": """    input_relation: SQLRelation
         Relation used for scoring. This relation can 
         be a view, table, or a customized relation (if 
         an alias is used at the end of the relation). 
-        For example: (SELECT ... FROM ...) x''',
-    'average': '''    average: str, optional
+        For example: (SELECT ... FROM ...) x""",
+    "average": """    average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
             micro    : positive  and   negative  values 
@@ -59,14 +59,14 @@ PARAMETER_DESCRIPTIONS = {
                     class.
             weighted : weighted average of the score of 
                     each class.
-            scores   : scores  for   all  the  classes.''',
-    'labels': '''    labels: ArrayLike
-        List   of   the  response  column   categories.''',
-    'cm_pos_label': '''    pos_label: str / PythonNumber, optional
+            scores   : scores  for   all  the  classes.""",
+    "labels": """    labels: ArrayLike
+        List   of   the  response  column   categories.""",
+    "cm_pos_label": """    pos_label: str / PythonNumber, optional
         To compute the one dimensional confusion 
         matrix, one  of the response column classes must
         be the positive class. The parameter 'pos_label' 
-        represents this class.'''
+        represents this class.""",
 }
 
 
@@ -78,13 +78,16 @@ def _compute_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> tuple:
 
 
 def _compute_tn_fn_fp_tp(
-    y_true: str, y_score: str, input_relation: SQLRelation, pos_label: PythonScalar = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    pos_label: PythonScalar = 1,
 ) -> tuple:
     """
-    A helper function that  computes the confusion matrix 
-    for  the specified 'pos_label' class and returns  its 
-    values as a tuple of the following: 
-    true negatives, false negatives, false positives, and 
+    A helper function that  computes the confusion matrix
+    for  the specified 'pos_label' class and returns  its
+    values as a tuple of the following:
+    true negatives, false negatives, false positives, and
     true positives.
 
     Parameters
@@ -94,13 +97,13 @@ def _compute_tn_fn_fp_tp(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation  to use for scoring. This  relation can be a 
-        view,  table, or a  customized relation (if an  alias 
-        is used at the end of the relation). 
+        Relation  to use for scoring. This  relation can be a
+        view,  table, or a  customized relation (if an  alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     pos_label: PythonScalar, optional
-        To  compute the confusion matrix, one of the  response 
-        column classes must be the positive class. The 
+        To  compute the confusion matrix, one of the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -128,12 +131,15 @@ def _compute_classes_tn_fn_fp_tp_from_cm(cm: ArrayLike) -> list[tuple]:
 
 
 def _compute_classes_tn_fn_fp_tp(
-    y_true: str, y_score: str, input_relation: SQLRelation, labels: ArrayLike,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    labels: ArrayLike,
 ) -> list[tuple]:
     """
-    A helper function that  computes the confusion matrix 
-    and returns  its values  as a tuple of the following: 
-    true negatives, false negatives, false positives, and 
+    A helper function that  computes the confusion matrix
+    and returns  its values  as a tuple of the following:
+    true negatives, false negatives, false positives, and
     true positives.
 
     Parameters
@@ -143,9 +149,9 @@ def _compute_classes_tn_fn_fp_tp(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation  to use for scoring. This  relation can be a 
-        view,  table, or a  customized relation (if an  alias 
-        is used at the end of the relation). 
+        Relation  to use for scoring. This  relation can be a
+        view,  table, or a  customized relation (if an  alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     labels: ArrayLike
         List of the response column categories.
@@ -247,7 +253,14 @@ def _compute_final_score(
     return _compute_final_score_from_cm(metric, cm, average=average, multi=multi)
 
 
-@param_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'labels', 'cm_pos_label')
+@param_docstring(
+    PARAMETER_DESCRIPTIONS,
+    "y_true",
+    "y_score",
+    "input_relation",
+    "labels",
+    "cm_pos_label",
+)
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
@@ -298,7 +311,9 @@ def confusion_matrix(
             query += f", '{l}', {idx}"
         query += f") AS response FROM {input_relation}) VERTICAPY_SUBTABLE;"
         res = _executeSQL(
-            query=query, title="Computing Confusion Matrix.", method="fetchall",
+            query=query,
+            title="Computing Confusion Matrix.",
+            method="fetchall",
         )
         return np.round(np.array([x[1:-1] for x in res])).astype(int)
     else:
@@ -333,9 +348,9 @@ def accuracy_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation  used for  scoring.  This  relation 
-        can  be a view, table, or a customized  relation 
-        (if an alias is used at the end of the relation). 
+        Relation  used for  scoring.  This  relation
+        can  be a view, table, or a customized  relation
+        (if an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -344,19 +359,19 @@ def accuracy_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
             None     : accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        Label used to identify the positive class. If 
-        pos_label is NULL then the global accuracy is 
+        Label used to identify the positive class. If
+        pos_label is NULL then the global accuracy is
         be computed.
 
     Returns
@@ -364,7 +379,10 @@ def accuracy_score(
     float
         score.
     """
-    return _compute_final_score(_accuracy_score, **locals(),)
+    return _compute_final_score(
+        _accuracy_score,
+        **locals(),
+    )
 
 
 def _balanced_accuracy_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -390,9 +408,9 @@ def balanced_accuracy_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -401,19 +419,19 @@ def balanced_accuracy_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
             None     : balanced accuracy.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -421,7 +439,10 @@ def balanced_accuracy_score(
     float
         score.
     """
-    return _compute_final_score(_balanced_accuracy_score, **locals(),)
+    return _compute_final_score(
+        _balanced_accuracy_score,
+        **locals(),
+    )
 
 
 def _critical_success_index(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -447,9 +468,9 @@ def critical_success_index(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -458,20 +479,20 @@ def critical_success_index(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -479,7 +500,10 @@ def critical_success_index(
     float
         score.
     """
-    return _compute_final_score(_critical_success_index, **locals(),)
+    return _compute_final_score(
+        _critical_success_index,
+        **locals(),
+    )
 
 
 def _diagnostic_odds_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -509,9 +533,9 @@ def diagnostic_odds_ratio(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -520,20 +544,20 @@ def diagnostic_odds_ratio(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -541,7 +565,10 @@ def diagnostic_odds_ratio(
     float
         score.
     """
-    return _compute_final_score(_diagnostic_odds_ratio, **locals(),)
+    return _compute_final_score(
+        _diagnostic_odds_ratio,
+        **locals(),
+    )
 
 
 def _f1_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -568,9 +595,9 @@ def f1_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -579,20 +606,20 @@ def f1_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -600,7 +627,10 @@ def f1_score(
     float
         score.
     """
-    return _compute_final_score(_f1_score, **locals(),)
+    return _compute_final_score(
+        _f1_score,
+        **locals(),
+    )
 
 
 def _false_negative_rate(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -626,9 +656,9 @@ def false_negative_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -637,20 +667,20 @@ def false_negative_rate(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -684,9 +714,9 @@ def false_positive_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -695,20 +725,20 @@ def false_positive_rate(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -716,7 +746,10 @@ def false_positive_rate(
     float
         score.
     """
-    return _compute_final_score(_false_positive_rate, **locals(),)
+    return _compute_final_score(
+        _false_positive_rate,
+        **locals(),
+    )
 
 
 def _false_discovery_rate(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -742,9 +775,9 @@ def false_discovery_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -753,20 +786,20 @@ def false_discovery_rate(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -774,7 +807,10 @@ def false_discovery_rate(
     float
         score.
     """
-    return _compute_final_score(_false_discovery_rate, **locals(),)
+    return _compute_final_score(
+        _false_discovery_rate,
+        **locals(),
+    )
 
 
 def _false_omission_rate(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -800,9 +836,9 @@ def false_omission_rate(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -811,20 +847,20 @@ def false_omission_rate(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -832,7 +868,10 @@ def false_omission_rate(
     float
         score.
     """
-    return _compute_final_score(_false_omission_rate, **locals(),)
+    return _compute_final_score(
+        _false_omission_rate,
+        **locals(),
+    )
 
 
 def _fowlkes_mallows_index(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -858,9 +897,9 @@ def fowlkes_mallows_index(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -869,20 +908,20 @@ def fowlkes_mallows_index(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -890,7 +929,10 @@ def fowlkes_mallows_index(
     float
         score.
     """
-    return _compute_final_score(_fowlkes_mallows_index, **locals(),)
+    return _compute_final_score(
+        _fowlkes_mallows_index,
+        **locals(),
+    )
 
 
 def _informedness(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -916,9 +958,9 @@ def informedness(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -927,20 +969,20 @@ def informedness(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -948,7 +990,10 @@ def informedness(
     float
         score.
     """
-    return _compute_final_score(_informedness, **locals(),)
+    return _compute_final_score(
+        _informedness,
+        **locals(),
+    )
 
 
 def _markedness(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -976,9 +1021,9 @@ def markedness(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -987,20 +1032,20 @@ def markedness(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1008,7 +1053,10 @@ def markedness(
     float
         score.
     """
-    return _compute_final_score(_markedness, **locals(),)
+    return _compute_final_score(
+        _markedness,
+        **locals(),
+    )
 
 
 def _matthews_corrcoef(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1038,9 +1086,9 @@ def matthews_corrcoef(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1049,20 +1097,20 @@ def matthews_corrcoef(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1070,7 +1118,10 @@ def matthews_corrcoef(
     float
         score.
     """
-    return _compute_final_score(_matthews_corrcoef, **locals(),)
+    return _compute_final_score(
+        _matthews_corrcoef,
+        **locals(),
+    )
 
 
 def _negative_predictive_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1096,9 +1147,9 @@ def negative_predictive_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1107,20 +1158,20 @@ def negative_predictive_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1128,7 +1179,10 @@ def negative_predictive_score(
     float
         score.
     """
-    return _compute_final_score(_negative_predictive_score, **locals(),)
+    return _compute_final_score(
+        _negative_predictive_score,
+        **locals(),
+    )
 
 
 def _negative_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1154,9 +1208,9 @@ def negative_likelihood_ratio(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1165,20 +1219,20 @@ def negative_likelihood_ratio(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1186,7 +1240,10 @@ def negative_likelihood_ratio(
     float
         score.
     """
-    return _compute_final_score(_negative_likelihood_ratio, **locals(),)
+    return _compute_final_score(
+        _negative_likelihood_ratio,
+        **locals(),
+    )
 
 
 def _positive_likelihood_ratio(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1213,9 +1270,9 @@ def positive_likelihood_ratio(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1224,20 +1281,20 @@ def positive_likelihood_ratio(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1245,7 +1302,10 @@ def positive_likelihood_ratio(
     float
         score.
     """
-    return _compute_final_score(_positive_likelihood_ratio, **locals(),)
+    return _compute_final_score(
+        _positive_likelihood_ratio,
+        **locals(),
+    )
 
 
 def _precision_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1271,9 +1331,9 @@ def precision_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1282,20 +1342,20 @@ def precision_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1303,7 +1363,10 @@ def precision_score(
     float
         score.
     """
-    return _compute_final_score(_precision_score, **locals(),)
+    return _compute_final_score(
+        _precision_score,
+        **locals(),
+    )
 
 
 def _prevalence_threshold(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1330,9 +1393,9 @@ def prevalence_threshold(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1341,20 +1404,20 @@ def prevalence_threshold(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1362,7 +1425,10 @@ def prevalence_threshold(
     float
         score.
     """
-    return _compute_final_score(_prevalence_threshold, **locals(),)
+    return _compute_final_score(
+        _prevalence_threshold,
+        **locals(),
+    )
 
 
 def _recall_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1388,9 +1454,9 @@ def recall_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1399,20 +1465,20 @@ def recall_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1420,7 +1486,10 @@ def recall_score(
     float
         score.
     """
-    return _compute_final_score(_recall_score, **locals(),)
+    return _compute_final_score(
+        _recall_score,
+        **locals(),
+    )
 
 
 def _specificity_score(tn: int, fn: int, fp: int, tp: int) -> float:
@@ -1446,9 +1515,9 @@ def specificity_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1457,20 +1526,20 @@ def specificity_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
 
     Returns
@@ -1478,7 +1547,10 @@ def specificity_score(
     float
         score.
     """
-    return _compute_final_score(_specificity_score, **locals(),)
+    return _compute_final_score(
+        _specificity_score,
+        **locals(),
+    )
 
 
 """
@@ -1643,9 +1715,9 @@ def best_cutoff(
     y_score: str | ArrayLike
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1654,30 +1726,30 @@ def best_cutoff(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision boundaries. 
-        Decision boundaries  are set at equally spaced 
-        intervals between 0 and 1, inclusive. 
-        Greater  values  for nbins give  more  precise 
-        estimations  of the AUC,  but can  potentially 
-        decrease  performance.  The  maximum value  is 
-        999,999.  If negative,  the  maximum value  is 
+        An integer value that determines the number of
+        decision boundaries.
+        Decision boundaries  are set at equally spaced
+        intervals between 0 and 1, inclusive.
+        Greater  values  for nbins give  more  precise
+        estimations  of the AUC,  but can  potentially
+        decrease  performance.  The  maximum value  is
+        999,999.  If negative,  the  maximum value  is
         used.
 
     Returns
@@ -1730,9 +1802,9 @@ def roc_auc_score(
     y_score: str |  ArrayLike
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1741,37 +1813,37 @@ def roc_auc_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision boundaries. 
-        Decision boundaries  are set at equally spaced 
-        intervals between 0 and 1, inclusive. 
-        Greater  values  for nbins give  more  precise 
-        estimations  of the AUC,  but can  potentially 
-        decrease  performance.  The  maximum value  is 
-        999,999.  If negative,  the  maximum value  is 
+        An integer value that determines the number of
+        decision boundaries.
+        Decision boundaries  are set at equally spaced
+        intervals between 0 and 1, inclusive.
+        Greater  values  for nbins give  more  precise
+        estimations  of the AUC,  but can  potentially
+        decrease  performance.  The  maximum value  is
+        999,999.  If negative,  the  maximum value  is
         used.
 
     Returns
     -------
     float
         score.
-	"""
+    """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
@@ -1805,7 +1877,7 @@ def prc_auc_score(
     nbins: int = 10000,
 ) -> Union[float, list[float]]:
     """
-    Computes the area under the curve (AUC) of a 
+    Computes the area under the curve (AUC) of a
     Precision-Recall (PRC) curve.
 
     Parameters
@@ -1815,9 +1887,9 @@ def prc_auc_score(
     y_score: str | ArrayLike
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The method used to  compute the final score for
@@ -1826,30 +1898,30 @@ def prc_auc_score(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
-        To  compute  the metric, one of  the  response 
-        column classes must be the positive class. The 
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
         parameter 'pos_label' represents this class.
     nbins: int, optional
-        An integer value that determines the number of 
-        decision boundaries. 
-        Decision boundaries  are set at equally spaced 
-        intervals between 0 and 1, inclusive. 
-        Greater  values  for nbins give  more  precise 
-        estimations  of the AUC,  but can  potentially 
-        decrease  performance.  The  maximum value  is 
-        999,999.  If negative,  the  maximum value  is 
+        An integer value that determines the number of
+        decision boundaries.
+        Decision boundaries  are set at equally spaced
+        intervals between 0 and 1, inclusive.
+        Greater  values  for nbins give  more  precise
+        estimations  of the AUC,  but can  potentially
+        decrease  performance.  The  maximum value  is
+        999,999.  If negative,  the  maximum value  is
         used.
 
     Returns
@@ -1901,9 +1973,9 @@ def log_loss(
     y_score: str | ArrayLike
         Prediction Probability.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table, or a customized relation (if an  alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table, or a customized relation (if an  alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     average: str, optional
         The  method  used  to  compute  the final score for
@@ -1912,20 +1984,20 @@ def log_loss(
                        positive   and    use   the   binary
                        confusion   matrix  to  compute  the
                        score.
-            micro    : positive    and    negative   values 
+            micro    : positive    and    negative   values
                        globally.
-            macro    : average   of   the   score  of  each 
+            macro    : average   of   the   score  of  each
                        class.
             scores   : scores  for   all  the  classes.
-            weighted : weighted  average  of  the score  of 
+            weighted : weighted  average  of  the score  of
                        each class.
-        If  empty,  the  behaviour  is  similar to  the 
+        If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
         List   of    the    response   column    categories.
     pos_label: PythonScalar, optional
-        To compute the log loss,  one of the response column 
-        classes must  be  the  positive class. The parameter 
+        To compute the log loss,  one of the response column
+        classes must  be  the  positive class. The parameter
         'pos_label' represents this class.
 
     Returns
@@ -2031,10 +2103,10 @@ def classification_report(
     estimator: Optional["VerticaModel"] = None,
 ) -> Union[float, TableSample]:
     """
-    Computes  a classification  report using  multiple 
+    Computes  a classification  report using  multiple
     metrics (AUC, accuracy, PRC AUC, F1...). In the case
-    of multiclass classification, it  considers each 
-    category as positive and switches to the next one 
+    of multiclass classification, it  considers each
+    category as positive and switches to the next one
     during the computation.
 
     Parameters
@@ -2044,23 +2116,23 @@ def classification_report(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     metrics: list, optional
-        List of the metrics used to compute the final 
+        List of the metrics used to compute the final
         report.
             accuracy    : Accuracy
             aic         : Akaike’s  Information  Criterion
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            best_cutoff : Cutoff  which optimised the  ROC 
+            best_cutoff : Cutoff  which optimised the  ROC
                           Curve prediction.
             bic         : Bayesian  Information  Criterion
             bm          : Informedness = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
@@ -2075,9 +2147,9 @@ def classification_report(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
+            mcc         : Matthews Correlation Coefficient
             mk          : Markedness = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
             precision   : Precision = tp / (tp + fp)
@@ -2086,31 +2158,31 @@ def classification_report(
             recall      : Recall = tp / (tp + fn)
             specificity : Specificity = tn / (tn + fp)
     labels: ArrayLike, optional
-    	List of the response column categories to use.
+        List of the response column categories to use.
     cutoff: PythonNumber, optional
-    	Cutoff  for which the tested category will  be 
+        Cutoff  for which the tested category will  be
         accepted as prediction.
     nbins: int, optional
-        [Used to compute ROC AUC, PRC AUC and the best 
+        [Used to compute ROC AUC, PRC AUC and the best
         cutoff]
-        An integer value that determines the number of 
-        decision boundaries. 
-        Decision boundaries  are set at equally spaced 
-        intervals between 0 and 1, inclusive. 
-        Greater  values  for nbins give  more  precise 
-        estimations  of the AUC,  but can  potentially 
-        decrease  performance.  The  maximum value  is 
-        999,999.  If negative,  the  maximum value  is 
+        An integer value that determines the number of
+        decision boundaries.
+        Decision boundaries  are set at equally spaced
+        intervals between 0 and 1, inclusive.
+        Greater  values  for nbins give  more  precise
+        estimations  of the AUC,  but can  potentially
+        decrease  performance.  The  maximum value  is
+        999,999.  If negative,  the  maximum value  is
         used.
     estimator: object, optional
-        Estimator used to compute the classification 
+        Estimator used to compute the classification
         report.
 
     Returns
     -------
     TableSample
-     	report.
-	"""
+        report.
+    """
     return_scalar = False
     if isinstance(metrics, str):
         metrics = [metrics]

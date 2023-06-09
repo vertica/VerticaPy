@@ -45,7 +45,9 @@ def dtc_data_vd():
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -109,10 +111,14 @@ class TestDecisionTreeClassifier:
         assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = DecisionTreeClassifier("model_contour",)
+        model_test = DecisionTreeClassifier(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -126,7 +132,9 @@ class TestDecisionTreeClassifier:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS decision_tc_model_test_drop")
-        model_test = DecisionTreeClassifier("decision_tc_model_test_drop",)
+        model_test = DecisionTreeClassifier(
+            "decision_tc_model_test_drop",
+        )
         model_test.fit(
             "public.dtc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -442,9 +450,13 @@ class TestDecisionTreeClassifier:
 
     def test_model_from_vDF(self, dtc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
-        model_test = DecisionTreeClassifier("tc_from_vDF",)
+        model_test = DecisionTreeClassifier(
+            "tc_from_vDF",
+        )
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
+            dtc_data_vd,
+            ["Gender", '"owned cars"', "cost", "income"],
+            "TransPortation",
         )
 
         current_cursor().execute(

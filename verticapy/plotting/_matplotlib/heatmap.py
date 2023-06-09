@@ -27,7 +27,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HeatMap(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -54,7 +53,13 @@ class HeatMap(MatplotlibBase):
             and "method" in self.layout
             and (
                 self.layout["method"]
-                in ("pearson", "spearman", "spearmand", "kendall", "biserial",)
+                in (
+                    "pearson",
+                    "spearman",
+                    "spearmand",
+                    "kendall",
+                    "biserial",
+                )
             )
         ):
             return {"cmap": self.get_cmap(idx=1)}
@@ -116,7 +121,10 @@ class HeatMap(MatplotlibBase):
                 for y_index in range(m):
                     label = X[x_index][y_index]
                     ax.text(
-                        x_index, y_index, label, **self.init_style_text,
+                        x_index,
+                        y_index,
+                        label,
+                        **self.init_style_text,
                     )
         ax.set_xlabel(self.layout["columns"][0])
         if len(self.layout["columns"]) > 1:

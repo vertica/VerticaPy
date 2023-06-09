@@ -31,12 +31,16 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
-    model_class = SVD("SVD_model_test",)
+    model_class = SVD(
+        "SVD_model_test",
+    )
     model_class.drop()
     model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
@@ -77,7 +81,9 @@ class TestSVD:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS SVD_model_test_drop")
-        model_test = SVD("SVD_model_test_drop",)
+        model_test = SVD(
+            "SVD_model_test_drop",
+        )
         model_test.fit("public.winequality", ["alcohol", "quality"])
 
         current_cursor().execute(
@@ -207,7 +213,9 @@ class TestSVD:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS SVD_vDF")
-        model_test = SVD("SVD_vDF",)
+        model_test = SVD(
+            "SVD_vDF",
+        )
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'SVD_vDF'"

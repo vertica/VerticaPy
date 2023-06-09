@@ -40,7 +40,7 @@ def date(expr: SQLExpression) -> StringSQL:
 
 def day(expr: SQLExpression) -> StringSQL:
     """
-    Returns the day of the month as an integer. 
+    Returns the day of the month as an integer.
 
     Parameters
     ----------
@@ -58,7 +58,7 @@ def day(expr: SQLExpression) -> StringSQL:
 
 def dayofweek(expr: SQLExpression) -> StringSQL:
     """
-    Returns the day of the week as an integer, 
+    Returns the day of the week as an integer,
     where Sunday is day 1.
 
     Parameters
@@ -77,7 +77,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
 
 def dayofyear(expr: SQLExpression) -> StringSQL:
     """
-    Returns the day of the year as an integer, 
+    Returns the day of the year as an integer,
     where January 1 is day 1.
 
     Parameters
@@ -96,7 +96,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
 
 def extract(expr: SQLExpression, field: str) -> StringSQL:
     """
-    Extracts a sub-field, such as year or hour, from 
+    Extracts a sub-field, such as year or hour, from
     a date/time expression.
 
     Parameters
@@ -104,13 +104,13 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
     expr: SQLExpression
         Expression.
     field: str
-        The field to extract. It must be one of the 
-        following: 
-     		CENTURY  /  DAY  /  DECADE / DOQ /  DOW 
+        The field to extract. It must be one of the
+        following:
+                CENTURY  /  DAY  /  DECADE / DOQ /  DOW
             DOY /  EPOCH / HOUR / ISODOW  / ISOWEEK
-     		ISOYEAR  /  MICROSECONDS  /  MILLENNIUM 
+                ISOYEAR  /  MICROSECONDS  /  MILLENNIUM
             MILLISECONDS / MINUTE / MONTH / QUARTER
-     		SECOND  /  TIME ZONE   /  TIMEZONE_HOUR
+                SECOND  /  TIME ZONE   /  TIMEZONE_HOUR
             TIMEZONE_MINUTE   /    WEEK    /   YEAR
 
     Returns
@@ -124,7 +124,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
 
 def getdate() -> StringSQL:
     """
-    Returns the current statement's start date and time 
+    Returns the current statement's start date and time
     as a TIMESTAMP value.
 
     Returns
@@ -137,7 +137,7 @@ def getdate() -> StringSQL:
 
 def getutcdate() -> StringSQL:
     """
-    Returns the current statement's start date and time 
+    Returns the current statement's start date and time
     at TIME ZONE 'UTC' as a TIMESTAMP value.
 
     Returns
@@ -150,7 +150,7 @@ def getutcdate() -> StringSQL:
 
 def hour(expr: SQLExpression) -> StringSQL:
     """
-    Returns the hour portion of the specified date as 
+    Returns the hour portion of the specified date as
     an integer, where 0 is 00:00 to 00:59.
 
     Parameters
@@ -187,7 +187,7 @@ def interval(expr: SQLExpression) -> StringSQL:
 
 def minute(expr: SQLExpression) -> StringSQL:
     """
-    Returns the minute portion of the specified date 
+    Returns the minute portion of the specified date
     as an integer.
 
     Parameters
@@ -206,7 +206,7 @@ def minute(expr: SQLExpression) -> StringSQL:
 
 def microsecond(expr: SQLExpression) -> StringSQL:
     """
-    Returns the microsecond portion of the specified 
+    Returns the microsecond portion of the specified
     date as an integer.
 
     Parameters
@@ -225,7 +225,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
 
 def month(expr: SQLExpression) -> StringSQL:
     """
-    Returns the month portion of the specified date 
+    Returns the month portion of the specified date
     as an integer.
 
     Parameters
@@ -249,22 +249,22 @@ def overlaps(
     end1: SQLExpression,
 ) -> StringSQL:
     """
-    Evaluates  two time  periods and returns true  when 
+    Evaluates  two time  periods and returns true  when
     they overlap, false otherwise.
 
     Parameters
     ----------
     start0: SQLExpression
-        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that 
+        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that
         specifies the beginning of a time period.
     end0: SQLExpression
-        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that 
+        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that
         specifies the end of a time period.
     start1: SQLExpression
-        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that 
+        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that
         specifies the beginning of a time period.
     end1: SQLExpression
-        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that 
+        DATE, TIME, or TIMESTAMP/TIMESTAMPTZ value that
         specifies the end of a time period.
 
     Returns
@@ -283,8 +283,8 @@ def overlaps(
 
 def quarter(expr: SQLExpression) -> StringSQL:
     """
-    Returns calendar quarter of the specified date 
-    as an integer, where the January-March quarter 
+    Returns calendar quarter of the specified date
+    as an integer, where the January-March quarter
     is 1.
 
     Parameters
@@ -310,21 +310,21 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     expr: SQLExpression
         Expression.
     precision: str, optional
-        A string  constant that  specifies precision 
+        A string  constant that  specifies precision
         for the rounded value, one of the following:
-    	    Century: CC | SCC
-    	    Year: SYYY | YYYY | YEAR | YYY | YY | Y
-    	    ISO Year: IYYY | IYY | IY | I
-    	    Quarter: Q
-    	    Month: MONTH | MON | MM | RM
-    	    Same weekday as first day of year: WW
-    	    Same weekday as first day of ISO year: IW
-    	    Same weekday as first day of month: W
-    	    Day (default): DDD | DD | J
-    	    First weekday: DAY | DY | D
-    	    Hour: HH | HH12 | HH24
-    	    Minute: MI
-    	    Second: SS
+            Century: CC | SCC
+            Year: SYYY | YYYY | YEAR | YYY | YY | Y
+            ISO Year: IYYY | IYY | IY | I
+            Quarter: Q
+            Month: MONTH | MON | MM | RM
+            Same weekday as first day of year: WW
+            Same weekday as first day of ISO year: IW
+            Same weekday as first day of month: W
+            Day (default): DDD | DD | J
+            First weekday: DAY | DY | D
+            Hour: HH | HH12 | HH24
+            Minute: MI
+            Second: SS
 
     Returns
     -------
@@ -337,7 +337,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
 
 def second(expr: SQLExpression) -> StringSQL:
     """
-    Returns the seconds portion of the specified 
+    Returns the seconds portion of the specified
     date as an integer.
 
     Parameters
@@ -356,7 +356,7 @@ def second(expr: SQLExpression) -> StringSQL:
 
 def timestamp(expr: SQLExpression) -> StringSQL:
     """
-    Converts the input value to a TIMESTAMP 
+    Converts the input value to a TIMESTAMP
     data type.
 
     Parameters
@@ -375,9 +375,9 @@ def timestamp(expr: SQLExpression) -> StringSQL:
 
 def week(expr: SQLExpression) -> StringSQL:
     """
-    Returns the week of the year for the 
-    specified date  as an integer, where 
-    the  first week begins on the  first 
+    Returns the week of the year for the
+    specified date  as an integer, where
+    the  first week begins on the  first
     Sunday on or preceding January 1.
 
     Parameters
@@ -396,7 +396,7 @@ def week(expr: SQLExpression) -> StringSQL:
 
 def year(expr: SQLExpression) -> StringSQL:
     """
-    Returns an integer that represents the 
+    Returns an integer that represents the
     year  portion  of the  specified date.
 
     Parameters

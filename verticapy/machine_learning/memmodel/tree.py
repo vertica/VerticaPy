@@ -58,7 +58,7 @@ class Tree(InMemoryModel):
 
     def _go_left(self, X: ArrayLike, node_id: int) -> bool:
         """
-        Function used to decide either to go left 
+        Function used to decide either to go left
         or not.
         """
         th = self.threshold_[node_id]
@@ -89,7 +89,7 @@ class Tree(InMemoryModel):
         self, X: ArrayLike, node_id: int = 0, return_proba: bool = False
     ) -> float:
         """
-        Function used recursively to get the tree 
+        Function used recursively to get the tree
         prediction.
         """
         if self.children_left_[node_id] == self.children_right_[node_id]:
@@ -106,7 +106,7 @@ class Tree(InMemoryModel):
 
     def _predict_row_proba(self, X: ArrayLike, node_id: int = 0) -> ArrayLike:
         """
-        Function used  recursively to get the Tree 
+        Function used  recursively to get the Tree
         prediction.
         """
         return self._predict_row(X, node_id, True)
@@ -198,7 +198,7 @@ class Tree(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         probabilities.
 
         Parameters
@@ -245,7 +245,7 @@ class Tree(InMemoryModel):
     @staticmethod
     def _flat_dict(d: dict) -> str:
         """
-        Converts dictionary to string with a specific 
+        Converts dictionary to string with a specific
         format used  during the Graphviz  convertion.
         """
         res = []
@@ -294,25 +294,25 @@ class Tree(InMemoryModel):
         classes_color: ArrayLike, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to. 
+            The number of decimals to round the prediction to.
             0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as 
+            If set to True, the probabilities are returned as
             percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical 
+            If set to True, the function generates a vertical
             tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each node  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each arrow of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each leaf  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
 
         Returns
@@ -365,7 +365,7 @@ class Tree(InMemoryModel):
                         self.value_[i][1]
                     )
                     anomaly_score = -(anomaly_score) / self._heuristic_length(self.psy)
-                    anomaly_score = float(2 ** anomaly_score)
+                    anomaly_score = float(2**anomaly_score)
                     if anomaly_score < 0.5:
                         color_anomaly = "#ffffff"
                     else:
@@ -416,7 +416,12 @@ class Tree(InMemoryModel):
                 res += f"\n{i} [label={label}{self._flat_dict(leaf_style)}]"
         return res + "\n}"
 
-    def plot_tree(self, pic_path: Optional[str] = None, *args, **kwargs,) -> "Source":
+    def plot_tree(
+        self,
+        pic_path: Optional[str] = None,
+        *args,
+        **kwargs,
+    ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -449,28 +454,28 @@ class Tree(InMemoryModel):
 
 class BinaryTreeRegressor(Tree):
     """
-    InMemoryModel  implementation  of  binary  trees  for 
+    InMemoryModel  implementation  of  binary  trees  for
     regression.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the 
+        A list of node IDs, where children_left[i] is the
         node id of the left child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node 
+        A list of node IDs, children_right[i] is the node
         id of the right child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the 
+        A  list  of features,  where  feature[i]  is  the
         feature to split on for the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the 
+        A  list of thresholds, where threshold[i] is  the
         threshold for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and   
-        return_proba is set to True,  each element of the 
-        list must be a sublist  with the probabilities of 
+        Contains  the  constant  prediction value of each
+        node.   If  used  for   classification   and
+        return_proba is set to True,  each element of the
+        list must be a sublist  with the probabilities of
         each class.
     """
 
@@ -511,28 +516,28 @@ class BinaryTreeRegressor(Tree):
 
 class BinaryTreeAnomaly(Tree):
     """
-    InMemoryModel  implementation  of  binary  trees  for 
+    InMemoryModel  implementation  of  binary  trees  for
     anomaly detection.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the 
+        A list of node IDs, where children_left[i] is the
         node id of the left child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node 
+        A list of node IDs, children_right[i] is the node
         id of the right child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the 
+        A  list  of features,  where  feature[i]  is  the
         feature to split on for the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the 
+        A  list of thresholds, where threshold[i] is  the
         threshold for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and   
-        return_proba is set to True,  each element of the 
-        list must be a sublist  with the probabilities of 
+        Contains  the  constant  prediction value of each
+        node.   If  used  for   classification   and
+        return_proba is set to True,  each element of the
+        list must be a sublist  with the probabilities of
         each class.
     psy: int, optional
         Sampling  size used to  compute the final  score.
@@ -585,28 +590,28 @@ class BinaryTreeAnomaly(Tree):
 
 class BinaryTreeClassifier(Tree):
     """
-    InMemoryModel  implementation  of  binary  trees  for 
+    InMemoryModel  implementation  of  binary  trees  for
     classification.
 
     Parameters
     ----------
     children_left: ArrayLike
-        A list of node IDs, where children_left[i] is the 
+        A list of node IDs, where children_left[i] is the
         node id of the left child of node i.
     children_right: ArrayLike
-        A list of node IDs, children_right[i] is the node 
+        A list of node IDs, children_right[i] is the node
         id of the right child of node i.
     feature: ArrayLike
-        A  list  of features,  where  feature[i]  is  the 
+        A  list  of features,  where  feature[i]  is  the
         feature to split on for the internal node i.
     threshold: ArrayLike
-        A  list of thresholds, where threshold[i] is  the 
+        A  list of thresholds, where threshold[i] is  the
         threshold for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each 
-        node.   If  used  for   classification   and    
-        return_proba is set to True,  each element of the 
-        list must be a sublist  with the probabilities of 
+        Contains  the  constant  prediction value of each
+        node.   If  used  for   classification   and
+        return_proba is set to True,  each element of the
+        list must be a sublist  with the probabilities of
         each class.
     classes: ArrayLike, optional
         The classes for the binary tree model.
@@ -673,7 +678,7 @@ class NonBinaryTree(Tree):
     Parameters
     ----------
     tree: dict
-        A  NonBinaryTree  tree.  NonBinaryTrees  can 
+        A  NonBinaryTree  tree.  NonBinaryTrees  can
         be generated with the vDataFrame.chaid method.
     classes: ArrayLike, optional
         The  p  corresponding   to  the  p-distances.
@@ -702,7 +707,7 @@ class NonBinaryTree(Tree):
         self, X: ArrayLike, tree: dict, return_proba: bool = False
     ) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the tree 
+        Function used recursively to get the tree
         prediction.
         """
         if tree["is_leaf"]:
@@ -725,14 +730,14 @@ class NonBinaryTree(Tree):
 
     def _predict_row(self, X: ArrayLike) -> Union[ArrayLike, str, int]:
         """
-        Function used recursively to get the Tree 
+        Function used recursively to get the Tree
         prediction for one row.
         """
         return self._predict_tree(X, self.tree_, False)
 
     def _predict_proba_row(self, X: ArrayLike) -> ArrayLike:
         """
-        Function used recursively to get the Tree 
+        Function used recursively to get the Tree
         probabilities for one row.
         """
         return self._predict_tree(X, self.tree_, True)
@@ -775,7 +780,7 @@ class NonBinaryTree(Tree):
         self, X: ArrayLike, tree: dict, class_id: int = 0, return_proba: bool = False
     ) -> str:
         """
-        Function used recursively to do the final SQL 
+        Function used recursively to do the final SQL
         code generation.
         """
         if tree["is_leaf"]:
@@ -801,7 +806,7 @@ class NonBinaryTree(Tree):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         using its attributes.
 
         Parameters
@@ -818,7 +823,7 @@ class NonBinaryTree(Tree):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         probabilities.
 
         Parameters
@@ -933,25 +938,25 @@ class NonBinaryTree(Tree):
         classes_color: ArrayLike, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to. 
+            The number of decimals to round the prediction to.
             0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as 
+            If set to True, the probabilities are returned as
             percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical 
+            If set to True, the function generates a vertical
             tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each node  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary  of options to customize each arrow of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each arrow of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each leaf  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
 
         Returns

@@ -62,7 +62,7 @@ def pcsv(
     genSQL: bool = False,
 ) -> dict[str, str]:
     """
-    Parses a CSV file using flex tables. It identifies the 
+    Parses a CSV file using flex tables. It identifies the
     columns and their respective types.
 
     Parameters
@@ -72,7 +72,7 @@ def pcsv(
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' is 
+        If set to False, the parameter 'header_names' is
         used to name the different columns.
     header_names: list, optional
         List of the column names.
@@ -83,35 +83,35 @@ def pcsv(
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
-        A single-character  value  used to  specify  the end of 
+        A single-character  value  used to  specify  the end of
         a record.
     trim: bool, optional
-        Boolean,  specifies  whether to trim  white space  from 
+        Boolean,  specifies  whether to trim  white space  from
         header names and key values.
     omit_empty_keys: bool, optional
-        Boolean,  specifies how the  parser handles header keys 
-        without  values.  If true,  keys with an empty value in 
+        Boolean,  specifies how the  parser handles header keys
+        without  values.  If true,  keys with an empty value in
         the header row are not loaded.
     reject_on_duplicate: bool, optional
-        Boolean,  specifies whether  to ignore duplicate records 
-        (False), or to reject duplicates (True). In either case, 
+        Boolean,  specifies whether  to ignore duplicate records
+        (False), or to reject duplicates (True). In either case,
         the load continues.
     reject_on_empty_key: bool, optional
-        Boolean, specifies whether to reject any  row containing 
+        Boolean, specifies whether to reject any  row containing
         a key without a value.
     reject_on_materialized_type_error: bool, optional
-        Boolean,  specifies  whether to reject any  materialized 
-        column  value  that  the  parser  cannot coerce  into  a 
+        Boolean,  specifies  whether to reject any  materialized
+        column  value  that  the  parser  cannot coerce  into  a
         compatible data type.
     ingest_local: bool, optional
-        If set to True, the file is ingested from the local 
+        If set to True, the file is ingested from the local
         machine.
     flex_name: str, optional
         Flex table name.
     genSQL: bool, optional
-        If set to True, the SQL code for creating the final table 
-        is  generated  but  not executed. This is a good  way  to 
-        change the final relation  types or to customize the data 
+        If set to True, the SQL code for creating the final table
+        is  generated  but  not executed. This is a good  way  to
+        change the final relation  types or to customize the data
         ingestion.
 
     Returns
@@ -157,10 +157,12 @@ def pcsv(
     if genSQL:
         return [clean_query(query), clean_query(query2)]
     _executeSQL(
-        query=query, title="Creating flex table to identify the data types.",
+        query=query,
+        title="Creating flex table to identify the data types.",
     )
     _executeSQL(
-        query=query2, title="Parsing the data.",
+        query=query2,
+        title="Parsing the data.",
     )
     result = compute_flextable_keys(flex_name)
     dtype = {}
@@ -222,19 +224,19 @@ def read_csv(
     schema: str, optional
         Schema where the CSV file will be ingested.
     table_name: str, optional
-        The final relation/table name. If unspecified, the name 
+        The final relation/table name. If unspecified, the name
         is set to the name of the file or parent directory.
     sep: str, optional
         Column separator.
     header: bool, optional
-        If set to False, the parameter 'header_names' is used 
+        If set to False, the parameter 'header_names' is used
         to name the different columns.
     header_names: list, optional
         List of the column names.
     dtype: dict, optional
-        Dictionary of the user types. Providing a dictionary can 
-        increase   ingestion  speed  and  precision; instead  of 
-        parsing the file to guess the different types, VerticaPy 
+        Dictionary of the user types. Providing a dictionary can
+        increase   ingestion  speed  and  precision; instead  of
+        parsing the file to guess the different types, VerticaPy
         will use the input types.
     na_rep: str, optional
         Missing values representation.
@@ -243,68 +245,68 @@ def read_csv(
     escape: str, optional
         Separator between each record.
     record_terminator: str, optional
-        A single-character  value  used to  specify  the end of 
+        A single-character  value  used to  specify  the end of
         a record.
     trim: bool, optional
-        Boolean,  specifies  whether to trim  white space  from 
+        Boolean,  specifies  whether to trim  white space  from
         header names and key values.
     omit_empty_keys: bool, optional
-        Boolean,  specifies how the  parser handles header keys 
-        without  values.  If true,  keys with an empty value in 
+        Boolean,  specifies how the  parser handles header keys
+        without  values.  If true,  keys with an empty value in
         the header row are not loaded.
     reject_on_duplicate: bool, optional
-        Boolean,  specifies whether  to ignore duplicate records 
-        (False), or to reject duplicates (True). In either case, 
+        Boolean,  specifies whether  to ignore duplicate records
+        (False), or to reject duplicates (True). In either case,
         the load continues.
     reject_on_empty_key: bool, optional
-        Boolean, specifies whether to reject any  row containing 
+        Boolean, specifies whether to reject any  row containing
         a key without a value.
     reject_on_materialized_type_error: bool, optional
-        Boolean,  specifies  whether to reject any  materialized 
-        column  value  that  the  parser  cannot coerce  into  a 
+        Boolean,  specifies  whether to reject any  materialized
+        column  value  that  the  parser  cannot coerce  into  a
         compatible data type.
     parse_nrows: int, optional
-        If  this parameter is greater than zero, a new  file  of 
+        If  this parameter is greater than zero, a new  file  of
         'parse_nrows' rows is created and ingested to identify
-        the data types. It is then dropped and the entire file 
-        is ingested. The data types identification  will be less 
-        precise but this  parameter can make the process faster 
+        the data types. It is then dropped and the entire file
+        is ingested. The data types identification  will be less
+        precise but this  parameter can make the process faster
         if the file is large.
     insert: bool, optional
         If set to True,  the data is ingested into the specified
-        input relation. Be sure that your  file  has  a   header 
-        corresponding  to  the  name  of the  relation  columns, 
+        input relation. Be sure that your  file  has  a   header
+        corresponding  to  the  name  of the  relation  columns,
         otherwise ingestion will fail.
     temporary_table: bool, optional
         If set to True, a temporary table will be created.
     temporary_local_table: bool, optional
-        If set to True, a temporary local table will be created. 
-        The parameter 'schema'  must  be  empty,  otherwise this 
+        If set to True, a temporary local table will be created.
+        The parameter 'schema'  must  be  empty,  otherwise this
         parameter is ignored.
     gen_tmp_table_name: bool, optional
-        Sets the name of the  temporary table. This parameter is 
-        only used when the parameter  'temporary_local_table' is 
-        set  to  True  and if  the parameters  "table_name"  and 
+        Sets the name of the  temporary table. This parameter is
+        only used when the parameter  'temporary_local_table' is
+        set  to  True  and if  the parameters  "table_name"  and
         "schema" are unspecified.
     ingest_local: bool, optional
-        If set to True, the file will be ingested from the local 
+        If set to True, the file will be ingested from the local
         machine.
     genSQL: bool, optional
-        If set to True, the SQL code for creating the final table 
-        is  generated  but  not executed. This is a good  way  to 
-        change the final relation  types or to customize the data 
+        If set to True, the SQL code for creating the final table
+        is  generated  but  not executed. This is a good  way  to
+        change the final relation  types or to customize the data
         ingestion.
     materialize: bool, optional
-        If  set to True,  the  flex table is  materialized  into a 
-        table. Otherwise, it will remain a flex table. Flex tables 
-        simplify  the  data  ingestion but have  worse  performace 
+        If  set to True,  the  flex table is  materialized  into a
+        table. Otherwise, it will remain a flex table. Flex tables
+        simplify  the  data  ingestion but have  worse  performace
         compared to regular tables.
 
     Returns
     -------
     vDataFrame
-    	The vDataFrame of the relation.
-	"""
+        The vDataFrame of the relation.
+    """
     dtype = format_type(dtype, dtype=dict)
     if isinstance(sep, NoneType):
         sep = ""
@@ -444,10 +446,12 @@ def read_csv(
                 return [clean_query(query2)]
             if not insert:
                 _executeSQL(
-                    query, title="Creating the flex table.",
+                    query,
+                    title="Creating the flex table.",
                 )
             _executeSQL(
-                query2, title="Copying the data.",
+                query2,
+                title="Copying the data.",
             )
             return vDataFrame(table_name, schema=schema)
         if (
@@ -515,7 +519,8 @@ def read_csv(
             if not insert:
                 _executeSQL(query1, title="Creating the table.")
             _executeSQL(
-                query2, title="Ingesting the data.",
+                query2,
+                title="Ingesting the data.",
             )
             if (
                 not insert

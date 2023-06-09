@@ -38,14 +38,18 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -90,10 +94,14 @@ class TestRFR:
         assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
-        model_test = RandomForestRegressor("model_contour",)
+        model_test = RandomForestRegressor(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
@@ -107,7 +115,9 @@ class TestRFR:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS rfr_model_test_drop")
-        model_test = RandomForestRegressor("rfr_model_test_drop",)
+        model_test = RandomForestRegressor(
+            "rfr_model_test_drop",
+        )
         model_test.fit(
             "public.rfr_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -206,7 +216,9 @@ class TestRFR:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = RandomForestRegressor("model_test_plot",)
+        model_test = RandomForestRegressor(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -342,7 +354,9 @@ class TestRFR:
 
     def test_model_from_vDF(self, rfr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS rfr_from_vDF")
-        model_test = RandomForestRegressor("rfr_from_vDF",)
+        model_test = RandomForestRegressor(
+            "rfr_from_vDF",
+        )
         model_test.fit(rfr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(

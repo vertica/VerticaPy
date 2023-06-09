@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class BarChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -58,7 +57,11 @@ class BarChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a BarChart using the HC API.
         """
@@ -72,7 +75,6 @@ class BarChart(HighchartsBase):
 
 
 class BarChart2D(HighchartsBase):
-
     # Properties.
 
     @property
@@ -107,7 +109,11 @@ class BarChart2D(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a 2D BarChart using the HC API.
         """
@@ -122,7 +128,6 @@ class BarChart2D(HighchartsBase):
 
 
 class DrillDownBarChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -159,7 +164,11 @@ class DrillDownBarChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a 2D BarChart using the HC API.
         """

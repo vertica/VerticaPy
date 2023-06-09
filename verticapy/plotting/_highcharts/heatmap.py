@@ -24,7 +24,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class HeatMap(HighchartsBase):
-
     # Properties.
 
     @property
@@ -74,7 +73,10 @@ class HeatMap(HighchartsBase):
                 "categories": self.layout["x_labels"],
                 "title": {"text": self.layout["columns"][0]},
             },
-            "yAxis": {"categories": y_labels, "title": {"text": y_label},},
+            "yAxis": {
+                "categories": y_labels,
+                "title": {"text": y_label},
+            },
             "legend": {
                 "align": "right",
                 "layout": "vertical",
@@ -102,7 +104,13 @@ class HeatMap(HighchartsBase):
             and "method" in self.layout
             and (
                 self.layout["method"]
-                in ("pearson", "spearman", "spearmand", "kendall", "biserial",)
+                in (
+                    "pearson",
+                    "spearman",
+                    "spearmand",
+                    "kendall",
+                    "biserial",
+                )
             )
         ):
             d = {

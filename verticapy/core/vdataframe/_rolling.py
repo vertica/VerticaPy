@@ -42,16 +42,16 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by using an 
-        advanced  analytical  window function on one or  two 
+        Adds a new vDataColumn to the vDataFrame by using an
+        advanced  analytical  window function on one or  two
         specific vDataColumns.
 
-        \u26A0 Warning : Some window functions can make the 
-                         vDataFrame structure heavier. It is 
-                         recommended to always check the current 
-                         structure with the 'current_relation' 
-                         method and to save it with the 'to_db' 
-                         method, using the parameters 'inplace 
+        \u26A0 Warning : Some window functions can make the
+                         vDataFrame structure heavier. It is
+                         recommended to always check the current
+                         structure with the 'current_relation'
+                         method and to save it with the 'to_db'
+                         method, using the parameters 'inplace
                          = True' and 'relation_type = table'.
 
         Parameters
@@ -75,25 +75,25 @@ class vDFRolling(vDFCorr):
                 sum         : sum
                 std         : standard deviation
                 var         : variance
-                    Other window functions could work if it is part of 
+                    Other window functions could work if it is part of
                     the DB version you are using.
         window: list / tuple
             Window Frame Range.
-            If set to two integers, computes a Row Window, otherwise 
-            it computes a Time  Window. For example, if set  to 
-            (-5, 1),  the moving  windows will take 5 rows  preceding 
+            If set to two integers, computes a Row Window, otherwise
+            it computes a Time  Window. For example, if set  to
+            (-5, 1),  the moving  windows will take 5 rows  preceding
             and one following. If set to ('- 5 minutes', '0 minutes'),
-            the  moving window  will take all elements of the last  5 
+            the  moving window  will take all elements of the last  5
             minutes.
         columns: SQLColumns
             Input vDataColumns. Must be a list of one or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using 
-            ascending/descending order or a dictionary of all the 
-            sorting methods. 
-            For example, to sort by "column1" ASC and "column2" DESC, 
+            List of the vDataColumns used to sort the data using
+            ascending/descending order or a dictionary of all the
+            sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC,
             use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
             Name of the new vDataColumn.  If empty, a default name is
@@ -251,7 +251,7 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the 
+        Adds a new vDataColumn to the vDataFrame by computing the
         cumulative maximum of the input vDataColumn.
 
         Parameters
@@ -261,13 +261,13 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using 
-            ascending/descending order or a dictionary of all the 
-            sorting methods. 
-            For example, to sort by "column1" ASC and "column2" DESC, 
+            List of the vDataColumns used to sort the data using
+            ascending/descending order or a dictionary of all the
+            sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC,
             use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is 
+            Name of the new vDataColumn. If empty, a default name is
             generated.
 
         Returns
@@ -293,7 +293,7 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the 
+        Adds a new vDataColumn to the vDataFrame by computing the
         cumulative minimum of the input vDataColumn.
 
         Parameters
@@ -303,13 +303,13 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using 
-            ascending/descending order or a dictionary of all the 
-            sorting methods. 
-            For example, to sort by "column1" ASC and "column2" DESC, 
+            List of the vDataColumns used to sort the data using
+            ascending/descending order or a dictionary of all the
+            sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC,
             use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is 
+            Name of the new vDataColumn. If empty, a default name is
             generated.
 
         Returns
@@ -335,7 +335,7 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the 
+        Adds a new vDataColumn to the vDataFrame by computing the
         cumulative product of the input vDataColumn.
 
         Parameters
@@ -345,13 +345,13 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using 
-            ascending/descending order or a dictionary of all the 
-            sorting methods. 
-            For example, to sort by "column1" ASC and "column2" DESC, 
+            List of the vDataColumns used to sort the data using
+            ascending/descending order or a dictionary of all the
+            sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC,
             use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is 
+            Name of the new vDataColumn. If empty, a default name is
             generated.
 
         Returns
@@ -377,7 +377,7 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the 
+        Adds a new vDataColumn to the vDataFrame by computing the
         cumulative sum of the input vDataColumn.
 
         Parameters
@@ -387,13 +387,13 @@ class vDFRolling(vDFCorr):
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using 
-            ascending/descending order or a dictionary of all the 
-            sorting methods. 
-            For example, to sort by "column1" ASC and "column2" DESC, 
+            List of the vDataColumns used to sort the data using
+            ascending/descending order or a dictionary of all the
+            sorting methods.
+            For example, to sort by "column1" ASC and "column2" DESC,
             use: {"column1": "asc", "column2": "desc"}.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is 
+            Name of the new vDataColumn. If empty, a default name is
             generated.
 
         Returns

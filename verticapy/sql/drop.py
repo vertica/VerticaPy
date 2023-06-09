@@ -31,7 +31,7 @@ def drop(
     raise_error: bool = False,
 ) -> bool:
     """
-    Drops the input relation. This can be a model, 
+    Drops the input relation. This can be a model,
     view, table, text index, schema, or geo index.
 
     Parameters
@@ -42,24 +42,24 @@ def drop(
     method: str, optional
         Method used to drop.
             auto   : identifies the table / view /
-                     index / model to drop. 
-                     It never drops an entire 
-                     schema  unless the  method is 
+                     index / model to drop.
+                     It never drops an entire
+                     schema  unless the  method is
                      set to 'schema'.
             model  : drops the input model.
             table  : drops the input table.
-            view   : drops the input view.        
+            view   : drops the input view.
             geo    : drops the input geo index.
             text   : drops the input text index.
             schema : drops the input schema.
     raise_error: bool, optional
-        If  the object  couldn't be dropped,  this 
+        If  the object  couldn't be dropped,  this
         function raises an error.
 
     Returns
     -------
     bool
-        True   if   the   relation   was  dropped, 
+        True   if   the   relation   was  dropped,
         False otherwise.
     """
     schema, relation = schema_relation(name)

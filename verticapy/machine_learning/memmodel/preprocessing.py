@@ -58,7 +58,7 @@ class Scaler(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms  and applies the scaler model to  the 
+        Transforms  and applies the scaler model to  the
         input matrix.
 
         Parameters
@@ -77,7 +77,7 @@ class Scaler(InMemoryModel):
 
     def transform_sql(self, X: ArrayLike) -> list[str]:
         """
-        Transforms and returns the SQL needed to deploy 
+        Transforms and returns the SQL needed to deploy
         the Scaler.
 
         Parameters
@@ -157,18 +157,18 @@ class OneHotEncoder(InMemoryModel):
     categories: ArrayLike
         ArrayLike  of the categories of  the different  features.
     column_naming: str, optional
-        Appends  categorical  levels  to column  names  according 
+        Appends  categorical  levels  to column  names  according
         to the specified method:
-        indices              : Uses integer  indices to represent 
+        indices              : Uses integer  indices to represent
                                categorical levels.
-        values/values_relaxed: Both methods use categorical level 
-                               names.  If duplicate column  names 
-                               occur,  the  function attempts  to 
-                               disambiguate them by appending _n, 
-                               where  n  is a zero-based  integer 
+        values/values_relaxed: Both methods use categorical level
+                               names.  If duplicate column  names
+                               occur,  the  function attempts  to
+                               disambiguate them by appending _n,
+                               where  n  is a zero-based  integer
                                index (_0, _1,…).
     drop_first: bool, optional
-        If set to False, the first dummy of each category is 
+        If set to False, the first dummy of each category is
         dropped.
     """
 
@@ -198,7 +198,7 @@ class OneHotEncoder(InMemoryModel):
 
     def _transform_row(self, X: ArrayLike) -> list:
         """
-        Transforms and applies the OneHotEncoder model to the 
+        Transforms and applies the OneHotEncoder model to the
         input row.
         """
         X_trans = []
@@ -213,7 +213,7 @@ class OneHotEncoder(InMemoryModel):
 
     def transform(self, X: ArrayLike) -> np.ndarray:
         """
-        Transforms and applies the OneHotEncoder model to the 
+        Transforms and applies the OneHotEncoder model to the
         input matrix.
 
         Parameters

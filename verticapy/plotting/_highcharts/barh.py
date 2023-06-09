@@ -24,7 +24,6 @@ from verticapy.plotting._highcharts.bar import DrillDownBarChart
 
 
 class HorizontalBarChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -59,7 +58,11 @@ class HorizontalBarChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a histogram using the HC API.
         """
@@ -73,7 +76,6 @@ class HorizontalBarChart(HighchartsBase):
 
 
 class HorizontalBarChart2D(HighchartsBase):
-
     # Properties.
 
     @property
@@ -118,7 +120,11 @@ class HorizontalBarChart2D(HighchartsBase):
                 "title": {"text": ""},
                 "subtitle": {"text": ""},
                 "xAxis": [
-                    {"categories": x_labels, "reversed": False, "labels": {"step": 1},},
+                    {
+                        "categories": x_labels,
+                        "reversed": False,
+                        "labels": {"step": 1},
+                    },
                     {
                         "opposite": True,
                         "reversed": False,
@@ -178,7 +184,6 @@ class HorizontalBarChart2D(HighchartsBase):
 
 
 class DrillDownHorizontalBarChart(DrillDownBarChart):
-
     # Properties.
 
     @property

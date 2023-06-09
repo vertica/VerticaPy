@@ -37,12 +37,16 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    model_class = KernelDensity("KernelDensity_model_test",)
+    model_class = KernelDensity(
+        "KernelDensity_model_test",
+    )
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"])
     yield model_class
@@ -93,7 +97,9 @@ class TestKernelDensity:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, titanic_vd):
-        model_test = KernelDensity("KernelDensity_from_vDF_tmp",)
+        model_test = KernelDensity(
+            "KernelDensity_from_vDF_tmp",
+        )
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare"])
         titanic_copy = model_test.predict(titanic_vd.copy(), name="kde")

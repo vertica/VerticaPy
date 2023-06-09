@@ -54,7 +54,8 @@ class StringSQL:
             hasattr(x, "isarray") and x.isarray()
         ):
             return StringSQL(
-                f"ARRAY_CAT({self._init_transf}, {x._init_transf})", "complex",
+                f"ARRAY_CAT({self._init_transf}, {x._init_transf})",
+                "complex",
             )
         val = format_magic(x)
         op = (
@@ -69,7 +70,8 @@ class StringSQL:
             hasattr(x, "isarray") and x.isarray()
         ):
             return StringSQL(
-                f"ARRAY_CAT({x._init_transf}, {self._init_transf})", "complex",
+                f"ARRAY_CAT({x._init_transf}, {self._init_transf})",
+                "complex",
             )
         val = format_magic(x)
         op = (
@@ -91,7 +93,8 @@ class StringSQL:
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return StringSQL(
-            f"({self._init_transf}) BETWEEN ({val1}) AND ({val2})", self.category(),
+            f"({self._init_transf}) BETWEEN ({val1}) AND ({val2})",
+            self.category(),
         )
 
     def _in(self, *args) -> "StringSQL":
@@ -141,7 +144,8 @@ class StringSQL:
         if order_by:
             order_by = f"ORDER BY {order_by}"
         return StringSQL(
-            f"{self._init_transf} OVER ({by} {order_by})", self.category(),
+            f"{self._init_transf} OVER ({by} {order_by})",
+            self.category(),
         )
 
     def __eq__(self, x: Any) -> "StringSQL":

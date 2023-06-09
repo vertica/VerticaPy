@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class PieChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -80,7 +79,11 @@ class PieChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a pie chart using the HC API.
         """
@@ -106,7 +109,6 @@ class PieChart(HighchartsBase):
 
 
 class NestedPieChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -142,7 +144,11 @@ class NestedPieChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a nested pie chart using the HC API.
         """
@@ -222,10 +228,17 @@ class NestedPieChart(HighchartsBase):
                 "pie",
                 self.layout["method_of"],
                 size="60%",
-                dataLabels={"color": "white", "distance": -30,},
+                dataLabels={
+                    "color": "white",
+                    "distance": -30,
+                },
             )
             chart.add_data_set(
-                outerData, "pie", self.layout["method_of"], size="80%", innerSize="60%",
+                outerData,
+                "pie",
+                self.layout["method_of"],
+                size="80%",
+                innerSize="60%",
             )
         else:
             raise ValueError("The number of columns is too big to draw the plot.")

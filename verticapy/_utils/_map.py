@@ -85,48 +85,52 @@ def param_docstring(*args):
     @param_docstring(PARAMETER_DESCRIPTIONS, 'y_true', 'y_score', 'input_relation', 'pos_label')
 
     The decorator inserts the supplied parameter descriptions inbetween the function's description
-    and the Returns section. For instance, in the following docstring, the above decorator would 
+    and the Returns section. For instance, in the following docstring, the above decorator would
     insert the parameter descriptions inbetween 'Computes the Confusion Matrix' and 'Returns':
 
     Computes the Confusion Matrix.
-    
+
     Returns
     -------
     Array
         confusion matrix.
 
-    When several functions share the same parameters, this decorator can be used to improve code 
+    When several functions share the same parameters, this decorator can be used to improve code
     readability and doc consistency.
 
-    Note: To preserve correct spacing, add four spaces before the parameter name in the 
+    Note: To preserve correct spacing, add four spaces before the parameter name in the
     dictionary value and for each following line. For example:
 
     ...
     'y_true': '''    y_true: str
         Response column.''',
     'y_score': '''    y_score: str
-        Prediction.''', 
+        Prediction.''',
     'input_relation': '''    input_relation: SQLRelation
-        Relation used for scoring. This relation can 
-        be a view, table, or a customized relation (if 
-        an alias is used at the end of the relation). 
+        Relation used for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
         For example: (SELECT ... FROM ...) x''',
     ...
     """
     param_defs = args[0]
-    parameter_docstring = '''Parameters
-    ----------\n'''
+    parameter_docstring = """Parameters
+    ----------\n"""
     for param in args[1:]:
-        parameter_docstring += param_defs[param] + '\n'
-    parameter_docstring += '''
+        parameter_docstring += param_defs[param] + "\n"
+    parameter_docstring += """
     Returns
-    -------'''
+    -------"""
 
     def docstring_decorator(func):
         existing_docstring = func.__doc__
-        existing_docstring = existing_docstring.split('''Returns
-    -------''')
-        func.__doc__ = existing_docstring[0] + parameter_docstring + existing_docstring[1]
+        existing_docstring = existing_docstring.split(
+            """Returns
+    -------"""
+        )
+        func.__doc__ = (
+            existing_docstring[0] + parameter_docstring + existing_docstring[1]
+        )
 
         return func
 

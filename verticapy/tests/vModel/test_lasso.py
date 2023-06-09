@@ -38,12 +38,16 @@ set_option("print_info", False)
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
-    model_class = Lasso("lasso_model_test",)
+    model_class = Lasso(
+        "lasso_model_test",
+    )
     model_class.drop()
     model_class.fit(
         "public.winequality",
@@ -59,10 +63,14 @@ class TestLasso:
         assert model.__repr__() == "<LinearRegression>"
 
     def test_contour(self, winequality_vd):
-        model_test = Lasso("model_contour",)
+        model_test = Lasso(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            winequality_vd, ["residual_sugar", "alcohol"], "quality",
+            winequality_vd,
+            ["residual_sugar", "alcohol"],
+            "quality",
         )
         with warnings.catch_warnings(record=True) as w:
             result = model_test.contour()
@@ -77,7 +85,9 @@ class TestLasso:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS lasso_model_test_drop")
-        model_test = Lasso("lasso_model_test_drop",)
+        model_test = Lasso(
+            "lasso_model_test_drop",
+        )
         model_test.fit("public.winequality", ["alcohol"], "quality")
 
         current_cursor().execute(
@@ -175,7 +185,9 @@ class TestLasso:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = Lasso("model_test_plot",)
+        model_test = Lasso(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -309,7 +321,9 @@ class TestLasso:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS lasso_from_vDF")
-        model_test = Lasso("lasso_from_vDF",)
+        model_test = Lasso(
+            "lasso_from_vDF",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
 
         current_cursor().execute(

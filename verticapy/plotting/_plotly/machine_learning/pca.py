@@ -54,7 +54,11 @@ class PCACirclePlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a PCA circle plot using the Plotly API.
         """

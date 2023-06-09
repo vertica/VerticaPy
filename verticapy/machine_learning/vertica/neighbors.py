@@ -66,26 +66,26 @@ Algorithms used for regression.
 class KNeighborsRegressor(Regressor):
     """
     [Beta Version]
-    Creates a  KNeighborsRegressor object using the 
-    k-nearest neighbors algorithm. This object uses 
-    pure SQL to compute all the distances and final 
+    Creates a  KNeighborsRegressor object using the
+    k-nearest neighbors algorithm. This object uses
+    pure SQL to compute all the distances and final
     score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
-                     during   computation  and  is  therefore 
-                     computationally  expensive at  O(n * n), 
-                     where n is the total number of elements. 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
+                     during   computation  and  is  therefore
+                     computationally  expensive at  O(n * n),
+                     where n is the total number of elements.
                      Since  KNeighborsRegressor  uses  the p-
-                     distance,  it  is  highly  sensitive  to 
+                     distance,  it  is  highly  sensitive  to
                      unnormalized data.
 
     Parameters
     ----------
     n_neighbors: int, optional
-        Number of neighbors to consider when computing 
+        Number of neighbors to consider when computing
         the score.
     p: int, optional
-        The p of the p-distances (distance metric used 
+        The p of the p-distances (distance metric used
         during the model computation).
     """
 
@@ -148,7 +148,7 @@ class KNeighborsRegressor(Regressor):
         key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
@@ -157,7 +157,7 @@ class KNeighborsRegressor(Regressor):
         test_relation: str, optional
             Relation used to do the predictions.
         key_columns: SQLColumns, optional
-            A  list  of columns  to  include in  the  results, 
+            A  list  of columns  to  include in  the  results,
             but to exclude from computation of the prediction.
 
         Returns
@@ -282,28 +282,28 @@ Algorithms used for classification.
 class KNeighborsClassifier(MulticlassClassifier):
     """
     [Beta Version]
-    Creates a KNeighborsClassifier object using the 
-    k-nearest neighbors algorithm. This object uses 
-    pure SQL to compute all the distances and final 
+    Creates a KNeighborsClassifier object using the
+    k-nearest neighbors algorithm. This object uses
+    pure SQL to compute all the distances and final
     score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
-                     during   computation  and  is  therefore 
-                     computationally  expensive at  O(n * n), 
-                     where n is the total number of elements. 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
+                     during   computation  and  is  therefore
+                     computationally  expensive at  O(n * n),
+                     where n is the total number of elements.
                      Since  KNeighborsClassifier uses  the p-
-                     distance,  it  is  highly  sensitive  to 
+                     distance,  it  is  highly  sensitive  to
                      unnormalized data.
 
     Parameters
     ----------
     n_neighbors: int, optional
-        Number  of neighbors to consider when computing  the 
+        Number  of neighbors to consider when computing  the
         score.
     p: int, optional
-        The p of the p-distances (distance metric used 
+        The p of the p-distances (distance metric used
         during the model computation).
-	"""
+    """
 
     # Properties.
 
@@ -382,7 +382,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         key_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
@@ -391,11 +391,11 @@ class KNeighborsClassifier(MulticlassClassifier):
         test_relation: str, optional
             Relation used to do the predictions.
         predict: bool, optional
-            If set to True, returns the prediction instead 
+            If set to True, returns the prediction instead
             of the probability.
         key_columns: SQLColumns, optional
-            A  list of columns to include in the  results, 
-            but  to   exclude  from   computation  of  the 
+            A  list of columns to include in the  results,
+            but  to   exclude  from   computation  of  the
             prediction.
 
         Returns
@@ -471,7 +471,10 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_final_relation(self, pos_label: Optional[PythonScalar] = None,) -> str:
+    def _get_final_relation(
+        self,
+        pos_label: Optional[PythonScalar] = None,
+    ) -> str:
         """
         Returns the final relation used to do the predictions.
         """
@@ -482,7 +485,10 @@ class KNeighborsClassifier(MulticlassClassifier):
             WHERE predict_neighbors = '{pos_label}') 
             final_centroids_relation"""
 
-    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
+    def _get_y_proba(
+        self,
+        pos_label: Optional[PythonScalar] = None,
+    ) -> str:
         """
         Returns the input which represents the model's probabilities.
         """
@@ -609,7 +615,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         **kwargs,
     ) -> vDataFrame:
         """
-        Returns the model's probabilities using the 
+        Returns the model's probabilities using the
         input relation.
         """
         # Inititalization
@@ -726,13 +732,13 @@ Algorithms used for density analysis.
 class KernelDensity(Regressor, Tree):
     """
     [Beta Version]
-    Creates a KernelDensity object. 
+    Creates a KernelDensity object.
     This object uses pure SQL to compute the final score.
 
     Parameters
     ----------
     name: str
-        Name of the model. This is not a built-in model, so 
+        Name of the model. This is not a built-in model, so
         this name is used  to build the final table.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
@@ -743,21 +749,21 @@ class KernelDensity(Regressor, Tree):
             sigmoid   : Sigmoid Kernel.
             silverman : Silverman Kernel.
     p: int, optional
-        The p of the p-distances (distance metric used 
+        The p of the p-distances (distance metric used
         during the model computation).
     max_leaf_nodes: PythonNumber, optional
-        The maximum number of leaf nodes,  an integer between 
+        The maximum number of leaf nodes,  an integer between
         1 and 1e9, inclusive.
     max_depth: int, optional
-        The maximum tree depth,  an integer between 1 and 100, 
+        The maximum tree depth,  an integer between 1 and 100,
         inclusive.
     min_samples_leaf: int, optional
-        The  minimum number of  samples each branch must  have 
-        after splitting a node,  an integer between 1 and 1e6, 
-        inclusive. A split that results in fewer remaining 
+        The  minimum number of  samples each branch must  have
+        after splitting a node,  an integer between 1 and 1e6,
+        inclusive. A split that results in fewer remaining
         samples is discarded.
-    nbins: int, optional 
-        The  number  of  bins used to discretize  the  input 
+    nbins: int, optional
+        The  number  of  bins used to discretize  the  input
         features.
     xlim: list, optional
         List of tuples used to compute the kernel window.
@@ -1100,7 +1106,7 @@ class KernelDensity(Regressor, Tree):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -1111,12 +1117,16 @@ class KernelDensity(Regressor, Tree):
         data, layout = self._compute_plot_params()
         if len(self.X) == 1:
             vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-                class_name="DensityPlot", chart=chart, style_kwargs=style_kwargs,
+                class_name="DensityPlot",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot
         elif len(self.X) == 2:
             vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-                class_name="DensityPlot2D", chart=chart, style_kwargs=style_kwargs,
+                class_name="DensityPlot2D",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             fun = vpy_plt.DensityPlot2D
         else:
@@ -1132,35 +1142,35 @@ Algorithms used for anomaly detection.
 class LocalOutlierFactor(VerticaModel):
     """
     [Beta Version]
-    Creates a LocalOutlierFactor object by using the 
-    Local Outlier Factor algorithm as defined by Markus 
-    M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
-    Sander. This object is using pure SQL to compute all 
+    Creates a LocalOutlierFactor object by using the
+    Local Outlier Factor algorithm as defined by Markus
+    M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg
+    Sander. This object is using pure SQL to compute all
     the distances and final score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
-                     during   computation  and  is  therefore 
-                     computationally  expensive at  O(n * n), 
-                     where n is the total number of elements. 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
+                     during   computation  and  is  therefore
+                     computationally  expensive at  O(n * n),
+                     where n is the total number of elements.
                      Since  LocalOutlierFactor   uses  the p-
-                     distance,  it  is  highly  sensitive  to 
-                     unnormalized data. 
-                     A  table  is created at the  end of 
+                     distance,  it  is  highly  sensitive  to
+                     unnormalized data.
+                     A  table  is created at the  end of
                      the learning phase.
 
     Parameters
     ----------
     name: str
-    	Name  of the  model.  This is not a  built-in 
-        model, so this name is used to build the 
+        Name  of the  model.  This is not a  built-in
+        model, so this name is used to build the
         final table.
     n_neighbors: int, optional
-    	Number of neighbors to consider when computing 
+        Number of neighbors to consider when computing
         the score.
     p: int, optional
-    	The p of the p-distances (distance metric used 
+        The p of the p-distances (distance metric used
         during the model computation).
-	"""
+    """
 
     # Properties.
 
@@ -1237,24 +1247,24 @@ class LocalOutlierFactor(VerticaModel):
         index: Optional[str] = None,
     ) -> None:
         """
-    	Trains the model.
+        Trains the model.
 
-    	Parameters
-    	----------
-    	input_relation: SQLRelation
-    		Training relation.
-    	X: SQLColumns, optional
-    		List of the predictors.
-    	key_columns: SQLColumns, optional
-    		Columns  not  used   during  the   algorithm 
-            computation  but   which  are  used  to 
+        Parameters
+        ----------
+        input_relation: SQLRelation
+                Training relation.
+        X: SQLColumns, optional
+                List of the predictors.
+        key_columns: SQLColumns, optional
+                Columns  not  used   during  the   algorithm
+            computation  but   which  are  used  to
             create the final relation.
-    	index: str, optional
-    		Index  used to seperately identify each row. 
+        index: str, optional
+                Index  used to seperately identify each row.
             To avoid the creation of temporary tables,
             it is recommended that you already have an
             index in the main table.
-		"""
+        """
         X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)
         if conf.get_option("overwrite_model"):
@@ -1438,7 +1448,7 @@ class LocalOutlierFactor(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -1447,7 +1457,9 @@ class LocalOutlierFactor(VerticaModel):
             Plotting Object.
         """
         vpy_plt, kwargs = self.get_plotting_lib(
-            class_name="LOFPlot", chart=chart, style_kwargs=style_kwargs,
+            class_name="LOFPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         return vpy_plt.LOFPlot(
             vdf=vDataFrame(self.model_name),

@@ -97,7 +97,11 @@ class SVMClassifierPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a SVM Classifier plot using the Plotly API.
         """
@@ -143,7 +147,14 @@ class SVMClassifierPlot(PlotlyBase):
                 ]
                 fig.add_trace(go.Scatter(name="0", x=x0, y=y0, **self.hover_style_2d))
                 fig.add_trace(go.Scatter(name="1", x=x1, y=y1, **self.hover_style_2d))
-                fig.add_trace(go.Scatter(name="SVM", x=x_svm, y=y_svm, mode="lines",))
+                fig.add_trace(
+                    go.Scatter(
+                        name="SVM",
+                        x=x_svm,
+                        y=y_svm,
+                        mode="lines",
+                    )
+                )
                 fig.update_layout(
                     **self._update_dict(self.init_layout_style, style_kwargs)
                 )

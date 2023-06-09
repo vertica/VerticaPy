@@ -22,7 +22,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class Histogram(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -39,7 +38,11 @@ class Histogram(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a histogram using the Matplotlib API.
         """

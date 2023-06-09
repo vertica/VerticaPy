@@ -33,21 +33,27 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def iris_vd():
     iris = load_iris()
     yield iris
-    drop(name="public.iris",)
+    drop(
+        name="public.iris",
+    )
 
 
 @pytest.fixture(scope="module")
 def market_vd():
     market = load_market()
     yield market
-    drop(name="public.market",)
+    drop(
+        name="public.market",
+    )
 
 
 class TestvDFPreprocessing:

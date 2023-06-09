@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ROCCurve(HighchartsBase):
-
     # Properties.
 
     @property
@@ -55,14 +54,24 @@ class ROCCurve(HighchartsBase):
                 "max": 1.0,
             },
             "legend": {"enabled": False},
-            "subtitle": {"text": f"AUC = {round(auc, 4) * 100}%", "align": "left",},
-            "tooltip": {"headerFormat": "", "pointFormat": "[{point.x}, {point.y}]",},
+            "subtitle": {
+                "text": f"AUC = {round(auc, 4) * 100}%",
+                "align": "left",
+            },
+            "tooltip": {
+                "headerFormat": "",
+                "pointFormat": "[{point.x}, {point.y}]",
+            },
             "colors": self.get_colors(),
         }
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a machine learning ROC curve using the HC API.
         """
@@ -75,7 +84,6 @@ class ROCCurve(HighchartsBase):
 
 
 class PRCCurve(ROCCurve):
-
     # Properties.
 
     @property
@@ -84,7 +92,6 @@ class PRCCurve(ROCCurve):
 
 
 class CutoffCurve(HighchartsBase):
-
     # Properties.
 
     @property
@@ -105,7 +112,10 @@ class CutoffCurve(HighchartsBase):
                 "min": 0.0,
                 "max": 1.0,
             },
-            "yAxis": {"min": 0.0, "max": 1.0,},
+            "yAxis": {
+                "min": 0.0,
+                "max": 1.0,
+            },
             "legend": {"enabled": True},
             "tooltip": {"crosshairs": True, "shared": True},
             "colors": self.get_colors(),
@@ -113,7 +123,11 @@ class CutoffCurve(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a machine cutoff curve using the HC API.
         """
@@ -128,7 +142,6 @@ class CutoffCurve(HighchartsBase):
 
 
 class LiftChart(HighchartsBase):
-
     # Properties.
 
     @property
@@ -158,7 +171,11 @@ class LiftChart(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a machine cutoff curve using the HC API.
         """

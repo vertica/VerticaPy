@@ -37,7 +37,6 @@ if TYPE_CHECKING:
 
 
 class AnimatedBubblePlot(AnimatedBase):
-
     # Properties.
 
     @property
@@ -230,7 +229,10 @@ class AnimatedBubblePlot(AnimatedBase):
             scatter_values,
             custom_lines,
             all_cats,
-        ) = self._compute_anim_params(date_f=date_f, style_kwargs=style_kwargs,)
+        ) = self._compute_anim_params(
+            date_f=date_f,
+            style_kwargs=style_kwargs,
+        )
         sc = ax.scatter(
             scatter_values[0]["x"],
             scatter_values[0]["y"],

@@ -228,8 +228,8 @@ def list_strip(L: list) -> list:
 
 def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns:
     """
-    Returns the specified string argument in the format 
-    that is required in order to use that string as an 
+    Returns the specified string argument in the format
+    that is required in order to use that string as an
     identifier in an SQL statement.
 
     Parameters
@@ -263,9 +263,9 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
 
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     """
-    Replaces the input variables with their respective SQL 
-    representations. If a input variable does not have a 
-    SQL representation, it is materialised by a temporary 
+    Replaces the input variables with their respective SQL
+    representations. If a input variable does not have a
+    SQL representation, it is materialised by a temporary
     local table.
     """
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
@@ -315,7 +315,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
 def schema_relation(relation: Any) -> tuple[str, str]:
     """
     Extracts the schema and the table from the input
-    relation. If the input relation does not have a schema, 
+    relation. If the input relation does not have a schema,
     the temporary schema is used.
     """
     if isinstance(relation, str):
@@ -346,7 +346,7 @@ def schema_relation(relation: Any) -> tuple[str, str]:
 def format_schema_table(schema: str, table_name: str) -> str:
     """
     Returns the formatted relation. If the schema is not
-    defined, the 'public' schema is used. 
+    defined, the 'public' schema is used.
     """
     if not schema:
         schema = "public"

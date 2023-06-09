@@ -72,8 +72,8 @@ MINIMUM_VERTICA_VERSION = {
 
 def check_minimum_version(func: Callable) -> Callable:
     """
-    check_minimum_version decorator. It simplifies 
-    the code by checking whether the feature is 
+    check_minimum_version decorator. It simplifies
+    the code by checking whether the feature is
     available in the user's version.
     """
 
@@ -97,8 +97,8 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
     Parameters
     ----------
     condition: list, optional
-        List of the minimal version information. If the 
-        current version is not greater or equal to this 
+        List of the minimal version information. If the
+        current version is not greater or equal to this
         version, the function raises an error.
 
     Returns

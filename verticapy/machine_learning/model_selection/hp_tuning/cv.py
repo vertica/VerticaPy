@@ -66,7 +66,7 @@ def randomized_search_cv(
     print_info: bool = True,
 ) -> TableSample:
     """
-    Computes  the   K-Fold  randomized  search  of  an 
+    Computes  the   K-Fold  randomized  search  of  an
     estimator.
 
     Parameters
@@ -81,25 +81,25 @@ def randomized_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -107,19 +107,19 @@ def randomized_search_cv(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -140,32 +140,32 @@ def randomized_search_cv(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive 
+        The main class to be considered as positive
         (classification only).
     cutoff: float, optional
         The model cutoff (classification only).
     nbins: int, optional
-        Number of bins used to compute the different 
+        Number of bins used to compute the different
         parameters categories.
     lmax: int, optional
         Maximum length of each parameter list.
     optimized_grid: int, optional
-        If set to 0, the randomness is based on the 
+        If set to 0, the randomness is based on the
         input parameters.
-        If set to 1,  the randomness is limited  to 
-        some  parameters  while others  are  picked 
+        If set to 1,  the randomness is limited  to
+        some  parameters  while others  are  picked
         based on a default grid.
-        If set  to 2, there is no  randomness and a 
+        If set  to 2, there is no  randomness and a
         default grid is returned.
     print_info: bool, optional
-        If set to True, prints the model information 
+        If set to True, prints the model information
         at each step.
 
     Returns
@@ -222,7 +222,7 @@ def grid_search_cv(
     estimator: VerticaModel
         Vertica estimator with a fit method.
     param_grid: dict/list
-        Dictionary of the parameters to test. It can 
+        Dictionary of the parameters to test. It can
         also be a list of the different combinations.
     input_relation: SQLRelation
         Relation used to train the model.
@@ -232,25 +232,25 @@ def grid_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -258,19 +258,19 @@ def grid_search_cv(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -291,25 +291,25 @@ def grid_search_cv(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
     pos_label: PythonScalar, optional
-        The main class to  be considered as positive 
+        The main class to  be considered as positive
         (classification only).
     cutoff: float, optional
         The  model   cutoff  (classification  only).
     training_score: bool, optional
-        If set to True,  the  training score is 
+        If set to True,  the  training score is
         computed with the validation score.
     skip_error: bool, optional
-        If set to True and an error occurs, the error 
+        If set to True and an error occurs, the error
         is displayed but not raised.
     print_info: bool, optional
-        If set to True, prints the model information 
+        If set to True, prints the model information
         at each step.
 
     Returns
@@ -428,7 +428,12 @@ def grid_search_cv(
             )
         else:
             return TableSample(
-                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
+                {
+                    "parameters": [],
+                    "avg_score": [],
+                    "avg_time": [],
+                    "score_std": [],
+                }
             )
     reverse = True
     if metric in [
@@ -516,8 +521,8 @@ def bayesian_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the k-fold bayesian search of an estimator 
-    using a random forest model to estimate a probably 
+    Computes the k-fold bayesian search of an estimator
+    using a random forest model to estimate a probably
     optimal set of parameters.
 
     Parameters
@@ -532,25 +537,25 @@ def bayesian_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -558,19 +563,19 @@ def bayesian_search_cv(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -585,43 +590,43 @@ def bayesian_search_cv(
     cv: int, optional
         Number of folds.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive 
+        The main class to be considered as positive
         (classification only).
     cutoff: float, optional
         The model cutoff (classification only).
     param_grid: dict/list, optional
-        Dictionary of the parameters to test. It can 
-        also be a list of the different combinations. 
+        Dictionary of the parameters to test. It can
+        also be a list of the different combinations.
         If empty, a parameter grid is generated.
     random_nbins: int, optional
-        Number of bins used to compute the different 
-        parameters    categories   in   the   random 
+        Number of bins used to compute the different
+        parameters    categories   in   the   random
         parameters generation.
     bayesian_nbins: int, optional
-        Number of bins used to compute the different 
-        parameters  categories in the bayesian table 
+        Number of bins used to compute the different
+        parameters  categories in the bayesian table
         generation.
     random_grid: bool, optional
-        If  True,  the rows used to find the optimal 
-        function  are used randomnly.  Otherwise, 
-        they are regularly spaced. 
+        If  True,  the rows used to find the optimal
+        function  are used randomnly.  Otherwise,
+        they are regularly spaced.
     lmax: int, optional
         Maximum length of each parameter list.
     nrows: int, optional
-        Number  of  rows to use when performing  the 
+        Number  of  rows to use when performing  the
         bayesian search.
     k_tops: int, optional
-        When  performing  the bayesian  search,  the 
+        When  performing  the bayesian  search,  the
         final  stage  is to  retrain  the top
-        possible  combinations. 'k_tops'  represents 
-        the number of  models to train at this stage 
+        possible  combinations. 'k_tops'  represents
+        the number of  models to train at this stage
         in order to find the most efficient model.
     RFmodel_params: dict, optional
-        Dictionary   of   the  random  forest  model 
-        parameters  used  to   estimate  a  probably 
+        Dictionary   of   the  random  forest  model
+        parameters  used  to   estimate  a  probably
         optimal set of parameters.
     print_info: bool, optional
-        If True, prints the model information at each 
+        If True, prints the model information at each
         step.
 
     Returns
@@ -805,7 +810,7 @@ def enet_search_cv(
     **kwargs,
 ) -> TableSample:
     """
-    Computes the  k-fold grid search using multiple ENet 
+    Computes the  k-fold grid search using multiple ENet
     models.
 
     Parameters
@@ -818,44 +823,44 @@ def enet_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
                           = tpr / fpr
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -871,14 +876,14 @@ def enet_search_cv(
         Number of folds.
     estimator_type: str, optional
         Estimator Type.
-            auto : detects if it is a Logit Model 
+            auto : detects if it is a Logit Model
                    or ENet.
             logit: Logistic Regression
             enet : ElasticNet
     cutoff: float, optional
         The model cutoff (logit only).
     print_info: bool, optional
-        If   set   to  True,   prints  the  model 
+        If   set   to  True,   prints  the  model
         information at each step.
 
     Returns

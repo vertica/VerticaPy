@@ -73,7 +73,9 @@ def model(tr_data_vd):
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 class TestDecisionTreeRegressor:
@@ -81,10 +83,14 @@ class TestDecisionTreeRegressor:
         assert model.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
-        model_test = DecisionTreeRegressor("model_contour",)
+        model_test = DecisionTreeRegressor(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -98,7 +104,9 @@ class TestDecisionTreeRegressor:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS tr_model_test_drop")
-        model_test = DecisionTreeRegressor("tr_model_test_drop",)
+        model_test = DecisionTreeRegressor(
+            "tr_model_test_drop",
+        )
         model_test.fit(
             "public.tr_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -311,7 +319,9 @@ class TestDecisionTreeRegressor:
 
     def test_model_from_vDF(self, tr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tr_from_vDF")
-        model_test = DecisionTreeRegressor("tr_from_vDF",)
+        model_test = DecisionTreeRegressor(
+            "tr_from_vDF",
+        )
         model_test.fit(tr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(

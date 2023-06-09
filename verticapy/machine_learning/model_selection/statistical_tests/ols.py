@@ -56,7 +56,7 @@ def het_breuschpagan(
     Returns
     -------
     tuple
-        Lagrange Multiplier statistic, LM pvalue, 
+        Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
     """
     if isinstance(input_relation, vDataFrame):
@@ -108,14 +108,14 @@ def het_goldfeldquandt(
     X: SQLColumns
         Exogenous Variables.
     idx: int, optional
-        Column index of variable according to which observations 
+        Column index of variable according to which observations
         are sorted for the split.
     split: float, optional
-        Float to indicate where to split (Example: 0.5 to split 
+        Float to indicate where to split (Example: 0.5 to split
         on the median).
     alternative: str, optional
-        Specifies  the  alternative hypothesis  for  the  p-value 
-        calculation, one of the following variances: "increasing", 
+        Specifies  the  alternative hypothesis  for  the  p-value
+        calculation, one of the following variances: "increasing",
         "decreasing", "two-sided".
 
     Returns
@@ -188,7 +188,7 @@ def het_white(
     Returns
     -------
     tuple
-        Lagrange Multiplier statistic, LM pvalue, 
+        Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
     """
     if isinstance(input_relation, vDataFrame):
@@ -258,7 +258,7 @@ def endogtest(
     Returns
     -------
     tuple
-        Lagrange Multiplier statistic, LM pvalue, 
+        Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
     """
     if isinstance(input_relation, vDataFrame):
@@ -297,8 +297,8 @@ def variance_inflation_factor(
     input_relation: SQLRelation, X: SQLColumns, X_idx: Optional[int] = None
 ) -> Union[float, TableSample]:
     """
-    Computes the variance inflation factor (VIF). It can be 
-    used  to detect multicollinearity in an OLS  Regression 
+    Computes the variance inflation factor (VIF). It can be
+    used  to detect multicollinearity in an OLS  Regression
     Analysis.
 
     Parameters
@@ -308,8 +308,8 @@ def variance_inflation_factor(
     X: list
         Input Variables.
     X_idx: int
-        Index of the exogenous variable in X. If empty, 
-        a TableSample is returned with all the  variables 
+        Index of the exogenous variable in X. If empty,
+        a TableSample is returned with all the  variables
         VIF.
 
     Returns

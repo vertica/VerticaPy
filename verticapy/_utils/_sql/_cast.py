@@ -20,7 +20,10 @@ from typing import Literal, Optional, Union
 import numpy as np
 
 
-def to_varchar(category: str, column: str = "{}",) -> str:
+def to_varchar(
+    category: str,
+    column: str = "{}",
+) -> str:
     """
     Uses the correct SQL function to convert
     the input column to VARCHAR.

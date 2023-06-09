@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class RegressionPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -61,7 +60,10 @@ class RegressionPlot(HighchartsBase):
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
+                            "hover": {
+                                "enabled": True,
+                                "lineColor": "rgb(100,100,100)",
+                            }
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},

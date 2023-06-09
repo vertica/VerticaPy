@@ -31,7 +31,9 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -55,7 +57,9 @@ class TestOneHotEncoder:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS ohe_model_test_drop")
-        model_test = OneHotEncoder("ohe_model_test_drop",)
+        model_test = OneHotEncoder(
+            "ohe_model_test_drop",
+        )
         model_test.fit("public.titanic", ["pclass", "embarked"])
 
         current_cursor().execute(

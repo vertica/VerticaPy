@@ -45,7 +45,7 @@ class vDFSystem(vDFTyping):
     def _add_to_history(self, message: str) -> "vDataFrame":
         """
         VERTICAPY stores the user modification and helps the user
-        to look at what they did. This method is used to add a 
+        to look at what they did. This method is used to add a
         customized message in the vDataFrame history attribute.
         """
         self._vars["history"] += ["{" + time.strftime("%c") + "}" + " " + message]
@@ -58,18 +58,18 @@ class vDFSystem(vDFTyping):
         force_columns: Optional[SQLColumns] = None,
     ) -> str:
         """
-        Method used to generate the SQL final relation. It  
-        looks at all transformations and builds a nested query where 
+        Method used to generate the SQL final relation. It
+        looks at all transformations and builds a nested query where
         each transformation is associated to a specific floor.
 
         Parameters
         ----------
         split: bool, optional
-            Adds a split  column __verticapy_split__ in the relation, 
+            Adds a split  column __verticapy_split__ in the relation,
             which can be used to downsample the data.
         transformations: dict, optional
-            Dictionary of columns and their respective transformation. 
-            It can be used to test if an expression is correct and 
+            Dictionary of columns and their respective transformation.
+            It can be used to test if an expression is correct and
             can be added in the final relation.
         force_columns: SQLColumns, optional
             Columns used to generate the final relation.
@@ -196,8 +196,8 @@ class vDFSystem(vDFTyping):
         columns: Optional[SQLColumns] = None,
     ) -> Optional[str]:
         """
-        VERTICAPY  stores  the  already  computed aggregations to  avoid 
-        useless computations. This method returns the stored aggregation 
+        VERTICAPY  stores  the  already  computed aggregations to  avoid
+        useless computations. This method returns the stored aggregation
         if it was already computed.
         """
         if not conf.get_option("cache"):
@@ -276,8 +276,8 @@ class vDFSystem(vDFTyping):
         column: Optional[str] = None,
     ) -> None:
         """
-        VERTICAPY stores the already computed aggregations to 
-        avoid useless  computations.  This  method stores the 
+        VERTICAPY stores the already computed aggregations to
+        avoid useless  computations.  This  method stores the
         input aggregation in the vDataColumn catalog.
         """
         values = format_type(values, dtype=dict)
@@ -344,8 +344,8 @@ class vDFSystem(vDFTyping):
         reindent: bool, optional
             Reindent the text to be more readable.
         split: bool, optional
-            Adds a split  column __verticapy_split__  
-            in the  relation, which can be used to 
+            Adds a split  column __verticapy_split__
+            in the  relation, which can be used to
             downsample the data.
 
         Returns
@@ -384,7 +384,7 @@ class vDFSystem(vDFTyping):
     @save_verticapy_logs
     def expected_store_usage(self, unit: str = "b") -> TableSample:
         """
-        Returns the vDataFrame expected store usage. 
+        Returns the vDataFrame expected store usage.
 
         Parameters
         ----------
@@ -485,13 +485,13 @@ class vDFSystem(vDFTyping):
     @save_verticapy_logs
     def explain(self, digraph: bool = False) -> str:
         """
-        Provides information on how Vertica is computing the current 
+        Provides information on how Vertica is computing the current
         vDataFrame relation.
 
         Parameters
         ----------
         digraph: bool, optional
-            If set to True,  returns only the digraph of the explain 
+            If set to True,  returns only the digraph of the explain
             plan.
 
         Returns
@@ -522,7 +522,7 @@ class vDFSystem(vDFTyping):
 
     def info(self) -> str:
         """
-        Displays information about the different vDataFrame 
+        Displays information about the different vDataFrame
         transformations.
 
         Returns
@@ -544,7 +544,7 @@ class vDFSystem(vDFTyping):
     @save_verticapy_logs
     def memory_usage(self) -> TableSample:
         """
-        Returns the vDataFrame memory usage. 
+        Returns the vDataFrame memory usage.
 
         Returns
         -------
@@ -651,7 +651,7 @@ class vDCSystem(vDCTyping):
     @save_verticapy_logs
     def memory_usage(self) -> float:
         """
-        Returns the vDataColumn memory usage. 
+        Returns the vDataColumn memory usage.
 
         Returns
         -------
@@ -700,12 +700,12 @@ class vDCSystem(vDCTyping):
 
     def rename(self, new_name: str) -> "vDataFrame":
         """
-        Renames the vDataColumn by dropping the current vDataColumn 
+        Renames the vDataColumn by dropping the current vDataColumn
         and creating a copy with the specified name.
 
-        \u26A0 Warning : SQL code generation  will be slower if the 
-                         vDataFrame  has been transformed  multiple 
-                         times, so it's better practice to use this 
+        \u26A0 Warning : SQL code generation  will be slower if the
+                         vDataFrame  has been transformed  multiple
+                         times, so it's better practice to use this
                          method when first preparing your data.
 
         Parameters

@@ -75,7 +75,11 @@ class ACFPlot(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws an ACF time series plot using the Plotly API.
         """
@@ -84,7 +88,10 @@ class ACFPlot(PlotlyBase):
         Z = self.data["z"]
         fig = self._get_fig(fig)
         fig.add_scatter(
-            x=X, y=Z, **self.init_confidence_style, hoverinfo="none",
+            x=X,
+            y=Z,
+            **self.init_confidence_style,
+            hoverinfo="none",
         )
         fig.add_scatter(
             x=X,
@@ -108,7 +115,10 @@ class ACFPlot(PlotlyBase):
                     line=dict(color="black", width=2),
                 )
         fig.add_scatter(
-            x=X, y=Y, **self.init_scatter_style, mode=scatter_mode,
+            x=X,
+            y=Y,
+            **self.init_scatter_style,
+            mode=scatter_mode,
         )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig

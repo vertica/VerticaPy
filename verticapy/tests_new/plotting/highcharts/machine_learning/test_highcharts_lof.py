@@ -22,7 +22,6 @@ import pytest
 from verticapy.tests_new.plotting.base_test_files import LOFPlot2D, LOFPlot3D
 
 
-
 class TestHighchartsMachineLearningLOFPlot2D(LOFPlot2D):
     """
     Testing different attributes of 2D LOF plot

@@ -35,19 +35,25 @@ set_option("print_info", False)
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    model_class = LogisticRegression("logreg_model_test",)
+    model_class = LogisticRegression(
+        "logreg_model_test",
+    )
     model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
@@ -89,10 +95,14 @@ class TestLogisticRegression:
         assert conf_mat2[1][1] == 391
 
     def test_contour(self, titanic_vd):
-        model_test = LogisticRegression("model_contour",)
+        model_test = LogisticRegression(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
@@ -106,7 +116,9 @@ class TestLogisticRegression:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS logreg_model_test_drop")
-        model_test = LogisticRegression("logreg_model_test_drop",)
+        model_test = LogisticRegression(
+            "logreg_model_test_drop",
+        )
         model_test.fit("public.titanic", ["age", "fare"], "survived")
 
         current_cursor().execute(
@@ -144,7 +156,9 @@ class TestLogisticRegression:
     def test_get_plot(self, winequality_vd):
         # 1D
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LogisticRegression("model_test_plot",)
+        model_test = LogisticRegression(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 11
@@ -172,7 +186,11 @@ class TestLogisticRegression:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_proba=True,)([[3.0, 11.0]])[0][1]
+            model.to_python(
+                return_proba=True,
+            )([[3.0, 11.0]])[
+                0
+            ][1]
         )
 
     def test_to_sql(self, model):
@@ -414,7 +432,9 @@ class TestLogisticRegression:
 
     def test_model_from_vDF(self, titanic_vd):
         current_cursor().execute("DROP MODEL IF EXISTS logreg_from_vDF")
-        model_test = LogisticRegression("logreg_from_vDF",)
+        model_test = LogisticRegression(
+            "logreg_from_vDF",
+        )
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
         current_cursor().execute(

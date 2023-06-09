@@ -24,7 +24,6 @@ from verticapy.plotting._highcharts.line import LinePlot
 
 
 class RangeCurve(LinePlot):
-
     # Properties.
 
     @property
@@ -63,7 +62,11 @@ class RangeCurve(LinePlot):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a time series plot using the HC API.
         """

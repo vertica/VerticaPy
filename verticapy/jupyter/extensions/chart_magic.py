@@ -112,11 +112,12 @@ def get_kind_option(kind: Literal[tuple(CLASS_NAME_MAP)] = "auto") -> dict:
 
 
 def chartSQL(
-    query: str, kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",
+    query: str,
+    kind: Literal[tuple(CLASS_NAME_MAP)] = "auto",
 ) -> PlottingObject:
     """
     Helper Function:
-    Draws a custom High Chart graphic using the 
+    Draws a custom High Chart graphic using the
     input SQL query.
     """
     if kind in [
@@ -191,29 +192,29 @@ def chart_magic(
     line: str, cell: Optional[str] = None, local_ns: Optional[dict] = None
 ) -> Union[Highstock, Highchart]:
     """
-    Draws  responsive charts using the High Chart  API: 
-    https://api.highcharts.com/highcharts/ 
-    The returned object can be customized using the API 
+    Draws  responsive charts using the High Chart  API:
+    https://api.highcharts.com/highcharts/
+    The returned object can be customized using the API
     parameters and the 'set_dict_options' method.
 
     -c / --command : SQL Command to execute.
 
-    -f  /   --file : Input File. You can use this option 
-                     if  you  want to execute the  input 
+    -f  /   --file : Input File. You can use this option
+                     if  you  want to execute the  input
                      file.
 
     -k  /  --kind  : Chart Type, one  of  the following:
                      area  / area_range  / area_ts / bar
-                     biserial   /   boxplot   /   bubble 
-                     candlestick   /   cramer  /   donut 
-                     donut3d  / heatmap / hist / kendall 
+                     biserial   /   boxplot   /   bubble
+                     candlestick   /   cramer  /   donut
+                     donut3d  / heatmap / hist / kendall
                      line / negative_bar / pearson / pie
                      pie_half / pie3d / scatter / spider
                      spline / stacked_bar / stacked_hist
                      spearman
 
-     -o / --output : Output File. You can use this option 
-                     if  you want to export the result of 
+     -o / --output : Output File. You can use this option
+                     if  you want to export the result of
                      the query to the HTML format.
     """
 
@@ -225,7 +226,6 @@ def chart_magic(
     options_dict = get_magic_options(line)
 
     for option in options_dict:
-
         if option.lower() in (
             "-f",
             "--file",
@@ -236,7 +236,6 @@ def chart_magic(
             "-k",
             "--kind",
         ):
-
             if option.lower() in ("-f", "--file"):
                 if "-f" in options:
                     raise ValueError("Duplicate option '-f'.")
