@@ -253,12 +253,13 @@ You can find all vDataFrame's methods inside the folder verticapy/core/vdatafram
 
 You can define any new vDataFrame method inside these modules depending on the nature of the method. The same applies to vColumns. You can use any of the developed classes to inherit properties.
 
-When defining a function, you should mention the 'type' hints for every variable. 
+When defining a function, you should specify the 'type' hints for every variable: 
 
-For variables of multiple types, use the Union operator.
-For variables that are optional, use Optional operator. 
-And for variables that require literal input, use Literal operator. 
-Examples of such hints are all over the code. Please have a look at the rest of code if you want to get examples. 
+- For variables of multiple types, use the Union operator.
+- For variables that are optional, use the Optional operator. 
+- For variables that require literal input, use the Literal operator. 
+
+There are examples of such hints throughout the code. 
 
 
 <p align="center">
@@ -272,7 +273,7 @@ Be sure to write a detailed description for each function that explains how it w
 </p>
 
 
-Remember: the vDataFrame.get_columns() and vDataFrame.format_colnames() functions are essential for correctly formated input column names.
+Important: the vDataFrame.get_columns() and vDataFrame.format_colnames() functions are essential for correctly formatting input column names.
 
 ```python
 # Displaying columns from the titanic dataset
@@ -438,7 +439,7 @@ Functions will work exactly the same.
 
 ### Unit Tests
 
-Functions must include unit tests. Unit tests are located in the 'tests' folder. The test files follow the same folder structure as the original veritcapy directory. So for each file there will be a test file. That means if a function is added in core/vdataframe/_aggregate.py file then its respective test will be added in the test file test/core/vdataframe/test_aggregate.py.
+Functions must include unit tests, which are located in the 'tests' folder. The test files follow the same folder structure as the original veritcapy directory. For each file there is a test file. That means if a function is added in core/vdataframe/_aggregate.py file then its respective test will be added in the test file test/core/vdataframe/test_aggregate.py.
 
 Unit tests can be tested with the default VerticaPy datasets or the smaller efficient datasets creted inside the tests/conftest.py file. Be sure to look at all the datasets before creating your own. All these datasets can be imported as fixtures:
 
@@ -447,9 +448,9 @@ def test_properties_type(self, titanic_vd):
     result=titanic_vd["survived"].bar()
     assert(type(result)==plotly.graph_objs._figure.Figure)
 ```
-Above titanic_vd is a fixture that is defined in the conftest file. 
+The above titanic_vd is a fixture that is defined in the conftest file. 
 
-In order to make the coodes efficient, it is highly encouraged to use fixtures and sharing results across the scope. This ensures that the result will be shared. For every test i.e. assert, there should be a separate function. To combine multiple tests for the same method, feel free to use classes. 
+To make the code efficient, it is highly encouraged to use fixtures and to share results across the scope. This ensures that the result will be shared. For every test (i.e. assert), there should be a separate function. To combine multiple tests for the same method, feel free to use classes. 
 
 For the function we just created, we would place the unit tests 'test_vDF_correlation.py' in the 'vDataFrame' directory.
 
@@ -467,8 +468,8 @@ class TestPearson(self):
         assert result == pytest.approx(-0.0422446185581737, 1e-2)  
 ```
 
-A fixture by the name of "schema_loader" has been defined in the conftest file which creates a schema with a random name. This schema is dropped at the end of the unit test. You are encouraged to make use of this fixture to name your models/datasets if you have to. 
-For example, below if we load a dataset and give it a name from the schema.
+A fixture by the name of "schema_loader" has been defined in the conftest file that creates a schema with a random name. This schema is dropped at the end of the unit test. You are encouraged to make use of this fixture to name your models/datasets, if necessary. 
+For example, the follwoing loads a dataset and gives it a name from the schema.
 
 ```python
 @pytest.fixture(scope="module")
@@ -480,25 +481,25 @@ def titanic_vd(schema_loader):
     yield titanic
     drop(name=f"{schema_loader}.titanic")
 ```
-Note that we do not necessarily have to drop the dataset as the schema will automatically be dropped at the end of the unit test as we are using "schema_loader" fixture.
+Since we are using the "schema_loader" fixture, we do not necessarily have to drop the dataset schema because it is automatically dropped at the end of the unit test.
 
-Lastly, double check to make sure that your test allows parallel exeution by using the following pytest command:
+Lastly, double check to make sure that your test allows parallel execution by using the following pytest command:
 
 ```python
 pytest -n auto --dist=loadscope
 ```
-Note that in order to use above, you will have to install pytest-xdist.
+Note that in order to use the above, you will have to install pytest-xdist.
 
 
-Add appropriate tests for the bug’s or feature's behavior, run the test suite again and ensure that all tests pass. Here are additional guidelines for writing test:
- - Tests should be easy for any contributor to run. Contributors may not get complete access to their Vertica database, for example, they may only have a non-admin user with write privileges to a single schema, and the database may not be the latest version. We encourage tests to use only what they need and nothing more.
+Add appropriate tests for the bugs or features behavior, run the test suite again, and ensure that all tests pass. Here are additional guidelines for writing tests:
+ - Tests should be easy for any contributor to run. Contributors may not get complete access to their Vertica database. For example, they may only have a non-admin user with write privileges to a single schema, and the database may not be the latest version. We encourage tests to use only what they need and nothing more.
  - If there are requirements to the database for running a test, the test should adapt to different situations and never report a failure. For example, if a test depends on a multi-node database, it should check the number of DB nodes first, and skip itself when it connects to a single-node database (see helper function `require_DB_nodes_at_least()` in `verticapy/tests/integration_tests/base.py`).
 
 ### Code formatting as per PEP 8
 
 Once you are satisfied with your code, please run [black](https://black.readthedocs.io/en/stable/) for your code. Black will automatically format all your code to make it professional and consistent with PEP 8.
 
-Next please run [pylint](https://pypi.org/project/pylint/) and ensure that your score is above the miinimum threshold of 5. Pylint will automatically provide you with the improvement opportunities that you can adjust to increaes your score.
+Next please run [pylint](https://pypi.org/project/pylint/) and ensure that your score is above the minimum threshold of 5. Pylint will automatically provide you with the improvement opportunities that you can adjust to increaes your score.
 
 As per the updated CI/CD, no code will be accepted that requires formatting using black or has a lower pylint score than the threshold stated above. 
 
@@ -522,7 +523,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 ```
-You are now ready to create your first contribution!
+You are now ready to make your first contribution!
 
 ### Commits
 
