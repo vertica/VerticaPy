@@ -130,7 +130,7 @@ The user can provide the type of plot along with the SQL command to create vario
 %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/93e8556d-851d-4f1d-8f75-e46e9feed65a" width="92%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/93e8556d-851d-4f1d-8f75-e46e9feed65a" width="50%">
 </p>
 
 
