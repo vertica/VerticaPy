@@ -28,11 +28,11 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
 - [Installation](#installation)
 - [Documentation](#documentation)
 - [Use-cases](#use-cases)
-- [SQL Magic](#sql-magic)
+- [Highllighted Features](#highllighted-features)
 - [Charts](#charts)
-- [Contributing](#contributing)
 - [Connecting to the Database](#connecting-to-the-database)
 - [Quick start](#quickstart)
+- [Contributing](#contributing)
 
 <br><br>
 # Introduction
@@ -95,11 +95,12 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
-## SQL Magic
+## Highllighted Features
 
+### SQL Magic
 You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation_last/extensions/sql/'>SQL Magic</a>:
 
-### Example
+#### Example
 
 Load the SQL extension.
 ```python
@@ -114,7 +115,49 @@ SELECT version();
 # Vertica Analytic Database v11.0.1-0
 ```
 
+### Multiple Database Connection using DBLINK
+
+In one platform multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using the convience of SQL and python.
+
+#### Example
+```python
+%%sql
+/* Fetch TAIL_NUMBER and CITY after Joining the flight_vertica table with airports table in MySQL database. */
+SELECT flight_vertica.TAIL_NUMBER, airports.CITY AS Departing_City
+FROM flight_vertica
+INNER JOIN &&& airports &&&
+ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
+```
+In the example above, flight_vertica table is stored in Vertica, whereas the 'airports' table is store in MySQL.
+
+For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about its use in VerticaPy check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php)
+
+### SQL Plots
+
+Interactive professional plots can be created directly from SQL.
+
+The user can provide the type of plot along with the SQL command to create various plots.
+
+#### Example
+```python
+%load_ext verticapy.jupyter.extensions.chart_magic
+%chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
+```
+
+### Python and SQL Combo
+
+VerticaPy has a unique place in the market that it allows the users to use python and SQL in the same environment. 
+
+#### Example
+```
+import verticapy as vp
+selected_titanic=vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
+selected_titanic.groupby(columns = ["pclass"],expr = ["AVG(AVG)"])
+```
+
 ## Charts
+
+Verticapy comes with three famous plotting libraries integrated inside: matplotlib, highcharts, and plotly.
 
 A gallery of VerticaPy-generated charts is available at:<br>
 
