@@ -32,7 +32,7 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [SQL Magic](#sql-magic)
   - [SQL Plots](#sql-plots)
   - [Multiple DataBase Connection](#multiple-database-connection-using-dblink)
-  - [Pythoon and SQL combo](#python-and-sql-combo)
+  - [Python and SQL combo](#python-and-sql-combo)
 - [Charts](#charts)
 - [Connecting to the Database](#connecting-to-the-database)
 - [Quick start](#quickstart)
@@ -118,6 +118,21 @@ SELECT version();
 # Output
 # Vertica Analytic Database v11.0.1-0
 ```
+### SQL Plots
+
+Interactive professional plots can be created directly from SQL.
+
+The user can provide the type of plot along with the SQL command to create various plots.
+
+#### Example
+```python
+%load_ext verticapy.jupyter.extensions.chart_magic
+%chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/93e8556d-851d-4f1d-8f75-e46e9feed65a" width="92%">
+</p>
+
 
 ### Multiple Database Connection using DBLINK
 
@@ -136,17 +151,6 @@ In the example above, flight_vertica table is stored in Vertica, whereas the 'ai
 
 For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about its use in VerticaPy check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php)
 
-### SQL Plots
-
-Interactive professional plots can be created directly from SQL.
-
-The user can provide the type of plot along with the SQL command to create various plots.
-
-#### Example
-```python
-%load_ext verticapy.jupyter.extensions.chart_magic
-%chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
-```
 
 ### Python and SQL Combo
 
