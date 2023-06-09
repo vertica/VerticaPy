@@ -260,7 +260,7 @@ For variables that are optional, use Optional operator.
 And for variables that require literal input, use Literal operator. 
 Examples of such hints are all over the code. Please have a look at the rest of code if you want to get examples. 
 
-**********ADD IMAGE FOR AN EXAMPLE FUNCTION WITH ALL THREE OPERATORS ************
+
 <p align="center">
 <img src='https://github.com/vertica/VerticaPy/assets/46414488/149e4265-62e9-4d09-a58f-1f62fcd354cc' width="60%">
 </p>
@@ -271,14 +271,8 @@ Be sure to write a detailed description for each function that explains how it w
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/description.png' width="60%">
 </p>
 
-Uses the check_types() function to verify the types of each parameter, vDataFrame.are_namecols_in() to verify that the specified column belongs to the main vDataFrame, and vDataFrame.format_colnames() to format column names.
 
-<p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/check_types.png' width="60%">
-</p>
-
-
-Remember: the vDataFrame.are_namecols_in() and vDataFrame.format_colnames() functions are essential for correctly formated input column names.
+Remember: the vDataFrame.get_columns() and vDataFrame.format_colnames() functions are essential for correctly formated input column names.
 
 ```python
 # Displaying columns from the titanic dataset
