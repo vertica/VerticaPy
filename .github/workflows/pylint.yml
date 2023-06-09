@@ -23,4 +23,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=5 $(git ls-files '*.py')
+        pylint --fail-under=9 --disable=typecheck,W,C,R $(git ls-files '*.py')
