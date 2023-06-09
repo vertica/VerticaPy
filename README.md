@@ -22,6 +22,21 @@
 
 VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
+
+# Table on Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Documentation](#documentation)
+- [Use-cases](#use-cases)
+- [SQL Magic](#sql-magic)
+- [Charts](#charts)
+- [Contributing](#contributing)
+- [Connecting to the Database](#connecting-to-the-database)
+- [Quick start](#quickstart)
+
+<br><br>
+# Introduction
+
 Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 <br><br>
 Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists.
