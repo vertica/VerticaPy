@@ -35,7 +35,7 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL combo](#python-and-sql-combo)
   - [Charts](#charts)
-  - [Compelte ML pipeline]
+  - [Compelte ML pipeline](#compelte-machine-learning-pipeline)
 - [Quick start](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
@@ -213,7 +213,7 @@ data.outliers_plot(columns="Heights")
 
 - Machine Learning
   ML is the strongest suite of VerticaPy as it uses the speed of in-database training and prediction using SQL in the background to interact with the database. ML for verticapy covers a vast majority of tools including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php) etc. 
-  
+
 ```python
 stepwise_result = stepwise(
     model,
