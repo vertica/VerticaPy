@@ -23,6 +23,7 @@ class TestMatplotlibOutliersPlot(OutliersPlot):
     Testing different attributes of outliers plot on a vDataColumn
     """
 
+
 class TestMatplotlibOutliersPlot2D(OutliersPlot2D):
     """
     Testing different attributes of outliers plot on a vDataFrame
