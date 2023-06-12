@@ -121,7 +121,6 @@ class TestPlotlyVDCBoxPlot(VDCBoxPlot):
         ), "median not computed correctly"
 
 
-
 class TestPlotlyParitionVDCBoxPlot(VDCParitionBoxPlot):
     """
     Testing different attributes of Box plot on a vDataColumn using "by" attribute
