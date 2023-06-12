@@ -26,17 +26,20 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
 # Table on Contents
 - [Introduction](#introduction)
 - [Installation](#installation)
+- [Connecting to the Database](#connecting-to-the-database)
 - [Documentation](#documentation)
 - [Use-cases](#use-cases)
 - [Highlighted Features](#highllighted-features)
   - [SQL Magic](#sql-magic)
   - [SQL Plots](#sql-plots)
-  - [Multiple DataBase Connection](#multiple-database-connection-using-dblink)
+  - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL combo](#python-and-sql-combo)
-- [Charts](#charts)
-- [Connecting to the Database](#connecting-to-the-database)
+  - [Charts](#charts)
+  - [Compelte ML pipeline]
 - [Quick start](#quickstart)
-- [Contributing](#contributing)
+- [Help and Support](#help-an-support)
+  - [Contributing](#contributing)
+  - [Communication](#communication)
 
 <br><br>
 # Introduction
@@ -80,6 +83,10 @@ root@ubuntu:~$ python3 setup.py install
 A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
+
+## Connecting to the Database
+
+VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
 
 ## Documentation
 
@@ -161,7 +168,7 @@ selected_titanic=vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM pub
 selected_titanic.groupby(columns = ["pclass"],expr = ["AVG(AVG)"])
 ```
 
-## Charts
+### Charts
 
 Verticapy comes with three famous plotting libraries integrated inside: matplotlib, highcharts, and plotly.
 
@@ -173,13 +180,60 @@ https://www.vertica.com/python/gallery/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
-## Contributing
+### Compelte Machine Learning Pipeline
 
-For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
+- Data Ingestion
+  VerticaPy allows users to ingest data from a diverse range of sources such as AVRO, Paqruet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", it automatically infers the source type as well as the data type.
 
-## Connecting to the Database
+  ```python
+  verticapy.read_file(path="complex.csv")
+  ```
 
-VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
+- Data Exploration
+
+  There are a lot of options for descriptive as well as visual exploration. 
+
+```python
+iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species',max_nb_points=30)
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/ffa37b72-2778-4ea5-af9e-c0f3d6f610f3" width="40%">
+</p>
+
+- Data Preparation
+  Whether it is [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything, and more, in one package.
+
+```python
+data.outliers_plot(columns="Heights")
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/ff5cf6fa-b54b-4910-bc11-60305fcbc871" width="40%">
+</p>
+
+
+- Machine Learning
+  ML is the strongest suite of VerticaPy as it uses the speed of in-database training and prediction using SQL in the background to interact with the database. ML for verticapy covers a vast majority of tools including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php) etc. 
+  
+```python
+stepwise_result = stepwise(
+    model,
+    input_relation=titanic_vd,
+    X=[
+        "age",
+        "fare",
+        "parch",
+        "pclass",
+    ],
+    y="survived",
+    direction="backward",
+    height=600,
+    width=800
+)
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
+</p>
+
 
 ## Quickstart
 
@@ -306,3 +360,15 @@ avg             0.928685964607
 std            0.0201579224026
 ```
 Enjoy!
+
+## Help an Support
+
+### Contributing
+
+For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
+
+### Communication
+
+- LinkedIn: https://www.linkedin.com/company/verticapy/
+
+- Announcements and Discussion: https://github.com/vertica/VerticaPy/discussions
