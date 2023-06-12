@@ -87,7 +87,7 @@ class OutliersPlot(ScatterPlot):
         Z = self.data["map"]["Z"]
         zvals = self.data["map"]["zvals"]
         if len(self.layout["columns"]) == 1:
-            if Z.max()>th:
+            if Z.max() > th:
                 cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
                 fig.colorbar(cp).set_label("ZSCORE")
             ax.fill_between(zvals, [-1, -1], [1, 1], facecolor=self.layout["color"])
