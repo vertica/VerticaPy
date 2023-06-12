@@ -20,7 +20,7 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
 </p>
 
-VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
+VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage of Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 
 # Table on Contents
@@ -41,15 +41,13 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
 <br><br>
 # Introduction
 
-Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
-<br><br>
 Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists.
 <br><br>
 Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists. Unfortunately, Python only works in-memory as a single-node process. This problem has led to the rise of distributed programming languages, but they too, are limited as in-memory processes and, as such, will never be able to process all of your data in this era, and moving data for processing is prohobitively expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
 <br><br>
 **VerticaPy aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, VerticaPy brings the logic to the data.
 <br><br>
-3 years in the making, we're proud to bring you VerticaPy.
+3+ years in the making, we're proud to bring you VerticaPy.
 <br><br>
 Main Advantages:
 <ul>
@@ -136,7 +134,7 @@ The user can provide the type of plot along with the SQL command to create vario
 
 ### Multiple Database Connection using DBLINK
 
-In one platform multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using the convience of SQL and python.
+In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using the convience of SQL and python.
 
 #### Example
 ```python
@@ -147,7 +145,7 @@ FROM flight_vertica
 INNER JOIN &&& airports &&&
 ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
 ```
-In the example above, flight_vertica table is stored in Vertica, whereas the 'airports' table is store in MySQL.
+In the example above, flight_vertica table is stored in Vertica, whereas the 'airports' table is store in MySQL. We can associate special symbols "&&&" to the different databases to fetch the data. The best part is that all the aggregation is pushed to the databases (i.e. it is not done in memory)!
 
 For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about its use in VerticaPy check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php)
 
