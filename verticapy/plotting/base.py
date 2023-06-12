@@ -235,7 +235,9 @@ class PlottingBase(PlottingBaseSQL):
         self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:
         """
-        Missing docstring?
+        If a color or list of colours is available in the
+        input dictionary, return it. Otherwise, this function
+        returns the current module str or list of colors. 
         """
         d = format_type(d, dtype=dict)
         if "color" in d:
