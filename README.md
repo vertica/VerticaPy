@@ -182,14 +182,15 @@ https://www.vertica.com/python/gallery/
 
 ### Compelte Machine Learning Pipeline
 
-- Data Ingestion
+- **Data Ingestion**
+
   VerticaPy allows users to ingest data from a diverse range of sources such as AVRO, Paqruet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", it automatically infers the source type as well as the data type.
 
   ```python
   verticapy.read_file(path="complex.csv")
   ```
 
-- Data Exploration
+- **Data Exploration**
 
   There are a lot of options for descriptive as well as visual exploration. 
 
@@ -200,7 +201,8 @@ iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species'
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/ffa37b72-2778-4ea5-af9e-c0f3d6f610f3" width="40%">
 </p>
 
-- Data Preparation
+- **Data Preparation**
+
   Whether it is [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything, and more, in one package.
 
 ```python
@@ -211,7 +213,8 @@ data.outliers_plot(columns="Heights")
 </p>
 
 
-- Machine Learning
+- **Machine Learning**
+
   ML is the strongest suite of VerticaPy as it uses the speed of in-database training and prediction using SQL in the background to interact with the database. ML for verticapy covers a vast majority of tools including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php) etc. 
 
 ```python
