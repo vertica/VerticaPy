@@ -33,10 +33,10 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [SQL Magic](#sql-magic)
   - [SQL Plots](#sql-plots)
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
-  - [Python and SQL combo](#python-and-sql-combo)
+  - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
   - [Compelte ML pipeline](#compelte-machine-learning-pipeline)
-- [Quick start](#quickstart)
+- [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
   - [Communication](#communication)
@@ -125,9 +125,9 @@ SELECT version();
 ```
 ### SQL Plots
 
-Interactive professional plots can be created directly from SQL.
+You can create interactive, professional plots directly from SQL.
 
-The user can provide the type of plot along with the SQL command to create various plots.
+To create plots, simply provide the type of plot along with the SQL command.
 
 #### Example
 ```python
@@ -141,7 +141,7 @@ The user can provide the type of plot along with the SQL command to create vario
 
 ### Multiple Database Connection using DBLINK
 
-In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using the convience of SQL and python.
+In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using SQL and python.
 
 #### Example
 ```python
@@ -152,14 +152,14 @@ FROM flight_vertica
 INNER JOIN &&& airports &&&
 ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
 ```
-In the example above, flight_vertica table is stored in Vertica, whereas the 'airports' table is store in MySQL. We can associate special symbols "&&&" to the different databases to fetch the data. The best part is that all the aggregation is pushed to the databases (i.e. it is not done in memory)!
+In the example above, the 'flight_vertica' table is stored in Vertica, whereas the 'airports' table is stored in MySQL. We can associate special symbols "&&&" to the different databases to fetch the data. The best part is that all the aggregation is pushed to the databases (i.e. it is not done in memory)!
 
-For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about its use in VerticaPy check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php)
+For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php).
 
 
 ### Python and SQL Combo
 
-VerticaPy has a unique place in the market that it allows the users to use python and SQL in the same environment. 
+VerticaPy has a unique place in the market because it allows users to use python and SQL in the same environment. 
 
 #### Example
 ```
@@ -170,7 +170,7 @@ selected_titanic.groupby(columns = ["pclass"],expr = ["AVG(AVG)"])
 
 ### Charts
 
-Verticapy comes with three famous plotting libraries integrated inside: matplotlib, highcharts, and plotly.
+Verticapy comes integrated with three popular plotting libraries: matplotlib, highcharts, and plotly.
 
 A gallery of VerticaPy-generated charts is available at:<br>
 
@@ -184,7 +184,7 @@ https://www.vertica.com/python/gallery/
 
 - **Data Ingestion**
 
-  VerticaPy allows users to ingest data from a diverse range of sources such as AVRO, Paqruet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", it automatically infers the source type as well as the data type.
+  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Paqruet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", VerticaPy automatically infers the source type and the data type.
 
   ```python
   verticapy.read_file(path="complex.csv")
@@ -192,7 +192,7 @@ https://www.vertica.com/python/gallery/
 
 - **Data Exploration**
 
-  There are a lot of options for descriptive as well as visual exploration. 
+  There are many options for descriptive and visual exploration. 
 
 ```python
 iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species',max_nb_points=30)
@@ -203,7 +203,7 @@ iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species'
 
 - **Data Preparation**
 
-  Whether it is [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything, and more, in one package.
+  Whether you are [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything and more in one package.
 
 ```python
 data.outliers_plot(columns="Heights")
@@ -215,7 +215,7 @@ data.outliers_plot(columns="Heights")
 
 - **Machine Learning**
 
-  ML is the strongest suite of VerticaPy as it uses the speed of in-database training and prediction using SQL in the background to interact with the database. ML for verticapy covers a vast majority of tools including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php) etc. 
+  ML is the strongest suite of VerticaPy as it capitalizes on the speed of in-database training and prediction by using SQL in the background to interact with the database. ML for VerticaPy covers a vast array of tools, including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php). 
 
 ```python
 stepwise_result = stepwise(
@@ -364,11 +364,11 @@ std            0.0201579224026
 ```
 Enjoy!
 
-## Help an Support
+## Help and Support
 
 ### Contributing
 
-For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
+For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>.
 
 ### Communication
 
