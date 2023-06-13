@@ -23,7 +23,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ImportanceBarChart(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -41,7 +40,11 @@ class ImportanceBarChart(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a coefficient importance bar chart using the Matplotlib API.
         """

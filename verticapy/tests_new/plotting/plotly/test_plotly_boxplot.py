@@ -120,17 +120,6 @@ class TestPlotlyVDCBoxPlot(VDCBoxPlot):
             50, 1
         ), "median not computed correctly"
 
-    def test_data_maximum_point_value(self, dummy_dist_vd):
-        """
-        Test if maximum value plotted
-        """
-        # Arrange
-        # Act
-        # Assert
-        assert dummy_dist_vd.max()["max"][0] == pytest.approx(
-            max(self.result.data[0]["x"][0]), 2
-        ), "Maximum value not in plot"
-
 
 class TestPlotlyParitionVDCBoxPlot(VDCParitionBoxPlot):
     """

@@ -19,8 +19,8 @@ from verticapy.connection.global_connection import get_global_connection
 
 def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> None:
     """
-    Sets a Connection Identifier Database. It connects to 
-    an external source using DBLINK. For more information, 
+    Sets a Connection Identifier Database. It connects to
+    an external source using DBLINK. For more information,
     see: https://github.com/vertica/dblink
 
     Parameters
@@ -28,15 +28,15 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
     cid: str
         Connection Identifier Database.
     rowset: int, optional
-        Number of rows retrieved from the remote database 
+        Number of rows retrieved from the remote database
         during each SQLFetch() cycle.
     symbol: str, optional
         A special character to identify the connection.
         One of the following:
-        "$", "€", "£", "%", "@", "&", "§", "?", "!" 
-        For example, if the symbol is '$', you can call 
+        "$", "€", "£", "%", "@", "&", "§", "?", "!"
+        For example, if the symbol is '$', you can call
         external tables with the input cid by writing
-        $$$QUERY$$$, where QUERY represents a custom 
+        $$$QUERY$$$, where QUERY represents a custom
         query.
     """
     gb_conn = get_global_connection()

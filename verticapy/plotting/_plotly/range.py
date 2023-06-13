@@ -87,7 +87,11 @@ class RangeCurve(PlotlyBase):
         )
         if plot_median:
             fig.add_trace(
-                go.Scatter(x=self.data["x"], y=self.data["Y"][:, 1], name="Median",)
+                go.Scatter(
+                    x=self.data["x"],
+                    y=self.data["Y"][:, 1],
+                    name="Median",
+                )
             )
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig

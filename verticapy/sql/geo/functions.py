@@ -38,7 +38,7 @@ def coordinate_converter(
     reverse: bool = False,
 ) -> vDataFrame:
     """
-    Converts between geographic coordinates (latitude 
+    Converts between geographic coordinates (latitude
     and longitude)  and  Euclidean coordinates (x,y).
 
     Parameters
@@ -54,7 +54,7 @@ def coordinate_converter(
     earth_radius: PythonNumber, optional
         Earth radius in km.
     reverse: bool, optional
-        If set to True, the Euclidean coordinates are 
+        If set to True, the Euclidean coordinates are
         converted to latitude and longitude.
 
     Returns
@@ -67,14 +67,12 @@ def coordinate_converter(
     result = vdf.copy()
 
     if reverse:
-
         result[x] = result[x] / earth_radius * 180 / mt.PI + x0
         result[y] = (
             (mt.atan(mt.exp(result[y] / earth_radius)) - mt.PI / 4) / mt.PI * 360
         )
 
     else:
-
         result[x] = earth_radius * ((result[x] - x0) * mt.PI / 180)
         result[y] = earth_radius * mt.ln(mt.tan(result[y] * mt.PI / 360 + mt.PI / 4))
 
@@ -91,7 +89,7 @@ def intersect(
     y: Optional[str] = None,
 ) -> vDataFrame:
     """
-    Spatially intersects a point or points with a set 
+    Spatially intersects a point or points with a set
     of polygons.
 
     Parameters
@@ -101,12 +99,12 @@ def intersect(
     index: str
         Name of the index.
     gid: str
-        An  integer  column  or integer that  uniquely 
-        identifies the spatial object(s) of g or x and 
+        An  integer  column  or integer that  uniquely
+        identifies the spatial object(s) of g or x and
         y.
     g: str, optional
-        A  geometry  or  geography (WGS84) column that 
-        contains points. The g column can contain only 
+        A  geometry  or  geography (WGS84) column that
+        contains points. The g column can contain only
         point geometries or geographies.
     x: str, optional
         x-coordinate or longitude.
@@ -127,7 +125,6 @@ def intersect(
         params = f"{gid}, {x}, {y}"
 
     else:
-
         raise ValueError("Either 'x' and 'y' or 'g' must not be empty.")
 
     query = f"""
@@ -144,11 +141,11 @@ def intersect(
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
-    Splits a polygon into  (nbins ** 2) smaller 
-    polygons of approximately equal total area. 
-    This  process  is inexact,  and  the  split 
-    polygons  have approximated edges;  greater 
-    values for nbins produces more accurate and 
+    Splits a polygon into  (nbins ** 2) smaller
+    polygons of approximately equal total area.
+    This  process  is inexact,  and  the  split
+    polygons  have approximated edges;  greater
+    values for nbins produces more accurate and
     precise edge approximations.
 
     Parameters
@@ -156,16 +153,16 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     p: str
         String representation of the polygon.
     nbins: int, optional
-        Number of bins used to cut the longitude 
-        and the latitude.  Split  polygons  have 
-        approximated  edges, and greater  values 
-        for  nbins  leads to more  accurate  and 
+        Number of bins used to cut the longitude
+        and the latitude.  Split  polygons  have
+        approximated  edges, and greater  values
+        for  nbins  leads to more  accurate  and
         precise edge approximations.
 
     Returns
     -------
     vDataFrame
-        output  vDataFrame that includes the new 
+        output  vDataFrame that includes the new
         polygons.
     """
     sql = f"""SELECT /*+LABEL(split_polygon_n)*/

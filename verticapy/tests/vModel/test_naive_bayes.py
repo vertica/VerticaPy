@@ -34,26 +34,34 @@ set_option("print_info", False)
 def iris_vd():
     iris = load_iris()
     yield iris
-    drop(name="public.iris",)
+    drop(
+        name="public.iris",
+    )
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(
+        name="public.winequality",
+    )
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
 def model(iris_vd):
-    model_class = NaiveBayes("nb_model_test",)
+    model_class = NaiveBayes(
+        "nb_model_test",
+    )
     model_class.drop()
     model_class.fit(
         "public.iris",
@@ -119,10 +127,14 @@ class TestNB:
         assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
     def test_contour(self, titanic_vd):
-        model_test = NaiveBayes("model_contour",)
+        model_test = NaiveBayes(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 36
@@ -136,7 +148,9 @@ class TestNB:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS nb_model_test_drop")
-        model_test = NaiveBayes("nb_model_test_drop",)
+        model_test = NaiveBayes(
+            "nb_model_test_drop",
+        )
         model_test.fit(
             "public.iris",
             ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
@@ -168,7 +182,9 @@ class TestNB:
     def test_to_python(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["has_children"] = "parch > 0"
-        model_class = NaiveBayes("nb_model_test_to_python",)
+        model_class = NaiveBayes(
+            "nb_model_test_to_python",
+        )
         model_class.drop()
         model_class.fit(
             titanic,
@@ -209,7 +225,9 @@ class TestNB:
     def test_to_memmodel(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["has_children"] = "parch > 0"
-        model_class = NaiveBayes("nb_model_test_to_memmodel",)
+        model_class = NaiveBayes(
+            "nb_model_test_to_memmodel",
+        )
         model_class.drop()
         model_class.fit(
             titanic,
@@ -218,18 +236,30 @@ class TestNB:
         )
         mmodel = model_class.to_memmodel()
         res = mmodel.predict(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
+            [
+                [11.0, 1993.0, 1, 3, "male", False],
+                [1.0, 1999.0, 1, 1, "female", True],
+            ]
         )
         res_py = model_class.to_python()(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
+            [
+                [11.0, 1993.0, 1, 3, "male", False],
+                [1.0, 1999.0, 1, 1, "female", True],
+            ]
         )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         res = mmodel.predict_proba(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
+            [
+                [11.0, 1993.0, 1, 3, "male", False],
+                [1.0, 1999.0, 1, 1, "female", True],
+            ]
         )
         res_py = model_class.to_python(return_proba=True)(
-            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True],]
+            [
+                [11.0, 1993.0, 1, 3, "male", False],
+                [1.0, 1999.0, 1, 1, "female", True],
+            ]
         )
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
@@ -466,7 +496,9 @@ class TestNB:
 
     def test_model_from_vDF(self, iris_vd):
         current_cursor().execute("DROP MODEL IF EXISTS nb_from_vDF")
-        model_test = NaiveBayes("nb_from_vDF",)
+        model_test = NaiveBayes(
+            "nb_from_vDF",
+        )
         model_test.fit(
             iris_vd,
             ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],

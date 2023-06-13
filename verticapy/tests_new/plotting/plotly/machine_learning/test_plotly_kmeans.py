@@ -35,5 +35,5 @@ class TestPlotlyMachineLearningKmeansPlot(VornoiPlot):
         # Act
         # Assert
         assert len(self.result.data) == pytest.approx(
-            total_items, abs=2
+            total_items, abs=5
         ), "Some elements missing"

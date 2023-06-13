@@ -39,7 +39,8 @@ ArrayLike = Annotated[Union[list, np.ndarray], "Array Like Structure"]
 NoneType = type(None)
 PythonNumber = Annotated[Union[int, float, decimal.Decimal], "Python Numbers"]
 PythonScalar = Annotated[
-    Union[bool, float, str, datetime.timedelta, datetime.datetime], "Python Scalar",
+    Union[bool, float, str, datetime.timedelta, datetime.datetime],
+    "Python Scalar",
 ]
 TimeInterval = Annotated[Union[str, datetime.timedelta], "Time Interval"]
 Datetime = Annotated[Union[str, datetime.datetime], ""]

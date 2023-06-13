@@ -139,7 +139,12 @@ class Test_InMemoryModel:
         assert model.object_type == "SVD"
 
     def test_MinMaxScaler(self):
-        model = mm.MinMaxScaler(**{"min_": [0.4, 0.3], "max_": [0.5, 0.2],})
+        model = mm.MinMaxScaler(
+            **{
+                "min_": [0.4, 0.3],
+                "max_": [0.5, 0.2],
+            }
+        )
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(0.0)
         assert transformation[0][1] == pytest.approx(-2.0)
@@ -154,7 +159,12 @@ class Test_InMemoryModel:
         assert model.object_type == "MinMaxScaler"
 
     def test_StandardScaler(self):
-        model = mm.StandardScaler(**{"mean": [0.4, 0.3], "std": [0.5, 0.2],})
+        model = mm.StandardScaler(
+            **{
+                "mean": [0.4, 0.3],
+                "std": [0.5, 0.2],
+            }
+        )
         transformation = model.transform([[0.4, 0.5]])
         assert transformation[0][0] == pytest.approx(0.0)
         assert transformation[0][1] == pytest.approx(1.0)
@@ -162,7 +172,12 @@ class Test_InMemoryModel:
         assert transformation_sql[0] == "(0.4 - 0.4) / 0.5"
         assert transformation_sql[1] == "(0.5 - 0.3) / 0.2"
         attributes = model.get_attributes()
-        model = mm.StandardScaler(**{"mean": [0.5, 0.6], "std": [0.4, 0.3],})
+        model = mm.StandardScaler(
+            **{
+                "mean": [0.5, 0.6],
+                "std": [0.4, 0.3],
+            }
+        )
         attributes = model.get_attributes()
         assert model.sub_[0] == 0.5
         assert model.sub_[1] == 0.6
@@ -365,7 +380,13 @@ class Test_InMemoryModel:
     def test_BisectingKMeans(self):
         model = mm.BisectingKMeans(
             **{
-                "clusters": [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200],],
+                "clusters": [
+                    [0.5, 0.6],
+                    [1, 2],
+                    [100, 200],
+                    [10, 700],
+                    [-100, -200],
+                ],
                 "p": 2,
                 "children_left": [1, 3, None, None, None],
                 "children_right": [2, 4, None, None, None],
@@ -858,9 +879,18 @@ class Test_InMemoryModel:
                     },
                     {
                         "type": "categorical",
-                        "C": {"female": 0.407843137254902, "male": 0.592156862745098,},
-                        "Q": {"female": 0.416666666666667, "male": 0.583333333333333,},
-                        "S": {"female": 0.406666666666667, "male": 0.593333333333333,},
+                        "C": {
+                            "female": 0.407843137254902,
+                            "male": 0.592156862745098,
+                        },
+                        "Q": {
+                            "female": 0.416666666666667,
+                            "male": 0.583333333333333,
+                        },
+                        "S": {
+                            "female": 0.406666666666667,
+                            "male": 0.593333333333333,
+                        },
                     },
                 ],
                 "classes": ["C", "Q", "S"],

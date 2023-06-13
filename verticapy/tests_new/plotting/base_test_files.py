@@ -37,9 +37,6 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 
-
-
-
 def get_xaxis_label(obj):
     """
     Get x-axis label for given plotting object
@@ -303,7 +300,6 @@ class VDFBarPlot(BasicPlotTests):
             {"columns": self.COL_NAME_VDF_1},
         )
 
-
     def col_name_param():
         """
         Get column value to pass as pytest parameter
@@ -337,6 +333,7 @@ class VDCBarhPlot(BasicPlotTests):
     """
     Testing different attributes of HHorizontal Bar plot on a vDataColumn
     """
+
     # Testing variables
     COL_NAME = "check 2"
     COL_NAME_2 = "check 1"
@@ -447,7 +444,9 @@ class VDCParitionBoxPlot(VDCBoxPlot):
     """
     Testing different attributes of Box plot on a vDataColumn using "by" attribute
     """
+
     COL_NAME_2 = "binary"
+
     @property
     def cols(self):
         """
@@ -500,7 +499,6 @@ class VDCCandlestick(BasicPlotTests):
 
     COL_NAME_1 = "values"
     TIME_COL = "date"
-
 
     @pytest.fixture(autouse=True)
     def data(self, dummy_line_data_vd):
@@ -584,7 +582,7 @@ class VDFContourPlot(BasicPlotTests):
         Create the plot
         """
 
-        def func(param_a, param_b):
+        def func_tmp(param_a, param_b):
             """
             Arbitrary custom function for testing
             """
@@ -592,7 +590,7 @@ class VDFContourPlot(BasicPlotTests):
 
         return (
             self.data.contour,
-            {"columns": [self.COL_NAME_1, self.COL_NAME_2], "func": func},
+            {"columns": [self.COL_NAME_1, self.COL_NAME_2], "func": func_tmp},
         )
 
     @pytest.mark.parametrize("nbins", [10, 20])
@@ -700,7 +698,6 @@ class VDFDensityPlot(BasicPlotTests):
 
     COL_NAME = "0"
 
-
     @pytest.fixture(autouse=True)
     def data(self, dummy_dist_vd):
         """
@@ -740,7 +737,6 @@ class VDFDensityPlot(BasicPlotTests):
         )
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
-
 
 
 class VDFPivotHeatMap(BasicPlotTests):

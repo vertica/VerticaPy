@@ -49,46 +49,46 @@ class vDFText(vDFRolling):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Computes a new vDataColumn based on regular expressions. 
+        Computes a new vDataColumn based on regular expressions.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn  used  to compute the  regular 
+            Input vDataColumn  used  to compute the  regular
             expression.
         pattern: str
             The regular expression.
         method: str, optional
             Method used to compute the regular  expressions.
-                count     : Returns the number of times a 
-                            regular expression matches each 
-                            element of the input vDataColumn. 
-                ilike     : Returns  True if  the  vDataColumn 
-                            element  contains a match for  the 
+                count     : Returns the number of times a
+                            regular expression matches each
+                            element of the input vDataColumn.
+                ilike     : Returns  True if  the  vDataColumn
+                            element  contains a match for  the
                             regular expression.
-                instr     : Returns  the  starting  or  ending 
-                            position in  a vDataColumn element 
-                            where a regular expression matches. 
-                like      : Returns  True  if the  vDataColumn 
-                            element    matches   the   regular 
+                instr     : Returns  the  starting  or  ending
+                            position in  a vDataColumn element
+                            where a regular expression matches.
+                like      : Returns  True  if the  vDataColumn
+                            element    matches   the   regular
                             expression.
-                not_ilike : Returns  True  if the  vDataColumn 
+                not_ilike : Returns  True  if the  vDataColumn
                             element  does  not match the  case
                             -insensitive  regular   expression.
-                not_like  : Returns  True if  the  vDataColumn 
-                            element  does not contain a  match 
+                not_like  : Returns  True if  the  vDataColumn
+                            element  does not contain a  match
                             for the regular expression.
-                replace   : Replaces   all  occurrences  of  a 
-                            substring  that  match  a  regular 
+                replace   : Replaces   all  occurrences  of  a
+                            substring  that  match  a  regular
                             expression  with another substring.
-                substr    : Returns the substring that matches 
-                            a  regular   expression  within  a 
+                substr    : Returns the substring that matches
+                            a  regular   expression  within  a
                             vDataColumn.
         position: int, optional
-            The number of characters from the start of the string 
+            The number of characters from the start of the string
             where the function should start searching for matches.
         occurrence: int, optional
-            Controls  which occurrence of a pattern match in  the 
+            Controls  which occurrence of a pattern match in  the
             string to return.
         replacement: str, optional
             The string to replace matched substrings.
@@ -123,7 +123,7 @@ class vDCText(vDCCorr):
     @save_verticapy_logs
     def str_contains(self, pat: str) -> "vDataFrame":
         """
-        Verifies  if the  regular expression  is in each of  the 
+        Verifies  if the  regular expression  is in each of  the
         vDataColumn records. The vDataColumn will be transformed.
 
         Parameters
@@ -142,8 +142,8 @@ class vDCText(vDCCorr):
     @save_verticapy_logs
     def str_count(self, pat: str) -> "vDataFrame":
         """
-        Computes the number of matches for the regular expression in 
-        each  record  of  the vDataColumn.  The vDataColumn will  be 
+        Computes the number of matches for the regular expression in
+        each  record  of  the vDataColumn.  The vDataColumn will  be
         transformed.
 
         Parameters
@@ -181,8 +181,8 @@ class vDCText(vDCCorr):
     @save_verticapy_logs
     def str_replace(self, to_replace: str, value: Optional[str] = None) -> "vDataFrame":
         """
-        Replaces  the  regular expression matches in each  of  the 
-        vDataColumn record by an input value. The vDataColumn will 
+        Replaces  the  regular expression matches in each  of  the
+        vDataColumn record by an input value. The vDataColumn will
         be transformed.
 
         Parameters

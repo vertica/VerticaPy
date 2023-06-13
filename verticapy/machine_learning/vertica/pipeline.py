@@ -36,19 +36,19 @@ General Class.
 
 class Pipeline:
     """
-    Creates a Pipeline object, which sequentially 
+    Creates a Pipeline object, which sequentially
     applies a list of transforms and a final estimator.
-    The intermediate steps must  implement a transform 
+    The intermediate steps must  implement a transform
     method.
 
     Parameters
     ----------
     steps: list
-        List of (name, transform)  tuples (implementing 
-        fit/transform) that  are chained, in  the order 
-        in which they are chained, where the last object 
+        List of (name, transform)  tuples (implementing
+        fit/transform) that  are chained, in  the order
+        in which they are chained, where the last object
         is an estimator.
-	"""
+    """
 
     # Properties.
 
@@ -147,12 +147,12 @@ class Pipeline:
         Parameters
         ----------
         parameters: dict, optional
-            New parameters.  It must be a  dictionary with 
+            New parameters.  It must be a  dictionary with
             the  Pipeline names as keys and the parameter
             dictionary as values.
         **kwargs
             New parameters can also be passed as arguments.
-            Example: set_params(pipeline1 = dict1, 
+            Example: set_params(pipeline1 = dict1,
                                 pipeline2 = dict2)
         """
         parameters = format_type(parameters, dtype=dict)
@@ -217,9 +217,9 @@ class Pipeline:
 
     def report(self) -> TableSample:
         """
-        Computes a regression/classification report using 
-        multiple metrics to  evaluate the model depending 
-        on its type. 
+        Computes a regression/classification report using
+        multiple metrics to  evaluate the model depending
+        on its type.
 
         Returns
         -------
@@ -239,7 +239,7 @@ class Pipeline:
         ----------
         metric: str, optional
             The metric used to compute the score.
-            Depends  on  the  final estimator type 
+            Depends  on  the  final estimator type
             (classification or regression).
 
         Returns
@@ -268,10 +268,10 @@ class Pipeline:
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input  vDataFrame.  You  can  also  specify  a 
-            customized  relation,  but  you  must  enclose 
-            it with an alias.  For example: "(SELECT 1) x" 
-            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            Input  vDataFrame.  You  can  also  specify  a
+            customized  relation,  but  you  must  enclose
+            it with an alias.  For example: "(SELECT 1) x"
+            is valid whereas "(SELECT 1)" and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
@@ -317,10 +317,10 @@ class Pipeline:
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input  vDataFrame.  You  can  also  specify  a 
-            customized  relation,  but  you  must  enclose 
-            it with an alias. For  example: "(SELECT 1) x" 
-            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            Input  vDataFrame.  You  can  also  specify  a
+            customized  relation,  but  you  must  enclose
+            it with an alias. For  example: "(SELECT 1) x"
+            is valid whereas "(SELECT 1)" and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
@@ -351,16 +351,16 @@ class Pipeline:
         self, vdf: SQLRelation = None, X: Optional[SQLColumns] = None
     ) -> vDataFrame:
         """
-        Applies  the  inverse model transformation  on  a 
+        Applies  the  inverse model transformation  on  a
         vDataFrame.
 
         Parameters
         ----------
         vdf: SQLRelation, optional
-            Input  vDataFrame.  You  can  also  specify  a 
-            customized  relation,  but  you  must  enclose 
-            it with an alias. For  example: "(SELECT 1) x" 
-            is valid whereas "(SELECT 1)" and "SELECT 1" 
+            Input  vDataFrame.  You  can  also  specify  a
+            customized  relation,  but  you  must  enclose
+            it with an alias. For  example: "(SELECT 1) x"
+            is valid whereas "(SELECT 1)" and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.

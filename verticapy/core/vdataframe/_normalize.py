@@ -46,17 +46,17 @@ class vDFNorm(vDFText):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the  vDataColumns names.  If empty, all numerical 
+            List  of the  vDataColumns names.  If empty, all numerical
             vDataColumns are used.
         method: str, optional
             Method used to normalize.
-                zscore        : Normalization  using the Z-Score  (avg 
-                                and std). 
+                zscore        : Normalization  using the Z-Score  (avg
+                                and std).
                                 (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score 
+                robust_zscore : Normalization using the Robust Z-Score
                                 (median and mad).
                                 (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min 
+                minmax        : Normalization  using  the  MinMax (min
                                 and max).
                                 (x - min) / (max - min)
 
@@ -97,20 +97,20 @@ class vDCNorm(vDCText):
         ----------
         method: str, optional
             Method used to normalize.
-                zscore        : Normalization  using the Z-Score  (avg 
-                                and std). 
+                zscore        : Normalization  using the Z-Score  (avg
+                                and std).
                                 (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score 
+                robust_zscore : Normalization using the Robust Z-Score
                                 (median and mad).
                                 (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min 
+                minmax        : Normalization  using  the  MinMax (min
                                 and max).
                                 (x - min) / (max - min)
         by: SQLColumns, optional
             vDataColumns used in the partition.
         return_trans: bool, optimal
-            If  set to True,  the method  returns the  transformation 
-            used instead of the parent vDataFrame. This parameter is used 
+            If  set to True,  the method  returns the  transformation
+            used instead of the parent vDataFrame. This parameter is used
             for testing purposes.
 
         Returns
@@ -124,14 +124,11 @@ class vDCNorm(vDCText):
         nullifzero, n = 1, len(by)
 
         if self.isbool():
-
             warning_message = "Normalize doesn't work on booleans"
             warnings.warn(warning_message, Warning)
 
         elif self.isnum():
-
             if method == "zscore":
-
                 if n == 0:
                     nullifzero = 0
                     avg, stddev = self.aggregate(["avg", "std"]).values[self._alias]
@@ -223,11 +220,14 @@ class vDCNorm(vDCText):
                     return f"({self} - {avg}) / {nullifzero}({stddev})"
                 else:
                     final_transformation = [
-                        (f"({{}} - {avg}) / {nullifzero}({stddev})", "float", "float",)
+                        (
+                            f"({{}} - {avg}) / {nullifzero}({stddev})",
+                            "float",
+                            "float",
+                        )
                     ]
 
             elif method == "robust_zscore":
-
                 if n > 0:
                     warning_message = (
                         "The method 'robust_zscore' is available only if the "
@@ -243,7 +243,11 @@ class vDCNorm(vDCText):
                         return f"({self} - {med}) / ({mad})"
                     else:
                         final_transformation = [
-                            (f"({{}} - {med}) / ({mad})", "float", "float",)
+                            (
+                                f"({{}} - {med}) / ({mad})",
+                                "float",
+                                "float",
+                            )
                         ]
                 else:
                     warning_message = (
@@ -254,7 +258,6 @@ class vDCNorm(vDCText):
                     return self
 
             elif method == "minmax":
-
                 if n == 0:
                     nullifzero = 0
                     cmin, cmax = self.aggregate(["min", "max"]).values[self._alias]
@@ -370,9 +373,7 @@ class vDCNorm(vDCText):
                     self._catalog["percent"] = 100 * sauv["count"] / parent_cnt
 
             for elem in sauv:
-
                 if "top" in elem:
-
                     if "percent" in elem:
                         self._catalog[elem] = sauv[elem]
                     elif isinstance(elem, NoneType):

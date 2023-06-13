@@ -36,7 +36,7 @@ General Function.
 
 def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     """
-    Applies any Vertica function on the input 
+    Applies any Vertica function on the input
     expressions.
     Please check-out the Vertica Documentation
     to see the available functions:
@@ -45,7 +45,7 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     Parameters
     ----------
     func: SQLExpression
-        Vertica Function. For geospatial 
+        Vertica Function. For geospatial
         functions, you can write  the function
         name without the ST_ or STV_ prefix.
     args: SQLExpression, optional
@@ -234,7 +234,7 @@ def atan(expr: SQLExpression) -> StringSQL:
 
 def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
     """
-    Trigonometric Inverse Tangent of the arithmetic 
+    Trigonometric Inverse Tangent of the arithmetic
     dividend of the arguments.
 
     Parameters
@@ -384,7 +384,7 @@ def distance(
     lat0: float, lon0: float, lat1: float, lon1: float, radius: float = 6371.009
 ) -> StringSQL:
     """
-    Returns the distance (in kilometers) between two 
+    Returns the distance (in kilometers) between two
     points.
 
     Parameters
@@ -398,8 +398,8 @@ def distance(
     lon1: float
         Ending point longitude.
     radius: float
-        Specifies the radius of the curvature of the 
-        earth  at the midpoint between the  starting 
+        Specifies the radius of the curvature of the
+        earth  at the midpoint between the  starting
         and ending points.
 
     Returns
@@ -484,7 +484,7 @@ def gamma(expr: SQLExpression) -> StringSQL:
 
 def hash(*args) -> StringSQL:
     """
-    Calculates a hash value over the function 
+    Calculates a hash value over the function
     arguments.
 
     Parameters

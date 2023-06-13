@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class PCACirclePlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -58,7 +57,11 @@ class PCACirclePlot(HighchartsBase):
                 "min": -1,
                 "max": 1,
             },
-            "yAxis": {"title": {"text": y_label}, "min": -1, "max": 1,},
+            "yAxis": {
+                "title": {"text": y_label},
+                "min": -1,
+                "max": 1,
+            },
             "legend": {"enabled": True},
             "tooltip": {
                 "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
@@ -96,7 +99,6 @@ class PCACirclePlot(HighchartsBase):
 
 
 class PCAScreePlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -129,7 +131,11 @@ class PCAScreePlot(HighchartsBase):
         self.init_style_line = {
             "zIndex": 1,
             "color": "black",
-            "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "black",},
+            "marker": {
+                "fillColor": "white",
+                "lineWidth": 1,
+                "lineColor": "black",
+            },
         }
 
     # Draw.
@@ -157,7 +163,6 @@ class PCAScreePlot(HighchartsBase):
 
 
 class PCAVarPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -192,7 +197,11 @@ class PCAVarPlot(HighchartsBase):
                 "min": min_x,
                 "max": max_x,
             },
-            "yAxis": {"title": {"text": y_label}, "min": min_y, "max": max_y,},
+            "yAxis": {
+                "title": {"text": y_label},
+                "min": min_y,
+                "max": max_y,
+            },
             "legend": {"enabled": True},
             "plotOptions": {
                 "scatter": {

@@ -53,7 +53,6 @@ class Test_hchart:
         reason="Deprecated, we need to implement the functions for each graphic"
     )
     def test_hchart(self, titanic_vd, amazon_vd):
-
         # Test -k
         result = hchart("-k pearson", "SELECT * FROM titanic;")
         assert isinstance(result, Highchart)
@@ -74,7 +73,8 @@ class Test_hchart:
         result = hchart("-k auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;")
         assert isinstance(result, Highchart)
         result = hchart(
-            "-k auto", "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
+            "-k auto",
+            "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
         )
         assert isinstance(result, Highchart)
         result = hchart("-k auto", "SELECT date, number FROM amazon;")
@@ -102,11 +102,13 @@ class Test_hchart:
 
         # Test -c
         result = hchart(
-            "   -k line  -c   'SELECT date, number, state FROM amazon;'", "",
+            "   -k line  -c   'SELECT date, number, state FROM amazon;'",
+            "",
         )
         assert isinstance(result, Highstock)
         result = hchart(
-            '   -k line  --command   "SELECT date, number, state FROM amazon;"', "",
+            '   -k line  --command   "SELECT date, number, state FROM amazon;"',
+            "",
         )
         assert isinstance(result, Highstock)
 
@@ -128,7 +130,8 @@ class Test_hchart:
 
         # Export to HTML -o
         result = hchart(
-            "  -o   verticapy_test_hchart", "SELECT date, number, state FROM amazon;",
+            "  -o   verticapy_test_hchart",
+            "SELECT date, number, state FROM amazon;",
         )
         try:
             file = open("verticapy_test_hchart.html", "r", encoding="utf-8")

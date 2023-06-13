@@ -76,12 +76,12 @@ class vDFMath(vDFFilter):
     @save_verticapy_logs
     def abs(self, columns: Optional[SQLColumns] = None) -> "vDataFrame":
         """
-        Applies the absolute value function to all input vDataColumns. 
+        Applies the absolute value function to all input vDataColumns.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns names. If empty, all  numerical 
+            List  of the vDataColumns names. If empty, all  numerical
             vDataColumns are used.
 
         Returns
@@ -110,14 +110,14 @@ class vDFMath(vDFFilter):
         add_count: bool = True,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by using an advanced 
+        Adds a new vDataColumn to the vDataFrame by using an advanced
         analytical function on one or two specific vDataColumns.
 
-        \u26A0 Warning : Some analytical  functions can make the vDataFrame 
-                         structure  more resource intensive. It is best  to 
-                         check  the structure of  the vDataFrame with  the 
-                         'current_relation' method and save it with the 
-                         'to_db'  method,  uisng  the  parameters 
+        \u26A0 Warning : Some analytical  functions can make the vDataFrame
+                         structure  more resource intensive. It is best  to
+                         check  the structure of  the vDataFrame with  the
+                         'current_relation' method and save it with the
+                         'to_db'  method,  uisng  the  parameters
                          'inplace = True' and 'relation_type = table'.
 
         Parameters
@@ -134,7 +134,7 @@ class vDFMath(vDFFilter):
                 first_value  : first non null lead
                 iqr          : interquartile range
                 kurtosis     : kurtosis
-                jb           : Jarque-Bera index 
+                jb           : Jarque-Bera index
                 lead         : next element
                 lag          : previous element
                 last_value   : first non null lag
@@ -157,28 +157,28 @@ class vDFMath(vDFFilter):
                 std          : standard deviation
                 unique       : cardinality (count distinct)
                 var          : variance
-            Other analytical functions could work if they are part of your DB 
+            Other analytical functions could work if they are part of your DB
             version.
         columns: SQLColumns, optional
             Input vDataColumns. Must be a list of one or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: dict / list, optional
-            Either a list of the vDataColumns used to sort (in ascending order) 
-            the data, or a dictionary of vDataColumns and their sorting 
-            methods. For example, to sort by "column1" ASC and "column2" DESC, 
+            Either a list of the vDataColumns used to sort (in ascending order)
+            the data, or a dictionary of vDataColumns and their sorting
+            methods. For example, to sort by "column1" ASC and "column2" DESC,
             write: {"column1": "asc", "column2": "desc"}
         name: str, optional
-            Name of  the new vDataColumn. If empty, a default name based on the 
+            Name of  the new vDataColumn. If empty, a default name based on the
             other parameters is generated.
         offset: int, optional
             Lead/Lag  offset  if parameter 'func' is the function  'lead'/'lag'.
         x_smoothing: float, optional
-            The  smoothing parameter of the 'ema' if the  function is 'ema'. It 
+            The  smoothing parameter of the 'ema' if the  function is 'ema'. It
             must be a float in the range [0;1].
         add_count: bool, optional
             If the 'func' is set to 'mode' and this parameter is True, a column
-            with the mode number of occurences is added to the vDataFrame. 
+            with the mode number of occurences is added to the vDataFrame.
 
         Returns
         -------
@@ -279,11 +279,13 @@ class vDFMath(vDFFilter):
                     )
                 elif func == "aad":
                     self.eval(
-                        name, f"AVG(ABS({columns[0]} - {mean_name})) OVER ({by})",
+                        name,
+                        f"AVG(ABS({columns[0]} - {mean_name})) OVER ({by})",
                     )
                 elif func == "mad":
                     self.eval(
-                        name, f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
+                        name,
+                        f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
                     )
             elif func == "top":
                 if not by:
@@ -395,7 +397,8 @@ class vDFMath(vDFFilter):
                 info_param = ""
             if func == "pct_change":
                 self.eval(
-                    name, f"{columns[0]} / (LAG({columns[0]}) OVER ({by}{order_by}))",
+                    name,
+                    f"{columns[0]} / (LAG({columns[0]}) OVER ({by}{order_by}))",
                 )
             else:
                 columns0 = columns[0] if (columns) else ""
@@ -463,9 +466,9 @@ class vDFMath(vDFFilter):
          ----------
          func: dict
             Dictionary of functions.
-            The dictionary must be in the following format: 
-            {column1: func1, ..., columnk: funck}. Each function variable 
-            must be  composed of two  flower brackets {}. For example, to 
+            The dictionary must be in the following format:
+            {column1: func1, ..., columnk: funck}. Each function variable
+            must be  composed of two  flower brackets {}. For example, to
             apply the function x -> x^2 + 2, use "POWER({}, 2) + 2".
 
          Returns
@@ -481,18 +484,18 @@ class vDFMath(vDFFilter):
     @save_verticapy_logs
     def applymap(self, func: str, numeric_only: bool = True) -> "vDataFrame":
         """
-        Applies a function to all vDataColumns. 
+        Applies a function to all vDataColumns.
 
         Parameters
         ----------
         func: str
             Function to apply.
-            The function variable must be composed of two flower 
-            brackets {}. 
-            For example to  apply the function x -> x^2 + 2, use 
+            The function variable must be composed of two flower
+            brackets {}.
+            For example to  apply the function x -> x^2 + 2, use
             "POWER({}, 2) + 2".
         numeric_only: bool, optional
-            If set to True,  only the  numerical columns is used. 
+            If set to True,  only the  numerical columns is used.
 
         Returns
         -------
@@ -518,7 +521,7 @@ class vDCMath(vDCFilter):
     @save_verticapy_logs
     def abs(self) -> "vDataFrame":
         """
-        Applies the absolute value function to the input vDataColumn. 
+        Applies the absolute value function to the input vDataColumn.
 
         Returns
         -------
@@ -535,8 +538,8 @@ class vDCMath(vDCFilter):
         Parameters
         ----------
         x: float
-            If the vDataColumn type is date (date, datetime ...), 
-            the parameter  'x' represents the  number  of seconds, 
+            If the vDataColumn type is date (date, datetime ...),
+            the parameter  'x' represents the  number  of seconds,
             otherwise it represents a number.
 
         Returns
@@ -560,8 +563,8 @@ class vDCMath(vDCFilter):
         ----------
         func: str,
             Function in pure SQL used to transform the vDataColumn.
-            The  function variable must be composed of two  flower 
-            brackets {}. For example, to apply the function 
+            The  function variable must be composed of two  flower
+            brackets {}. For example, to apply the function
             x -> x^2 + 2, use "POWER({}, 2) + 2".
         copy_name: str, optional
             If non-empty, a copy is created using the input name.
@@ -591,7 +594,10 @@ class vDCMath(vDCFilter):
                 try:
                     column_str = column.replace('"', "")
                     if (quote_ident(column) in func) or (
-                        re.search(re.compile(f"\\b{column_str}\\b"), func,)
+                        re.search(
+                            re.compile(f"\\b{column_str}\\b"),
+                            func,
+                        )
                     ):
                         max_floor = max(len(self._parent[column]._transf), max_floor)
                 except:
@@ -683,8 +689,8 @@ class vDCMath(vDCFilter):
                 cot          : trigonometric cotangent
                 dim          : dimension (only for arrays)
                 exp          : exponential function
-                find         : returns the ordinal position of a 
-                               specified element in an array (only 
+                find         : returns the ordinal position of a
+                               specified element in an array (only
                                for arrays)
                 floor        : value down to the next whole number
                 len / length : length
@@ -694,9 +700,9 @@ class vDCMath(vDCFilter):
                 max          : maximum
                 min          : minimum
                 mod          : remainder of a division operation
-                pow          : number raised to the power of another 
+                pow          : number raised to the power of another
                                number
-                round        : rounds a value to a specified number of 
+                round        : rounds a value to a specified number of
                                decimal places
                 sign         : arithmetic sign
                 sin          : trigonometric sine
@@ -706,7 +712,7 @@ class vDCMath(vDCFilter):
                 tan          : trigonometric tangent
                 tanh         : hyperbolic tangent
         x: PythonScalar, optional
-            If the function has two arguments (example, power or mod), 
+            If the function has two arguments (example, power or mod),
             'x' represents the second argument.
 
         Returns
@@ -750,18 +756,18 @@ class vDCMath(vDCFilter):
     @save_verticapy_logs
     def date_part(self, field: str) -> "vDataFrame":
         """
-        Extracts a specific TS field  from the vDataColumn (only if 
-        the vDataColumn type is date like). The vDataColumn is 
+        Extracts a specific TS field  from the vDataColumn (only if
+        the vDataColumn type is date like). The vDataColumn is
         transformed.
 
         Parameters
         ----------
         field: str
-            The field to extract. It must be one of the following: 
-            CENTURY / DAY / DECADE / DOQ  / DOW / DOY / EPOCH / HOUR 
-            / ISODOW / ISOWEEK / ISOYEAR / MICROSECONDS / MILLENNIUM 
-            / MILLISECONDS  /  MINUTE  /  MONTH  / QUARTER /  SECOND 
-            / TIME ZONE  /  TIMEZONE_HOUR /  TIMEZONE_MINUTE /  WEEK 
+            The field to extract. It must be one of the following:
+            CENTURY / DAY / DECADE / DOQ  / DOW / DOY / EPOCH / HOUR
+            / ISODOW / ISOWEEK / ISOYEAR / MICROSECONDS / MILLENNIUM
+            / MILLISECONDS  /  MINUTE  /  MONTH  / QUARTER /  SECOND
+            / TIME ZONE  /  TIMEZONE_HOUR /  TIMEZONE_MINUTE /  WEEK
             / YEAR
 
         Returns
@@ -791,7 +797,7 @@ class vDCMath(vDCFilter):
 
     def get_len(self) -> "vDataColumn":
         """
-        Returns a new vDataColumn that represents the length of 
+        Returns a new vDataColumn that represents the length of
         each element.
 
         Returns
@@ -820,7 +826,7 @@ class vDCMath(vDCFilter):
     @save_verticapy_logs
     def round(self, n: int) -> "vDataFrame":
         """
-        Rounds the vDataColumn by keeping only the input number 
+        Rounds the vDataColumn by keeping only the input number
         of digits after the decimal point.
 
         Parameters
@@ -857,7 +863,7 @@ class vDCMath(vDCFilter):
         self, length: int, unit: str = "second", start: bool = True
     ) -> "vDataFrame":
         """
-        Slices and transforms the vDataColumn using a time series 
+        Slices and transforms the vDataColumn using a time series
         rule.
 
         Parameters
@@ -867,7 +873,7 @@ class vDCMath(vDCFilter):
         unit: str, optional
             Slice size unit. For example, 'minute', 'hour'...
         start: bool, optional
-            If set to True, the record is sliced using the floor 
+            If set to True, the record is sliced using the floor
             of the slicing instead of the ceiling.
 
         Returns
@@ -889,8 +895,8 @@ class vDCMath(vDCFilter):
         Parameters
         ----------
         x: PythonNumber
-            If the vDataColumn type is date (date, datetime ...), 
-            the parameter 'x' represents  the number of seconds, 
+            If the vDataColumn type is date (date, datetime ...),
+            the parameter 'x' represents  the number of seconds,
             otherwise it represents a number.
 
         Returns

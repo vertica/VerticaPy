@@ -28,7 +28,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 @save_verticapy_logs
 def parameter_grid(param_grid: dict) -> list[dict]:
     """
-    Generates a list of the different combinations 
+    Generates a list of the different combinations
     of input parameters.
 
     Parameters
@@ -63,22 +63,22 @@ def gen_params_grid(
     estimator: object
         Vertica   estimator  with  a  fit   method.
     nbins: int, optional
-        Number of bins used to discretize numerical 
+        Number of bins used to discretize numerical
         features.
     max_nfeatures: int, optional
-        Maximum number of  features used to compute 
+        Maximum number of  features used to compute
         Random Forest, PCA...
     lmax: int, optional
         Maximum length of the parameter grid.
     optimized_grid: int, optional
-        If set to 0, the randomness is based on the 
+        If set to 0, the randomness is based on the
         input parameters.
-        If set to 1,  the randomness is limited  to 
-        some  parameters  while others  are  picked 
+        If set to 1,  the randomness is limited  to
+        some  parameters  while others  are  picked
         based on a default grid.
-        If set  to 2, there is no  randomness and a 
+        If set  to 2, there is no  randomness and a
         default grid is returned.
-        
+
     Returns
     -------
     dict
@@ -170,7 +170,11 @@ def gen_params_grid(
                 "max_leaf_nodes": {"type": int, "range": [32, 1e9], "nbins": nbins},
                 "max_depth": {"type": int, "range": [2, 30], "nbins": nbins},
                 "min_samples_leaf": {"type": int, "range": [1, 15], "nbins": nbins},
-                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins,},
+                "min_info_gain": {
+                    "type": float,
+                    "range": [0.0, 0.1],
+                    "nbins": nbins,
+                },
                 "nbins": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
             if isinstance(
@@ -273,7 +277,11 @@ def gen_params_grid(
                     "values": [0.0, 0.25],
                     "nbins": nbins,
                 },
-                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins,},
+                "learning_rate": {
+                    "type": float,
+                    "range": [0.0, 1.0],
+                    "nbins": nbins,
+                },
                 "sample": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
                 "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
                 "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins},

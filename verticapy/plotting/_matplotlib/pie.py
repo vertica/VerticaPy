@@ -29,7 +29,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class PieChart(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -176,7 +175,10 @@ class PieChart(MatplotlibBase):
             colors = colors + self.get_colors()
             style_kwargs["color"] = colors
             ax.bar(
-                rad, y, width=width, **self._update_dict(kwargs, style_kwargs, -1),
+                rad,
+                y,
+                width=width,
+                **self._update_dict(kwargs, style_kwargs, -1),
             )
             for i in np.arange(N):
                 ax.text(
@@ -206,7 +208,6 @@ class PieChart(MatplotlibBase):
 
 
 class NestedPieChart(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -241,7 +242,11 @@ class NestedPieChart(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a nested pie chart using the Matplotlib API.
         """

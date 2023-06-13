@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class StepwisePlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -46,7 +45,10 @@ class StepwisePlot(HighchartsBase):
                 "endOnTick": True,
                 "showLastLabel": True,
             },
-            "yAxis": {"reversed": True, "title": {"text": self.layout["y_label"]},},
+            "yAxis": {
+                "reversed": True,
+                "title": {"text": self.layout["y_label"]},
+            },
             "legend": {"enabled": True},
             "plotOptions": {
                 "scatter": {

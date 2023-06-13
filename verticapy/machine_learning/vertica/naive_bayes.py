@@ -35,20 +35,20 @@ Algorithms used for classification.
 
 class NaiveBayes(MulticlassClassifier):
     """
-    Creates  a  NaiveBayes object using the Vertica 
+    Creates  a  NaiveBayes object using the Vertica
     Naive  Bayes  algorithm.  It is a "probabilistic
     classifier"  based  on  applying Bayes' theorem
-    with strong (naïve) independence assumptions 
+    with strong (naïve) independence assumptions
     between the features.
 
     Parameters
     ----------
     name: str
-    	Name  of  the  model.  The  model is stored 
+        Name  of  the  model.  The  model is stored
         in the database.
     alpha: float, optional
-    	A  float  that  specifies  use  of  Laplace 
-        smoothing if the event model is categorical, 
+        A  float  that  specifies  use  of  Laplace
+        smoothing if the event model is categorical,
         multinomial, or Bernoulli.
     nbtype: str, optional
         Naive Bayes type.
@@ -56,20 +56,20 @@ class NaiveBayes(MulticlassClassifier):
                 treat columns according to data type:
               * FLOAT values are assumed to follow some
                 Gaussian distribution.
-              * INTEGER values are assumed to belong to 
+              * INTEGER values are assumed to belong to
                 one multinomial distribution.
-              * CHAR/VARCHAR   values  are  assumed  to 
-                follow  some categorical distribution. 
-                The  string  values  stored  in  these 
-                columns  must be no greater than  128 
+              * CHAR/VARCHAR   values  are  assumed  to
+                follow  some categorical distribution.
+                The  string  values  stored  in  these
+                columns  must be no greater than  128
                 characters.
-              * BOOLEAN    values    are   treated   as 
+              * BOOLEAN    values    are   treated   as
                 categorical with two values.
         - bernoulli   : Casts the variables to boolean.
         - categorical : Casts the variables to categorical.
         - multinomial : Casts the variables to integer.
         - gaussian    : Casts the variables to float.
-	"""
+    """
 
     # Properties.
 
@@ -127,7 +127,7 @@ class NaiveBayes(MulticlassClassifier):
 
     def _get_nb_attributes(self) -> list[dict]:
         """
-        Returns a list of dictionary for each of the NB 
+        Returns a list of dictionary for each of the NB
         variables. It is used to translate NB to Python.
         """
         vdf = vDataFrame(self.input_relation)
@@ -195,14 +195,17 @@ class NaiveBayes(MulticlassClassifier):
         Converts  the model to an InMemory object  that
         can be used for different types of predictions.
         """
-        return mm.NaiveBayes(self.attributes_, self.prior_, self.classes_,)
+        return mm.NaiveBayes(
+            self.attributes_,
+            self.prior_,
+            self.classes_,
+        )
 
 
 class BernoulliNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'bernoulli'"""
 
     def __init__(self, name: str, alpha: float = 1.0) -> None:
-
         super().__init__(name, alpha, nbtype="bernoulli")
 
 
@@ -210,7 +213,6 @@ class CategoricalNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'categorical'"""
 
     def __init__(self, name: str, alpha: float = 1.0) -> None:
-
         super().__init__(name, alpha, nbtype="categorical")
 
 
@@ -218,7 +220,6 @@ class GaussianNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'gaussian'"""
 
     def __init__(self, name: str) -> None:
-
         super().__init__(name, nbtype="gaussian")
 
 
@@ -226,5 +227,4 @@ class MultinomialNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'multinomial'"""
 
     def __init__(self, name: str, alpha: float = 1.0) -> None:
-
         super().__init__(name, alpha, nbtype="multinomial")

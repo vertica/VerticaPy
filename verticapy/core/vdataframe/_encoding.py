@@ -43,9 +43,9 @@ class vDFEncode(vDFFill):
     @save_verticapy_logs
     def case_when(self, name: str, *args) -> "vDataFrame":
         """
-        Creates a new feature by evaluating on 
+        Creates a new feature by evaluating on
         provided conditions.
-        
+
         Parameters
         ----------
         name: str
@@ -54,7 +54,7 @@ class vDFEncode(vDFFill):
             Any number of Expressions.
             The expression is generated in the following format:
             even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
-            odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... 
+            odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ...
                            ELSE args[n] END
 
         Returns
@@ -74,28 +74,28 @@ class vDFEncode(vDFFill):
         use_numbers_as_suffix: bool = False,
     ) -> "vDataFrame":
         """
-        Encodes the vDataColumns  using the One Hot Encoding 
+        Encodes the vDataColumns  using the One Hot Encoding
         algorithm.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns used to train the  One 
-            Hot Encoding model. If empty, only the vDataColumns 
-            with  a cardinality  less than 'max_cardinality' 
+            List  of the vDataColumns used to train the  One
+            Hot Encoding model. If empty, only the vDataColumns
+            with  a cardinality  less than 'max_cardinality'
             are used.
         max_cardinality: int, optional
-            Cardinality  threshold  used to  determine whether the 
-            vDataColumn is taken into account during the encoding 
-            This parameter is used only if the parameter 'columns' 
+            Cardinality  threshold  used to  determine whether the
+            vDataColumn is taken into account during the encoding
+            This parameter is used only if the parameter 'columns'
             is empty.
         prefix_sep: str, optional
             Prefix delimitor of the dummies names.
         drop_first: bool, optional
-            Drops  the  first  dummy  to  avoid  the  creation  of 
+            Drops  the  first  dummy  to  avoid  the  creation  of
             correlated features.
         use_numbers_as_suffix: bool, optional
-            Uses  numbers  as suffix instead of  the  vDataColumns 
+            Uses  numbers  as suffix instead of  the  vDataColumns
             categories.
 
         Returns
@@ -136,20 +136,20 @@ class vDCEncode(vDCFill):
         right: bool = True,
     ) -> "vDataFrame":
         """
-        Discretizes the vDataColumn using the input list. 
+        Discretizes the vDataColumn using the input list.
 
         Parameters
         ----------
         breaks: list
             List of values used to cut the vDataColumn.
         labels: list, optional
-            Labels used  to name the new categories.  If empty, 
+            Labels used  to name the new categories.  If empty,
             names are generated.
         include_lowest: bool, optional
-            If  set to  True,  the lowest element of the  list 
+            If  set to  True,  the lowest element of the  list
             is included.
         right: bool, optional
-            How the intervals should be closed. If set to True, 
+            How the intervals should be closed. If set to True,
             the intervals are closed on the right.
 
         Returns
@@ -199,10 +199,10 @@ class vDCEncode(vDCFill):
         args: object
             Any number of expressions.
             The expression is generated in the following format:
-            even: CASE ... WHEN vDataColumn = args[2 * i] 
+            even: CASE ... WHEN vDataColumn = args[2 * i]
                            THEN args[2 * i + 1] ... END
-            odd : CASE ... WHEN vDataColumn = args[2 * i] 
-                           THEN args[2 * i + 1] ... 
+            odd : CASE ... WHEN vDataColumn = args[2 * i]
+                           THEN args[2 * i + 1] ...
                            ELSE args[n] END
 
         Returns
@@ -231,41 +231,41 @@ class vDCEncode(vDCFill):
         ----------
         method: str, optional
             The method used to discretize the vDataColumn.
-                auto       : Uses method 'same_width' for numerical 
-                             vDataColumns, casts the other types to 
+                auto       : Uses method 'same_width' for numerical
+                             vDataColumns, casts the other types to
                              varchar.
-                same_freq  : Computes bins  with the same number of 
+                same_freq  : Computes bins  with the same number of
                              elements.
                 same_width : Computes regular width bins.
-                smart      : Uses  the Random  Forest on a  response 
-                             column  to   find   the  most  relevant 
+                smart      : Uses  the Random  Forest on a  response
+                             column  to   find   the  most  relevant
                              interval to use for the discretization.
-                topk       : Keeps the topk most frequent categories 
-                             and  merge the  other  into one  unique 
+                topk       : Keeps the topk most frequent categories
+                             and  merge the  other  into one  unique
                              category.
         h: PythonNumber, optional
-            The  interval  size  used  to  convert  the vDataColumn. 
-            If this parameter is equal to 0, an optimised interval is 
+            The  interval  size  used  to  convert  the vDataColumn.
+            If this parameter is equal to 0, an optimised interval is
             computed.
         nbins: int, optional
             Number of bins  used for the discretization  (must be > 1)
         k: int, optional
             The integer k of the 'topk' method.
         new_category: str, optional
-            The  name of the  merging  category when using the  'topk' 
+            The  name of the  merging  category when using the  'topk'
             method.
         RFmodel_params: dict, optional
-            Dictionary  of the  Random Forest  model  parameters used  to 
-            compute the best splits when 'method' is set to 'smart'. 
-            A RF Regressor is  trained if  the response is numerical 
+            Dictionary  of the  Random Forest  model  parameters used  to
+            compute the best splits when 'method' is set to 'smart'.
+            A RF Regressor is  trained if  the response is numerical
             (except ints and bools), a RF Classifier otherwise.
-            Example: Write {"n_estimators": 20, "max_depth": 10} to train 
+            Example: Write {"n_estimators": 20, "max_depth": 10} to train
             a Random Forest with 20 trees and a maximum depth of 10.
         response: str, optional
             Response vDataColumn when method is set to 'smart'.
         return_enum_trans: bool, optional
-            Returns  the transformation instead of the vDataFrame parent, 
-            and does not apply the transformation. This parameter is 
+            Returns  the transformation instead of the vDataFrame parent,
+            and does not apply the transformation. This parameter is
             useful for testing the look of the final transformation.
 
         Returns
@@ -458,10 +458,10 @@ class vDCEncode(vDCFill):
         prefix_sep: str, optional
             Prefix delimitor of the dummies.
         drop_first: bool, optional
-            Drops the first dummy to avoid the creation of correlated 
+            Drops the first dummy to avoid the creation of correlated
             features.
         use_numbers_as_suffix: bool, optional
-            Uses  numbers  as  suffix  instead  of  the  vDataColumns 
+            Uses  numbers  as  suffix  instead  of  the  vDataColumns
             categories.
 
         Returns
@@ -537,7 +537,7 @@ class vDCEncode(vDCFill):
     @save_verticapy_logs
     def label_encode(self) -> "vDataFrame":
         """
-        Encodes the  vDataColumn using  a bijection from the different 
+        Encodes the  vDataColumn using  a bijection from the different
         categories to [0, n - 1] (n being the vDataColumn cardinality).
 
         Returns
@@ -572,7 +572,7 @@ class vDCEncode(vDCFill):
     @save_verticapy_logs
     def mean_encode(self, response: str) -> "vDataFrame":
         """
-        Encodes the vDataColumn using the average of the response 
+        Encodes the vDataColumn using the average of the response
         partitioned by the different vDataColumn categories.
 
         Parameters
@@ -591,7 +591,13 @@ class vDCEncode(vDCFill):
         )
         max_floor = len(self._parent[response]._transf) - len(self._transf)
         self._transf += [("{}", self.ctype(), self.category())] * max_floor
-        self._transf += [(f"AVG({response}) OVER (PARTITION BY {{}})", "int", "float",)]
+        self._transf += [
+            (
+                f"AVG({response}) OVER (PARTITION BY {{}})",
+                "int",
+                "float",
+            )
+        ]
         self._parent._update_catalog(erase=True, columns=[self._alias])
         self._parent._add_to_history(
             f"[Mean Encode]: The vDataColumn {self} was transformed "

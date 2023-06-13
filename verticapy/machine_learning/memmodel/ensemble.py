@@ -58,7 +58,11 @@ class Ensemble(InMemoryModel):
     # Trees Representation Methods.
 
     def plot_tree(
-        self, pic_path: Optional[str] = None, tree_id: int = 0, *args, **kwargs,
+        self,
+        pic_path: Optional[str] = None,
+        tree_id: int = 0,
+        *args,
+        **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the Graphviz module.
@@ -68,7 +72,7 @@ class Ensemble(InMemoryModel):
         pic_path: str, optional
             Absolute  path to  save the image of the  tree.
         tree_id: int, optional
-            Unique  tree identifier,   an  integer  in  the 
+            Unique  tree identifier,   an  integer  in  the
             range [0, n_estimators - 1].
         *args, **kwargs: Any, optional
             Arguments to pass to the 'to_graphviz'  method.
@@ -83,7 +87,7 @@ class Ensemble(InMemoryModel):
 
 class RandomForestRegressor(Ensemble):
     """
-    InMemoryModel implementation of the random 
+    InMemoryModel implementation of the random
     forest regressor algorithm.
 
     Parameters
@@ -147,7 +151,7 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel implementation of the random 
+    InMemoryModel implementation of the random
     forest classifier algorithm.
 
     Parameters
@@ -155,7 +159,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     trees: list[BinaryTreeClassifier]
         List of BinaryTrees for classification.
     classes: ArrayLike, optional
-    	The model's classes.
+        The model's classes.
     """
 
     # Properties.
@@ -184,7 +188,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes  the model's probabilites using  the 
+        Computes  the model's probabilites using  the
         input matrix.
 
         Parameters
@@ -209,7 +213,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         using its attributes.
 
         Parameters
@@ -252,7 +256,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    InMemoryModel implementation of the XGBoost 
+    InMemoryModel implementation of the XGBoost
     regressor algorithm.
 
     Parameters
@@ -278,7 +282,10 @@ class XGBRegressor(Ensemble):
     # System & Special Methods.
 
     def __init__(
-        self, trees: list[BinaryTreeRegressor], mean: float = 0.0, eta: float = 1.0,
+        self,
+        trees: list[BinaryTreeRegressor],
+        mean: float = 0.0,
+        eta: float = 1.0,
     ) -> None:
         self.trees_ = copy.deepcopy(trees)
         self.mean_ = mean
@@ -325,7 +332,7 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    InMemoryModel implementation of the XGBoost 
+    InMemoryModel implementation of the XGBoost
     classifier algorithm.
 
     Parameters
@@ -333,10 +340,10 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     trees: list[BinaryTreeRegressor]
         List  of   BinaryTrees  for  regression.
     logodds: ArrayLike[float], optional
-        ArrayLike of the logodds of the response 
+        ArrayLike of the logodds of the response
         classes.
     classes: ArrayLike, optional
-    	The model's classes.
+        The model's classes.
     learning_rate: float, optional
         Learning rate.
     """
@@ -373,7 +380,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """
-        Computes the model's probabilites using the input 
+        Computes the model's probabilites using the input
         matrix.
 
         Parameters
@@ -397,7 +404,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model using its 
+        Returns the SQL code needed to deploy the model using its
         attributes.
 
         Parameters
@@ -425,7 +432,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    InMemoryModel  implementation of the isolation 
+    InMemoryModel  implementation of the isolation
     forest algorithm.
 
     Parameters

@@ -21,13 +21,13 @@ from verticapy._utils._sql._format import format_type, quote_ident
 
 def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
     """
-    Excludes the input lists of prefixes from the 
+    Excludes the input lists of prefixes from the
     input name and then returns the new name.
-    When there is a match, the other elements of 
+    When there is a match, the other elements of
     the list are ignored.
 
     Parameters
-    ---------- 
+    ----------
     name: str
         Input name.
     prefix: list, optional
@@ -52,11 +52,11 @@ def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
     """
     Excludes the input lists of suffixes from the
     input name and then returns the new name.
-    When there is a match, the other elements of 
+    When there is a match, the other elements of
     the list are ignored.
 
     Parameters
-    ---------- 
+    ----------
     name: str
         Input name.
     suffix: list, optional
@@ -79,13 +79,13 @@ def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
 
 def erase_word_in_name(name: str, word: Optional[list] = None) -> str:
     """
-    Excludes the input lists of words from the 
+    Excludes the input lists of words from the
     input name and then returns the new name.
-    When there is a match, the other elements 
+    When there is a match, the other elements
     of the list are ignored.
 
     Parameters
-    ---------- 
+    ----------
     name: str
         Input name.
     word: list, optional
@@ -112,13 +112,13 @@ def erase_in_name(
     order: Optional[list] = None,
 ) -> str:
     """
-    Excludes the input lists of suffixes and 
-    prefixes from the input name and then 
-    returns the new name. When there is a match,  
+    Excludes the input lists of suffixes and
+    prefixes from the input name and then
+    returns the new name. When there is a match,
     the other elements of the list are ignored.
 
     Parameters
-    ---------- 
+    ----------
     name: str
         Input name.
     suffix: list, optional
@@ -132,14 +132,14 @@ def erase_in_name(
             s: suffix
             p: prefix
             w: word
-        For example, the list ["p", "s", "w"] will 
-        start by excluding the prefixes, then 
+        For example, the list ["p", "s", "w"] will
+        start by excluding the prefixes, then
         suffixes, and finally the input words.
 
     Returns
     -------
     name
-        The name without the prefixes, suffixes 
+        The name without the prefixes, suffixes
         and input words.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
@@ -164,12 +164,12 @@ def is_similar_name(
     order: Optional[list] = None,
 ) -> bool:
     """
-    Excludes the input lists of suffixes, prefixes 
+    Excludes the input lists of suffixes, prefixes
     and words from the input names and then returns
     a boolean for whether the new names are similar.
 
     Parameters
-    ---------- 
+    ----------
     name1: str
         First name to compare.
     name2: str
@@ -185,15 +185,15 @@ def is_similar_name(
             s: suffix
             p: prefix
             w: word
-        For example, the list ["p", "s", "w"] will start 
-        by excluding the prefixes, then suffixes, and 
+        For example, the list ["p", "s", "w"] will start
+        by excluding the prefixes, then suffixes, and
         finally the input words.
-        
+
 
     Returns
     -------
     bool
-        True if the two names are similar, false 
+        True if the two names are similar, false
         otherwise.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
@@ -201,10 +201,18 @@ def is_similar_name(
         skip_suffix, skip_prefix, skip_word, dtype=list
     )
     n1 = erase_in_name(
-        name=name1, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
+        name=name1,
+        suffix=skip_suffix,
+        prefix=skip_prefix,
+        word=skip_word,
+        order=order,
     )
     n2 = erase_in_name(
-        name=name2, suffix=skip_suffix, prefix=skip_prefix, word=skip_word, order=order,
+        name=name2,
+        suffix=skip_suffix,
+        prefix=skip_prefix,
+        word=skip_word,
+        order=order,
     )
     return n1 == n2
 
@@ -218,12 +226,12 @@ def belong_to_group(
     order: Optional[list] = None,
 ) -> bool:
     """
-    Excludes the input lists of suffixes, prefixes 
-    and words from the  input name and looks if it 
+    Excludes the input lists of suffixes, prefixes
+    and words from the  input name and looks if it
     belongs to a specific group.
 
     Parameters
-    ---------- 
+    ----------
     name: str
         Input Name.
     group: list
@@ -239,14 +247,14 @@ def belong_to_group(
             s: suffix
             p: prefix
             w: word
-        For example, the list ["p", "s", "w"] will 
-        start by excluding the prefixes, then 
+        For example, the list ["p", "s", "w"] will
+        start by excluding the prefixes, then
         suffixes, and finally the input words.
 
     Returns
     -------
     bool
-        True if the name belong to the input group, 
+        True if the name belong to the input group,
         false otherwise.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
@@ -274,11 +282,11 @@ def group_similar_names(
     order: Optional[list] = None,
 ) -> dict:
     """
-    Creates groups of similar names using the input 
+    Creates groups of similar names using the input
     column names.
 
     Parameters
-    ---------- 
+    ----------
     colnames: list
         List of input names.
     skip_suffix: list, optional
@@ -292,8 +300,8 @@ def group_similar_names(
             s: suffix
             p: prefix
             w: word
-        For example, the list ["p", "s", "w"] will 
-        start by excluding the prefixes, then 
+        For example, the list ["p", "s", "w"] will
+        start by excluding the prefixes, then
         suffixes, and finally the input words.
 
     Returns
@@ -323,13 +331,13 @@ def group_similar_names(
 
 def gen_coalesce(group_dict: dict) -> str:
     """
-    Generates the SQL statement to merge the 
+    Generates the SQL statement to merge the
     groups together.
 
     Parameters
-    ---------- 
+    ----------
     group_dict: dict
-        Dictionary including the different 
+        Dictionary including the different
         groups.
 
     Returns

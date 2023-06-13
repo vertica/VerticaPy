@@ -27,7 +27,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class HexbinMap(MatplotlibBase):
-
     # Properties.
 
     @property

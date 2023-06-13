@@ -45,7 +45,9 @@ def dtc_data_vd():
 def titanic_vd():
     titanic = load_titanic()
     yield titanic
-    drop(name="public.titanic",)
+    drop(
+        name="public.titanic",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -57,7 +59,9 @@ def model(dtc_data_vd):
     )
 
     # I could use load_model but it is buggy
-    model_class = DummyTreeClassifier("decision_tc_model_test",)
+    model_class = DummyTreeClassifier(
+        "decision_tc_model_test",
+    )
     model_class.input_relation = "public.dtc_data"
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
@@ -101,10 +105,14 @@ class TestDummyTreeClassifier:
         assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = DummyTreeClassifier("model_contour",)
+        model_test = DummyTreeClassifier(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -118,7 +126,9 @@ class TestDummyTreeClassifier:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS decision_tc_model_test_drop")
-        model_test = DummyTreeClassifier("decision_tc_model_test_drop",)
+        model_test = DummyTreeClassifier(
+            "decision_tc_model_test_drop",
+        )
         model_test.fit(
             "public.dtc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -425,9 +435,13 @@ class TestDummyTreeClassifier:
 
     def test_model_from_vDF(self, dtc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
-        model_test = DummyTreeClassifier("tc_from_vDF",)
+        model_test = DummyTreeClassifier(
+            "tc_from_vDF",
+        )
         model_test.fit(
-            dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation",
+            dtc_data_vd,
+            ["Gender", '"owned cars"', "cost", "income"],
+            "TransPortation",
         )
 
         current_cursor().execute(

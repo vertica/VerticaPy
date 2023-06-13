@@ -51,17 +51,17 @@ class vDFJoinUnionSort(vDFMath):
         input_relation: SQLRelation
             Relation to merge with.
         expr1: SQLExpression, optional
-            List of pure-SQL expressions from the current vDataFrame 
-            to use during merging. For example,  'CASE WHEN "column" 
-            > 3 THEN 2 ELSE NULL END' and  'POWER("column", 2)' will 
-            work. If empty, all vDataFrame vDataColumns are used. 
+            List of pure-SQL expressions from the current vDataFrame
+            to use during merging. For example,  'CASE WHEN "column"
+            > 3 THEN 2 ELSE NULL END' and  'POWER("column", 2)' will
+            work. If empty, all vDataFrame vDataColumns are used.
             Aliases are recommended to avoid auto-naming.
         expr2: SQLExpression, optional
-            List of pure-SQL  expressions from the input relation to 
+            List of pure-SQL  expressions from the input relation to
             use during the merging.
-            For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-            and 'POWER("column", 2)'  will work.  If empty, all input 
-            relation columns are  used. Aliases  are  recommended to 
+            For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END'
+            and 'POWER("column", 2)'  will work.  If empty, all input
+            relation columns are  used. Aliases  are  recommended to
             avoid auto-naming.
         union_all: bool, optional
             If  set to True, the  vDataFrame is merged with the input
@@ -101,11 +101,11 @@ class vDFJoinUnionSort(vDFMath):
         """
         Joins the vDataFrame with another one or an input relation.
 
-        \u26A0 Warning : Joins  can  make  the  vDataFrame  structure 
-                         heavier.  It is recommended that you check 
-                         the    current     structure    using    the 
-                         'current_relation'  method  and  save  it 
-                         with the 'to_db' method, using the parameters 
+        \u26A0 Warning : Joins  can  make  the  vDataFrame  structure
+                         heavier.  It is recommended that you check
+                         the    current     structure    using    the
+                         'current_relation'  method  and  save  it
+                         with the 'to_db' method, using the parameters
                          'inplace = True' and 'relation_type = table'.
 
         Parameters
@@ -115,7 +115,7 @@ class vDFJoinUnionSort(vDFMath):
         on: tuple / dict / list, optional
             If using a list:
             List of 3-tuples. Each tuple must include (key1, key2, operator)
-            —where key1 is the key of the vDataFrame, key2 is the key of the 
+            —where key1 is the key of the vDataFrame, key2 is the key of the
             input relation, and operator is one of the following:
                          '=' : exact match
                          '<' : key1  < key2
@@ -127,28 +127,28 @@ class vDFJoinUnionSort(vDFMath):
                'linterpolate': key1 INTERPOLATE key2
                'rinterpolate': key2 INTERPOLATE key1
             Some operators need 5-tuples: (key1, key2, operator, operator2, x)
-            —where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a 
+            —where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a
             float or an integer, and operator is one of the following:
                      'jaro' : JARO(key1, key2) operator2 x
                     'jarow' : JARO_WINCKLER(key1, key2) operator2 x
                       'lev' : LEVENSHTEIN(key1, key2) operator2 x
-            
+
             If using a dictionary:
-            This parameter must include all the different keys. It must be 
+            This parameter must include all the different keys. It must be
             similar to the following:
-            {"relationA_key1": "relationB_key1" ..., 
+            {"relationA_key1": "relationB_key1" ...,
              "relationA_keyk": "relationB_keyk"}
-            where relationA is the current vDataFrame and relationB is the 
+            where relationA is the current vDataFrame and relationB is the
             input relation or the input vDataFrame.
         on_interpolate: dict, optional
-            Dictionary of all unique keys. This is used to join two event 
-            series together using some ordered attribute. Event series 
-            joins let you compare values from two series directly, rather 
-            than having to normalize the series  to the same measurement  
+            Dictionary of all unique keys. This is used to join two event
+            series together using some ordered attribute. Event series
+            joins let you compare values from two series directly, rather
+            than having to normalize the series  to the same measurement
             interval. The dict must be similar to the following:
-            {"relationA_key1": "relationB_key1" ..., 
+            {"relationA_key1": "relationB_key1" ...,
              "relationA_keyk": "relationB_keyk"}
-            where relationA is the  current vDataFrame and relationB is the 
+            where relationA is the  current vDataFrame and relationB is the
             input relation or the input vDataFrame.
         how: str, optional
             Join Type.
@@ -159,14 +159,14 @@ class vDFJoinUnionSort(vDFMath):
                 natural : Natural Join.
                 inner   : Inner Join.
         expr1: SQLExpression, optional
-            List  of the different columns in pure  SQL to select  from the 
-            current   vDataFrame,   optionally  as  aliases.   Aliases  are 
-            recommended to avoid  ambiguous names. For example: 'column' or 
-            'column AS my_new_alias'. 
+            List  of the different columns in pure  SQL to select  from the
+            current   vDataFrame,   optionally  as  aliases.   Aliases  are
+            recommended to avoid  ambiguous names. For example: 'column' or
+            'column AS my_new_alias'.
         expr2: SQLExpression, optional
-            List  of the different  columns in pure SQL to select from  the 
-            input  relation optionally as aliases. Aliases are  recommended 
-            to avoid  ambiguous names.  For example: 'column' or 'column AS 
+            List  of the different  columns in pure SQL to select from  the
+            input  relation optionally as aliases. Aliases are  recommended
+            to avoid  ambiguous names.  For example: 'column' or 'column AS
             my_new_alias'.
 
         Returns
@@ -272,9 +272,9 @@ class vDFJoinUnionSort(vDFMath):
         Parameters
         ----------
         columns: SQLColumns / dict
-            List  of the  vDataColumns  used to sort  the data, 
-            using asc order or dictionary of all sorting methods. 
-            For example,  to sort by  "column1" ASC and "column2" 
+            List  of the  vDataColumns  used to sort  the data,
+            using asc order or dictionary of all sorting methods.
+            For example,  to sort by  "column1" ASC and "column2"
             DESC,  write  {"column1": "asc", "column2": "desc"}
 
         Returns

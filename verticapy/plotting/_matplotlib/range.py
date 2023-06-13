@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class RangeCurve(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -96,7 +95,9 @@ class RangeCurve(MatplotlibBase):
                 )
             if ((plot_scatter) or n < 20) and plot_median:
                 ax.scatter(
-                    self.data["x"], self.data["Y"][:, i + 1], **self.init_style_scatter,
+                    self.data["x"],
+                    self.data["Y"][:, i + 1],
+                    **self.init_style_scatter,
                 )
         ax.set_xlabel(self.layout["order_by"])
         if len(self.layout["columns"]) == 1:

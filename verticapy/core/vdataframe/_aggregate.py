@@ -63,7 +63,6 @@ if TYPE_CHECKING:
 
 
 class vDFAgg(vDFEval):
-
     # Main Aggregate Functions.
 
     @save_verticapy_logs
@@ -83,7 +82,7 @@ class vDFAgg(vDFEval):
             List of the different aggregations.
                 aad            : average absolute deviation
                 approx_median  : approximate median
-                approx_q%      : approximate q quantile 
+                approx_q%      : approximate q quantile
                                  (ex: approx_50% for the approximate median)
                 approx_unique  : approximative cardinality
                 count          : number of non-missing elements
@@ -91,16 +90,16 @@ class vDFAgg(vDFEval):
                 dtype          : virtual column type
                 iqr            : interquartile range
                 kurtosis       : kurtosis
-                jb             : Jarque-Bera index 
+                jb             : Jarque-Bera index
                 mad            : median absolute deviation
                 max            : maximum
                 mean           : average
                 median         : median
                 min            : minimum
                 mode           : most occurent element
-                percent        : percent of non-missing elements 
+                percent        : percent of non-missing elements
                 q%             : q quantile (ex: 50% for the median)
-                                 Use the 'approx_q%' (approximate quantile) 
+                                 Use the 'approx_q%' (approximate quantile)
                                  aggregation to get better performance.
                 prod           : product
                 range          : difference between the max and the min
@@ -108,7 +107,7 @@ class vDFAgg(vDFEval):
                 skewness       : skewness
                 sum            : sum
                 std            : standard deviation
-                topk           : kth most occurent element 
+                topk           : kth most occurent element
                                  (ex: top1 for the mode)
                 topk_percent   : kth most occurent element density
                 unique         : cardinality (count distinct)
@@ -116,19 +115,19 @@ class vDFAgg(vDFEval):
             Other aggregations will work if supported by your database
             version.
         columns: SQLColumns, optional
-            List of  the vDataColumn's names. If empty,  depending on the 
+            List of  the vDataColumn's names. If empty,  depending on the
             aggregations, all or only numerical vDataColumns are used.
         ncols_block: int, optional
-            Number  of columns  used per query.  Setting  this  parameter 
-            divides  what  would otherwise be  one large query into  many 
-            smaller  queries  called "blocks", whose size is determine by 
+            Number  of columns  used per query.  Setting  this  parameter
+            divides  what  would otherwise be  one large query into  many
+            smaller  queries  called "blocks", whose size is determine by
             the size of ncols_block.
         processes: int, optional
-            Number  of child processes  to  create. Setting  this  with  the 
-            ncols_block  parameter lets you parallelize a  single query into 
-            many smaller  queries, where each child process creates  its own 
-            connection to the database and sends one query. This can improve 
-            query performance, but consumes  more resources. If processes is 
+            Number  of child processes  to  create. Setting  this  with  the
+            ncols_block  parameter lets you parallelize a  single query into
+            many smaller  queries, where each child process creates  its own
+            connection to the database and sends one query. This can improve
+            query performance, but consumes  more resources. If processes is
             set to 1, the queries are sent iteratively from a single process.
 
         Returns
@@ -163,7 +162,6 @@ class vDFAgg(vDFEval):
         other_agg = []
 
         for fun in func:
-
             if fun[-1] == "%":
                 if (len(fun.lower()) >= 8) and fun.startswith("approx_"):
                     agg_approx += [fun.lower()]
@@ -217,7 +215,6 @@ class vDFAgg(vDFEval):
         # Computing iteratively aggregations using block of columns.
 
         if ncols_block < len(columns) and processes <= 1:
-
             if conf.get_option("tqdm"):
                 loop = tqdm(range(0, len(columns), ncols_block))
             else:
@@ -237,7 +234,6 @@ class vDFAgg(vDFEval):
         # Computing the aggregations using multiple queries at the same time.
 
         elif ncols_block < len(columns):
-
             parameters = []
             for i in range(0, len(columns), ncols_block):
                 parameters += [(self, func, columns, ncols_block, i)]
@@ -491,7 +487,6 @@ class vDFAgg(vDFEval):
         values = {"index": func}
 
         try:
-
             if nb_precomputed == len(func) * len(columns):
                 res = _executeSQL(
                     query=f"""
@@ -526,7 +521,6 @@ class vDFAgg(vDFEval):
                 i += len(func)
 
         except QueryError:
-
             try:
                 query = [
                     "SELECT {0} FROM vdf_table LIMIT 1".format(
@@ -564,9 +558,7 @@ class vDFAgg(vDFEval):
                     values[columns[idx]] = list(elem)
 
             except QueryError:
-
                 try:
-
                     for i, elem in enumerate(agg):
                         pre_comp_val = []
                         for fun in func:
@@ -601,7 +593,6 @@ class vDFAgg(vDFEval):
                                 elem for elem in current_cursor().fetchone()
                             ]
                 except QueryError:
-
                     for i, elem in enumerate(agg):
                         values[columns[i]] = []
                         for j, agg_fun in enumerate(elem):
@@ -642,7 +633,13 @@ class vDFAgg(vDFEval):
     def describe(
         self,
         method: Literal[
-            "numerical", "categorical", "statistics", "length", "range", "all", "auto",
+            "numerical",
+            "categorical",
+            "statistics",
+            "length",
+            "range",
+            "all",
+            "auto",
         ] = "auto",
         columns: Optional[SQLColumns] = None,
         unique: bool = False,
@@ -650,7 +647,7 @@ class vDFAgg(vDFEval):
         processes: int = 1,
     ) -> TableSample:
         """
-        Aggregates  the vDataFrame  using  multiple  statistical  aggregations: 
+        Aggregates  the vDataFrame  using  multiple  statistical  aggregations:
         min, max, median, unique... depending on the types of the vDataColumns.
 
         Parameters
@@ -658,20 +655,20 @@ class vDFAgg(vDFEval):
         method: str, optional
             The describe method.
                 all         : Aggregates all statistics for all vDataColumns. The
-                              exact method depends on the vDataColumn type 
-                              (numerical  dtype:  numerical; timestamp  dtype: 
+                              exact method depends on the vDataColumn type
+                              (numerical  dtype:  numerical; timestamp  dtype:
                               range; categorical dtype: length)
-                auto        : Sets  the  method  to  'numerical' if  at  least  one 
-                              vDataColumn   of   the   vDataFrame    is   numerical, 
+                auto        : Sets  the  method  to  'numerical' if  at  least  one
+                              vDataColumn   of   the   vDataFrame    is   numerical,
                               'categorical' otherwise.
                 categorical : Uses only categorical aggregations.
-                length      : Aggregates the vDataFrame using numerical aggregation 
+                length      : Aggregates the vDataFrame using numerical aggregation
                               on the length of all selected vDataColumns.
-                numerical   : Uses  only  numerical  descriptive  statistics, which 
+                numerical   : Uses  only  numerical  descriptive  statistics, which
                               are  computed faster than the  'aggregate' method.
                 range       : Aggregates the vDataFrame using multiple  statistical
                               aggregations - min, max, range...
-                statistics  : Aggregates the vDataFrame using  multiple statistical 
+                statistics  : Aggregates the vDataFrame using  multiple statistical
                               aggregations - kurtosis, skewness, min, max...
         columns: SQLColumns, optional
             List of the vDataColumns names.  If empty, the  vDataColumns are
@@ -680,15 +677,15 @@ class vDFAgg(vDFEval):
             If set to True, computes the cardinality of each element.
         ncols_block: int, optional
             Number of columns used per query.  Setting this parameter divides
-            what would otherwise be one large query into many smaller queries 
-            called "blocks", whose size is determined by the ncols_block 
+            what would otherwise be one large query into many smaller queries
+            called "blocks", whose size is determined by the ncols_block
             parmeter.
         processes: int, optional
-            Number  of child  processes to  create.  Setting  this with  the 
-            ncols_block  parameter lets you parallelize a single query  into 
-            many smaller  queries, where each  child process creates its own 
-            connection to the database and sends one query. This can improve 
-            query performance,  but consumes more resources. If processes is 
+            Number  of child  processes to  create.  Setting  this with  the
+            ncols_block  parameter lets you parallelize a single query  into
+            many smaller  queries, where each  child process creates its own
+            connection to the database and sends one query. This can improve
+            query performance,  but consumes more resources. If processes is
             set to 1, the queries are sent iteratively from a single process.
 
         Returns
@@ -705,7 +702,6 @@ class vDFAgg(vDFEval):
         dtype, percent = {}, {}
 
         if method == "numerical":
-
             if not columns:
                 columns = self.numcol()
             else:
@@ -810,7 +806,6 @@ class vDFAgg(vDFEval):
                     values = TableSample(vals).transpose().values
 
             except QueryError:
-
                 values = self.aggregate(
                     [
                         "count",
@@ -828,14 +823,15 @@ class vDFAgg(vDFEval):
                 ).values
 
         elif method == "categorical":
-
             func = ["dtype", "count", "top", "top_percent"]
             values = self.aggregate(
-                func, columns=columns, ncols_block=ncols_block, processes=processes,
+                func,
+                columns=columns,
+                ncols_block=ncols_block,
+                processes=processes,
             ).values
 
         elif method == "statistics":
-
             func = [
                 "dtype",
                 "percent",
@@ -862,7 +858,6 @@ class vDFAgg(vDFEval):
             ).values
 
         elif method == "length":
-
             if not columns:
                 columns = self.get_columns()
             func = [
@@ -889,7 +884,6 @@ class vDFAgg(vDFEval):
             ).values
 
         elif method == "range":
-
             if not columns:
                 columns = []
                 all_cols = self.get_columns()
@@ -905,7 +899,6 @@ class vDFAgg(vDFEval):
             ).values
 
         elif method == "all":
-
             datecols, numcol, catcol = [], [], []
             if not columns:
                 columns = self.get_columns()
@@ -1051,24 +1044,24 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns
-            List  of the  vDataColumns  used  to group the elements  or a 
-            customized expression.  If rollup is set to True, this can be 
+            List  of the  vDataColumns  used  to group the elements  or a
+            customized expression.  If rollup is set to True, this can be
             a list of tuples.
         expr: SQLExpression, optional
-            List of  the  different  aggregations  in  pure SQL.  Aliases 
-            can  be  used.  For  example, 'SUM(column)'  or  'AVG(column) 
-            AS  my_new_alias'  are  valid  whereas 'AVG'  is  invalid. 
-            Aliases  are recommended to keep the track  of  the  features 
-            and  to  prevent  ambiguous  names.  For  example,  the  MODE 
-            function  does  not exist,  but can  be replicated  by  using 
+            List of  the  different  aggregations  in  pure SQL.  Aliases
+            can  be  used.  For  example, 'SUM(column)'  or  'AVG(column)
+            AS  my_new_alias'  are  valid  whereas 'AVG'  is  invalid.
+            Aliases  are recommended to keep the track  of  the  features
+            and  to  prevent  ambiguous  names.  For  example,  the  MODE
+            function  does  not exist,  but can  be replicated  by  using
             the 'analytic' method and then grouping the result.
         rollup: bool / list of bools, optional
             If set to True, the rollup operator is used.
-            If  set to a list of bools, the  rollup  operator is  used on 
-            the  matching indexes  and the  length of 'rollup' must match 
+            If  set to a list of bools, the  rollup  operator is  used on
+            the  matching indexes  and the  length of 'rollup' must match
             the length of 'columns.'
-            For example, for columns = ['col1', ('col2', 'col3'), 'col4'] 
-            and rollup = [False, True, True], the rollup operator is used 
+            For example, for columns = ['col1', ('col2', 'col3'), 'col4']
+            and rollup = [False, True, True], the rollup operator is used
             on the set ('col2', 'col3') and on 'col4'.
         having: str, optional
             Expression used to filter the result.
@@ -1170,18 +1163,22 @@ class vDFAgg(vDFEval):
     # Single Aggregate Functions.
 
     @save_verticapy_logs
-    def aad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def aad(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'aad' 
+        Aggregates the vDataFrame using 'aad'
         (Average Absolute Deviation).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1192,17 +1189,21 @@ class vDFAgg(vDFEval):
         return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
-    def all(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
+    def all(
+        self,
+        columns: SQLColumns,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'bool_and'.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
 
@@ -1214,17 +1215,21 @@ class vDFAgg(vDFEval):
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
-    def any(self, columns: SQLColumns, **agg_kwargs,) -> TableSample:
+    def any(
+        self,
+        columns: SQLColumns,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'bool_or'.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1235,18 +1240,22 @@ class vDFAgg(vDFEval):
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
-    def avg(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def avg(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'avg' 
+        Aggregates the vDataFrame using 'avg'
         (Average).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1259,18 +1268,22 @@ class vDFAgg(vDFEval):
     mean = avg
 
     @save_verticapy_logs
-    def count(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def count(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the  vDataFrame  using a  list of 'count' 
+        Aggregates the  vDataFrame  using a  list of 'count'
         (Number of non-missing values).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1282,7 +1295,9 @@ class vDFAgg(vDFEval):
 
     @save_verticapy_logs
     def kurtosis(
-        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'kurtosis'.
@@ -1290,7 +1305,7 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             are used.
         **agg_kwargs
             Any  optional parameter to pass to the Aggregate  function.
@@ -1305,15 +1320,19 @@ class vDFAgg(vDFEval):
     kurt = kurtosis
 
     @save_verticapy_logs
-    def mad(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def mad(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'mad' 
+        Aggregates the vDataFrame using 'mad'
         (Median Absolute Deviation).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             are used.
         **agg_kwargs
             Any  optional parameter to pass to the Aggregate  function.
@@ -1326,14 +1345,18 @@ class vDFAgg(vDFEval):
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
-    def max(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def max(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'max' (Maximum).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             are used.
         **agg_kwargs
             Any optional parameter  to pass to  the Aggregate function.
@@ -1347,7 +1370,10 @@ class vDFAgg(vDFEval):
 
     @save_verticapy_logs
     def median(
-        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
+        self,
+        columns: Optional[SQLColumns] = None,
+        approx: bool = True,
+        **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'median'.
@@ -1355,10 +1381,10 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all numerical vDataColumns are 
+            List of the vDataColumns names. If empty, all numerical vDataColumns are
             used.
         approx: bool, optional
-            If set to True, the approximate median is returned. By setting this 
+            If set to True, the approximate median is returned. By setting this
             parameter to False, the function's performance can drastically decrease.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate function.
@@ -1368,17 +1394,26 @@ class vDFAgg(vDFEval):
         TableSample
             result.
         """
-        return self.quantile(0.5, columns=columns, approx=approx, **agg_kwargs,)
+        return self.quantile(
+            0.5,
+            columns=columns,
+            approx=approx,
+            **agg_kwargs,
+        )
 
     @save_verticapy_logs
-    def min(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def min(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'min' (Minimum).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all numerical vDataColumns are 
+            List of the vDataColumns names. If empty, all numerical vDataColumns are
             used.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate function.
@@ -1392,7 +1427,9 @@ class vDFAgg(vDFEval):
 
     @save_verticapy_logs
     def product(
-        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'product'.
@@ -1400,10 +1437,10 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumn  names.  If empty, all 
+            List  of the vDataColumn  names.  If empty, all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1424,25 +1461,25 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using an ArrayLike of 
+        Aggregates the vDataFrame using an ArrayLike of
         'quantiles'.
 
         Parameters
         ----------
         q: PythonNumber / ArrayLike
-            List of  the  different quantiles. They must be 
+            List of  the  different quantiles. They must be
             numbers between 0 and 1.
             For example [0.25, 0.75] will return  Q1 and Q3.
         columns: SQLColumns, optional
-            List  of  the   vDataColumns  names.  If  empty, 
+            List  of  the   vDataColumns  names.  If  empty,
             all numerical vDataColumns are used.
         approx: bool, optional
-            If  set  to  True,  the approximate quantile is 
-            returned. By  setting  this parameter to  False, 
-            the  function's  performance   can  drastically 
+            If  set  to  True,  the approximate quantile is
+            returned. By  setting  this parameter to  False,
+            the  function's  performance   can  drastically
             decrease.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1460,18 +1497,22 @@ class vDFAgg(vDFEval):
         )
 
     @save_verticapy_logs
-    def sem(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def sem(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'sem' 
+        Aggregates the vDataFrame using 'sem'
         (Standard Error of the Mean).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns names. If empty,  all 
+            List  of the vDataColumns names. If empty,  all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1483,7 +1524,9 @@ class vDFAgg(vDFEval):
 
     @save_verticapy_logs
     def skewness(
-        self, columns: Optional[SQLColumns] = None, **agg_kwargs,
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
     ) -> TableSample:
         """
         Aggregates the vDataFrame using 'skewness'.
@@ -1491,10 +1534,10 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1507,18 +1550,22 @@ class vDFAgg(vDFEval):
     skew = skewness
 
     @save_verticapy_logs
-    def std(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def std(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'std' 
+        Aggregates the vDataFrame using 'std'
         (Standard Deviation).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns names.  If empty, all 
+            List  of the vDataColumns names.  If empty, all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1531,17 +1578,21 @@ class vDFAgg(vDFEval):
     stddev = std
 
     @save_verticapy_logs
-    def sum(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def sum(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'sum'.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns names.  If empty, all 
+            List of the  vDataColumns names.  If empty, all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1552,17 +1603,21 @@ class vDFAgg(vDFEval):
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs)
 
     @save_verticapy_logs
-    def var(self, columns: Optional[SQLColumns] = None, **agg_kwargs,) -> TableSample:
+    def var(
+        self,
+        columns: Optional[SQLColumns] = None,
+        **agg_kwargs,
+    ) -> TableSample:
         """
         Aggregates the vDataFrame using 'variance'.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the  vDataColumns  names. If empty, all 
+            List of the  vDataColumns  names. If empty, all
             numerical vDataColumns are used.
         **agg_kwargs
-            Any optional parameter to pass to the Aggregate 
+            Any optional parameter to pass to the Aggregate
             function.
 
         Returns
@@ -1585,22 +1640,22 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates  the   vDataFrame  using  a  list  of  'count' 
-        (the   number   of  non-missing   values)  and   percent 
+        Aggregates  the   vDataFrame  using  a  list  of  'count'
+        (the   number   of  non-missing   values)  and   percent
         (the percent of non-missing values).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of vDataColumn names. If empty, all vDataColumns 
+            List of vDataColumn names. If empty, all vDataColumns
             are used.
         sort_result: bool, optional
             If set to True, the result is sorted.
         desc: bool, optional
-            If  set  to  True and 'sort_result' is  set  to  True, 
+            If  set  to  True and 'sort_result' is  set  to  True,
             the result is sorted in descending order.
         **agg_kwargs
-            Any  optional  parameter  to  pass  to  the Aggregate 
+            Any  optional  parameter  to  pass  to  the Aggregate
             function.
 
         Returns
@@ -1609,7 +1664,9 @@ class vDFAgg(vDFEval):
             result.
         """
         result = self.aggregate(
-            func=["count", "percent"], columns=columns, **agg_kwargs,
+            func=["count", "percent"],
+            columns=columns,
+            **agg_kwargs,
         )
         if sort_result:
             result.sort("count", desc)
@@ -1619,23 +1676,26 @@ class vDFAgg(vDFEval):
 
     @save_verticapy_logs
     def nunique(
-        self, columns: Optional[SQLColumns] = None, approx: bool = True, **agg_kwargs,
+        self,
+        columns: Optional[SQLColumns] = None,
+        approx: bool = True,
+        **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'unique' 
+        Aggregates the vDataFrame using 'unique'
         (cardinality).
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             are used.
         approx: bool, optional
-            If set to True, the  approximate cardinality  is  returned. 
-            By  setting  this  parameter   to  False,  the  function's 
+            If set to True, the  approximate cardinality  is  returned.
+            By  setting  this  parameter   to  False,  the  function's
             performance can drastically decrease.
         **agg_kwargs
-            Any   optional   parameter  to   pass   to  the  Aggregate 
+            Any   optional   parameter  to   pass   to  the  Aggregate
             function.
 
         Returns
@@ -1658,10 +1718,10 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all vDataColumns 
+            List of the vDataColumns names. If empty, all vDataColumns
             are selected.
         count: bool, optional
-            If set to  True, the  method also returns the count of 
+            If set to  True, the  method also returns the count of
             each duplicate.
         limit: int, optional
             Sets a limit on the number of elements to be displayed.
@@ -1724,7 +1784,6 @@ class vDFAgg(vDFEval):
 
 
 class vDCAgg(vDCEval):
-
     # Main Aggregate Functions.
 
     @save_verticapy_logs
@@ -1743,7 +1802,7 @@ class vDCAgg(vDCEval):
                 dtype          : vDataColumn type
                 iqr            : interquartile range
                 kurtosis       : kurtosis
-                jb             : Jarque-Bera index 
+                jb             : Jarque-Bera index
                 mad            : median absolute deviation
                 max            : maximum
                 mean           : average
@@ -1758,12 +1817,12 @@ class vDCAgg(vDCEval):
                 skewness       : skewness
                 sum            : sum
                 std            : standard deviation
-                topk           : kth most occurent element 
+                topk           : kth most occurent element
                                  (ex: top1 for the mode)
                 topk_percent   : kth most occurent element density
                 unique         : cardinality (count distinct)
                 var            : variance
-            Other aggregations might work if they are part of the DB 
+            Other aggregations might work if they are part of the DB
             version you are using.
 
         Returns
@@ -1783,30 +1842,30 @@ class vDCAgg(vDCEval):
         numcol: Optional[str] = None,
     ) -> TableSample:
         """
-        Aggregates the vDataColumn using multiple statistical 
-        aggregations: min, max, median, unique... 
+        Aggregates the vDataColumn using multiple statistical
+        aggregations: min, max, median, unique...
         depending on the input method.
 
         Parameters
         ----------
         method: str, optional
             The describe method.
-                auto        : Sets  the  method to  'numerical' if 
-                              the   vDataColumn    is    numerical, 
+                auto        : Sets  the  method to  'numerical' if
+                              the   vDataColumn    is    numerical,
                               'categorical' otherwise.
-                categorical : Uses  only categorical  aggregations 
+                categorical : Uses  only categorical  aggregations
                               during the computation.
-                cat_stats   : Computes  statistics  of a numerical 
-                              column for each vDataColumn category. 
-                              In this case,  the parameter 'numcol' 
+                cat_stats   : Computes  statistics  of a numerical
+                              column for each vDataColumn category.
+                              In this case,  the parameter 'numcol'
                               must be defined.
-                numerical   : Uses  popular numerical aggregations 
+                numerical   : Uses  popular numerical aggregations
                               during the computation.
         max_cardinality: int, optional
-            Cardinality  threshold  to  use  to  determine  if the 
+            Cardinality  threshold  to  use  to  determine  if the
             vDataColumn is considered as categorical.
         numcol: str, optional
-            Numerical  vDataColumn  to  use  when  the   parameter 
+            Numerical  vDataColumn  to  use  when  the   parameter
             method is set to 'cat_stats'.
 
         Returns
@@ -1954,7 +2013,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def aad(self) -> float:
         """
-        Aggregates the vDataColumn using 'aad' 
+        Aggregates the vDataColumn using 'aad'
         (Average Absolute Deviation).
 
         Returns
@@ -1981,7 +2040,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def count(self) -> int:
         """
-        Aggregates the vDataColumn using 'count' 
+        Aggregates the vDataColumn using 'count'
         (Number of non-Missing elements).
 
         Returns
@@ -2008,7 +2067,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def mad(self) -> float:
         """
-        Aggregates the vDataColumn using 'mad' 
+        Aggregates the vDataColumn using 'mad'
         (median absolute deviation).
 
         Returns
@@ -2031,15 +2090,18 @@ class vDCAgg(vDCEval):
         return self.aggregate(["max"]).values[self._alias][0]
 
     @save_verticapy_logs
-    def median(self, approx: bool = True,) -> float:
+    def median(
+        self,
+        approx: bool = True,
+    ) -> float:
         """
         Aggregates the vDataColumn using 'median'.
 
         Parameters
         ----------
         approx: bool, optional
-            If set to True, the approximate median is returned. 
-            By setting this parameter to False, the function's 
+            If set to True, the approximate median is returned.
+            By setting this parameter to False, the function's
             performance can drastically decrease.
 
         Returns
@@ -2083,12 +2145,12 @@ class vDCAgg(vDCEval):
         Parameters
         ----------
         x: PythonNumber
-            A float between 0 and  1 that represents the 
+            A float between 0 and  1 that represents the
             quantile.  For  example:  0.25 represents Q1.
         approx: bool, optional
-            If set to True,  the approximate quantile is 
-            returned. By setting this parameter to False, 
-            the  function's performance can  drastically 
+            If set to True,  the approximate quantile is
+            returned. By setting this parameter to False,
+            the  function's performance can  drastically
             decrease.
 
         Returns
@@ -2102,7 +2164,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def sem(self) -> float:
         """
-        Aggregates the vDataColumn using 'sem' 
+        Aggregates the vDataColumn using 'sem'
         (standard error of mean).
 
         Returns
@@ -2129,7 +2191,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def std(self) -> float:
         """
-        Aggregates the vDataColumn using 'std' 
+        Aggregates the vDataColumn using 'std'
         (Standard Deviation).
 
         Returns
@@ -2177,11 +2239,11 @@ class vDCAgg(vDCEval):
         Parameters
         ----------
         dropna: bool, optional
-            If set to True, NULL values are not considered 
+            If set to True, NULL values are not considered
             during the computation.
         n: int, optional
-            Integer  corresponding to the offset. For  example, 
-            if n = 1, this method returns the mode of the 
+            Integer  corresponding to the offset. For  example,
+            if n = 1, this method returns the mode of the
             vDataColumn.
 
         Returns
@@ -2226,7 +2288,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def value_counts(self, k: int = 30) -> TableSample:
         """
-        Returns the k most occurent elements, how often 
+        Returns the k most occurent elements, how often
         they occur, and other statistical information.
 
         Parameters
@@ -2244,7 +2306,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def topk(self, k: int = -1, dropna: bool = True) -> TableSample:
         """
-        Returns the k most  occurent elements and their 
+        Returns the k most  occurent elements and their
         distributions as percents.
 
         Parameters
@@ -2252,7 +2314,7 @@ class vDCAgg(vDCEval):
         k: int, optional
             Number of most occurent elements to return.
         dropna: bool, optional
-            If  set to True, NULL  values  are not 
+            If  set to True, NULL  values  are not
             considered during the computation.
 
         Returns
@@ -2336,15 +2398,15 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def nunique(self, approx: bool = True) -> int:
         """
-        Aggregates the vDataColumn using 'unique' 
+        Aggregates the vDataColumn using 'unique'
         (cardinality).
 
         Parameters
         ----------
         approx: bool, optional
-            If  set  to  True,  the  approximate  cardinality 
-            is   returned.  By  setting  this  parameter   to 
-            False, the function's performance can drastically 
+            If  set  to  True,  the  approximate  cardinality
+            is   returned.  By  setting  this  parameter   to
+            False, the function's performance can drastically
             decrease.
 
         Returns

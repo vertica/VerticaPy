@@ -25,7 +25,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    InMemoryModel  implementation  of  linear 
+    InMemoryModel  implementation  of  linear
     algorithms.
 
     Parameters
@@ -103,7 +103,7 @@ class LinearModel(InMemoryModel):
 
     def _predict_regression_sql(self, X: ArrayLike) -> str:
         """
-        Returns the model's SQL score using the input 
+        Returns the model's SQL score using the input
         matrix.
         """
         if len(X) != len(self.coef_):
@@ -117,14 +117,14 @@ class LinearModel(InMemoryModel):
 
     def _predict_logit_sql(self, X: ArrayLike) -> str:
         """
-        Returns the model's SQL logit score using the 
+        Returns the model's SQL logit score using the
         input Matrix.
         """
         return f"1 / (1 + EXP(- ({self._predict_regression_sql(X)})))"
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         using its attributes.
 
         Parameters
@@ -141,7 +141,7 @@ class LinearModel(InMemoryModel):
 
     def predict_proba_sql(self, X: ArrayLike) -> list[str]:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         probabilities using its attributes.
 
         Parameters
@@ -160,7 +160,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    InMemoryModel Implementation of linear algorithms for 
+    InMemoryModel Implementation of linear algorithms for
     classification.
 
     Parameters
@@ -199,7 +199,7 @@ class LinearModelClassifier(LinearModel):
 
     def predict_sql(self, X: ArrayLike) -> str:
         """
-        Returns the SQL code needed to deploy the model 
+        Returns the SQL code needed to deploy the model
         using its attributes.
 
         Parameters

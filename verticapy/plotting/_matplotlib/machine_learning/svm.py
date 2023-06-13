@@ -70,7 +70,11 @@ class SVMClassifierPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws an SVM classifier plot using the Matplotlib API.
         """
@@ -153,7 +157,10 @@ class SVMClassifierPlot(MatplotlibBase):
                     ax, size=(8, 6), dim=3, style_kwargs=style_kwargs
                 )
                 ax.plot_surface(
-                    X_svm, Y_svm, Z_svm, **self.init_style_svm_3d,
+                    X_svm,
+                    Y_svm,
+                    Z_svm,
+                    **self.init_style_svm_3d,
                 )
                 all_scatter = []
                 alpha = 1.0

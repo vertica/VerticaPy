@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ElbowCurve(HighchartsBase):
-
     # Properties.
 
     @property
@@ -54,13 +53,20 @@ class ElbowCurve(HighchartsBase):
                 "max": 1.0,
             },
             "legend": {"enabled": False},
-            "tooltip": {"headerFormat": "", "pointFormat": "[{point.x}, {point.y}]",},
+            "tooltip": {
+                "headerFormat": "",
+                "pointFormat": "[{point.x}, {point.y}]",
+            },
             "colors": self.get_colors(),
         }
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a machine learning ROC curve using the HC API.
         """

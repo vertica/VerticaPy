@@ -62,7 +62,10 @@ General Metrics.
 
 
 def aic_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    k: int = 1,
 ) -> float:
     """
     Returns the AIC score.
@@ -71,7 +74,10 @@ def aic_score(
 
 
 def bic_score(
-    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    k: int = 1,
 ) -> float:
     """
     Returns the BIC score.
@@ -87,20 +93,20 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
     Parameters
     ----------
     y_true: str
-    	Response column.
+        Response column.
     y_score: str
-    	Prediction.
+        Prediction.
     input_relation: SQLRelation
-    	Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
     -------
     float
-    	score.
-	"""
+        score.
+    """
     return regression_report(
         y_true, y_score, input_relation, metrics="explained_variance"
     )
@@ -118,9 +124,9 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
@@ -145,22 +151,25 @@ def mean_absolute_error(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
     -------
     float
         score.
-	"""
+    """
     return regression_report(y_true, y_score, input_relation, metrics="mae")
 
 
 @save_verticapy_logs
 def mean_squared_error(
-    y_true: str, y_score: str, input_relation: SQLRelation, root: bool = False,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    root: bool = False,
 ) -> float:
     """
     Computes the Mean Squared Error.
@@ -172,9 +181,9 @@ def mean_squared_error(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
@@ -201,9 +210,9 @@ def mean_squared_log_error(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
@@ -228,9 +237,9 @@ def median_absolute_error(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
 
     Returns
@@ -245,7 +254,10 @@ def median_absolute_error(
 
 @save_verticapy_logs
 def quantile_error(
-    y_true: str, y_score: str, input_relation: SQLRelation, q: PythonNumber,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    q: PythonNumber,
 ) -> float:
     """
     Computes the input quantile of the Error.
@@ -257,9 +269,9 @@ def quantile_error(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     q: PythonNumber
         Input quantile.
@@ -290,12 +302,12 @@ def r2_score(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     k: int, optional
-        Number  of predictors. Only used to compute the  
+        Number  of predictors. Only used to compute the
         adjusted R2.
     adj: bool, optional
         If set to True, computes the adjusted R2.
@@ -303,8 +315,8 @@ def r2_score(
     Returns
     -------
     float
-    	score.
-	"""
+        score.
+    """
     if adj:
         kwargs = {"metrics": "r2_adj", "k": k}
     else:
@@ -319,7 +331,10 @@ Reports.
 
 @save_verticapy_logs
 def anova_table(
-    y_true: str, y_score: str, input_relation: SQLRelation, k: int = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: SQLRelation,
+    k: int = 1,
 ) -> TableSample:
     """
     Computes the ANOVA table.
@@ -331,9 +346,9 @@ def anova_table(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     k: int, optional
         Number of predictors.
@@ -394,8 +409,8 @@ def regression_report(
     k: int = 1,
 ) -> Union[float, TableSample]:
     """
-    Computes a regression report using multiple metrics (r2, 
-    mse, max error...). 
+    Computes a regression report using multiple metrics (r2,
+    mse, max error...).
 
     Parameters
     ----------
@@ -404,12 +419,12 @@ def regression_report(
     y_score: str
         Prediction.
     input_relation: SQLRelation
-        Relation to use for scoring. This relation can be a 
-        view, table,  or a customized relation (if an alias 
-        is used at the end of the relation). 
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
         For example: (SELECT ... FROM ...) x
     metrics: list, optional
-        List of the metrics used to compute the final 
+        List of the metrics used to compute the final
         report.
             aic    : Akaike’s Information Criterion
             bic    : Bayesian Information Criterion
@@ -422,20 +437,20 @@ def regression_report(
             r2a    : R2 adjusted
             qe     : quantile error, the quantile must be
                      included in the name. Example:
-                        qe50.1% will  return the quantile 
+                        qe50.1% will  return the quantile
                         error using q=0.501.
             rmse   : Root Mean Squared Error
-            var    : Explained Variance 
+            var    : Explained Variance
     k: int, optional
-        Number  of predictors. Used  to compute the adjusted 
+        Number  of predictors. Used  to compute the adjusted
         R2.
 
 
     Returns
     -------
     TableSample
-     	report.
-	"""
+        report.
+    """
     return_scalar = False
     if isinstance(metrics, str):
         metrics = [metrics]

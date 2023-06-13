@@ -54,47 +54,47 @@ def best_k(
     input_relation: SQLRelation
         Relation used to train the model.
     X: SQLColumns, optional
-    	List  of  the  predictor  columns.  If  empty,  all 
+        List  of  the  predictor  columns.  If  empty,  all
         numerical columns are used.
     n_cluster: tuple/list, optional
-    	Tuple representing  the number  of clusters to start 
-        and end with. This can also be a customized list with 
+        Tuple representing  the number  of clusters to start
+        and end with. This can also be a customized list with
         various k values to test.
     init: str / list, optional
-    	The method used to  find the initial cluster centers.
-    		kmeanspp : [Only available when use_kprototype is 
+        The method used to  find the initial cluster centers.
+                kmeanspp : [Only available when use_kprototype is
                        set to False]
-                       Use the k-means++ method to initialize 
+                       Use the k-means++ method to initialize
                        the centers.
-            random   : Randomly  subsamples the data to  find 
+            random   : Randomly  subsamples the data to  find
                        initial centers.
-        Default  value  is  'kmeanspp' if  use_kprototype  is 
+        Default  value  is  'kmeanspp' if  use_kprototype  is
         False; otherwise, 'random'.
     max_iter: int, optional
-    	The  maximum  number of iterations for the  algorithm.
+        The  maximum  number of iterations for the  algorithm.
     tol: float, optional
-    	Determines  whether  the algorithm has converged.  The 
-        algorithm is considered  converged after no center has 
-        moved more than a  distance of 'tol' from the previous 
+        Determines  whether  the algorithm has converged.  The
+        algorithm is considered  converged after no center has
+        moved more than a  distance of 'tol' from the previous
         iteration.
     use_kprototype: bool, optional
-        If  set  to True, the  function uses the  k-prototypes 
-        algorithm instead of k-means.  k-prototypes can handle 
+        If  set  to True, the  function uses the  k-prototypes
+        algorithm instead of k-means.  k-prototypes can handle
         categorical features.
     gamma: float, optional
-        [Only if use_kprototype is set to True] 
-        Weighting factor for categorical columns. It determines 
-        the  relative  importance of numerical and  categorical 
+        [Only if use_kprototype is set to True]
+        Weighting factor for categorical columns. It determines
+        the  relative  importance of numerical and  categorical
         attributes.
     elbow_score_stop: float, optional
-    	Stops searching for parameters when the specified elbow 
+        Stops searching for parameters when the specified elbow
         score is reached.
 
     Returns
     -------
     int
-    	the k-means / k-prototypes k
-	"""
+        the k-means / k-prototypes k
+    """
     X = format_type(X, dtype=list)
     if not init and (use_kprototype):
         init = "random"
@@ -158,50 +158,50 @@ def elbow(
     input_relation: SQLRelation
         Relation used to train the model.
     X: SQLColumns, optional
-        List  of  the  predictor  columns.  If  empty,  all 
+        List  of  the  predictor  columns.  If  empty,  all
         numerical columns are used.
     n_cluster: tuple/list, optional
-        Tuple representing  the number  of clusters to start 
-        and end with. This can also be a customized list with 
+        Tuple representing  the number  of clusters to start
+        and end with. This can also be a customized list with
         various k values to test.
     init: str / list, optional
         The method used to  find the initial cluster centers.
-            kmeanspp : [Only available when use_kprototype is 
+            kmeanspp : [Only available when use_kprototype is
                        set to False]
-                       Use the k-means++ method to initialize 
+                       Use the k-means++ method to initialize
                        the centers.
-            random   : Randomly  subsamples the data to  find 
+            random   : Randomly  subsamples the data to  find
                        initial centers.
-        Default  value  is  'kmeanspp' if  use_kprototype  is 
+        Default  value  is  'kmeanspp' if  use_kprototype  is
         False; otherwise, 'random'.
     max_iter: int, optional
         The  maximum  number of iterations for the  algorithm.
     tol: float, optional
-        Determines  whether  the algorithm has converged.  The 
-        algorithm is considered  converged after no center has 
-        moved more than a  distance of 'tol' from the previous 
+        Determines  whether  the algorithm has converged.  The
+        algorithm is considered  converged after no center has
+        moved more than a  distance of 'tol' from the previous
         iteration.
     use_kprototype: bool, optional
-        If  set  to True, the  function uses the  k-prototypes 
-        algorithm instead of k-means.  k-prototypes can handle 
+        If  set  to True, the  function uses the  k-prototypes
+        algorithm instead of k-means.  k-prototypes can handle
         categorical features.
     gamma: float, optional
-        [Only if use_kprototype is set to True] 
-        Weighting factor for categorical columns. It determines 
-        the  relative  importance of numerical and  categorical 
+        [Only if use_kprototype is set to True]
+        Weighting factor for categorical columns. It determines
+        the  relative  importance of numerical and  categorical
         attributes.
     show: bool, optional
         If set to True, the  Plotting object is returned.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the  Plotting 
+        Any  optional  parameter  to  pass  to  the  Plotting
         functions.
 
     Returns
     -------
     TableSample
-        nb_clusters,total_within_cluster_ss,between_cluster_ss, 
+        nb_clusters,total_within_cluster_ss,between_cluster_ss,
         total_ss, elbow_score
     """
     X = format_type(X, dtype=list)
@@ -244,7 +244,9 @@ def elbow(
         model.drop()
     if show:
         vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-            class_name="ElbowCurve", chart=chart, style_kwargs=style_kwargs,
+            class_name="ElbowCurve",
+            chart=chart,
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": np.array(L),

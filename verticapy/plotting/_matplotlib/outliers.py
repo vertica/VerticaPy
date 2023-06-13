@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.scatter import ScatterPlot
 
 
 class OutliersPlot(ScatterPlot):
-
     # Properties.
 
     @property
@@ -69,7 +68,10 @@ class OutliersPlot(ScatterPlot):
     # Draw.
 
     def draw(
-        self, cmap: str = None, ax: Optional[Axes] = None, **style_kwargs,
+        self,
+        cmap: str = None,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
     ) -> Axes:
         """
         Draws an outliers contour plot using the Matplotlib API.
@@ -85,7 +87,9 @@ class OutliersPlot(ScatterPlot):
         Z = self.data["map"]["Z"]
         zvals = self.data["map"]["zvals"]
         if len(self.layout["columns"]) == 1:
-            cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
+            if Z.max() > th:
+                cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
+                fig.colorbar(cp).set_label("ZSCORE")
             ax.fill_between(zvals, [-1, -1], [1, 1], facecolor=self.layout["color"])
             for x0 in zvals:
                 ax.plot([x0, x0], [-1, 1], color=self.layout["inliers_border_color"])
@@ -105,6 +109,7 @@ class OutliersPlot(ScatterPlot):
                 **self.init_style_linewidth,
             )
             cp = ax.contourf(X, Y, Z, cmap=cmap, levels=np.linspace(th, Z.max(), 8))
+            fig.colorbar(cp).set_label("ZSCORE")
             ax.set_xlabel(self.layout["columns"][0])
             ax.set_ylabel(self.layout["columns"][1])
         for x, c in [
@@ -112,9 +117,14 @@ class OutliersPlot(ScatterPlot):
             (self.data["outliers"], self.layout["outliers_color"]),
         ]:
             ax.scatter(
-                x[:, 0], x[:, 1], color=c, **{**self.init_style, **style_kwargs,},
+                x[:, 0],
+                x[:, 1],
+                color=c,
+                **{
+                    **self.init_style,
+                    **style_kwargs,
+                },
             )
-        fig.colorbar(cp).set_label("ZSCORE")
         args = [[0], [0]]
         ax.legend(
             [

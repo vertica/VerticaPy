@@ -63,7 +63,11 @@ class SpiderChart(PlotlyBase):
 
     # Draw.
 
-    def draw(self, fig: Optional[Figure] = None, **style_kwargs,) -> Figure:
+    def draw(
+        self,
+        fig: Optional[Figure] = None,
+        **style_kwargs,
+    ) -> Figure:
         """
         Draws a spider plot using the Plotly API.
         """
@@ -79,7 +83,10 @@ class SpiderChart(PlotlyBase):
             )
         fig.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, nticks=5,),
+                radialaxis=dict(
+                    visible=True,
+                    nticks=5,
+                ),
                 angularaxis=dict(type="category"),
             ),
             showlegend=True,

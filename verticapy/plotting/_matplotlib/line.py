@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class LinePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -71,7 +70,11 @@ class LinePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a time series plot using the Matplotlib API.
         """
@@ -114,7 +117,6 @@ class LinePlot(MatplotlibBase):
 
 
 class MultiLinePlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -143,7 +145,10 @@ class MultiLinePlot(MatplotlibBase):
         if len(self.data["x"]) < 20:
             self.init_style["markerfacecolor"] = "white"
 
-    def _get_style(self, idx: int = 0,) -> dict[str, Any]:
+    def _get_style(
+        self,
+        idx: int = 0,
+    ) -> dict[str, Any]:
         colors = self.get_colors()
         kwargs = {"linewidth": 1}
         kwargs_small = {
@@ -180,7 +185,11 @@ class MultiLinePlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a multi-time series plot using the Matplotlib API.
         """

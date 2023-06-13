@@ -25,7 +25,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class SpiderChart(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -48,7 +47,11 @@ class SpiderChart(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a spider plot using the Matplotlib API.
         """

@@ -60,29 +60,29 @@ class vDFUtils(PlottingUtils):
         raise_error: bool = True,
     ) -> SQLExpression:
         """
-        Method used to format the input columns by using the 
+        Method used to format the input columns by using the
         vDataFrame columns' names.
 
         Parameters
         ----------
         *args: str / list / dict, optional
-            List of columns' names to format. This allows you 
-            to use multiple objects as input and to format all 
+            List of columns' names to format. This allows you
+            to use multiple objects as input and to format all
             of them.
-            Example:  self.format_colnames(x0, x1, x2) returns 
-            x0_f, x1_f, x2_f 
+            Example:  self.format_colnames(x0, x1, x2) returns
+            x0_f, x1_f, x2_f
             where xi_f represents xi correctly formatted.
         columns: SQLColumns / dict, optional
             List of columns' names to format.
         expected_nb_of_cols: int | list
             [Only used for the function first argument]
             List of the expected number of columns.
-            Example: If  expected_nb_of_cols is set to [2, 3], 
-            the parameters 'columns' or the first argument of 
-            args  should   have   exactly  2  or  3  elements. 
+            Example: If  expected_nb_of_cols is set to [2, 3],
+            the parameters 'columns' or the first argument of
+            args  should   have   exactly  2  or  3  elements.
             Otherwise, the function will raise an error.
         raise_error: bool, optional
-            If set to True and there is an error, the function 
+            If set to True and there is an error, the function
             raises the error.
 
         Returns
@@ -177,7 +177,7 @@ class vDFUtils(PlottingUtils):
 
     def is_colname_in(self, column: str) -> bool:
         """
-        Method used to check if the input column name is used by 
+        Method used to check if the input column name is used by
         the vDataFrame.
 
         Parameters
@@ -188,7 +188,7 @@ class vDFUtils(PlottingUtils):
         Returns
         -------
         bool
-            True if the  column is used by the vDataFrame; false 
+            True if the  column is used by the vDataFrame; false
             otherwise.
         """
         columns = self.get_columns()

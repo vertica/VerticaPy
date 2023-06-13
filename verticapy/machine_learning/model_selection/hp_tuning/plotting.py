@@ -72,25 +72,25 @@ def validation_curve(
         Response Column.
     metric: str, optional
         Metric used to for model evaluation.
-            auto: logloss for classification & rmse for 
+            auto: logloss for classification & rmse for
                   regression.
         For Classification:
             accuracy    : Accuracy
             auc         : Area Under the Curve (ROC)
             ba          : Balanced Accuracy
                           = (tpr + tnr) / 2
-            bm          : Informedness 
+            bm          : Informedness
                           = tpr + tnr - 1
-            csi         : Critical Success Index 
+            csi         : Critical Success Index
                           = tp / (tp + fn + fp)
             f1          : F1 Score
             fdr         : False Discovery Rate = 1 - ppv
             fm          : Fowlkes–Mallows index
                           = sqrt(ppv * tpr)
-            fnr         : False Negative Rate 
+            fnr         : False Negative Rate
                           = fn / (fn + tp)
             for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate 
+            fpr         : False Positive Rate
                           = fp / (fp + tn)
             logloss     : Log Loss
             lr+         : Positive Likelihood Ratio
@@ -98,19 +98,19 @@ def validation_curve(
             lr-         : Negative Likelihood Ratio
                           = fnr / tnr
             dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient 
-            mk          : Markedness 
+            mcc         : Matthews Correlation Coefficient
+            mk          : Markedness
                           = ppv + npv - 1
-            npv         : Negative Predictive Value 
+            npv         : Negative Predictive Value
                           = tn / (tn + fn)
             prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision 
+            precision   : Precision
                           = tp / (tp + fp)
             pt          : Prevalence Threshold
                           = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall 
+            recall      : Recall
                           = tp / (tp + fn)
-            specificity : Specificity 
+            specificity : Specificity
                           = tn / (tn + fp)
         For Regression:
             max    : Max error
@@ -131,31 +131,31 @@ def validation_curve(
                        positive  and  use  the   binary
                        confusion  matrix to compute the
                        score.
-            micro    : positive  and   negative  values 
+            micro    : positive  and   negative  values
                        globally.
-            macro    : average  of  the  score of  each 
+            macro    : average  of  the  score of  each
                        class.
-            weighted : weighted average of the score of 
+            weighted : weighted average of the score of
                        each class.
     pos_label: PythonScalar, optional
-        The main class to be considered as positive 
+        The main class to be considered as positive
         (classification only).
     cutoff: float, optional
         The  model  cutoff  (classification  only).
     std_coeff: float, optional
-        Value of the standard deviation coefficient 
-        used  to compute the area plot around  each 
+        Value of the standard deviation coefficient
+        used  to compute the area plot around  each
         score.
     chart: PlottingObject, optional
         The chart object to plot on.
     **style_kwargs
-        Any  optional  parameter  to  pass  to  the 
+        Any  optional  parameter  to  pass  to  the
         Plotting functions.
 
     Returns
     -------
     TableSample
-        training_score_lower, training_score, 
+        training_score_lower, training_score,
         training_score_upper, test_score_lower,
         test_score, test_score_upper
     """
@@ -211,7 +211,9 @@ def validation_curve(
         }
     )
     vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-        class_name="RangeCurve", chart=chart, style_kwargs=style_kwargs,
+        class_name="RangeCurve",
+        chart=chart,
+        style_kwargs=style_kwargs,
     )
     data = {"x": x, "Y": Y}
     layout = {"columns": ["train", "test"], "order_by": param_name, "y_label": metric}
@@ -250,15 +252,15 @@ def plot_acf_pacf(
     by: list, optional
         vDataColumns used in the partition.
     p: int | list, optional
-        Integer equal to the maximum  number  of lags to 
-        consider during the computation or a list of the 
+        Integer equal to the maximum  number  of lags to
+        consider during the computation or a list of the
         different lags to include during the computation.
         p must be positive or a list of positive integers.
     show: bool, optional
         If  set to  True,  the  Plotting  object is
         returned.
     **style_kwargs
-        Any optional  parameter to pass to the Plotting 
+        Any optional  parameter to pass to the Plotting
         functions.
 
     Returns
@@ -273,7 +275,8 @@ def plot_acf_pacf(
     index = [i for i in range(0, len(acf.values["value"]))]
     if show:
         vpy_plt, kwargs = PlottingUtils().get_plotting_lib(
-            class_name="ACFPACFPlot", style_kwargs=style_kwargs,
+            class_name="ACFPACFPlot",
+            style_kwargs=style_kwargs,
         )
         data = {
             "x": np.array(index),

@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class ChampionChallengerPlot(HighchartsBase):
-
     # Properties.
 
     @property

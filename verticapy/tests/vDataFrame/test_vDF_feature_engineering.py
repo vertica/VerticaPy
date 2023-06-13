@@ -816,7 +816,11 @@ class TestvDFFeatureEngineering:
         # method = "ilike"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="mrs.", method="ilike", occurrence=1, name="name2",
+            column="name",
+            pattern="mrs.",
+            method="ilike",
+            occurrence=1,
+            name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 185
@@ -840,7 +844,11 @@ class TestvDFFeatureEngineering:
         # method = "not_ilike"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="mrs.", method="not_ilike", position=2, name="name2",
+            column="name",
+            pattern="mrs.",
+            method="not_ilike",
+            position=2,
+            name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 1049
@@ -848,7 +856,11 @@ class TestvDFFeatureEngineering:
         # method = "not_like"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="Mrs.", method="not_like", position=2, name="name2",
+            column="name",
+            pattern="Mrs.",
+            method="not_like",
+            position=2,
+            name="name2",
         )
 
         assert titanic_copy["name2"].sum() == 1049
@@ -870,7 +882,11 @@ class TestvDFFeatureEngineering:
         # method = "substr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="[^,]+", method="substr", occurrence=2, name="name2",
+            column="name",
+            pattern="[^,]+",
+            method="substr",
+            occurrence=2,
+            name="name2",
         )
         titanic_copy.sort(["name2"])
 

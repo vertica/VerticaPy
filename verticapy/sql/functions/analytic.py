@@ -22,7 +22,7 @@ from verticapy.core.string_sql.base import StringSQL
 
 def avg(expr: SQLExpression) -> StringSQL:
     """
-    Computes the average (arithmetic mean) of 
+    Computes the average (arithmetic mean) of
     an  expression  over  a  group  of  rows.
 
     Parameters
@@ -44,8 +44,8 @@ mean = avg
 
 def bool_and(expr: SQLExpression) -> StringSQL:
     """
-    Processes  Boolean  values and returns  a  Boolean 
-    value  result.  If  all  input  values  are  true, 
+    Processes  Boolean  values and returns  a  Boolean
+    value  result.  If  all  input  values  are  true,
     BOOL_AND returns True. Otherwise it returns False.
 
     Parameters
@@ -64,9 +64,9 @@ def bool_and(expr: SQLExpression) -> StringSQL:
 
 def bool_or(expr: SQLExpression) -> StringSQL:
     """
-    Processes Boolean values and returns a Boolean 
-    value  result. If at least one input value  is 
-    true,  BOOL_OR  returns  True.  Otherwise,  it 
+    Processes Boolean values and returns a Boolean
+    value  result. If at least one input value  is
+    true,  BOOL_OR  returns  True.  Otherwise,  it
     returns False.
 
     Parameters
@@ -85,9 +85,9 @@ def bool_or(expr: SQLExpression) -> StringSQL:
 
 def bool_xor(expr: SQLExpression) -> StringSQL:
     """
-    Processes  Boolean values and  returns a Boolean 
-    value  result.  If  specifically only one  input 
-    value is true, BOOL_XOR returns True. Otherwise, 
+    Processes  Boolean values and  returns a Boolean
+    value  result.  If  specifically only one  input
+    value is true, BOOL_XOR returns True. Otherwise,
     it returns False.
 
     Parameters
@@ -106,9 +106,9 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
 
 def conditional_change_event(expr: SQLExpression) -> StringSQL:
     """
-    Assigns an event window number to each row,  starting 
-    from  0,  and  increments  by  1 when the  result  of 
-    evaluating the argument expression on the current row 
+    Assigns an event window number to each row,  starting
+    from  0,  and  increments  by  1 when the  result  of
+    evaluating the argument expression on the current row
     differs from that on the previous row.
 
     Parameters
@@ -127,8 +127,8 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
 
 def conditional_true_event(expr: SQLExpression) -> StringSQL:
     """
-    Assigns an  event window number to each row,  starting 
-    from 0, and increments the number by 1 when the result 
+    Assigns an  event window number to each row,  starting
+    from 0, and increments the number by 1 when the result
     of  the boolean  argument expression  evaluates  true.
 
     Parameters
@@ -147,7 +147,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
 
 def count(expr: SQLExpression) -> StringSQL:
     """
-    Returns as a BIGINT the number of rows in each group 
+    Returns as a BIGINT the number of rows in each group
     where the expression is not NULL.
 
     Parameters
@@ -166,8 +166,8 @@ def count(expr: SQLExpression) -> StringSQL:
 
 def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
     """
-    Returns the value of the input expression at the given 
-    offset before the current row within a window. 
+    Returns the value of the input expression at the given
+    offset before the current row within a window.
 
     Parameters
     ----------
@@ -187,9 +187,9 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
 def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
     """
-    Returns values  from the row after the current row within 
-    a window, letting you access more than one row in a table 
-    at the same time. 
+    Returns values  from the row after the current row within
+    a window, letting you access more than one row in a table
+    at the same time.
 
     Parameters
     ----------
@@ -209,7 +209,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
 def max(expr: SQLExpression) -> StringSQL:
     """
-    Returns the greatest value of an expression 
+    Returns the greatest value of an expression
     over a group of rows.
 
     Parameters
@@ -228,7 +228,7 @@ def max(expr: SQLExpression) -> StringSQL:
 
 def median(expr: SQLExpression) -> StringSQL:
     """
-    Computes the approximate median of an expression 
+    Computes the approximate median of an expression
     over a group of rows.
 
     Parameters
@@ -247,7 +247,7 @@ def median(expr: SQLExpression) -> StringSQL:
 
 def min(expr: SQLExpression) -> StringSQL:
     """
-    Returns the smallest value of an expression 
+    Returns the smallest value of an expression
     over a group of rows.
 
     Parameters
@@ -266,7 +266,7 @@ def min(expr: SQLExpression) -> StringSQL:
 
 def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
     """
-    Returns the value evaluated at the row that is 
+    Returns the value evaluated at the row that is
     the nth row of the window (counting from 1).
 
     Parameters
@@ -287,7 +287,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
 
 def quantile(expr: SQLExpression, number: float) -> StringSQL:
     """
-    Computes  the  approximate  percentile of  an 
+    Computes  the  approximate  percentile of  an
     expression over a group of rows.
 
     Parameters
@@ -295,7 +295,7 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
     expr: SQLExpression
         Expression.
     number: float
-        Percentile value,  which must be  a FLOAT 
+        Percentile value,  which must be  a FLOAT
         constant ranging from 0 to 1 (inclusive).
 
     Returns
@@ -312,8 +312,8 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
 
 def rank() -> StringSQL:
     """
-    Within each window partition, ranks all rows in 
-    the  query  results set according to the  order 
+    Within each window partition, ranks all rows in
+    the  query  results set according to the  order
     specified  by  the  window's  ORDER BY  clause.
 
     Returns
@@ -326,7 +326,7 @@ def rank() -> StringSQL:
 
 def row_number() -> StringSQL:
     """
-    Assigns a sequence of unique numbers, starting 
+    Assigns a sequence of unique numbers, starting
     from 1,  to  each  row in a  window partition.
 
     Returns
@@ -339,7 +339,7 @@ def row_number() -> StringSQL:
 
 def std(expr: SQLExpression) -> StringSQL:
     """
-    Evaluates  the  statistical  sample  standard 
+    Evaluates  the  statistical  sample  standard
     deviation  for  each  member  of  the  group.
 
     Parameters
@@ -361,7 +361,7 @@ stddev = std
 
 def sum(expr: SQLExpression) -> StringSQL:
     """
-    Computes the sum of an expression over a group 
+    Computes the sum of an expression over a group
     of rows.
 
     Parameters
@@ -380,7 +380,7 @@ def sum(expr: SQLExpression) -> StringSQL:
 
 def var(expr: SQLExpression) -> StringSQL:
     """
-    Evaluates the sample variance for each row of 
+    Evaluates the sample variance for each row of
     the group.
 
     Parameters

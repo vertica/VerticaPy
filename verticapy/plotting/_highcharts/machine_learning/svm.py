@@ -24,7 +24,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class SVMClassifierPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -62,7 +61,10 @@ class SVMClassifierPlot(HighchartsBase):
                     "marker": {
                         "radius": 5,
                         "states": {
-                            "hover": {"enabled": True, "lineColor": "rgb(100,100,100)",}
+                            "hover": {
+                                "enabled": True,
+                                "lineColor": "rgb(100,100,100)",
+                            }
                         },
                     },
                     "states": {"hover": {"marker": {"enabled": False}}},

@@ -95,10 +95,14 @@ def model(xgbr_data_vd):
 )
 class TestXGBR:
     def test_contour(self, titanic_vd):
-        model_test = XGBRegressor("model_contour",)
+        model_test = XGBRegressor(
+            "model_contour",
+        )
         model_test.drop()
         model_test.fit(
-            titanic_vd, ["age", "fare"], "survived",
+            titanic_vd,
+            ["age", "fare"],
+            "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) in (37, 34)
@@ -112,7 +116,9 @@ class TestXGBR:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS xgbr_model_test_drop")
-        model_test = XGBRegressor("xgbr_model_test_drop",)
+        model_test = XGBRegressor(
+            "xgbr_model_test_drop",
+        )
         model_test.fit(
             "public.xgbr_data",
             ['"Gender"', '"owned cars"', '"cost"', '"income"'],
@@ -433,7 +439,9 @@ class TestXGBR:
 
     def test_model_from_vDF(self, xgbr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS xgbr_from_vDF")
-        model_test = XGBRegressor("xgbr_from_vDF",)
+        model_test = XGBRegressor(
+            "xgbr_from_vDF",
+        )
         model_test.fit(xgbr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(
@@ -471,7 +479,9 @@ class TestXGBR:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = XGBRegressor("model_test_plot",)
+        model_test = XGBRegressor(
+            "model_test_plot",
+        )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) in (9, 12)

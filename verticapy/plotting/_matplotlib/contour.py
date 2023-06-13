@@ -24,7 +24,6 @@ from verticapy.plotting._matplotlib.base import MatplotlibBase
 
 
 class ContourPlot(MatplotlibBase):
-
     # Properties.
 
     @property
@@ -71,7 +70,11 @@ class ContourPlot(MatplotlibBase):
 
     # Draw.
 
-    def draw(self, ax: Optional[Axes] = None, **style_kwargs,) -> Axes:
+    def draw(
+        self,
+        ax: Optional[Axes] = None,
+        **style_kwargs,
+    ) -> Axes:
         """
         Draws a contour plot using the Matplotlib API.
         """

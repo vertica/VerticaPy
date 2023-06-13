@@ -36,7 +36,7 @@ def gen_name(L: list) -> str:
 
 def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> str:
     """
-    Generates a temporary name using the input schema 
+    Generates a temporary name using the input schema
     and name.
     """
     current_cursor().execute("SELECT CURRENT_SESSION(), USERNAME();")

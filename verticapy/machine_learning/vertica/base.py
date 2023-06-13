@@ -77,7 +77,7 @@ if conf.get_import_success("graphviz"):
 class VerticaModel(PlottingUtils):
     """
     Base Class for Vertica Models.
-	"""
+    """
 
     # Properties.
 
@@ -184,16 +184,18 @@ class VerticaModel(PlottingUtils):
         return drop(self.model_name, method="model")
 
     def _is_already_stored(
-        self, raise_error: bool = False, return_model_type: bool = False,
+        self,
+        raise_error: bool = False,
+        return_model_type: bool = False,
     ) -> Union[bool, str]:
         """
-        Checks whether the model is stored in the 
+        Checks whether the model is stored in the
         Vertica database.
 
         Parameters
         ----------
         raise_error: bool, optional
-            If set to True and an error occurs, 
+            If set to True and an error occurs,
             raises the error.
         return_model_type: bool, optional
             If set to True, returns the model type.
@@ -212,10 +214,12 @@ class VerticaModel(PlottingUtils):
 
     @staticmethod
     def does_model_exists(
-        name: str, raise_error: bool = False, return_model_type: bool = False,
+        name: str,
+        raise_error: bool = False,
+        return_model_type: bool = False,
     ) -> Union[bool, str]:
         """
-        Checks whether the model is stored in the Vertica 
+        Checks whether the model is stored in the Vertica
         database.
 
         Parameters
@@ -223,7 +227,7 @@ class VerticaModel(PlottingUtils):
         name: str, optional
             Model's name.
         raise_error: bool, optional
-            If set to True and an error occurs, 
+            If set to True and an error occurs,
             raises the error.
         return_model_type: bool, optional
             If set to True, returns the model type.
@@ -337,7 +341,7 @@ class VerticaModel(PlottingUtils):
     @staticmethod
     def _map_to_vertica_param_dict() -> dict[str, str]:
         """
-        Returns a dictionary used to map VerticaPy parameter 
+        Returns a dictionary used to map VerticaPy parameter
         names to Vertica parameter names.
         """
         return {
@@ -359,7 +363,7 @@ class VerticaModel(PlottingUtils):
 
     def _map_to_vertica_param_name(self, param: str) -> str:
         """
-        Maps the input VerticaPy parameter name to the 
+        Maps the input VerticaPy parameter name to the
         Vertica parameter name.
         """
         options = self._map_to_vertica_param_dict()
@@ -370,8 +374,8 @@ class VerticaModel(PlottingUtils):
 
     def _get_vertica_param_dict(self) -> dict[str, str]:
         """
-        Returns the Vertica parameters dict to use when fitting 
-        the model. As some model's parameters names are not the 
+        Returns the Vertica parameters dict to use when fitting
+        the model. As some model's parameters names are not the
         same in Vertica. It is important to map them.
 
         Returns
@@ -382,7 +386,6 @@ class VerticaModel(PlottingUtils):
         parameters = {}
 
         for param in self.parameters:
-
             if param == "class_weight":
                 if isinstance(self.parameters[param], (list, np.ndarray)):
                     parameters[
@@ -417,7 +420,7 @@ class VerticaModel(PlottingUtils):
         self, options: Optional[dict] = None, **kwargs
     ) -> dict:
         """
-        Takes as input a dictionary of Vertica options and 
+        Takes as input a dictionary of Vertica options and
         returns  the  associated  dictionary of  VerticaPy
         options.
         """
@@ -501,12 +504,12 @@ class VerticaModel(PlottingUtils):
 
     def deploySQL(self, X: Optional[SQLColumns] = None) -> str:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model. 
+            List of the columns used to deploy the model.
             If empty,  the model predictors are used.
 
         Returns
@@ -529,10 +532,12 @@ class VerticaModel(PlottingUtils):
             )
 
     def to_python(
-        self, return_proba: bool = False, return_distance_clusters: bool = False,
+        self,
+        return_proba: bool = False,
+        return_distance_clusters: bool = False,
     ) -> Callable:
         """
-        Returns the Python function needed for in-memory 
+        Returns the Python function needed for in-memory
         scoring  without using built-in Vertica functions.
 
         Parameters
@@ -541,9 +546,9 @@ class VerticaModel(PlottingUtils):
             If  set to True  and  the  model is a  classifier,
             the  function  returns  the  model  probabilities.
         return_distance_clusters: bool, optional
-            If  set to  True and the  model is  cluster-based, 
-            the function returns the model clusters distances. 
-            If the model is KPrototypes, the  function returns 
+            If  set to  True and the  model is  cluster-based,
+            the function returns the model clusters distances.
+            If the model is KPrototypes, the  function returns
             the dissimilarity function.
 
         Returns
@@ -566,7 +571,7 @@ class VerticaModel(PlottingUtils):
         return_distance_clusters: bool = False,
     ) -> SQLExpression:
         """
-        Returns  the SQL  code  needed  to deploy the  model 
+        Returns  the SQL  code  needed  to deploy the  model
         without using built-in Vertica functions.
 
         Parameters
@@ -577,9 +582,9 @@ class VerticaModel(PlottingUtils):
             If  set to  True and  the  model is a  classifier,
             the function returns the class probabilities.
         return_distance_clusters: bool, optional
-            If  set to  True and the  model is  cluster-based, 
-            the function returns the model clusters distances. 
-            If the model is  KPrototypes, the function returns 
+            If  set to  True and the  model is  cluster-based,
+            the function returns the model clusters distances.
+            If the model is  KPrototypes, the function returns
             the dissimilarity function.
 
         Returns
@@ -630,7 +635,10 @@ class VerticaModel(PlottingUtils):
         return res
 
     def contour(
-        self, nbins: int = 100, chart: Optional[PlottingObject] = None, **style_kwargs,
+        self,
+        nbins: int = 100,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
     ) -> PlottingObject:
         """
         Draws the model's contour plot.
@@ -638,12 +646,12 @@ class VerticaModel(PlottingUtils):
         Parameters
         ----------
         nbins: int, optional
-            Number of bins used to discretize the 
+            Number of bins used to discretize the
             two predictors.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -659,7 +667,6 @@ class VerticaModel(PlottingUtils):
 
 
 class Supervised(VerticaModel):
-
     # Properties
 
     @property
@@ -687,24 +694,24 @@ class Supervised(VerticaModel):
         test_relation: SQLRelation = "",
     ) -> Optional[str]:
         """
-    	Trains the model.
+        Trains the model.
 
-    	Parameters
-    	----------
-    	input_relation: SQLRelation
-    		Training relation.
-    	X: SQLColumns
-    		List of the predictors.
-    	y: str
-    		Response column.
-    	test_relation: SQLRelation, optional
-    		Relation used to test the model.
+        Parameters
+        ----------
+        input_relation: SQLRelation
+                Training relation.
+        X: SQLColumns
+                List of the predictors.
+        y: str
+                Response column.
+        test_relation: SQLRelation, optional
+                Relation used to test the model.
 
         Returns
         -------
         str
             model's summary.
-		"""
+        """
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -823,7 +830,6 @@ class Supervised(VerticaModel):
 
 
 class Tree:
-
     # Properties.
 
     @property
@@ -850,8 +856,8 @@ class Tree:
         self, tree: TableSample, X: list, return_probability: bool = False
     ) -> list[list]:
         """
-        Takes as input a tree which is represented by a 
-        TableSample.  It returns a list of arrays. Each 
+        Takes as input a tree which is represented by a
+        TableSample.  It returns a list of arrays. Each
         index of the arrays represents a node value.
         """
         for i in range(len(tree["tree_id"])):
@@ -973,7 +979,7 @@ class Tree:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -988,7 +994,9 @@ class Tree:
             }
             layout = {"columns": copy.deepcopy(self.X)}
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="ImportanceBarChart", chart=chart, style_kwargs=style_kwargs,
+                class_name="ImportanceBarChart",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
         importances = {
@@ -998,17 +1006,20 @@ class Tree:
         }
         return TableSample(values=importances).sort(column="importance", desc=True)
 
-    def get_score(self, tree_id: Optional[int] = None,) -> TableSample:
+    def get_score(
+        self,
+        tree_id: Optional[int] = None,
+    ) -> TableSample:
         """
-        Returns the feature importance metrics for the input 
+        Returns the feature importance metrics for the input
         tree.
 
         Parameters
         ----------
         tree_id: int, optional
-            Unique  tree identifier, an integer in the range 
-            [0, n_estimators - 1]. If tree_id is  undefined, 
-            all  the trees in the model are used to  compute 
+            Unique  tree identifier, an integer in the range
+            [0, n_estimators - 1]. If tree_id is  undefined,
+            all  the trees in the model are used to  compute
             the metrics.
 
         Returns
@@ -1040,7 +1051,7 @@ class Tree:
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -1052,7 +1063,9 @@ class Tree:
             vdf = vDataFrame(self.input_relation)
             vdf["_prediction"] = self.deploySQL()
             vpy_plt, kwargs = self.get_plotting_lib(
-                class_name="RegressionTreePlot", chart=chart, style_kwargs=style_kwargs,
+                class_name="RegressionTreePlot",
+                chart=chart,
+                style_kwargs=style_kwargs,
             )
             return vpy_plt.RegressionTreePlot(
                 vdf=vdf,
@@ -1072,7 +1085,7 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree  identifier, an integer in the range 
+            Unique tree  identifier, an integer in the range
             [0, n_estimators - 1].
 
         Returns
@@ -1105,30 +1118,30 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique  tree identifier,  an integer in the  range 
+            Unique  tree identifier,  an integer in the  range
             [0, n_estimators - 1].
         classes_color: ArrayLike, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to. 
+            The number of decimals to round the prediction to.
             Zero rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as 
+            If set to True, the probabilities are returned as
             percents.
         vertical: bool, optional
-            If set to True, the function generates a vertical 
+            If set to True, the function generates a vertical
             tree.
         node_style: dict, optional
-            Dictionary  of options to customize each node  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each node  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary of options to customize each arrow  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary  of options to customize each leaf  of 
-            the tree. For a list of options, see the Graphviz 
+            Dictionary  of options to customize each leaf  of
+            the tree. For a list of options, see the Graphviz
             API: https://graphviz.org/doc/info/attrs.html
 
         Returns
@@ -1148,7 +1161,11 @@ class Tree:
         )
 
     def plot_tree(
-        self, tree_id: int = 0, pic_path: Optional[str] = None, *args, **kwargs,
+        self,
+        tree_id: int = 0,
+        pic_path: Optional[str] = None,
+        *args,
+        **kwargs,
     ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
@@ -1156,7 +1173,7 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier, an integer in the range 
+            Unique tree identifier, an integer in the range
             [0, n_estimators - 1].
         pic_path: str, optional
             Absolute  path to save  the image of the  tree.
@@ -1169,12 +1186,14 @@ class Tree:
             graphviz object.
         """
         return self.trees_[tree_id].plot_tree(
-            pic_path=pic_path, feature_names=self.X, *args, **kwargs,
+            pic_path=pic_path,
+            feature_names=self.X,
+            *args,
+            **kwargs,
         )
 
 
 class BinaryClassifier(Supervised):
-
     # Properties.
 
     @property
@@ -1202,23 +1221,23 @@ class BinaryClassifier(Supervised):
         self, X: Optional[SQLColumns] = None, cutoff: Optional[PythonNumber] = None
     ) -> str:
         """
-    	Returns  the  SQL code  needed to deploy  the  model. 
+        Returns  the  SQL code  needed to deploy  the  model.
 
-    	Parameters
-    	----------
+        Parameters
+        ----------
         X: SQLColumns, optional
-            List of the  columns used to deploy the model. If 
+            List of the  columns used to deploy the model. If
             empty, the model predictors are used.
-    	cutoff: PythonNumber, optional
-    		Probability cutoff. If this number is not between 
-            0 and 1,  the method retruns the  probability 
+        cutoff: PythonNumber, optional
+                Probability cutoff. If this number is not between
+            0 and 1,  the method retruns the  probability
             of class 1.
 
-    	Returns
-    	-------
-    	str
-    		the SQL code needed to deploy the model.
-		"""
+        Returns
+        -------
+        str
+                the SQL code needed to deploy the model.
+        """
         X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
         sql = f"""
@@ -1250,32 +1269,32 @@ class BinaryClassifier(Supervised):
     ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple model
-        evaluation metrics (AUC, accuracy, PRC AUC, F1...). 
+        evaluation metrics (AUC, accuracy, PRC AUC, F1...).
 
         Parameters
         ----------
         metrics: list, optional
-            List  of the  metrics  used to compute the  final 
+            List  of the  metrics  used to compute the  final
             report.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
                 ba          : Balanced Accuracy
                               = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC 
+                best_cutoff : Cutoff  which optimised the  ROC
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index 
+                csi         : Critical Success Index
                               = tp / (tp + fn + fp)
                 f1          : F1 Score
                 fdr         : False Discovery Rate = 1 - ppv
                 fm          : Fowlkes–Mallows index
                               = sqrt(ppv * tpr)
-                fnr         : False Negative Rate 
+                fnr         : False Negative Rate
                               = fn / (fn + tp)
                 for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate 
+                fpr         : False Positive Rate
                               = fp / (fp + tn)
                 logloss     : Log Loss
                 lr+         : Positive Likelihood Ratio
@@ -1283,9 +1302,9 @@ class BinaryClassifier(Supervised):
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
                 dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient 
+                mcc         : Matthews Correlation Coefficient
                 mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value 
+                npv         : Negative Predictive Value
                               = tn / (tn + fn)
                 prc_auc     : Area Under the Curve (PRC)
                 precision   : Precision = tp / (tp + fp)
@@ -1297,12 +1316,12 @@ class BinaryClassifier(Supervised):
             Probability cutoff.
         nbins: int, optional
             [Used to compute ROC AUC, PRC AUC and the best cutoff]
-            An  integer  value  that   determines  the  number  of 
-            decision  boundaries. Decision  boundaries are set  at 
-            equally  spaced intervals between 0 and 1,  inclusive. 
-            Greater values for nbins give more precise estimations 
-            of   the   metrics,  but   can  potentially   decrease 
-            performance. The maximum value is 999,999. If negative, 
+            An  integer  value  that   determines  the  number  of
+            decision  boundaries. Decision  boundaries are set  at
+            equally  spaced intervals between 0 and 1,  inclusive.
+            Greater values for nbins give more precise estimations
+            of   the   metrics,  but   can  potentially   decrease
+            performance. The maximum value is 999,999. If negative,
             the maximum value is used.
 
         Returns
@@ -1336,7 +1355,9 @@ class BinaryClassifier(Supervised):
             confusion matrix.
         """
         return mt.confusion_matrix(
-            self.y, self.deploySQL(cutoff=cutoff), self.test_relation,
+            self.y,
+            self.deploySQL(cutoff=cutoff),
+            self.test_relation,
         )
 
     def score(
@@ -1357,20 +1378,20 @@ class BinaryClassifier(Supervised):
                 auc         : Area Under the Curve (ROC)
                 ba          : Balanced Accuracy
                               = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC 
+                best_cutoff : Cutoff  which optimised the  ROC
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index 
+                csi         : Critical Success Index
                               = tp / (tp + fn + fp)
                 f1          : F1 Score
                 fdr         : False Discovery Rate = 1 - ppv
                 fm          : Fowlkes–Mallows index
                               = sqrt(ppv * tpr)
-                fnr         : False Negative Rate 
+                fnr         : False Negative Rate
                               = fn / (fn + tp)
                 for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate 
+                fpr         : False Positive Rate
                               = fp / (fp + tn)
                 logloss     : Log Loss
                 lr+         : Positive Likelihood Ratio
@@ -1378,9 +1399,9 @@ class BinaryClassifier(Supervised):
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
                 dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient 
+                mcc         : Matthews Correlation Coefficient
                 mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value 
+                npv         : Negative Predictive Value
                               = tn / (tn + fn)
                 prc_auc     : Area Under the Curve (PRC)
                 precision   : Precision = tp / (tp + fp)
@@ -1392,12 +1413,12 @@ class BinaryClassifier(Supervised):
             Cutoff for which the tested category will be
             accepted as a prediction.
         nbins: int, optional
-            [Only  when  method  is set  to  auc|prc_auc|best_cutoff] 
+            [Only  when  method  is set  to  auc|prc_auc|best_cutoff]
             An  integer value that determines the number of  decision
-            boundaries. Decision boundaries are set at equally spaced 
-            intervals between 0 and 1,  inclusive. Greater values for 
-            nbins give more precise  estimations of the AUC,  but can 
-            potentially  decrease performance.  The maximum value  is 
+            boundaries. Decision boundaries are set at equally spaced
+            intervals between 0 and 1,  inclusive. Greater values for
+            nbins give more precise  estimations of the AUC,  but can
+            potentially  decrease performance.  The maximum value  is
             999,999. If negative, the maximum value is used.
 
         Returns
@@ -1448,21 +1469,21 @@ class BinaryClassifier(Supervised):
         Parameters
         ----------
         vdf: SQLRelation
-            Object used to run  the prediction.  You can 
-            also  specify a  customized  relation,  but you 
-            must  enclose  it with an alias.  For  example, 
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)" 
+            Object used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models. 
+            List of the columns  used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name
             is generated.
         cutoff: float, optional
             Probability cutoff.
         inplace: bool, optional
-            If set to True, the prediction is added to 
+            If set to True, the prediction is added to
             the vDataFrame.
 
         Returns
@@ -1498,28 +1519,28 @@ class BinaryClassifier(Supervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Returns the model's  probabilities  using the input 
+        Returns the model's  probabilities  using the input
         relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run  the prediction.  You can 
-            also  specify a  customized  relation,  but you 
-            must  enclose  it with an alias.  For  example, 
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)" 
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models. 
+            List of the columns  used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name
             is generated.
         pos_label: PythonScalar, optional
-            Class  label.  For binary classification,  this 
+            Class  label.  For binary classification,  this
             can be either 1 or 0.
         inplace: bool, optional
-            If set to True, the prediction is added to 
+            If set to True, the prediction is added to
             the vDataFrame.
 
         Returns
@@ -1573,12 +1594,12 @@ class BinaryClassifier(Supervised):
         nbins: int, optional
             The number of bins.
         show: bool, optional
-            If set to True,  the  Plotting 
+            If set to True,  the  Plotting
             object is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass 
+            Any optional parameter to pass
             to the Plotting functions.
 
         Returns
@@ -1605,26 +1626,26 @@ class BinaryClassifier(Supervised):
         **style_kwargs,
     ) -> TableSample:
         """
-    	Draws the model Lift Chart.
+        Draws the model Lift Chart.
 
         Parameters
         ----------
         nbins: int, optional
             The number of bins.
         show: bool, optional
-            If set to True,  the  Plotting 
+            If set to True,  the  Plotting
             object  is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass 
+            Any optional parameter to pass
             to the Plotting functions.
 
-    	Returns
-    	-------
-    	TableSample
-    		lift chart data points.
-		"""
+        Returns
+        -------
+        TableSample
+                lift chart data points.
+        """
         return mt.lift_chart(
             self.y,
             self.deploySQL(),
@@ -1643,26 +1664,26 @@ class BinaryClassifier(Supervised):
         **style_kwargs,
     ) -> TableSample:
         """
-    	Draws the model PRC curve.
+        Draws the model PRC curve.
 
         Parameters
         ----------
         nbins: int, optional
             The number of bins.
         show: bool, optional
-            If set to True,  the  Plotting 
+            If set to True,  the  Plotting
             object  is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass 
+            Any optional parameter to pass
             to the Plotting functions.
 
-    	Returns
-    	-------
-    	TableSample
-    		PRC curve data points.
-		"""
+        Returns
+        -------
+        TableSample
+                PRC curve data points.
+        """
         return mt.prc_curve(
             self.y,
             self.deploySQL(),
@@ -1688,12 +1709,12 @@ class BinaryClassifier(Supervised):
         nbins: int, optional
             The number of bins.
         show: bool, optional
-            If set to True,  the  Plotting 
+            If set to True,  the  Plotting
             object  is returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass 
+            Any optional parameter to pass
             to the Plotting functions.
 
         Returns
@@ -1713,7 +1734,6 @@ class BinaryClassifier(Supervised):
 
 
 class MulticlassClassifier(Supervised):
-
     # System & Special Methods.
 
     @abstractmethod
@@ -1774,25 +1794,25 @@ class MulticlassClassifier(Supervised):
         allSQL: bool = False,
     ) -> SQLExpression:
         """
-        Returns the SQL code needed to deploy the model. 
+        Returns the SQL code needed to deploy the model.
 
         Parameters
         ----------
         X: SQLColumns, optional
-            List of the columns used to deploy the model. 
+            List of the columns used to deploy the model.
             If empty, the model predictors are used.
         pos_label: PythonScalar, optional
-            Label to consider as positive. All the other 
-            classes  are  merged and  considered  as 
+            Label to consider as positive. All the other
+            classes  are  merged and  considered  as
             negative for multiclass classification.
         cutoff: PythonNumber, optional
-            Cutoff for which the tested category will be 
-            accepted  as a prediction. If the cutoff  is 
-            not  between 0 and 1,  a probability is 
+            Cutoff for which the tested category will be
+            accepted  as a prediction. If the cutoff  is
+            not  between 0 and 1,  a probability is
             returned.
         allSQL: bool, optional
             If set to True, the output is a list of
-            the different SQL codes needed to deploy the 
+            the different SQL codes needed to deploy the
             different categories score.
 
         Returns
@@ -1851,16 +1871,22 @@ class MulticlassClassifier(Supervised):
 
     # Model Evaluation Methods.
 
-    def _get_final_relation(self, pos_label: Optional[PythonScalar] = None,) -> str:
+    def _get_final_relation(
+        self,
+        pos_label: Optional[PythonScalar] = None,
+    ) -> str:
         """
-        Returns  the  final  relation  used to do  the 
+        Returns  the  final  relation  used to do  the
         predictions.
         """
         return self.test_relation
 
-    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
+    def _get_y_proba(
+        self,
+        pos_label: Optional[PythonScalar] = None,
+    ) -> str:
         """
-        Returns the input which represents the  model's 
+        Returns the input which represents the  model's
         probabilities.
         """
         return self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -1872,7 +1898,7 @@ class MulticlassClassifier(Supervised):
         allSQL: bool = False,
     ) -> str:
         """
-        Returns  the input which represents the model's 
+        Returns  the input which represents the model's
         scoring.
         """
         return self.deploySQL(pos_label=pos_label, cutoff=cutoff, allSQL=allSQL)
@@ -1888,35 +1914,35 @@ class MulticlassClassifier(Supervised):
     ) -> Union[float, TableSample]:
         """
         Computes a classification report using multiple model
-        evaluation metrics (AUC, accuracy, PRC AUC, F1...). 
-        For  multiclass classification,  it considers  each 
-        category as positive and switches to the next one during 
+        evaluation metrics (AUC, accuracy, PRC AUC, F1...).
+        For  multiclass classification,  it considers  each
+        category as positive and switches to the next one during
         the computation.
 
         Parameters
         ----------
         metrics: list, optional
-            List of  the metrics  used to compute the  final 
+            List of  the metrics  used to compute the  final
             report.
                 accuracy    : Accuracy
                 aic         : Akaike’s  Information  Criterion
                 auc         : Area Under the Curve (ROC)
                 ba          : Balanced Accuracy
                               = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC 
+                best_cutoff : Cutoff  which optimised the  ROC
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index 
+                csi         : Critical Success Index
                               = tp / (tp + fn + fp)
                 f1          : F1 Score
                 fdr         : False Discovery Rate = 1 - ppv
                 fm          : Fowlkes–Mallows index
                               = sqrt(ppv * tpr)
-                fnr         : False Negative Rate 
+                fnr         : False Negative Rate
                               = fn / (fn + tp)
                 for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate 
+                fpr         : False Positive Rate
                               = fp / (fp + tn)
                 logloss     : Log Loss
                 lr+         : Positive Likelihood Ratio
@@ -1924,9 +1950,9 @@ class MulticlassClassifier(Supervised):
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
                 dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient 
+                mcc         : Matthews Correlation Coefficient
                 mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value 
+                npv         : Negative Predictive Value
                               = tn / (tn + fn)
                 prc_auc     : Area Under the Curve (PRC)
                 precision   : Precision = tp / (tp + fp)
@@ -1936,23 +1962,23 @@ class MulticlassClassifier(Supervised):
                 specificity : Specificity = tn / (tn + fp)
         cutoff: PythonNumber, optional
             Cutoff for which the tested category is accepted
-            as a prediction.  For multiclass  classification, each 
-            tested category becomes  the positives  and the others 
-            are  merged  into  the   negatives.  The  cutoff   
-            represents the classes  threshold.  If  it  is  empty, 
+            as a prediction.  For multiclass  classification, each
+            tested category becomes  the positives  and the others
+            are  merged  into  the   negatives.  The  cutoff
+            represents the classes  threshold.  If  it  is  empty,
             the  regular  cutoff (1 / number of classes) is used.
         labels: str / list, optional
-            List  of the  different  labels to be used during  the 
+            List  of the  different  labels to be used during  the
             computation.
         nbins: int, optional
             [Used to compute ROC AUC, PRC AUC and the best cutoff]
-            An  integer  value  that   determines  the  number  of 
-            decision  boundaries.  Decision boundaries are set  at 
-            equally spaced intervals  between 0 and 1,  inclusive. 
-            Greater values for nbins give more precise estimations 
-            of   the  metrics,   but   can  potentially   decrease 
-            performance. 
-            The maximum value is 999,999. If negative, the maximum 
+            An  integer  value  that   determines  the  number  of
+            decision  boundaries.  Decision boundaries are set  at
+            equally spaced intervals  between 0 and 1,  inclusive.
+            Greater values for nbins give more precise estimations
+            of   the  metrics,   but   can  potentially   decrease
+            performance.
+            The maximum value is 999,999. If negative, the maximum
             value is used.
 
         Returns
@@ -1965,7 +1991,11 @@ class MulticlassClassifier(Supervised):
         elif isinstance(labels, str):
             labels = [labels]
         return mt.classification_report(
-            estimator=self, metrics=metrics, labels=labels, cutoff=cutoff, nbins=nbins,
+            estimator=self,
+            metrics=metrics,
+            labels=labels,
+            cutoff=cutoff,
+            nbins=nbins,
         )
 
     report = classification_report
@@ -1981,12 +2011,12 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            Label  to consider  as positive.  All the other  classes 
-            are merged and considered as negative for multiclass 
-            classification.  If  the 'pos_label' is not defined, the 
+            Label  to consider  as positive.  All the other  classes
+            are merged and considered as negative for multiclass
+            classification.  If  the 'pos_label' is not defined, the
             entire confusion matrix is drawn.
         cutoff: PythonNumber, optional
-            Cutoff for which the tested category is accepted as 
+            Cutoff for which the tested category is accepted as
             a prediction. It is only used if 'pos_label' is defined.
 
         Returns
@@ -1995,7 +2025,10 @@ class MulticlassClassifier(Supervised):
             confusion matrix.
         """
         if hasattr(self, "_confusion_matrix"):
-            return self._confusion_matrix(pos_label=pos_label, cutoff=cutoff,)
+            return self._confusion_matrix(
+                pos_label=pos_label,
+                cutoff=cutoff,
+            )
         elif isinstance(pos_label, NoneType):
             return mt.confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, labels=self.classes_
@@ -2031,20 +2064,20 @@ class MulticlassClassifier(Supervised):
                 auc         : Area Under the Curve (ROC)
                 ba          : Balanced Accuracy
                               = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which optimised the  ROC 
+                best_cutoff : Cutoff  which optimised the  ROC
                               Curve prediction.
                 bic         : Bayesian  Information  Criterion
                 bm          : Informedness = tpr + tnr - 1
-                csi         : Critical Success Index 
+                csi         : Critical Success Index
                               = tp / (tp + fn + fp)
                 f1          : F1 Score
                 fdr         : False Discovery Rate = 1 - ppv
                 fm          : Fowlkes–Mallows index
                               = sqrt(ppv * tpr)
-                fnr         : False Negative Rate 
+                fnr         : False Negative Rate
                               = fn / (fn + tp)
                 for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate 
+                fpr         : False Positive Rate
                               = fp / (fp + tn)
                 logloss     : Log Loss
                 lr+         : Positive Likelihood Ratio
@@ -2052,9 +2085,9 @@ class MulticlassClassifier(Supervised):
                 lr-         : Negative Likelihood Ratio
                               = fnr / tnr
                 dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation Coefficient 
+                mcc         : Matthews Correlation Coefficient
                 mk          : Markedness = ppv + npv - 1
-                npv         : Negative Predictive Value 
+                npv         : Negative Predictive Value
                               = tn / (tn + fn)
                 prc_auc     : Area Under the Curve (PRC)
                 precision   : Precision = tp / (tp + fp)
@@ -2069,31 +2102,31 @@ class MulticlassClassifier(Supervised):
                            positive  and  use  the   binary
                            confusion  matrix to compute the
                            score.
-                micro    : positive  and   negative  values 
+                micro    : positive  and   negative  values
                            globally.
-                macro    : average  of  the  score of  each 
+                macro    : average  of  the  score of  each
                            class.
                 scores   : scores  for   all  the  classes.
-                weighted : weighted average of the score of 
+                weighted : weighted average of the score of
                            each class.
             If empty,  the result will depend on the  input
-            metric.  Whenever  it  is  possible, the  exact 
+            metric.  Whenever  it  is  possible, the  exact
             score is computed.  Otherwise, the behaviour is
             similar to the 'scores' option.
         pos_label: PythonScalar, optional
-            Label  to  consider   as  positive.  All the 
-            other classes will be  merged and considered 
+            Label  to  consider   as  positive.  All the
+            other classes will be  merged and considered
             as negative  for multiclass  classification.
         cutoff: PythonNumber, optional
             Cutoff for which the tested category is
             accepted as a prediction.
         nbins: int, optional
-            [Only  when  method  is set  to  auc|prc_auc|best_cutoff] 
+            [Only  when  method  is set  to  auc|prc_auc|best_cutoff]
             An  integer value that determines the number of  decision
-            boundaries. Decision boundaries are set at equally spaced 
-            intervals between 0 and 1,  inclusive. Greater values for 
-            nbins give more precise  estimations of the AUC,  but can 
-            potentially  decrease performance.  The maximum value  is 
+            boundaries. Decision boundaries are set at equally spaced
+            intervals between 0 and 1,  inclusive. Greater values for
+            nbins give more precise  estimations of the AUC,  but can
+            potentially  decrease performance.  The maximum value  is
             999,999. If negative, the maximum value is used.
 
         Returns
@@ -2149,23 +2182,23 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run  the prediction.  You can 
-            also  specify a  customized  relation,  but you 
-            must  enclose  it with an alias.  For  example, 
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)" 
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models. 
+            List of the columns  used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name
             is generated.
         cutoff: PythonNumber, optional
-            Cutoff  for which  the tested category is 
-            accepted  as a  prediction.  This parameter  is 
+            Cutoff  for which  the tested category is
+            accepted  as a  prediction.  This parameter  is
             only used for binary classification.
         inplace: bool, optional
-            If set to True, the prediction is added to 
+            If set to True, the prediction is added to
             the vDataFrame.
 
         Returns
@@ -2220,28 +2253,28 @@ class MulticlassClassifier(Supervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-        Returns the model's probabilities using the input 
+        Returns the model's probabilities using the input
         relation.
 
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run  the prediction.  You can 
-            also  specify a  customized  relation,  but you 
-            must  enclose  it with an alias.  For  example, 
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)" 
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models. 
+            List of the columns  used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name
             is generated.
         pos_label: PythonScalar, optional
-            Class  label.  For binary classification,  this 
+            Class  label.  For binary classification,  this
             can be either 1 or 0.
         inplace: bool, optional
-            If set to True, the prediction is added to 
+            If set to True, the prediction is added to
             the vDataFrame.
 
         Returns
@@ -2251,7 +2284,11 @@ class MulticlassClassifier(Supervised):
         """
         if hasattr(self, "_predict_proba"):
             return self._predict_proba(
-                vdf=vdf, X=X, name=name, pos_label=pos_label, inplace=inplace,
+                vdf=vdf,
+                X=X,
+                name=name,
+                pos_label=pos_label,
+                inplace=inplace,
             )
         # Inititalization
         X = format_type(X, dtype=list, na_out=self.X)
@@ -2345,16 +2382,16 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            Label  to  consider  as positive. All other 
-            classes  are  merged   and   considered  as 
+            Label  to  consider  as positive. All other
+            classes  are  merged   and   considered  as
             negative for multiclass classification.
         nbins: int, optional
-             Number  of  bins  used to  discretize  the  two 
+             Number  of  bins  used to  discretize  the  two
              predictors.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the Plotting 
+            Any optional parameter to pass to the Plotting
             functions.
 
         Returns
@@ -2385,11 +2422,11 @@ class MulticlassClassifier(Supervised):
         Parameters
         ----------
         pos_label: PythonScalar, optional
-            To  draw the Cutoff curve, one of the response  column 
-            classes  must  be  the  positive  class. The  parameter 
+            To  draw the Cutoff curve, one of the response  column
+            classes  must  be  the  positive  class. The  parameter
             'pos_label' represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision   
+            An integer value that determines the number of decision
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
@@ -2397,7 +2434,7 @@ class MulticlassClassifier(Supervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting 
+            Any  optional  parameter  to  pass  to  the  Plotting
             functions.
 
         Returns
@@ -2421,16 +2458,16 @@ class MulticlassClassifier(Supervised):
         **style_kwargs,
     ) -> TableSample:
         """
-    	Draws the model Lift Chart.
+        Draws the model Lift Chart.
 
-    	Parameters
-    	----------
-    	pos_label: PythonScalar, optional
-            To  draw  the Lift Chart, one of the  response  column 
-            classes  must  be  the  positive  class. The parameter 
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            To  draw  the Lift Chart, one of the  response  column
+            classes  must  be  the  positive  class. The parameter
             'pos_label' represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision   
+            An integer value that determines the number of decision
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
@@ -2438,14 +2475,14 @@ class MulticlassClassifier(Supervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting 
+            Any  optional  parameter  to  pass  to  the  Plotting
             functions.
 
-    	Returns
-    	-------
-    	TableSample
-    		lift chart data points.
-		"""
+        Returns
+        -------
+        TableSample
+                lift chart data points.
+        """
         return mt.lift_chart(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
@@ -2462,16 +2499,16 @@ class MulticlassClassifier(Supervised):
         **style_kwargs,
     ) -> TableSample:
         """
-    	Draws the model PRC curve.
+        Draws the model PRC curve.
 
-    	Parameters
-    	----------
-    	pos_label: PythonScalar, optional
-            To  draw  the PRC curve,  one of the  response  column 
-            classes  must  be  the  positive  class. The parameter 
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            To  draw  the PRC curve,  one of the  response  column
+            classes  must  be  the  positive  class. The parameter
             'pos_label' represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision   
+            An integer value that determines the number of decision
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
@@ -2479,14 +2516,14 @@ class MulticlassClassifier(Supervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting 
+            Any  optional  parameter  to  pass  to  the  Plotting
             functions.
 
-    	Returns
-    	-------
-    	TableSample
-    		PRC curve data points.
-		"""
+        Returns
+        -------
+        TableSample
+                PRC curve data points.
+        """
         return mt.prc_curve(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
@@ -2503,16 +2540,16 @@ class MulticlassClassifier(Supervised):
         **style_kwargs,
     ) -> TableSample:
         """
-    	Draws the model ROC curve.
+        Draws the model ROC curve.
 
-    	Parameters
-    	----------
-    	pos_label: PythonScalar, optional
-            To  draw  the ROC curve,  one of the  response  column 
-            classes  must  be  the  positive  class. The parameter 
+        Parameters
+        ----------
+        pos_label: PythonScalar, optional
+            To  draw  the ROC curve,  one of the  response  column
+            classes  must  be  the  positive  class. The parameter
             'pos_label' represents this class.
         nbins: int, optional
-            An integer value that determines the number of decision   
+            An integer value that determines the number of decision
             boundaries.  Decision  boundaries  are   set at equally
             -spaced intervals between 0 and 1, inclusive.
         show: bool, optional
@@ -2520,14 +2557,14 @@ class MulticlassClassifier(Supervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the  Plotting 
+            Any  optional  parameter  to  pass  to  the  Plotting
             functions.
 
-    	Returns
-    	-------
-    	TableSample
-    		roc curve data points.
-		"""
+        Returns
+        -------
+        TableSample
+                roc curve data points.
+        """
         return mt.roc_curve(
             *self._get_plot_args(pos_label=pos_label),
             show=show,
@@ -2537,7 +2574,6 @@ class MulticlassClassifier(Supervised):
 
 
 class Regressor(Supervised):
-
     # System & Special Methods.
 
     @abstractmethod
@@ -2556,8 +2592,8 @@ class Regressor(Supervised):
         ] = None,
     ) -> Union[float, TableSample]:
         """
-        Computes a regression report using multiple metrics to 
-        evaluate the model (r2, mse, max error...). 
+        Computes a regression report using multiple metrics to
+        evaluate the model (r2, mse, max error...).
 
         Parameters
         ----------
@@ -2577,12 +2613,12 @@ class Regressor(Supervised):
                 msle   : Mean Squared Log Error
                 qe     : quantile  error,  the quantile must be
                          included in the name. Example:
-                         qe50.1% will return the quantile error 
+                         qe50.1% will return the quantile error
                          using q=0.501.
                 r2     : R squared coefficient
                 r2a    : R2 adjusted
                 rmse   : Root Mean Squared Error
-                var    : Explained Variance 
+                var    : Explained Variance
 
         Returns
         -------
@@ -2673,7 +2709,7 @@ class Regressor(Supervised):
                 r2     : R squared coefficient
                 r2a    : R2 adjusted
                 rmse   : Root Mean Squared Error
-                var    : Explained Variance 
+                var    : Explained Variance
 
         Returns
         -------
@@ -2715,31 +2751,31 @@ class Regressor(Supervised):
         inplace: bool = True,
     ) -> vDataFrame:
         """
-    	Predicts using the input relation.
+        Predicts using the input relation.
 
-    	Parameters
-    	----------
-    	vdf: SQLRelation
-            Object  used to run  the prediction.  You can 
-            also  specify a  customized  relation,  but you 
-            must  enclose  it with an alias.  For  example, 
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)" 
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns  used to deploy the models. 
+            List of the columns  used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name of the added vDataColumn. If empty, a name 
+            Name of the added vDataColumn. If empty, a name
             is generated.
-    	inplace: bool, optional
-    		If set to True, the prediction is added to 
+        inplace: bool, optional
+                If set to True, the prediction is added to
             the vDataFrame.
 
-    	Returns
-    	-------
-    	vDataFrame
-    		the input object.
-		"""
+        Returns
+        -------
+        vDataFrame
+                the input object.
+        """
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
         X = format_type(X, dtype=list, na_out=self.X)
@@ -2757,7 +2793,6 @@ class Regressor(Supervised):
 
 
 class Unsupervised(VerticaModel):
-
     # System & Special Methods.
 
     @abstractmethod
@@ -2771,21 +2806,21 @@ class Unsupervised(VerticaModel):
         self, input_relation: SQLRelation, X: Optional[SQLColumns] = None
     ) -> Optional[str]:
         """
-    	Trains the model.
+        Trains the model.
 
-    	Parameters
-    	----------
-    	input_relation: SQLRelation
-    		Training relation.
-    	X: SQLColumns, optional
-    		List of the predictors. If empty, all the 
+        Parameters
+        ----------
+        input_relation: SQLRelation
+                Training relation.
+        X: SQLColumns, optional
+                List of the predictors. If empty, all the
             numerical columns are used.
 
-    	Returns
-    	-------
-    	str
-    		model's summary.
-		"""
+        Returns
+        -------
+        str
+                model's summary.
+        """
         if conf.get_option("overwrite_model"):
             self.drop()
         else:
@@ -2849,7 +2884,11 @@ class Unsupervised(VerticaModel):
             SELECT 
                 /*+LABEL('learn.VerticaModel.fit')*/ 
                 {fun}('{self.model_name}', '{relation}', '{', '.join(self.X)}'"""
-        if self._model_type in ("BisectingKMeans", "KMeans", "KPrototypes",):
+        if self._model_type in (
+            "BisectingKMeans",
+            "KMeans",
+            "KPrototypes",
+        ):
             query += f", {parameters['n_cluster']}"
         elif self._model_type == "Scaler":
             query += f", {parameters['method']}"
@@ -2869,7 +2908,12 @@ class Unsupervised(VerticaModel):
         if (
             "init_method" in parameters
             and not isinstance(parameters["init_method"], str)
-            and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
+            and self._model_type
+            in (
+                "KMeans",
+                "BisectingKMeans",
+                "KPrototypes",
+            )
         ):
             name_init = gen_tmp_name(
                 schema=schema_relation(self.model_name)[0],
@@ -2927,14 +2971,23 @@ class Unsupervised(VerticaModel):
             if (
                 "init_method" in parameters
                 and not isinstance(parameters["init_method"], str)
-                and self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",)
+                and self._model_type
+                in (
+                    "KMeans",
+                    "BisectingKMeans",
+                    "KPrototypes",
+                )
             ):
                 drop(name_init, method="table")
             raise
         finally:
             if tmp_view:
                 drop(relation, method="view")
-        if self._model_type in ("KMeans", "BisectingKMeans", "KPrototypes",):
+        if self._model_type in (
+            "KMeans",
+            "BisectingKMeans",
+            "KPrototypes",
+        ):
             if "init_method" in parameters and not (
                 isinstance(parameters["init_method"], str)
             ):

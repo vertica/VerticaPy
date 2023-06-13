@@ -61,7 +61,6 @@ General Class.
 
 
 class Clustering(Unsupervised):
-
     # Properties.
 
     @property
@@ -92,19 +91,19 @@ class Clustering(Unsupervised):
         Parameters
         ----------
         vdf: SQLRelation
-            Object  used to run the prediction.  You can 
-            also  specify a  customized relation,  but you 
-            must  enclose  it with an alias. For  example: 
-            "(SELECT 1) x" is valid whereas "(SELECT 1)" 
+            Object  used to run the prediction.  You can
+            also  specify a  customized relation,  but you
+            must  enclose  it with an alias. For  example:
+            "(SELECT 1) x" is valid whereas "(SELECT 1)"
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
-            List of the columns used to deploy the models. 
+            List of the columns used to deploy the models.
             If empty, the model predictors are used.
         name: str, optional
-            Name  of  the added  vDataColumn. If empty,  a 
+            Name  of  the added  vDataColumn. If empty,  a
             name is generated.
         inplace: bool, optional
-            If  set to True, the prediction is  added 
+            If  set to True, the prediction is  added
             to the vDataFrame.
 
         Returns
@@ -161,7 +160,7 @@ class Clustering(Unsupervised):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -196,40 +195,40 @@ KMeans Algorithms & Extensions.
 
 class KMeans(Clustering):
     """
-    Creates  a  KMeans object using the  Vertica  k-means 
+    Creates  a  KMeans object using the  Vertica  k-means
     algorithm.  k-means  clustering is a method of vector
     quantization, originally from signal processing, that
     aims to partition  n  observations into k clusters in
     which each observation belongs to the cluster with the
     nearest mean (cluster centers or cluster centroid),
-    serving as a prototype of  the cluster.  This results 
+    serving as a prototype of  the cluster.  This results
     in a partitioning of the data space into Voronoi cells.
 
     Parameters
     ----------
     name: str
-    	Name  of  the model. The model is stored in the 
+        Name  of  the model. The model is stored in the
         database.
     n_cluster: int, optional
-    	Number of clusters
+        Number of clusters
     init: str / list, optional
-    	The  method  used to find the initial  cluster 
+        The  method  used to find the initial  cluster
         centers.
-    		kmeanspp : Uses   the  KMeans++  method   to 
+                kmeanspp : Uses   the  KMeans++  method   to
                        initialize the centers.
-    		random   : The   centers   are   initialized 
+                random   : The   centers   are   initialized
                        randomly.
-    	You can also provide a list with the initial 
+        You can also provide a list with the initial
         cluster centers.
     max_iter: int, optional
-    	The  maximum number of iterations  the algorithm 
+        The  maximum number of iterations  the algorithm
         performs.
     tol: float, optional
-    	Determines whether the algorithm has  converged. 
-        The  algorithm is considered converged after  no 
-        center  has moved more than a distance of  'tol' 
+        Determines whether the algorithm has  converged.
+        The  algorithm is considered converged after  no
+        center  has moved more than a distance of  'tol'
         from the previous iteration.
-	"""
+    """
 
     # Properties.
 
@@ -337,7 +336,10 @@ class KMeans(Clustering):
         Converts the  model to an InMemory  object  that
         can be used for different types of predictions.
         """
-        return mm.KMeans(self.clusters_, self.p_,)
+        return mm.KMeans(
+            self.clusters_,
+            self.p_,
+        )
 
     # Plotting Methods.
 
@@ -356,12 +358,12 @@ class KMeans(Clustering):
         max_nb_points: int, optional
             Maximum  number  of   points  to   display.
         plot_crosses: bool, optional
-            If set to True, the centers are represented 
+            If set to True, the centers are represented
             by white crosses.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any  optional  parameter  to  pass  to  the 
+            Any  optional  parameter  to  pass  to  the
             Plotting functions.
 
         Returns
@@ -388,35 +390,35 @@ class KMeans(Clustering):
 
 class KPrototypes(KMeans):
     """
-    Creates a KPrototypes object by using the Vertica 
-    k-prototypes algorithm. The algorithm combines 
-    the k-means and k-modes  algorithms  in order to 
+    Creates a KPrototypes object by using the Vertica
+    k-prototypes algorithm. The algorithm combines
+    the k-means and k-modes  algorithms  in order to
     handle both numerical and  categorical data.
 
     Parameters
     ----------
     name: str
-        Name  of the model. The model is stored in  the 
+        Name  of the model. The model is stored in  the
         database.
     n_cluster: int, optional
         Number of clusters.
     init: str / list, optional
-        The  method  used  to  find the  initial  cluster 
+        The  method  used  to  find the  initial  cluster
         centers.
             random: The centers are initialized randomly.
-        You  can  also provide a list of initial  cluster 
+        You  can  also provide a list of initial  cluster
         centers.
     max_iter: int, optional
-        The  maximum number of iterations the  algorithm 
+        The  maximum number of iterations the  algorithm
         performs.
     tol: float, optional
-        Determines whether  the algorithm has converged. 
-        The  algorithm is  considered converged when  no 
-        center  moves more than a distance of 'tol' from 
+        Determines whether  the algorithm has converged.
+        The  algorithm is  considered converged when  no
+        center  moves more than a distance of 'tol' from
         the previous iteration.
     gamma: float, optional
-        Weighting  factor  for  categorical columns.  It 
-        determines the relative importance of  numerical 
+        Weighting  factor  for  categorical columns.  It
+        determines the relative importance of  numerical
         and categorical attributes.
     """
 
@@ -500,13 +502,13 @@ class KPrototypes(KMeans):
 
 class BisectingKMeans(KMeans, Tree):
     """
-    Creates   a  BisectingKMeans  object  using   the 
+    Creates   a  BisectingKMeans  object  using   the
     Vertica   bisecting  k-means  algorithm.  k-means
-    clustering is a method of vector quantization,  
+    clustering is a method of vector quantization,
     originally  from  signal processing, that aims to
-    partition n observations into k  clusters. Each 
+    partition n observations into k  clusters. Each
     observation  belongs  to the  cluster  with  the
-    nearest  mean   (cluster centers  or  cluster 
+    nearest  mean   (cluster centers  or  cluster
     centroid),  which serves  as a  prototype  of the
     cluster.  This  results  in a partitioning of the
     data space into  Voronoi cells. Bisecting k-means
@@ -515,56 +517,56 @@ class BisectingKMeans(KMeans, Tree):
     Parameters
     ----------
     name: str
-        Name of the model.  The  model is stored in 
+        Name of the model.  The  model is stored in
         the database.
     n_cluster: int, optional
         Number of clusters
     bisection_iterations: int, optional
-        The number of iterations the bisecting KMeans 
-        algorithm  performs for each bisection  step. 
-        This   corresponds  to  how   many  times  a 
-        standalone  KMeans  algorithm runs  in  each 
-        bisection step. Setting to a value greater 
+        The number of iterations the bisecting KMeans
+        algorithm  performs for each bisection  step.
+        This   corresponds  to  how   many  times  a
+        standalone  KMeans  algorithm runs  in  each
+        bisection step. Setting to a value greater
         than 1 allows the algorithm to run and choose
-        the best KMeans run within each bisection 
+        the best KMeans run within each bisection
         step.  If you are using  kmeanspp,   the
-        bisection_iterations value is always 1  
+        bisection_iterations value is always 1
         because kmeanspp is more costly  to run  but
         also  better  than  the alternatives,  so it
         does  not   require multiple runs.
     split_method: str, optional
-        The method used to choose a cluster to 
+        The method used to choose a cluster to
         bisect/split.
-            size        : Choose the largest cluster 
+            size        : Choose the largest cluster
                           to bisect.
-            sum_squares : Choose the cluster with the 
+            sum_squares : Choose the cluster with the
                           largest withInSS to bisect.
     min_divisible_cluster_size: int, optional
-        The minimum number of points of a divisible 
+        The minimum number of points of a divisible
         cluster. Must be greater than or equal to 2.
     distance_method: str, optional
-        The  distance measure between two  data 
-        points. Only Euclidean distance is supported 
+        The  distance measure between two  data
+        points. Only Euclidean distance is supported
         at this time.
     init: str / list, optional
-        The method used to find the initial KMeans 
+        The method used to find the initial KMeans
         cluster centers.
-            kmeanspp : Uses  the KMeans++ method  to 
+            kmeanspp : Uses  the KMeans++ method  to
                        initialize the centers.
-            pseudo   : Uses "pseudo center" approach 
-                       used by Spark,  bisects given 
-                       center without iterating over 
+            pseudo   : Uses "pseudo center" approach
+                       used by Spark,  bisects given
+                       center without iterating over
                        points.
-        You can also provide a list with the initial 
+        You can also provide a list with the initial
         cluster centers.
     max_iter: int, optional
-        The maximum number of iterations the KMeans 
+        The maximum number of iterations the KMeans
         algorithm performs.
     tol: float, optional
-        Determines whether the KMeans algorithm has 
-        converged.  The   algorithm  is  considered 
-        converged  after  no center has moved  more 
-        than a distance of  'tol' from the previous 
+        Determines whether the KMeans algorithm has
+        converged.  The   algorithm  is  considered
+        converged  after  no center has moved  more
+        than a distance of  'tol' from the previous
         iteration.
     """
 
@@ -688,7 +690,7 @@ class BisectingKMeans(KMeans, Tree):
 
     def get_tree(self) -> TableSample:
         """
-        Returns a table containing information about the 
+        Returns a table containing information about the
         BK-tree.
         """
         return self.tree_
@@ -708,28 +710,28 @@ class BisectingKMeans(KMeans, Tree):
         Parameters
         ----------
         round_score: int, optional
-            The number of  decimals to round the  node's 
+            The number of  decimals to round the  node's
             score to. Zero rounds to an integer.
         percent: bool, optional
-            If set to True, the scores are  returned  as 
+            If set to True, the scores are  returned  as
             a percent.
         vertical: bool, optional
-            If set to True,  the  function  generates  a 
+            If set to True,  the  function  generates  a
             vertical tree.
         node_style: dict, optional
-            Dictionary of options to customize each  node 
-            of the tree. 
-            For a list of options,  see the Graphviz API: 
+            Dictionary of options to customize each  node
+            of the tree.
+            For a list of options,  see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
         arrow_style: dict, optional
-            Dictionary of options to customize each arrow 
-            of the tree. 
-            For  a list of options, see the Graphviz API: 
+            Dictionary of options to customize each arrow
+            of the tree.
+            For  a list of options, see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
         leaf_style: dict, optional
-            Dictionary of options to customize each  leaf 
-            of the tree. 
-            For a list of options,  see the Graphviz API: 
+            Dictionary of options to customize each  leaf
+            of the tree.
+            For a list of options,  see the Graphviz API:
             https://graphviz.org/doc/info/attrs.html
 
         Returns
@@ -746,7 +748,12 @@ class BisectingKMeans(KMeans, Tree):
             leaf_style=leaf_style,
         )
 
-    def plot_tree(self, pic_path: Optional[str] = None, *args, **kwargs,) -> "Source":
+    def plot_tree(
+        self,
+        pic_path: Optional[str] = None,
+        *args,
+        **kwargs,
+    ) -> "Source":
         """
         Draws the input tree. Requires the graphviz module.
 
@@ -762,7 +769,11 @@ class BisectingKMeans(KMeans, Tree):
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel().plot_tree(pic_path=pic_path, *args, **kwargs,)
+        return self.to_memmodel().plot_tree(
+            pic_path=pic_path,
+            *args,
+            **kwargs,
+        )
 
 
 """
@@ -773,42 +784,42 @@ Algorithms used for clustering.
 class DBSCAN(VerticaModel):
     """
     [Beta Version]
-    Creates a DBSCAN object by  using the DBSCAN algorithm 
-    as defined by Martin  Ester,  Hans-Peter Kriegel, Jörg 
-    Sander, and Xiaowei Xu.  This  object uses pure SQL to 
-    compute the distances and neighbors, and uses Python to 
+    Creates a DBSCAN object by  using the DBSCAN algorithm
+    as defined by Martin  Ester,  Hans-Peter Kriegel, Jörg
+    Sander, and Xiaowei Xu.  This  object uses pure SQL to
+    compute the distances and neighbors, and uses Python to
     compute the cluster propagation (non-scalable phase).
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN 
-                     during   computation  and  is  therefore 
-                     computationally  expensive at  O(n * n), 
-                     where n is the total number of elements. 
-                     This  algorithm indexes elements of  the 
-                     table in order to be optimal  (the CROSS 
-                     JOIN will happen only with IDs which are 
-                     integers). 
-                     Since  DBSCAN uses  the  p-distance, it 
-                     is highly sensitive  to unnormalized data. 
-                     However,  DBSCAN is robust to outliers and 
-                     can find non-linear clusters. It is a very 
-                     powerful algorithm for outlier  detection 
-                     and clustering. A table is created at 
+    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
+                     during   computation  and  is  therefore
+                     computationally  expensive at  O(n * n),
+                     where n is the total number of elements.
+                     This  algorithm indexes elements of  the
+                     table in order to be optimal  (the CROSS
+                     JOIN will happen only with IDs which are
+                     integers).
+                     Since  DBSCAN uses  the  p-distance, it
+                     is highly sensitive  to unnormalized data.
+                     However,  DBSCAN is robust to outliers and
+                     can find non-linear clusters. It is a very
+                     powerful algorithm for outlier  detection
+                     and clustering. A table is created at
                      the end of the learning phase.
 
     Parameters
     ----------
     name: str
-        Name  of the model.  This is  not a  built-in 
-        model, so this name is  used to build the 
+        Name  of the model.  This is  not a  built-in
+        model, so this name is  used to build the
         final table.
     eps: float, optional
-        The radius of a  neighborhood with respect to 
+        The radius of a  neighborhood with respect to
         some point.
     min_samples: int, optional
-        Minimum number  of points required to  form a 
+        Minimum number  of points required to  form a
         dense region.
     p: int, optional
-        The p of the p-distance (distance metric used 
+        The p of the p-distance (distance metric used
         during the model computation).
     """
 
@@ -882,15 +893,15 @@ class DBSCAN(VerticaModel):
         input_relation: SQLRelation
             Training relation.
         X: SQLColumns, optional
-            List of the predictors. If empty, all the 
+            List of the predictors. If empty, all the
             numerical vDataColumns are used.
         key_columns: SQLColumns, optional
-            Columns  not  used  during  the  algorithm 
-            computation  but  which  are  used  to 
+            Columns  not  used  during  the  algorithm
+            computation  but  which  are  used  to
             create the final relation.
         index: str, optional
-            Index  used to identify each row  separately. 
-            It is highly  recommanded to have one already 
+            Index  used to identify each row  separately.
+            It is highly  recommanded to have one already
             in the main table to avoid creating temporary
             tables.
         """
@@ -1094,7 +1105,7 @@ class DBSCAN(VerticaModel):
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
-            Any optional parameter to pass to the 
+            Any optional parameter to pass to the
             Plotting functions.
 
         Returns
@@ -1119,15 +1130,15 @@ Algorithms used for classification.
 
 class NearestCentroid(MulticlassClassifier):
     """
-    Creates  a NearestCentroid object using the  k-nearest 
-    centroid algorithm. 
+    Creates  a NearestCentroid object using the  k-nearest
+    centroid algorithm.
     This object uses pure SQL to compute the distances and
     final score.
 
     Parameters
     ----------
     p: int, optional
-        The p corresponding to the one of the p-distances 
+        The p corresponding to the one of the p-distances
         (distance metric used to compute the model).
     """
 
@@ -1200,9 +1211,12 @@ class NearestCentroid(MulticlassClassifier):
 
     # Prediction / Transformation Methods.
 
-    def _get_y_proba(self, pos_label: Optional[PythonScalar] = None,) -> str:
+    def _get_y_proba(
+        self,
+        pos_label: Optional[PythonScalar] = None,
+    ) -> str:
         """
-        Returns the input that represents the model's 
+        Returns the input that represents the model's
         probabilities.
         """
         idx = self.get_match_index(pos_label, self.classes_, False)
@@ -1215,4 +1229,8 @@ class NearestCentroid(MulticlassClassifier):
         Converts  the  model to  an InMemory object that
         can be used for different types of predictions.
         """
-        return mm.NearestCentroid(self.clusters_, self.classes_, self.p_,)
+        return mm.NearestCentroid(
+            self.clusters_,
+            self.classes_,
+            self.p_,
+        )

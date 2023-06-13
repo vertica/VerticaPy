@@ -23,7 +23,6 @@ from verticapy.plotting._highcharts.base import HighchartsBase
 
 
 class BoxPlot(HighchartsBase):
-
     # Properties.
 
     @property
@@ -53,7 +52,10 @@ class BoxPlot(HighchartsBase):
             "chart": {"type": "boxplot"},
             "title": {"text": ""},
             "legend": {"enabled": False},
-            "xAxis": {"categories": labels, "title": {"text": self.layout["x_label"]},},
+            "xAxis": {
+                "categories": labels,
+                "title": {"text": self.layout["x_label"]},
+            },
             "yAxis": {"title": {"text": y_label}},
             "colors": self.get_colors(),
         }
@@ -64,7 +66,11 @@ class BoxPlot(HighchartsBase):
         }
         self.init_style_scatter = {
             "color": "#444444",
-            "marker": {"fillColor": "white", "lineWidth": 1, "lineColor": "#444444",},
+            "marker": {
+                "fillColor": "white",
+                "lineWidth": 1,
+                "lineColor": "#444444",
+            },
             "tooltip": {"pointFormat": pointFormat + "{point.y}"},
         }
         if len(labels) == 1:
@@ -72,7 +78,11 @@ class BoxPlot(HighchartsBase):
 
     # Draw.
 
-    def draw(self, chart: Optional[HChart] = None, **style_kwargs,) -> HChart:
+    def draw(
+        self,
+        chart: Optional[HChart] = None,
+        **style_kwargs,
+    ) -> HChart:
         """
         Draws a multi-box plot using the HC API.
         """

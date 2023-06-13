@@ -23,7 +23,6 @@ from verticapy.plotting._matplotlib.animated.bar import AnimatedBarChart
 
 
 class AnimatedPieChart(AnimatedBarChart):
-
     # Properties.
 
     @property

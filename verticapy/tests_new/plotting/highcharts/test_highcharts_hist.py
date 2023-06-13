@@ -24,7 +24,6 @@ from verticapy.tests_new.plotting.base_test_files import (
 )
 
 
-
 @pytest.mark.skip(reason="Hist not available in Highcharts currently")
 class TestHighchartsVDCHistogramPlot(VDCHistogramPlot):
     """
