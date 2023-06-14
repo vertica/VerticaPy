@@ -202,8 +202,23 @@ https://www.vertica.com/python/gallery/
 
   ```python
   import verticapy as vp
-  vp.read_file(path="complex.csv")
+  read_file(
+      "/home/laliga/2012.json",
+      table_name="laliga",
+  )
   ```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cddc5bbc-9f96-469e-92ee-b4a6e0bc7cfb" width="92%">
+</p>
+Note: Not all columns are displayed in the screenshot above because of width restriction here.
+
+As shown above, it has created a nested structure for the complex data. The actual file structure is below:
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/6ad242fb-2994-45de-8796-d6af61dae00d" width="92%">
+</p>
+
 
 - **Data Exploration**
 
