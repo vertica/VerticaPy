@@ -176,8 +176,10 @@ VerticaPy has a unique place in the market because it allows users to use python
 #### Example
 ```python
 import verticapy as vp
-selected_titanic=vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
-selected_titanic.groupby(columns = ["pclass"],expr = ["AVG(AVG)"])
+selected_titanic = vp.vDataFrame(
+    "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
+)
+selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
 ```
 
 ### Charts
@@ -209,8 +211,10 @@ https://www.vertica.com/python/gallery/
 
 ```python
 from verticapy.datasets import load_iris
-iris_data=load_iris
-iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species',max_nb_points=30)
+iris_data = load_iris()
+iris_data.scatter(
+    ["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"], by="Species", max_nb_points=30
+)
 ```
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/ffa37b72-2778-4ea5-af9e-c0f3d6f610f3" width="40%">
@@ -223,7 +227,7 @@ iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species'
 ```python
 import random
 import verticapy as vp
-data=vp.vDataFrame({"Heights":[random.randint(10, 60) for _ in range(40)]+[100]})
+data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [100]})
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
@@ -250,7 +254,7 @@ stepwise_result = stepwise(
     y="survived",
     direction="backward",
     height=600,
-    width=800
+    width=800,
 )
 ```
 <p align="center">
@@ -320,14 +324,22 @@ from verticapy.learn.model_selection import cross_validate
 from verticapy.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
-vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna()
+vdf["sex"].label_encode()["boat"].fillna(method="0ifnull")["name"].str_extract(
+    " ([A-Za-z]+)\."
+).eval("family_size", expr="parch + sibsp + 1").drop(
+    columns=["cabin", "body", "ticket", "home.dest"]
+)[
+    "fare"
+].fill_outliers().fillna()
 
 # Model Evaluation
-cross_validate(RandomForestClassifier("rf_titanic", max_leaf_nodes = 100, n_estimators = 30), 
-               vdf, 
-               ["age", "family_size", "sex", "pclass", "fare", "boat"], 
-               "survived", 
-               cutoff = 0.35)
+cross_validate(
+    RandomForestClassifier("rf_titanic", max_leaf_nodes=100, n_estimators=30),
+    vdf,
+    ["age", "family_size", "sex", "pclass", "fare", "boat"],
+    "survived",
+    cutoff=0.35,
+)
 ```
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/49d3a606-8518-4676-b7ae-fa5c3c962432" width="100%">
@@ -335,9 +347,7 @@ cross_validate(RandomForestClassifier("rf_titanic", max_leaf_nodes = 100, n_esti
 
 ```python
 # Features importance
-model.fit(vdf, 
-          ["age", "family_size", "sex", "pclass", "fare", "boat"], 
-          "survived")
+model.fit(vdf, ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived")
 model.features_importance()
 ```
 
@@ -347,7 +357,7 @@ model.features_importance()
 
 ```python
 # ROC Curve
-model.roc_curve(pos_label = "0")
+model.roc_curve(pos_label="0")
 ```
 
 <p align="center">
