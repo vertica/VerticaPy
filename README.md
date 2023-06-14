@@ -6,7 +6,9 @@
 
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
-:warning: VerticaPy 0.9.0 includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
+:warning: VerticaPy 0.9.0 (and onwards) includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
+
+:warning: The following README is for VerticaPy 1.0.0-beta and onwards, and so some of the elements may not be present in the previous versions. 
 
 # VerticaPy
 
@@ -35,7 +37,7 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
-  - [Compelte ML pipeline](#compelte-machine-learning-pipeline)
+  - [Complete ML pipeline](#compelte-machine-learning-pipeline)
 - [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
@@ -90,9 +92,18 @@ VerticaPy is compatible with several clients. For details, see the <a href='http
 
 ## Documentation
 
-Documentation is available at: <br>
+The easiest and most accurate way to find documentaiton for a particular function is to use the help function:
+
+```python
+import verticapy as vp
+help(vp.vDataFrame)
+```
+
+Official documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
+
+:heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
 
 ## Use-cases
 
@@ -116,7 +127,7 @@ Load the SQL extension.
 %load_ext verticapy.sql
 ```
 Execute your SQL queries.
-```python
+```sql
 %%sql
 SELECT version();
 
@@ -144,7 +155,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using SQL and python.
 
 #### Example
-```python
+```sql
 %%sql
 /* Fetch TAIL_NUMBER and CITY after Joining the flight_vertica table with airports table in MySQL database. */
 SELECT flight_vertica.TAIL_NUMBER, airports.CITY AS Departing_City
@@ -162,7 +173,7 @@ For more details on how to setup DBLINK, please visit the [github repo](https://
 VerticaPy has a unique place in the market because it allows users to use python and SQL in the same environment. 
 
 #### Example
-```
+```python
 import verticapy as vp
 selected_titanic=vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
 selected_titanic.groupby(columns = ["pclass"],expr = ["AVG(AVG)"])
@@ -184,10 +195,11 @@ https://www.vertica.com/python/gallery/
 
 - **Data Ingestion**
 
-  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Paqruet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", VerticaPy automatically infers the source type and the data type.
+  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Parquet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", VerticaPy automatically infers the source type and the data type.
 
   ```python
-  verticapy.read_file(path="complex.csv")
+  import verticapy as vp
+  vp.read_file(path="complex.csv")
   ```
 
 - **Data Exploration**
@@ -195,6 +207,8 @@ https://www.vertica.com/python/gallery/
   There are many options for descriptive and visual exploration. 
 
 ```python
+from verticapy.datasets import load_iris
+iris_data=load_iris
 iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species',max_nb_points=30)
 ```
 <p align="center">
@@ -206,6 +220,9 @@ iris_data.scatter(['SepalWidthCm', 'SepalLengthCm','PetalLengthCm'],by='Species'
   Whether you are [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything and more in one package.
 
 ```python
+import random
+import verticapy as vp
+data=vp.vDataFrame({"Heights":[random.randint(10, 60) for _ in range(40)]+[100]})
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
@@ -218,6 +235,8 @@ data.outliers_plot(columns="Heights")
   ML is the strongest suite of VerticaPy as it capitalizes on the speed of in-database training and prediction by using SQL in the background to interact with the database. ML for VerticaPy covers a vast array of tools, including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php). 
 
 ```python
+# titanic_vd is already loaded
+# Logistic Regression model is already loaded
 stepwise_result = stepwise(
     model,
     input_relation=titanic_vd,
@@ -277,26 +296,11 @@ vdf = load_titanic()
 Examine your data:
 ```python
 vdf.describe()
-
-# Output
-                count                 mean                  std     min
-"pclass"         1234     2.28444084278768    0.842485636190292     1.0 
-"survived"       1234    0.364667747163696    0.481532018641288     0.0
-"age"             997     30.1524573721163     14.4353046299159    0.33
-"sibsp"          1234    0.504051863857374     1.04111727241629     0.0 
-"parch"          1234    0.378444084278768    0.868604707790393     0.0 
-"fare"           1233      33.963793673966     52.6460729831293     0.0 
-"body"            118      164.14406779661     96.5760207557808     1.0 
-                approx_25%    approx_50%    approx_75%         max  
-"pclass"               1.0           3.0           3.0         3.0  
-"survived"             0.0           0.0           1.0         1.0  
-"age"                 21.0          28.0          39.0        80.0  
-"sibsp"                0.0           0.0           1.0         8.0  
-"parch"                0.0           0.0           0.0         9.0  
-"fare"              7.8958       14.4542       31.3875    512.3292  
-"body"               79.25         160.5         257.5       328.0  
-Rows: 1-7 | Columns: 9
 ```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/362dbd53-3692-48e4-a1e1-60f5f565dc50" width="80%">
+</p>
+
 Print the SQL query with <b>set_option</b>:
 ```python
 set_option("sql_on", True)
