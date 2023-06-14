@@ -145,7 +145,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/93e8556d-851d-4f1d-8f75-e46e9feed65a" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cf74b1cb-f97a-4ead-a815-820b9540ee42" width="50%">
 </p>
 
 
@@ -230,7 +230,7 @@ iris_data.scatter(
 )
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/ffa37b72-2778-4ea5-af9e-c0f3d6f610f3" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cb482992-58b3-4dcf-8fe7-f18f7c0f64d1" width="40%">
 </p>
 
 - **Data Preparation**
@@ -244,7 +244,7 @@ data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/ff5cf6fa-b54b-4910-bc11-60305fcbc871" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="40%">
 </p>
 
 
@@ -333,8 +333,8 @@ FROM public.titanic
 ```
 With VerticaPy, it is now possible to solve a ML problem with few lines of code.
 ```python
-from verticapy.learn.model_selection import cross_validate
-from verticapy.learn.ensemble import RandomForestClassifier
+from verticapy.machine_learning.model_selection.model_validation import cross_validate
+from verticapy.machine_learning.vertica import RandomForestClassifier
 
 # Data Preparation
 vdf["sex"].label_encode()["boat"].fillna(method="0ifnull")["name"].str_extract(
@@ -365,7 +365,7 @@ model.features_importance()
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/81788c21-b16d-4b41-8cba-5ffa47f6ef04" width="80%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/a3d8b236-53a7-4d69-a969-48c2ba9bc114" width="80%">
 </p>
 
 ```python
@@ -386,7 +386,7 @@ model.roc_curve()
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/c5d14ff4-97d3-4976-a3ff-3ddde5a5d7f2" width="80%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/87f74bc7-a6cd-4336-8d32-b144f7fb6888" width="80%">
 </p>
 
 
