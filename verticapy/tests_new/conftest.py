@@ -27,7 +27,6 @@ from scipy.special import erfinv
 import numpy as np
 import pandas as pd
 
-
 # VerticaPy
 import verticapy
 from verticapy import drop
@@ -298,13 +297,41 @@ def pred_cl_dataset_multi():
             "a",
         ]
     )
-    y_prob = [
-        [random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)]
-        for x_val in range(len(y_true))
-    ]
-    input_relation = np.column_stack((y_true, y_pred, y_prob))
-    vdf = vDataFrame(input_relation, usecols=["y_true", "y_pred", "y_prob"])
-    yield vdf, y_true, y_pred, y_prob, labels
+    labels_num = np.array([0, 1, 2])
+    y_true_num = np.array([random.randint(0, 2) for _ in range(len(y_true))])
+    y_pred_num = np.array([random.randint(0, 2) for _ in range(len(y_true))])
+
+    y_prob = np.array(
+        [
+            [random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)]
+            for _ in range(len(y_true))
+        ]
+    )
+
+    input_relation = np.column_stack(
+        (
+            y_true,
+            y_pred,
+            y_true_num,
+            y_pred_num,
+            y_prob[:, 0],
+            y_prob[:, 1],
+            y_prob[:, 2],
+        )
+    )
+    vdf = vDataFrame(
+        input_relation,
+        usecols=[
+            "y_true",
+            "y_pred",
+            "y_true_num",
+            "y_pred_num",
+            "y_prob0",
+            "y_prob1",
+            "y_prob2",
+        ],
+    )
+    yield vdf, y_true, y_pred, y_prob, labels, y_true_num, y_pred_num, labels_num
 
 
 @pytest.fixture(scope="module")
@@ -359,10 +386,19 @@ def pred_cl_dataset_binary():
             "a",
         ]
     )
-    y_prob = [random.uniform(0, 1) for x_val in range(len(y_true))]
-    input_relation = np.column_stack((y_true, y_pred, y_prob))
-    vdf = vDataFrame(input_relation, usecols=["y_true", "y_pred", "y_prob"])
-    yield vdf, y_true, y_pred, y_prob, labels
+
+    labels_num = np.array([0, 1])
+    y_true_num = np.array([random.randint(0, 1) for _ in range(len(y_true))])
+    y_pred_num = np.array([random.randint(0, 1) for _ in range(len(y_true))])
+
+    y_prob = np.array([random.uniform(0, 1) for _ in range(len(y_true))])
+
+    input_relation = np.column_stack((y_true, y_pred, y_true_num, y_pred_num, y_prob))
+    vdf = vDataFrame(
+        input_relation,
+        usecols=["y_true", "y_pred", "y_true_num", "y_pred_num", "y_prob"],
+    )
+    yield vdf, y_true, y_pred, y_prob, labels, y_true_num, y_pred_num, labels_num
 
 
 @pytest.fixture(scope="module")
