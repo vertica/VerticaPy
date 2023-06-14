@@ -298,7 +298,7 @@ Examine your data:
 vdf.describe()
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/362dbd53-3692-48e4-a1e1-60f5f565dc50" width="80%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/362dbd53-3692-48e4-a1e1-60f5f565dc50" width="100%">
 </p>
 
 Print the SQL query with <b>set_option</b>:
@@ -322,50 +322,38 @@ from verticapy.learn.ensemble import RandomForestClassifier
 vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna()
 
 # Model Evaluation
-cross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), 
+cross_validate(RandomForestClassifier("rf_titanic", max_leaf_nodes = 100, n_estimators = 30), 
                vdf, 
                ["age", "family_size", "sex", "pclass", "fare", "boat"], 
                "survived", 
                cutoff = 0.35)
-
-# Output
-                           auc               prc_auc   
-1-fold      0.9877114427860691    0.9530465915039339   
-2-fold      0.9965555014605642    0.7676485351425721   
-3-fold      0.9927239216549301    0.6419135521132449   
-avg             0.992330288634        0.787536226253   
-std           0.00362128464093         0.12779562393   
-                     accuracy              log_loss   
-1-fold      0.971291866028708    0.0502052541223871   
-2-fold      0.983253588516746    0.0298167751798457   
-3-fold      0.964824120603015    0.0392745694400433   
-avg            0.973123191716       0.0397655329141   
-std           0.0076344236729      0.00833079837099   
-                     precision                recall   
-1-fold                    0.96                  0.96   
-2-fold      0.9556962025316456                   1.0   
-3-fold      0.9647887323943662    0.9383561643835616   
-avg             0.960161644975        0.966118721461   
-std           0.00371376912311        0.025535200301   
-                      f1-score                   mcc   
-1-fold      0.9687259282082884    0.9376119402985075   
-2-fold      0.9867172675521821    0.9646971010878469   
-3-fold      0.9588020287309097    0.9240569687684576   
-avg              0.97141507483        0.942122003385   
-std            0.0115538960753       0.0168949813163   
-                  informedness            markedness   
-1-fold      0.9376119402985075    0.9376119402985075   
-2-fold      0.9737827715355807    0.9556962025316456   
-3-fold      0.9185148945422918    0.9296324823943662   
-avg             0.943303202125        0.940980208408   
-std            0.0229190954261       0.0109037699717   
-                           csi  
-1-fold      0.9230769230769231  
-2-fold      0.9556962025316456  
-3-fold      0.9072847682119205  
-avg             0.928685964607  
-std            0.0201579224026
 ```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/49d3a606-8518-4676-b7ae-fa5c3c962432" width="100%">
+</p>
+
+```python
+# Features importance
+model.fit(vdf, 
+          ["age", "family_size", "sex", "pclass", "fare", "boat"], 
+          "survived")
+model.features_importance()
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/81788c21-b16d-4b41-8cba-5ffa47f6ef04" width="80%">
+</p>
+
+```python
+# ROC Curve
+model.roc_curve(pos_label = "0")
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/91336750-56b0-4984-8d0f-33f7b22a2f41" width="80%">
+</p>
+
+
 Enjoy!
 
 ## Help and Support
