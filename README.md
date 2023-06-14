@@ -225,21 +225,21 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
 ```
 ```sql
  CREATE local temporary TABLE "laliga"
-    ("away_score" int, "away_team" Row
-        ("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, ..., Row
-            ("id" int, "name" varchar)), 
+    ("away_score" INT, "away_team" Row
+        ("away_team_gender" VARCHAR, "away_team_group" VARCHAR, "away_team_id" INT, ..., Row
+            ("id" INT, "name" VARCHAR)), 
         "competition" Row
-            ("competition_id" int, "competition_name" varchar, "country_name" varchar), 
+            ("competition_id" INT, "competition_name" VARCHAR, "country_name" VARCHAR), 
         "competition_stage" Row
-            ("id" int, "name" varchar), 
-        "home_score" int, "home_team" Row
+            ("id" INT, "name" VARCHAR), 
+        "home_score" INT, "home_team" Row
             ("country" Row
-                ("id" int, "name" varchar), 
-            "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, ...), 
-        "kick_off" time, "last_updated" date, "match_date" date, "match_id" int, ..., Row
-            ("data_version" date, "shot_fidelity_version" int, "xy_fidelity_version" int), 
+                ("id" INT, "name" VARCHAR), 
+            "home_team_gender" VARCHAR, "home_team_group" VARCHAR, "home_team_id" INT, ...), 
+        "kick_off" TIME, "last_upDATEd" DATE, "match_DATE" DATE, "match_id" INT, ..., Row
+            ("data_version" DATE, "shot_fidelity_version" INT, "xy_fidelity_version" INT), 
         "season" Row
-            ("season_id" int, "season_name" varchar)
+            ("season_id" INT, "season_name" VARCHAR)
         ) 
         ON COMMIT PRESERVE ROWS',
  'copy "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
