@@ -223,7 +223,7 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
   import verticapy as vp
   read_file("/home/laliga/2012.json", table_name="laliga", genSQL=True)
 ```
-```SQL
+```sql
  CREATE local temporary TABLE "laliga"
     ("away_score" int, "away_team" Row
         ("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, ..., Row
