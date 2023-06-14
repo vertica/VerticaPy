@@ -61,6 +61,7 @@ Main Advantages:
  <li> In-Database Machine Learning.</li>
  <li> Easy Model Evaluation.</li>
  <li> Easy Model Deployment.</li>
+ <li> Flexibility of using either Python or SQL.</li>
 </ul>
 
 <p align="center">
