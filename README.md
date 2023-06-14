@@ -93,7 +93,7 @@ VerticaPy is compatible with several clients. For details, see the <a href='http
 
 ## Documentation
 
-The easiest and most accurate way to find documentaiton for a particular function is to use the help function:
+The easiest and most accurate way to find documentation for a particular function is to use the help function:
 
 ```python
 import verticapy as vp
@@ -192,7 +192,7 @@ https://www.vertica.com/python/gallery/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
-### Compelte Machine Learning Pipeline
+### Complete Machine Learning Pipeline
 
 - **Data Ingestion**
 
