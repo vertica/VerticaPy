@@ -207,7 +207,7 @@ https://www.vertica.com/python/gallery/
   ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/cddc5bbc-9f96-469e-92ee-b4a6e0bc7cfb" width="92%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cddc5bbc-9f96-469e-92ee-b4a6e0bc7cfb" width="100%">
 </p>
 Note: Not all columns are displayed in the screenshot above because of width restriction here.
 
@@ -217,6 +217,34 @@ As shown above, it has created a nested structure for the complex data. The actu
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/6ad242fb-2994-45de-8796-d6af61dae00d" width="30%">
 </p>
 
+We can even see the SQL underneath every VerticaPy command by turning on the option of genSQL:
+
+```python
+  import verticapy as vp
+  read_file("/home/laliga/2012.json", table_name="laliga", genSQL=True)
+```
+```SQL
+ CREATE local temporary TABLE "laliga"
+    ("away_score" int, "away_team" Row
+        ("away_team_gender" varchar, "away_team_group" varchar, "away_team_id" int, ..., Row
+            ("id" int, "name" varchar)), 
+        "competition" Row
+            ("competition_id" int, "competition_name" varchar, "country_name" varchar), 
+        "competition_stage" Row
+            ("id" int, "name" varchar), 
+        "home_score" int, "home_team" Row
+            ("country" Row
+                ("id" int, "name" varchar), 
+            "home_team_gender" varchar, "home_team_group" varchar, "home_team_id" int, ...), 
+        "kick_off" time, "last_updated" date, "match_date" date, "match_id" int, ..., Row
+            ("data_version" date, "shot_fidelity_version" int, "xy_fidelity_version" int), 
+        "season" Row
+            ("season_id" int, "season_name" varchar)
+        ) 
+        ON COMMIT PRESERVE ROWS',
+ 'copy "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
+ parser FJsonParser()
+```
 
 - **Data Exploration**
 
