@@ -6,8 +6,6 @@
 
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
-:warning: VerticaPy 0.9.0 (and onwards) includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
-
 :warning: The following README is for VerticaPy 1.0.0-beta and onwards, and so some of the elements may not be present in the previous versions. 
 
 # VerticaPy
