@@ -357,11 +357,23 @@ model.features_importance()
 
 ```python
 # ROC Curve
-model.roc_curve(pos_label="0")
+model = RandomForestClassifier(name = "public.RF_titanic",
+                               n_estimators = 20,
+                               max_features = "auto",
+                               max_leaf_nodes = 32, 
+                               sample = 0.7,
+                               max_depth = 3,
+                               min_samples_leaf = 5,
+                               min_info_gain = 0.0,
+                               nbins = 32)
+model.fit("public.titanic", ["age", "fare", "sex"], "survived")
+
+# Roc Curve
+model.roc_curve()
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/91336750-56b0-4984-8d0f-33f7b22a2f41" width="80%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/c5d14ff4-97d3-4976-a3ff-3ddde5a5d7f2" width="80%">
 </p>
 
 
