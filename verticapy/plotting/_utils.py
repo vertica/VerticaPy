@@ -69,8 +69,8 @@ class PlottingUtils:
         """
         Returns the first available library (Plotly, Matplotlib, or
         Highcharts) to draw a specific graphic. If the graphic is not
-        available for a library, function tries the next plotting 
-        library. The style applied to the graphic corresponds to the 
+        available for a library, function tries the next plotting
+        library. The style applied to the graphic corresponds to the
         input style. The final graphic is drawn using the input
         'chart' object.
         """
