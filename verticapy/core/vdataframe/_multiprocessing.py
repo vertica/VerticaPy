@@ -29,7 +29,7 @@ def aggregate_parallel_block(
 ) -> TableSample:
     """
     Parallelizes the computations of the aggregate vDataFrame
-    method. This allows the vDataFrame to send multiple 
+    method. This allows the vDataFrame to send multiple
     queries at the same time.
     """
     return vdf.aggregate(
@@ -47,7 +47,7 @@ def describe_parallel_block(
 ) -> TableSample:
     """
     Parallelizes the computations of the describe vDataFrame
-    method. This allows the vDataFrame to send multiple 
+    method. This allows the vDataFrame to send multiple
     queries at the same time.
     """
     return vdf.describe(
