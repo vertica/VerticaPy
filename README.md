@@ -536,4 +536,8 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 
 - Announcements and Discussion: https://github.com/vertica/VerticaPy/discussions
 
+[:arrow_up: Back to TOC](#table-on-contents)
+
+<sub<>
 [Back to TOC](#table-on-contents)
+</sub>
