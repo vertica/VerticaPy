@@ -276,6 +276,9 @@ from verticapy.datasets import load_titanic
 titanic = load_titanic()
 titanic.corr(method="spearman")
 ```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
+</p>
 
 Users can even turn on SQL to see and copy SQL queries by turning on the SQL print option:
 
@@ -283,10 +286,6 @@ Users can even turn on SQL to see and copy SQL queries by turning on the SQL pri
 from verticapy import set_option
 set_option("sql_on", True)
 ```
-
-<p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
-</p>
 
 ```sql
   SELECT
