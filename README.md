@@ -68,6 +68,7 @@ Main Advantages:
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="92%">
 </p>
 
+<br>
 ## Installation
 
 To install <b>VerticaPy</b> with pip:
@@ -87,10 +88,12 @@ A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
 
+<br>
 ## Connecting to the Database
 
 VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
 
+<br>
 ## Documentation
 
 The easiest and most accurate way to find documentation for a particular function is to use the help function:
@@ -106,6 +109,7 @@ https://www.vertica.com/python/documentation_last/
 
 :heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
 
+<br>
 ## Use-cases
 
 Examples and case-studies: <br>
@@ -116,6 +120,7 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
+<br>
 ## Highlighted Features
 
 ### SQL Magic
@@ -135,6 +140,7 @@ SELECT version();
 # Output
 # Vertica Analytic Database v11.0.1-0
 ```
+<br>
 ### SQL Plots
 
 You can create interactive, professional plots directly from SQL.
@@ -150,7 +156,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
 </p>
 
-
+<br>
 ### Multiple Database Connection using DBLINK
 
 In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using SQL and python.
@@ -168,7 +174,7 @@ In the example above, the 'flight_vertica' table is stored in Vertica, whereas t
 
 For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php).
 
-
+<br>
 ### Python and SQL Combo
 
 VerticaPy has a unique place in the market because it allows users to use python and SQL in the same environment. 
@@ -181,7 +187,7 @@ selected_titanic = vp.vDataFrame(
 )
 selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
 ```
-
+<br>
 ### Charts
 
 Verticapy comes integrated with three popular plotting libraries: matplotlib, highcharts, and plotly.
@@ -193,7 +199,7 @@ https://www.vertica.com/python/gallery/
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
-
+<br>
 ### Complete Machine Learning Pipeline
 
 - **Data Ingestion**
@@ -304,7 +310,7 @@ set_option("sql_on", True)
 "public"."titanic") spearman_table
 ```
 
-VerticaPy allows use to calculate just a focused correlation as well using the focus parameter:
+VerticaPy allows users to calculate only a focused correlation as well using the "focus" parameter:
 
 ```python
 titanic.corr(method="spearman", focus="survived")
@@ -354,7 +360,7 @@ stepwise_result = stepwise(
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
 </p>
-
+<br>
 ### Loading Predefined Datasets
 
 VerticaPy has some predefined datasets that can be loaded quite easily. They include iris dataset, titanic dataset, amazon etc.
@@ -374,9 +380,7 @@ iris_data = load_iris()
 iris_data = vp.vDataFrame(input_relation = "public.iris")
 ```
 
-
-
-
+<br>
 ## Quickstart
 
 The following example follows the <a href='https://www.vertica.com/python/quick-start.php'>VerticaPy quickstart guide</a>.
@@ -493,7 +497,7 @@ model.roc_curve()
 
 
 Enjoy!
-
+<br>
 ## Help and Support
 
 ### Contributing
