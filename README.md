@@ -224,7 +224,7 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
   read_file("/home/laliga/2012.json", table_name="laliga", genSQL=True)
 ```
 ```sql
- CREATE local temporary TABLE "laliga"
+ CREATE LOCAL TEMPORARY TABLE "laliga"
     (
     "away_score" INT, 
     "away_team" Row
@@ -246,7 +246,7 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
         ("season_id" INT, "season_name" VARCHAR)
     ) 
     ON COMMIT PRESERVE ROWS',
- 'copy "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
+ 'COPY "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
  parser FJsonParser()
 ```
 
