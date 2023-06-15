@@ -25,7 +25,7 @@
 VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage of Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 
-# Table on Contents
+# Table of Contents
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Connecting to the Database](#connecting-to-the-database)
@@ -69,7 +69,7 @@ Main Advantages:
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="92%">
 </p>
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Installation
@@ -91,14 +91,14 @@ A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Connecting to the Database
 
 VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Documentation
@@ -116,7 +116,7 @@ https://www.vertica.com/python/documentation_last/
 
 :heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Use-cases
@@ -129,7 +129,7 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Highlighted Features
@@ -151,7 +151,7 @@ SELECT version();
 # Output
 # Vertica Analytic Database v11.0.1-0
 ```
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### SQL Plots
@@ -168,7 +168,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
 </p>
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### Multiple Database Connection using DBLINK
@@ -188,7 +188,7 @@ In the example above, the 'flight_vertica' table is stored in Vertica, whereas t
 
 For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php).
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### Python and SQL Combo
@@ -203,7 +203,7 @@ selected_titanic = vp.vDataFrame(
 )
 selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
 ```
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### Charts
@@ -217,7 +217,7 @@ https://www.vertica.com/python/gallery/
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### Complete Machine Learning Pipeline
@@ -380,7 +380,7 @@ stepwise_result = stepwise(
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
 </p>
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ### Loading Predefined Datasets
@@ -401,7 +401,7 @@ iris_data = load_iris()
 ```python
 iris_data = vp.vDataFrame(input_relation = "public.iris")
 ```
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Quickstart
@@ -521,7 +521,7 @@ model.roc_curve()
 
 Enjoy!
 
-[Back to TOC](#table-on-contents)
+[:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
 ## Help and Support
@@ -536,8 +536,4 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 
 - Announcements and Discussion: https://github.com/vertica/VerticaPy/discussions
 
-[:arrow_up: Back to TOC](#table-on-contents)
-
-<sub>
-[Back to TOC](#table-on-contents)
-</sub>
+[:arrow_up: Back to TOC](#table-of-contents)
