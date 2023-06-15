@@ -538,6 +538,6 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 
 [:arrow_up: Back to TOC](#table-on-contents)
 
-<sub<>
+<sub>
 [Back to TOC](#table-on-contents)
 </sub>
