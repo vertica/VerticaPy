@@ -326,7 +326,7 @@ data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="90%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="10%">
 </p>
 
 
