@@ -37,7 +37,7 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
-  - [Complete ML pipeline](#compelte-machine-learning-pipeline)
+  - [Complete ML pipeline](#complete-machine-learning-pipeline)
 - [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
@@ -252,6 +252,8 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
  parser FJsonParser()
 ```
 
+There are other specific functions to import specific file types such as [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) and read_csv(#https://www.vertica.com/python/documentation_last/utilities/read_csv/). The advantage is that since they focus on a particular file type, they offer more options to tackle the data. For example, [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) has an additional parameter "flatten_arrays" that allows to flatten the nest JSON arrays.
+
 - **Data Exploration**
 
   There are many options for descriptive and visual exploration. 
@@ -265,6 +267,52 @@ iris_data.scatter(
 ```
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/cb482992-58b3-4dcf-8fe7-f18f7c0f64d1" width="40%">
+</p>
+
+<b>Correlation Matrix</b> are also very fast and convenient to compute. Users can choose from a wide variety of correaltions including cramer, spearman, pearson etc.
+
+```python
+from verticapy.datasets import load_titanic
+titanic = load_titanic()
+titanic.corr(method="spearman")
+```
+
+Users can even turn on SQL to see and copy SQL queries by turning on the SQL print option:
+
+```python
+from verticapy import set_option
+set_option("sql_on", True)
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="40%">
+</p>
+
+```sql
+  SELECT
+    /*+LABEL('vDataframe._aggregate_matrix')*/ CORR_MATRIX("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()  
+  FROM
+(
+  SELECT
+    RANK() OVER (ORDER BY "pclass") AS "pclass",
+    RANK() OVER (ORDER BY "survived") AS "survived",
+    RANK() OVER (ORDER BY "age") AS "age",
+    RANK() OVER (ORDER BY "sibsp") AS "sibsp",
+    RANK() OVER (ORDER BY "parch") AS "parch",
+    RANK() OVER (ORDER BY "fare") AS "fare",
+    RANK() OVER (ORDER BY "body") AS "body"  
+  FROM
+"public"."titanic") spearman_table
+```
+
+VerticaPy allows use to calculate just a focused correlation as well using the focus parameter:
+
+```python
+titanic.corr(method="spearman", focus="survived")
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="40%">
 </p>
 
 - **Data Preparation**
@@ -307,6 +355,27 @@ stepwise_result = stepwise(
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
 </p>
+
+### Loading Predefined Datasets
+
+VerticaPy has some predefined datasets that can be loaded quite easily. They include iris dataset, titanic dataset, amazon etc.
+
+There are two ways to access them:
+
+(1) Using the standard python method"
+
+```python
+from verticapy.datasets import load_iris
+iris_data = load_iris()
+```
+
+(2) using the standard name of the dataset from the public schema:
+
+```python
+iris_data = vp.vDataFrame(input_relation = "public.iris")
+```
+
+
 
 
 ## Quickstart
