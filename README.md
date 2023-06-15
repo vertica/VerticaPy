@@ -285,7 +285,7 @@ set_option("sql_on", True)
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="80%">
 </p>
 
 ```sql
@@ -312,7 +312,7 @@ titanic.corr(method="spearman", focus="survived")
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="100%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="20%">
 </p>
 
 - **Data Preparation**
@@ -326,7 +326,7 @@ data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="10%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="50%">
 </p>
 
 
