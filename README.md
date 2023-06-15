@@ -171,7 +171,7 @@ For more details on how to setup DBLINK, please visit the [github repo](https://
 
 ### Python and SQL Combo
 
-VerticaPy has a unique place in the market because it allows users to use python and SQL in the same environment. 
+VerticaPy has a unique place in the market because it allows users to use Python and SQL in the same environment. 
 
 #### Example
 ```python
@@ -227,29 +227,36 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
 ```
 ```sql
  CREATE LOCAL TEMPORARY TABLE "laliga"
-    (
-    "away_score" INT, 
-    "away_team" Row
-        ("away_team_gender" VARCHAR, "away_team_group" VARCHAR, "away_team_id" INT, ..., Row
-            ("id" INT, "name" VARCHAR)
-        ), 
-    "competition" Row
-        ("competition_id" INT, "competition_name" VARCHAR, "country_name" VARCHAR), 
-    "competition_stage" Row
-        ("id" INT, "name" VARCHAR), 
-    "home_score" INT, 
-    "home_team" Row
-        ("country" Row
-            ("id" INT, "name" VARCHAR), 
-        "home_team_gender" VARCHAR, "home_team_group" VARCHAR, "home_team_id" INT, ...), 
-    "kick_off" TIME, "last_upDATEd" DATE, "match_DATE" DATE, "match_id" INT, ..., Row
-        ("data_version" DATE, "shot_fidelity_version" INT, "xy_fidelity_version" INT), 
-    "season" Row
-        ("season_id" INT, "season_name" VARCHAR)
-    ) 
-    ON COMMIT PRESERVE ROWS',
- 'COPY "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
- parser FJsonParser()
+    ("away_score" INT, 
+     "away_team" ROW("away_team_gender" VARCHAR, 
+                     "away_team_group"  VARCHAR, 
+                     "away_team_id"     INT, ... 
+                                        ROW("id"   INT, 
+                                            "name" VARCHAR)), 
+     "competition" ROW("competition_id"   INT, 
+                       "competition_name" VARCHAR, 
+                       "country_name"     VARCHAR), 
+     "competition_stage" ROW("id"   INT, 
+                             "name" VARCHAR), 
+     "home_score" INT, 
+     "home_team" ROW("country" ROW("id"   INT, 
+                                   "name" VARCHAR), 
+                     "home_team_gender" VARCHAR, 
+                     "home_team_group"  VARCHAR, 
+                     "home_team_id"     INT, ...), 
+     "kick_off"     TIME, 
+     "last_updated" DATE, 
+     "match_DATE"   DATE, 
+     "match_id"     INT, ... 
+                    ROW("data_version"          DATE, 
+                        "shot_fidelity_version" INT, 
+                        "xy_fidelity_version"   INT), 
+     "season" ROW("season_id"   INT, 
+                  "season_name" VARCHAR)) 
+     ON COMMIT PRESERVE ROWS
+     COPY "v_temp_schema"."laliga" 
+     FROM '/home/laliga/2012.json' 
+     PARSER FJsonParser()
 ```
 
 - **Data Exploration**
@@ -260,7 +267,9 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
 from verticapy.datasets import load_iris
 iris_data = load_iris()
 iris_data.scatter(
-    ["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"], by="Species", max_nb_points=30
+    ["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"], 
+    by="Species", 
+    max_nb_points=30
 )
 ```
 <p align="center">
@@ -320,12 +329,13 @@ root@ubuntu:~$ pip3 install verticapy[all]
 Create a new Vertica connection:
 ```python
 import verticapy as vp
-vp.new_connection({"host": "10.211.55.14", 
-                   "port": "5433", 
-                   "database": "testdb", 
-                   "password": "XxX", 
-                   "user": "dbadmin"},
-                   name = "Vertica_New_Connection")
+vp.new_connection({
+    "host": "10.211.55.14", 
+    "port": "5433", 
+    "database": "testdb", 
+    "password": "XxX", 
+    "user": "dbadmin"},
+    name="Vertica_New_Connection")
 ```
 Use the newly created connection:
 ```python
@@ -404,16 +414,22 @@ model.features_importance()
 
 ```python
 # ROC Curve
-model = RandomForestClassifier(name = "public.RF_titanic",
-                               n_estimators = 20,
-                               max_features = "auto",
-                               max_leaf_nodes = 32, 
-                               sample = 0.7,
-                               max_depth = 3,
-                               min_samples_leaf = 5,
-                               min_info_gain = 0.0,
-                               nbins = 32)
-model.fit("public.titanic", ["age", "fare", "sex"], "survived")
+model = RandomForestClassifier(
+    name = "public.RF_titanic",
+    n_estimators = 20,
+    max_features = "auto",
+    max_leaf_nodes = 32, 
+    sample = 0.7,
+    max_depth = 3,
+    min_samples_leaf = 5,
+    min_info_gain = 0.0,
+    nbins = 32
+)
+model.fit(
+    "public.titanic", # input relation
+    ["age", "fare", "sex"], # predictors
+    "survived" # response
+)
 
 # Roc Curve
 model.roc_curve()
