@@ -147,7 +147,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/cf74b1cb-f97a-4ead-a815-820b9540ee42" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
 </p>
 
 
@@ -285,7 +285,7 @@ set_option("sql_on", True)
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="80%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="90%">
 </p>
 
 ```sql
