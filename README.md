@@ -285,7 +285,7 @@ set_option("sql_on", True)
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="90%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
 </p>
 
 ```sql
