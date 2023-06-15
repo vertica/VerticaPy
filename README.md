@@ -25,7 +25,7 @@
 VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage of Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 
-# Table on Contents
+# Table of Contents
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Connecting to the Database](#connecting-to-the-database)
@@ -37,13 +37,14 @@ VerticaPy is a Python library with scikit-like functionality used to conduct dat
   - [Diverse Database Connections](#multiple-database-connection-using-dblink)
   - [Python and SQL Combo](#python-and-sql-combo)
   - [Charts](#charts)
-  - [Complete ML pipeline](#compelte-machine-learning-pipeline)
+  - [Complete ML pipeline](#complete-machine-learning-pipeline)
 - [Quickstart](#quickstart)
 - [Help and Support](#help-an-support)
   - [Contributing](#contributing)
   - [Communication](#communication)
 
-<br><br>
+<br>
+
 # Introduction
 
 Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists.
@@ -68,6 +69,9 @@ Main Advantages:
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="92%">
 </p>
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ## Installation
 
 To install <b>VerticaPy</b> with pip:
@@ -87,9 +91,15 @@ A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ## Connecting to the Database
 
 VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Documentation
 
@@ -106,6 +116,9 @@ https://www.vertica.com/python/documentation_last/
 
 :heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ## Use-cases
 
 Examples and case-studies: <br>
@@ -115,6 +128,9 @@ https://www.vertica.com/python/examples/
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Highlighted Features
 
@@ -135,6 +151,9 @@ SELECT version();
 # Output
 # Vertica Analytic Database v11.0.1-0
 ```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ### SQL Plots
 
 You can create interactive, professional plots directly from SQL.
@@ -147,9 +166,11 @@ To create plots, simply provide the type of plot along with the SQL command.
 %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/cf74b1cb-f97a-4ead-a815-820b9540ee42" width="50%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
 </p>
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ### Multiple Database Connection using DBLINK
 
@@ -168,6 +189,8 @@ In the example above, the 'flight_vertica' table is stored in Vertica, whereas t
 
 For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php).
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ### Python and SQL Combo
 
@@ -181,6 +204,8 @@ selected_titanic = vp.vDataFrame(
 )
 selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
 ```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ### Charts
 
@@ -193,6 +218,9 @@ https://www.vertica.com/python/gallery/
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ### Complete Machine Learning Pipeline
 
@@ -219,7 +247,7 @@ As shown above, it has created a nested structure for the complex data. The actu
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/6ad242fb-2994-45de-8796-d6af61dae00d" width="30%">
 </p>
 
-We can even see the SQL underneath every VerticaPy command by turning on the option of genSQL:
+We can even see the SQL underneath every VerticaPy command by turning on the genSQL option:
 
 ```python
   import verticapy as vp
@@ -259,6 +287,8 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
      PARSER FJsonParser()
 ```
 
+VerticaPy provides functions for importing other specific file types, such as [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) and read_csv(#https://www.vertica.com/python/documentation_last/utilities/read_csv/). Since these functions focus on a particular file type, they offer more options for tackling the data. For example, [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) has a "flatten_arrays" parameter that allows you to flatten nested JSON arrays.
+
 - **Data Exploration**
 
   There are many options for descriptive and visual exploration. 
@@ -276,6 +306,51 @@ iris_data.scatter(
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/cb482992-58b3-4dcf-8fe7-f18f7c0f64d1" width="40%">
 </p>
 
+The <b>Correlation Matrix</b> is also very fast and convenient to compute. Users can choose from a wide variety of correaltions, including cramer, spearman, pearson etc.
+
+```python
+from verticapy.datasets import load_titanic
+titanic = load_titanic()
+titanic.corr(method="spearman")
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
+</p>
+
+By turning on the SQL print option, users can see and copy SQL queries:
+
+```python
+from verticapy import set_option
+set_option("sql_on", True)
+```
+
+```sql
+  SELECT
+    /*+LABEL('vDataframe._aggregate_matrix')*/ CORR_MATRIX("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()  
+  FROM
+(
+  SELECT
+    RANK() OVER (ORDER BY "pclass") AS "pclass",
+    RANK() OVER (ORDER BY "survived") AS "survived",
+    RANK() OVER (ORDER BY "age") AS "age",
+    RANK() OVER (ORDER BY "sibsp") AS "sibsp",
+    RANK() OVER (ORDER BY "parch") AS "parch",
+    RANK() OVER (ORDER BY "fare") AS "fare",
+    RANK() OVER (ORDER BY "body") AS "body"  
+  FROM
+"public"."titanic") spearman_table
+```
+
+VerticaPy allows users to calculate a focused correlation using the "focus" parameter:
+
+```python
+titanic.corr(method="spearman", focus="survived")
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="20%">
+</p>
+
 - **Data Preparation**
 
   Whether you are [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything and more in one package.
@@ -287,7 +362,7 @@ data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="50%">
 </p>
 
 
@@ -317,6 +392,29 @@ stepwise_result = stepwise(
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
 </p>
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+### Loading Predefined Datasets
+
+VerticaPy provides some predefined datasets that can be easily loaded. These datasets include the iris dataset, titanic dataset, amazon, and more.
+
+There are two ways to access the provided datasets:
+
+(1) Use the standard python method:
+
+```python
+from verticapy.datasets import load_iris
+iris_data = load_iris()
+```
+
+(2) Use the standard name of the dataset from the public schema:
+
+```python
+iris_data = vp.vDataFrame(input_relation = "public.iris")
+```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Quickstart
 
@@ -442,6 +540,9 @@ model.roc_curve()
 
 Enjoy!
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ## Help and Support
 
 ### Contributing
@@ -453,3 +554,5 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 - LinkedIn: https://www.linkedin.com/company/verticapy/
 
 - Announcements and Discussion: https://github.com/vertica/VerticaPy/discussions
+
+[:arrow_up: Back to TOC](#table-of-contents)
