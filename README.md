@@ -225,23 +225,27 @@ We can even see the SQL underneath every VerticaPy command by turning on the opt
 ```
 ```sql
  CREATE local temporary TABLE "laliga"
-    ("away_score" INT, "away_team" Row
+    (
+    "away_score" INT, 
+    "away_team" Row
         ("away_team_gender" VARCHAR, "away_team_group" VARCHAR, "away_team_id" INT, ..., Row
-            ("id" INT, "name" VARCHAR)), 
-        "competition" Row
-            ("competition_id" INT, "competition_name" VARCHAR, "country_name" VARCHAR), 
-        "competition_stage" Row
+            ("id" INT, "name" VARCHAR)
+        ), 
+    "competition" Row
+        ("competition_id" INT, "competition_name" VARCHAR, "country_name" VARCHAR), 
+    "competition_stage" Row
+        ("id" INT, "name" VARCHAR), 
+    "home_score" INT, 
+    "home_team" Row
+        ("country" Row
             ("id" INT, "name" VARCHAR), 
-        "home_score" INT, "home_team" Row
-            ("country" Row
-                ("id" INT, "name" VARCHAR), 
-            "home_team_gender" VARCHAR, "home_team_group" VARCHAR, "home_team_id" INT, ...), 
-        "kick_off" TIME, "last_upDATEd" DATE, "match_DATE" DATE, "match_id" INT, ..., Row
-            ("data_version" DATE, "shot_fidelity_version" INT, "xy_fidelity_version" INT), 
-        "season" Row
-            ("season_id" INT, "season_name" VARCHAR)
-        ) 
-        ON COMMIT PRESERVE ROWS',
+        "home_team_gender" VARCHAR, "home_team_group" VARCHAR, "home_team_id" INT, ...), 
+    "kick_off" TIME, "last_upDATEd" DATE, "match_DATE" DATE, "match_id" INT, ..., Row
+        ("data_version" DATE, "shot_fidelity_version" INT, "xy_fidelity_version" INT), 
+    "season" Row
+        ("season_id" INT, "season_name" VARCHAR)
+    ) 
+    ON COMMIT PRESERVE ROWS',
  'copy "v_temp_schema"."laliga" FROM \'/home/laliga/2012.json\' 
  parser FJsonParser()
 ```
