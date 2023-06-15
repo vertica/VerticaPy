@@ -312,7 +312,7 @@ titanic.corr(method="spearman", focus="survived")
 ```
 
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="80%">
 </p>
 
 - **Data Preparation**
@@ -326,7 +326,7 @@ data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [
 data.outliers_plot(columns="Heights")
 ```
 <p align="center">
-<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="40%">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="20%">
 </p>
 
 
