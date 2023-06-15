@@ -45,7 +45,7 @@ This release contains some major changes, including:
 
 - Plotting
     - Plotly is now the default plotting library, introducing improved visualizations. The Plotly plots are more interactive and enhance the user experience.
-    - Convenient switching of plotting libraries. You can now easily switch the plotting libraries using the following syntax:
+    - You can now easily switch between the plotting libraries using the following syntax:
 
 
     ```python
@@ -53,9 +53,9 @@ This release contains some major changes, including:
     set_option("plotting_lib","matplotlib")
     ```
 
-    Note that the function "Hchart" is also deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax mentioned below if Highcharts is set as the default the plotting library.
+    Note that the "Hchart" function is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
 
-    - Custom width and height. The parameters "custom_height" and "custom_width" have been added to all plots so that the sizes can be changed as per the user requirement.
+    - The parameters "custom_height" and "custom_width" have been added to all plots so that the sizes can be changed as needed.
 
   
 - Validators now ensure that only supported options are selected for the VerticaPy options.
@@ -83,7 +83,7 @@ This release contains some major changes, including:
 
 - Added support for many new classification and regression metrics.
 
-  New metrics added to classification report:
+  The following metrics have been added to the classification report:
     - Akaike’s Information Criterion (AIC)
     - Balanced Accuracy (BA)
     - False Discovery Rate (FDR)
@@ -95,7 +95,7 @@ This release contains some major changes, including:
 
     Most of the above metrics are new in this version and can be accessed directly.
 
-    New metrics added to the regression report:
+    The following metrics have been added to the regression report:
     - Mean Squared Log Error
     - Quantile Error
 
@@ -150,9 +150,9 @@ This release contains some major changes, including:
 
 - A new decorator (@check_dtypes) is used to ensure correct input for the functions.
 
-- Updated the workflow to use the latest version of Github actions, and added a tox.ini file and a CONTRIBUTING.md file.
+- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and a CONTRIBUTING.md file.
 
-- The new Github workflow now automatically checks for pylint score of the new code that is added. If the score is below 5, then the tests fail.
+- The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the score is below 5, then the tests fail.
 
-- Another check in the workflow is for fomatting check using black. If any of the files requires formatting, the test fails for new code.
+- Added a check in the workflow for fomatting using black. If any files requires reformatting, the test fails and reports the relevant files.
 
