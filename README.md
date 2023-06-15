@@ -168,6 +168,7 @@ To create plots, simply provide the type of plot along with the SQL command.
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
 </p>
+
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
@@ -217,6 +218,7 @@ https://www.vertica.com/python/gallery/
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
+
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
@@ -380,6 +382,7 @@ stepwise_result = stepwise(
 <p align="center">
 <img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
 </p>
+
 [:arrow_up: Back to TOC](#table-of-contents)
 <br>
 
