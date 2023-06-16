@@ -1916,6 +1916,36 @@ def roc_auc_score(
             y_true, y_score, input_relation, labels, nbins, fun_sql_name="roc"
         )
         return _compute_area(true_positive, false_positive)
+    elif average == "macro":
+        fpr = {}
+        tpr = {}
+        for i in range(len(y_score)):
+            fpr[i], tpr[i] = _compute_function_metrics(
+                y_true=y_true,
+                y_score=y_score[i],
+                input_relation=input_relation,
+                pos_label=labels[i],
+                nbins=nbins,
+                fun_sql_name="roc",
+            )[1:]
+
+        fpr_grid = np.linspace(0.0, 1.0, nbins)
+        mean_tpr = np.zeros_like(fpr_grid)
+
+        for i in range(len(y_score)):
+            sorted_pairs = sorted(zip(fpr[i], tpr[i]))
+            fpr_sorted, tpr_sorted = zip(*sorted_pairs)
+            mean_tpr += np.interp(
+                fpr_grid, fpr_sorted, tpr_sorted
+            )  # linear interpolation
+
+        # Average it and compute AUC
+        mean_tpr /= len(y_score)
+
+        fpr_macro = fpr_grid
+        tpr_macro = mean_tpr
+        roc_auc = _compute_area(tpr_macro.tolist()[::-1], fpr_macro.tolist()[::-1])
+        return roc_auc
     else:
         return _compute_multiclass_metric(
             metric=roc_auc_score,
