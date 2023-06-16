@@ -15,9 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
-
+import verticapy as vp
 import numpy as np
-
 from verticapy._typing import (
     ArrayLike,
     NoneType,
@@ -1644,6 +1643,7 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
+    fun_sql_name: Optional[str],
     average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
@@ -1657,7 +1657,6 @@ def _compute_multiclass_metric(
         )
         weights = [args[1] + args[3] for args in confusion_list]
     else:
-        # micro is not feasible using AUC.
         weights = [1.0 for args in labels]
     nbins_kw = {"nbins": nbins} if not isinstance(nbins, NoneType) else {}
     scores = [
@@ -1672,6 +1671,60 @@ def _compute_multiclass_metric(
         for i in range(len(labels))
     ]
     return sum(scores) / sum(weights)
+
+
+def _compute_micro_multiclass_metric(
+    y_true, y_score, input_relation, labels, nbins, fun_sql_name
+):
+    if fun_sql_name == "roc":
+        X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
+    query = f"""
+            SELECT
+                {', '.join(X)}
+            FROM
+                (SELECT
+                    {fun_sql_name.upper()}(
+                            obs, prob 
+                            USING PARAMETERS 
+                            num_bins = {nbins}) OVER() 
+                FROM (
+                SELECT
+                t.decoded_value as obs,
+                t.prob_value::float as prob
+                FROM (
+                SELECT
+                    CASE WHEN {y_true} = distinct_values.value THEN 1 ELSE 0 END AS decoded_value,
+                    CASE distinct_values.value"""
+    distinct_values = _executeSQL(
+        query=f"SELECT DISTINCT {y_true} AS value FROM {input_relation}",
+        method="fetchall",
+    )
+    if set(item[0] for item in distinct_values) != set(labels):
+        raise ValueError("Mismatch between distinct values and provided labels")
+    for i in range(len(labels)):
+        query += f"""
+                    WHEN {labels[i]} THEN {y_score[i]}"""
+    query += f"""
+                    ELSE NULL
+                END AS prob_value
+                FROM
+                    {input_relation},
+                    (SELECT DISTINCT {y_true} AS value FROM {input_relation}) AS distinct_values
+                ) AS t) AS subquery
+            ) x
+    """
+    # The following query does exactly what is required except that I have to tell it that the distinct values are 0,1,2
+    query_result = _executeSQL(
+        query=query,
+        title=f"Computing the",
+        method="fetchall",
+    )
+    result = [
+        [item[0] for item in query_result],
+        [item[1] for item in query_result],
+        [item[2] for item in query_result],
+    ]
+    return result
 
 
 def _get_yscore(
@@ -1844,7 +1897,11 @@ def roc_auc_score(
     float
         score.
     """
-    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
+    if (
+        not isinstance(pos_label, NoneType)
+        or isinstance(labels, NoneType)
+        and isinstance(y_score, str)
+    ):
         false_positive, true_positive = _compute_function_metrics(
             y_true=y_true,
             y_score=_get_yscore(y_score, labels, pos_label),
@@ -1853,6 +1910,11 @@ def roc_auc_score(
             nbins=nbins,
             fun_sql_name="roc",
         )[1:]
+        return _compute_area(true_positive, false_positive)
+    elif average == "micro":
+        _, false_positive, true_positive = _compute_micro_multiclass_metric(
+            y_true, y_score, input_relation, labels, nbins, fun_sql_name="roc"
+        )
         return _compute_area(true_positive, false_positive)
     else:
         return _compute_multiclass_metric(
@@ -1948,6 +2010,7 @@ def prc_auc_score(
             average=average,
             labels=labels,
             nbins=nbins,
+            fun_sql_name="prc",
         )
 
 
