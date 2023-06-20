@@ -1643,7 +1643,6 @@ def _compute_multiclass_metric(
     y_true: str,
     y_score: Union[str, ArrayLike],
     input_relation: SQLRelation,
-    fun_sql_name: Optional[str],
     average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
     labels: Optional[ArrayLike] = None,
     nbins: int = 10000,
@@ -1674,7 +1673,12 @@ def _compute_multiclass_metric(
 
 
 def _compute_micro_multiclass_metric(
-    y_true, y_score, input_relation, labels, nbins, fun_sql_name
+    y_true: str,
+    y_score: ArrayLike,
+    input_relation: SQLRelation,
+    labels: ArrayLike,
+    nbins: int,
+    fun_sql_name: Optional[str],
 ):
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
@@ -2068,13 +2072,8 @@ def prc_auc_score(
         for i in range(len(y_score)):
             sorted_pairs = sorted(zip(recall[i], precision[i]))
             recall_sorted, precision_sorted = zip(*sorted_pairs)
-            mean_precision += np.interp(
-                recall_grid, recall_sorted, precision_sorted
-            )  # linear interpolation
-
-        # Average it and compute AUC
+            mean_precision += np.interp(recall_grid, recall_sorted, precision_sorted)
         mean_precision /= len(y_score)
-
         recall_macro = recall_grid
         precision_macro = mean_precision
         prc_auc = _compute_area(
