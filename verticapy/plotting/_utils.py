@@ -67,7 +67,12 @@ class PlottingUtils:
         style_kwargs: Optional[dict] = None,
     ) -> tuple[Literal[vpy_highcharts_plt, vpy_matplotlib_plt, vpy_plotly_plt], dict]:
         """
-        Missing function description?
+        Returns the first available library (Plotly, Matplotlib, or
+        Highcharts) to draw a specific graphic. If the graphic is not
+        available for a library, function tries the next plotting
+        library. The style applied to the graphic corresponds to the
+        input style. The final graphic is drawn using the input
+        'chart' object.
         """
         highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs = format_type(
             highchart_kwargs, plotly_kwargs, matplotlib_kwargs, style_kwargs, dtype=dict

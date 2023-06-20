@@ -69,7 +69,17 @@ COLORS_OPTIONS: dict[str, list] = {
     "summer": ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"],
     "tropical": ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"],
     "india": ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"],
-    "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
+    "old": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
+    "default": [
+        "#1a6aff",
+        "#000000",
+        "#9c9c9c",
+        "#FE5016",
+        "#FDE159",
+        "#33C180",
+        "#4E2A84",
+        "#00008b",
+    ],
 }
 
 
@@ -245,7 +255,9 @@ class PlottingBase(PlottingBaseSQL):
         self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:
         """
-        Missing function description?
+        If a color or list of colours is available in the
+        input dictionary, return it. Otherwise, this function
+        returns the current module str or list of colors.
         """
         d = format_type(d, dtype=dict)
         if "color" in d:

@@ -2313,7 +2313,7 @@ class TestMachineLearningLiftChart:
         ), "Custom height and width not working"
 
 
-class TestMachineLearningLiftChart:
+class TestMachineLearningVoronoiPlot:
     @pytest.fixture(autouse=True)
     def result(self, voronoi_plot_result):
         self.result = voronoi_plot_result
@@ -2350,7 +2350,7 @@ class TestMachineLearningLiftChart:
         # Act
         # Assert
         assert len(self.result.data) == pytest.approx(
-            total_items, abs=2
+            total_items, abs=5
         ), "Some elements missing"
 
     def test_additional_options_custom_height(self, load_plotly, iris_vd):

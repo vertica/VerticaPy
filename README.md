@@ -6,7 +6,7 @@
 
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
-:warning: VerticaPy 0.9.0 includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
+:warning: The following README is for VerticaPy 1.0.0-beta and onwards, and so some of the elements may not be present in the previous versions. 
 
 # VerticaPy
 
@@ -15,22 +15,45 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/vertica/VerticaPy/branch/master/graph/badge.svg?token=a6GiFYI9at)](https://codecov.io/gh/vertica/VerticaPy)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
 </p>
 
-VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
+VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage of Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
-Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
-<br><br>
+
+# Table of Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Connecting to the Database](#connecting-to-the-database)
+- [Documentation](#documentation)
+- [Use-cases](#use-cases)
+- [Highlighted Features](#highllighted-features)
+  - [SQL Magic](#sql-magic)
+  - [SQL Plots](#sql-plots)
+  - [Diverse Database Connections](#multiple-database-connection-using-dblink)
+  - [Python and SQL Combo](#python-and-sql-combo)
+  - [Charts](#charts)
+  - [Complete ML pipeline](#complete-machine-learning-pipeline)
+- [Quickstart](#quickstart)
+- [Help and Support](#help-an-support)
+  - [Contributing](#contributing)
+  - [Communication](#communication)
+
+<br>
+
+# Introduction
+
 Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists.
 <br><br>
 Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists. Unfortunately, Python only works in-memory as a single-node process. This problem has led to the rise of distributed programming languages, but they too, are limited as in-memory processes and, as such, will never be able to process all of your data in this era, and moving data for processing is prohobitively expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
 <br><br>
 **VerticaPy aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, VerticaPy brings the logic to the data.
 <br><br>
-3 years in the making, we're proud to bring you VerticaPy.
+3+ years in the making, we're proud to bring you VerticaPy.
 <br><br>
 Main Advantages:
 <ul>
@@ -39,11 +62,15 @@ Main Advantages:
  <li> In-Database Machine Learning.</li>
  <li> Easy Model Evaluation.</li>
  <li> Easy Model Deployment.</li>
+ <li> Flexibility of using either Python or SQL.</li>
 </ul>
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="92%">
 </p>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Installation
 
@@ -64,11 +91,33 @@ A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
 
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+## Connecting to the Database
+
+VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
 ## Documentation
 
-Documentation is available at: <br>
+The easiest and most accurate way to find documentation for a particular function is to use the help function:
+
+```python
+import verticapy as vp
+help(vp.vDataFrame)
+```
+
+Official documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
+
+:heavy_exclamation_mark: But note the above is not currently updated as per VerticaPy 1.0.0-beta. It will be done soon.
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Use-cases
 
@@ -80,26 +129,87 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
-## SQL Magic
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
+## Highlighted Features
+
+### SQL Magic
 You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation_last/extensions/sql/'>SQL Magic</a>:
 
-### Example
+#### Example
 
 Load the SQL extension.
 ```python
 %load_ext verticapy.sql
 ```
 Execute your SQL queries.
-```python
+```sql
 %%sql
 SELECT version();
 
 # Output
 # Vertica Analytic Database v11.0.1-0
 ```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
-## Charts
+### SQL Plots
+
+You can create interactive, professional plots directly from SQL.
+
+To create plots, simply provide the type of plot along with the SQL command.
+
+#### Example
+```python
+%load_ext verticapy.jupyter.extensions.chart_magic
+%chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/9e1bebad-2c35-40d1-831f-0d4416e3f3c7" width="50%">
+</p>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+### Multiple Database Connection using DBLINK
+
+In a single platform, multiple databases (e.g. PostgreSQL, Vertica, MySQL, In-memory) can be accessed using SQL and python.
+
+#### Example
+```sql
+%%sql
+/* Fetch TAIL_NUMBER and CITY after Joining the flight_vertica table with airports table in MySQL database. */
+SELECT flight_vertica.TAIL_NUMBER, airports.CITY AS Departing_City
+FROM flight_vertica
+INNER JOIN &&& airports &&&
+ON flight_vertica.ORIGIN_AIRPORT = airports.IATA_CODE;
+```
+In the example above, the 'flight_vertica' table is stored in Vertica, whereas the 'airports' table is stored in MySQL. We can associate special symbols "&&&" to the different databases to fetch the data. The best part is that all the aggregation is pushed to the databases (i.e. it is not done in memory)!
+
+For more details on how to setup DBLINK, please visit the [github repo](https://github.com/vertica/dblink). To learn about using DBLINK in VerticaPy, check out the [documentation page](https://www.vertica.com/python/workshop/full_stack/dblink_integration/index.php).
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+### Python and SQL Combo
+
+VerticaPy has a unique place in the market because it allows users to use Python and SQL in the same environment. 
+
+#### Example
+```python
+import verticapy as vp
+selected_titanic = vp.vDataFrame(
+    "(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x"
+)
+selected_titanic.groupby(columns=["pclass"], expr=["AVG(AVG)"])
+```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+### Charts
+
+Verticapy comes integrated with three popular plotting libraries: matplotlib, highcharts, and plotly.
 
 A gallery of VerticaPy-generated charts is available at:<br>
 
@@ -109,13 +219,202 @@ https://www.vertica.com/python/gallery/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
-## Contributing
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
-For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
+### Complete Machine Learning Pipeline
 
-## Connecting to the Database
+- **Data Ingestion**
 
-VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
+  VerticaPy allows users to ingest data from a diverse range of sources, such as AVRO, Parquet, CSV, JSON etc. With a simple command "[read_file](https://www.vertica.com/python/documentation_last/utilities/read_file/)", VerticaPy automatically infers the source type and the data type.
+
+  ```python
+  import verticapy as vp
+  read_file(
+      "/home/laliga/2012.json",
+      table_name="laliga",
+  )
+  ```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cddc5bbc-9f96-469e-92ee-b4a6e0bc7cfb" width="100%">
+</p>
+Note: Not all columns are displayed in the screenshot above because of width restriction here.
+
+As shown above, it has created a nested structure for the complex data. The actual file structure is below:
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/6ad242fb-2994-45de-8796-d6af61dae00d" width="30%">
+</p>
+
+We can even see the SQL underneath every VerticaPy command by turning on the genSQL option:
+
+```python
+  import verticapy as vp
+  read_file("/home/laliga/2012.json", table_name="laliga", genSQL=True)
+```
+```sql
+ CREATE LOCAL TEMPORARY TABLE "laliga"
+    ("away_score" INT, 
+     "away_team" ROW("away_team_gender" VARCHAR, 
+                     "away_team_group"  VARCHAR, 
+                     "away_team_id"     INT, ... 
+                                        ROW("id"   INT, 
+                                            "name" VARCHAR)), 
+     "competition" ROW("competition_id"   INT, 
+                       "competition_name" VARCHAR, 
+                       "country_name"     VARCHAR), 
+     "competition_stage" ROW("id"   INT, 
+                             "name" VARCHAR), 
+     "home_score" INT, 
+     "home_team" ROW("country" ROW("id"   INT, 
+                                   "name" VARCHAR), 
+                     "home_team_gender" VARCHAR, 
+                     "home_team_group"  VARCHAR, 
+                     "home_team_id"     INT, ...), 
+     "kick_off"     TIME, 
+     "last_updated" DATE, 
+     "match_DATE"   DATE, 
+     "match_id"     INT, ... 
+                    ROW("data_version"          DATE, 
+                        "shot_fidelity_version" INT, 
+                        "xy_fidelity_version"   INT), 
+     "season" ROW("season_id"   INT, 
+                  "season_name" VARCHAR)) 
+     ON COMMIT PRESERVE ROWS
+     COPY "v_temp_schema"."laliga" 
+     FROM '/home/laliga/2012.json' 
+     PARSER FJsonParser()
+```
+
+VerticaPy provides functions for importing other specific file types, such as [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) and read_csv(#https://www.vertica.com/python/documentation_last/utilities/read_csv/). Since these functions focus on a particular file type, they offer more options for tackling the data. For example, [read_json](#https://www.vertica.com/python/documentation_last/utilities/read_json/) has a "flatten_arrays" parameter that allows you to flatten nested JSON arrays.
+
+- **Data Exploration**
+
+  There are many options for descriptive and visual exploration. 
+
+```python
+from verticapy.datasets import load_iris
+iris_data = load_iris()
+iris_data.scatter(
+    ["SepalWidthCm", "SepalLengthCm", "PetalLengthCm"], 
+    by="Species", 
+    max_nb_points=30
+)
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/cb482992-58b3-4dcf-8fe7-f18f7c0f64d1" width="40%">
+</p>
+
+The <b>Correlation Matrix</b> is also very fast and convenient to compute. Users can choose from a wide variety of correaltions, including cramer, spearman, pearson etc.
+
+```python
+from verticapy.datasets import load_titanic
+titanic = load_titanic()
+titanic.corr(method="spearman")
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/b6a7a9b7-ee0b-4544-a464-e1afb97235d7" width="75%">
+</p>
+
+By turning on the SQL print option, users can see and copy SQL queries:
+
+```python
+from verticapy import set_option
+set_option("sql_on", True)
+```
+
+```sql
+  SELECT
+    /*+LABEL('vDataframe._aggregate_matrix')*/ CORR_MATRIX("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()  
+  FROM
+(
+  SELECT
+    RANK() OVER (ORDER BY "pclass") AS "pclass",
+    RANK() OVER (ORDER BY "survived") AS "survived",
+    RANK() OVER (ORDER BY "age") AS "age",
+    RANK() OVER (ORDER BY "sibsp") AS "sibsp",
+    RANK() OVER (ORDER BY "parch") AS "parch",
+    RANK() OVER (ORDER BY "fare") AS "fare",
+    RANK() OVER (ORDER BY "body") AS "body"  
+  FROM
+"public"."titanic") spearman_table
+```
+
+VerticaPy allows users to calculate a focused correlation using the "focus" parameter:
+
+```python
+titanic.corr(method="spearman", focus="survived")
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/eb610bf6-1ec3-4d6f-a651-36ed9c817eaa" width="20%">
+</p>
+
+- **Data Preparation**
+
+  Whether you are [joining multiple tables](https://www.vertica.com/python/workshop/data_prep/joins/), [encoding](https://www.vertica.com/python/workshop/data_prep/encoding/index.php), or [filling missing values](https://www.vertica.com/python/workshop/data_prep/missing_values/index.php), VerticaPy has everything and more in one package.
+
+```python
+import random
+import verticapy as vp
+data = vp.vDataFrame({"Heights": [random.randint(10, 60) for _ in range(40)] + [100]})
+data.outliers_plot(columns="Heights")
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/5c48418f-1c25-4ddd-a7b3-a41f382a3cbe" width="50%">
+</p>
+
+
+- **Machine Learning**
+
+  ML is the strongest suite of VerticaPy as it capitalizes on the speed of in-database training and prediction by using SQL in the background to interact with the database. ML for VerticaPy covers a vast array of tools, including [time series forecasting](https://www.vertica.com/python/workshop/ml/time_series/index.php), [clustering](https://www.vertica.com/python/workshop/ml/clustering/index.php), and [classification](https://www.vertica.com/python/workshop/ml/classification/index.php). 
+
+```python
+# titanic_vd is already loaded
+# Logistic Regression model is already loaded
+stepwise_result = stepwise(
+    model,
+    input_relation=titanic_vd,
+    X=[
+        "age",
+        "fare",
+        "parch",
+        "pclass",
+    ],
+    y="survived",
+    direction="backward",
+    height=600,
+    width=800,
+)
+```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/aaefb9bc-9825-4f31-b411-b2ef06a8bed7" width="50%">
+</p>
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+### Loading Predefined Datasets
+
+VerticaPy provides some predefined datasets that can be easily loaded. These datasets include the iris dataset, titanic dataset, amazon, and more.
+
+There are two ways to access the provided datasets:
+
+(1) Use the standard python method:
+
+```python
+from verticapy.datasets import load_iris
+iris_data = load_iris()
+```
+
+(2) Use the standard name of the dataset from the public schema:
+
+```python
+iris_data = vp.vDataFrame(input_relation = "public.iris")
+```
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
 
 ## Quickstart
 
@@ -128,12 +427,13 @@ root@ubuntu:~$ pip3 install verticapy[all]
 Create a new Vertica connection:
 ```python
 import verticapy as vp
-vp.new_connection({"host": "10.211.55.14", 
-                   "port": "5433", 
-                   "database": "testdb", 
-                   "password": "XxX", 
-                   "user": "dbadmin"},
-                   name = "Vertica_New_Connection")
+vp.new_connection({
+    "host": "10.211.55.14", 
+    "port": "5433", 
+    "database": "testdb", 
+    "password": "XxX", 
+    "user": "dbadmin"},
+    name="Vertica_New_Connection")
 ```
 Use the newly created connection:
 ```python
@@ -156,26 +456,11 @@ vdf = load_titanic()
 Examine your data:
 ```python
 vdf.describe()
-
-# Output
-                count                 mean                  std     min
-"pclass"         1234     2.28444084278768    0.842485636190292     1.0 
-"survived"       1234    0.364667747163696    0.481532018641288     0.0
-"age"             997     30.1524573721163     14.4353046299159    0.33
-"sibsp"          1234    0.504051863857374     1.04111727241629     0.0 
-"parch"          1234    0.378444084278768    0.868604707790393     0.0 
-"fare"           1233      33.963793673966     52.6460729831293     0.0 
-"body"            118      164.14406779661     96.5760207557808     1.0 
-                approx_25%    approx_50%    approx_75%         max  
-"pclass"               1.0           3.0           3.0         3.0  
-"survived"             0.0           0.0           1.0         1.0  
-"age"                 21.0          28.0          39.0        80.0  
-"sibsp"                0.0           0.0           1.0         8.0  
-"parch"                0.0           0.0           0.0         9.0  
-"fare"              7.8958       14.4542       31.3875    512.3292  
-"body"               79.25         160.5         257.5       328.0  
-Rows: 1-7 | Columns: 9
 ```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/362dbd53-3692-48e4-a1e1-60f5f565dc50" width="100%">
+</p>
+
 Print the SQL query with <b>set_option</b>:
 ```python
 set_option("sql_on", True)
@@ -190,55 +475,84 @@ FROM public.titanic
 ```
 With VerticaPy, it is now possible to solve a ML problem with few lines of code.
 ```python
-from verticapy.learn.model_selection import cross_validate
-from verticapy.learn.ensemble import RandomForestClassifier
+from verticapy.machine_learning.model_selection.model_validation import cross_validate
+from verticapy.machine_learning.vertica import RandomForestClassifier
 
 # Data Preparation
-vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna()
+vdf["sex"].label_encode()["boat"].fillna(method="0ifnull")["name"].str_extract(
+    " ([A-Za-z]+)\."
+).eval("family_size", expr="parch + sibsp + 1").drop(
+    columns=["cabin", "body", "ticket", "home.dest"]
+)[
+    "fare"
+].fill_outliers().fillna()
 
 # Model Evaluation
-cross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), 
-               vdf, 
-               ["age", "family_size", "sex", "pclass", "fare", "boat"], 
-               "survived", 
-               cutoff = 0.35)
-
-# Output
-                           auc               prc_auc   
-1-fold      0.9877114427860691    0.9530465915039339   
-2-fold      0.9965555014605642    0.7676485351425721   
-3-fold      0.9927239216549301    0.6419135521132449   
-avg             0.992330288634        0.787536226253   
-std           0.00362128464093         0.12779562393   
-                     accuracy              log_loss   
-1-fold      0.971291866028708    0.0502052541223871   
-2-fold      0.983253588516746    0.0298167751798457   
-3-fold      0.964824120603015    0.0392745694400433   
-avg            0.973123191716       0.0397655329141   
-std           0.0076344236729      0.00833079837099   
-                     precision                recall   
-1-fold                    0.96                  0.96   
-2-fold      0.9556962025316456                   1.0   
-3-fold      0.9647887323943662    0.9383561643835616   
-avg             0.960161644975        0.966118721461   
-std           0.00371376912311        0.025535200301   
-                      f1-score                   mcc   
-1-fold      0.9687259282082884    0.9376119402985075   
-2-fold      0.9867172675521821    0.9646971010878469   
-3-fold      0.9588020287309097    0.9240569687684576   
-avg              0.97141507483        0.942122003385   
-std            0.0115538960753       0.0168949813163   
-                  informedness            markedness   
-1-fold      0.9376119402985075    0.9376119402985075   
-2-fold      0.9737827715355807    0.9556962025316456   
-3-fold      0.9185148945422918    0.9296324823943662   
-avg             0.943303202125        0.940980208408   
-std            0.0229190954261       0.0109037699717   
-                           csi  
-1-fold      0.9230769230769231  
-2-fold      0.9556962025316456  
-3-fold      0.9072847682119205  
-avg             0.928685964607  
-std            0.0201579224026
+cross_validate(
+    RandomForestClassifier("rf_titanic", max_leaf_nodes=100, n_estimators=30),
+    vdf,
+    ["age", "family_size", "sex", "pclass", "fare", "boat"],
+    "survived",
+    cutoff=0.35,
+)
 ```
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/49d3a606-8518-4676-b7ae-fa5c3c962432" width="100%">
+</p>
+
+```python
+# Features importance
+model.fit(vdf, ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived")
+model.features_importance()
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/a3d8b236-53a7-4d69-a969-48c2ba9bc114" width="80%">
+</p>
+
+```python
+# ROC Curve
+model = RandomForestClassifier(
+    name = "public.RF_titanic",
+    n_estimators = 20,
+    max_features = "auto",
+    max_leaf_nodes = 32, 
+    sample = 0.7,
+    max_depth = 3,
+    min_samples_leaf = 5,
+    min_info_gain = 0.0,
+    nbins = 32
+)
+model.fit(
+    "public.titanic", # input relation
+    ["age", "fare", "sex"], # predictors
+    "survived" # response
+)
+
+# Roc Curve
+model.roc_curve()
+```
+
+<p align="center">
+<img src="https://github.com/vertica/VerticaPy/assets/46414488/87f74bc7-a6cd-4336-8d32-b144f7fb6888" width="80%">
+</p>
+
+
 Enjoy!
+
+[:arrow_up: Back to TOC](#table-of-contents)
+<br>
+
+## Help and Support
+
+### Contributing
+
+For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>.
+
+### Communication
+
+- LinkedIn: https://www.linkedin.com/company/verticapy/
+
+- Announcements and Discussion: https://github.com/vertica/VerticaPy/discussions
+
+[:arrow_up: Back to TOC](#table-of-contents)
