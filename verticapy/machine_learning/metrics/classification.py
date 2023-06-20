@@ -1678,6 +1678,8 @@ def _compute_micro_multiclass_metric(
 ):
     if fun_sql_name == "roc":
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
+    elif fun_sql_name == "prc":
+        X = ["decision_boundary", "recall", "precision"]
     query = f"""
             SELECT
                 {', '.join(X)}
@@ -1718,6 +1720,10 @@ def _compute_micro_multiclass_metric(
         [item[1] for item in query_result],
         [item[2] for item in query_result],
     ]
+    if fun_sql_name == "prc":
+        result[0] = [0] + result[0] + [1]
+        result[1] = [1] + result[1] + [0]
+        result[2] = [0] + result[2] + [1]
     return result
 
 
@@ -2041,7 +2047,7 @@ def prc_auc_score(
         _, recall, precision = _compute_micro_multiclass_metric(
             y_true, y_score, input_relation, labels, nbins, fun_sql_name="prc"
         )
-        return _compute_area(recall, precision)
+        return _compute_area(precision, recall)
     elif average == "macro":
         _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
         recall = {}
@@ -2069,7 +2075,7 @@ def prc_auc_score(
         # Average it and compute AUC
         mean_precision /= len(y_score)
 
-        recall_macro = fpr_grid
+        recall_macro = recall_grid
         precision_macro = mean_precision
         prc_auc = _compute_area(
             precision_macro.tolist()[::-1], recall_macro.tolist()[::-1]
