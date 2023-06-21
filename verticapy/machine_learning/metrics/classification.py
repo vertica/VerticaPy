@@ -15,7 +15,6 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from typing import Callable, Literal, Optional, Union, TYPE_CHECKING
-import verticapy as vp
 import numpy as np
 from verticapy._typing import (
     ArrayLike,
@@ -1684,6 +1683,21 @@ def _compute_micro_multiclass_metric(
         X = ["decision_boundary", "false_positive_rate", "true_positive_rate"]
     elif fun_sql_name == "prc":
         X = ["decision_boundary", "recall", "precision"]
+    labels_query = ""
+    for i in range(len(labels)):
+        labels_query += f"""
+                    WHEN {labels[i]} THEN {y_score[i]}"""
+    decode_query = f"""
+                    SELECT
+                    CASE WHEN {y_true} = distinct_values.value THEN 1 ELSE 0 END AS decoded_value,
+                    CASE distinct_values.value
+                    {labels_query}
+                    ELSE NULL
+                    END AS prob_value
+                    FROM
+                    {input_relation},
+                    (SELECT DISTINCT {y_true} AS value FROM {input_relation}) AS distinct_values"""
+
     query = f"""
             SELECT
                 {', '.join(X)}
@@ -1698,21 +1712,9 @@ def _compute_micro_multiclass_metric(
                 t.decoded_value as obs,
                 t.prob_value::float as prob
                 FROM (
-                SELECT
-                    CASE WHEN {y_true} = distinct_values.value THEN 1 ELSE 0 END AS decoded_value,
-                    CASE distinct_values.value"""
-    for i in range(len(labels)):
-        query += f"""
-                    WHEN {labels[i]} THEN {y_score[i]}"""
-    query += f"""
-                    ELSE NULL
-                END AS prob_value
-                FROM
-                    {input_relation},
-                    (SELECT DISTINCT {y_true} AS value FROM {input_relation}) AS distinct_values
-                ) AS t) AS subquery
+                {decode_query}) AS t) AS subquery
             ) x
-    """
+            """
     # The following query does exactly what is required except that I have to tell it that the distinct values are 0,1,2
     query_result = _executeSQL(
         query=query,
@@ -1947,7 +1949,6 @@ def roc_auc_score(
 
         # Average it and compute AUC
         mean_tpr /= len(y_score)
-
         fpr_macro = fpr_grid
         tpr_macro = mean_tpr
         roc_auc = _compute_area(tpr_macro.tolist()[::-1], fpr_macro.tolist()[::-1])
