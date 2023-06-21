@@ -663,7 +663,7 @@ class vDFFilter(vDFAgg):
         """
         order_by, usecols, expr = format_type(order_by, usecols, expr, dtype=list)
         if isinstance(conditions, Iterable) and not isinstance(conditions, str):
-            conditions = " AND ".join([f"({elem})" for elem in conditions])
+            conditions = " AND ".join([f"({c})" for c in conditions])
         if conditions:
             conditions = f" WHERE {conditions}"
         all_cols = ", ".join(["*"] + expr)

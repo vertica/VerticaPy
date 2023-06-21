@@ -462,18 +462,18 @@ class PlottingBase(PlottingBaseSQL):
             )
         # depending on the cardinality, the type, the vDataColumn
         # can be treated as categorical or not
-        cardinality, count, is_numeric, is_date, is_categorical = (
-            vdc.nunique(True),
-            vdc._parent.shape()[0],
-            vdc.isnum() and not vdc.isbool(),
-            (vdc.category() == "date"),
-            False,
-        )
+        cardinality = vdc.nunique(True)
+        count = vdc._parent.shape()[0]
+        is_numeric = vdc.isnum() and not vdc.isbool()
+        is_date = vdc.isdate()
+        is_bool = vdc.isbool()
+        cast = "::int" if is_bool else ""
+        is_categorical = False
         # case when categorical
         if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
             is_date
         ):
-            if (is_numeric) and not pie:
+            if ((is_numeric) and not pie) or (is_bool):
                 query = f"""
                     SELECT 
                         {vdc},
@@ -618,7 +618,7 @@ class PlottingBase(PlottingBaseSQL):
                 query=f"""
                     SELECT
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-                        FLOOR({vdc} / {h}) * {h},
+                        FLOOR({vdc}{cast} / {h}) * {h},
                         {aggregate} 
                     FROM {vdc._parent}
                     WHERE {vdc} IS NOT NULL
@@ -774,9 +774,12 @@ class PlottingBase(PlottingBaseSQL):
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
                 f"MAX({columns[0]})",
             ]
-            if vdf[by].isnum():
+            if vdf[by].isnum() and not(vdf[by].isbool()):
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
                 is_num_transf = True
+            elif vdf[by].isbool():
+                _by = ("{}::varchar", "varchar", "text")
+                is_num_transf = False
             else:
                 _by = vdf[by].discretize(
                     k=max_cardinality, method="topk", return_enum_trans=True
@@ -890,6 +893,7 @@ class PlottingBase(PlottingBaseSQL):
         for idx, column in enumerate(columns):
             is_numeric = vdf[column].isnum() and (vdf[column].nunique(True) > 2)
             is_date = vdf[column].isdate()
+            cast = "::int" if vdf[column].isbool() else ""
             where = []
             if is_numeric:
                 if isinstance(h[idx], NoneType):
@@ -910,11 +914,11 @@ class PlottingBase(PlottingBaseSQL):
                 else:
                     floor_end = ""
                 expr = f"""'[' 
-                          || FLOOR({column} 
+                          || FLOOR({column}{cast}
                                  / {interval}) 
                                  * {interval} 
                           || ';' 
-                          || (FLOOR({column} 
+                          || (FLOOR({column}{cast}
                                   / {interval}) 
                                   * {interval} 
                                   + {interval}{floor_end}) 
@@ -922,8 +926,8 @@ class PlottingBase(PlottingBaseSQL):
                 if (interval > 1) or (vdf[column].category() == "float"):
                     matrix += [expr]
                 else:
-                    matrix += [f"FLOOR({column}) || ''"]
-                order_by = f"""ORDER BY MIN(FLOOR({column} 
+                    matrix += [f"FLOOR({column}{cast}) || ''"]
+                order_by = f"""ORDER BY MIN(FLOOR({column}{cast} 
                                           / {interval}) * {interval}) ASC"""
                 where += [f"{column} IS NOT NULL"]
             elif is_date:
