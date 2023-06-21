@@ -1949,9 +1949,7 @@ def roc_auc_score(
 
         # Average it and compute AUC
         mean_tpr /= len(y_score)
-        fpr_macro = fpr_grid
-        tpr_macro = mean_tpr
-        roc_auc = _compute_area(tpr_macro.tolist()[::-1], fpr_macro.tolist()[::-1])
+        roc_auc = _compute_area(mean_tpr.tolist()[::-1], fpr_grid.tolist()[::-1])
         return roc_auc
     else:
         return _compute_multiclass_metric(
@@ -2075,10 +2073,8 @@ def prc_auc_score(
             recall_sorted, precision_sorted = zip(*sorted_pairs)
             mean_precision += np.interp(recall_grid, recall_sorted, precision_sorted)
         mean_precision /= len(y_score)
-        recall_macro = recall_grid
-        precision_macro = mean_precision
         prc_auc = _compute_area(
-            precision_macro.tolist()[::-1], recall_macro.tolist()[::-1]
+            mean_precision.tolist()[::-1], recall_grid.tolist()[::-1]
         )
         return prc_auc
     else:
