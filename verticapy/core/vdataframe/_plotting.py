@@ -15,8 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import math
-from typing import Callable, Literal, Optional, Union
+import warnings
 from collections.abc import Iterable
+from typing import Callable, Literal, Optional, Union
 import numpy as np
 
 import verticapy._config.config as conf
@@ -1807,22 +1808,48 @@ class vDCPlot(vDCNorm):
         obj
             Plotting Object.
         """
-        vpy_plt, kwargs = self._parent.get_plotting_lib(
-            class_name="Histogram",
-            chart=chart,
-            style_kwargs=style_kwargs,
-        )
-        return vpy_plt.Histogram(
-            vdf=self._parent,
-            columns=[self._alias],
-            by=by,
-            method=method,
-            of=of,
-            h=h,
-            h_by=h_by,
-            max_cardinality=max_cardinality,
-            cat_priority=cat_priority,
-        ).draw(**kwargs)
+        if self.isnum() and not(self.isbool()):
+            vpy_plt, kwargs = self._parent.get_plotting_lib(
+                class_name="Histogram",
+                chart=chart,
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.Histogram(
+                vdf=self._parent,
+                columns=[self._alias],
+                by=by,
+                method=method,
+                of=of,
+                h=h,
+                h_by=h_by,
+                max_cardinality=max_cardinality,
+                cat_priority=cat_priority,
+            ).draw(**kwargs)
+        else:
+            warning_message = (
+                f"The Virtual Column {self._alias} is not "
+                "numerical. A bar chart will be drawn instead."
+            )
+            warnings.warn(warning_message, Warning)
+            if by:
+                return self._parent.bar(
+                    columns=[self._alias, by],
+                    method=method,
+                    of=of,
+                    max_cardinality=(max_cardinality, max_cardinality),
+                    h=(h, h),
+                    chart=chart,
+                    **style_kwargs,
+                )
+            else:
+                return self.bar(
+                    method=method,
+                    of=of,
+                    max_cardinality=max_cardinality,
+                    h=h,
+                    chart=chart,
+                    **style_kwargs,
+                )
 
     @save_verticapy_logs
     def density(
