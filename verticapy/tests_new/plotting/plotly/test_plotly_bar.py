@@ -15,7 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Vertica
-from verticapy.tests_new.plotting.base_test_files import VDCBarPlot, VDFBarPlot
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCBarPlot,
+    VDFBarPlot,
+    VDFBarPlot2D,
+)
 
 
 class TestPlotlyVDCBarPlot(VDCBarPlot):
@@ -85,3 +89,9 @@ class TestPlotlyVDFBarPlot(VDFBarPlot):
         assert set(self.result.data[0]["y"]).issubset(
             set([nums["A"] / total, nums["B"] / total, nums["C"] / total])
         )
+
+
+class TestPlotlyVDFBarPlot2D(VDFBarPlot2D):
+    """
+    Testing different attributes of 2D Bar plot on a vDataFrame
+    """
