@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.plotting._plotly.bar import BarChart, BarChart2D
 from verticapy.plotting._plotly.pie import PieChart, NestedPieChart
-from verticapy.plotting._plotly.barh import HorizontalBarChart
+from verticapy.plotting._plotly.barh import HorizontalBarChart, HorizontalBarChart2D
 from verticapy.plotting._plotly.scatter import ScatterPlot
 from verticapy.plotting._plotly.boxplot import BoxPlot
 from verticapy.plotting._plotly.heatmap import HeatMap

@@ -434,7 +434,19 @@ class VDFBarhPlot(VDFBarPlot):
         )
 
 
-# Testing variables
+class VDFBarhPlot2D(VDFBarPlot2D):
+    """
+    Testing different attributes of HHorizontal Bar plot on a vDataFrame
+    """
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.barh,
+            {"columns": [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2]},
+        )
 
 
 class VDCBoxPlot(BasicPlotTests):
