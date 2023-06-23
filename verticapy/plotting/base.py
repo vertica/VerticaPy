@@ -679,7 +679,7 @@ class PlottingBase(PlottingBaseSQL):
             columns = format_type(columns, dtype=list)
         columns_ = []
         for col in columns:
-            if vdf[col].isnum() and not(vdf[col].isbool()):
+            if vdf[col].isnum() and not (vdf[col].isbool()):
                 columns_ += [col]
             elif conf.get_option("print_info"):
                 warning_message = (
@@ -777,7 +777,7 @@ class PlottingBase(PlottingBaseSQL):
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
                 f"MAX({columns[0]})",
             ]
-            if vdf[by].isnum() and not(vdf[by].isbool()):
+            if vdf[by].isnum() and not (vdf[by].isbool()):
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
                 is_num_transf = True
             elif vdf[by].isbool():

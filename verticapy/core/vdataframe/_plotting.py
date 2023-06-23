@@ -1808,7 +1808,7 @@ class vDCPlot(vDCNorm):
         obj
             Plotting Object.
         """
-        if self.isnum() and not(self.isbool()):
+        if self.isnum() and not (self.isbool()):
             vpy_plt, kwargs = self._parent.get_plotting_lib(
                 class_name="Histogram",
                 chart=chart,

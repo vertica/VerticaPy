@@ -15,7 +15,11 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 # Vertica
-from verticapy.tests_new.plotting.base_test_files import VDCBarhPlot, VDFBarhPlot
+from verticapy.tests_new.plotting.base_test_files import (
+    VDCBarhPlot,
+    VDFBarhPlot,
+    VDFBarhPlot2D,
+)
 
 
 class TestMatplotlibVDCBarhPlot(VDCBarhPlot):
@@ -89,3 +93,16 @@ class TestMatplotlibVDFBarhPlot(VDFBarhPlot):
         assert set(
             self.result.get_yticklabels()[i].get_text() for i in range(3)
         ).issubset(set(["A", "B", "C"]))
+
+
+class TestMatplotlibVDFBarhPlot2D(VDFBarhPlot2D):
+    """
+    Testing different attributes of HHorizontal Bar plot on a vDataFrame
+    """
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return ["density", self.COL_NAME_VDF_1]
