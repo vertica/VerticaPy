@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.plotting._plotly.bar import BarChart
+from verticapy.plotting._plotly.bar import BarChart, BarChart2D
 from verticapy.plotting._plotly.pie import PieChart, NestedPieChart
 from verticapy.plotting._plotly.barh import HorizontalBarChart
 from verticapy.plotting._plotly.scatter import ScatterPlot
