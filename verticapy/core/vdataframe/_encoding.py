@@ -384,7 +384,7 @@ class vDCEncode(vDCFill):
                 symbol=self._parent._vars["symbol"],
             )
             result = [elem[0] for elem in result]
-        elif self.isnum() and method in ("same_width", "auto"):
+        elif self.isnum() and not(self.isbool()) and method in ("same_width", "auto"):
             if not h or h <= 0:
                 if nbins <= 0:
                     h = self.numh()

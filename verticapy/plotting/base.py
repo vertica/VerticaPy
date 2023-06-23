@@ -69,7 +69,17 @@ COLORS_OPTIONS: dict[str, list] = {
     "summer": ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"],
     "tropical": ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"],
     "india": ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"],
-    "default": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
+    "old": ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"],
+    "default": [
+        "#1a6aff",
+        "#000000",
+        "#9c9c9c",
+        "#FE5016",
+        "#FDE159",
+        "#33C180",
+        "#4E2A84",
+        "#00008b",
+    ],
 }
 
 
@@ -452,18 +462,18 @@ class PlottingBase(PlottingBaseSQL):
             )
         # depending on the cardinality, the type, the vDataColumn
         # can be treated as categorical or not
-        cardinality, count, is_numeric, is_date, is_categorical = (
-            vdc.nunique(True),
-            vdc._parent.shape()[0],
-            vdc.isnum() and not vdc.isbool(),
-            (vdc.category() == "date"),
-            False,
-        )
+        cardinality = vdc.nunique(True)
+        count = vdc._parent.shape()[0]
+        is_numeric = vdc.isnum() and not vdc.isbool()
+        is_date = vdc.isdate()
+        is_bool = vdc.isbool()
+        cast = "::int" if is_bool else ""
+        is_categorical = False
         # case when categorical
         if (((cardinality <= max_cardinality) or not is_numeric) or pie) and not (
             is_date
         ):
-            if (is_numeric) and not pie:
+            if ((is_numeric) and not pie) or (is_bool):
                 query = f"""
                     SELECT 
                         {vdc},
@@ -608,7 +618,7 @@ class PlottingBase(PlottingBaseSQL):
                 query=f"""
                     SELECT
                         /*+LABEL('plotting._matplotlib._compute_plot_params')*/
-                        FLOOR({vdc} / {h}) * {h},
+                        FLOOR({vdc}{cast} / {h}) * {h},
                         {aggregate} 
                     FROM {vdc._parent}
                     WHERE {vdc} IS NOT NULL
@@ -667,13 +677,23 @@ class PlottingBase(PlottingBaseSQL):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        if not columns:
-            raise ValueError("No numerical columns found to compute the statistics.")
-        columns, by = vdf.format_colnames(columns, by)
+        columns_ = []
+        for col in columns:
+            if vdf[col].isnum() and not(vdf[col].isbool()):
+                columns_ += [col]
+            elif conf.get_option("print_info"):
+                warning_message = (
+                    f"The Virtual Column {col} is not numerical."
+                    " Its histogram will not be drawn."
+                )
+                warnings.warn(warning_message, Warning)
+        if not columns_:
+            raise ValueError("No quantitative feature to plot.")
+        columns_, by = vdf.format_colnames(columns_, by)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
-        self._init_check(dim=len(columns), is_standard=is_standard)
-        if by and len(columns) == 1:
-            column = columns[0]
+        self._init_check(dim=len(columns_), is_standard=is_standard)
+        if by and len(columns_) == 1:
+            column = columns_[0]
             cols = [column]
             if not h or h <= 0:
                 h = vdf[column].numh()
@@ -700,24 +720,17 @@ class PlottingBase(PlottingBaseSQL):
         else:
             h_, categories = [], None
             if isinstance(h, NoneType) or h <= 0:
-                for idx, column in enumerate(columns):
+                for idx, column in enumerate(columns_):
                     h_ += [vdf[column].numh()]
                 h = min(h_)
             data, cols = {"width": h}, []
-            for idx, column in enumerate(columns):
+            for idx, column in enumerate(columns_):
                 if vdf[column].isnum():
                     self._compute_plot_params(
                         vdf[column], method=method, of=of, max_cardinality=1, h=h
                     )
                     cols += [column]
                     data[self._clean_quotes(column)] = copy.deepcopy(self.data)
-                else:
-                    if vdf._vars["display"]["print_info"]:
-                        warning_message = (
-                            f"The Virtual Column {column} is not numerical."
-                            " Its histogram will not be drawn."
-                        )
-                        warnings.warn(warning_message, Warning)
         self.data = data
         self.layout = {
             "columns": self._clean_quotes(cols),
@@ -764,9 +777,12 @@ class PlottingBase(PlottingBaseSQL):
                 f"APPROXIMATE_PERCENTILE({columns[0]} USING PARAMETERS percentile = {q[1]})",
                 f"MAX({columns[0]})",
             ]
-            if vdf[by].isnum():
+            if vdf[by].isnum() and not(vdf[by].isbool()):
                 _by = vdf[by].discretize(h=h, return_enum_trans=True)
                 is_num_transf = True
+            elif vdf[by].isbool():
+                _by = ("{}::varchar", "varchar", "text")
+                is_num_transf = False
             else:
                 _by = vdf[by].discretize(
                     k=max_cardinality, method="topk", return_enum_trans=True
@@ -880,6 +896,7 @@ class PlottingBase(PlottingBaseSQL):
         for idx, column in enumerate(columns):
             is_numeric = vdf[column].isnum() and (vdf[column].nunique(True) > 2)
             is_date = vdf[column].isdate()
+            cast = "::int" if vdf[column].isbool() else ""
             where = []
             if is_numeric:
                 if isinstance(h[idx], NoneType):
@@ -900,11 +917,11 @@ class PlottingBase(PlottingBaseSQL):
                 else:
                     floor_end = ""
                 expr = f"""'[' 
-                          || FLOOR({column} 
+                          || FLOOR({column}{cast}
                                  / {interval}) 
                                  * {interval} 
                           || ';' 
-                          || (FLOOR({column} 
+                          || (FLOOR({column}{cast}
                                   / {interval}) 
                                   * {interval} 
                                   + {interval}{floor_end}) 
@@ -912,8 +929,8 @@ class PlottingBase(PlottingBaseSQL):
                 if (interval > 1) or (vdf[column].category() == "float"):
                     matrix += [expr]
                 else:
-                    matrix += [f"FLOOR({column}) || ''"]
-                order_by = f"""ORDER BY MIN(FLOOR({column} 
+                    matrix += [f"FLOOR({column}{cast}) || ''"]
+                order_by = f"""ORDER BY MIN(FLOOR({column}{cast} 
                                           / {interval}) * {interval}) ASC"""
                 where += [f"{column} IS NOT NULL"]
             elif is_date:
