@@ -18,6 +18,7 @@ permissions and limitations under the License.
 import random
 import tempfile
 import string
+from contextlib import contextmanager
 
 # Pytest
 import pytest
@@ -414,8 +415,32 @@ def pred_cl_dataset_multilevel():
     yield vdf, y_true, y_pred, labels
 
 
-@pytest.fixture(scope="module")
+# @pytest.fixture(scope="function")
+# def winequality_vpy(schema_loader):
+#     """
+#     Create a dummy vDataFrame for winequality data
+#     """
+#     winequality = load_winequality(schema_loader, "winequality")
+#     yield winequality
+#     drop(
+#         name=f"{schema_loader}.winequality",
+#     )
+
+@pytest.fixture(scope='module')
 def winequality_vpy(schema_loader):
+    with winequality_vpy_main(schema_loader) as result:
+        yield result
+
+
+@pytest.fixture(scope='function')
+def winequality_vpy_fun(schema_loader):
+    with winequality_vpy_main(schema_loader) as result:
+        yield result
+
+
+# @pytest.fixture(scope="function")
+@contextmanager
+def winequality_vpy_main(schema_loader):
     """
     Create a dummy vDataFrame for winequality data
     """
