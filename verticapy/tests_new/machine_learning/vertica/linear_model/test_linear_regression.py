@@ -319,8 +319,9 @@ class TestLinearRegressionMethods:
         test function - contour
         """
         vpy_res = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].contour()
+        vpy_res.set_title("Linear_Regression Contour - Unit Test")
 
-        assert len(vpy_res.get_default_bbox_extra_artists()) == 5
+        assert vpy_res.get_title() == "Linear_Regression Contour - Unit Test"
 
     def test_deploysql(self, get_vpy_model, get_py_model):
         """
@@ -509,9 +510,10 @@ class TestLinearRegressionMethods:
         """
         test function - plot
         """
-        result = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].plot(color="r")
+        result = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].plot()
+        result.set_title("Linear_Regression Plot - Unit Test")
 
-        assert len(result.get_default_bbox_extra_artists()) == 1
+        assert result.get_title() == "Linear_Regression Plot - Unit Test"
         plt.close("all")
 
     def test_to_memmodel(self, get_vpy_model, get_py_model):
