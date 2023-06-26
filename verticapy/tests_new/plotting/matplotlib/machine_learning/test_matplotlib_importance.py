@@ -33,7 +33,6 @@ class TestMatplotlibMachineLearningImportanceBarChart(ImportanceBarChartPlot):
         """
         return ["Importance (%)", "Features"]
 
-    @pytest.mark.skip(reason="Need to add '%' sign to x axis")
     def test_properties_xaxis_label(self):
         """
         Testing x-axis title

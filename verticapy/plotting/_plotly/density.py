@@ -40,7 +40,7 @@ class DensityPlot(PlotlyBase):
             "width": 700,
             "height": 500,
             "autosize": False,
-            "xaxis_title": self.layout["x_label"],
+            "xaxis_title": self.layout["x_label"][1:-1],
             "yaxis_title": self.layout["y_label"],
             "xaxis": dict(
                 showline=True,
