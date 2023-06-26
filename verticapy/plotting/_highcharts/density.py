@@ -119,7 +119,6 @@ class MultiDensityPlot(DensityPlot):
         """
         Draws a multi-density plot using the HC API.
         """
-        labels = self._clean_quotes(self.layout["labels"])
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
@@ -128,5 +127,5 @@ class MultiDensityPlot(DensityPlot):
             data = np.column_stack(
                 (self.data["X"][:, i], self.data["Y"][:, i])
             ).tolist()
-            chart.add_data_set(data, "area", labels[i])
+            chart.add_data_set(data, "area", str(self.layout["labels"][i]))
         return chart
