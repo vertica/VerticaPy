@@ -46,32 +46,14 @@ class TestPlotlyVDCDensityPlot(VDCDensityPlot):
             x_max, 4
         ), "The range in data is not consistent with plot"
 
-    @pytest.mark.skip(reason="Need to remove extra quootation marks")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """
-
 
 class TestplotlyVDCDensityMultiPlot(VDCDensityMultiPlot):
     """
     Testing different attributes of Multiple Density plots on a vDataColumn
     """
 
-    @pytest.mark.skip(reason="Need to remove extra quootation marks")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """
-
 
 class TestPlotlyVDFDensityPlot(VDFDensityPlot):
     """
     Testing different attributes of Density plot on a vDataFrame
     """
-
-    @pytest.mark.skip(reason="Need to remove extra quootation marks")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """

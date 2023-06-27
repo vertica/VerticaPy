@@ -37,12 +37,6 @@ class TestMatplotlibMachineLearningCutoffCurvePlot(CutoffCurvePlot):
     Testing different attributes of Curve plot
     """
 
-    @pytest.mark.skip(reason="Need to fix y axis")
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """
-
 
 class TestMatplotlibMachineLearningPRCPlot(PRCPlot):
     """
@@ -54,9 +48,3 @@ class TestMatplotlibMachineLearningLiftChartPlot(LiftChartPlot):
     """
     Testing different attributes of Lift Chart plot
     """
-
-    @pytest.mark.skip(reason="Need to fix y axis")
-    def test_properties_yaxis_label(self):
-        """
-        Testing y-axis title
-        """

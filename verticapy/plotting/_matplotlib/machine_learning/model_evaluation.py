@@ -141,6 +141,7 @@ class CutoffCurve(ROCCurve):
             **self.init_style,
         )
         ax.set_xlabel(self.layout["x_label"])
+        ax.set_ylabel("Values")
         ax.set_title(self.layout["title"])
         ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
         ax.set_ylim(0, 1)
@@ -260,6 +261,7 @@ class LiftChart(ROCCurve):
             label=self.layout["y_label"],
         )
         ax.legend(handles=[c0, c1], loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_ylabel("Values")
         ax.set_xlim(0, 1)
         ax.set_ylim(0)
         return ax
