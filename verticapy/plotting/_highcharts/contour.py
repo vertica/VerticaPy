@@ -52,7 +52,7 @@ class ContourPlot(HighchartsBase):
         data = []
         for i in range(n):
             for j in range(m):
-                data += [[i, j, self.data["Z"][i][j]]]
+                data += [[j, i, self.data["Z"][i][j]]]
         return data
 
     # Styling Methods.
@@ -76,11 +76,11 @@ class ContourPlot(HighchartsBase):
                 )
             },
             "xAxis": {
-                "categories": np.round(self.data["X"][:, 0], 3).tolist(),
+                "categories": np.round(self.data["X"][0], 3).tolist(),
                 "title": {"text": self.layout["columns"][0]},
             },
             "yAxis": {
-                "categories": np.round(self.data["Y"][0], 3).tolist(),
+                "categories": np.round(self.data["Y"][:, 0], 3).tolist(),
                 "title": {"text": self.layout["columns"][1]},
             },
             "legend": {
