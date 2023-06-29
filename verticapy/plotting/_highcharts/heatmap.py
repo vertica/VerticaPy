@@ -49,7 +49,6 @@ class HeatMap(HighchartsBase):
             y_label = ""
         if isinstance(self.layout["y_labels"], list):
             y_labels = copy.deepcopy(self.layout["y_labels"])
-            y_labels.reverse()
         else:
             y_labels = self.layout["y_labels"]
         self.init_style = {
