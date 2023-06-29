@@ -1801,8 +1801,9 @@ class vDCPlot(vDCNorm):
             The less frequent  elements are gathered together
             to create a new category : 'Others'.
             This parameter is used to discretize the vDataColumn
-            'by' when the main one is numerical. Otherwise, it is
-            used to discretize all the inputs vDataColumns.
+            'by' when the main input vDataColumn is numerical.
+            Otherwise, it is used to discretize all the 
+            vDataColumn inputs.
         cat_priority: PythonScalar / ArrayLike, optional
             ArrayLike list of the different categories to consider
             when drawing the box plot.  The other categories are
