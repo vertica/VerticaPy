@@ -24,29 +24,32 @@ import pytest
 import statsmodels.api as sm
 from scipy import stats
 import matplotlib.pyplot as plt
+from vertica_highcharts.highcharts.highcharts import Highchart
+import plotly
 
-REL_TOLERANCE = 1e-2
+REL_TOLERANCE = 1e-5
 
 regression_metrics_args = (
-    "vpy_metric_name, py_metric_name",
+    "vpy_metric_name, py_metric_name, _rel_tolerance",
     [
-        (("explained_variance",), "explained_variance_score"),
-        (("max_error",), "max_error"),
-        (("median_absolute_error",), "median_absolute_error"),
-        (("mean_absolute_error",), "mean_absolute_error"),
-        (("mean_squared_error",), "mean_squared_error"),
-        (("mean_squared_log_error",), "mean_squared_log_error"),
+        (("explained_variance",), "explained_variance_score", REL_TOLERANCE),
+        (("max_error",), "max_error", REL_TOLERANCE),
+        (("median_absolute_error",), "median_absolute_error", 1e-2),
+        (("mean_absolute_error",), "mean_absolute_error", REL_TOLERANCE),
+        (("mean_squared_error",), "mean_squared_error", REL_TOLERANCE),
+        (("mean_squared_log_error",), "mean_squared_log_error", REL_TOLERANCE),
         (
             (
                 "rmse",
                 "root_mean_squared_error",
             ),
             "rmse",
+            REL_TOLERANCE,
         ),
-        (("r2",), "r2_score"),
-        (("r2_adj",), "rsquared_adj"),
-        (("aic",), "aic"),
-        (("bic",), "bic"),
+        (("r2",), "r2_score", REL_TOLERANCE),
+        (("r2_adj",), "rsquared_adj", REL_TOLERANCE),
+        (("aic",), "aic", REL_TOLERANCE),
+        (("bic",), "bic", REL_TOLERANCE),
     ],
 )
 
@@ -178,7 +181,10 @@ class TestLinearRegressionMethods:
             skl_pred, rel=REL_TOLERANCE
         )
 
-    def test_regression_report(self, get_vpy_model, get_py_model, fun_name=None):
+    @pytest.mark.parametrize("report_metric", [None, "details", "anova"])
+    def test_regression_report(
+        self, get_vpy_model, get_py_model, report_metric, fun_name=None
+    ):
         """
         test function - regression report
         """
@@ -188,140 +194,147 @@ class TestLinearRegressionMethods:
 
         vpy_model, _, _, _ = get_vpy_model()
         X, y, sm_model, _, _ = get_py_model()
-        report_metrics = [None, "details", "anova"]
 
-        for report_metric in report_metrics:
-            # ****************** regression report *********************************************
-            if report_metric is None:
-                reg_rep = (
-                    vpy_model.report()
-                    if fun_name == "report"
-                    else vpy_model.regression_report()
+        # ****************** regression report *********************************************
+        if report_metric is None:
+            reg_rep = (
+                vpy_model.report()
+                if fun_name == "report"
+                else vpy_model.regression_report()
+            )
+            vpy_reg_rep_map = dict(zip(reg_rep["index"], reg_rep["value"]))
+            for vpy_metric in reg_rep["index"]:
+                idx = [
+                    list(set(v) & set(reg_rep["index"]))[0]
+                    if set(v) & set(reg_rep["index"])
+                    else ""
+                    for v, p, _ in regression_metrics_args[1]
+                ].index(vpy_metric)
+                py_metric_name = regression_metrics_args[1][idx][1]
+                vpy_score = vpy_reg_rep_map[vpy_metric]
+                py_score = calculate_python_regression_metrics(
+                    get_py_model, metric_name=py_metric_name
                 )
-                vpy_reg_rep_map = dict(zip(reg_rep["index"], reg_rep["value"]))
-                for vpy_metric in reg_rep["index"]:
-                    idx = [
-                        list(set(v) & set(reg_rep["index"]))[0]
-                        if set(v) & set(reg_rep["index"])
-                        else ""
-                        for v, p in regression_metrics_args[1]
-                    ].index(vpy_metric)
-                    py_metric_name = regression_metrics_args[1][idx][1]
-                    vpy_score = vpy_reg_rep_map[vpy_metric]
-                    py_score = calculate_python_regression_metrics(
-                        get_py_model, metric_name=py_metric_name
-                    )
+                _rel_tolerance = regression_metrics_args[1][idx][2]
 
-                    print(
-                        f"Metric Name: {vpy_metric, py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
-                    )
-                    assert vpy_score == pytest.approx(
-                        py_score,
-                        rel=REL_TOLERANCE,
-                    )
-            # ****************** detailed report *********************************************
-            elif report_metric == "details":
-                reg_rep_details = (
-                    vpy_model.report(metrics=report_metric)
-                    if fun_name == "report"
-                    else vpy_model.regression_report(metrics=report_metric)
+                print(
+                    f"Metric Name: {vpy_metric, py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
                 )
-                vpy_reg_rep_details_map = dict(
-                    zip(reg_rep_details["index"], reg_rep_details["value"])
+                assert vpy_score == pytest.approx(
+                    py_score,
+                    rel=_rel_tolerance,
                 )
+        # ****************** detailed report *********************************************
+        elif report_metric == "details":
+            reg_rep_details = (
+                vpy_model.report(metrics=report_metric)
+                if fun_name == "report"
+                else vpy_model.regression_report(metrics=report_metric)
+            )
+            vpy_reg_rep_details_map = dict(
+                zip(reg_rep_details["index"], reg_rep_details["value"])
+            )
 
-                py_reg_rep_details_map = {
-                    "Dep. Variable": '"quality"',
-                    "Model": "LinearRegression",
-                    "No. Observations": len(y),
-                    "No. Predictors": len(X.columns),
-                    "R-squared": sm_model.rsquared,
-                    "Adj. R-squared": sm_model.rsquared_adj,
-                    "F-statistic": sm_model.fvalue,
-                    "Prob (F-statistic)": sm_model.f_pvalue,
-                    "Kurtosis": stats.kurtosis(y),
-                    "Skewness": stats.skew(y),
-                    "Jarque-Bera (JB)": stats.jarque_bera(y).statistic,
-                }
+            py_reg_rep_details_map = {
+                "Dep. Variable": '"quality"',
+                "Model": "LinearRegression",
+                "No. Observations": len(y),
+                "No. Predictors": len(X.columns),
+                "R-squared": sm_model.rsquared,
+                "Adj. R-squared": sm_model.rsquared_adj,
+                "F-statistic": sm_model.fvalue,
+                "Prob (F-statistic)": sm_model.f_pvalue,
+                "Kurtosis": stats.kurtosis(y),
+                "Skewness": stats.skew(y),
+                "Jarque-Bera (JB)": stats.jarque_bera(y).statistic,
+            }
 
-                assert vpy_reg_rep_details_map == pytest.approx(
-                    py_reg_rep_details_map, rel=REL_TOLERANCE
-                )
-                # ****************** anova report *********************************************
-            else:
-                vpy_reg_rep_anova_map, py_reg_rep_anova_map = {}, {}
-                reg_rep_anova = (
-                    vpy_model.report(metrics=report_metric)
-                    if fun_name == "report"
-                    else vpy_model.regression_report(metrics=report_metric)
-                )
-                for metric in ["Df", "SS", "MS", "F", "p_value"]:
+            assert vpy_reg_rep_details_map == pytest.approx(
+                py_reg_rep_details_map, rel=1e-2
+            )
+            # ****************** anova report *********************************************
+        else:
+            vpy_reg_rep_anova_map, py_reg_rep_anova_map = {}, {}
+            reg_rep_anova = (
+                vpy_model.report(metrics=report_metric)
+                if fun_name == "report"
+                else vpy_model.regression_report(metrics=report_metric)
+            )
+            for metric in ["Df", "SS", "MS", "F", "p_value"]:
+                (
+                    vpy_reg_rep_anova_map[f"model_{metric}"],
+                    vpy_reg_rep_anova_map[f"residual_{metric}"],
+                    _,
+                ) = reg_rep_anova[metric]
+
+                # python stats model
+                if metric == "Df":
                     (
-                        vpy_reg_rep_anova_map[f"model_{metric}"],
-                        vpy_reg_rep_anova_map[f"residual_{metric}"],
-                        _,
-                    ) = reg_rep_anova[metric]
+                        py_reg_rep_anova_map[f"model_{metric}"],
+                        py_reg_rep_anova_map[f"residual_{metric}"],
+                    ) = (sm_model.df_model, sm_model.df_resid)
+                elif metric == "SS":
+                    (
+                        py_reg_rep_anova_map[f"model_{metric}"],
+                        py_reg_rep_anova_map[f"residual_{metric}"],
+                    ) = (sm_model.ess, sm_model.ssr)
+                elif metric == "MS":
+                    (
+                        py_reg_rep_anova_map[f"model_{metric}"],
+                        py_reg_rep_anova_map[f"residual_{metric}"],
+                    ) = (sm_model.mse_model, sm_model.mse_resid)
+                elif metric == "F":
+                    (
+                        py_reg_rep_anova_map[f"model_{metric}"],
+                        py_reg_rep_anova_map[f"residual_{metric}"],
+                    ) = (sm_model.fvalue, "")
+                elif metric == "p_value":
+                    (
+                        py_reg_rep_anova_map[f"model_{metric}"],
+                        py_reg_rep_anova_map[f"residual_{metric}"],
+                    ) = (sm_model.f_pvalue, "")
 
-                    # python stats model
-                    if metric == "Df":
-                        (
-                            py_reg_rep_anova_map[f"model_{metric}"],
-                            py_reg_rep_anova_map[f"residual_{metric}"],
-                        ) = (sm_model.df_model, sm_model.df_resid)
-                    elif metric == "SS":
-                        (
-                            py_reg_rep_anova_map[f"model_{metric}"],
-                            py_reg_rep_anova_map[f"residual_{metric}"],
-                        ) = (sm_model.ess, sm_model.ssr)
-                    elif metric == "MS":
-                        (
-                            py_reg_rep_anova_map[f"model_{metric}"],
-                            py_reg_rep_anova_map[f"residual_{metric}"],
-                        ) = (sm_model.mse_model, sm_model.mse_resid)
-                    elif metric == "F":
-                        (
-                            py_reg_rep_anova_map[f"model_{metric}"],
-                            py_reg_rep_anova_map[f"residual_{metric}"],
-                        ) = (sm_model.fvalue, "")
-                    elif metric == "p_value":
-                        (
-                            py_reg_rep_anova_map[f"model_{metric}"],
-                            py_reg_rep_anova_map[f"residual_{metric}"],
-                        ) = (sm_model.f_pvalue, "")
+            assert vpy_reg_rep_anova_map == pytest.approx(
+                py_reg_rep_anova_map, rel=REL_TOLERANCE
+            )
 
-                assert vpy_reg_rep_anova_map == pytest.approx(
-                    py_reg_rep_anova_map, rel=REL_TOLERANCE
-                )
-
-    def test_report(self, get_vpy_model, get_py_model):
+    @pytest.mark.parametrize("report_metric", [None, "details", "anova"])
+    def test_report(self, get_vpy_model, get_py_model, report_metric):
         """
         test function - report
         """
-        self.test_regression_report(get_vpy_model, get_py_model, fun_name="report")
+        self.test_regression_report(
+            get_vpy_model, get_py_model, report_metric, fun_name="report"
+        )
 
-    def test_fit(self, get_vpy_model, get_py_model):
+    @pytest.mark.parametrize("fit_attr", ["coef_", "intercept_", "score"])
+    def test_fit(self, get_vpy_model, get_py_model, fit_attr):
         """
         test function - fir
         """
         vpy_model, _, _, _ = get_vpy_model()
         X, y, _, _, skl_model = get_py_model()
 
-        assert vpy_model.coef_ == pytest.approx(skl_model.coef_, rel=REL_TOLERANCE)
-        assert vpy_model.intercept_ == pytest.approx(
-            skl_model.intercept_, rel=REL_TOLERANCE
-        )
-        assert vpy_model.score() == pytest.approx(
-            skl_model.score(X, y), rel=REL_TOLERANCE
-        )
+        if fit_attr == "score":
+            vpy_res = getattr(vpy_model, fit_attr)()
+            py_res = getattr(skl_model, fit_attr)(X, y)
+        else:
+            vpy_res = getattr(vpy_model, fit_attr)
+            py_res = getattr(skl_model, fit_attr)
+
+        assert vpy_res == pytest.approx(py_res, rel=REL_TOLERANCE)
 
     def test_contour(self, get_vpy_model):
         """
         test function - contour
         """
         vpy_res = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].contour()
-        vpy_res.set_title("Linear_Regression Contour - Unit Test")
 
-        assert vpy_res.get_title() == "Linear_Regression Contour - Unit Test"
+        assert (
+            isinstance(vpy_res, plt.Axes)
+            or isinstance(vpy_res, plotly.graph_objs.Figure)
+            or isinstance(vpy_res, Highchart)
+        )
 
     def test_deploysql(self, get_vpy_model, get_py_model):
         """
@@ -340,16 +353,13 @@ class TestLinearRegressionMethods:
         test function - drop
         """
         vpy_model, _, schema_name, model_name = get_vpy_model()
+        model_sql = f"SELECT model_name FROM models WHERE schema_name='{schema_name}' and model_name = '{model_name}'"
 
-        current_cursor().execute(
-            f"SELECT model_name FROM models WHERE schema_name='{schema_name}' and model_name = '{model_name}'"
-        )
+        current_cursor().execute(model_sql)
         assert current_cursor().fetchone()[0] == model_name
 
         vpy_model.drop()
-        current_cursor().execute(
-            f"SELECT model_name FROM models WHERE schema_name='{schema_name}' and model_name = '{model_name}'"
-        )
+        current_cursor().execute(model_sql)
         assert current_cursor().fetchone() is None
 
     def test_get_attributes(self, get_vpy_model):
@@ -377,30 +387,42 @@ class TestLinearRegressionMethods:
             vpy_lr_parms_map, rel=REL_TOLERANCE
         )
 
-    def test_get_vertica_attributes(self, get_vpy_model):
+    @pytest.mark.parametrize(
+        "attributes, expected",
+        [
+            (
+                "attr_name",
+                [
+                    "details",
+                    "regularization",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+            ),
+            (
+                "attr_fields",
+                [
+                    "predictor, coefficient, std_err, t_value, p_value",
+                    "type, lambda",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+            ),
+            ("#_of_rows", [4, 1, 1, 1, 1, 1]),
+        ],
+    )
+    def test_get_vertica_attributes(self, get_vpy_model, attributes, expected):
         """
         test function - get_vertica_attributes
         """
         vpy_model, _, _, _ = get_vpy_model()
         model_attributes = vpy_model.get_vertica_attributes()
 
-        assert model_attributes["attr_name"] == [
-            "details",
-            "regularization",
-            "iteration_count",
-            "rejected_row_count",
-            "accepted_row_count",
-            "call_string",
-        ]
-        assert model_attributes["attr_fields"] == [
-            "predictor, coefficient, std_err, t_value, p_value",
-            "type, lambda",
-            "iteration_count",
-            "rejected_row_count",
-            "accepted_row_count",
-            "call_string",
-        ]
-        assert model_attributes["#_of_rows"] == [4, 1, 1, 1, 1, 1]
+        assert model_attributes[attributes] == expected
 
     def test_set_params(self, get_vpy_model):
         """
@@ -475,46 +497,67 @@ class TestLinearRegressionMethods:
         vpy_model.drop()
         assert vpy_model.does_model_exists(name=model_name_with_schema) is False
 
-    def test_get_match_index(self, get_vpy_model, get_py_model):
+    @pytest.mark.parametrize(
+        "match_index_attr, expected", [("valid_colum", 2), ("invalid_colum", None)]
+    )
+    def test_get_match_index(
+        self, get_vpy_model, get_py_model, match_index_attr, expected
+    ):
         """
         test function - get_match_index
         """
         vpy_model, _, _, _ = get_vpy_model()
         X, _, _, _, _ = get_py_model()
 
-        assert vpy_model.get_match_index(x=X.columns[2], col_list=X.columns) == 2
-        assert vpy_model.get_match_index(x="invalid_colum", col_list=X.columns) is None
+        if match_index_attr == "valid_colum":
+            vpy_res = vpy_model.get_match_index(x=X.columns[2], col_list=X.columns)
+        else:
+            vpy_res = vpy_model.get_match_index(x=match_index_attr, col_list=X.columns)
+
+        assert vpy_res == expected
 
     def test_get_plotting_lib(self, get_vpy_model):
         """
         test function - get_plotting_lib
         """
-        assert (
-            "matplotlib"
-            in get_vpy_model()[0]
+        plotting_lib = (
+            get_vpy_model()[0]
             .get_plotting_lib(class_name="RegressionPlot")[0]
             .RegressionPlot.__module__
         )
+        assert (
+            "matplotlib" in plotting_lib
+            or "plotly" in plotting_lib
+            or "highcharts" in plotting_lib
+        )
 
-    def test_features_importance(self, get_vpy_model):
+    @pytest.mark.parametrize(
+        "key_name, expected",
+        [
+            ("index", ["alcohol", "residual_sugar", "citric_acid"]),
+            ("importance", [52.25, 32.58, 15.17]),
+            ("sign", [1, 1, 1]),
+        ],
+    )
+    def test_features_importance(self, get_vpy_model, key_name, expected):
         """
         test function - features_importance
         """
         f_imp = get_vpy_model()[0].features_importance(show=False)
 
-        assert f_imp["index"] == ["alcohol", "residual_sugar", "citric_acid"]
-        assert f_imp["importance"] == [52.25, 32.58, 15.17]
-        assert f_imp["sign"] == [1, 1, 1]
+        assert f_imp[key_name] == expected
 
     def test_plot(self, get_vpy_model):
         """
         test function - plot
         """
-        result = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].plot()
-        result.set_title("Linear_Regression Plot - Unit Test")
+        vpy_res = get_vpy_model(y_true=["residual_sugar", "alcohol"])[0].plot()
 
-        assert result.get_title() == "Linear_Regression Plot - Unit Test"
-        plt.close("all")
+        assert (
+            isinstance(vpy_res, plt.Axes)
+            or isinstance(vpy_res, plotly.graph_objs.Figure)
+            or isinstance(vpy_res, Highchart)
+        )
 
     def test_to_memmodel(self, get_vpy_model, get_py_model):
         """
@@ -552,6 +595,7 @@ class TestLinearRegressionMethods:
         fit_intercept,
         vpy_metric_name,
         py_metric_name,
+        _rel_tolerance,
     ):
         """
         test function - score
@@ -571,4 +615,4 @@ class TestLinearRegressionMethods:
         print(
             f"Metric Name: {py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
         )
-        assert vpy_score == pytest.approx(py_score, rel=REL_TOLERANCE)
+        assert vpy_score == pytest.approx(py_score, rel=_rel_tolerance)
