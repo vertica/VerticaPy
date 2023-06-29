@@ -165,7 +165,11 @@ class HeatMap(HighchartsBase):
         data = []
         for i in range(len(self.layout["x_labels"])):
             for j in range(len(self.layout["y_labels"])):
-                data += [[i, j, round(X[i, j], self.layout["mround"])]]
+                if "mround" in self.layout:
+                    Xij = round(X[i, j], self.layout["mround"])
+                else:
+                    Xij = X[i, j]
+                data += [[i, j, Xij]]
         chart.add_data_set(data, **self.init_style_matrix)
         chart.set_dict_options(
             {"colorAxis": self._get_cmap_style(style_kwargs=style_kwargs)}
