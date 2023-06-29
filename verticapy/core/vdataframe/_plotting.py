@@ -46,7 +46,6 @@ from verticapy.plotting.base import PlottingBase
 
 
 class vDFPlot(vDFMachineLearning):
-
     # Boxplots.
 
     @save_verticapy_logs
@@ -168,9 +167,9 @@ class vDFPlot(vDFMachineLearning):
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        if not(isinstance(max_cardinality, Iterable)):
+        if not (isinstance(max_cardinality, Iterable)):
             max_cardinality = (max_cardinality, max_cardinality)
-        if not(isinstance(h, Iterable)):
+        if not (isinstance(h, Iterable)):
             h = (h, h)
 
         if len(columns) == 1:
@@ -288,9 +287,9 @@ class vDFPlot(vDFMachineLearning):
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
-        if not(isinstance(max_cardinality, Iterable)):
+        if not (isinstance(max_cardinality, Iterable)):
             max_cardinality = (max_cardinality, max_cardinality)
-        if not(isinstance(h, Iterable)):
+        if not (isinstance(h, Iterable)):
             h = (h, h)
 
         if len(columns) == 1:
@@ -1802,7 +1801,7 @@ class vDCPlot(vDCNorm):
             to create a new category : 'Others'.
             This parameter is used to discretize the vDataColumn
             'by' when the main input nvDataColumn is nnumerical.
-            Otherwise, it  is  used  to   discretize    all the 
+            Otherwise, it  is  used  to   discretize    all the
             vDataColumn inputs.
         cat_priority: PythonScalar / ArrayLike, optional
             ArrayLike list of the different categories to consider
