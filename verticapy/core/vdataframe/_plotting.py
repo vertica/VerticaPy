@@ -167,6 +167,11 @@ class vDFPlot(vDFMachineLearning):
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        if not (isinstance(max_cardinality, Iterable)):
+            max_cardinality = (max_cardinality, max_cardinality)
+        if not (isinstance(h, Iterable)):
+            h = (h, h)
+
         if len(columns) == 1:
             return self[columns[0]].bar(
                 method=method,
@@ -282,6 +287,11 @@ class vDFPlot(vDFMachineLearning):
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
+        if not (isinstance(max_cardinality, Iterable)):
+            max_cardinality = (max_cardinality, max_cardinality)
+        if not (isinstance(h, Iterable)):
+            h = (h, h)
+
         if len(columns) == 1:
             return self[columns[0]].barh(
                 method=method,
@@ -413,10 +423,6 @@ class vDFPlot(vDFMachineLearning):
             AVG(column1) + 5
         of: str, optional
             The  vDataColumn used to compute the  aggregation.
-        max_cardinality: tuple, optional
-            Maximum number of distinct elements for vDataColumns
-            to be used as categorical. For these elements, no
-            h is picked or computed.
         h: tuple, optional
             Interval width of the  input vDataColumns. Optimized
             h  will be  computed if  the  parameter  is empty or
@@ -1793,6 +1799,10 @@ class vDCPlot(vDCNorm):
             to be used as categorical.
             The less frequent  elements are gathered together
             to create a new category : 'Others'.
+            This parameter is used to discretize the vDataColumn
+            'by' when the main input nvDataColumn is nnumerical.
+            Otherwise, it  is  used  to   discretize    all the
+            vDataColumn inputs.
         cat_priority: PythonScalar / ArrayLike, optional
             ArrayLike list of the different categories to consider
             when drawing the box plot.  The other categories are
