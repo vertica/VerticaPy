@@ -150,8 +150,9 @@ class LinePlot(HighchartsBase):
             chart.set_dict_options(kind_kwargs)
         if self.layout["has_category"]:
             uniques = np.unique(self.data["z"])
+            X = np.array([int(int_string) for int_string in self.data["x"]])
             for c in uniques:
-                x = self._to_datetime(self.data["x"][self.data["z"] == c])
+                x = self._to_datetime(X[self.data["z"] == c])
                 y = self.data["Y"][:, 0][self.data["z"] == c]
                 data = np.column_stack((x, y)).tolist()
                 chart.add_data_set(data, kind, str(c), **step_kwargs)

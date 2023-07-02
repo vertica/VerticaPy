@@ -677,13 +677,23 @@ class PlottingBase(PlottingBaseSQL):
             columns = vdf.numcol()
         else:
             columns = format_type(columns, dtype=list)
-        if not columns:
-            raise ValueError("No numerical columns found to compute the statistics.")
-        columns, by = vdf.format_colnames(columns, by)
+        columns_ = []
+        for col in columns:
+            if vdf[col].isnum() and not (vdf[col].isbool()):
+                columns_ += [col]
+            elif conf.get_option("print_info"):
+                warning_message = (
+                    f"The Virtual Column {col} is not numerical."
+                    " Its histogram will not be drawn."
+                )
+                warnings.warn(warning_message, Warning)
+        if not columns_:
+            raise ValueError("No quantitative feature to plot.")
+        columns_, by = vdf.format_colnames(columns_, by)
         method, aggregate, aggregate_fun, is_standard = self._map_method(method, of)
-        self._init_check(dim=len(columns), is_standard=is_standard)
-        if by and len(columns) == 1:
-            column = columns[0]
+        self._init_check(dim=len(columns_), is_standard=is_standard)
+        if by and len(columns_) == 1:
+            column = columns_[0]
             cols = [column]
             if not h or h <= 0:
                 h = vdf[column].numh()
@@ -710,24 +720,17 @@ class PlottingBase(PlottingBaseSQL):
         else:
             h_, categories = [], None
             if isinstance(h, NoneType) or h <= 0:
-                for idx, column in enumerate(columns):
+                for idx, column in enumerate(columns_):
                     h_ += [vdf[column].numh()]
                 h = min(h_)
             data, cols = {"width": h}, []
-            for idx, column in enumerate(columns):
+            for idx, column in enumerate(columns_):
                 if vdf[column].isnum():
                     self._compute_plot_params(
                         vdf[column], method=method, of=of, max_cardinality=1, h=h
                     )
                     cols += [column]
                     data[self._clean_quotes(column)] = copy.deepcopy(self.data)
-                else:
-                    if vdf._vars["display"]["print_info"]:
-                        warning_message = (
-                            f"The Virtual Column {column} is not numerical."
-                            " Its histogram will not be drawn."
-                        )
-                        warnings.warn(warning_message, Warning)
         self.data = data
         self.layout = {
             "columns": self._clean_quotes(cols),

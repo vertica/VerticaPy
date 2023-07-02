@@ -92,7 +92,7 @@ class ContourPlot(PlotlyBase):
         y_title = self.layout["columns"][1]
         fig = go.Figure(
             data=go.Contour(
-                z=np.transpose(self.data["Z"]),
+                z=self.data["Z"],
                 x=np.unique(self.data["X"]),
                 y=np.unique(self.data["Y"]),
                 hovertemplate=f"{x_title}: "

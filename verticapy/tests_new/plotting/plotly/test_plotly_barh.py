@@ -18,6 +18,7 @@ permissions and limitations under the License.
 from verticapy.tests_new.plotting.base_test_files import (
     VDCBarhPlot,
     VDFBarhPlot,
+    VDFBarhPlot2D,
     get_yaxis_label,
     get_xaxis_label,
 )
@@ -123,3 +124,16 @@ class TestPlotlyVDFBarhPlot(VDFBarhPlot):
         Test if all categories exist in plot
         """
         assert set(self.result.data[0]["y"]).issubset(set(["A", "B", "C"]))
+
+
+class TestPlotlyVDFBarhPlot2D(VDFBarhPlot2D):
+    """
+    Testing different attributes of HHorizontal Bar plot on a vDataFrame
+    """
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return ["density", self.COL_NAME_VDF_1]

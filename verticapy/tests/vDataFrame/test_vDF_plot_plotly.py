@@ -1270,9 +1270,7 @@ class TestVDFDensityPlot:
         # Act
         result = dummy_dist_vd["0"].density()
         # Assert -
-        assert (
-            result.layout["xaxis"]["title"]["text"] == '"0"'
-        ), "X axis title incorrect"
+        assert result.layout["xaxis"]["title"]["text"] == "0", "X axis title incorrect"
 
     def test_properties_y_axis_title(self, load_plotly, dummy_dist_vd):
         # Arrange
