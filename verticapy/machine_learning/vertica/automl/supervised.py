@@ -75,6 +75,10 @@ class AutoML(VerticaModel):
     ----------
     name: str
         Name of the model.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     estimator: list / 'native' / 'all' / 'fast' / object
         List  of Vertica  estimators with a fit  method.
         Alternatively,  you can specify 'native' for all
@@ -251,6 +255,7 @@ class AutoML(VerticaModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         estimator: Union[list, str] = "fast",
         estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
         metric: str = "auto",
@@ -272,6 +277,7 @@ class AutoML(VerticaModel):
         if optimized_grid not in [0, 1, 2]:
             raise ValueError("Optimized Grid must be an integer between 0 and 2.")
         self.model_name = name
+        self.overwrite_model = overwrite_model
         self.parameters = {
             "estimator": estimator,
             "estimator_type": estimator_type,
@@ -356,7 +362,7 @@ class AutoML(VerticaModel):
         y: str, optional
             Response column.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

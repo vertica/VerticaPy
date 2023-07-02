@@ -46,6 +46,10 @@ class NaiveBayes(MulticlassClassifier):
     name: str
         Name  of  the  model.  The  model is stored
         in the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     alpha: float, optional
         A  float  that  specifies  use  of  Laplace
         smoothing if the event model is categorical,
@@ -82,10 +86,6 @@ class NaiveBayes(MulticlassClassifier):
         return "PREDICT_NAIVE_BAYES"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -104,13 +104,13 @@ class NaiveBayes(MulticlassClassifier):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         alpha: PythonNumber = 1.0,
         nbtype: Literal[
             "auto", "bernoulli", "categorical", "multinomial", "gaussian"
         ] = "auto",
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {"alpha": alpha, "nbtype": str(nbtype).lower()}
 
     # Attributes Methods.
@@ -205,26 +205,30 @@ class NaiveBayes(MulticlassClassifier):
 class BernoulliNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'bernoulli'"""
 
-    def __init__(self, name: str, alpha: float = 1.0) -> None:
-        super().__init__(name, alpha, nbtype="bernoulli")
+    def __init__(
+        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+    ) -> None:
+        super().__init__(name, overwrite_model, alpha, nbtype="bernoulli")
 
 
 class CategoricalNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'categorical'"""
 
-    def __init__(self, name: str, alpha: float = 1.0) -> None:
-        super().__init__(name, alpha, nbtype="categorical")
+    def __init__(self, name: str, overwrite_model: bool = False, alpha: float = 1.0) -> None:
+        super().__init__(name, overwrite_model, alpha, nbtype="categorical")
 
 
 class GaussianNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'gaussian'"""
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name, nbtype="gaussian")
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model, nbtype="gaussian")
 
 
 class MultinomialNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'multinomial'"""
 
-    def __init__(self, name: str, alpha: float = 1.0) -> None:
-        super().__init__(name, alpha, nbtype="multinomial")
+    def __init__(
+        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+    ) -> None:
+        super().__init__(name, overwrite_model, alpha, nbtype="multinomial")

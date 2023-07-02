@@ -163,13 +163,11 @@ class VerticaModel(PlottingUtils):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        return None
-        # self.X = None
-        # self.parameters = {}
-        # for att in self._attributes:
-        #    setattr(self, att, None)
+        self.model_name = name
+        self.overwrite_model = overwrite_model
+
 
     def __repr__(self) -> str:
         """
@@ -678,11 +676,15 @@ class Supervised(VerticaModel):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
         # self.test_relation = None
         # self.y = None
+
+    @property
+    def _model_category(self) -> Literal["SUPERVISED"]:
+        return "SUPERVISED"
 
     # Model Fitting Method.
 
@@ -712,7 +714,7 @@ class Supervised(VerticaModel):
         str
             model's summary.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
@@ -1203,9 +1205,9 @@ class BinaryClassifier(Supervised):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
 
     # Attributes Methods.
 
@@ -1737,9 +1739,9 @@ class MulticlassClassifier(Supervised):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
         # self.classes_ = None
 
     def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
@@ -2577,9 +2579,9 @@ class Regressor(Supervised):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
 
     # Model Evaluation Methods.
 
@@ -2796,9 +2798,13 @@ class Unsupervised(VerticaModel):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
+
+    @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
 
     # Model Fitting Method.
 
@@ -2821,7 +2827,7 @@ class Unsupervised(VerticaModel):
         str
                 model's summary.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

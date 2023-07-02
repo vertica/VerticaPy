@@ -39,6 +39,10 @@ class DecisionTreeRegressor(RandomForestRegressor):
     name: str
         Name of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     max_features: str / int, optional
         The number of randomly  chosen features from which
         to pick the best feature  to split on a given tree
@@ -75,6 +79,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 100,
@@ -82,7 +87,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        super().__init__(name)
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -106,14 +111,18 @@ class DummyTreeRegressor(RandomForestRegressor):
     name: str
         Name of the model. The model is stored
         in the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     """
 
     # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",
@@ -140,6 +149,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
     name: str
         Name of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     max_features: str / int, optional
         The number of randomly  chosen features from which
         to pick the best feature  to split on a given tree
@@ -176,6 +189,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
         max_depth: int = 100,
@@ -183,7 +197,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        super().__init__(name)
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,
             "max_features": max_features,
@@ -207,14 +221,18 @@ class DummyTreeClassifier(RandomForestClassifier):
     name: str
         Name of  the  model. The model is stored
         in the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     """
 
     # System & Special Methods.
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,
             "max_features": "max",

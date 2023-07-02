@@ -43,6 +43,10 @@ class AutoDataPrep(VerticaModel):
     name: str, optional
         Name of the model in which to store the output
         relation in the Vertica database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     cat_method: str, optional
         Method for encoding categorical features. This
         can  be set to 'label' for label encoding  and
@@ -155,6 +159,7 @@ class AutoDataPrep(VerticaModel):
     def __init__(
         self,
         name: Optional[str] = None,
+        overwrite_model: Optional[bool] = False,
         cat_method: Literal["label", "ooe"] = "ooe",
         num_method: Literal["same_freq", "same_width", "none"] = "none",
         nbins: int = 20,
@@ -170,6 +175,7 @@ class AutoDataPrep(VerticaModel):
         save: bool = True,
     ) -> None:
         self.model_name = name
+        self.overwrite_model = overwrite_model
         if not self.model_name:
             self.model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="autodataprep"
@@ -216,7 +222,7 @@ class AutoDataPrep(VerticaModel):
         by: SQLColumns, optional
             vDataColumns used in the partition.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

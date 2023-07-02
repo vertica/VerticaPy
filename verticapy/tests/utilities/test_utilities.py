@@ -611,6 +611,7 @@ class TestUtilities:
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/datasets/data/titanic.csv"
         # with schema
+        drop("public.titanic_verticapy_test_csv", method="table")
         result = read_csv(
             path, table_name="titanic_verticapy_test_csv", schema="public"
         )

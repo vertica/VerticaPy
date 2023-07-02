@@ -70,14 +70,22 @@ class TestDelphi:
             "AutoML_test_dp",
         )
         model.drop()
+        # AutoDataPrep creates a table which is not cleaned up while dropping the model
+        drop("public.AutoML_test_dp", method = "table")
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
         model.drop()
+        drop("public.AutoML_test_dp", method = "table")
+
         model2 = AutoDataPrep("AutoML_test_dp_2", num_method="same_freq")
         model2.drop()
+        # AutoDataPrep creates a table which is not cleaned up while dropping the model
+        drop("public.AutoML_test_dp_2", method = "table")
         model2.fit(titanic_vd)
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
+        drop("public.AutoML_test_dp_2", method = "table")
+
         model3 = AutoDataPrep(
             "AutoML_test_dp_3",
             num_method="same_width",
@@ -85,16 +93,23 @@ class TestDelphi:
             apply_pca=True,
         )
         model3.drop()
+        # AutoDataPrep creates a table which is not cleaned up while dropping the model
+        drop("public.AutoML_test_dp_3", method = "table")
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
+        drop("public.AutoML_test_dp_3", method = "table")
+
         model4 = AutoDataPrep(
             "AutoML_test_dp_4",
         )
         model4.drop()
+        # AutoDataPrep creates a table which is not cleaned up while dropping the model
+        drop("public.AutoML_test_dp_4", method = "table")
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)
         model4.drop()
+        drop("public.AutoML_test_dp_4", method = "table")
 
     def test_AutoClustering(self, titanic_vd):
         model = AutoClustering(
