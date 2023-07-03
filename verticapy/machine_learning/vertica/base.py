@@ -257,7 +257,7 @@ class VerticaModel(PlottingUtils):
         else:
             res = False
         if raise_error and res:
-            raise NameError(f"The model '{model_name}' already exists !")
+            raise NameError(f"The model '{model_name}' already exists!")
         if return_model_type:
             return model_type
         return res

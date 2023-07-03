@@ -330,3 +330,20 @@ class TestLinearRegression:
         assert current_cursor().fetchone()[0] == "linreg_from_vDF"
 
         model_test.drop()
+
+    def test_overwrite_model(self, winequality_vd):
+        model = LinearRegression("test_overwrite_model")
+        model.drop() # to isulate this test from any previous left over
+        model.fit(winequality_vd, ["alcohol"], "quality")
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(winequality_vd, ["alcohol"], "quality")
+        assert exception_info.match("The model 'test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = LinearRegression("test_overwrite_model", overwrite_model = True)
+        model.fit(winequality_vd, ["alcohol"], "quality")
+
+        # cleaning up
+        model.drop()

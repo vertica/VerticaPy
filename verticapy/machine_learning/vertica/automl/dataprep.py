@@ -25,6 +25,8 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.sql.drop import drop
+
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -174,8 +176,8 @@ class AutoDataPrep(VerticaModel):
         identify_ts: bool = True,
         save: bool = True,
     ) -> None:
-        self.model_name = name
-        self.overwrite_model = overwrite_model
+        super().__init__(name, overwrite_model)
+
         if not self.model_name:
             self.model_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="autodataprep"
@@ -195,6 +197,15 @@ class AutoDataPrep(VerticaModel):
             "identify_ts": identify_ts,
             "save": save,
         }
+
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        # it could be stored as a model or a table
+        dropped_model = super().drop()
+        dropped_table = drop(self.model_name, method="table")
+        return dropped_model or dropped_table
 
     # Model Fitting Method.
 

@@ -20,6 +20,7 @@ import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
+from vertica_python.errors import DuplicateObject
 
 # VerticaPy
 from verticapy import (
@@ -80,6 +81,8 @@ class TestLocalOutlierFactor:
         model_test.fit("public.titanic", ["age"])
         result = model_test.plot(color=["r", "b"])
         assert len(result.get_default_bbox_extra_artists()) == 9
+        model_test.drop()
+
         model_test = LocalOutlierFactor("model_test_plot_lof_2")
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare", "pclass"])
@@ -102,3 +105,20 @@ class TestLocalOutlierFactor:
             1.17226637499694, abs=1e-6
         )
         model_test.drop()
+
+    def test_overwrite_model(self, titanic_vd):
+        model = LocalOutlierFactor("test_overwrite_model")
+        model.drop() # to isulate this test from any previous left over
+        model.fit(titanic_vd, ["age", "fare"])
+
+        # overwrite_model is false by default
+        with pytest.raises(DuplicateObject) as exception_info:
+            model.fit(titanic_vd, ["age", "fare"])
+        assert 'Object "test_overwrite_model" already exists' in str(exception_info.value)
+
+        # overwriting the model when overwrite_model is specified true
+        model = LocalOutlierFactor("test_overwrite_model", overwrite_model = True)
+        model.fit(titanic_vd, ["age", "fare"])
+
+        # cleaning up
+        model.drop()

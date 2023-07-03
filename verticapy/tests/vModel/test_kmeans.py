@@ -232,3 +232,20 @@ class TestKMeans:
         assert len(result.gca().get_default_bbox_extra_artists()) == 21
         plt.close("all")
         model_test.drop()
+
+    def test_overwrite_model(self, iris_vd):
+        model = KMeans("test_overwrite_model")
+        model.drop() # to isulate this test from any previous left over
+        model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
+        assert exception_info.match("The model 'test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = KMeans("test_overwrite_model", overwrite_model = True)
+        model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
+
+        # cleaning up
+        model.drop()

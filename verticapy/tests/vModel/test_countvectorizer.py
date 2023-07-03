@@ -18,6 +18,9 @@ permissions and limitations under the License.
 # Pytest
 import pytest
 
+# Other Modules
+from vertica_python.errors import QueryError
+
 # VerticaPy
 from verticapy import (
     drop,
@@ -113,3 +116,20 @@ class TestCountVectorizer:
         model_class.fit(titanic_vd, ["name"])
         assert model_class.transform().shape() == (1841, 4)
         model_class.drop()
+
+    def test_AutoDataPrep_overwrite_model(self, titanic_vd):
+        model = CountVectorizer("test_overwrite_model")
+        model.drop()
+        model.fit(titanic_vd, ["name"])
+
+        # overwrite_model is false by default
+        with pytest.raises(QueryError) as exception_info:
+            model.fit(titanic_vd)
+        assert 'throwErrorFunctionDoesNotMatchCandidates' in str(exception_info.value)
+
+        # overwriting the model when overwrite_model is specified true
+        model = CountVectorizer("test_overwrite_model", overwrite_model = True)
+        model.fit(titanic_vd, ["name"])
+
+        # cleaning up
+        model.drop()

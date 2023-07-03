@@ -281,3 +281,50 @@ class TestPipeline:
         )
         assert len(current_cursor().fetchall()) == 2
         model_test.drop()
+
+    def test_overwrite_model(self, winequality_vd):
+        model = Pipeline(
+            [
+                (
+                    "ScalerWine",
+                    Scaler(
+                        "std_test_overwrite_model",
+                    ),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression(
+                        "linreg_test_overwrite_model",
+                    ),
+                ),
+            ]
+        )
+        model.drop()
+        model.fit(winequality_vd, ["alcohol"], "quality")
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(winequality_vd, ["alcohol"], "quality")
+        assert exception_info.match("The model 'std_test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = Pipeline(
+            [
+                (
+                    "ScalerWine",
+                    Scaler(
+                        "std_test_overwrite_model",
+                    ),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression(
+                        "linreg_test_overwrite_model",
+                    ),
+                ),
+            ],
+            overwrite_model = True)
+        model.fit(winequality_vd, ["alcohol"], "quality")
+
+        # cleaning up
+        model.drop()

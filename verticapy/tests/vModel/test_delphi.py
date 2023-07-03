@@ -20,6 +20,7 @@ import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
+from vertica_python.errors import DuplicateObject
 
 # VerticaPy
 from verticapy import set_option, drop
@@ -65,26 +66,37 @@ class TestDelphi:
         plt.close("all")
         model.drop()
 
+    def test_AutoML_overwrite_model(self, titanic_vd):
+        model = AutoML("test_overwrite_model")
+        model.drop()
+        model.fit(titanic_vd, y="survived")
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(titanic_vd, y="survived")
+        assert exception_info.match("The model 'test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = AutoML("test_overwrite_model", overwrite_model = True)
+        model.fit(titanic_vd, y="survived")
+
+        # cleaning up
+        model.drop()
+
     def test_AutoDataPrep(self, titanic_vd, amazon_vd):
         model = AutoDataPrep(
             "AutoML_test_dp",
         )
         model.drop()
-        # AutoDataPrep creates a table which is not cleaned up while dropping the model
-        drop("public.AutoML_test_dp", method = "table")
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
         model.drop()
-        drop("public.AutoML_test_dp", method = "table")
 
         model2 = AutoDataPrep("AutoML_test_dp_2", num_method="same_freq")
         model2.drop()
-        # AutoDataPrep creates a table which is not cleaned up while dropping the model
-        drop("public.AutoML_test_dp_2", method = "table")
         model2.fit(titanic_vd)
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
-        drop("public.AutoML_test_dp_2", method = "table")
 
         model3 = AutoDataPrep(
             "AutoML_test_dp_3",
@@ -93,23 +105,34 @@ class TestDelphi:
             apply_pca=True,
         )
         model3.drop()
-        # AutoDataPrep creates a table which is not cleaned up while dropping the model
-        drop("public.AutoML_test_dp_3", method = "table")
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
-        drop("public.AutoML_test_dp_3", method = "table")
 
         model4 = AutoDataPrep(
             "AutoML_test_dp_4",
         )
         model4.drop()
-        # AutoDataPrep creates a table which is not cleaned up while dropping the model
-        drop("public.AutoML_test_dp_4", method = "table")
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)
         model4.drop()
-        drop("public.AutoML_test_dp_4", method = "table")
+
+    def test_AutoDataPrep_overwrite_model(self, titanic_vd):
+        model = AutoDataPrep("test_overwrite_model")
+        model.drop()
+        model.fit(titanic_vd)
+
+        # overwrite_model is false by default
+        with pytest.raises(DuplicateObject) as exception_info:
+            model.fit(titanic_vd)
+        assert 'Object "test_overwrite_model" already exists' in str(exception_info.value)
+
+        # overwriting the model when overwrite_model is specified true
+        model = AutoDataPrep("test_overwrite_model", overwrite_model = True)
+        model.fit(titanic_vd)
+
+        # cleaning up
+        model.drop()
 
     def test_AutoClustering(self, titanic_vd):
         model = AutoClustering(
@@ -118,4 +141,21 @@ class TestDelphi:
         model.drop()
         model.fit(titanic_vd)
         assert model.model_.parameters["n_cluster"] < 100
+        model.drop()
+
+    def test_AutoClustering_overwrite_model(self, titanic_vd):
+        model = AutoClustering("test_overwrite_model")
+        model.drop()
+        model.fit(titanic_vd)
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(titanic_vd)
+        assert exception_info.match("The model 'test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = AutoClustering("test_overwrite_model", overwrite_model = True)
+        model.fit(titanic_vd)
+
+        # cleaning up
         model.drop()

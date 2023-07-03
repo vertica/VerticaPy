@@ -848,6 +848,10 @@ class DBSCAN(VerticaModel):
         return ""
 
     @property
+    def _model_category(self) -> Literal["UNSUPERVISED"]:
+        return "UNSUPERVISED"
+
+    @property
     def _model_subcategory(self) -> Literal["CLUSTERING"]:
         return "CLUSTERING"
 
