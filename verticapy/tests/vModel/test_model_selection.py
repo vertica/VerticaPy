@@ -409,10 +409,14 @@ class TestModelSelection:
                 True,
                 True,
             )
-        assert exception_info.match("The model 'stepwise_overwrite_model_test' already exists!")
+        assert exception_info.match(
+            "The model 'stepwise_overwrite_model_test' already exists!"
+        )
 
         # overwriting the model when overwrite_model is specified true
-        model = LogisticRegression("stepwise_overwrite_model_test", overwrite_model = True)
+        model = LogisticRegression(
+            "stepwise_overwrite_model_test", overwrite_model=True
+        )
         result = stepwise(
             model,
             titanic,

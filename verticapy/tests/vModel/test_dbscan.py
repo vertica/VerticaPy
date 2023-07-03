@@ -92,16 +92,18 @@ class TestDBSCAN:
 
     def test_overwrite_model(self, titanic_vd):
         model = DBSCAN("test_overwrite_model")
-        model.drop() # to isulate this test from any previous left over
+        model.drop()  # to isulate this test from any previous left over
         model.fit(titanic_vd, ["age", "fare"], "survived")
 
         # overwrite_model is false by default
         with pytest.raises(DuplicateObject) as exception_info:
             model.fit(titanic_vd, ["age", "fare"], "survived")
-        assert 'Object "test_overwrite_model" already exists' in str(exception_info.value)
+        assert 'Object "test_overwrite_model" already exists' in str(
+            exception_info.value
+        )
 
         # overwriting the model when overwrite_model is specified true
-        model = DBSCAN("test_overwrite_model", overwrite_model = True)
+        model = DBSCAN("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd, ["age", "fare"], "survived")
 
         # cleaning up

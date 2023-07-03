@@ -111,7 +111,7 @@ class TestKernelDensity:
 
     def test_overwrite_model(self, titanic_vd):
         model = KernelDensity("test_overwrite_model")
-        model.drop() # to isulate this test from any previous left over
+        model.drop()  # to isulate this test from any previous left over
         model.fit(titanic_vd, ["age", "fare"])
 
         # overwrite_model is false by default
@@ -120,7 +120,7 @@ class TestKernelDensity:
         assert exception_info.match("The model 'test_overwrite_model' already exists!")
 
         # overwriting the model when overwrite_model is specified true
-        model = KernelDensity("test_overwrite_model", overwrite_model = True)
+        model = KernelDensity("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd, ["age", "fare"])
 
         # cleaning up

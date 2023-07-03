@@ -214,7 +214,9 @@ class BernoulliNB(NaiveBayes):
 class CategoricalNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'categorical'"""
 
-    def __init__(self, name: str, overwrite_model: bool = False, alpha: float = 1.0) -> None:
+    def __init__(
+        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+    ) -> None:
         super().__init__(name, overwrite_model, alpha, nbtype="categorical")
 
 

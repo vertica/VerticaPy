@@ -125,10 +125,10 @@ class TestCountVectorizer:
         # overwrite_model is false by default
         with pytest.raises(QueryError) as exception_info:
             model.fit(titanic_vd)
-        assert 'throwErrorFunctionDoesNotMatchCandidates' in str(exception_info.value)
+        assert "throwErrorFunctionDoesNotMatchCandidates" in str(exception_info.value)
 
         # overwriting the model when overwrite_model is specified true
-        model = CountVectorizer("test_overwrite_model", overwrite_model = True)
+        model = CountVectorizer("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd, ["name"])
 
         # cleaning up

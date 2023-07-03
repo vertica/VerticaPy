@@ -333,7 +333,7 @@ class TestLinearRegression:
 
     def test_overwrite_model(self, winequality_vd):
         model = LinearRegression("test_overwrite_model")
-        model.drop() # to isulate this test from any previous left over
+        model.drop()  # to isulate this test from any previous left over
         model.fit(winequality_vd, ["alcohol"], "quality")
 
         # overwrite_model is false by default
@@ -342,7 +342,7 @@ class TestLinearRegression:
         assert exception_info.match("The model 'test_overwrite_model' already exists!")
 
         # overwriting the model when overwrite_model is specified true
-        model = LinearRegression("test_overwrite_model", overwrite_model = True)
+        model = LinearRegression("test_overwrite_model", overwrite_model=True)
         model.fit(winequality_vd, ["alcohol"], "quality")
 
         # cleaning up

@@ -305,7 +305,9 @@ class TestPipeline:
         # overwrite_model is false by default
         with pytest.raises(NameError) as exception_info:
             model.fit(winequality_vd, ["alcohol"], "quality")
-        assert exception_info.match("The model 'std_test_overwrite_model' already exists!")
+        assert exception_info.match(
+            "The model 'std_test_overwrite_model' already exists!"
+        )
 
         # overwriting the model when overwrite_model is specified true
         model = Pipeline(
@@ -323,7 +325,8 @@ class TestPipeline:
                     ),
                 ),
             ],
-            overwrite_model = True)
+            overwrite_model=True,
+        )
         model.fit(winequality_vd, ["alcohol"], "quality")
 
         # cleaning up

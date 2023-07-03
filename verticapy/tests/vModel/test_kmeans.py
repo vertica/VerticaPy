@@ -235,7 +235,7 @@ class TestKMeans:
 
     def test_overwrite_model(self, iris_vd):
         model = KMeans("test_overwrite_model")
-        model.drop() # to isulate this test from any previous left over
+        model.drop()  # to isulate this test from any previous left over
         model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
 
         # overwrite_model is false by default
@@ -244,7 +244,7 @@ class TestKMeans:
         assert exception_info.match("The model 'test_overwrite_model' already exists!")
 
         # overwriting the model when overwrite_model is specified true
-        model = KMeans("test_overwrite_model", overwrite_model = True)
+        model = KMeans("test_overwrite_model", overwrite_model=True)
         model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
 
         # cleaning up

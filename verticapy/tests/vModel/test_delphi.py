@@ -77,7 +77,7 @@ class TestDelphi:
         assert exception_info.match("The model 'test_overwrite_model' already exists!")
 
         # overwriting the model when overwrite_model is specified true
-        model = AutoML("test_overwrite_model", overwrite_model = True)
+        model = AutoML("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd, y="survived")
 
         # cleaning up
@@ -125,10 +125,12 @@ class TestDelphi:
         # overwrite_model is false by default
         with pytest.raises(DuplicateObject) as exception_info:
             model.fit(titanic_vd)
-        assert 'Object "test_overwrite_model" already exists' in str(exception_info.value)
+        assert 'Object "test_overwrite_model" already exists' in str(
+            exception_info.value
+        )
 
         # overwriting the model when overwrite_model is specified true
-        model = AutoDataPrep("test_overwrite_model", overwrite_model = True)
+        model = AutoDataPrep("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd)
 
         # cleaning up
@@ -154,7 +156,7 @@ class TestDelphi:
         assert exception_info.match("The model 'test_overwrite_model' already exists!")
 
         # overwriting the model when overwrite_model is specified true
-        model = AutoClustering("test_overwrite_model", overwrite_model = True)
+        model = AutoClustering("test_overwrite_model", overwrite_model=True)
         model.fit(titanic_vd)
 
         # cleaning up

@@ -168,7 +168,6 @@ class VerticaModel(PlottingUtils):
         self.model_name = name
         self.overwrite_model = overwrite_model
 
-
     def __repr__(self) -> str:
         """
         Returns the model Representation.

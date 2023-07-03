@@ -178,7 +178,7 @@ def local_outlier_factor_3d_plot_result(load_plotly, dummy_scatter_vd):
     model.fit(dummy_scatter_vd, ["X", "Y", "Z"])
     yield model.plot()
     model.drop()
-    drop("lof_test_3d", method = "table")
+    drop("lof_test_3d", method="table")
 
 
 @pytest.fixture(scope="class")
@@ -187,7 +187,7 @@ def local_outlier_factor_plot_result(load_plotly, dummy_scatter_vd):
     model.fit(dummy_scatter_vd, ["X", "Y"])
     yield model.plot()
     model.drop()
-    drop("lof_test_fixture", method = "table")
+    drop("lof_test_fixture", method="table")
 
 
 @pytest.fixture(scope="class")
@@ -1891,7 +1891,7 @@ class TestMachineLearningLOFPlot:
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
         model.drop()
-        drop("lof_test", method = "table")
+        drop("lof_test", method="table")
 
 
 class TestMachineLearningLogisticRegressionPlot:
