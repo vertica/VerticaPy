@@ -32,25 +32,10 @@ class TestHighchartsVDCDensityPlot(VDCDensityPlot):
     """
 
 
-@pytest.mark.skip("Error in this highchart plot")
 class TestHighchartVDCDensityMultiPlot(VDCDensityMultiPlot):
     """
     Testing different attributes of Multiple Density plots on a vDataColumn
     """
-
-    def test_properties_multiple_plots_produced_for_multiplot(
-        self,
-    ):
-        """
-        Test if two plots created
-        """
-        # Arrange
-        number_of_plots = 2
-        # Act
-        # Assert
-        assert (
-            len(self.result.lines) == number_of_plots
-        ), "Two plots not produced for two classes"
 
 
 class TestHighchartsVDFDensityPlot(VDFDensityPlot):

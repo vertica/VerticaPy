@@ -34,7 +34,7 @@ def to_varchar(
         "spatial": f"ST_AsText({column})",
     }
     if category in map_dict:
-        return map_dict[column]
+        return map_dict[category]
     return column
 
 

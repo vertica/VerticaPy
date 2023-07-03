@@ -49,7 +49,9 @@ class ImportanceBarChart(MatplotlibBase):
         Draws a coefficient importance bar chart using the Matplotlib API.
         """
         n = len(self.data["importance"])
-        x_label = self.layout["x_label"] if "x_label" in self.layout else "Importance"
+        x_label = (
+            self.layout["x_label"] if "x_label" in self.layout else "Importance (%)"
+        )
         y_label = self.layout["y_label"] if "y_label" in self.layout else "Features"
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,

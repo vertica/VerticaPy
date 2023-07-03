@@ -329,6 +329,40 @@ class VDFBarPlot(BasicPlotTests):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
+class VDFBarPlot2D(BasicPlotTests):
+    """
+    Testing different attributes of Bar plot on a vDataFrame
+    """
+
+    # Testing variables
+
+    COL_NAME_VDF_1 = "cats"
+    COL_NAME_VDF_2 = "binary"
+
+    @pytest.fixture(autouse=True)
+    def data(self, dummy_dist_vd):
+        """
+        Load test data
+        """
+        self.data = dummy_dist_vd
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [self.COL_NAME_VDF_1, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.bar,
+            {"columns": [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2]},
+        )
+
+
 class VDCBarhPlot(BasicPlotTests):
     """
     Testing different attributes of HHorizontal Bar plot on a vDataColumn
@@ -400,7 +434,19 @@ class VDFBarhPlot(VDFBarPlot):
         )
 
 
-# Testing variables
+class VDFBarhPlot2D(VDFBarPlot2D):
+    """
+    Testing different attributes of HHorizontal Bar plot on a vDataFrame
+    """
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.barh,
+            {"columns": [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2]},
+        )
 
 
 class VDCBoxPlot(BasicPlotTests):
