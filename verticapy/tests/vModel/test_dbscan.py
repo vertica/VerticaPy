@@ -108,3 +108,7 @@ class TestDBSCAN:
 
         # cleaning up
         model.drop()
+
+    def test_optional_name(self):
+        model = DBSCAN()
+        assert model.model_name is not None

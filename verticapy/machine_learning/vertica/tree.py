@@ -36,7 +36,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -78,7 +78,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
@@ -108,7 +108,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored
         in the database.
     overwrite_model: bool, optional
@@ -121,7 +121,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,
@@ -146,7 +146,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -188,7 +188,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
@@ -218,7 +218,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of  the  model. The model is stored
         in the database.
     overwrite_model: bool, optional
@@ -231,7 +231,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": 1,

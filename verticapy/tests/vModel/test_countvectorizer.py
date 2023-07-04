@@ -133,3 +133,7 @@ class TestCountVectorizer:
 
         # cleaning up
         model.drop()
+
+    def test_optional_name(self):
+        model = CountVectorizer()
+        assert model.model_name is not None

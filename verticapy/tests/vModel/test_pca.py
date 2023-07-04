@@ -226,3 +226,7 @@ class TestPCA:
         )
         assert current_cursor().fetchone()[0] == "pca_vDF"
         model_test.drop()
+
+    def test_optional_name(self):
+        model = PCA()
+        assert model.model_name is not None

@@ -43,7 +43,7 @@ class LinearSVR(Regressor, LinearModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in
         the database.
     overwrite_model: bool, optional
@@ -104,7 +104,7 @@ class LinearSVR(Regressor, LinearModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-4,
         C: float = 1.0,
@@ -152,7 +152,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model. The model is stored
         in the database.
     overwrite_model: bool, optional
@@ -216,7 +216,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-4,
         C: float = 1.0,

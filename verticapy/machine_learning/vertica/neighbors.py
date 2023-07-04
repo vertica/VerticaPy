@@ -118,7 +118,7 @@ class KNeighborsRegressor(Regressor):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
         super().__init__(name)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -329,7 +329,7 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
+    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
         super().__init__(name)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -727,7 +727,7 @@ class KernelDensity(Regressor, Tree):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. This is not a built-in model, so
         this name is used  to build the final table.
     overwrite_model: bool, optional
@@ -800,7 +800,7 @@ class KernelDensity(Regressor, Tree):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
@@ -1156,7 +1156,7 @@ class LocalOutlierFactor(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model.  This is not a  built-in
         model, so this name is used to build the
         final table.
@@ -1207,7 +1207,7 @@ class LocalOutlierFactor(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_neighbors: int = 20,
         p: int = 2,

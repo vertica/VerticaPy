@@ -407,7 +407,7 @@ class CountVectorizer(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the same
@@ -471,7 +471,7 @@ class CountVectorizer(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         lowercase: bool = True,
         max_df: float = 1.0,
@@ -649,7 +649,7 @@ class Scaler(Preprocessing):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the same
@@ -702,7 +702,7 @@ class Scaler(Preprocessing):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ) -> None:
@@ -748,7 +748,7 @@ class StandardScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["mean_", "std_"]
 
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model, "zscore")
 
 
@@ -759,7 +759,7 @@ class RobustScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["median_", "mad_"]
 
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model, "robust_zscore")
 
 
@@ -770,7 +770,7 @@ class MinMaxScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["min_", "max_"]
 
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model, "minmax")
 
 
@@ -785,7 +785,7 @@ class OneHotEncoder(Preprocessing):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the same
@@ -858,7 +858,7 @@ class OneHotEncoder(Preprocessing):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         extra_levels: Optional[dict] = None,
         drop_first: bool = True,

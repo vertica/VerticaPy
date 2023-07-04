@@ -178,10 +178,6 @@ class AutoDataPrep(VerticaModel):
     ) -> None:
         super().__init__(name, overwrite_model)
 
-        if not self.model_name:
-            self.model_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="autodataprep"
-            )
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,

@@ -257,3 +257,7 @@ class TestBisectingKMeans:
         model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", metric="accuracy")
         assert score == pytest.approx(1.0)
+
+    def test_optional_name(self):
+        model = BisectingKMeans()
+        assert model.model_name is not None

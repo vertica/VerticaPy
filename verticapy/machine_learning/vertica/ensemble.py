@@ -363,7 +363,7 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -442,7 +442,7 @@ class RandomForestRegressor(Regressor, RandomForest):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
@@ -512,7 +512,7 @@ class XGBRegressor(Regressor, XGBoost):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model.  The  model  is  stored
         in the DB.
     overwrite_model: bool, optional
@@ -599,7 +599,7 @@ class XGBRegressor(Regressor, XGBoost):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         max_ntree: int = 10,
         max_depth: int = 5,
@@ -690,7 +690,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -770,7 +770,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
@@ -856,7 +856,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model. The model  is  stored in the
         database.
     overwrite_model: bool, optional
@@ -944,7 +944,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         max_ntree: int = 10,
         max_depth: int = 5,
@@ -1061,7 +1061,7 @@ class IsolationForest(Clustering, Tree):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of  the model. The model  is stored in the
         database.
     overwrite_model: bool, optional
@@ -1117,7 +1117,7 @@ class IsolationForest(Clustering, Tree):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_estimators: int = 100,
         max_depth: int = 10,
