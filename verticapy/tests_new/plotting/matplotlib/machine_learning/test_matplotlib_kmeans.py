@@ -120,3 +120,5 @@ class TestMatplotlibMachineLearningVoronoiChart:
         )
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
+        # cleanup
+        model.drop()
