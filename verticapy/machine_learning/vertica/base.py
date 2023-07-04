@@ -170,8 +170,7 @@ class VerticaModel(PlottingUtils):
 
         if not self.model_name:
             self.model_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"),
-                name = self._model_type
+                schema=conf.get_option("temp_schema"), name=self._model_type
             )
 
     def __repr__(self) -> str:
