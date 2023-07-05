@@ -409,6 +409,10 @@ class CountVectorizer(VerticaModel):
     ----------
     name: str
         Name of the model.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     lowercase: bool, optional
         Converts  all  the elements to lowercase  before
         processing.
@@ -468,6 +472,7 @@ class CountVectorizer(VerticaModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         lowercase: bool = True,
         max_df: float = 1.0,
         min_df: float = 0.0,
@@ -475,8 +480,7 @@ class CountVectorizer(VerticaModel):
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "lowercase": lowercase,
             "max_df": max_df,
@@ -574,7 +578,7 @@ class CountVectorizer(VerticaModel):
             columns are used.
         """
         X = format_type(X, dtype=list)
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
@@ -647,6 +651,10 @@ class Scaler(Preprocessing):
     ----------
     name: str
         Name of the model.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     method: str, optional
         Method used to normalize.
                 zscore        : Normalization   using   the   Z-Score.
@@ -672,10 +680,6 @@ class Scaler(Preprocessing):
         return "REVERSE_NORMALIZE"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["PREPROCESSING"]:
         return "PREPROCESSING"
 
@@ -697,10 +701,12 @@ class Scaler(Preprocessing):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
-        self, name: str, method: Literal["zscore", "robust_zscore", "minmax"] = "zscore"
+        self,
+        name: str,
+        overwrite_model: bool = False,
+        method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {"method": str(method).lower()}
 
     # Attributes Methods.
@@ -742,8 +748,8 @@ class StandardScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["mean_", "std_"]
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name, "zscore")
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model, "zscore")
 
 
 class RobustScaler(Scaler):
@@ -753,8 +759,8 @@ class RobustScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["median_", "mad_"]
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name, "robust_zscore")
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model, "robust_zscore")
 
 
 class MinMaxScaler(Scaler):
@@ -764,8 +770,8 @@ class MinMaxScaler(Scaler):
     def _attributes(self) -> list[str]:
         return ["min_", "max_"]
 
-    def __init__(self, name: str) -> None:
-        super().__init__(name, "minmax")
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model, "minmax")
 
 
 """
@@ -781,6 +787,10 @@ class OneHotEncoder(Preprocessing):
     ----------
     name: str
         Name of the model.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     extra_levels: dict, optional
         Additional levels in each  category that are not
         in the input relation.
@@ -831,10 +841,6 @@ class OneHotEncoder(Preprocessing):
         return ""
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["PREPROCESSING"]:
         return "PREPROCESSING"
 
@@ -853,6 +859,7 @@ class OneHotEncoder(Preprocessing):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         extra_levels: Optional[dict] = None,
         drop_first: bool = True,
         ignore_null: bool = True,
@@ -860,8 +867,7 @@ class OneHotEncoder(Preprocessing):
         column_naming: Literal["indices", "values", "values_relaxed"] = "indices",
         null_column_name: str = "null",
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "extra_levels": format_type(extra_levels, dtype=dict),
             "drop_first": drop_first,

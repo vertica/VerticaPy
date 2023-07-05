@@ -296,6 +296,10 @@ class ElasticNet(Regressor, LinearModel):
     name: str
         Name of the  model.  The model is stored in
         the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Determines  whether the algorithm has reached
         the specified accuracy result.
@@ -333,10 +337,6 @@ class ElasticNet(Regressor, LinearModel):
         return "PREDICT_LINEAR_REG"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -351,6 +351,7 @@ class ElasticNet(Regressor, LinearModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
         max_iter: int = 100,
@@ -358,8 +359,7 @@ class ElasticNet(Regressor, LinearModel):
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
@@ -388,6 +388,10 @@ class Lasso(Regressor, LinearModel):
     name: str
         Name of the model. The  model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Determines  whether the  algorithm has reached
         the specified accuracy result.
@@ -422,10 +426,6 @@ class Lasso(Regressor, LinearModel):
         return "PREDICT_LINEAR_REG"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -440,14 +440,14 @@ class Lasso(Regressor, LinearModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs", "cgd"] = "cgd",
         fit_intercept: bool = True,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
@@ -473,6 +473,10 @@ class LinearRegression(Regressor, LinearModel):
     name: str
         Name of the model. The  model is stored  in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Determines whether the  algorithm has reached the
         specified accuracy result.
@@ -503,10 +507,6 @@ class LinearRegression(Regressor, LinearModel):
         return "PREDICT_LINEAR_REG"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -521,13 +521,13 @@ class LinearRegression(Regressor, LinearModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-6,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
@@ -554,6 +554,10 @@ class Ridge(Regressor, LinearModel):
     name: str
         Name of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Determines whether  the algorithm has reached
         the specified accuracy result.
@@ -587,10 +591,6 @@ class Ridge(Regressor, LinearModel):
         return "PREDICT_LINEAR_REG"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -605,14 +605,14 @@ class Ridge(Regressor, LinearModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
         max_iter: int = 100,
         solver: Literal["newton", "bfgs"] = "newton",
         fit_intercept: bool = True,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "
@@ -643,6 +643,10 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     name: str
         Name of the model.  The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     penalty: str, optional
         Determines the method of regularization.
             None : No Regularization.
@@ -686,10 +690,6 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         return "PREDICT_LOGISTIC_REG"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -704,6 +704,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         penalty: Literal["none", "l1", "l2", "enet", None] = "none",
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
@@ -712,10 +713,9 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ) -> None:
-        super().__init__()
+        super().__init__(name, overwrite_model)
         penalty = str(penalty).lower()
         solver = str(solver).lower()
-        self.model_name = name
         if vertica_version()[0] < 12 and not fit_intercept:
             raise VersionError(
                 "The parameter 'fit_intercept' can be activated for "

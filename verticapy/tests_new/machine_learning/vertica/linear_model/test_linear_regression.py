@@ -485,7 +485,7 @@ class TestLinearRegressionMethods:
         try:
             vpy_model.does_model_exists(name=model_name_with_schema, raise_error=True)
         except NameError as e:
-            assert e.args[0] == "The model 'vpy_lr_model' already exists !"
+            assert e.args[0] == "The model 'vpy_lr_model' already exists!"
 
         assert (
             vpy_model.does_model_exists(

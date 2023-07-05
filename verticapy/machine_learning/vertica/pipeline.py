@@ -48,6 +48,9 @@ class Pipeline:
         fit/transform) that  are chained, in  the order
         in which they are chained, where the last object
         is an estimator.
+    overwrite_model: bool, optional
+        If set to True, training a model in the pipeline with the same
+        name as an existing model overwrites the existing model.
     """
 
     # Properties.
@@ -83,8 +86,9 @@ class Pipeline:
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, steps: list) -> None:
+    def __init__(self, steps: list, overwrite_model: bool = False) -> None:
         self.steps = []
+        self.overwrite_model = overwrite_model
         for idx, s in enumerate(steps):
             if len(s) != 2:
                 raise ValueError(
@@ -194,7 +198,7 @@ class Pipeline:
             vdf = vDataFrame(input_relation)
         else:
             vdf = input_relation
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         X_new = copy.deepcopy(X)
         current_vdf = vdf

@@ -46,6 +46,10 @@ class LinearSVR(Regressor, LinearModel):
     name: str
         Name of the model. The model is stored in
         the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Tolerance for stopping criteria. This is
         used to control accuracy.
@@ -87,10 +91,6 @@ class LinearSVR(Regressor, LinearModel):
         return "PREDICT_SVM_REGRESSOR"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -105,6 +105,7 @@ class LinearSVR(Regressor, LinearModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-4,
         C: float = 1.0,
         intercept_scaling: float = 1.0,
@@ -112,8 +113,7 @@ class LinearSVR(Regressor, LinearModel):
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "tol": tol,
             "C": C,
@@ -155,6 +155,10 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     name: str
         Name  of the  model. The model is stored
         in the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     tol: float, optional
         Tolerance for stopping criteria. This is
         used to control accuracy.
@@ -199,10 +203,6 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         return "PREDICT_SVM_CLASSIFIER"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -217,6 +217,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         tol: float = 1e-4,
         C: float = 1.0,
         intercept_scaling: float = 1.0,
@@ -224,8 +225,7 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
         class_weight: Union[Literal["auto", "none"], list] = [1, 1],
         max_iter: int = 100,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "tol": tol,
             "C": C,

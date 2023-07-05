@@ -72,9 +72,9 @@ class Clustering(Unsupervised):
     # System & Special Methods.
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
-        super().__init__()
+        super().__init__(name, overwrite_model)
 
     # Prediction / Transformation Methods.
 
@@ -209,6 +209,10 @@ class KMeans(Clustering):
     name: str
         Name  of  the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_cluster: int, optional
         Number of clusters
     init: str / list, optional
@@ -241,10 +245,6 @@ class KMeans(Clustering):
         return "APPLY_KMEANS"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLUSTERING"]:
         return "CLUSTERING"
 
@@ -271,13 +271,13 @@ class KMeans(Clustering):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         n_cluster: int = 8,
         init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -400,6 +400,10 @@ class KPrototypes(KMeans):
     name: str
         Name  of the model. The model is stored in  the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_cluster: int, optional
         Number of clusters.
     init: str / list, optional
@@ -457,13 +461,14 @@ class KPrototypes(KMeans):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         n_cluster: int = 8,
         init: Union[Literal["random"], list] = "random",
         max_iter: int = 300,
         tol: float = 1e-4,
         gamma: float = 1.0,
     ) -> None:
-        super().__init__(name)
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -519,6 +524,10 @@ class BisectingKMeans(KMeans, Tree):
     name: str
         Name of the model.  The  model is stored in
         the database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_cluster: int, optional
         Number of clusters
     bisection_iterations: int, optional
@@ -581,10 +590,6 @@ class BisectingKMeans(KMeans, Tree):
         return "APPLY_BISECTING_KMEANS"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLUSTERING"]:
         return "CLUSTERING"
 
@@ -616,6 +621,7 @@ class BisectingKMeans(KMeans, Tree):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         n_cluster: int = 8,
         bisection_iterations: int = 1,
         split_method: Literal["size", "sum_squares"] = "sum_squares",
@@ -625,7 +631,7 @@ class BisectingKMeans(KMeans, Tree):
         max_iter: int = 300,
         tol: float = 1e-4,
     ) -> None:
-        super().__init__(name)
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_cluster": n_cluster,
             "bisection_iterations": bisection_iterations,
@@ -812,6 +818,10 @@ class DBSCAN(VerticaModel):
         Name  of the model.  This is  not a  built-in
         model, so this name is  used to build the
         final table.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     eps: float, optional
         The radius of a  neighborhood with respect to
         some point.
@@ -857,10 +867,14 @@ class DBSCAN(VerticaModel):
 
     @save_verticapy_logs
     def __init__(
-        self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
+        self,
+        name: str,
+        overwrite_model: bool = False,
+        eps: float = 0.5,
+        min_samples: int = 5,
+        p: int = 2,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {"eps": eps, "min_samples": min_samples, "p": p}
 
     def drop(self) -> bool:
@@ -905,7 +919,7 @@ class DBSCAN(VerticaModel):
             in the main table to avoid creating temporary
             tables.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
@@ -1157,10 +1171,6 @@ class NearestCentroid(MulticlassClassifier):
         return ""
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -1176,8 +1186,7 @@ class NearestCentroid(MulticlassClassifier):
 
     @save_verticapy_logs
     def __init__(self, name: str, p: int = 2) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name)
         self.parameters = {"p": p}
 
     def drop(self) -> bool:
