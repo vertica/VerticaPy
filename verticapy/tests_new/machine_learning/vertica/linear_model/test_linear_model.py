@@ -63,13 +63,13 @@ def calculate_regression_metrics(linear_model_name, get_py_model, fit_intercept=
     """
     function to calculate python metrics
     """
-    X, y, _, skl_pred, skl_model = get_py_model(
+    _, y, _, skl_pred, skl_model = get_py_model(
         linear_model_name, py_fit_intercept=fit_intercept
     )
     regression_metrics_map = {}
-    n = len(y)
-    avg = sum(y) / n
-    num_features = k = len(skl_model.feature_names_in_)
+    no_of_records = len(y)
+    avg = sum(y) / no_of_records
+    num_features = len(skl_model.feature_names_in_)
     num_params = len(skl_model.coef_) + 1
 
     regression_metrics_map["mse"] = getattr(skl_metrics, "mean_squared_error")(
@@ -78,8 +78,8 @@ def calculate_regression_metrics(linear_model_name, get_py_model, fit_intercept=
     regression_metrics_map["rmse"] = np.sqrt(regression_metrics_map["mse"])
     regression_metrics_map["ssr"] = sum(np.square(skl_pred - avg))
     regression_metrics_map["sse"] = sum(np.square(y - skl_pred))
-    regression_metrics_map["dfr"] = k
-    regression_metrics_map["dfe"] = n - k - 1
+    regression_metrics_map["dfr"] = num_features
+    regression_metrics_map["dfe"] = no_of_records - num_features - 1
     regression_metrics_map["msr"] = (
         regression_metrics_map["ssr"] / regression_metrics_map["dfr"]
     )
@@ -89,7 +89,9 @@ def calculate_regression_metrics(linear_model_name, get_py_model, fit_intercept=
     regression_metrics_map["f"] = (
         regression_metrics_map["msr"] / regression_metrics_map["_mse"]
     )
-    regression_metrics_map["p_value"] = f.sf(regression_metrics_map["f"], k, n)
+    regression_metrics_map["p_value"] = f.sf(
+        regression_metrics_map["f"], num_features, no_of_records
+    )
     regression_metrics_map["mean_squared_log_error"] = (
         sum(
             pow(
@@ -97,20 +99,20 @@ def calculate_regression_metrics(linear_model_name, get_py_model, fit_intercept=
                 2,
             )
         )
-        / n
+        / no_of_records
     )
     regression_metrics_map["r2"] = regression_metrics_map[
         "r2_score"
     ] = skl_metrics.r2_score(y, skl_pred)
     regression_metrics_map["rsquared_adj"] = 1 - (1 - regression_metrics_map["r2"]) * (
-        n - 1
-    ) / (n - num_features - 1)
+        no_of_records - 1
+    ) / (no_of_records - num_features - 1)
     regression_metrics_map["aic"] = (
-        n * math.log(regression_metrics_map["mse"]) + 2 * num_params
+        no_of_records * math.log(regression_metrics_map["mse"]) + 2 * num_params
     )
-    regression_metrics_map["bic"] = n * math.log(
+    regression_metrics_map["bic"] = no_of_records * math.log(
         regression_metrics_map["mse"]
-    ) + num_params * math.log(n)
+    ) + num_params * math.log(no_of_records)
     regression_metrics_map["explained_variance_score"] = getattr(
         skl_metrics, "explained_variance_score"
     )(y, skl_pred)
@@ -265,9 +267,9 @@ def get_py_model_fixture(winequality_vpy_fun):
     return _get_py_model
 
 
-# @pytest.mark.parametrize("linear_model_name", ["LinearSVR"])
-# @pytest.mark.parametrize("linear_model_name", ["Ridge", "Lasso", "ElasticNet", "LinearRegression", "LinearSVR"])
-@pytest.mark.parametrize("linear_model_name", ["Ridge", "Lasso", "ElasticNet", "LinearRegression"])
+@pytest.mark.parametrize(
+    "linear_model_name", ["Ridge", "Lasso", "ElasticNet", "LinearRegression"]
+)
 class TestLinearModel:
     """
     test class for linear models
@@ -275,6 +277,9 @@ class TestLinearModel:
 
     @pytest.fixture
     def get_models(self, linear_model_name, get_vpy_model, get_py_model):
+        """
+        test function - get_models
+        """
         vpy_model, vpy_pred_vdf, schema_name, model_name = get_vpy_model(
             linear_model_name
         )
@@ -477,11 +482,7 @@ class TestLinearModel:
             linear_model_name, y_true=["residual_sugar", "alcohol"]
         )[0].contour()
 
-        assert (
-            isinstance(vpy_res, plt.Axes)
-            or isinstance(vpy_res, plotly.graph_objs.Figure)
-            or isinstance(vpy_res, Highchart)
-        )
+        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
     def test_deploysql(self, get_models, linear_model_name):
         """
@@ -681,8 +682,8 @@ class TestLinearModel:
             get_models.vpy.vpy_model.does_model_exists(
                 name=model_name_with_schema, raise_error=True
             )
-        except NameError as e:
-            assert e.args[0] == "The model 'vpy_lr_model' already exists !"
+        except NameError as error:
+            assert error.args[0] == "The model 'vpy_lr_model' already exists !"
 
         assert get_models.vpy.vpy_model.does_model_exists(
             name=model_name_with_schema, return_model_type=True
@@ -771,11 +772,7 @@ class TestLinearModel:
             linear_model_name, y_true=["residual_sugar", "alcohol"]
         )[0].plot()
 
-        assert (
-            isinstance(vpy_res, plt.Axes)
-            or isinstance(vpy_res, plotly.graph_objs.Figure)
-            or isinstance(vpy_res, Highchart)
-        )
+        assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
     def test_to_memmodel(self, get_models):
         """
