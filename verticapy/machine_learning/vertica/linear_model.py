@@ -293,7 +293,7 @@ class ElasticNet(Regressor, LinearModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the  model.  The model is stored in
         the database.
     overwrite_model: bool, optional
@@ -350,7 +350,7 @@ class ElasticNet(Regressor, LinearModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
@@ -385,7 +385,7 @@ class Lasso(Regressor, LinearModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The  model is stored in the
         database.
     overwrite_model: bool, optional
@@ -439,7 +439,7 @@ class Lasso(Regressor, LinearModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
@@ -470,7 +470,7 @@ class LinearRegression(Regressor, LinearModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The  model is stored  in the
         database.
     overwrite_model: bool, optional
@@ -520,7 +520,7 @@ class LinearRegression(Regressor, LinearModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-6,
         max_iter: int = 100,
@@ -551,7 +551,7 @@ class Ridge(Regressor, LinearModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -604,7 +604,7 @@ class Ridge(Regressor, LinearModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         tol: float = 1e-6,
         C: PythonNumber = 1.0,
@@ -640,7 +640,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.  The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -703,7 +703,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         penalty: Literal["none", "l1", "l2", "enet", None] = "none",
         tol: float = 1e-6,

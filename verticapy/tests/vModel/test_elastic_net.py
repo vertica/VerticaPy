@@ -333,3 +333,7 @@ class TestElasticNet:
         assert current_cursor().fetchone()[0] == "enet_from_vDF"
 
         model_test.drop()
+
+    def test_optional_name(self):
+        model = ElasticNet()
+        assert model.model_name is not None

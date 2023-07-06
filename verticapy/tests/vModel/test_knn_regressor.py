@@ -187,3 +187,7 @@ class TestKNeighborsRegressor:
         model_test.fit(titanic_vd, ["age"], "survived")
         assert model_test.score() == pytest.approx(-0.122616967579114)
         model_test.drop()
+
+    def test_optional_name(self):
+        model = KNeighborsRegressor()
+        assert model.model_name is not None

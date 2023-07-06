@@ -400,7 +400,7 @@ class PCA(Decomposition):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -456,7 +456,7 @@ class PCA(Decomposition):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_components: int = 0,
         scale: bool = False,
@@ -515,7 +515,7 @@ class MCA(PCA):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.  The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -558,7 +558,7 @@ class MCA(PCA):
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {}
 
@@ -761,7 +761,7 @@ class SVD(Decomposition):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -813,7 +813,7 @@ class SVD(Decomposition):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_components: int = 0,
         method: Literal["lapack"] = "lapack",

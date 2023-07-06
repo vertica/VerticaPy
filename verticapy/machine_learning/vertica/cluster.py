@@ -206,7 +206,7 @@ class KMeans(Clustering):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of  the model. The model is stored in the
         database.
     overwrite_model: bool, optional
@@ -270,7 +270,7 @@ class KMeans(Clustering):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_cluster: int = 8,
         init: Union[Literal["kmeanspp", "random"], list] = "kmeanspp",
@@ -397,7 +397,7 @@ class KPrototypes(KMeans):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the model. The model is stored in  the
         database.
     overwrite_model: bool, optional
@@ -460,7 +460,7 @@ class KPrototypes(KMeans):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_cluster: int = 8,
         init: Union[Literal["random"], list] = "random",
@@ -521,7 +521,7 @@ class BisectingKMeans(KMeans, Tree):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.  The  model is stored in
         the database.
     overwrite_model: bool, optional
@@ -620,7 +620,7 @@ class BisectingKMeans(KMeans, Tree):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         n_cluster: int = 8,
         bisection_iterations: int = 1,
@@ -814,7 +814,7 @@ class DBSCAN(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the model.  This is  not a  built-in
         model, so this name is  used to build the
         final table.
@@ -868,7 +868,7 @@ class DBSCAN(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         eps: float = 0.5,
         min_samples: int = 5,
@@ -1185,7 +1185,7 @@ class NearestCentroid(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, p: int = 2) -> None:
+    def __init__(self, name: str = None, p: int = 2) -> None:
         super().__init__(name)
         self.parameters = {"p": p}
 

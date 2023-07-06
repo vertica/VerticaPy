@@ -319,3 +319,7 @@ class TestLinearSVR:
         assert current_cursor().fetchone()[0] == "lsvr_from_vDF"
 
         model_test.drop()
+
+    def test_optional_name(self):
+        model = LinearSVR()
+        assert model.model_name is not None

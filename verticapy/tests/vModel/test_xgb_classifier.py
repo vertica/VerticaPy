@@ -604,3 +604,7 @@ class TestXGBC:
         assert result == 0.0
         model.drop()
         os.remove(path)
+
+    def test_optional_name(self):
+        model = XGBClassifier()
+        assert model.model_name is not None

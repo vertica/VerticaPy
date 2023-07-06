@@ -168,6 +168,11 @@ class VerticaModel(PlottingUtils):
         self.model_name = name
         self.overwrite_model = overwrite_model
 
+        if not self.model_name:
+            self.model_name = gen_tmp_name(
+                schema=conf.get_option("temp_schema"), name=self._model_type
+            )
+
     def __repr__(self) -> str:
         """
         Returns the model Representation.

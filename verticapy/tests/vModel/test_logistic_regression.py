@@ -443,3 +443,7 @@ class TestLogisticRegression:
         assert current_cursor().fetchone()[0] == "logreg_from_vDF"
 
         model_test.drop()
+
+    def test_optional_name(self):
+        model = LogisticRegression()
+        assert model.model_name is not None

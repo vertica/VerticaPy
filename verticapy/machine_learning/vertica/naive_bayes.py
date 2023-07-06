@@ -43,7 +43,7 @@ class NaiveBayes(MulticlassClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of  the  model.  The  model is stored
         in the database.
     overwrite_model: bool, optional
@@ -103,7 +103,7 @@ class NaiveBayes(MulticlassClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
         overwrite_model: bool = False,
         alpha: PythonNumber = 1.0,
         nbtype: Literal[
@@ -206,7 +206,7 @@ class BernoulliNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'bernoulli'"""
 
     def __init__(
-        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+        self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0
     ) -> None:
         super().__init__(name, overwrite_model, alpha, nbtype="bernoulli")
 
@@ -215,7 +215,7 @@ class CategoricalNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'categorical'"""
 
     def __init__(
-        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+        self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0
     ) -> None:
         super().__init__(name, overwrite_model, alpha, nbtype="categorical")
 
@@ -223,7 +223,7 @@ class CategoricalNB(NaiveBayes):
 class GaussianNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'gaussian'"""
 
-    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
         super().__init__(name, overwrite_model, nbtype="gaussian")
 
 
@@ -231,6 +231,6 @@ class MultinomialNB(NaiveBayes):
     """NaiveBayes with parameter nbtype = 'multinomial'"""
 
     def __init__(
-        self, name: str, overwrite_model: bool = False, alpha: float = 1.0
+        self, name: str = None, overwrite_model: bool = False, alpha: float = 1.0
     ) -> None:
         super().__init__(name, overwrite_model, alpha, nbtype="multinomial")

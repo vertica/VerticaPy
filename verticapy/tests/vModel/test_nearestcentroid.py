@@ -249,3 +249,7 @@ class TestNearestCentroid:
             0.6078234704112337
         )
         model_test.drop()
+
+    def test_optional_name(self):
+        model = NearestCentroid()
+        assert model.model_name is not None
