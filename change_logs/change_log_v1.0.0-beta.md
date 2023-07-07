@@ -26,7 +26,7 @@ This release contains some major changes, including:
     - VerticaPy now supports the KPrototypes algorithm.
     - New function for finding the feature importance for XGBoost models.
     - Classification metrics are now available for multiclass data/model using three methods: micro, macro, and weighted.
-    - - average_precision_score is another new metric that is added to classification metrics. 
+     - average_precision_score is another new metric that is added to classification metrics. 
 
 
 - `vDataFramesSQL` is deprecated. Now, `vDataFrame` can be used directly to create `vDataFrame`s from SQL. For example:
