@@ -38,3 +38,73 @@ def username() -> str:
         method="fetchfirstelem",
         print_time_sql=False,
     )
+
+def does_table_exist(table_name: str, schema: str) -> bool:
+    """
+    Checks if the specified table exists.
+
+    Parameters
+    ----------
+    table_name: str
+        The table name.
+    schema: str
+        Schema name.
+
+    Returns
+    -------
+    bool
+        False if the table doesn't exist,
+        or it exists but the user has no USAGE privilege on it.
+        True otherwise.
+    """
+    query = f"SELECT COUNT(*) FROM tables WHERE table_name='{table_name:}' AND table_schema='{schema}';"
+    result = _executeSQL(query, title="Does the table exist?", method="fetchfirstelem")
+    if result == 0: return False
+    return True
+
+def has_privileges(object_name: str, object_schema: str, privileges: list,
+                   raise_error: bool = False) -> bool:
+    """
+    Checks if the user has all the privileges on the object_schema.object_name object.
+
+    Parameters
+    ----------
+    object_name: str
+        The object name.
+    object_schema: str
+        Schema name.
+    privileges: list
+        The list of privileges.
+    raise_error: bool, optional
+        It raises an error if not all privileges are granted.
+
+    Returns
+    -------
+    bool
+        True if the user has been granted the list of privileges on the object.
+        False otherwise.
+    """
+    query = f"SELECT privileges_description FROM grants "
+            f"WHERE object_schema='{object_schema}' AND object_name='{object_name}' AND "
+            "grantee=current_user();"
+
+    try:
+        result = _executeSQL(query, title="Cheking privileges", method="fetchrow")
+        if result is None:
+            raise(f"There is no privilege on {object_schema}.{object_name}.")
+
+        result = result[0].lower()
+        granted_privileges = result.split(", ")
+        # there might be a '*' after a privilege name
+        for index, item in enumerate(granted_privileges):
+            if item[len(item) - 1] = '*':
+                granted_privileges[index] = item[0 : len(item) - 1]
+
+        for x in privileges:
+            x.lower()
+            if not (x in granted_privileges):
+                raise(f"The privilege {x} on {object_schema}.{object_name} is required.")
+    except Exception:
+        if raise_error:
+            raise("Cheking privileges falied")
+        return False

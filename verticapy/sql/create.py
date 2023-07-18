@@ -51,7 +51,6 @@ def create_schema(
             raise
         return False
 
-
 def create_table(
     table_name: str,
     dtype: dict,
@@ -67,7 +66,7 @@ def create_table(
 
     Parameters
     ----------
-    table_name: str, optional
+    table_name: str
         The final table name.
     dtype: dict
         Dictionary  of the user types. Each  key
