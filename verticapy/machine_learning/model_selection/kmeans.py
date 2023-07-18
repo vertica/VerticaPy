@@ -121,9 +121,24 @@ def best_k(
         if use_kprototype:
             if init == "kmeanspp":
                 init = "random"
-            model = KPrototypes(model_name, True, i, init, max_iter, tol, gamma)
+            model = KPrototypes(
+                name=model_name,
+                overwrite_model=True,
+                n_cluster=i,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                gama=gamma,
+            )
         else:
-            model = KMeans(model_name, True, i, init, max_iter, tol)
+            model = KMeans(
+                name=model_name,
+                overwrite_model=True,
+                n_cluster=i,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+            )
         model.fit(input_relation, X)
         score = model.elbow_score_
         if score > elbow_score_stop:
@@ -233,9 +248,30 @@ def elbow(
         if use_kprototype:
             if init == "kmeanspp":
                 init = "random"
+<<<<<<< HEAD
             model = KPrototypes(model_name, True, i, init, max_iter, tol, gamma)
         else:
             model = KMeans(model_name, True, i, init, max_iter, tol)
+=======
+            model = KPrototypes(
+                name=model_name,
+                overwrite_model=True,
+                n_cluster=i,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                gamma=gamma,
+            )
+        else:
+            model = KMeans(
+                name=model_name,
+                overwrite_model=True,
+                n_cluster=i,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+            )
+>>>>>>> 3ea95dacf29c1b9b9d07a0224051191ed0744d62
         model.fit(input_relation, X)
         elbow_score += [float(model.elbow_score_)]
         between_cluster_ss += [float(model.between_cluster_ss_)]
