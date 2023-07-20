@@ -51,6 +51,7 @@ def create_schema(
             raise
         return False
 
+
 def create_table(
     table_name: str,
     dtype: dict,

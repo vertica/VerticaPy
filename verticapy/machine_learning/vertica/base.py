@@ -344,8 +344,10 @@ class VerticaModel(PlottingUtils):
             )
 
         schema_name, model_name = schema_relation(self.model_name, do_quote=False)
-        query = f"SELECT model_id FROM models WHERE schema_name='{schema_name}' " \
-                f"AND model_name='{model_name}';"
+        query = (
+            f"SELECT model_id FROM models WHERE schema_name='{schema_name}' "
+            f"AND model_name='{model_name}';"
+        )
         model_id = _executeSQL(query, title="Finding model_id", method="fetchrow")
 
         if not model_id:

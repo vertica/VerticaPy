@@ -346,6 +346,7 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
     else:
         return (schema, relation)
 
+
 def format_schema_table(schema: str, table_name: str) -> str:
     """
     Returns the formatted relation. If the schema is not

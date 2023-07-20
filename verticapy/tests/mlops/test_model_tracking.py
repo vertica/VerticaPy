@@ -31,6 +31,7 @@ import verticapy.sql.sys as sys
 
 set_option("print_info", False)
 
+
 @pytest.fixture(scope="module")
 def winequality_vd():
     winequality = load_winequality()
@@ -42,27 +43,40 @@ class ExperimentBase:
     """
     A base clase for model tracking tests with different experiment types
     """
+
     def test_repr(self, experiment, representation):
         assert experiment.__repr__() == representation
         assert experiment.__str__() == representation
 
-    def test_creating_db_backed_experiment(self, vdf_data, new_model, predictors, response,
-                                           standard_metrics_0, ud_metrics, exp_type):
-        experiment = mt.vExperiment(experiment_name = "my_exp",
-                                    test_relation = vdf_data,
-                                    X = predictors,
-                                    y = response,
-                                    experiment_type = exp_type,
-                                    experiment_table = "my_exp_table")
+    def test_creating_db_backed_experiment(
+        self,
+        vdf_data,
+        new_model,
+        predictors,
+        response,
+        standard_metrics_0,
+        ud_metrics,
+        exp_type,
+    ):
+        experiment = mt.vExperiment(
+            experiment_name="my_exp",
+            test_relation=vdf_data,
+            X=predictors,
+            y=response,
+            experiment_type=exp_type,
+            experiment_table="my_exp_table",
+        )
 
         experiment.add_model(new_model, ud_metrics)
 
         assert experiment.model_name_list_[0] == new_model.model_name
         assert experiment.model_type_list_[0] == new_model._model_type
         assert experiment.parameters_[0] == new_model.get_params()
-        if (len(experiment.measured_metrics_[0]) > 0):
-            assert experiment.measured_metrics_[0][0] == pytest.approx(standard_metrics_0)
-        if (experiment.user_defined_metrics_[0]):
+        if len(experiment.measured_metrics_[0]) > 0:
+            assert experiment.measured_metrics_[0][0] == pytest.approx(
+                standard_metrics_0
+            )
+        if experiment.user_defined_metrics_[0]:
             assert experiment.user_defined_metrics_[0] == ud_metrics
         assert sys.does_table_exist("my_exp_table", "public")
 
@@ -70,14 +84,24 @@ class ExperimentBase:
         assert not new_model.does_model_exists(new_model.model_name)
         assert not sys.does_table_exist("my_exp_table", "public")
 
-    def test_creating_in_memory_experiment(self, vdf_data, new_model, predictors, response,
-                                           standard_metrics_0, ud_metrics, exp_type):
+    def test_creating_in_memory_experiment(
+        self,
+        vdf_data,
+        new_model,
+        predictors,
+        response,
+        standard_metrics_0,
+        ud_metrics,
+        exp_type,
+    ):
         with pytest.warns(Warning) as record:
-            experiment = mt.vExperiment(experiment_name = "my_exp",
-                                        test_relation = vdf_data,
-                                        X = predictors,
-                                        y = response,
-                                        experiment_type = exp_type)
+            experiment = mt.vExperiment(
+                experiment_name="my_exp",
+                test_relation=vdf_data,
+                X=predictors,
+                y=response,
+                experiment_type=exp_type,
+            )
         assert "not be backed up" in record[0].message.args[0]
 
         experiment.add_model(new_model, ud_metrics)
@@ -85,20 +109,26 @@ class ExperimentBase:
         assert experiment.model_name_list_[0] == new_model.model_name
         assert experiment.model_type_list_[0] == new_model._model_type
         assert experiment.parameters_[0] == new_model.get_params()
-        if (len(experiment.measured_metrics_[0]) > 0):
-            assert experiment.measured_metrics_[0][0] == pytest.approx(standard_metrics_0)
-        if (experiment.user_defined_metrics_[0]):
+        if len(experiment.measured_metrics_[0]) > 0:
+            assert experiment.measured_metrics_[0][0] == pytest.approx(
+                standard_metrics_0
+            )
+        if experiment.user_defined_metrics_[0]:
             assert experiment.user_defined_metrics_[0] == ud_metrics
 
         experiment.drop()
         assert not new_model.does_model_exists(new_model.model_name)
 
-    def test_loading_experiment_from_db(self, experiment, vdf_data, predictors, response):
-        new_experiment = mt.vExperiment(experiment_name =experiment.experiment_name,
-                                        test_relation = vdf_data,
-                                        X = predictors,
-                                        y = response,
-                                        experiment_table = experiment.experiment_table)
+    def test_loading_experiment_from_db(
+        self, experiment, vdf_data, predictors, response
+    ):
+        new_experiment = mt.vExperiment(
+            experiment_name=experiment.experiment_name,
+            test_relation=vdf_data,
+            X=predictors,
+            y=response,
+            experiment_table=experiment.experiment_table,
+        )
 
         assert new_experiment.experiment_type == experiment.experiment_type
 
@@ -114,56 +144,66 @@ class ExperimentBase:
         best_model = experiment.load_best_model(metric)
         assert best_model.model_name == best_model_name
 
+
 ######################### Regressor  ##############################
 
 from verticapy.learn.linear_model import LinearRegression
 from verticapy.learn.linear_model import Ridge
 from verticapy.learn.svm import LinearSVR
 
+
 @pytest.fixture(scope="module")
 def reg_model1(winequality_vd):
-    model = LinearRegression("reg_m1", solver = "Newton", max_iter = 5)
+    model = LinearRegression("reg_m1", solver="Newton", max_iter=5)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def reg_model2(winequality_vd):
-    model = LinearRegression("reg_m2", solver = "BFGS", max_iter = 5)
+    model = LinearRegression("reg_m2", solver="BFGS", max_iter=5)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def reg_model3(winequality_vd):
-    model = LinearSVR("reg_m3", max_iter = 5)
+    model = LinearSVR("reg_m3", max_iter=5)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
     yield model
     model.drop()
 
+
 @pytest.fixture(scope="module")
 def regressor_experiment(winequality_vd, reg_model1, reg_model2, reg_model3):
-    experiment = mt.vExperiment(experiment_name = "reg_exp",
-                                test_relation = winequality_vd,
-                                X = ["citric_acid", "residual_sugar", "alcohol"],
-                                y = "quality",
-                                experiment_type = "auto",
-                                experiment_table = "reg_exp_table")
+    experiment = mt.vExperiment(
+        experiment_name="reg_exp",
+        test_relation=winequality_vd,
+        X=["citric_acid", "residual_sugar", "alcohol"],
+        y="quality",
+        experiment_type="auto",
+        experiment_table="reg_exp_table",
+    )
 
     experiment.add_model(reg_model1)
     experiment.add_model(reg_model2)
@@ -182,34 +222,49 @@ class TestRegressorExperiment(ExperimentBase):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "quality"
 
-        model = Ridge("reg_m4", max_iter = 5, overwrite_model = True)
+        model = Ridge("reg_m4", max_iter=5, overwrite_model=True)
         model.fit(winequality_vd, predictors, response)
 
         standard_metrics_0 = 0.2198162448
         ud_metrics = None
 
-        super().test_creating_db_backed_experiment(winequality_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "regressor")
+        super().test_creating_db_backed_experiment(
+            winequality_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "regressor",
+        )
 
     def test_creating_in_memory_experiment(self, winequality_vd):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "quality"
 
-        model = Ridge("reg_m4", max_iter = 5, overwrite_model = True)
+        model = Ridge("reg_m4", max_iter=5, overwrite_model=True)
         model.fit(winequality_vd, predictors, response)
 
         standard_metrics_0 = 0.2198162448
         ud_metrics = None
 
-        super().test_creating_in_memory_experiment(winequality_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "regressor")
+        super().test_creating_in_memory_experiment(
+            winequality_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "regressor",
+        )
 
     def test_loading_experiment_from_db(self, regressor_experiment, winequality_vd):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "quality"
 
-        super().test_loading_experiment_from_db(regressor_experiment, winequality_vd,
-                                                predictors, response)
+        super().test_loading_experiment_from_db(
+            regressor_experiment, winequality_vd, predictors, response
+        )
 
     def test_list_models(self, regressor_experiment):
         list_of_models = ["reg_m1", "reg_m2", "reg_m3"]
@@ -217,7 +272,9 @@ class TestRegressorExperiment(ExperimentBase):
 
     def test_load_best_model(self, regressor_experiment):
         best_model_name = "reg_m1"
-        super().test_load_best_model(regressor_experiment, best_model_name, "mean_squared_error")
+        super().test_load_best_model(
+            regressor_experiment, best_model_name, "mean_squared_error"
+        )
 
 
 ######################### Binary  ##############################
@@ -226,50 +283,59 @@ from verticapy.learn.linear_model import LogisticRegression
 from verticapy.learn.svm import LinearSVC
 from verticapy.learn.tree import DecisionTreeClassifier
 
+
 @pytest.fixture(scope="module")
 def bin_model1(winequality_vd):
     model = LogisticRegression("bin_m1", solver="Newton", max_iter=5, penalty=None)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "good",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def bin_model2(winequality_vd):
-    model = LogisticRegression("bin_m2", solver = "BFGS", max_iter = 5, penalty=None)
+    model = LogisticRegression("bin_m2", solver="BFGS", max_iter=5, penalty=None)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "good",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def bin_model3(winequality_vd):
-    model = LinearSVC("bin_m3", max_iter = 5)
+    model = LinearSVC("bin_m3", max_iter=5)
     model.drop()
 
-    model.fit(winequality_vd,
+    model.fit(
+        winequality_vd,
         ["citric_acid", "residual_sugar", "alcohol"],
         "good",
     )
     yield model
     model.drop()
 
+
 @pytest.fixture(scope="module")
 def binary_experiment(winequality_vd, bin_model1, bin_model2, bin_model3):
-    experiment = mt.vExperiment(experiment_name = "bin_exp",
-                                test_relation = winequality_vd,
-                                X = ["citric_acid", "residual_sugar", "alcohol"],
-                                y = "good",
-                                experiment_type = "binary",
-                                experiment_table = "bin_exp_table")
+    experiment = mt.vExperiment(
+        experiment_name="bin_exp",
+        test_relation=winequality_vd,
+        X=["citric_acid", "residual_sugar", "alcohol"],
+        y="good",
+        experiment_type="binary",
+        experiment_table="bin_exp_table",
+    )
 
     experiment.add_model(bin_model1)
     experiment.add_model(bin_model2)
@@ -288,34 +354,53 @@ class TestBinaryExperiment(ExperimentBase):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "good"
 
-        model = DecisionTreeClassifier("bin_m4", max_features= "max", max_depth=3, overwrite_model = True)
+        model = DecisionTreeClassifier(
+            "bin_m4", max_features="max", max_depth=3, overwrite_model=True
+        )
         model.fit(winequality_vd, predictors, response)
 
         standard_metrics_0 = 0.7844518552
         ud_metrics = None
 
-        super().test_creating_db_backed_experiment(winequality_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "binary")
+        super().test_creating_db_backed_experiment(
+            winequality_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "binary",
+        )
 
     def test_creating_in_memory_experiment(self, winequality_vd):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "good"
 
-        model = DecisionTreeClassifier("reg_m4", max_features= "max", max_depth=3, overwrite_model = True)
+        model = DecisionTreeClassifier(
+            "reg_m4", max_features="max", max_depth=3, overwrite_model=True
+        )
         model.fit(winequality_vd, predictors, response)
 
         standard_metrics_0 = 0.7844518552
         ud_metrics = None
 
-        super().test_creating_in_memory_experiment(winequality_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "binary")
+        super().test_creating_in_memory_experiment(
+            winequality_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "binary",
+        )
 
     def test_loading_experiment_from_db(self, binary_experiment, winequality_vd):
         predictors = ["citric_acid", "residual_sugar", "alcohol"]
         response = "good"
 
-        super().test_loading_experiment_from_db(binary_experiment, winequality_vd,
-                                                predictors, response)
+        super().test_loading_experiment_from_db(
+            binary_experiment, winequality_vd, predictors, response
+        )
 
     def test_list_models(self, binary_experiment):
         list_of_models = ["bin_m1", "bin_m2", "bin_m3"]
@@ -332,55 +417,67 @@ from verticapy.datasets import load_iris
 from verticapy.learn.tree import DecisionTreeClassifier
 from verticapy.learn.ensemble import RandomForestClassifier
 
+
 @pytest.fixture(scope="module")
 def iris_vd():
     iris = load_iris()
     yield iris
     drop(name="public.iris")
 
+
 @pytest.fixture(scope="module")
 def multi_model1(iris_vd):
     model = DecisionTreeClassifier("multi_m1", max_features="max", max_depth=3)
     model.drop()
 
-    model.fit(iris_vd,
+    model.fit(
+        iris_vd,
         ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
         "Species",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def multi_model2(iris_vd):
     model = DecisionTreeClassifier("multi_m2", max_features="max", max_depth=2)
     model.drop()
 
-    model.fit(iris_vd,
+    model.fit(
+        iris_vd,
         ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
         "Species",
     )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def multi_model3(iris_vd):
-    model = RandomForestClassifier("multi_m3", max_features="max", max_depth=3, n_estimators=3, sample=1)
+    model = RandomForestClassifier(
+        "multi_m3", max_features="max", max_depth=3, n_estimators=3, sample=1
+    )
     model.drop()
 
-    model.fit(iris_vd,
+    model.fit(
+        iris_vd,
         ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
         "Species",
     )
     yield model
     model.drop()
 
+
 @pytest.fixture(scope="module")
 def multi_experiment(iris_vd, multi_model1, multi_model2, multi_model3):
-    experiment = mt.vExperiment(experiment_name = "multi_exp",
-                                test_relation = iris_vd,
-                                X = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-                                y = "Species",
-                                experiment_table = "multi_exp_table")
+    experiment = mt.vExperiment(
+        experiment_name="multi_exp",
+        test_relation=iris_vd,
+        X=["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+        y="Species",
+        experiment_table="multi_exp_table",
+    )
 
     experiment.add_model(multi_model1)
     experiment.add_model(multi_model2)
@@ -399,34 +496,53 @@ class TestMultiExperiment(ExperimentBase):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = "Species"
 
-        model = DecisionTreeClassifier("multi_m4", max_features= "max", max_depth=3, overwrite_model = True)
+        model = DecisionTreeClassifier(
+            "multi_m4", max_features="max", max_depth=3, overwrite_model=True
+        )
         model.fit(iris_vd, predictors, response)
 
         standard_metrics_0 = 0.9822222222
         ud_metrics = None
 
-        super().test_creating_db_backed_experiment(iris_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "multi")
+        super().test_creating_db_backed_experiment(
+            iris_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "multi",
+        )
 
     def test_creating_in_memory_experiment(self, iris_vd):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = "Species"
 
-        model = DecisionTreeClassifier("multi_m4", max_features= "max", max_depth=3, overwrite_model = True)
+        model = DecisionTreeClassifier(
+            "multi_m4", max_features="max", max_depth=3, overwrite_model=True
+        )
         model.fit(iris_vd, predictors, response)
 
         standard_metrics_0 = 0.9822222222
         ud_metrics = None
 
-        super().test_creating_in_memory_experiment(iris_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "multi")
+        super().test_creating_in_memory_experiment(
+            iris_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "multi",
+        )
 
     def test_loading_experiment_from_db(self, multi_experiment, iris_vd):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = "Species"
 
-        super().test_loading_experiment_from_db(multi_experiment, iris_vd,
-                                                predictors, response)
+        super().test_loading_experiment_from_db(
+            multi_experiment, iris_vd, predictors, response
+        )
 
     def test_list_models(self, multi_experiment):
         list_of_models = ["multi_m1", "multi_m2", "multi_m3"]
@@ -434,48 +550,64 @@ class TestMultiExperiment(ExperimentBase):
 
     def test_load_best_model(self, multi_experiment):
         best_model_name = "multi_m1"
-        super().test_load_best_model(multi_experiment, best_model_name, "weighted_precision")
+        super().test_load_best_model(
+            multi_experiment, best_model_name, "weighted_precision"
+        )
 
 
 ######################### Clustering  ##############################
 from verticapy.learn.cluster import KMeans
 from verticapy.learn.cluster import BisectingKMeans
 
+
 @pytest.fixture(scope="module")
 def clustering_model1(iris_vd):
     model = KMeans("clustering_m1", n_cluster=2, max_iter=5)
     model.drop()
 
-    model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"])
+    model.fit(
+        iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
+    )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def clustering_model2(iris_vd):
     model = KMeans("clustering_m2", n_cluster=3, max_iter=5)
     model.drop()
 
-    model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"])
+    model.fit(
+        iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
+    )
     yield model
     model.drop()
+
 
 @pytest.fixture(scope="module")
 def clustering_model3(iris_vd):
     model = BisectingKMeans("clustering_m3", n_cluster=3, max_iter=5)
     model.drop()
 
-    model.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"])
+    model.fit(
+        iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
+    )
     yield model
     model.drop()
 
+
 @pytest.fixture(scope="module")
-def clustering_experiment(iris_vd, clustering_model1, clustering_model2, clustering_model3):
-    experiment = mt.vExperiment(experiment_name = "clustering_exp",
-                                test_relation = iris_vd,
-                                X = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
-                                y = None,
-                                experiment_type = "auto",
-                                experiment_table = "clustering_exp_table")
+def clustering_experiment(
+    iris_vd, clustering_model1, clustering_model2, clustering_model3
+):
+    experiment = mt.vExperiment(
+        experiment_name="clustering_exp",
+        test_relation=iris_vd,
+        X=["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+        y=None,
+        experiment_type="auto",
+        experiment_table="clustering_exp_table",
+    )
 
     experiment.add_model(clustering_model1, {"metric1": 1.1, "metric2": 2.1})
     experiment.add_model(clustering_model2, {"metric1": 1.2, "metric2": 2.2})
@@ -487,41 +619,58 @@ def clustering_experiment(iris_vd, clustering_model1, clustering_model2, cluster
 
 class TestClusteringExperiment(ExperimentBase):
     def test_repr(self, clustering_experiment):
-        representation = "<experiment_name: clustering_exp, experiment_type: clustering>"
+        representation = (
+            "<experiment_name: clustering_exp, experiment_type: clustering>"
+        )
         super().test_repr(clustering_experiment, representation)
 
     def test_creating_db_backed_experiment(self, iris_vd):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = None
 
-        model = KMeans("clustering_m4", n_cluster=3, max_iter=5, overwrite_model = True)
+        model = KMeans("clustering_m4", n_cluster=3, max_iter=5, overwrite_model=True)
         model.fit(iris_vd, predictors)
 
         standard_metrics_0 = None
         ud_metrics = {"metric1": 1.1, "metric2": 2.1}
 
-        super().test_creating_db_backed_experiment(iris_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "clustering")
+        super().test_creating_db_backed_experiment(
+            iris_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "clustering",
+        )
 
     def test_creating_in_memory_experiment(self, iris_vd):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = None
 
-        model = KMeans("clustering_m4", n_cluster=3, max_iter=5, overwrite_model = True)
+        model = KMeans("clustering_m4", n_cluster=3, max_iter=5, overwrite_model=True)
         model.fit(iris_vd, predictors)
 
         standard_metrics_0 = None
         ud_metrics = {"metric1": 1.1, "metric2": 2.1}
 
-        super().test_creating_in_memory_experiment(iris_vd, model, predictors, response,
-                                                   standard_metrics_0, ud_metrics, "clustering")
+        super().test_creating_in_memory_experiment(
+            iris_vd,
+            model,
+            predictors,
+            response,
+            standard_metrics_0,
+            ud_metrics,
+            "clustering",
+        )
 
     def test_loading_experiment_from_db(self, clustering_experiment, iris_vd):
         predictors = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
         response = None
 
-        super().test_loading_experiment_from_db(clustering_experiment, iris_vd,
-                                                predictors, response)
+        super().test_loading_experiment_from_db(
+            clustering_experiment, iris_vd, predictors, response
+        )
 
     def test_list_models(self, clustering_experiment):
         list_of_models = ["clustering_m1", "clustering_m2", "clustering_m3"]
