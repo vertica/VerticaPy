@@ -15,6 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import warnings
+import numpy as np
+import uuid
 from typing import Literal
 
 from verticapy._typing import (
@@ -28,6 +30,15 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 from verticapy.machine_learning.vertica.model_management import load_model
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
+from verticapy.plotting._utils import PlottingUtils
+from verticapy._typing import PlottingObject
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._sys import _executeSQL
+
+from verticapy._utils._sql._format import (
+    quote_ident,
+    schema_relation
+)
 
 from verticapy.machine_learning.metrics.classification import (
     roc_auc_score,
@@ -37,6 +48,8 @@ from verticapy.machine_learning.metrics.classification import (
     recall_score,
     f1_score,
 )
+
+import verticapy.sql.sys as sys
 
 class vExperiment(PlottingUtils):
     """
@@ -94,6 +107,11 @@ class vExperiment(PlottingUtils):
         The list of metrics to be used for evaluating each model.
         This list will be determined based on the value of
         experiment_type at the time of object creation.
+        Each metric is paired with 1 or -1 where 1 indicates a
+        positive correlationthe between the value of the metric
+        positive correlationthe between the value of the metric
+        and the quality of the model. In contrast, number -1
+        indicates a negative correlation.
     user_defined_metrics_: list
         The list of dictionaries of user-defined metrics.
     """
@@ -105,17 +123,23 @@ class vExperiment(PlottingUtils):
                            "measured_metrics" : "varchar(2048)",
                            "user_defined_metrics" : "varchar(2048)"}
 
-    _regressor_metrics = ["explained_variance", "max_error", "median_absolute_error",
-                          "mean_absolute_error", "mean_squared_error", "root_mean_squared_error",
-                          "r2", "r2_adj", "aic", "bic"]
-    _binary_metrics = ["auc", "prc_auc", "accuracy", "log_loss", "precision", "recall", "f1_score",
-                       "mcc", "informedness", "markedness", "csi"]
-    _multi_metrics = ["micro_roc_auc", "micro_prc_auc", "micro_accuracy",
-                      "micro_precision", "micro_recall", "micro_f1_score",
-                      "macro_roc_auc", "macro_prc_auc", "macro_accuracy",
-                      "macro_precision", "macro_recall", "macro_f1_score",
-                      "weighted_roc_auc", "weighted_prc_auc", "weighted_accuracy",
-                      "weighted_precision", "weighted_recall", "weighted_f1_score"]
+    _regressor_metrics = [("explained_variance",1), ("max_error",-1),
+                          ("median_absolute_error",-1), ("mean_absolute_error",-1),
+                          ("mean_squared_error",-1), ("root_mean_squared_error",-1),
+                          ("r2",1), ("r2_adj",1), ("aic",-1), ("bic",-1)]
+
+    _binary_metrics = [("auc",1), ("prc_auc",1), ("accuracy",1), ("log_loss",-1),
+                       ("precision",1), ("recall",1), ("f1_score",1),
+                       ("mcc",1), ("informedness",1), ("markedness",1), ("csi",-1)]
+
+    # TODO: commented metrics should be returned back when the problem of roc and prc is resolved
+    _multi_metrics = [
+        #("micro_roc_auc",1), ("micro_prc_auc",1),
+        ("micro_accuracy",1), ("micro_precision",1), ("micro_recall",1), ("micro_f1_score",1),
+        #("macro_roc_auc",1), ("macro_prc_auc",1),
+        ("macro_accuracy",1), ("macro_precision",1), ("macro_recall",1), ("macro_f1_score",1),
+        #("weighted_roc_auc",1), ("weighted_prc_auc",1),
+        ("weighted_accuracy",1), ("weighted_precision",1), ("weighted_recall",1), ("weighted_f1_score",1)]
 
     @save_verticapy_logs
     def __init__(
@@ -147,47 +171,49 @@ class vExperiment(PlottingUtils):
         if self.experiment_table:
             self._load_or_create_experiment_table()
         else:
-            warning_message = "The experiment will not be backed up in the database "
-            "when experiment_table is not specified."
+            warning_message = "The experiment will not be backed up in the database " \
+                              "when experiment_table is not specified."
             warnings.warn(warning_message, Warning)
 
-        if (self.experiment_type == "clustering") or
-           (self.experiment_type == "auto" and not (test_relation and X and y)):
-            self.experiment_type == "clustering"
+        if (self.experiment_type == "clustering" or
+            (self.experiment_type == "auto" and (test_relation is None or
+                                                 X is None or
+                                                 y is None))):
+            self.experiment_type = "clustering"
             return
 
         if not (self.test_relation and X and y):
-            raise("test_relation, X, and y must be specified except for experiments of type clustering")
+            raise ValueError("test_relation, X, and y must be specified except for experiments of type clustering")
 
         if not isinstance(test_relation, vDataFrame):
             self.test_relation = vDataFrame(test_relation)
 
-        columns = self.test_relation[y].get_columns()
-        if not (all(x in columns for x in X)):
-            raise("not all columns of X are available in test_relation")
-        if not (y in columns):
-            raise("y is not available in test_relation")
+        columns = self.test_relation.get_columns()
+        if not (all(quote_ident(x) in columns for x in X)):
+            raise ValueError("not all columns of X are available in test_relation")
+        if not (quote_ident(y) in columns):
+            raise ValueError("y is not available in test_relation")
 
         if self.experiment_type == "auto":
             # finding experiment_type from the content of test_relation
             if self._is_regressor():
                 self.experiment_type = "regressor"
-                self.metrics_ = _regressor_metrics
+                self.metrics_ = self._regressor_metrics
             elif self._is_binary():
                 self.experiment_type = "binary"
-                self.metrics_ = _binary_metrics
+                self.metrics_ = self._binary_metrics
             else:
                 self.experiment_type = "multi"
-                self.metrics_ = _multi_metrics
+                self.metrics_ = self._multi_metrics
 
         elif self.experiment_type == "regressor":
             self._is_regressor(raise_error=True)
-            self.metrics_ = _regressor_metrics
+            self.metrics_ = self._regressor_metrics
         elif self.experiment_type == "binary":
             self._is_binary(raise_error=True)
-            self.metrics_ = _binary_metrics
+            self.metrics_ = self._binary_metrics
         elif self.experiment_type == "multi":
-            self.metrics_ = _multi_metrics
+            self.metrics_ = self._multi_metrics
         else:
             raise ValueError(
                 f"Parameter 'experiment_type` must be in auto|binary|multi|regressor|clustering. "
@@ -224,8 +250,8 @@ class vExperiment(PlottingUtils):
         if metrics:
             # No user defined metric should be named the same as a standard one.
             # Besides, their keys must be string and their values numeric
-            for ud_metric in metrics.key():
-                if ud_metric in self.metrics_:
+            for ud_metric in metrics.keys():
+                if (ud_metric,1) in self.metrics_ or (ud_metric,-1) in self.metrics_:
                     raise ValueError(f"A user defined metric must not be named the same as " \
                                      f"a standard metric '{ud_metric}'.")
                 if not isinstance(ud_metric, str):
@@ -251,44 +277,61 @@ class vExperiment(PlottingUtils):
                 report = model.report()
                 measured_metrics = report.values["value"]
             else: # self.experiment_type == "multi"
-                metric_fucntion = ["micro", "macro", "weighted"]
-                # TODO: calculating y_score and store it in a temp table will help performance
+                average_methods = ["micro", "macro", "weighted"]
+                # calculating y_score and store it in a temp table will help performance
+                test_vdf = self.test_relation.copy()
+                model.predict(vdf=test_vdf, X=self.X, name="y_score")
+                prediction_vdf = test_vdf.select([self.y, "y_score"])
+                temp_table_name = "temp" + str(uuid.uuid1()).replace("-", "")
+                prediction_vdf.to_db(name=temp_table_name, relation_type="local", inplace=True)
+
                 for avg_method in average_methods:
+                    # TODO: roc_auc_score and prc_auc_score are commented out until
+                    # their problem is resolved
+                    """
                     m_metric = roc_auc_score(y_true = self.y,
-                                             y_score = model.deploySQL(),
-                                             input_relation = self.test_relation,
-                                             average = avg_method)
+                                             y_score = "y_score",
+                                             input_relation = prediction_vdf,
+                                             average = avg_method,
+                                             labels = model.classes_)
                     measured_metrics.append(m_metric)
 
                     m_metric = prc_auc_score(y_true = self.y,
-                                             y_score = model.deploySQL(),
-                                             input_relation = self.test_relation,
-                                             average = avg_method)
+                                             y_score = "y_score",
+                                             input_relation = prediction_vdf,
+                                             average = avg_method,
+                                             labels = model.classes_)
                     measured_metrics.append(m_metric)
-
+                    """
                     m_metric = accuracy_score(y_true = self.y,
-                                              y_score = model.deploySQL(),
-                                              input_relation = self.test_relation,
-                                              average = avg_method)
+                                              y_score = "y_score",
+                                              input_relation = prediction_vdf,
+                                              average = avg_method,
+                                              labels = model.classes_)
                     measured_metrics.append(m_metric)
 
                     m_metric = precision_score(y_true = self.y,
-                                               y_score = model.deploySQL(),
-                                               input_relation = self.test_relation,
-                                               average = avg_method)
+                                               y_score = "y_score",
+                                               input_relation = prediction_vdf,
+                                               average = avg_method,
+                                               labels = model.classes_)
                     measured_metrics.append(m_metric)
 
                     m_metric = recall_score(y_true = self.y,
-                                            y_score = model.deploySQL(),
-                                            input_relation = self.test_relation,
-                                            average = avg_method)
+                                            y_score = "y_score",
+                                            input_relation = prediction_vdf,
+                                            average = avg_method,
+                                            labels = model.classes_)
                     measured_metrics.append(m_metric)
 
                     m_metric = f1_score(y_true = self.y,
-                                        y_score = model.deploySQL(),
-                                        input_relation = self.test_relation,
-                                        average = avg_method)
+                                        y_score = "y_score",
+                                        input_relation = prediction_vdf,
+                                        average = avg_method,
+                                        labels = model.classes_)
                     measured_metrics.append(m_metric)
+
+                drop(name=temp_table_name, method="table")
 
         # the model will not be added if any of the above steps fail
         self.model_name_list_.append(model.model_name)
@@ -309,7 +352,7 @@ class vExperiment(PlottingUtils):
             metric_values = []
             for values_list in self.measured_metrics_:
                 metric_values.append(values_list[index])
-            values_table[metric] = metric_values
+            values_table[metric[0]] = metric_values
 
         values_table["user_defined_metrics"] = self.user_defined_metrics_
 
@@ -322,24 +365,30 @@ class vExperiment(PlottingUtils):
         max_value = float('-inf')
         max_index = -1
 
-        if metric in self.metrics_:
+        if (metric,1) in self.metrics_ or (metric,-1) in self.metrics_:
             # search the list of the standard metrics for the requested metric
-            metric_index = self.metrics_.index(metric)
+            if (metric,1) in self.metrics_:
+                metric_index = self.metrics_.index((metric,1))
+                metric_sign = 1
+            else:
+                metric_index = self.metrics_.index((metric,-1))
+                metric_sign = -1
 
-            for index, item in enumerate(sef.measured_metrics_):
-                if item[metric_index] > max_value:
+            for index, item in enumerate(self.measured_metrics_):
+                if (item[metric_index] * metric_sign) > max_value:
                     max_value = item[metric_index]
                     max_index = index
         else:
             # search the list of user defined metrics
             for index, item in enumerate(self.user_defined_metrics_):
-                if metric in item.keys():
+                if item is not None and metric in item.keys():
                     if item[metric] > max_value:
                         max_value = item[metric]
                         max_index = index
 
         if max_index == -1:
-            raise ValueError(f"Cannot find a metric named {metric}")
+            raise ValueError(f"Cannot find a metric named {metric} for " \
+                             f"this experiment of type {self.experiment_type}.")
 
         best_model = load_model(name = self.model_name_list_[max_index])
         return best_model
@@ -347,8 +396,7 @@ class vExperiment(PlottingUtils):
     def plot(self,
              parameter: str,
              metric: str,
-             show: bool = True,
-             chart: Optional[PlottingObject] = None,
+             chart: PlottingObject = None,
              **style_kwargs,
          ) -> PlottingObject:
         """
@@ -361,8 +409,6 @@ class vExperiment(PlottingUtils):
         metric: str
             The name of metric used in measuring the quality of the models
             in the experiment
-        show: bool, optional
-            If set to True, the Plotting object will be returned.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -376,18 +422,21 @@ class vExperiment(PlottingUtils):
         parameter_list = []
         metric_list = []
 
-        if metric in self.metrics_:
+        if (metric,1) in self.metrics_ or (metric,-1) in self.metrics_:
             # it is a standard metric
-            metric_index = self.metrics_.index(metric)
+            if (metric,1) in self.metrics_:
+                metric_index = self.metrics_.index((metric,1))
+            else:
+                metric_index = self.metrics_.index((metric,-1))
 
-            for model_index, item in enumerate(sef.measured_metrics_):
-                if parameter in self.parameters_[model_index].key():
+            for model_index, item in enumerate(self.measured_metrics_):
+                if parameter in self.parameters_[model_index].keys():
                     parameter_list.append(self.parameters_[model_index][parameter])
                     metric_list.append(item[metric_index])
         else:
             # it is a user defined metric
             for model_index, item in enumerate(self.user_defined_metrics_):
-                if (metric in item.keys()) and (parameter in self.parameters_[model_index].key()):
+                if (metric in item.keys()) and (parameter in self.parameters_[model_index].keys()):
                     parameter_list.append(self.parameters_[model_index][parameter])
                     metric_list.append(item[metric])
 
@@ -395,26 +444,18 @@ class vExperiment(PlottingUtils):
             raise ValueError("Could not find any datapoint for the provided pair of " \
                              "(parameter, metric) = ({parameter}, {metric}).")
 
-        vml = get_vertica_mllib()
+        data = {"X": np.concatenate(parameter_list, metric_list), "s": None, "c": None}
+        layout = {"columns": ["parameter", "metric"], "size": None, "c": None, "has_category": False,
+                  "has_cmap": False, "has_size": False}
 
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ScatterPlot",
             chart=chart,
             style_kwargs=style_kwargs,
         )
-        # TODO: I'm not sure how to work with vpy_plt
-        """
-        return vpy_plt.ScatterPlot(
-            vdf=self,
-            columns=columns,
-            by=by,
-            cmap_col=cmap_col,
-            size=size,
-            max_cardinality=max_cardinality,
-            cat_priority=cat_priority,
-            max_nb_points=max_nb_points,
-        ).draw(**kwargs)
-        """
+
+        return vpy_plt.ScatterPlot(data = data, layout = layout).draw(**kwargs)
+
     def drop(self, keeping_models: list = None) -> bool:
         """
         Drops all models of the experiment except those in the keeping_models list.
@@ -422,7 +463,7 @@ class vExperiment(PlottingUtils):
         experiment_table if it is specified.
         """
         for model in self.model_name_list_:
-            if not model in keeping_models:
+            if (keeping_models is None) or (not model in keeping_models):
                 drop(name = model, method = "model")
 
         self.model_name_list_.clear()
@@ -443,31 +484,33 @@ class vExperiment(PlottingUtils):
         """
         Returns the model Representation.
         """
-        return f"experiment_name: {self.experiment_name}, experiment_type: {self.experiment_type}"
+        return f"<experiment_name: {self.experiment_name}, experiment_type: {self.experiment_type}>"
 
     def _load_or_create_experiment_table(self):
         """
         Loads previous experiment info from the experiment table if it exists;
         creates the table otherwise.
         """
-        schema, relation = schema_relation(self.experiment_table)
-        if does_table_exist(relation, schema):
+        schema, relation = schema_relation(self.experiment_table, do_quote = False)
+        if sys.does_table_exist(relation, schema):
             # does the relation qualify to be an experiment table
             self._evaluate_experiment_table(table_name=relation, schema=schema)
 
             # load previously saved experiment
-            self._load_experiment_table(input_relation=relation, schema=schema)
+            self._load_experiment_table(table_name=relation, schema=schema)
         else:
             # create the experiment table
-            create_table(table_name=relation, schema=schema, dtype=_experiment_columns,
-                         temporary_local_table=False, raise_error=True)
+            create_table(table_name = quote_ident(relation),
+                         schema = quote_ident(schema),
+                         dtype=self._experiment_columns,
+                         temporary_local_table = False, raise_error = True)
 
     def _evaluate_experiment_table(self, table_name: str, schema: str) -> None:
         """
         Evaluates if schema.table_name meets the criteria of being an experiment table.
         """
         # does user has required privileges?
-        has_privileges(table_name, schema, ["SELECT", "INSERT", "DELETE"], raise_error=True)
+        sys.has_privileges(table_name, schema, ["SELECT", "INSERT", "DELETE"], raise_error=True)
 
         # does the table have the expected columns?
         vdf = vDataFrame(input_relation=table_name, schema=schema)
@@ -475,9 +518,10 @@ class vExperiment(PlottingUtils):
         for index, item in enumerate(table_columns):
             table_columns[index] = item.lower()
 
-        if sorted(_experiment_columns) != sorted(table_columns) :
-            raise ValueError(f"Table {schema}.{table_name} does not have " \
-                             "the required set of columns to be an experiment table.")
+        for column in self._experiment_columns:
+            if not quote_ident(column) in table_columns :
+                raise ValueError(f"Table {schema}.{table_name} does not have the " \
+                                 f"{column} column required for an experiment table.")
 
     def _load_experiment_table(self, table_name: str, schema: str) -> None:
         """
@@ -485,7 +529,7 @@ class vExperiment(PlottingUtils):
         """
         if self.experiment_type == "auto":
             # trying to find the type from the experiment table
-            query_type = f"SELECT experiment_type FROM {schema}.{table_name} "
+            query_type = f"SELECT experiment_type FROM {schema}.{table_name} " \
                          f"WHERE experiment_name='{self.experiment_name}' LIMIT 1;"
             exp_type = _executeSQL(query_type, title="finding experiment type", method="fetchrow")
             if not exp_type:
@@ -493,11 +537,11 @@ class vExperiment(PlottingUtils):
                 return
             self.experiment_type = exp_type[0]
 
-        query_load = f"SELECT model_id, parameters, measured_metrics, user_defined_metrics "
-                     f"FROM {schema}.{table_name} WHERE experiment_name='{self.experiment_name}' "
+        query_load = f"SELECT model_id, parameters, measured_metrics, user_defined_metrics " \
+                     f"FROM {schema}.{table_name} WHERE experiment_name='{self.experiment_name}' " \
                      f"AND experiment_type='{self.experiment_type}';"
         ts = TableSample.read_sql(query_load, title="loading experiment table")
-        if (len(tc.values["model_id"]) == 0):
+        if (len(ts.values["model_id"]) == 0):
             # there is no history
             return
 
@@ -506,12 +550,15 @@ class vExperiment(PlottingUtils):
             res = _executeSQL(query_model, title="finding model", method="fetchrow")
             if res:
                 try:
+                    model_name = res[0] + "." + res[1]
+                    model_object = load_model(name = model_name)
                     parameters = eval(ts.values["parameters"][index])
                     measured_metrics = eval(ts.values["measured_metrics"][index])
                     ud_metrics = eval(ts.values["user_defined_metrics"][index])
                     # the model will be ignored if any of the above eval operations fails
-                    self.model_name_list_.append(res[0] + "." + res[1])
+                    self.model_name_list_.append(model_name)
                     self.model_id_list_.append(model_id)
+                    self.model_type_list_.append(model_object._model_type)
                     self.parameters_.append(parameters)
                     self.measured_metrics_.append(measured_metrics)
                     self.user_defined_metrics_.append(ud_metrics)
@@ -557,7 +604,7 @@ class vExperiment(PlottingUtils):
         bool
             True if test_relation is suitable; False otherwise.
         """
-        if sorted(self.test_relation[y].distinct()) != [0, 1]:
+        if sorted(self.test_relation[self.y].distinct()) != [0, 1]:
             if raise_error:
                 raise ValueError("In an experiment of type binary,"
                                  " the y column must have only two distinct values")
@@ -574,9 +621,16 @@ class vExperiment(PlottingUtils):
         user_id = _executeSQL("SELECT user_id FROM users WHERE user_name=current_user();",
                               title = "finding user_id", method="fetchfirstelem")
 
-        inser_query = f"INSERT INTO {self.experiment_table} VALUES ('{self.experiment_name}',"
-                      f"'{self.experiment_type}', {model_id}, {user_id},"
-                      f"'{model_parameters.__str__()}', '{measured_metrics.__str__()}',"
-                      f"'{user_defined_metrics.__str__()}');"
+        experiment_table = self.experiment_table.replace("'", "''")
+        experiment_name = self.experiment_name.replace("'", "''")
+        experiment_type = self.experiment_type.replace("'", "''")
+        model_parameters_str = (model_parameters.__str__()).replace("'", "''")
+        measured_metrics_str = (measured_metrics.__str__()).replace("'", "''")
+        user_defined_metrics_str = (user_defined_metrics.__str__()).replace("'", "''")
+
+        inser_query = f"INSERT INTO {experiment_table} VALUES ('{experiment_name}'," \
+                      f"'{experiment_type}', {model_id}, {user_id}," \
+                      f"'{model_parameters_str}', '{measured_metrics_str}'," \
+                      f"'{user_defined_metrics_str}');"
         _executeSQL(inser_query, title = "inserting experiment info")
         _executeSQL("COMMIT;", title = "commiting the insert of experiment info")
