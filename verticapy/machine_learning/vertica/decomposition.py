@@ -400,9 +400,13 @@ class PCA(Decomposition):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_components: int, optional
         The  number of  components to keep in the model.
         If  this value  is not provided,  all components
@@ -435,10 +439,6 @@ class PCA(Decomposition):
         return "APPLY_INVERSE_PCA"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
         return "DECOMPOSITION"
 
@@ -456,13 +456,13 @@ class PCA(Decomposition):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         n_components: int = 0,
         scale: bool = False,
         method: Literal["lapack"] = "lapack",
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_components": n_components,
             "scale": scale,
@@ -515,9 +515,13 @@ class MCA(PCA):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.  The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     """
 
     # Properties.
@@ -543,10 +547,6 @@ class MCA(PCA):
         return "APPLY_INVERSE_PCA"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
         return "DECOMPOSITION"
 
@@ -558,8 +558,8 @@ class MCA(PCA):
 
     @check_minimum_version
     @save_verticapy_logs
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
+    def __init__(self, name: str = None, overwrite_model: bool = False) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {}
 
     # Plotting Methods.
@@ -761,9 +761,13 @@ class SVD(Decomposition):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_components: int, optional
         The number  of components to keep in the model.
         If this value  is not provided,  all components
@@ -792,10 +796,6 @@ class SVD(Decomposition):
         return "APPLY_INVERSE_SVD"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["DECOMPOSITION"]:
         return "DECOMPOSITION"
 
@@ -812,10 +812,13 @@ class SVD(Decomposition):
     @check_minimum_version
     @save_verticapy_logs
     def __init__(
-        self, name: str, n_components: int = 0, method: Literal["lapack"] = "lapack"
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_components: int = 0,
+        method: Literal["lapack"] = "lapack",
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_components": n_components,
             "method": str(method).lower(),

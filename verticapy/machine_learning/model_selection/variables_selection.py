@@ -413,7 +413,7 @@ def stepwise(
     """
     X = format_type(X, dtype=list)
     assert len(X) >= 1, ValueError("Vector X must have at least one element.")
-    if not conf.get_option("overwrite_model"):
+    if not estimator.overwrite_model:
         estimator._is_already_stored(raise_error=True)
     avg = _executeSQL(
         f"SELECT /*+LABEL('stepwise')*/ AVG({y}) FROM {input_relation}",

@@ -514,3 +514,7 @@ class TestXGBR:
         assert result == pytest.approx(0.0, abs=1.0e-11)
         model.drop()
         os.remove(path)
+
+    def test_optional_name(self):
+        model = XGBRegressor()
+        assert model.model_name is not None

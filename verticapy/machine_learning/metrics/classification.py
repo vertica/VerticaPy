@@ -1842,6 +1842,129 @@ def best_cutoff(
 
 
 @save_verticapy_logs
+def average_precision_score(
+    y_true: str,
+    y_score: Union[str, ArrayLike],
+    input_relation: SQLRelation,
+    average: Literal[None, "micro", "macro", "scores", "weighted"] = None,
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+    nbins: int = 10000,
+) -> float:
+    """
+    Computes the Average precision Score.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str |  ArrayLike
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can
+        be a view, table, or a customized relation (if
+        an alias is used at the end of the relation).
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+            micro    : positive  and   negative  values
+                       globally.
+            macro    : average  of  the  score of  each
+                       class.
+            scores   : scores  for   all  the  classes.
+            weighted : weighted average of the score of
+                       each class.
+        If  empty,  the  behaviour  is  similar to  the
+        'scores' option.
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        To  compute  the metric, one of  the  response
+        column classes must be the positive class. The
+        parameter 'pos_label' represents this class.
+    nbins: int, optional
+        An integer value that determines the number of
+        decision boundaries.
+        Decision boundaries  are set at equally spaced
+        intervals between 0 and 1, inclusive.
+        Greater  values  for nbins give  more  precise
+        estimations  of the AUC,  but can  potentially
+        decrease  performance.  The  maximum value  is
+        999,999.  If negative,  the  maximum value  is
+        used.
+
+    Returns
+    -------
+    float
+        score.
+    """
+    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
+        recall, precision = _compute_function_metrics(
+            y_true=y_true,
+            y_score=_get_yscore(y_score, labels, pos_label),
+            input_relation=input_relation,
+            pos_label=pos_label,
+            nbins=nbins,
+            fun_sql_name="prc",
+        )[1:]
+        return -np.sum(np.diff(recall) * np.array(precision)[:-1])
+    else:
+        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
+    if average == "micro":
+        _, recall, precision = _compute_micro_multiclass_metric(
+            y_true, y_score, input_relation, labels, nbins, fun_sql_name="prc"
+        )
+        return -np.sum(np.diff(recall) * np.array(precision)[:-1])
+    elif average == "macro":
+        aps = 0
+        for i, label in enumerate(labels):
+            aps += average_precision_score(
+                y_true=y_true,
+                y_score=y_score[i],
+                input_relation=input_relation,
+                average=None,
+                labels=None,
+                pos_label=label,
+                nbins=nbins,
+            )
+        return aps / len(labels)
+    elif average == "weighted":
+        aps = 0
+        all_weights = 0
+        for i, label in enumerate(labels):
+            weight = len(input_relation[input_relation[y_true] == label])
+            aps += weight * average_precision_score(
+                y_true=y_true,
+                y_score=y_score[i],
+                input_relation=input_relation,
+                average=None,
+                labels=None,
+                pos_label=label,
+                nbins=nbins,
+            )
+            all_weights += weight
+        return aps / all_weights
+    else:
+        aps = []
+        for i, label in enumerate(labels):
+            aps.append(
+                average_precision_score(
+                    y_true=y_true,
+                    y_score=y_score[i],
+                    input_relation=input_relation,
+                    average=None,
+                    labels=None,
+                    pos_label=label,
+                    nbins=nbins,
+                )
+            )
+        return aps
+
+    return None
+
+
+@save_verticapy_logs
 def roc_auc_score(
     y_true: str,
     y_score: Union[str, ArrayLike],

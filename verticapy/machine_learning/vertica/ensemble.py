@@ -352,7 +352,7 @@ Algorithms used for regression.
 """
 
 
-class RandomForestRegressor(RandomForest, Regressor):
+class RandomForestRegressor(Regressor, RandomForest):
     """
     Creates a RandomForestRegressor object using the
     Vertica RF_REGRESSOR function. It is an ensemble
@@ -363,9 +363,13 @@ class RandomForestRegressor(RandomForest, Regressor):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_estimators: int, optional
         The number of trees  in the forest, an integer
         between 1 and 1000, inclusive.
@@ -416,10 +420,6 @@ class RandomForestRegressor(RandomForest, Regressor):
         return "PREDICT_RF_REGRESSOR"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -442,7 +442,8 @@ class RandomForestRegressor(RandomForest, Regressor):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
@@ -452,8 +453,7 @@ class RandomForestRegressor(RandomForest, Regressor):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -505,16 +505,20 @@ class RandomForestRegressor(RandomForest, Regressor):
             return mm.RandomForestRegressor(self.trees_)
 
 
-class XGBRegressor(XGBoost, Regressor):
+class XGBRegressor(Regressor, XGBoost):
     """
     Creates  an  XGBRegressor  object  using the  Vertica
     XGB_REGRESSOR algorithm.
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model.  The  model  is  stored
         in the DB.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     max_ntree: int, optional
         Maximum  number  of trees that  can be  created.
     max_depth: int, optional
@@ -571,10 +575,6 @@ class XGBRegressor(XGBoost, Regressor):
         return "PREDICT_XGB_REGRESSOR"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -599,7 +599,8 @@ class XGBRegressor(XGBoost, Regressor):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
@@ -612,8 +613,7 @@ class XGBRegressor(XGBoost, Regressor):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
@@ -680,7 +680,7 @@ Algorithms used for classification.
 """
 
 
-class RandomForestClassifier(RandomForest, MulticlassClassifier):
+class RandomForestClassifier(MulticlassClassifier, RandomForest):
     """
     Creates a RandomForestClassifier object using the
     Vertica  RF_CLASSIFIER function. It is an ensemble
@@ -690,9 +690,13 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. The model is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_estimators: int, optional
         The number of trees  in the forest, an integer
         between 1 and 1000, inclusive.
@@ -743,10 +747,6 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
         return "PREDICT_RF_CLASSIFIER"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -770,7 +770,8 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         n_estimators: int = 10,
         max_features: Union[Literal["auto", "max"], int] = "auto",
         max_leaf_nodes: PythonNumber = 1e9,
@@ -780,8 +781,7 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
         min_info_gain: PythonNumber = 0.0,
         nbins: int = 32,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": n_estimators,
             "max_features": max_features,
@@ -849,16 +849,20 @@ class RandomForestClassifier(RandomForest, MulticlassClassifier):
             return mm.RandomForestClassifier(self.trees_, self.classes_)
 
 
-class XGBClassifier(XGBoost, MulticlassClassifier):
+class XGBClassifier(MulticlassClassifier, XGBoost):
     """
     Creates  an  XGBClassifier  object using the  Vertica
     XGB_CLASSIFIER algorithm.
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model. The model  is  stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     max_ntree: int, optional
         Maximum  number  of trees that can be  created.
     max_depth: int, optional
@@ -915,10 +919,6 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         return "PREDICT_XGB_CLASSIFIER"
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -944,7 +944,8 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
@@ -957,8 +958,7 @@ class XGBClassifier(XGBoost, MulticlassClassifier):
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         params = {
             "max_ntree": max_ntree,
             "max_depth": max_depth,
@@ -1061,9 +1061,13 @@ class IsolationForest(Clustering, Tree):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of  the model. The model  is stored in the
         database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_estimators: int, optional
         The number  of  trees in the forest,  an integer
         between 1 and 1000, inclusive.
@@ -1096,10 +1100,6 @@ class IsolationForest(Clustering, Tree):
         return "APPLY_IFOREST"
 
     @property
-    def _model_category(self) -> Literal["UNSUPERVISED"]:
-        return "UNSUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["ANOMALY_DETECTION"]:
         return "ANOMALY_DETECTION"
 
@@ -1117,15 +1117,15 @@ class IsolationForest(Clustering, Tree):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         n_estimators: int = 100,
         max_depth: int = 10,
         nbins: int = 32,
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_estimators": n_estimators,
             "max_depth": max_depth,

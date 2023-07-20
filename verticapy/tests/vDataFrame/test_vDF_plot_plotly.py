@@ -168,35 +168,42 @@ def acf_plot_result(load_plotly, amazon_vd):
 def regression_plot_result(load_plotly, dummy_scatter_vd):
     model = LinearRegression("LR_churn")
     model.fit(dummy_scatter_vd, ["x"], "y")
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
 def local_outlier_factor_3d_plot_result(load_plotly, dummy_scatter_vd):
     model = LocalOutlierFactor("lof_test_3d")
     model.fit(dummy_scatter_vd, ["X", "Y", "Z"])
-    return model.plot()
+    yield model.plot()
+    model.drop()
+    drop("lof_test_3d", method="table")
 
 
 @pytest.fixture(scope="class")
 def local_outlier_factor_plot_result(load_plotly, dummy_scatter_vd):
-    model = LocalOutlierFactor("lof_test")
+    model = LocalOutlierFactor("lof_test_fixture")
     model.fit(dummy_scatter_vd, ["X", "Y"])
-    return model.plot()
+    yield model.plot()
+    model.drop()
+    drop("lof_test_fixture", method="table")
 
 
 @pytest.fixture(scope="class")
 def logistic_regression_plot_result(load_plotly, titanic_vd):
     model = LogisticRegression("log_reg_test")
     model.fit(titanic_vd, ["fare"], "survived")
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
 def logistic_regression_plot_for_3d_result(load_plotly, titanic_vd):
-    model = LogisticRegression("log_reg_test")
+    model = LogisticRegression("log_reg_test_3d")
     model.fit(titanic_vd, ["fare", "age"], "survived")
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -207,7 +214,8 @@ def importance_plot_result(load_plotly, iris_vd):
         ["PetalLengthCm", "PetalWidthCm", "SepalWidthCm", "SepalLengthCm"],
         "Species",
     )
-    return model.features_importance()
+    yield model.features_importance()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -215,7 +223,8 @@ def pca_circle_plot_result(load_plotly, iris_vd):
     model = PCA("pca_circle_test")
     model.drop()
     model.fit(iris_vd)
-    return model.plot_circle()
+    yield model.plot_circle()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -223,7 +232,8 @@ def roc_plot_result(load_plotly, titanic_vd):
     model = RandomForestClassifier("roc_plot_test")
     model.drop()
     model.fit(titanic_vd, ["age", "fare", "sex"], "survived")
-    return model.roc_curve()
+    yield model.roc_curve()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -231,7 +241,8 @@ def cutoff_curve_plot_result(load_plotly, iris_vd):
     model = RandomForestClassifier("cutoff_curve_plot_test")
     model.drop()
     model.fit(iris_vd, ["PetalLengthCm", "PetalWidthCm"], "Species")
-    return model.cutoff_curve(pos_label="Iris-virginica")
+    yield model.cutoff_curve(pos_label="Iris-virginica")
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -251,34 +262,38 @@ def voronoi_plot_result(load_plotly, iris_vd):
         iris_vd,
         ["PetalLengthCm", "PetalWidthCm"],
     )
-    return model.plot_voronoi()
+    yield model.plot_voronoi()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
 def svm_plot_result(load_plotly, iris_one_hot_vd):
     model = LinearSVC(name="public.SVC_iris")
     model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
 def svm_2d_plot_result(load_plotly, iris_one_hot_vd):
-    model = LinearSVC(name="public.SVC_iris")
+    model = LinearSVC(name="public.SVC_iris_2")
     model.fit(
         iris_one_hot_vd, ["PetalLengthCm", "SepalLengthCm"], "Species_Iris-setosa"
     )
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
 def svm_3d_plot_result(load_plotly, iris_one_hot_vd):
-    model = LinearSVC(name="public.SVC_iris")
+    model = LinearSVC(name="public.SVC_iris_3")
     model.fit(
         iris_one_hot_vd,
         ["PetalLengthCm", "SepalLengthCm", "PetalWidthCm"],
         "Species_Iris-setosa",
     )
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -291,7 +306,8 @@ def champion_challenger_plot_result(load_plotly, titanic_vd):
         ],
         "survived",
     )
-    return model.plot()
+    yield model.plot()
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -311,7 +327,8 @@ def stepwise_plot_result(load_plotly, titanic_vd):
         y="survived",
         direction="backward",
     )
-    return stepwise_result.step_wise_
+    yield stepwise_result.step_wise_
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -336,11 +353,12 @@ def iris_one_hot_vd():
 
 @pytest.fixture(scope="class")
 def regression_tree_plot_result(load_plotly, titanic_vd):
-    model = DecisionTreeRegressor(name="model_titanic")
+    model = DecisionTreeRegressor(name="model_titanic_fixture")
     x_col = "fare"
     y_col = "age"
     model.fit(titanic_vd, x_col, y_col)
-    return model.plot(), x_col, y_col
+    yield model.plot(), x_col, y_col
+    model.drop()
 
 
 @pytest.fixture(scope="class")
@@ -1756,7 +1774,7 @@ class TestMachineLearningRegressionPlot:
         custom_height = 650
         custom_width = 700
         # Act
-        model = LinearRegression("LR_churn")
+        model = LinearRegression("LR_churn_h")
         model.fit(dummy_scatter_vd, ["X"], "Y")
         result = model.plot(height=custom_height, width=custom_width)
         # Assert
@@ -1764,6 +1782,7 @@ class TestMachineLearningRegressionPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningLOFPlot:
@@ -1871,6 +1890,8 @@ class TestMachineLearningLOFPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
+        drop("lof_test", method="table")
 
 
 class TestMachineLearningLogisticRegressionPlot:
@@ -1950,7 +1971,7 @@ class TestMachineLearningLogisticRegressionPlot:
         custom_height = 650
         custom_width = 700
         # Act
-        model = LogisticRegression("log_reg_test")
+        model = LogisticRegression("log_reg_test_h")
         model.fit(titanic_vd, ["fare"], "survived")
         result = model.plot(height=custom_height, width=custom_width)
         # Assert
@@ -1958,6 +1979,7 @@ class TestMachineLearningLogisticRegressionPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningImportanceBarChart:
@@ -2003,7 +2025,7 @@ class TestMachineLearningImportanceBarChart:
         custom_height = 650
         custom_width = 700
         # Act
-        model = RandomForestClassifier("importance_test")
+        model = RandomForestClassifier("importance_test_2")
         model.fit(
             iris_vd,
             ["PetalLengthCm", "PetalWidthCm", "SepalWidthCm", "SepalLengthCm"],
@@ -2015,6 +2037,7 @@ class TestMachineLearningImportanceBarChart:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningPCACirclePlot:
@@ -2069,6 +2092,7 @@ class TestMachineLearningPCACirclePlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningROCCurve:
@@ -2130,6 +2154,7 @@ class TestMachineLearningROCCurve:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningCutoffCurve:
@@ -2186,6 +2211,7 @@ class TestMachineLearningCutoffCurve:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningPRCCurve:
@@ -2367,6 +2393,7 @@ class TestMachineLearningVoronoiPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningRegressionTreePlot:
@@ -2448,6 +2475,7 @@ class TestMachineLearningRegressionTreePlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningSVMClassifierPlot:
@@ -2515,7 +2543,7 @@ class TestMachineLearningSVMClassifierPlot:
         # rrange
         custom_height = 650
         custom_width = 700
-        model = LinearSVC(name="public.SVC_iris")
+        model = LinearSVC(name="public.SVC_iris_h")
         model.fit(iris_one_hot_vd, ["PetalLengthCm"], "Species_Iris-setosa")
         # Act
         result = model.plot(width=custom_width, height=custom_height)
@@ -2524,6 +2552,7 @@ class TestMachineLearningSVMClassifierPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
     def test_additional_options_custom_height_for_2d(
         self, load_plotly, iris_one_hot_vd
@@ -2531,7 +2560,7 @@ class TestMachineLearningSVMClassifierPlot:
         # rrange
         custom_height = 650
         custom_width = 700
-        model = LinearSVC(name="public.SVC_iris")
+        model = LinearSVC(name="public.SVC_iris_2d")
         model.fit(
             iris_one_hot_vd, ["PetalLengthCm", "SepalWidthCm"], "Species_Iris-setosa"
         )
@@ -2542,6 +2571,7 @@ class TestMachineLearningSVMClassifierPlot:
             result.layout["height"] == custom_height
             and result.layout["width"] == custom_width
         ), "Custom height and width not working"
+        model.drop()
 
 
 class TestMachineLearningChampionChallengerPlot:

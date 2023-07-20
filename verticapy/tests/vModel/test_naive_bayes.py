@@ -511,3 +511,7 @@ class TestNB:
         assert current_cursor().fetchone()[0] == "nb_from_vDF"
 
         model_test.drop()
+
+    def test_optional_name(self):
+        model = NaiveBayes()
+        assert model.model_name is not None

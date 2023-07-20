@@ -413,3 +413,7 @@ class TestLinearSVC:
         assert current_cursor().fetchone()[0] == "lsvc_from_vDF"
 
         model_test.drop()
+
+    def test_optional_name(self):
+        model = LinearSVC()
+        assert model.model_name is not None

@@ -37,6 +37,9 @@ class AutoClustering(VerticaModel):
     ----------
     name: str
         Name of the model.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same name
+        as an existing model overwrites the existing model.
     n_cluster: int, optional
         Number  of clusters. If empty, an optimal number  of
         clusters  are determined using multiple  k-means
@@ -120,6 +123,7 @@ class AutoClustering(VerticaModel):
     def __init__(
         self,
         name: str,
+        overwrite_model: bool = False,
         n_cluster: Optional[int] = None,
         init: Union[Literal["kmeanspp", "random"], ArrayLike] = "kmeanspp",
         max_iter: int = 300,
@@ -136,6 +140,7 @@ class AutoClustering(VerticaModel):
         print_info: bool = True,
     ) -> None:
         self.model_name = name
+        self.overwrite_model = overwrite_model
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -161,7 +166,7 @@ class AutoClustering(VerticaModel):
         X: SQLColumns, optional
             List of the predictors.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

@@ -104,10 +104,6 @@ class KNeighborsRegressor(Regressor):
         return ""
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["REGRESSOR"]:
         return "REGRESSOR"
 
@@ -122,9 +118,8 @@ class KNeighborsRegressor(Regressor):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__()
-        self.model_name = name
+    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__(name)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -320,10 +315,6 @@ class KNeighborsClassifier(MulticlassClassifier):
         return ""
 
     @property
-    def _model_category(self) -> Literal["SUPERVISED"]:
-        return "SUPERVISED"
-
-    @property
     def _model_subcategory(self) -> Literal["CLASSIFIER"]:
         return "CLASSIFIER"
 
@@ -338,9 +329,8 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__()
-        self.model_name = name
+    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__(name)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -737,9 +727,13 @@ class KernelDensity(Regressor, Tree):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model. This is not a built-in model, so
         this name is used  to build the final table.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     bandwidth: PythonNumber, optional
         The bandwidth of the kernel.
     kernel: str, optional
@@ -787,6 +781,8 @@ class KernelDensity(Regressor, Tree):
     def _vertica_predict_sql(self) -> Literal["PREDICT_RF_REGRESSOR"]:
         return "PREDICT_RF_REGRESSOR"
 
+    # This is an exception. Although KernelDensity is a subclass of Regressor,
+    # but it is UNSUPERVISED.
     @property
     def _model_category(self) -> Literal["UNSUPERVISED"]:
         return "UNSUPERVISED"
@@ -804,7 +800,8 @@ class KernelDensity(Regressor, Tree):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: str = None,
+        overwrite_model: bool = False,
         bandwidth: PythonNumber = 1.0,
         kernel: Literal["gaussian", "logistic", "sigmoid", "silverman"] = "gaussian",
         p: int = 2,
@@ -815,8 +812,7 @@ class KernelDensity(Regressor, Tree):
         xlim: Optional[list] = None,
         **kwargs,
     ) -> None:
-        super().__init__()
-        self.model_name = name
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "nbins": nbins,
             "p": p,
@@ -961,7 +957,7 @@ class KernelDensity(Regressor, Tree):
         """
         X = format_type(X, dtype=list)
         X = quote_ident(X)
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)
@@ -1160,10 +1156,14 @@ class LocalOutlierFactor(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name  of the  model.  This is not a  built-in
         model, so this name is used to build the
         final table.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     n_neighbors: int, optional
         Number of neighbors to consider when computing
         the score.
@@ -1205,9 +1205,14 @@ class LocalOutlierFactor(VerticaModel):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2) -> None:
-        super().__init__()
-        self.model_name = name
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_neighbors: int = 20,
+        p: int = 2,
+    ) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -1267,7 +1272,7 @@ class LocalOutlierFactor(VerticaModel):
         """
         X, key_columns = format_type(X, key_columns, dtype=list)
         X = quote_ident(X)
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

@@ -385,3 +385,52 @@ class TestModelSelection:
         assert result["importance"][-1] == pytest.approx(0.7255807088358904, 1e-4)
         assert result["importance"][-4] == pytest.approx(99.2744192911641096, 1e-4)
         plt.close("all")
+
+    def test_overwrite_model(self, titanic_vd):
+        titanic = titanic_vd.copy()
+        titanic["boat"].fillna(method="0ifnull")
+        model = LogisticRegression("stepwise_overwrite_model_test")
+        model.drop()
+        model.fit(titanic_vd, ["age", "fare"], "survived")
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            result = stepwise(
+                model,
+                titanic,
+                ["age", "fare", "boat", "pclass"],
+                "survived",
+                "bic",
+                "backward",
+                100,
+                3,
+                True,
+                "pearson",
+                True,
+                True,
+            )
+        assert exception_info.match(
+            "The model 'stepwise_overwrite_model_test' already exists!"
+        )
+
+        # overwriting the model when overwrite_model is specified true
+        model = LogisticRegression(
+            "stepwise_overwrite_model_test", overwrite_model=True
+        )
+        result = stepwise(
+            model,
+            titanic,
+            ["age", "fare", "boat", "pclass"],
+            "survived",
+            "aic",
+            "forward",
+            100,
+            3,
+            True,
+            "spearman",
+            True,
+            True,
+        )
+
+        # cleaning up
+        model.drop()

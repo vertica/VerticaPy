@@ -25,6 +25,8 @@ from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type
 from verticapy._utils._sql._sys import _executeSQL
 
+from verticapy.sql.drop import drop
+
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -43,6 +45,10 @@ class AutoDataPrep(VerticaModel):
     name: str, optional
         Name of the model in which to store the output
         relation in the Vertica database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
     cat_method: str, optional
         Method for encoding categorical features. This
         can  be set to 'label' for label encoding  and
@@ -155,6 +161,7 @@ class AutoDataPrep(VerticaModel):
     def __init__(
         self,
         name: Optional[str] = None,
+        overwrite_model: Optional[bool] = False,
         cat_method: Literal["label", "ooe"] = "ooe",
         num_method: Literal["same_freq", "same_width", "none"] = "none",
         nbins: int = 20,
@@ -169,11 +176,8 @@ class AutoDataPrep(VerticaModel):
         identify_ts: bool = True,
         save: bool = True,
     ) -> None:
-        self.model_name = name
-        if not self.model_name:
-            self.model_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="autodataprep"
-            )
+        super().__init__(name, overwrite_model)
+
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,
@@ -189,6 +193,15 @@ class AutoDataPrep(VerticaModel):
             "identify_ts": identify_ts,
             "save": save,
         }
+
+    def drop(self) -> bool:
+        """
+        Drops the model from the Vertica database.
+        """
+        # it could be stored as a model or a table
+        dropped_model = super().drop()
+        dropped_table = drop(self.model_name, method="table")
+        return dropped_model or dropped_table
 
     # Model Fitting Method.
 
@@ -216,7 +229,7 @@ class AutoDataPrep(VerticaModel):
         by: SQLColumns, optional
             vDataColumns used in the partition.
         """
-        if conf.get_option("overwrite_model"):
+        if self.overwrite_model:
             self.drop()
         else:
             self._is_already_stored(raise_error=True)

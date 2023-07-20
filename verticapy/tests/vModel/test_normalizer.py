@@ -354,3 +354,13 @@ class TestScaler:
         )
         assert current_cursor().fetchone()[0] == "norm_vDF"
         model_test.drop()
+
+    def test_optional_name(self):
+        model = Scaler()
+        assert model.model_name is not None
+        model = StandardScaler()
+        assert model.model_name is not None
+        model = RobustScaler()
+        assert model.model_name is not None
+        model = MinMaxScaler()
+        assert model.model_name is not None

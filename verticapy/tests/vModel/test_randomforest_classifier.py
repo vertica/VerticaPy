@@ -514,3 +514,7 @@ class TestRFC:
     def test_plot_tree(self, model):
         result = model.plot_tree()
         assert model.to_graphviz() == result.source.strip()
+
+    def test_optional_name(self):
+        model = RandomForestClassifier()
+        assert model.model_name is not None

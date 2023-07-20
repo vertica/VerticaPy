@@ -119,10 +119,6 @@ def set_option(key: str, value: Any = None) -> None:
         Display mode for VerticaPy outputs, either:
             full  : VerticaPy regular display mode.
             light : Minimalist display mode.
-    overwrite_model: bool
-        If set to True, training a model with the same
-        name as an existing model overwrites the
-        existing model.
     percent_bar: bool
         If set to True, the percent of non-missing
         values is displayed.
@@ -174,7 +170,6 @@ register_option(Option("footer_on", True, "", bool_validator))
 register_option(Option("max_columns", 50, "", st_positive_int_validator))
 register_option(Option("max_rows", 100, "", st_positive_int_validator))
 register_option(Option("mode", "full", "", in_validator(["full", "light"])))
-register_option(Option("overwrite_model", True, "", bool_validator))
 register_option(Option("percent_bar", False, "", bool_validator))
 register_option(Option("print_info", True, "", bool_validator))
 register_option(Option("save_query_profile", True, "", bool_validator))

@@ -108,3 +108,20 @@ class TestKernelDensity:
             1.82115211838814e-06, abs=1e-6
         )
         model_test.drop()
+
+    def test_overwrite_model(self, titanic_vd):
+        model = KernelDensity("test_overwrite_model")
+        model.drop()  # to isulate this test from any previous left over
+        model.fit(titanic_vd, ["age", "fare"])
+
+        # overwrite_model is false by default
+        with pytest.raises(NameError) as exception_info:
+            model.fit(titanic_vd, ["age", "fare"])
+        assert exception_info.match("The model 'test_overwrite_model' already exists!")
+
+        # overwriting the model when overwrite_model is specified true
+        model = KernelDensity("test_overwrite_model", overwrite_model=True)
+        model.fit(titanic_vd, ["age", "fare"])
+
+        # cleaning up
+        model.drop()

@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-import random
+import uuid
 from typing import Optional
 
 from verticapy._utils._sql._format import quote_ident
@@ -45,8 +45,8 @@ def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> st
     L = session_user.split("_")
     L[0] = "".join(filter(str.isalnum, L[0]))
     L[1] = "".join(filter(str.isalnum, L[1]))
-    random_int = random.randint(0, 10e9)
-    name = f'"_verticapy_tmp_{name.lower()}_{L[0]}_{L[1]}_{random_int}_"'
+    universal_unique_id = str(uuid.uuid1()).replace("-", "")
+    name = f'"_verticapy_tmp_{name.lower()}_{L[0]}_{L[1]}_{universal_unique_id}_"'
     if schema:
         name = f"{quote_ident(schema)}.{name}"
     return name
