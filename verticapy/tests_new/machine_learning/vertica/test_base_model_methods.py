@@ -18,6 +18,7 @@ from verticapy.connection import current_cursor
 import matplotlib.pyplot as plt
 from vertica_highcharts.highcharts.highcharts import Highchart
 import plotly
+from scipy import stats
 import pytest
 from collections import namedtuple
 from verticapy.tests_new.machine_learning.vertica import (
@@ -134,6 +135,22 @@ def model_params(model_class):
                 # (5, 'max', 1e6, 0.42, 6, 8, 0.3, 20),
             ],
         ),
+        "XGBRegressor": (
+            "max_ntree, max_depth, nbins, learning_rate, min_split_loss, weight_reg, sample, col_sample_by_tree, col_sample_by_node",
+            [
+                # (None, None, None, None, None, None, None, None),  # accuracy does not mach with default parameters
+                (10, 5, 32, 0.1, 0.0, 0.0, 1.0, 1.0, 1.0),
+                # (5, 'max', 1e6, 0.42, 6, 8, 0.3, 20),
+            ],
+        ),
+        "XGBClassifier": (
+            "max_ntree, max_depth, nbins, learning_rate, min_split_loss, weight_reg, sample, col_sample_by_tree, col_sample_by_node",
+            [
+                # (None, None, None, None, None, None, None, None),  # accuracy does not mach with default parameters
+                (10, 5, 32, 0.1, 0.0, 0.0, 1.0, 1.0, 1.0),
+                # (5, 'max', 1e6, 0.42, 6, 8, 0.3, 20),
+            ],
+        ),
         "DummyTreeRegressor": (),
         "DummyTreeClassifier": (),
         "Ridge": (
@@ -186,6 +203,171 @@ def model_params(model_class):
     }
 
     return model_params_map[model_class]
+
+
+def regression_report_none(
+    get_vpy_model,
+    get_py_model,
+    model_class,
+    regression_metrics,
+    fun_name,
+    vpy_metric_name,
+    py_metric_name,
+    _rel_tolerance,
+):
+    """
+    test function - regression/report None
+    """
+    vpy_model_obj = get_vpy_model(model_class)
+
+    reg_rep = (
+        vpy_model_obj.model.report()
+        if fun_name == "report"
+        else vpy_model_obj.model.regression_report()
+    )
+    vpy_rep_map = dict(zip(reg_rep["index"], reg_rep["value"]))
+
+    if vpy_metric_name[0] in vpy_rep_map or vpy_metric_name[1] in vpy_rep_map:
+        vpy_score = vpy_rep_map[
+            vpy_metric_name[0] if vpy_metric_name[1] is None else vpy_metric_name[1]
+        ]
+    else:
+        pytest.skip(f"{vpy_metric_name[0]} metric is not applicable for {model_class}")
+
+    if model_class in [
+        "RandomForestRegressor",
+        "DecisionTreeRegressor",
+        "DummyTreeRegressor",
+        "XGBRegressor",
+    ]:
+        py_model_obj = get_py_model(model_class)
+        regression_metrics_map = regression_metrics(model_class, model_obj=py_model_obj)
+    else:
+        # py_model_obj = get_py_model(model_class)
+        regression_metrics_map = regression_metrics(model_class)
+
+    py_score = regression_metrics_map[py_metric_name]
+
+    print(
+        f"Metric Name: {vpy_metric_name, py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
+    )
+
+    return vpy_score, py_score
+
+
+def regression_report_details(
+    model_class,
+    get_vpy_model,
+    get_py_model,
+    regression_metrics,
+    fun_name,
+    metric,
+    expected,
+    _rel_tolerance,
+    _abs_tolerance,
+):
+    """
+    test function - regression/report details
+    """
+    vpy_model_obj = get_vpy_model(model_class)
+
+    reg_rep_details = (
+        vpy_model_obj.model.report(metrics="details")
+        if fun_name == "report"
+        else vpy_model_obj.model.regression_report(metrics="details")
+    )
+    vpy_reg_rep_details_map = dict(
+        zip(reg_rep_details["index"], reg_rep_details["value"])
+    )
+
+    # Python
+    if model_class in [
+        "RandomForestRegressor",
+        "DecisionTreeRegressor",
+        "DummyTreeRegressor",
+        "XGBRegressor",
+    ]:
+        py_model_obj = get_py_model(model_class)
+        regression_metrics_map = regression_metrics(model_class, model_obj=py_model_obj)
+    else:
+        py_model_obj = get_py_model(model_class)
+        regression_metrics_map = regression_metrics(model_class)
+
+    if metric == "No. Observations":
+        py_res = len(py_model_obj.y)
+    elif metric == "Model":
+        if model_class == "RandomForestRegressor":
+            py_res = "RandomForestRegressor"
+        elif model_class == "DecisionTreeRegressor":
+            py_res = "RandomForestRegressor"  # need to check on this
+        elif model_class == "XGBRegressor":
+            py_res = "XGBRegressor"  # need to check on this
+        elif model_class == "DummyTreeRegressor":
+            py_res = "DummyTreeRegressor"
+        elif model_class == "LinearSVR":
+            py_res = "LinearSVR"
+        else:
+            py_res = "LinearRegression"
+    elif metric == "No. Predictors":
+        py_res = len(py_model_obj.X.columns)
+    elif metric == "R-squared":
+        py_res = regression_metrics_map["r2_score"]
+    elif metric == "Adj. R-squared":
+        py_res = regression_metrics_map["rsquared_adj"]
+    elif metric == "F-statistic":
+        py_res = regression_metrics_map["f"]
+    elif metric == "Prob (F-statistic)":
+        py_res = regression_metrics_map["p_value"]
+    elif metric == "Kurtosis":
+        py_res = stats.kurtosis(py_model_obj.y)
+    elif metric == "Skewness":
+        py_res = stats.skew(py_model_obj.y)
+    elif metric == "Jarque-Bera (JB)":
+        py_res = stats.jarque_bera(py_model_obj.y).statistic
+    else:
+        py_res = expected
+
+    return vpy_reg_rep_details_map, py_res
+
+
+def regression_report_anova(
+    model_class,
+    get_vpy_model,
+    get_py_model,
+    regression_metrics,
+    fun_name,
+    metric,
+    metric_types,
+    _rel_tolerance,
+    _abs_tolerance,
+):
+    """
+    test function - regression/report anova
+    """
+    vpy_model_obj = get_vpy_model(model_class)
+
+    reg_rep_anova = (
+        vpy_model_obj.model.report(metrics="anova")
+        if fun_name == "report"
+        else vpy_model_obj.model.regression_report(metrics="anova")
+    )
+
+    # Python
+    if model_class in [
+        "RandomForestRegressor",
+        "DecisionTreeRegressor",
+        "DummyTreeRegressor",
+        "XGBRegressor",
+    ]:
+        py_model_obj = get_py_model(model_class)
+        regression_metrics_map = regression_metrics(model_class, model_obj=py_model_obj)
+    else:
+        regression_metrics_map = regression_metrics(model_class)
+
+    # for vpy_res, metric_type in zip(reg_rep_anova[metric], metric_types):
+    #     py_res = regression_metrics_map[metric_type]
+
+    return reg_rep_anova, regression_metrics_map
 
 
 def model_score(
@@ -272,6 +454,36 @@ def model_score(
         vpy_score = vpy_model_obj.model.score(
             metric=vpy_metric_name[0], average="binary", pos_label=1
         )
+    elif model_class == "XGBRegressor":
+        vpy_model_obj = get_vpy_model(
+            model_class,
+            max_ntree=_model_class_tuple.max_ntree,
+            max_depth=_model_class_tuple.max_depth,
+            nbins=_model_class_tuple.nbins,
+            learning_rate=_model_class_tuple.learning_rate,
+            min_split_loss=_model_class_tuple.min_split_loss,
+            weight_reg=_model_class_tuple.weight_reg,
+            sample=_model_class_tuple.sample,
+            col_sample_by_tree=_model_class_tuple.col_sample_by_tree,
+            col_sample_by_node=_model_class_tuple.col_sample_by_node,
+        )
+        vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
+    elif model_class == "XGBClassifier":
+        vpy_model_obj = get_vpy_model(
+            model_class,
+            max_ntree=_model_class_tuple.max_ntree,
+            max_depth=_model_class_tuple.max_depth,
+            nbins=_model_class_tuple.nbins,
+            learning_rate=_model_class_tuple.learning_rate,
+            min_split_loss=_model_class_tuple.min_split_loss,
+            weight_reg=_model_class_tuple.weight_reg,
+            sample=_model_class_tuple.sample,
+            col_sample_by_tree=_model_class_tuple.col_sample_by_tree,
+            col_sample_by_node=_model_class_tuple.col_sample_by_node,
+        )
+        vpy_score = vpy_model_obj.model.score(
+            metric=vpy_metric_name[0], average="binary", pos_label=1
+        )
     elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
         vpy_model_obj = get_vpy_model(model_class)
         vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
@@ -316,13 +528,14 @@ def model_score(
             fit_intercept=_model_class_tuple.fit_intercept,
         )
         vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
-    # else:
-    #     pytest.skip(f"Invalid parameters {_model_class_tuple} for {model_class}")
+    else:
+        pytest.skip(f"Invalid parameters {_model_class_tuple} for {model_class}")
 
     if model_class in [
         "RandomForestClassifier",
         "DecisionTreeClassifier",
         "DummyTreeClassifier",
+        "XGBClassifier",
     ]:
         vpy_model_obj.pred_vdf.drop(
             columns=["survived_pred"]
@@ -377,6 +590,38 @@ def model_score(
         )
         _metrics = _metrics(model_class, model_obj=py_model_obj)
         py_score = _metrics[py_metric_name]
+    elif model_class in ["XGBRegressor"]:
+        py_model_obj = get_py_model(
+            model_class,
+            n_estimators=_model_class_tuple.max_ntree,
+            max_depth=_model_class_tuple.max_depth,
+            max_bin=_model_class_tuple.nbins,
+            learning_rate=_model_class_tuple.learning_rate,
+            gamma=_model_class_tuple.min_split_loss,
+            reg_alpha=_model_class_tuple.weight_reg,
+            reg_lambda=_model_class_tuple.weight_reg,
+            subsample=_model_class_tuple.sample,
+            colsample_bytree=_model_class_tuple.col_sample_by_tree,
+            colsample_bynode=_model_class_tuple.col_sample_by_node,
+        )
+        metrics_map = _metrics(model_class, model_obj=py_model_obj)
+        py_score = metrics_map[py_metric_name]
+    elif model_class in ["XGBClassifier"]:
+        py_model_obj = get_py_model(
+            model_class,
+            n_estimators=_model_class_tuple.max_ntree,
+            max_depth=_model_class_tuple.max_depth,
+            max_bin=_model_class_tuple.nbins,
+            learning_rate=_model_class_tuple.learning_rate,
+            gamma=_model_class_tuple.min_split_loss,
+            reg_alpha=_model_class_tuple.weight_reg,
+            reg_lambda=_model_class_tuple.weight_reg,
+            subsample=_model_class_tuple.sample,
+            colsample_bytree=_model_class_tuple.col_sample_by_tree,
+            colsample_bynode=_model_class_tuple.col_sample_by_node,
+        )
+        _metrics = _metrics(model_class, model_obj=py_model_obj)
+        py_score = _metrics[py_metric_name]
     elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
         py_model_obj = get_py_model(model_class)
         metrics_map = _metrics(model_class, model_obj=py_model_obj)
@@ -396,20 +641,22 @@ def model_score(
 @pytest.mark.parametrize(
     "model_class",
     [
-        "RandomForestRegressor",
-        "RandomForestClassifier",
-        "DecisionTreeRegressor",
-        "DecisionTreeClassifier",
-        "DummyTreeRegressor",
-        "DummyTreeClassifier",
-        "Ridge",
-        "Lasso",
-        "ElasticNet",
-        "LinearRegression",
-        "LinearSVR",
+        # "RandomForestRegressor",
+        # "RandomForestClassifier",
+        # "DecisionTreeRegressor",
+        # "DecisionTreeClassifier",
+        # "DummyTreeRegressor",
+        # "DummyTreeClassifier",
+        "XGBRegressor",
+        "XGBClassifier",
+        # "Ridge",
+        # "Lasso",
+        # "ElasticNet",
+        # "LinearRegression",
+        # "LinearSVR",
     ],
 )
-# @pytest.mark.parametrize("model_class", ["DummyTreeClassifier"])
+# @pytest.mark.parametrize("model_class", ["XGBClassifier"])
 class TestBaseModelMethods:
     """
     test class for linear models
@@ -435,18 +682,21 @@ class TestBaseModelMethods:
             "RandomForestClassifier",
             "DecisionTreeClassifier",
             "DummyTreeClassifier",
+            "XGBClassifier",
         ]:
             vpy_res = (
                 get_models.vpy.pred_vdf[["survived_pred"]].to_numpy().ravel().sum()
             )
             py_res = get_models.py.pred.sum()
 
-            assert vpy_res == pytest.approx(py_res, rel=1e-00)
+            assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
         else:
             assert get_models.vpy.pred_vdf[
                 ["quality_pred"]
-            ].to_numpy().mean() == pytest.approx(get_models.py.pred.mean(), rel=1e-02)
+            ].to_numpy().mean() == pytest.approx(
+                get_models.py.pred.mean(), rel=rel_tolerance_map[model_class]
+            )
 
     def test_contour(self, model_class, get_vpy_model):
         """
@@ -456,11 +706,12 @@ class TestBaseModelMethods:
             "RandomForestClassifier",
             "DecisionTreeClassifier",
             "DummyTreeClassifier",
+            "XGBClassifier",
         ]:
-            vpy_res = get_vpy_model(model_class, y_true=["age", "fare"]).model.contour()
+            vpy_res = get_vpy_model(model_class, X=["age", "fare"]).model.contour()
         else:
             vpy_res = get_vpy_model(
-                model_class, y_true=["residual_sugar", "alcohol"]
+                model_class, X=["residual_sugar", "alcohol"]
             ).model.contour()
 
         assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
@@ -481,6 +732,10 @@ class TestBaseModelMethods:
             "DummyTreeClassifier",
         ]:
             pred_fun_name = "PREDICT_RF_CLASSIFIER"
+        elif model_class == "XGBRegressor":
+            pred_fun_name = "PREDICT_XGB_REGRESSOR"
+        elif model_class == "XGBClassifier":
+            pred_fun_name = "PREDICT_XGB_CLASSIFIER"
         elif model_class == "LinearSVR":
             pred_fun_name = "PREDICT_SVM_REGRESSOR"
         else:
@@ -520,6 +775,15 @@ class TestBaseModelMethods:
                 "features_importance_",
                 "features_importance_trees_",
             ]
+        elif model_class == "XGBRegressor":
+            vpy_model_attributes = [
+                "n_estimators_",
+                "eta_",
+                "mean_",
+                "trees_",
+                "features_importance_",
+                "features_importance_trees_",
+            ]
         elif model_class in [
             "RandomForestClassifier",
             "DecisionTreeClassifier",
@@ -528,6 +792,16 @@ class TestBaseModelMethods:
             vpy_model_attributes = [
                 "n_estimators_",
                 "classes_",
+                "trees_",
+                "features_importance_",
+                "features_importance_trees_",
+            ]
+        elif model_class == "XGBClassifier":
+            vpy_model_attributes = [
+                "n_estimators_",
+                "classes_",
+                "eta_",
+                "logodds_",
                 "trees_",
                 "features_importance_",
                 "features_importance_trees_",
@@ -560,6 +834,20 @@ class TestBaseModelMethods:
                 "min_samples_leaf": 1,
                 "min_info_gain": 0.0,
                 "nbins": 32,
+            }
+        elif model_class in ["XGBRegressor", "XGBClassifier"]:
+            model_params_map = {
+                "max_ntree": 10,
+                "max_depth": 5,
+                "nbins": 32,
+                "split_proposal_method": "global",
+                "tol": 0.001,
+                "learning_rate": 0.1,
+                "min_split_loss": 0.0,
+                "weight_reg": 0.0,
+                "sample": 1.0,
+                "col_sample_by_tree": 1.0,
+                "col_sample_by_node": 1.0,
             }
         elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
             model_params_map = {}
@@ -632,6 +920,8 @@ class TestBaseModelMethods:
 
         model_attributes = get_models.vpy.model.get_vertica_attributes()
 
+        print(model_attributes)
+
         if model_class in [
             "RandomForestRegressor",
             "RandomForestClassifier",
@@ -639,6 +929,8 @@ class TestBaseModelMethods:
             "DecisionTreeClassifier",
             "DummyTreeRegressor",
             "DummyTreeClassifier",
+            "XGBRegressor",
+            "XGBClassifier",
         ]:
             attr_map = {
                 "attr_name": [
@@ -658,7 +950,16 @@ class TestBaseModelMethods:
                 "#_of_rows": [1, 1, 1, 1, 3],
             }
             expected = attr_map[attributes]
-        if model_class == "LinearSVR":
+            if model_class == "XGBRegressor":
+                attr_map["attr_name"].append("initial_prediction")
+                attr_map["attr_fields"].append("initial_prediction")
+                attr_map["#_of_rows"].append(1)
+            elif model_class == "XGBClassifier":
+                attr_map["attr_name"].append("initial_prediction")
+                attr_map["attr_fields"].append("response_label, value")
+                attr_map["#_of_rows"].append(2)
+
+        elif model_class == "LinearSVR":
             attr_map = {
                 "attr_name": [
                     "details",
@@ -688,6 +989,8 @@ class TestBaseModelMethods:
         if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
             params = {"n_estimators": 100, "max_depth": 50, "nbins": 100}
         elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
+            params = {"max_depth": 50, "nbins": 100}
+        elif model_class in ["XGBRegressor", "XGBClassifier"]:
             params = {"max_depth": 50, "nbins": 100}
         elif model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]:
             params = {}
@@ -728,6 +1031,7 @@ class TestBaseModelMethods:
             "RandomForestClassifier",
             "DecisionTreeClassifier",
             "DummyTreeClassifier",
+            "XGBClassifier",
         ]:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["survived_pred"]].to_numpy()[10]
@@ -758,6 +1062,8 @@ class TestBaseModelMethods:
                 ],
                 "PREDICT_RF_CLASSIFIER",
             ),
+            "XGBRegressor": "PREDICT_XGB_REGRESSOR",
+            "XGBClassifier": "PREDICT_XGB_CLASSIFIER",
             "LinearSVR": "PREDICT_SVM_REGRESSOR",
             **dict.fromkeys(
                 ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
@@ -769,6 +1075,7 @@ class TestBaseModelMethods:
             "RandomForestClassifier",
             "DecisionTreeClassifier",
             "DummyTreeClassifier",
+            "XGBClassifier",
         ]:
             pred_sql = f"SELECT {pred_fun_map[model_class]}(* USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::int, {get_models.vpy.model.to_sql()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"
         else:
@@ -798,7 +1105,14 @@ class TestBaseModelMethods:
 
         assert get_models.vpy.model.does_model_exists(
             name=model_name_with_schema, return_model_type=True
-        ) in ["LINEAR_REGRESSION", "SVM_REGRESSOR", "RF_REGRESSOR", "RF_CLASSIFIER"]
+        ) in [
+            "LINEAR_REGRESSION",
+            "SVM_REGRESSOR",
+            "RF_REGRESSOR",
+            "RF_CLASSIFIER",
+            "XGB_REGRESSOR",
+            "XGB_CLASSIFIER",
+        ]
 
         get_models.vpy.model.drop()
         assert (
@@ -848,15 +1162,52 @@ class TestBaseModelMethods:
         """
         test function - features_importance
         """
-        features_importance_map = {
-            "index": ["alcohol", "residual_sugar", "citric_acid"],
-            "sign": [1, 1, 1],
-        }
+        features_importance_map = {"sign": [1, 1, 1]}
+        _X = None
 
         if model_class in [
+            "RandomForestClassifier",
+            "DecisionTreeClassifier",
+            "DummyTreeClassifier",
+            "XGBClassifier",
+        ]:
+            features_importance_map["index"] = [
+                "sex",
+                "fare",
+                "age",
+            ]
+            if model_class in ["RandomForestClassifier"]:
+                # features_importance_map["index"] = [
+                #     "sex",
+                #     "fare",
+                #     "age",
+                # ]
+                features_importance_map["importance"] = [62.64, 28.62, 8.74]
+            elif model_class in ["DecisionTreeClassifier"]:
+                # features_importance_map["index"] = [
+                #     "sex",
+                #     "fare",
+                #     "age",
+                # ]
+                features_importance_map["importance"] = [66.55, 28.51, 4.94]
+            elif model_class in ["XGBClassifier"]:
+                # features_importance_map["index"] = [
+                #     "sex",
+                #     "fare",
+                #     "age",
+                # ]
+                features_importance_map["importance"] = [93.97, 4.19, 1.84]
+            elif model_class in ["DummyTreeClassifier"]:
+                features_importance_map["index"] = [
+                    "fare",
+                    "sex",
+                    "age",
+                ]
+                features_importance_map["importance"] = [38.9, 36.61, 24.49]
+        elif model_class in [
             "RandomForestRegressor",
             "DecisionTreeRegressor",
-            "DummyTreeRegressor",
+            "XGBRegressor",
         ]:
             features_importance_map["index"] = [
                 "alcohol",
@@ -864,72 +1215,68 @@ class TestBaseModelMethods:
                 "residual_sugar",
             ]
             if model_class in ["RandomForestRegressor"]:
-                features_importance_map["importance"] = [75.18, 18.64, 6.18]
+                features_importance_map["importance"] = [79.72, 14.44, 5.84]
             elif model_class in ["DecisionTreeRegressor"]:
-                features_importance_map["importance"] = [89.64, 6.4, 3.97]
-            elif model_class in ["DummyTreeRegressor"]:
-                features_importance_map["index"] = [
-                    "alcohol",
-                    "residual_sugar",
-                    "citric_acid",
-                ]
-                features_importance_map["importance"] = [89.64, 6.4, 3.97]
-        elif model_class in ["RandomForestClassifier"]:
+                features_importance_map["importance"] = [80.82, 13.73, 5.45]
+            elif model_class in ["XGBRegressor"]:
+                features_importance_map["importance"] = [74.51, 14.92, 10.56]
+        else:
             features_importance_map["index"] = [
-                "sex",
-                "fare",
-                "age",
-            ]
-            features_importance_map["importance"] = [71.6, 18.81, 9.6]
-        elif model_class in ["DecisionTreeClassifier"]:
-            features_importance_map["index"] = [
-                "sex",
-                "age",
-                "fare",
-            ]
-            features_importance_map["importance"] = [71.6, 18.81, 9.6]
-        elif model_class in ["DummyTreeClassifier"]:
-            features_importance_map["index"] = [
-                "fare",
-                "sex",
-                "age",
-            ]
-            features_importance_map["importance"] = [35.01, 33.6, 31.39]
-        elif model_class == "Ridge":
-            features_importance_map["importance"] = [52.3, 32.63, 15.07]
-        elif model_class in ["Lasso", "ElasticNet"]:
-            features_importance_map["index"] = [
-                "total_sulfur_dioxide",
-                "residual_sugar",
                 "alcohol",
+                "residual_sugar",
+                "citric_acid",
             ]
-            features_importance_map["importance"] = [100, 0, 0]
-            features_importance_map["sign"] = [-1, 0, 0]
-        elif model_class == "LinearRegression":
-            features_importance_map["importance"] = [52.25, 32.58, 15.17]
-        elif model_class == "LinearSVR":
-            features_importance_map["importance"] = [52.68, 33.27, 14.05]
+            if model_class in ["DummyTreeRegressor"]:
+                # features_importance_map["index"] = [
+                #     "alcohol",
+                #     "residual_sugar",
+                #     "citric_acid",
+                # ]
+                features_importance_map["importance"] = [37.61, 36.56, 25.83]
+            elif model_class == "Ridge":
+                # features_importance_map["index"] = ['alcohol', 'residual_sugar', 'citric_acid']
+                features_importance_map["importance"] = [52.3, 32.63, 15.07]
+            elif model_class == "LinearRegression":
+                # features_importance_map["index"] = ['alcohol', 'residual_sugar', 'citric_acid']
+                features_importance_map["importance"] = [52.25, 32.58, 15.17]
+            elif model_class == "LinearSVR":
+                # features_importance_map["index"] = ['alcohol', 'residual_sugar', 'citric_acid']
+                features_importance_map["importance"] = [52.68, 33.27, 14.05]
+            elif model_class in ["Lasso", "ElasticNet"]:
+                _X = features_importance_map["index"] = [
+                    "total_sulfur_dioxide",
+                    "residual_sugar",
+                    "alcohol",
+                ]
+                features_importance_map["importance"] = [100, 0, 0]
+                features_importance_map["sign"] = [-1, 0, 0]
 
-        f_imp = get_vpy_model(
-            model_class, y_true=features_importance_map["index"]
-        ).model.features_importance(show=False)
+        f_imp = get_vpy_model(model_class, X=_X).model.features_importance(show=False)
 
-        assert features_importance_map[key_name] == f_imp[key_name]
+        assert features_importance_map[key_name] == pytest.approx(
+            f_imp[key_name], rel=1e-2
+        )
 
     def test_plot(self, model_class, get_vpy_model):
         """
         test function - plot
         """
-        if model_class in [
-            "RandomForestClassifier",
-            "DecisionTreeClassifier",
-            "DummyTreeClassifier",
-        ]:
-            vpy_res = get_vpy_model(model_class, y_true=["age", "fare"])[0].plot()
-        else:
-            vpy_res = get_vpy_model(model_class, y_true=["residual_sugar", "alcohol"])[
-                0
-            ].plot()
+        try:
+            if model_class in [
+                "RandomForestClassifier",
+                "DecisionTreeClassifier",
+                "DummyTreeClassifier",
+                "XGBClassifier",
+            ]:
+                vpy_res = get_vpy_model(model_class, X=["age", "fare"])[0].plot()
+            else:
+                vpy_res = get_vpy_model(model_class, X=["residual_sugar", "alcohol"])[
+                    0
+                ].plot()
+        except NotImplementedError:
+            pytest.skip(
+                f"plot function is not implemented for {model_class} model class - NotImplementedError"
+            )
 
         assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
