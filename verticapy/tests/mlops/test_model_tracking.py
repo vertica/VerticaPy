@@ -69,15 +69,15 @@ class ExperimentBase:
 
         experiment.add_model(new_model, ud_metrics)
 
-        assert experiment.model_name_list_[0] == new_model.model_name
-        assert experiment.model_type_list_[0] == new_model._model_type
-        assert experiment.parameters_[0] == new_model.get_params()
-        if len(experiment.measured_metrics_[0]) > 0:
-            assert experiment.measured_metrics_[0][0] == pytest.approx(
+        assert experiment._model_name_list[0] == new_model.model_name
+        assert experiment._model_type_list[0] == new_model._model_type
+        assert experiment._parameters[0] == new_model.get_params()
+        if len(experiment._measured_metrics[0]) > 0:
+            assert experiment._measured_metrics[0][0] == pytest.approx(
                 standard_metrics_0
             )
-        if experiment.user_defined_metrics_[0]:
-            assert experiment.user_defined_metrics_[0] == ud_metrics
+        if experiment._user_defined_metrics[0]:
+            assert experiment._user_defined_metrics[0] == ud_metrics
         assert sys.does_table_exist("my_exp_table", "public")
 
         experiment.drop()
@@ -106,15 +106,15 @@ class ExperimentBase:
 
         experiment.add_model(new_model, ud_metrics)
 
-        assert experiment.model_name_list_[0] == new_model.model_name
-        assert experiment.model_type_list_[0] == new_model._model_type
-        assert experiment.parameters_[0] == new_model.get_params()
-        if len(experiment.measured_metrics_[0]) > 0:
-            assert experiment.measured_metrics_[0][0] == pytest.approx(
+        assert experiment._model_name_list[0] == new_model.model_name
+        assert experiment._model_type_list[0] == new_model._model_type
+        assert experiment._parameters[0] == new_model.get_params()
+        if len(experiment._measured_metrics[0]) > 0:
+            assert experiment._measured_metrics[0][0] == pytest.approx(
                 standard_metrics_0
             )
-        if experiment.user_defined_metrics_[0]:
-            assert experiment.user_defined_metrics_[0] == ud_metrics
+        if experiment._user_defined_metrics[0]:
+            assert experiment._user_defined_metrics[0] == ud_metrics
 
         experiment.drop()
         assert not new_model.does_model_exists(new_model.model_name)
@@ -132,9 +132,9 @@ class ExperimentBase:
 
         assert new_experiment.experiment_type == experiment.experiment_type
 
-        assert len(new_experiment.model_id_list_) == len(experiment.model_id_list_)
-        for index, id in enumerate(new_experiment.model_id_list_):
-            assert id == new_experiment.model_id_list_[index]
+        assert len(new_experiment._model_id_list) == len(experiment._model_id_list)
+        for index, id in enumerate(new_experiment._model_id_list):
+            assert id == new_experiment._model_id_list[index]
 
     def test_list_models(self, experiment, list_of_models):
         ts = experiment.list_models()

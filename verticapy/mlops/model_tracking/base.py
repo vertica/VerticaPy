@@ -91,17 +91,17 @@ class vExperiment(PlottingUtils):
 
     Attributes
     ----------
-    model_name_list_: list
+    _model_name_list: list
         The list of model names added to the experiment.
-    model_id_list_: list
+    _model_id_list: list
         The list of model IDs added to the experiment.
-    model_type_list_: list
+    _model_type_list: list
         The list of model types added to the experiment.
-    parameters_: list
+    _parameters: list
         The list of dictionaries of parameters of each added model.
-    measured_metrics_: list
+    _measured_metrics: list
         The list of list of measured metrics for each added model.
-    metrics_: list
+    _metrics: list
         The list of metrics to be used for evaluating each model.
         This list will be determined based on the value of
         experiment_type at the time of object creation.
@@ -110,7 +110,7 @@ class vExperiment(PlottingUtils):
         positive correlationthe between the value of the metric
         and the quality of the model. In contrast, number -1
         indicates a negative correlation.
-    user_defined_metrics_: list
+    _user_defined_metrics: list
         The list of dictionaries of user-defined metrics.
     """
 
@@ -189,13 +189,13 @@ class vExperiment(PlottingUtils):
         self.experiment_type = experiment_type.lower()
         self.experiment_table = experiment_table
 
-        self.model_name_list_ = []
-        self.model_id_list_ = []
-        self.model_type_list_ = []
-        self.parameters_ = []
-        self.measured_metrics_ = []
-        self.metrics_ = []
-        self.user_defined_metrics_ = []
+        self._model_name_list = []
+        self._model_id_list = []
+        self._model_type_list = []
+        self._parameters = []
+        self._measured_metrics = []
+        self._metrics = []
+        self._user_defined_metrics = []
 
         # if there is already a saved experiment in experiment_table,
         # it will determine experiment_type and its info will be loaded.
@@ -233,22 +233,22 @@ class vExperiment(PlottingUtils):
             # finding experiment_type from the content of test_relation
             if self._is_regressor():
                 self.experiment_type = "regressor"
-                self.metrics_ = self._regressor_metrics
+                self._metrics = self._regressor_metrics
             elif self._is_binary():
                 self.experiment_type = "binary"
-                self.metrics_ = self._binary_metrics
+                self._metrics = self._binary_metrics
             else:
                 self.experiment_type = "multi"
-                self.metrics_ = self._multi_metrics
+                self._metrics = self._multi_metrics
 
         elif self.experiment_type == "regressor":
             self._is_regressor(raise_error=True)
-            self.metrics_ = self._regressor_metrics
+            self._metrics = self._regressor_metrics
         elif self.experiment_type == "binary":
             self._is_binary(raise_error=True)
-            self.metrics_ = self._binary_metrics
+            self._metrics = self._binary_metrics
         elif self.experiment_type == "multi":
-            self.metrics_ = self._multi_metrics
+            self._metrics = self._multi_metrics
         else:
             raise ValueError(
                 f"Parameter 'experiment_type` must be in auto|binary|multi|regressor|clustering. "
@@ -288,7 +288,7 @@ class vExperiment(PlottingUtils):
             # No user defined metric should be named the same as a standard one.
             # Besides, their keys must be string and their values numeric
             for ud_metric in metrics.keys():
-                if (ud_metric, 1) in self.metrics_ or (ud_metric, -1) in self.metrics_:
+                if (ud_metric, 1) in self._metrics or (ud_metric, -1) in self._metrics:
                     raise ValueError(
                         f"A user defined metric must not be named the same as "
                         f"a standard metric '{ud_metric}'."
@@ -389,55 +389,55 @@ class vExperiment(PlottingUtils):
                 drop(name=temp_table_name, method="table")
 
         # the model will not be added if any of the above steps fail
-        self.model_name_list_.append(model.model_name)
-        self.model_id_list_.append(model_id)
-        self.model_type_list_.append(model._model_type)
-        self.parameters_.append(model_parameters)
-        self.measured_metrics_.append(measured_metrics)
-        self.user_defined_metrics_.append(metrics)
+        self._model_name_list.append(model.model_name)
+        self._model_id_list.append(model_id)
+        self._model_type_list.append(model._model_type)
+        self._parameters.append(model_parameters)
+        self._measured_metrics.append(measured_metrics)
+        self._user_defined_metrics.append(metrics)
 
         self._save_experiment(model_id, model_parameters, measured_metrics, metrics)
 
     def list_models(self) -> TableSample:
         values_table = {
-            "model_name": self.model_name_list_,
-            "model_type": self.model_type_list_,
-            "model_parameters": self.parameters_,
+            "model_name": self._model_name_list,
+            "model_type": self._model_type_list,
+            "model_parameters": self._parameters,
         }
 
-        for index, metric in enumerate(self.metrics_):
+        for index, metric in enumerate(self._metrics):
             metric_values = []
-            for values_list in self.measured_metrics_:
+            for values_list in self._measured_metrics:
                 metric_values.append(values_list[index])
             values_table[metric[0]] = metric_values
 
-        values_table["user_defined_metrics"] = self.user_defined_metrics_
+        values_table["user_defined_metrics"] = self._user_defined_metrics
 
         return TableSample(values_table)
 
     def load_best_model(self, metric: str) -> VerticaModel:
-        if len(self.model_name_list_) == 0:
+        if len(self._model_name_list) == 0:
             return None
 
         max_value = float("-inf")
         max_index = -1
 
-        if (metric, 1) in self.metrics_ or (metric, -1) in self.metrics_:
+        if (metric, 1) in self._metrics or (metric, -1) in self._metrics:
             # search the list of the standard metrics for the requested metric
-            if (metric, 1) in self.metrics_:
-                metric_index = self.metrics_.index((metric, 1))
+            if (metric, 1) in self._metrics:
+                metric_index = self._metrics.index((metric, 1))
                 metric_sign = 1
             else:
-                metric_index = self.metrics_.index((metric, -1))
+                metric_index = self._metrics.index((metric, -1))
                 metric_sign = -1
 
-            for index, item in enumerate(self.measured_metrics_):
+            for index, item in enumerate(self._measured_metrics):
                 if (item[metric_index] * metric_sign) > max_value:
                     max_value = item[metric_index]
                     max_index = index
         else:
             # search the list of user defined metrics
-            for index, item in enumerate(self.user_defined_metrics_):
+            for index, item in enumerate(self._user_defined_metrics):
                 if item is not None and metric in item.keys():
                     if item[metric] > max_value:
                         max_value = item[metric]
@@ -449,7 +449,7 @@ class vExperiment(PlottingUtils):
                 f"this experiment of type {self.experiment_type}."
             )
 
-        best_model = load_model(name=self.model_name_list_[max_index])
+        best_model = load_model(name=self._model_name_list[max_index])
         return best_model
 
     def plot(
@@ -482,24 +482,24 @@ class vExperiment(PlottingUtils):
         parameter_list = []
         metric_list = []
 
-        if (metric, 1) in self.metrics_ or (metric, -1) in self.metrics_:
+        if (metric, 1) in self._metrics or (metric, -1) in self._metrics:
             # it is a standard metric
-            if (metric, 1) in self.metrics_:
-                metric_index = self.metrics_.index((metric, 1))
+            if (metric, 1) in self._metrics:
+                metric_index = self._metrics.index((metric, 1))
             else:
-                metric_index = self.metrics_.index((metric, -1))
+                metric_index = self._metrics.index((metric, -1))
 
-            for model_index, item in enumerate(self.measured_metrics_):
-                if parameter in self.parameters_[model_index].keys():
-                    parameter_list.append(self.parameters_[model_index][parameter])
+            for model_index, item in enumerate(self._measured_metrics):
+                if parameter in self._parameters[model_index].keys():
+                    parameter_list.append(self._parameters[model_index][parameter])
                     metric_list.append(item[metric_index])
         else:
             # it is a user defined metric
-            for model_index, item in enumerate(self.user_defined_metrics_):
+            for model_index, item in enumerate(self._user_defined_metrics):
                 if (metric in item.keys()) and (
-                    parameter in self.parameters_[model_index].keys()
+                    parameter in self._parameters[model_index].keys()
                 ):
-                    parameter_list.append(self.parameters_[model_index][parameter])
+                    parameter_list.append(self._parameters[model_index][parameter])
                     metric_list.append(item[metric])
 
         if len(parameter_list) == 0 or len(metric_list) == 0:
@@ -532,15 +532,16 @@ class vExperiment(PlottingUtils):
         It also clears the info of models saved in the attributes, and drops the
         experiment_table if it is specified.
         """
-        for model in self.model_name_list_:
+        for model in self._model_name_list:
             if (keeping_models is None) or (not model in keeping_models):
                 drop(name=model, method="model")
 
-        self.model_name_list_.clear()
-        self.model_id_list_.clear()
-        self.parameters_.clear()
-        self.measured_metrics_.clear()
-        self.user_defined_metrics_.clear()
+        self._model_name_list.clear()
+        self._model_id_list.clear()
+        self._model_type_list.clear()
+        self._parameters.clear()
+        self._measured_metrics.clear()
+        self._user_defined_metrics.clear()
 
         drop(name=self.experiment_table, method="table")
 
@@ -641,12 +642,12 @@ class vExperiment(PlottingUtils):
                     measured_metrics = eval(ts.values["measured_metrics"][index])
                     ud_metrics = eval(ts.values["user_defined_metrics"][index])
                     # the model will be ignored if any of the above eval operations fails
-                    self.model_name_list_.append(model_name)
-                    self.model_id_list_.append(model_id)
-                    self.model_type_list_.append(model_object._model_type)
-                    self.parameters_.append(parameters)
-                    self.measured_metrics_.append(measured_metrics)
-                    self.user_defined_metrics_.append(ud_metrics)
+                    self._model_name_list.append(model_name)
+                    self._model_id_list.append(model_id)
+                    self._model_type_list.append(model_object._model_type)
+                    self._parameters.append(parameters)
+                    self._measured_metrics.append(measured_metrics)
+                    self._user_defined_metrics.append(ud_metrics)
                 except:
                     pass
 
