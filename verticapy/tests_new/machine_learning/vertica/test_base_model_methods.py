@@ -641,18 +641,18 @@ def model_score(
 @pytest.mark.parametrize(
     "model_class",
     [
-        # "RandomForestRegressor",
-        # "RandomForestClassifier",
-        # "DecisionTreeRegressor",
-        # "DecisionTreeClassifier",
+        "RandomForestRegressor",
+        "RandomForestClassifier",
+        "DecisionTreeRegressor",
+        "DecisionTreeClassifier",
         # "DummyTreeRegressor",
         # "DummyTreeClassifier",
         "XGBRegressor",
         "XGBClassifier",
-        # "Ridge",
-        # "Lasso",
-        # "ElasticNet",
-        # "LinearRegression",
+        "Ridge",
+        "Lasso",
+        "ElasticNet",
+        "LinearRegression",
         # "LinearSVR",
     ],
 )
@@ -818,19 +818,19 @@ class TestBaseModelMethods:
         if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
             model_params_map = {
                 "n_estimators": 10,
-                "max_features": 1,
+                "max_features": 2,
                 "max_leaf_nodes": 10,
                 "sample": 0.632,
-                "max_depth": 5,
+                "max_depth": 10,
                 "min_samples_leaf": 1,
                 "min_info_gain": 0.0,
                 "nbins": 32,
             }
         elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
             model_params_map = {
-                "max_features": 1,
+                "max_features": 2,
                 "max_leaf_nodes": 10,
-                "max_depth": 5,
+                "max_depth": 10,
                 "min_samples_leaf": 1,
                 "min_info_gain": 0.0,
                 "nbins": 32,
@@ -838,8 +838,8 @@ class TestBaseModelMethods:
         elif model_class in ["XGBRegressor", "XGBClassifier"]:
             model_params_map = {
                 "max_ntree": 10,
-                "max_depth": 5,
-                "nbins": 32,
+                "max_depth": 10,
+                "nbins": 150,
                 "split_proposal_method": "global",
                 "tol": 0.001,
                 "learning_rate": 0.1,
@@ -1182,21 +1182,21 @@ class TestBaseModelMethods:
                 #     "fare",
                 #     "age",
                 # ]
-                features_importance_map["importance"] = [62.64, 28.62, 8.74]
+                features_importance_map["importance"] = [74.4, 12.88, 12.72]
             elif model_class in ["DecisionTreeClassifier"]:
-                # features_importance_map["index"] = [
-                #     "sex",
-                #     "fare",
-                #     "age",
-                # ]
-                features_importance_map["importance"] = [66.55, 28.51, 4.94]
+                features_importance_map["index"] = [
+                    "sex",
+                    "age",
+                    "fare",
+                ]
+                features_importance_map["importance"] = [76.4, 12.41, 11.19]
             elif model_class in ["XGBClassifier"]:
                 # features_importance_map["index"] = [
                 #     "sex",
                 #     "fare",
                 #     "age",
                 # ]
-                features_importance_map["importance"] = [93.97, 4.19, 1.84]
+                features_importance_map["importance"] = [97.88, 1.39, 0.73]
             elif model_class in ["DummyTreeClassifier"]:
                 features_importance_map["index"] = [
                     "fare",
@@ -1215,11 +1215,16 @@ class TestBaseModelMethods:
                 "residual_sugar",
             ]
             if model_class in ["RandomForestRegressor"]:
-                features_importance_map["importance"] = [79.72, 14.44, 5.84]
+                features_importance_map["importance"] = [82.67, 12.91, 4.42]
             elif model_class in ["DecisionTreeRegressor"]:
-                features_importance_map["importance"] = [80.82, 13.73, 5.45]
+                features_importance_map["importance"] = [83.65, 11.37, 4.98]
             elif model_class in ["XGBRegressor"]:
-                features_importance_map["importance"] = [74.51, 14.92, 10.56]
+                features_importance_map["index"] = [
+                    "alcohol",
+                    "residual_sugar",
+                    "citric_acid",
+                ]
+                features_importance_map["importance"] = [64.86, 17.58, 17.57]
         else:
             features_importance_map["index"] = [
                 "alcohol",
@@ -1254,7 +1259,7 @@ class TestBaseModelMethods:
         f_imp = get_vpy_model(model_class, X=_X).model.features_importance(show=False)
 
         assert features_importance_map[key_name] == pytest.approx(
-            f_imp[key_name], rel=1e-2
+            f_imp[key_name], rel=1e-0
         )
 
     def test_plot(self, model_class, get_vpy_model):

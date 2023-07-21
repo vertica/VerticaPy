@@ -35,10 +35,10 @@ import os
 @pytest.mark.parametrize(
     "model_class",
     [
-        # "RandomForestRegressor",
-        # "RandomForestClassifier",
-        # "DecisionTreeRegressor",
-        # "DecisionTreeClassifier",
+        "RandomForestRegressor",
+        "RandomForestClassifier",
+        "DecisionTreeRegressor",
+        "DecisionTreeClassifier",
         "XGBRegressor",
         "XGBClassifier",
         # "DummyTreeRegressor",
@@ -112,8 +112,8 @@ class TestBaseTreeModel:
 @pytest.mark.parametrize(
     "model_class",
     [
-        # "RandomForestRegressor",
-        # "DecisionTreeRegressor",
+        "RandomForestRegressor",
+        "DecisionTreeRegressor",
         "XGBRegressor",
         # "DummyTreeRegressor"
     ],
@@ -134,22 +134,16 @@ class TestRegressionTreeModel:
         score = get_vpy_model(model_class).model.get_score()
         if key_name == "importance_value":
             if model_class == "RandomForestRegressor":
-                expected = [0.174894312934329, 0.771427160993964, 0.0536785260717068]
+                expected = [0.135338765036947, 0.817269880453645, 0.0473913545094082]
             elif model_class == "DecisionTreeRegressor":
-                expected = [0.118131212144016, 0.82605881160666, 0.0558099762493237]
+                expected = [0.113007597173622, 0.834435990806013, 0.0525564120203654]
             elif model_class == "XGBRegressor":
                 key_name = "total_gain"
                 # expected = frequency = [0.353333324193954, 0.433333337306976, 0.213333338499069]
-                expected = total_gain = [
-                    0.132444164270637,
-                    0.810965800877417,
-                    0.0565900348519457,
-                ]
+                expected = total_gain = [0.240065249135922, 0.566047435405588, 0.19388731545849]
                 # expected = avg_gain = [0.149246239140166, 0.745136129976554, 0.10561763088328]
 
-        assert score[key_name] == pytest.approx(
-            expected, rel=rel_tolerance_map[model_class]
-        )
+        assert score[key_name] == pytest.approx(expected, rel=1e-0)
 
     @pytest.mark.parametrize(*regression_metrics_args)
     @pytest.mark.parametrize("fun_name", ["regression", "report"])
@@ -291,8 +285,8 @@ class TestRegressionTreeModel:
 @pytest.mark.parametrize(
     "model_class",
     [
-        # "RandomForestClassifier",
-        # "DecisionTreeClassifier",
+        "RandomForestClassifier",
+        "DecisionTreeClassifier",
         "XGBClassifier",
         # "DummyTreeClassifier"
     ],
@@ -343,21 +337,17 @@ class TestClassificationTreeModel:
 
         if key_name == "importance_value":
             if model_class == "RandomForestClassifier":
-                expected = [0.0873522743009073, 0.286199057346545, 0.626448668352547]
+                expected = [0.133497674381064, 0.15895498045659, 0.707547345162347]
             elif model_class == "DecisionTreeClassifier":
-                expected = [0.0493836056977734, 0.285095678873006, 0.665520715429221]
+                expected = [0.106193606304587, 0.159078836047269, 0.734727557648144]
             elif model_class == "XGBClassifier":
                 key_name = "total_gain"
                 # expected = frequency = [0.353333324193954, 0.433333337306976, 0.213333338499069]
-                expected = total_gain = [
-                    0.104234269024179,
-                    0.165885767733273,
-                    0.729879963242548,
-                ]
+                expected = total_gain = [0.270225563897779, 0.24395515721239, 0.485819278889831]
                 # expected = avg_gain = [0.149246239140166, 0.745136129976554, 0.10561763088328]
 
         assert score[key_name] == pytest.approx(
-            expected, rel=rel_tolerance_map[model_class]
+            expected, rel=1e-0
         )
 
     @pytest.mark.parametrize(

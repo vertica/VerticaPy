@@ -26,7 +26,6 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
     regression_report_details,
     regression_report_anova,
 )
-from scipy import stats
 
 
 @pytest.mark.parametrize(
@@ -93,38 +92,6 @@ class TestLinearModel:
             py_metric_name,
             _rel_tolerance,
         )
-        # vpy_model_obj = get_vpy_model(model_class)
-        #
-        # reg_rep = (
-        #     vpy_model_obj.model.report()
-        #     if fun_name == "report"
-        #     else vpy_model_obj.model.regression_report()
-        # )
-        # vpy_rep_map = dict(zip(reg_rep["index"], reg_rep["value"]))
-        #
-        # if vpy_metric_name[0] in vpy_rep_map or vpy_metric_name[1] in vpy_rep_map:
-        #     vpy_score = vpy_rep_map[
-        #         vpy_metric_name[0] if vpy_metric_name[1] is None else vpy_metric_name[1]
-        #     ]
-        # else:
-        #     pytest.skip(
-        #         f"{vpy_metric_name[0]} metric is not applicable for {model_class}"
-        #     )
-        #
-        # if model_class in ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"]:
-        #     py_model_obj = get_py_model(model_class)
-        #     regression_metrics_map = regression_metrics(
-        #         model_class, model_obj=py_model_obj
-        #     )
-        # else:
-        #     # py_model_obj = get_py_model(model_class)
-        #     regression_metrics_map = regression_metrics(model_class)
-        #
-        # py_score = regression_metrics_map[py_metric_name]
-        #
-        # print(
-        #     f"Metric Name: {vpy_metric_name, py_metric_name}, vertica: {vpy_score}, sklearn: {py_score}"
-        # )
         assert vpy_score == pytest.approx(
             py_score,
             rel=_rel_tolerance[model_class]
@@ -149,59 +116,6 @@ class TestLinearModel:
         """
         test function - regression/report details
         """
-        # vpy_model_obj = get_vpy_model(model_class)
-        #
-        # reg_rep_details = (
-        #     vpy_model_obj.model.report(metrics="details")
-        #     if fun_name == "report"
-        #     else vpy_model_obj.model.regression_report(metrics="details")
-        # )
-        # vpy_reg_rep_details_map = dict(
-        #     zip(reg_rep_details["index"], reg_rep_details["value"])
-        # )
-        #
-        # # Python
-        # if model_class in ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"]:
-        #     py_model_obj = get_py_model(model_class)
-        #     regression_metrics_map = regression_metrics(
-        #         model_class, model_obj=py_model_obj
-        #     )
-        # else:
-        #     py_model_obj = get_py_model(model_class)
-        #     regression_metrics_map = regression_metrics(model_class)
-        #
-        # if metric == "No. Observations":
-        #     py_res = len(py_model_obj.y)
-        # elif metric == "Model":
-        #     if model_class == "RandomForestRegressor":
-        #         py_res = "RandomForestRegressor"
-        #     elif model_class == "DecisionTreeRegressor":
-        #         py_res = "RandomForestRegressor"  # need to check on this
-        #     elif model_class == "DummyTreeRegressor":
-        #         py_res = "DummyTreeRegressor"
-        #     elif model_class == "LinearSVR":
-        #         py_res = "LinearSVR"
-        #     else:
-        #         py_res = "LinearRegression"
-        # elif metric == "No. Predictors":
-        #     py_res = len(py_model_obj.X.columns)
-        # elif metric == "R-squared":
-        #     py_res = regression_metrics_map["r2_score"]
-        # elif metric == "Adj. R-squared":
-        #     py_res = regression_metrics_map["rsquared_adj"]
-        # elif metric == "F-statistic":
-        #     py_res = regression_metrics_map["f"]
-        # elif metric == "Prob (F-statistic)":
-        #     py_res = regression_metrics_map["p_value"]
-        # elif metric == "Kurtosis":
-        #     py_res = stats.kurtosis(py_model_obj.y)
-        # elif metric == "Skewness":
-        #     py_res = stats.skew(py_model_obj.y)
-        # elif metric == "Jarque-Bera (JB)":
-        #     py_res = stats.jarque_bera(py_model_obj.y).statistic
-        # else:
-        #     py_res = expected
-
         vpy_reg_rep_details_map, py_res = regression_report_details(
             model_class,
             get_vpy_model,
@@ -242,23 +156,6 @@ class TestLinearModel:
         """
         test function - regression/report anova
         """
-        # vpy_model_obj = get_vpy_model(model_class)
-        #
-        # reg_rep_anova = (
-        #     vpy_model_obj.model.report(metrics="anova")
-        #     if fun_name == "report"
-        #     else vpy_model_obj.model.regression_report(metrics="anova")
-        # )
-        #
-        # # Python
-        # if model_class in ["RandomForestRegressor", "DecisionTreeRegressor", "DummyTreeRegressor"]:
-        #     py_model_obj = get_py_model(model_class)
-        #     regression_metrics_map = regression_metrics(
-        #         model_class, model_obj=py_model_obj
-        #     )
-        # else:
-        #     regression_metrics_map = regression_metrics(model_class)
-
         reg_rep_anova, regression_metrics_map = regression_report_anova(
             model_class,
             get_vpy_model,

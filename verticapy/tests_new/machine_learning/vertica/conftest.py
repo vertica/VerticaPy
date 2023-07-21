@@ -47,7 +47,7 @@ le = LabelEncoder()
 
 # vpy_linear_model.LinearSVR
 # skl_svm.LinearSVR
-# vpy_tree.DummyTreeClassifier
+vpy_tree.DecisionTreeRegressor
 
 
 @pytest.fixture(name="get_vpy_model", scope="function")
@@ -63,20 +63,20 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
 
         rf_params_map = {
             "ntree": 10,
-            "mtry": 1,
+            "mtry": 2,
             "max_breadth": 10,
             "sampling_size": 0.632,
-            "max_depth": 5,
+            "max_depth": 10,
             "min_leaf_size": 1,
             "nbins": 32,
         }
 
         decision_params_map = {
             "ntree": 1,
-            "mtry": 1,
+            "mtry": 2,
             "max_breadth": 10,
             "sampling_size": 1,
-            "max_depth": 5,
+            "max_depth": 10,
             "min_leaf_size": 1,
             "nbins": 32,
         }
@@ -93,8 +93,8 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
 
         xgb_params_map = {
             "max_ntree": 10,
-            "max_depth": 5,
-            "nbins": 32,
+            "max_depth": 10,
+            "nbins": 150,
             "split_proposal_method": "'global'",
             "tol": 0.001,
             "learning_rate": 0.1,
@@ -124,12 +124,12 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
                 else 10,
                 max_features=kwargs.get("max_features")
                 if kwargs.get("max_features")
-                else 1,
+                else 2,
                 max_leaf_nodes=kwargs.get("max_leaf_nodes")
                 if kwargs.get("max_leaf_nodes")
                 else 10,
                 sample=kwargs.get("sample") if kwargs.get("sample") else 0.632,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
@@ -147,11 +147,11 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
                 else False,
                 max_features=kwargs.get("max_features")
                 if kwargs.get("max_features")
-                else 1,
+                else 2,
                 max_leaf_nodes=kwargs.get("max_leaf_nodes")
                 if kwargs.get("max_leaf_nodes")
                 else 10,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
@@ -168,8 +168,8 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
                 if kwargs.get("overwrite_model")
                 else False,
                 max_ntree=kwargs.get("max_ntree") if kwargs.get("max_ntree") else 10,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
-                nbins=kwargs.get("nbins") if kwargs.get("nbins") else 32,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
+                nbins=kwargs.get("nbins") if kwargs.get("nbins") else 150,
                 split_proposal_method=kwargs.get("split_proposal_method")
                 if kwargs.get("split_proposal_method")
                 else "global",
@@ -427,59 +427,61 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
                 else 10,
                 max_features=kwargs.get("max_features")
                 if kwargs.get("max_features")
-                else 1,
+                else 2,
                 max_leaf_nodes=kwargs.get("max_leaf_nodes")
                 if kwargs.get("max_leaf_nodes")
                 else 10,
                 max_samples=kwargs.get("sample") if kwargs.get("sample") else 0.632,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
+                random_state=1
             )
         elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
             model = getattr(skl_tree, model_class)(
                 max_features=kwargs.get("max_features")
                 if kwargs.get("max_features")
-                else 1,
+                else 2,
                 max_leaf_nodes=kwargs.get("max_leaf_nodes")
                 if kwargs.get("max_leaf_nodes")
                 else 10,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
+                random_state=1
             )
-        elif model_class in ["DummyTreeRegressor"]:
-            model = getattr(skl_dummy, "DummyRegressor")()
-        elif model_class in ["DummyTreeClassifier"]:
-            model = getattr(skl_dummy, "DummyClassifier")()
         elif model_class in ["XGBRegressor", "XGBClassifier"]:
             model = getattr(xgb, model_class)(
                 n_estimators=kwargs.get("n_estimators")
                 if kwargs.get("n_estimators")
                 else 10,
-                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 5,
-                max_bin=kwargs.get("max_bin") if kwargs.get("max_bin") else 32,
+                max_depth=kwargs.get("max_depth") if kwargs.get("max_depth") else 10,
+                max_bin=kwargs.get("max_bin") if kwargs.get("max_bin") else 150,
                 # split_proposal_method=kwargs.get("split_proposal_method") if kwargs.get("split_proposal_method") else 'global',
                 # tol=kwargs.get("tol") if kwargs.get("tol") else 0.001,
-                learning_rate=kwargs.get("learning_rate")
-                if kwargs.get("learning_rate")
-                else 0.1,
-                gamma=kwargs.get("gamma") if kwargs.get("gamma") else 0.0,
-                reg_alpha=kwargs.get("reg_alpha") if kwargs.get("reg_alpha") else 0.0,
-                reg_lambda=kwargs.get("reg_lambda")
-                if kwargs.get("reg_lambda")
-                else 0.0,
-                subsample=kwargs.get("subsample") if kwargs.get("subsample") else 1.0,
-                colsample_bytree=kwargs.get("colsample_bytree")
-                if kwargs.get("colsample_bytree")
-                else 1.0,
-                colsample_bynode=kwargs.get("colsample_bynode")
-                if kwargs.get("colsample_bynode")
-                else 1.0,
+                # learning_rate=kwargs.get("learning_rate")
+                # if kwargs.get("learning_rate")
+                # else 0.1,
+                # gamma=kwargs.get("gamma") if kwargs.get("gamma") else 0.0,
+                # reg_alpha=kwargs.get("reg_alpha") if kwargs.get("reg_alpha") else 0.0,
+                # reg_lambda=kwargs.get("reg_lambda")
+                # if kwargs.get("reg_lambda")
+                # else 0.0,
+                # subsample=kwargs.get("subsample") if kwargs.get("subsample") else 1.0,
+                # colsample_bytree=kwargs.get("colsample_bytree")
+                # if kwargs.get("colsample_bytree")
+                # else 1.0,
+                # colsample_bynode=kwargs.get("colsample_bynode")
+                # if kwargs.get("colsample_bynode")
+                # else 1.0,
+                random_state=1
             )
-            # tree_param_map = rf_params_map
+        elif model_class in ["DummyTreeRegressor"]:
+            model = getattr(skl_dummy, "DummyRegressor")()
+        elif model_class in ["DummyTreeClassifier"]:
+            model = getattr(skl_dummy, "DummyClassifier")()
         elif model_class == "LinearSVR":
             model = getattr(skl_svm, model_class)(
                 fit_intercept=py_fit_intercept if py_fit_intercept else True
@@ -594,12 +596,12 @@ def calculate_regression_metrics(get_py_model):
             )
             / no_of_records
         )
-        # regression_metrics_map["r2"] = regression_metrics_map[
-        #     "r2_score"
-        # ] = skl_metrics.r2_score(y, pred)
-        regression_metrics_map["r2"] = regression_metrics_map["r2_score"] = 1 - (
-            ss_res / ss_tot
-        )
+        regression_metrics_map["r2"] = regression_metrics_map[
+            "r2_score"
+        ] = skl_metrics.r2_score(y, pred)
+        # regression_metrics_map["r2"] = regression_metrics_map["r2_score"] = 1 - (
+        #     ss_res / ss_tot
+        # )
         regression_metrics_map["rsquared_adj"] = 1 - (
             1 - regression_metrics_map["r2"]
         ) * (no_of_records - 1) / (no_of_records - num_features - 1)
