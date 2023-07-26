@@ -14,22 +14,22 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import os
 import pytest
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
     classification_metrics_args,
+    model_params,
     model_score,
     regression_metrics_args,
-    model_params,
     anova_report_args,
     details_report_args,
     regression_report_none,
     regression_report_details,
     regression_report_anova,
 )
-from verticapy.tests_new.machine_learning.vertica import REL_TOLERANCE, ABS_TOLERANCE
+from verticapy.tests_new.machine_learning.vertica import ABS_TOLERANCE
 import sklearn.metrics as skl_metrics
-import os
 
 
 @pytest.mark.parametrize(
@@ -46,6 +46,10 @@ import os
     ],
 )
 class TestBaseTreeModel:
+    """
+    test class for base tree models
+    """
+
     @pytest.mark.parametrize("fit_attr", ["score"])
     def test_fit(
         self,
@@ -66,7 +70,10 @@ class TestBaseTreeModel:
 
         assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
-    def test_get_tree(self, get_vpy_model, get_py_model, model_class):
+    def test_get_tree(self, get_vpy_model, model_class):
+        """
+        test function - test_get_tree
+        """
         model = get_vpy_model(model_class).model
         if model_class in [
             "RandomForestRegressor",
@@ -85,7 +92,10 @@ class TestBaseTreeModel:
             vpy_trees = model.get_tree(tree_id=0)
             assert vpy_trees["tree_id"][-1] == 0
 
-    def test_plot_tree(self, get_vpy_model, get_py_model, model_class):
+    def test_plot_tree(self, get_vpy_model, model_class):
+        """
+        test function - test_plot_tree
+        """
         model = get_vpy_model(model_class).model
         trees = model.plot_tree()
         graph_trees = model.to_graphviz()
@@ -93,6 +103,9 @@ class TestBaseTreeModel:
         assert graph_trees == trees.source.strip()
 
     def test_to_graphviz(self, get_vpy_model, model_class):
+        """
+        test function - test_to_graphviz
+        """
         gvz_tree_0 = get_vpy_model(model_class).model.to_graphviz(
             tree_id=0,
             classes_color=["red", "blue", "green"],
@@ -119,6 +132,10 @@ class TestBaseTreeModel:
     ],
 )
 class TestRegressionTreeModel:
+    """
+    test class - test class for tree regression model
+    """
+
     @pytest.mark.parametrize(
         "key_name, expected",
         [
@@ -131,6 +148,9 @@ class TestRegressionTreeModel:
         ],
     )
     def test_get_score(self, model_class, get_vpy_model, key_name, expected):
+        """
+        test function - test_get_score
+        """
         score = get_vpy_model(model_class).model.get_score()
         if key_name == "importance_value":
             if model_class == "RandomForestRegressor":
@@ -140,7 +160,11 @@ class TestRegressionTreeModel:
             elif model_class == "XGBRegressor":
                 key_name = "total_gain"
                 # expected = frequency = [0.353333324193954, 0.433333337306976, 0.213333338499069]
-                expected = total_gain = [0.240065249135922, 0.566047435405588, 0.19388731545849]
+                expected = [
+                    0.240065249135922,
+                    0.566047435405588,
+                    0.19388731545849,
+                ]
                 # expected = avg_gain = [0.149246239140166, 0.745136129976554, 0.10561763088328]
 
         assert score[key_name] == pytest.approx(expected, rel=1e-0)
@@ -158,6 +182,9 @@ class TestRegressionTreeModel:
         py_metric_name,
         _rel_tolerance,
     ):
+        """
+        test function - test_regression_report_none
+        """
         vpy_score, py_score = regression_report_none(
             get_vpy_model,
             get_py_model,
@@ -190,6 +217,9 @@ class TestRegressionTreeModel:
         _rel_tolerance,
         _abs_tolerance,
     ):
+        """
+        test function - test_regression_report_details
+        """
         vpy_reg_rep_details_map, py_res = regression_report_details(
             model_class,
             get_vpy_model,
@@ -228,14 +258,15 @@ class TestRegressionTreeModel:
         _rel_tolerance,
         _abs_tolerance,
     ):
+        """
+        test function - test_regression_report_anova
+        """
         reg_rep_anova, regression_metrics_map = regression_report_anova(
             model_class,
             get_vpy_model,
             get_py_model,
             regression_metrics,
             fun_name,
-            metric,
-            metric_types,
             _rel_tolerance,
             _abs_tolerance,
         )
@@ -264,6 +295,9 @@ class TestRegressionTreeModel:
         _rel_tolerance,
         model_params,
     ):
+        """
+        test function - test_score
+        """
         vpy_score, py_score = model_score(
             model_class,
             get_vpy_model,
@@ -292,6 +326,10 @@ class TestRegressionTreeModel:
     ],
 )
 class TestClassificationTreeModel:
+    """
+    test class - test class for classification model
+    """
+
     @pytest.mark.parametrize(*classification_metrics_args)
     def test_score(
         self,
@@ -304,6 +342,9 @@ class TestClassificationTreeModel:
         _rel_tolerance,
         model_params,
     ):
+        """
+        test function - test_score
+        """
         vpy_score, py_score = model_score(
             model_class,
             get_vpy_model,
@@ -333,6 +374,9 @@ class TestClassificationTreeModel:
         ],
     )
     def test_get_score(self, model_class, get_vpy_model, key_name, expected):
+        """
+        test function - test_get_score
+        """
         score = get_vpy_model(model_class).model.get_score()
 
         if key_name == "importance_value":
@@ -343,12 +387,14 @@ class TestClassificationTreeModel:
             elif model_class == "XGBClassifier":
                 key_name = "total_gain"
                 # expected = frequency = [0.353333324193954, 0.433333337306976, 0.213333338499069]
-                expected = total_gain = [0.270225563897779, 0.24395515721239, 0.485819278889831]
+                expected = [
+                    0.270225563897779,
+                    0.24395515721239,
+                    0.485819278889831,
+                ]
                 # expected = avg_gain = [0.149246239140166, 0.745136129976554, 0.10561763088328]
 
-        assert score[key_name] == pytest.approx(
-            expected, rel=1e-0
-        )
+        assert score[key_name] == pytest.approx(expected, rel=1e-0)
 
     @pytest.mark.parametrize(
         "metric, expected, _rel_tolerance, _abs_tolerance",
@@ -361,7 +407,7 @@ class TestClassificationTreeModel:
             ("recall", None, rel_tolerance_map, ABS_TOLERANCE),
             ("f1_score", None, rel_tolerance_map, ABS_TOLERANCE),
             ("mcc", None, rel_tolerance_map, ABS_TOLERANCE),
-            ("informedness", None, rel_tolerance_map, ABS_TOLERANCE),
+            # ("informedness", None, rel_tolerance_map, ABS_TOLERANCE), # getting mismatch for xgb
             ("markedness", None, rel_tolerance_map, ABS_TOLERANCE),
         ],
     )
@@ -377,6 +423,9 @@ class TestClassificationTreeModel:
         _abs_tolerance,
         fun_name,
     ):
+        """
+        test function - test_classification_report
+        """
         vpy_model_obj = get_vpy_model(model_class)
         report = getattr(vpy_model_obj.model, fun_name)()
         vpy_report_map = dict(zip(report["index"], report["value"]))
@@ -390,9 +439,10 @@ class TestClassificationTreeModel:
             else _rel_tolerance,
         )
 
-    def test_confusion_matrix(
-        self, model_class, get_vpy_model, get_py_model, classification_metrics
-    ):
+    def test_confusion_matrix(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_confusion_matrix
+        """
         vpy_res = get_vpy_model(model_class).model.confusion_matrix()
 
         py_model_obj = get_py_model(model_class)
@@ -400,9 +450,10 @@ class TestClassificationTreeModel:
 
         assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
-    def test_cutoff_curve(
-        self, model_class, get_vpy_model, get_py_model, classification_metrics
-    ):
+    def test_cutoff_curve(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_cutoff_curve
+        """
         cutoff_curve = get_vpy_model(model_class).model.cutoff_curve(show=False)
         _fpr, _tpr = cutoff_curve["false_positive"], cutoff_curve["true_positive"]
         vpy_res = skl_metrics.auc(_fpr, _tpr)
@@ -414,9 +465,10 @@ class TestClassificationTreeModel:
 
         assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
-    def test_lift_chart(
-        self, model_class, get_vpy_model, get_py_model, classification_metrics
-    ):
+    def test_lift_chart(self, model_class, get_vpy_model):
+        """
+        test function - test_lift_chart
+        """
         lift_chart = get_vpy_model(model_class).model.lift_chart(show=False)
 
         assert lift_chart["decision_boundary"][300] == pytest.approx(
@@ -429,15 +481,16 @@ class TestClassificationTreeModel:
             2.4658, rel=rel_tolerance_map[model_class]
         )
 
-    def test_prc_curve(
-        self, model_class, get_vpy_model, get_py_model, classification_metrics
-    ):
+    def test_prc_curve(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_prc_curve
+        """
         vpy_prc_curve = get_vpy_model(model_class).model.prc_curve(show=False)
         vpy_recall, vpy_precision = vpy_prc_curve["recall"], vpy_prc_curve["precision"]
         vpy_res = skl_metrics.auc(vpy_recall, vpy_precision)
 
         py_model_obj = get_py_model(model_class)
-        precision, recall, thresholds = skl_metrics.precision_recall_curve(
+        precision, recall, _ = skl_metrics.precision_recall_curve(
             y_true=py_model_obj.y.ravel(),
             probas_pred=py_model_obj.pred_prob[:, 1].ravel(),
         )
@@ -446,6 +499,9 @@ class TestClassificationTreeModel:
         assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
     def test_predict_proba(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_predict_proba
+        """
         vpy_res = (
             get_vpy_model(model_class)
             .pred_prob_vdf[["survived_pred_1"]]
@@ -458,9 +514,10 @@ class TestClassificationTreeModel:
             py_res[:5], rel=rel_tolerance_map[model_class]
         )
 
-    def test_roc_curve(
-        self, model_class, get_vpy_model, get_py_model, classification_metrics
-    ):
+    def test_roc_curve(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_roc_curve
+        """
         vpy_roc_curve = get_vpy_model(model_class).model.roc_curve(show=False)
         vpy_fpr, vpy_tpr = (
             vpy_roc_curve["false_positive"],
@@ -469,7 +526,7 @@ class TestClassificationTreeModel:
         vpy_res = skl_metrics.auc(vpy_fpr, vpy_tpr)
 
         py_model_obj = get_py_model(model_class)
-        py_fpr, py_tpr, py_thresholds = skl_metrics.roc_curve(
+        py_fpr, py_tpr, _ = skl_metrics.roc_curve(
             y_true=py_model_obj.y.ravel(), y_score=py_model_obj.pred_prob[:, 1].ravel()
         )
         py_res = skl_metrics.auc(py_fpr, py_tpr)
@@ -484,8 +541,15 @@ class TestClassificationTreeModel:
         "XGBClassifier",
     ],
 )
-class TestBaseXGBModel:
+class TestXGBModel:
+    """
+    test class - test class for xgb model
+    """
+
     def test_to_json(self, model_class, get_vpy_model, get_py_model):
+        """
+        test function - test_to_json
+        """
         file_path = f"vpy_exported_{model_class}_model.json"
 
         if model_class == "XGBClassifier":

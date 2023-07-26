@@ -39,6 +39,10 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
     ],
 )
 class TestLinearModel:
+    """
+    test class - TestLinearModel
+    """
+
     @pytest.mark.parametrize("fit_attr", ["coef_", "intercept_", "score"])
     def test_fit(
         self,
@@ -162,8 +166,6 @@ class TestLinearModel:
             get_py_model,
             regression_metrics,
             fun_name,
-            metric,
-            metric_types,
             _rel_tolerance,
             _abs_tolerance,
         )
@@ -192,6 +194,9 @@ class TestLinearModel:
         _rel_tolerance,
         model_params,
     ):
+        """
+        test function - test_score
+        """
         vpy_score, py_score = model_score(
             model_class,
             get_vpy_model,

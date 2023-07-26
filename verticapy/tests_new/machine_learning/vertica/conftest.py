@@ -34,20 +34,9 @@ import sklearn.dummy as skl_dummy
 import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
 import pytest
-import statsmodels.api as sm
-from scipy import stats
 from scipy.stats import f
-import matplotlib.pyplot as plt
-from vertica_highcharts.highcharts.highcharts import Highchart
-import plotly
-from verticapy import vDataFrame
 
 le = LabelEncoder()
-
-
-# vpy_linear_model.LinearSVR
-# skl_svm.LinearSVR
-vpy_tree.DecisionTreeRegressor
 
 
 @pytest.fixture(name="get_vpy_model", scope="function")
@@ -436,7 +425,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
-                random_state=1
+                random_state=1,
             )
         elif model_class in ["DecisionTreeRegressor", "DecisionTreeClassifier"]:
             model = getattr(skl_tree, model_class)(
@@ -450,7 +439,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
                 min_samples_leaf=kwargs.get("min_samples_leaf")
                 if kwargs.get("min_samples_leaf")
                 else 1,
-                random_state=1
+                random_state=1,
             )
         elif model_class in ["XGBRegressor", "XGBClassifier"]:
             model = getattr(xgb, model_class)(
@@ -476,7 +465,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
                 # colsample_bynode=kwargs.get("colsample_bynode")
                 # if kwargs.get("colsample_bynode")
                 # else 1.0,
-                random_state=1
+                random_state=1,
             )
         elif model_class in ["DummyTreeRegressor"]:
             model = getattr(skl_dummy, "DummyRegressor")()
@@ -563,9 +552,9 @@ def calculate_regression_metrics(get_py_model):
         num_features = (
             3 if model_class in ["DummyTreeRegressor"] else len(model.feature_names_in_)
         )
-        y_bar = y.mean()
-        ss_tot = ((y - y_bar) ** 2).sum()
-        ss_res = ((y - pred) ** 2).sum()
+        # y_bar = y.mean()
+        # ss_tot = ((y - y_bar) ** 2).sum()
+        # ss_res = ((y - pred) ** 2).sum()
 
         regression_metrics_map["mse"] = getattr(skl_metrics, "mean_squared_error")(
             y, pred
@@ -640,11 +629,9 @@ def calculate_classification_metrics(get_py_model):
     fixture to calculate python classification metrics
     """
 
-    def _calculate_classification_metrics(
-        model_class, model_obj=None, fit_intercept=True
-    ):
+    def _calculate_classification_metrics(model_class, model_obj=None):
         _model_obj = get_py_model(model_class)
-        y, pred, pred_prob, model = (
+        y, pred, pred_prob, _ = (
             model_obj.y.ravel() if model_obj else _model_obj.y.ravel(),
             model_obj.pred.ravel() if model_obj else _model_obj.pred.ravel(),
             model_obj.pred_prob[:, 1].ravel()
@@ -653,12 +640,12 @@ def calculate_classification_metrics(get_py_model):
             model_obj.model if model_obj else _model_obj.model,
         )
 
-        precision, recall, thresholds = skl_metrics.precision_recall_curve(
+        precision, recall, _ = skl_metrics.precision_recall_curve(
             y, pred_prob, pos_label=1
         )
 
         classification_metrics_map = {}
-        no_of_records = len(y)
+        # no_of_records = len(y)
         # avg = sum(y) / no_of_records
         # num_features = 3 if model_class in ["DummyTreeClassifier"] else len(model.feature_names_in_)
 

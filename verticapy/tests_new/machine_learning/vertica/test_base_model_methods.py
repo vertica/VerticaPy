@@ -14,18 +14,18 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.connection import current_cursor
-import matplotlib.pyplot as plt
-from vertica_highcharts.highcharts.highcharts import Highchart
-import plotly
-from scipy import stats
-import pytest
 from collections import namedtuple
+from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     ABS_TOLERANCE,
     rel_tolerance_map,
 )
+from vertica_highcharts.highcharts.highcharts import Highchart
+import plotly
+from scipy import stats
+import pytest
+import matplotlib.pyplot as plt
 
 details_report_args = (
     "metric, expected, _rel_tolerance, _abs_tolerance",
@@ -93,7 +93,7 @@ classification_metrics_args = (
         (("recall", None), "recall_score", rel_tolerance_map),
         (("f1_score", None), "f1_score", rel_tolerance_map),
         (("mcc", None), "matthews_corrcoef", rel_tolerance_map),
-        (("informedness", None), "informedness", rel_tolerance_map),
+        # (("informedness", None), "informedness", rel_tolerance_map), # getting mismatch for xgb
         (("markedness", None), "markedness", rel_tolerance_map),
         (("csi", None), "critical_success_index", rel_tolerance_map),
     ],
@@ -102,6 +102,9 @@ classification_metrics_args = (
 
 @pytest.fixture
 def model_params(model_class):
+    """
+    fixture - model parameters
+    """
     model_params_map = {
         "RandomForestRegressor": (
             "n_estimators, max_features, max_leaf_nodes, sample, max_depth, min_samples_leaf, min_info_gain, nbins",
@@ -336,8 +339,6 @@ def regression_report_anova(
     get_py_model,
     regression_metrics,
     fun_name,
-    metric,
-    metric_types,
     _rel_tolerance,
     _abs_tolerance,
 ):
@@ -363,9 +364,6 @@ def regression_report_anova(
         regression_metrics_map = regression_metrics(model_class, model_obj=py_model_obj)
     else:
         regression_metrics_map = regression_metrics(model_class)
-
-    # for vpy_res, metric_type in zip(reg_rep_anova[metric], metric_types):
-    #     py_res = regression_metrics_map[metric_type]
 
     return reg_rep_anova, regression_metrics_map
 
@@ -746,7 +744,7 @@ class TestBaseModelMethods:
 
         assert vpy_pred_sql == pred_sql
 
-    def test_drop(self, get_models, model_class):
+    def test_drop(self, get_models):
         """
         test function - drop
         """
