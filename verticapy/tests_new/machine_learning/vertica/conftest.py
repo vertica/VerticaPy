@@ -306,12 +306,14 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
             current_cursor().execute(
                 f"ALTER TABLE {schema_name}.winequality ADD COLUMN id int"
             )
-            # current_cursor().execute("CREATE SEQUENCE sequence_auto_increment START 1")
+            seq_sql = f"CREATE SEQUENCE IF NOT EXISTS {schema_name}.sequence_auto_increment START 1"
+            print(f'Sequence SQL: {seq_sql}')
+            current_cursor().execute(seq_sql)
             current_cursor().execute(
-                f"create table {schema_name}.winequality1 as select * from {schema_name}.winequality limit 0"
+                f"CREATE TABLE {schema_name}.winequality1 as select * from {schema_name}.winequality limit 0"
             )
             current_cursor().execute(
-                f"insert into {schema_name}.winequality1 select fixed_acidity,volatile_acidity,citric_acid,residual_sugar,chlorides,free_sulfur_dioxide,total_sulfur_dioxide,density,pH,sulphates,alcohol,quality,good,color, NEXTVAL('sequence_auto_increment') from {schema_name}.winequality"
+                f"insert into {schema_name}.winequality1 select fixed_acidity,volatile_acidity,citric_acid,residual_sugar,chlorides,free_sulfur_dioxide,total_sulfur_dioxide,density,pH,sulphates,alcohol,quality,good,color, NEXTVAL('{schema_name}.sequence_auto_increment') from {schema_name}.winequality"
             )
             current_cursor().execute(f"DROP TABLE {schema_name}.winequality")
             current_cursor().execute(
@@ -341,6 +343,7 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
 
             pred_vdf = model.predict(winequality_vpy_fun, name=f"{y}_pred")
             pred_prob_vdf = None
+            current_cursor().execute(f"DROP SEQUENCE IF EXISTS {schema_name}.sequence_auto_increment")
         else:
             if X is None:
                 X = ["citric_acid", "residual_sugar", "alcohol"]
