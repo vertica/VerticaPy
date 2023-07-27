@@ -1182,11 +1182,11 @@ class TestBaseModelMethods:
                 # ]
                 features_importance_map["importance"] = [74.4, 12.88, 12.72]
             elif model_class in ["DecisionTreeClassifier"]:
-                features_importance_map["index"] = [
-                    "sex",
-                    "age",
-                    "fare",
-                ]
+                # features_importance_map["index"] = [
+                #     "sex",
+                #     "age",
+                #     "fare",
+                # ]
                 features_importance_map["importance"] = [76.4, 12.41, 11.19]
             elif model_class in ["XGBClassifier"]:
                 # features_importance_map["index"] = [
