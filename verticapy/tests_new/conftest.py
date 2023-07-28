@@ -438,3 +438,13 @@ def winequality_vpy_main(schema_loader):
     drop(
         name=f"{schema_loader}.winequality",
     )
+
+
+@pytest.fixture(scope="function")
+def titanic_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for titanic dataset
+    """
+    titanic = load_titanic(schema_loader, "titanic")
+    yield titanic
+    drop(name=f"{schema_loader}.titanic")
