@@ -22,7 +22,6 @@ import pytest
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression
 from verticapy.learn.linear_model import LogisticRegression
 
@@ -32,19 +31,12 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd():
-    winequality = load_winequality()
-    yield winequality
-    drop(name="public.winequality")
-
-
-@pytest.fixture(scope="module")
-def reg_model1(winequality_vd):
+def reg_model1(winequality_vpy):
     model = LinearRegression("reg_m1", solver="Newton", max_iter=2)
     model.drop()
 
     model.fit(
-        winequality_vd,
+        winequality_vpy,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
@@ -53,12 +45,12 @@ def reg_model1(winequality_vd):
 
 
 @pytest.fixture(scope="module")
-def reg_model2(winequality_vd):
+def reg_model2(winequality_vpy):
     model = LinearRegression("reg_m2", solver="Newton", max_iter=2)
     model.drop()
 
     model.fit(
-        winequality_vd,
+        winequality_vpy,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
@@ -67,12 +59,12 @@ def reg_model2(winequality_vd):
 
 
 @pytest.fixture(scope="module")
-def reg_model3(winequality_vd):
+def reg_model3(winequality_vpy):
     model = LinearRegression("reg_m3", solver="Newton", max_iter=2)
     model.drop()
 
     model.fit(
-        winequality_vd,
+        winequality_vpy,
         ["citric_acid", "residual_sugar", "alcohol"],
         "quality",
     )
@@ -81,12 +73,12 @@ def reg_model3(winequality_vd):
 
 
 @pytest.fixture(scope="module")
-def bin_model1(winequality_vd):
+def bin_model1(winequality_vpy):
     model = LogisticRegression("bin_m1", solver="Newton", max_iter=2, penalty=None)
     model.drop()
 
     model.fit(
-        winequality_vd,
+        winequality_vpy,
         ["citric_acid", "residual_sugar", "alcohol"],
         "good",
     )
@@ -95,12 +87,12 @@ def bin_model1(winequality_vd):
 
 
 @pytest.fixture(scope="module")
-def bin_model2(winequality_vd):
+def bin_model2(winequality_vpy):
     model = LogisticRegression("bin_m2", solver="Newton", max_iter=2, penalty=None)
     model.drop()
 
     model.fit(
-        winequality_vd,
+        winequality_vpy,
         ["citric_acid", "residual_sugar", "alcohol"],
         "good",
     )
@@ -138,11 +130,11 @@ class TestModelVersioning:
         assert ts.values["category"] == ["VERTICA_MODELS"]
         assert ts.values["model_name"] == ["bin_m1"]
 
-    def test_reg_predict_change_status(self, winequality_vd, reg_model2):
+    def test_reg_predict_change_status(self, winequality_vpy, reg_model2):
         reg_model2.register("regression_app2")
         rm = mv.RegisteredModel("regression_app2")
 
-        data1 = winequality_vd.copy()
+        data1 = winequality_vpy.copy()
         pred_vdf1 = rm.predict(
             data1,
             X=["citric_acid", "residual_sugar", "alcohol"],
@@ -153,7 +145,7 @@ class TestModelVersioning:
 
         rm.change_status(version=1, new_status="staging")
         rm.change_status(version=1, new_status="production")
-        data2 = winequality_vd.copy()
+        data2 = winequality_vpy.copy()
 
         pred_vdf2 = rm.predict(
             data2, X=["citric_acid", "residual_sugar", "alcohol"], name="y_score"
@@ -161,11 +153,11 @@ class TestModelVersioning:
 
         assert pred_vdf2["y_score"].avg() == pytest.approx(5.8183777127)
 
-    def test_bin_predict_change_status(self, winequality_vd, bin_model2):
+    def test_bin_predict_change_status(self, winequality_vpy, bin_model2):
         bin_model2.register("classification_app2")
         rm = mv.RegisteredModel("classification_app2")
 
-        data1 = winequality_vd.copy()
+        data1 = winequality_vpy.copy()
         pred_vdf1 = rm.predict(
             data1,
             X=["citric_acid", "residual_sugar", "alcohol"],
@@ -174,7 +166,7 @@ class TestModelVersioning:
         )
         assert pred_vdf1["y_score"].mode() == 0
 
-        data2 = winequality_vd.copy()
+        data2 = winequality_vpy.copy()
         pred_vdf2 = rm.predict_proba(
             data2,
             X=["citric_acid", "residual_sugar", "alcohol"],
@@ -186,13 +178,13 @@ class TestModelVersioning:
         rm.change_status(version=1, new_status="staging")
         rm.change_status(version=1, new_status="production")
 
-        data3 = winequality_vd.copy()
+        data3 = winequality_vpy.copy()
         pred_vdf3 = rm.predict(
             data3, X=["citric_acid", "residual_sugar", "alcohol"], name="y_score"
         )
         assert pred_vdf3["y_score"].mode() == 0
 
-        data4 = winequality_vd.copy()
+        data4 = winequality_vpy.copy()
         pred_vdf4 = rm.predict_proba(
             data4, X=["citric_acid", "residual_sugar", "alcohol"], name="y_score"
         )
