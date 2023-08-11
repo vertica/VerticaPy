@@ -146,7 +146,7 @@ from verticapy.learn.svm import LinearSVR
 
 @pytest.fixture(scope="module")
 def reg_model1(winequality_vpy):
-    model = LinearRegression("reg_m1", solver="Newton", max_iter=5)
+    model = LinearRegression("reg_m1", solver="BFGS", max_iter=1)
     model.drop()
 
     model.fit(
@@ -160,7 +160,7 @@ def reg_model1(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def reg_model2(winequality_vpy):
-    model = LinearRegression("reg_m2", solver="BFGS", max_iter=5)
+    model = LinearRegression("reg_m2", solver="BFGS", max_iter=3)
     model.drop()
 
     model.fit(
@@ -263,7 +263,7 @@ class TestRegressorExperiment(ExperimentBase):
         super().test_list_models(regressor_experiment, list_of_models)
 
     def test_load_best_model(self, regressor_experiment):
-        best_model_name = "reg_m1"
+        best_model_name = "reg_m3"
         super().test_load_best_model(
             regressor_experiment, best_model_name, "mean_squared_error"
         )

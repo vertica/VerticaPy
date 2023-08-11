@@ -490,14 +490,18 @@ class vExperiment(PlottingUtils):
 
             for model_index, item in enumerate(self._measured_metrics):
                 if parameter in self._parameters[model_index].keys():
-                    data_points.append((self._parameters[model_index][parameter], item[metric_index]))
+                    data_points.append(
+                        (self._parameters[model_index][parameter], item[metric_index])
+                    )
         else:
             # it is a user defined metric
             for model_index, item in enumerate(self._user_defined_metrics):
                 if (metric in item.keys()) and (
                     parameter in self._parameters[model_index].keys()
                 ):
-                    data_points.append((self._parameters[model_index][parameter], item[metric]))
+                    data_points.append(
+                        (self._parameters[model_index][parameter], item[metric])
+                    )
 
         if len(data_points) == 0:
             raise ValueError(
@@ -505,7 +509,6 @@ class vExperiment(PlottingUtils):
                 "(parameter, metric) = ({parameter}, {metric})."
             )
 
-        
         data = {"X": np.array(data_points), "s": None, "c": None}
         layout = {
             "columns": [f"parameter={parameter}", f"metric={metric}"],
