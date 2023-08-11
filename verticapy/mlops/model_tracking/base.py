@@ -433,7 +433,7 @@ class vExperiment(PlottingUtils):
 
             for index, item in enumerate(self._measured_metrics):
                 if (item[metric_index] * metric_sign) > max_value:
-                    max_value = item[metric_index]
+                    max_value = item[metric_index] * metric_sign
                     max_index = index
         else:
             # search the list of user defined metrics
@@ -479,8 +479,7 @@ class vExperiment(PlottingUtils):
         obj
             Plotting Object.
         """
-        parameter_list = []
-        metric_list = []
+        data_points = []
 
         if (metric, 1) in self._metrics or (metric, -1) in self._metrics:
             # it is a standard metric
@@ -491,26 +490,25 @@ class vExperiment(PlottingUtils):
 
             for model_index, item in enumerate(self._measured_metrics):
                 if parameter in self._parameters[model_index].keys():
-                    parameter_list.append(self._parameters[model_index][parameter])
-                    metric_list.append(item[metric_index])
+                    data_points.append((self._parameters[model_index][parameter], item[metric_index]))
         else:
             # it is a user defined metric
             for model_index, item in enumerate(self._user_defined_metrics):
                 if (metric in item.keys()) and (
                     parameter in self._parameters[model_index].keys()
                 ):
-                    parameter_list.append(self._parameters[model_index][parameter])
-                    metric_list.append(item[metric])
+                    data_points.append((self._parameters[model_index][parameter], item[metric]))
 
-        if len(parameter_list) == 0 or len(metric_list) == 0:
+        if len(data_points) == 0:
             raise ValueError(
                 "Could not find any datapoint for the provided pair of "
                 "(parameter, metric) = ({parameter}, {metric})."
             )
 
-        data = {"X": np.concatenate(parameter_list, metric_list), "s": None, "c": None}
+        
+        data = {"X": np.array(data_points), "s": None, "c": None}
         layout = {
-            "columns": ["parameter", "metric"],
+            "columns": [f"parameter={parameter}", f"metric={metric}"],
             "size": None,
             "c": None,
             "has_category": False,
