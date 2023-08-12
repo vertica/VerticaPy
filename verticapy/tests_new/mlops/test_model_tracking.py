@@ -33,7 +33,7 @@ set_option("print_info", False)
 
 class ExperimentBase:
     """
-    A base clase for model tracking tests with different experiment types
+    A base class for model tracking tests with different experiment types
     """
 
     def test_repr(self, experiment, representation):
