@@ -266,6 +266,43 @@ class VerticaModel(PlottingUtils):
             return model_type
         return res
 
+    def register(self, registered_name: str, raise_error: bool = False) -> bool:
+        """
+        Registers the model and adds it to in-DB Model versioning environment
+        with a status of 'under_review'.
+        The model must be native and already saved in-DB to be registered.
+
+        Parameters
+        ----------
+        registered_name: str
+            Identifies an abstract name to which the model is registered.
+        raise_error: bool, optional
+            If set to True and an error occurs, raises the error.
+
+        Returns
+        -------
+        bool
+            Returns True when registeration is successful; False otherwise.
+        """
+        try:
+            if not self._is_native:
+                raise RuntimeError("Only native models can be registered.")
+
+            if not self._is_already_stored():
+                raise RuntimeError("The model must be trained to be registered.")
+
+            registering_query = (
+                f"SELECT REGISTER_MODEL('{self.model_name}', '{registered_name}');"
+            )
+            _executeSQL(registering_query, title="register model")
+
+        except Exception as exc:
+            if raise_error:
+                raise RuntimeError("Failed to register the model") from exc
+            else:
+                return False
+        return True
+
     # Attributes Methods.
 
     def get_attributes(self, attr_name: Optional[str] = None) -> Any:
