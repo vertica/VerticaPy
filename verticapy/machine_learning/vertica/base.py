@@ -369,6 +369,28 @@ class VerticaModel(PlottingUtils):
                 "non-native models.\nUse 'get_attributes' method instead."
             )
 
+    def _get_vertica_model_id(self) -> int:
+        """
+        Returns the model_id of a native model archived in database.
+        It returns 0 if the model is not archived in the database.
+        """
+        if not self._is_native:
+            raise AttributeError(
+                "Method '_get_vertica_model_id' is not available for "
+                "non-native models."
+            )
+
+        schema_name, model_name = schema_relation(self.model_name, do_quote=False)
+        query = (
+            f"SELECT model_id FROM models WHERE schema_name='{schema_name}' "
+            f"AND model_name='{model_name}';"
+        )
+        model_id = _executeSQL(query, title="Finding model_id", method="fetchrow")
+
+        if not model_id:
+            return 0
+        return model_id[0]
+
     def _is_binary_classifier(self) -> Literal[False]:
         """
         Returns True if the model is a Binary Classifier.
