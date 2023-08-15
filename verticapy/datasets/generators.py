@@ -38,26 +38,26 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
                         two keys: 'type' must be set  to
                         'str'  and 'value' must  include
                         the feature categories.
-            | **For int** : The  subdictionary must  include
+            | **For int** : The subdictionary must include
                         two keys: 'type'  must be set to
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The  subdictionary must  include
-                        two keys:  'type' must be set to
-                        'float' and 'range' must include
-                        two  floats that  represent  the
-                        lower and the upper bounds.
-            | **For date**  : The  subdictionary must  include
+            | **For float** : The subdictionary must 
+                        include two keys: 'type' must be 
+                        set to'float' and 'range' must 
+                        include two floats that represent
+                        the lower and the upper bounds.
+            | **For date** : The subdictionary must include
                         two keys: 'type'  must be set to
                         'date' and 'range'  must include
                         the start date and the number of
                         days after.
-            | **For datetime** : The  subdictionary must  include
-                        two keys: 'type'  must be set to
-                        'date' and 'range'  must include
-                        the start date and the number of
-                        days after.
+            | **For datetime** : The  subdictionary must
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the
+                        number of days after.
     nrows: int, optional
         The maximum number of rows in the dataset.
 
@@ -176,26 +176,26 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
                         two keys: 'type' must be set  to
                         'str'  and 'value' must  include
                         the feature categories.
-            | **For int** : The  subdictionary must  include
+            | **For int** : The subdictionary must include
                         two keys: 'type'  must be set to
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The  subdictionary must  include
-                        two keys:  'type' must be set to
-                        'float' and 'range' must include
-                        two  floats that  represent  the
-                        lower and the upper bounds.
-            | **For date**  : The  subdictionary must  include
-                        two keys: 'type'  must be set to
-                        'date' and 'range'  must include
-                        the start date and the number of
-                        days after.
-            | **For datetime** : The  subdictionary must  include
-                        two keys: 'type'  must be set to
-                        'date' and 'range'  must include
-                        the start date and the number of
-                        days after.
+            | **For float** : The subdictionary must  
+                        include two keys:  'type' must be
+                        set to 'float' and 'range' must 
+                        include two floats that represent
+                        the lower and the upper bounds.
+            | **For date** : The subdictionary must 
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the
+                        number of days after.
+            | **For datetime** : The  subdictionary must
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the 
+                        number of days after.
 
         Numerical and date-like features must have an extra
         key in the  dictionary named 'nbins', which
