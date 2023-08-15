@@ -1,12 +1,12 @@
 # VerticaPy Examples
 
-Welcome to the VerticaPy Examples repository! This repository showcases different types of examples that highlight the capabilities of VerticaPy, a Python library for data exploration and analytics in collaboration with Vertica.
+Welcome to the VerticaPy Examples folder! This folder showcases different types of examples that highlight the capabilities of VerticaPy, a Python library for data exploration and analytics in collaboration with Vertica.
 
 ## Repository Categories
 
-- [Learning and Exploring VerticaPy](https://github.com/vertica/VerticaPy/examples/learn): Basic examples for understanding VerticaPy's functionalities.
-- [Real-World Phenomena Explored](https://github.com/vertica/VerticaPy/examples/understand): Advanced examples diving into real-life scenarios.
-- [Industry-Focused Business Applications](https://github.com/vertica/VerticaPy/examples/business): Examples demonstrating practical applications in various industries.
+- [Learning and Exploring VerticaPy](https://github.com/vertica/VerticaPy/tree/master/examples/learn): Basic examples for understanding VerticaPy's functionalities.
+- [Real-World Phenomena Explored](https://github.com/vertica/VerticaPy/tree/master/examples/understand): Advanced examples diving into real-life scenarios.
+- [Industry-Focused Business Applications](https://github.com/vertica/VerticaPy/tree/master/examples/business): Examples demonstrating practical applications in various industries.
 
 ## Contributing
 
