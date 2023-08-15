@@ -32,7 +32,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
 
     Parameters
     ----------
-    features_ranges: dict 
+    features_ranges: dict
         Dictionary including the features types and ranges.
             | **For str** : The  subdictionary must  include
                         two keys: 'type' must be set  to
@@ -43,9 +43,9 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The subdictionary must 
-                        include two keys: 'type' must be 
-                        set to'float' and 'range' must 
+            | **For float** : The subdictionary must
+                        include two keys: 'type' must be
+                        set to'float' and 'range' must
                         include two floats that represent
                         the lower and the upper bounds.
             | **For date** : The subdictionary must include
@@ -69,7 +69,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     Examples
     ---------
     .. code-block:: python
- 
+
         from verticapy.datasets import gen_dataset
         import datetime
 
@@ -81,7 +81,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
 
     .. ipython:: python
         :suppress:
-     
+
         from verticapy.datasets import gen_dataset
         import datetime
         import verticapy as vp
@@ -92,7 +92,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
                                     "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
                                     "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},},)._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: datasets_data_generators_gen_dataset.html
 
@@ -181,12 +181,12 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The subdictionary must  
+            | **For float** : The subdictionary must
                         include two keys:  'type' must be
-                        set to 'float' and 'range' must 
+                        set to 'float' and 'range' must
                         include two floats that represent
                         the lower and the upper bounds.
-            | **For date** : The subdictionary must 
+            | **For date** : The subdictionary must
                         include two keys: 'type' must be
                         set to 'date' and 'range'  must
                         include the start date and the
@@ -194,7 +194,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
             | **For datetime** : The  subdictionary must
                         include two keys: 'type' must be
                         set to 'date' and 'range'  must
-                        include the start date and the 
+                        include the start date and the
                         number of days after.
 
         Numerical and date-like features must have an extra
@@ -210,7 +210,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     Examples
     ---------
     .. code-block:: python
- 
+
         from verticapy.datasets import gen_meshgrid
         import datetime
 
@@ -222,7 +222,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
 
     .. ipython:: python
         :suppress:
-     
+
         from verticapy.datasets import gen_meshgrid
         import datetime
         import verticapy as vp
@@ -233,7 +233,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
                                 "date": {"type": datetime.date, "range": ["1993-11-03", 365], "nbins": 2,},
                                 "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365], "nbins": 2,},},)._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: datasets_data_generators_gen_meshgrid.html
 
