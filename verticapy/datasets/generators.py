@@ -34,26 +34,32 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     ----------
     features_ranges: dict
         Dictionary including the features types and ranges.
-            | **For str** : The  subdictionary must  include
+
+        **For str** : 
+                        The  subdictionary must  include
                         two keys: 'type' must be set  to
                         'str'  and 'value' must  include
                         the feature categories.
-            | **For int** : The subdictionary must include
+        **For int** : 
+                        The subdictionary must include
                         two keys: 'type'  must be set to
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The subdictionary must
+        **For float** : 
+                        The subdictionary must
                         include two keys: 'type' must be
                         set to'float' and 'range' must
                         include two floats that represent
                         the lower and the upper bounds.
-            | **For date** : The subdictionary must include
+        **For date** : 
+                        The subdictionary must include
                         two keys: 'type'  must be set to
                         'date' and 'range'  must include
                         the start date and the number of
                         days after.
-            | **For datetime** : The  subdictionary must
+        **For datetime** : 
+                        The  subdictionary must
                         include two keys: 'type' must be
                         set to 'date' and 'range'  must
                         include the start date and the
@@ -172,26 +178,32 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     ----------
     features_ranges: dict
         Dictionary including the features types and ranges.
-            | **For str** : The  subdictionary must  include
+
+        **For str** : 
+                        The  subdictionary must  include
                         two keys: 'type' must be set  to
                         'str'  and 'value' must  include
                         the feature categories.
-            | **For int** : The subdictionary must include
+        **For int** : 
+                        The subdictionary must include
                         two keys: 'type'  must be set to
                         'int' and 'range'  must  include
                         two integers  that represent the
                         lower and the upper bounds.
-            | **For float** : The subdictionary must
+        **For float** : 
+                        The subdictionary must
                         include two keys:  'type' must be
                         set to 'float' and 'range' must
                         include two floats that represent
                         the lower and the upper bounds.
-            | **For date** : The subdictionary must
+        **For date** : 
+                        The subdictionary must
                         include two keys: 'type' must be
                         set to 'date' and 'range'  must
                         include the start date and the
                         number of days after.
-            | **For datetime** : The  subdictionary must
+        **For datetime** : 
+                        The  subdictionary must
                         include two keys: 'type' must be
                         set to 'date' and 'range'  must
                         include the start date and the
