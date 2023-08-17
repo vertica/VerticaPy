@@ -547,7 +547,7 @@ Enjoy!
 
 ### Contributing
 
-For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>.
+For a short guide on contribution standards, see the <a href='https://github.com/vertica/VerticaPy/blob/master/contributing/'>contributing folder</a>.
 
 ### Communication
 

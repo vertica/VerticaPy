@@ -153,7 +153,7 @@ This release contains some major changes, including:
 
 - A new decorator (@check_dtypes) is used to ensure correct input for the functions.
 
-- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and a CONTRIBUTING.md file.
+- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and the contributing folder.
 
 - The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the score is below 5, then the tests fail.
 
