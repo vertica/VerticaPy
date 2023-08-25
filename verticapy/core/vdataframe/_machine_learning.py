@@ -27,6 +27,7 @@ from verticapy._typing import PythonScalar, SQLColumns
 from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
+from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.tablesample.base import TableSample
@@ -900,14 +901,10 @@ class vDFMachineLearning(vDFNorm):
         """
         order_by = format_type(order_by, dtype=list)
         order_by = self._get_sort_syntax(order_by)
-        if not random_state:
-            random_state = conf.get_option("random_state")
-        random_seed = (
-            random_state
-            if isinstance(random_state, int)
-            else random.randint(-10e6, 10e6)
-        )
-        random_func = f"SEEDED_RANDOM({random_seed})"
+        if random_state:
+            random_func = f"SEEDED_RANDOM({random_state})"
+        else:
+            random_func = _current_random()
         q = _executeSQL(
             query=f"""
                 SELECT 

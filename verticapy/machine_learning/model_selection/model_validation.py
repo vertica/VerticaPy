@@ -220,9 +220,8 @@ def cross_validate(
     for i in loop:
         estimator.drop()
         random_state = conf.get_option("random_state")
-        random_state = (
-            random.randint(-10e6, 10e6) if not random_state else random_state + i
-        )
+        if random_state:
+            random_state = random_state + i
         train, test = input_relation.train_test_split(
             test_size=float(1 / cv), order_by=[X[0]], random_state=random_state
         )
