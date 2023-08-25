@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -67,7 +67,7 @@ def create_table(
 
     Parameters
     ----------
-    table_name: str, optional
+    table_name: str
         The final table name.
     dtype: dict
         Dictionary  of the user types. Each  key

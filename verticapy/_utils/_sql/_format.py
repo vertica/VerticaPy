@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -312,7 +312,7 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     return query_tmp
 
 
-def schema_relation(relation: Any) -> tuple[str, str]:
+def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
     """
     Extracts the schema and the table from the input
     relation. If the input relation does not have a schema,
@@ -340,7 +340,11 @@ def schema_relation(relation: Any) -> tuple[str, str]:
             schema, relation = schema_input_relation[0], schema_input_relation[1]
     else:
         schema, relation = conf.get_option("temp_schema"), ""
-    return (quote_ident(schema), quote_ident(relation))
+
+    if do_quote:
+        return (quote_ident(schema), quote_ident(relation))
+    else:
+        return (schema, relation)
 
 
 def format_schema_table(schema: str, table_name: str) -> str:

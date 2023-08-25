@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -438,3 +438,13 @@ def winequality_vpy_main(schema_loader):
     drop(
         name=f"{schema_loader}.winequality",
     )
+
+
+@pytest.fixture(scope="function")
+def titanic_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for titanic dataset
+    """
+    titanic = load_titanic(schema_loader, "titanic")
+    yield titanic
+    drop(name=f"{schema_loader}.titanic")
