@@ -133,6 +133,7 @@ This release contains some major changes, including:
   ```
 
 - Added Model Tracking tool (MLOps)
+  
   It is a common practice for data scientists to train tens of temporary models before picking one of them as their candidate model for going into production.
 A model tracking tool can help each individual data scientist to easily track the models trained for an experiment (project) and compare their metrics for choosing the best one.
 
@@ -163,6 +164,7 @@ Example:
   ```
   
 - Added Model Versioning (MLOps)
+  
   To integrate model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help user with MLSUPERVISOR or DBADMIN privilege work with the registered models inside the database.
 
 Example:
