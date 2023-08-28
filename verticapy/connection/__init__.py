@@ -31,3 +31,5 @@ from verticapy.connection.write import (
     new_connection,
 )
 from verticapy.connection.read import available_connections, read_dsn
+
+from verticapy.connection.utils import get_connection_file
