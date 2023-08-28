@@ -157,15 +157,15 @@ Example:
   experiment.add_model(multi_model2)
   experiment.add_model(multi_model3)
 
-  # list models in the experiment
+  # listing models in the experiment
   experiment.list_models()
-  # findind the best model in the experiment based on a metric
+  # finding the best model in the experiment based on a metric
   best_model = experiment.load_best_model("weighted_precision")
   ```
   
 - Added Model Versioning (MLOps)
   
-  To integrate model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help user with MLSUPERVISOR or DBADMIN privilege work with the registered models inside the database.
+  To integrate in-DB model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help a user with MLSUPERVISOR or DBADMIN privilege to work with the registered models inside the database.
 
 Example:
 
