@@ -137,7 +137,7 @@ This release contains some major changes, including:
   It is a common practice for data scientists to train tens of temporary models before picking one of them as their candidate model for going into production.
 A model tracking tool can help each individual data scientist to easily track the models trained for an experiment (project) and compare their metrics for choosing the best one.
 
-Example:
+  Example:
 
   ```python
   import verticapy.mlops.model_tracking as mt
@@ -167,7 +167,7 @@ Example:
   
   To integrate in-DB model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help a user with MLSUPERVISOR or DBADMIN privilege to work with the registered models inside the database.
 
-Example:
+  Example:
 
   ```python
   # training a model and then registering it
