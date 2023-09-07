@@ -72,7 +72,7 @@ from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop
 from verticapy.sql.dtypes import get_data_types
 from verticapy.sql.insert import insert_into
-from verticapy.sql.sys import current_session, username
+from verticapy.sql.sys import current_session, username, does_table_exist, has_privileges
 
 ##
 #
