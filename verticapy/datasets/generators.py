@@ -1,19 +1,18 @@
 """
-..
-    (c)  Copyright  [2018-2023]  OpenText  or one of its
-    affiliates.  Licensed  under  the   Apache  License,
-    Version 2.0 (the  "License"); You  may  not use this
-    file except in compliance with the License.
+(c)  Copyright  [2018-2023]  OpenText  or one of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
 
-    You may obtain a copy of the License at:
-    http://www.apache.org/licenses/LICENSE-2.0
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless  required  by applicable  law or  agreed to in
-    writing, software  distributed  under the  License is
-    distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
-    OR CONDITIONS OF ANY KIND, either express or implied.
-    See the  License for the specific  language governing
-    permissions and limitations under the License.
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
 """
 import datetime
 
@@ -91,7 +90,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
         from verticapy.datasets import gen_dataset
         import datetime
         import verticapy as vp
-        html_file = open("datasets_data_generators_gen_dataset.html", "w")
+        html_file = open("figures/datasets_generators_gen_dataset.html", "w")
         html_file.write(gen_dataset(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
                                     "age": {"type": int, "range": [20, 40]},
                                     "distance": {"type": float, "range": [1000, 4000]},
@@ -100,7 +99,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
         html_file.close()
 
     .. raw:: html
-        :file: datasets_data_generators_gen_dataset.html
+        :file: SPHINX_DIRECTORY/figures/datasets_generators_gen_dataset.html
 
     """
     sql = []
@@ -217,7 +216,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     Returns
     -------
     vDataFrame
-        generated dataset.
+        Generated dataset.
 
     Examples
     ---------
@@ -238,7 +237,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
         from verticapy.datasets import gen_meshgrid
         import datetime
         import verticapy as vp
-        html_file = open("datasets_data_generators_gen_meshgrid.html", "w")
+        html_file = open("figures/datasets_generators_gen_meshgrid.html", "w")
         html_file.write(gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
                                 "age": {"type": int, "range": [20, 40], "nbins": 3,},
                                 "distance": {"type": float, "range": [1000, 4000], "nbins": 3,},
@@ -247,7 +246,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
         html_file.close()
 
     .. raw:: html
-        :file: datasets_data_generators_gen_meshgrid.html
+        :file: SPHINX_DIRECTORY/figures/datasets_generators_gen_meshgrid.html
 
     """
     sql = []
