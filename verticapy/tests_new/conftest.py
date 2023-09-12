@@ -31,7 +31,7 @@ import pandas as pd
 # VerticaPy
 import verticapy
 from verticapy import drop
-from verticapy.datasets import load_titanic, load_iris, load_amazon, load_winequality
+from verticapy.datasets import load_titanic, load_iris, load_amazon, load_winequality, load_market
 from verticapy.core.vdataframe.base import vDataFrame
 
 DUMMY_TEST_SIZE = 100
@@ -448,3 +448,13 @@ def titanic_vd_fun(schema_loader):
     titanic = load_titanic(schema_loader, "titanic")
     yield titanic
     drop(name=f"{schema_loader}.titanic")
+
+
+@pytest.fixture(scope="module")
+def market_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for market dataset
+    """
+    market = load_market(schema_loader, "market")
+    yield market
+    drop(name=f"{schema_loader}.market")
