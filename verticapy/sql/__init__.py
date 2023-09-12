@@ -18,6 +18,17 @@ from verticapy.jupyter.extensions.sql_magic import load_ipython_extension
 
 from verticapy.sql.create import create_schema, create_table
 from verticapy.sql.drop import drop
-from verticapy.sql.dtypes import get_data_types
+from verticapy.sql.dtypes import get_data_types, vertica_python_dtype
 from verticapy.sql.insert import insert_into
-from verticapy.sql.sys import current_session, username
+from verticapy.sql.sys import (
+    current_session,
+    username,
+    does_table_exist,
+    has_privileges,
+)
+from verticapy.sql.flex import (
+    compute_flextable_keys,
+    compute_vmap_keys,
+    isflextable,
+    isvmap,
+)
