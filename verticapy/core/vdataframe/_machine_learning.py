@@ -28,6 +28,7 @@ from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import vertica_version
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -907,7 +908,11 @@ class vDFMachineLearning(vDFNorm):
             if isinstance(random_state, int)
             else random.randint(-10e6, 10e6)
         )
-        random_func = f"SEEDED_RANDOM({random_seed})"
+        vertica_version = vertica_version()
+        if vertica_version[0] > 23:
+            random_func = f"DISTRIBUTED_SEEDED_RANDOM({random_seed})"
+        else:
+            random_func = f"SEEDED_RANDOM({random_seed})"
         q = _executeSQL(
             query=f"""
                 SELECT 
