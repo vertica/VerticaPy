@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -266,6 +266,43 @@ class VerticaModel(PlottingUtils):
             return model_type
         return res
 
+    def register(self, registered_name: str, raise_error: bool = False) -> bool:
+        """
+        Registers the model and adds it to in-DB Model versioning environment
+        with a status of 'under_review'.
+        The model must be native and already saved in-DB to be registered.
+
+        Parameters
+        ----------
+        registered_name: str
+            Identifies an abstract name to which the model is registered.
+        raise_error: bool, optional
+            If set to True and an error occurs, raises the error.
+
+        Returns
+        -------
+        bool
+            Returns True when registeration is successful; False otherwise.
+        """
+        try:
+            if not self._is_native:
+                raise RuntimeError("Only native models can be registered.")
+
+            if not self._is_already_stored():
+                raise RuntimeError("The model must be trained to be registered.")
+
+            registering_query = (
+                f"SELECT REGISTER_MODEL('{self.model_name}', '{registered_name}');"
+            )
+            _executeSQL(registering_query, title="register model")
+
+        except Exception as exc:
+            if raise_error:
+                raise RuntimeError("Failed to register the model") from exc
+            else:
+                return False
+        return True
+
     # Attributes Methods.
 
     def get_attributes(self, attr_name: Optional[str] = None) -> Any:
@@ -331,6 +368,28 @@ class VerticaModel(PlottingUtils):
                 "Method 'get_vertica_attributes' is not available for "
                 "non-native models.\nUse 'get_attributes' method instead."
             )
+
+    def _get_vertica_model_id(self) -> int:
+        """
+        Returns the model_id of a native model archived in database.
+        It returns 0 if the model is not archived in the database.
+        """
+        if not self._is_native:
+            raise AttributeError(
+                "Method '_get_vertica_model_id' is not available for "
+                "non-native models."
+            )
+
+        schema_name, model_name = schema_relation(self.model_name, do_quote=False)
+        query = (
+            f"SELECT model_id FROM models WHERE schema_name='{schema_name}' "
+            f"AND model_name='{model_name}';"
+        )
+        model_id = _executeSQL(query, title="Finding model_id", method="fetchrow")
+
+        if not model_id:
+            return 0
+        return model_id[0]
 
     def _is_binary_classifier(self) -> Literal[False]:
         """

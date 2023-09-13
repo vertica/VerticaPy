@@ -131,6 +131,56 @@ This release contains some major changes, including:
   ```python
   from verticapy.machine_learning.model_selection.statistical_tests import het_arch
   ```
+
+- Added Model Tracking tool (MLOps)
+  
+  It is a common practice for data scientists to train tens of temporary models before picking one of them as their candidate model for going into production.
+A model tracking tool can help each individual data scientist to easily track the models trained for an experiment (project) and compare their metrics for choosing the best one.
+
+  Example:
+
+  ```python
+  import verticapy.mlops.model_tracking as mt
+
+  # creating an experiment
+  experiment = mt.vExperiment(
+      experiment_name="multi_exp",
+      test_relation=iris_vd,
+      X=["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+      y="Species",
+      experiment_type="multi",
+      experiment_table="multi_exp_table",
+  )
+
+  # adding models to the experiment after they are trained
+  experiment.add_model(multi_model1)
+  experiment.add_model(multi_model2)
+  experiment.add_model(multi_model3)
+
+  # listing models in the experiment
+  experiment.list_models()
+  # finding the best model in the experiment based on a metric
+  best_model = experiment.load_best_model("weighted_precision")
+  ```
+  
+- Added Model Versioning (MLOps)
+  
+  To integrate in-DB model versioning into VerticaPy, we added a new function, named "register", to the VerticaModel class. Calling this function will execute the register_model meta-function inside Vertica and registers the model. We also implemented a new class in VerticaPy, named RegisteredModel, in order to help a user with MLSUPERVISOR or DBADMIN privilege to work with the registered models inside the database.
+
+  Example:
+
+  ```python
+  # training a model and then registering it
+  model = RandomForestClassifier(name = "my_schema.rfc1")
+  model.fit("public.train_data", ["pred1","pred2","pred3"], "resp")
+  model.register("application_name")
+
+  # for users with MLSUPERVISOR or DBADMIN privilege
+  import verticapy.mlops.model_versioning as mv
+  rm = mv.RegisteredModel("application_name")
+  rm.change_status(version=1, new_status="staging")
+  pred_vdf2 = rm.predict(new_data_vDF, version=1)
+  ```
   
 - Changes that do not affect the user experience include:
 
@@ -153,7 +203,7 @@ This release contains some major changes, including:
 
 - A new decorator (@check_dtypes) is used to ensure correct input for the functions.
 
-- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and a CONTRIBUTING.md file.
+- Updated the workflow to use the latest version of GitHub actions, and added a tox.ini file and the contributing folder.
 
 - The new GitHub workflow now automatically checks for pylint score of the new code that is added. If the score is below 5, then the tests fail.
 
