@@ -16,11 +16,9 @@ permissions and limitations under the License.
 """
 from itertools import chain
 import pytest
-import verticapy as vp
 import statsmodels.api as sm
 import numpy as np
 import pandas as pd
-from verticapy.tests_new.core.vdataframe import REL_TOLERANCE, ABS_TOLERANCE
 from scipy.stats import (
     pearsonr,
     kendalltau,
@@ -29,6 +27,8 @@ from scipy.stats import (
     chi2_contingency,
     chi2,
 )
+import verticapy as vp
+from verticapy.tests_new.core.vdataframe import REL_TOLERANCE, ABS_TOLERANCE
 
 
 class TestCorrelation:

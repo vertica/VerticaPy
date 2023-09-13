@@ -31,7 +31,13 @@ import pandas as pd
 # VerticaPy
 import verticapy
 from verticapy import drop
-from verticapy.datasets import load_titanic, load_iris, load_amazon, load_winequality, load_market
+from verticapy.datasets import (
+    load_titanic,
+    load_iris,
+    load_amazon,
+    load_winequality,
+    load_market,
+)
 from verticapy.core.vdataframe.base import vDataFrame
 
 DUMMY_TEST_SIZE = 100

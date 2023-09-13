@@ -18,10 +18,10 @@ from collections import namedtuple
 from contextlib import nullcontext as does_not_raise
 import pytest
 import numpy as np
+from scipy.stats import median_abs_deviation, jarque_bera
 from verticapy.errors import MissingColumn
 import verticapy as vp
 from verticapy.tests_new.core.vdataframe import REL_TOLERANCE, ABS_TOLERANCE
-from scipy.stats import median_abs_deviation, jarque_bera
 
 AggregateFun = namedtuple("AggregateFun", ["vpy", "py"])
 functions = {
