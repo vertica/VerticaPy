@@ -597,8 +597,8 @@ class vDFFilter(vDFAgg):
             random_seed = random.randint(-10e6, 10e6)
             if isinstance(random_state, int):
                 random_seed = random_state
-            vertica_version = vertica_version()
-            if vertica_version[0] > 23:
+            version = vertica_version()
+            if version[0] > 23:
                 random_func = f"DISTRIBUTED_SEEDED_RANDOM({random_seed})"
             else:
                 random_func = f"SEEDED_RANDOM({random_seed})"

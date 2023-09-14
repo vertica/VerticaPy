@@ -908,8 +908,8 @@ class vDFMachineLearning(vDFNorm):
             if isinstance(random_state, int)
             else random.randint(-10e6, 10e6)
         )
-        vertica_version = vertica_version()
-        if vertica_version[0] > 23:
+        version = vertica_version()
+        if version[0] > 23:
             random_func = f"DISTRIBUTED_SEEDED_RANDOM({random_seed})"
         else:
             random_func = f"SEEDED_RANDOM({random_seed})"
