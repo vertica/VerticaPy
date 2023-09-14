@@ -575,7 +575,9 @@ class TestXGBC:
         model.drop()
         os.remove(path)
 
-    @pytest.mark.skip(reason="This test fails after upgrading xgboost library from 1.7.6 to 2.0.0")
+    @pytest.mark.skip(
+        reason="This test fails after upgrading xgboost library from 1.7.6 to 2.0.0"
+    )
     def test_to_json_multiclass(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic.fillna()
