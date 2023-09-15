@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -31,32 +31,38 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
 
     Parameters
     ----------
-    features_ranges: dict,
+    features_ranges: dict
         Dictionary including the features types and ranges.
-            For str      : The  subdictionary must  include
-                           two keys: 'type' must be set  to
-                           'str'  and 'value' must  include
-                           the feature categories.
-            For int      : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'int' and 'range'  must  include
-                           two integers  that represent the
-                           lower and the upper bounds.
-            For float    : The  subdictionary must  include
-                           two keys:  'type' must be set to
-                           'float' and 'range' must include
-                           two  floats that  represent  the
-                           lower and the upper bounds.
-            For date     : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'date' and 'range'  must include
-                           the start date and the number of
-                           days after.
-            For datetime : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'date' and 'range'  must include
-                           the start date and the number of
-                           days after.
+
+        **For str** :
+                        The  subdictionary must  include
+                        two keys: 'type' must be set  to
+                        'str'  and 'value' must  include
+                        the feature categories.
+        **For int** :
+                        The subdictionary must include
+                        two keys: 'type'  must be set to
+                        'int' and 'range'  must  include
+                        two integers  that represent the
+                        lower and the upper bounds.
+        **For float** :
+                        The subdictionary must
+                        include two keys: 'type' must be
+                        set to'float' and 'range' must
+                        include two floats that represent
+                        the lower and the upper bounds.
+        **For date** :
+                        The subdictionary must include
+                        two keys: 'type'  must be set to
+                        'date' and 'range'  must include
+                        the start date and the number of
+                        days after.
+        **For datetime** :
+                        The  subdictionary must
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the
+                        number of days after.
     nrows: int, optional
         The maximum number of rows in the dataset.
 
@@ -64,6 +70,37 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
     -------
     vDataFrame
         Generated dataset.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        from verticapy.datasets import gen_dataset
+        import datetime
+
+        gen_dataset(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
+                                       "age": {"type": int, "range": [20, 40]},
+                                       "distance": {"type": float, "range": [1000, 4000]},
+                                       "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
+                                       "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},},)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import gen_dataset
+        import datetime
+        import verticapy as vp
+        html_file = open("figures/datasets_generators_gen_dataset.html", "w")
+        html_file.write(gen_dataset(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
+                                    "age": {"type": int, "range": [20, 40]},
+                                    "distance": {"type": float, "range": [1000, 4000]},
+                                    "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
+                                    "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},},)._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_generators_gen_dataset.html
+
     """
     sql = []
 
@@ -138,32 +175,39 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
 
     Parameters
     ----------
-    features_ranges: dict,
+    features_ranges: dict
         Dictionary including the features types and ranges.
-            For str      : The  subdictionary must  include
-                           two keys: 'type' must be set  to
-                           'str'  and 'value' must  include
-                           the feature categories.
-            For int      : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'int' and 'range'  must  include
-                           two integers  that represent the
-                           lower and the upper bounds.
-            For float    : The  subdictionary must  include
-                           two keys:  'type' must be set to
-                           'float' and 'range' must include
-                           two  floats that  represent  the
-                           lower and the upper bounds.
-            For date     : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'date' and 'range'  must include
-                           the start date and the number of
-                           days after.
-            For datetime : The  subdictionary must  include
-                           two keys: 'type'  must be set to
-                           'date' and 'range'  must include
-                           the start date and the number of
-                           days after.
+
+        **For str** :
+                        The  subdictionary must  include
+                        two keys: 'type' must be set  to
+                        'str'  and 'value' must  include
+                        the feature categories.
+        **For int** :
+                        The subdictionary must include
+                        two keys: 'type'  must be set to
+                        'int' and 'range'  must  include
+                        two integers  that represent the
+                        lower and the upper bounds.
+        **For float** :
+                        The subdictionary must
+                        include two keys:  'type' must be
+                        set to 'float' and 'range' must
+                        include two floats that represent
+                        the lower and the upper bounds.
+        **For date** :
+                        The subdictionary must
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the
+                        number of days after.
+        **For datetime** :
+                        The  subdictionary must
+                        include two keys: 'type' must be
+                        set to 'date' and 'range'  must
+                        include the start date and the
+                        number of days after.
+
         Numerical and date-like features must have an extra
         key in the  dictionary named 'nbins', which
         corresponds to the number of bins used to compute
@@ -172,7 +216,38 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
     Returns
     -------
     vDataFrame
-        generated dataset.
+        Generated dataset.
+
+    Examples
+    ---------
+    .. code-block:: python
+
+        from verticapy.datasets import gen_meshgrid
+        import datetime
+
+        gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
+                                        "age": {"type": int, "range": [20, 40]},
+                                        "distance": {"type": float, "range": [1000, 4000]},
+                                        "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
+                                        "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},},)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import gen_meshgrid
+        import datetime
+        import verticapy as vp
+        html_file = open("figures/datasets_generators_gen_meshgrid.html", "w")
+        html_file.write(gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
+                                "age": {"type": int, "range": [20, 40], "nbins": 3,},
+                                "distance": {"type": float, "range": [1000, 4000], "nbins": 3,},
+                                "date": {"type": datetime.date, "range": ["1993-11-03", 365], "nbins": 2,},
+                                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365], "nbins": 2,},},)._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_generators_gen_meshgrid.html
+
     """
     sql = []
 

@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -28,6 +28,7 @@ from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._random import _seeded_random_function
 
 from verticapy.core.tablesample.base import TableSample
 
@@ -907,7 +908,7 @@ class vDFMachineLearning(vDFNorm):
             if isinstance(random_state, int)
             else random.randint(-10e6, 10e6)
         )
-        random_func = f"SEEDED_RANDOM({random_seed})"
+        random_func = _seeded_random_function(random_seed)
         q = _executeSQL(
             query=f"""
                 SELECT 
