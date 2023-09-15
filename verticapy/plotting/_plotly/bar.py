@@ -116,4 +116,6 @@ class BarChart2D(PlotlyBase):
             fig_base.add_trace(fig)
         params = self._update_dict(self.init_layout_style, style_kwargs)
         fig_base.update_layout(**params)
-        return fig_base  # self.data,self.layout
+        if self.layout["kind"] == "stacked":
+            fig_base.update_layout(barmode="stack")
+        return fig_base
