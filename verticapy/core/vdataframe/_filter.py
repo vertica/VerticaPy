@@ -35,6 +35,7 @@ from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import clean_query, format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._random import _seeded_random_function
 
 from verticapy.core.vdataframe._aggregate import vDFAgg, vDCAgg
 
@@ -596,7 +597,7 @@ class vDFFilter(vDFAgg):
             random_seed = random.randint(-10e6, 10e6)
             if isinstance(random_state, int):
                 random_seed = random_state
-            random_func = f"SEEDED_RANDOM({random_seed})"
+            random_func = _seeded_random_function(random_seed)
             vdf.eval(name, random_func)
             q = vdf[name].quantile(x)
             print_info_init = conf.get_option("print_info")

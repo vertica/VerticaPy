@@ -17,6 +17,21 @@ permissions and limitations under the License.
 from typing import Optional
 
 import verticapy._config.config as conf
+from verticapy._utils._sql._vertica_version import vertica_version
+
+
+def _seeded_random_function(random_seed: int) -> str:
+    """
+    Returns the text of an appropriate seeded random function based on
+    the version of the connected Vertica server.
+    """
+    version = vertica_version()
+    if version[0] > 23:
+        random_func = f"DISTRIBUTED_SEEDED_RANDOM({random_seed})"
+    else:
+        random_func = f"SEEDED_RANDOM({random_seed})"
+
+    return random_func
 
 
 def _current_random(rand_int: Optional[int] = None) -> str:
@@ -29,12 +44,13 @@ def _current_random(rand_int: Optional[int] = None) -> str:
     random_state = conf.get_option("random_state")
     if isinstance(rand_int, int):
         if isinstance(random_state, int):
-            random_func = f"FLOOR({rand_int} * SEEDED_RANDOM({random_state}))"
+            seeded_function = _seeded_random_function(random_state)
+            random_func = f"FLOOR({rand_int} * {seeded_function})"
         else:
             random_func = f"RANDOMINT({rand_int})"
     else:
         if isinstance(random_state, int):
-            random_func = f"SEEDED_RANDOM({random_state})"
+            random_func = _seeded_random_function(random_state)
         else:
             random_func = "RANDOM()"
     return random_func
