@@ -171,6 +171,6 @@ class TestPlotlyVDFBarhPlot2D(VDFBarhPlot2D):
         Test bar type
         """
         result = dummy_dist_vd.barh(
-            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="negative"
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="pyramid"
         )
         assert result.layout["barmode"] == "relative"
