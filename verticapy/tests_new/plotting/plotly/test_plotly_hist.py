@@ -21,6 +21,7 @@ import pytest
 from verticapy.tests_new.plotting.base_test_files import (
     VDCHistogramPlot,
     VDFHistogramPlot,
+    VDFHistogramMultiPlot,
 )
 
 
@@ -45,4 +46,10 @@ class TestPlotlyVDCHistogramPlot(VDCHistogramPlot):
 class TestPlotlyVDFHistogramPlot(VDFHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataFrame
+    """
+
+
+class TestPlotlyVDFHistogramMultiPlot(VDFHistogramMultiPlot):
+    """
+    Testing different attributes of Multi-Histogram plot on a vDataFrame
     """
