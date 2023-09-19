@@ -67,7 +67,10 @@ class Histogram(HighchartsBase):
         chart.set_dict_options(style_kwargs)
         for label in self.layout["columns"]:
             data_to_plot = np.column_stack(
-                (self.data[label]["x"], self.data[label]["y"])
+                (
+                    self.data[label]["x"],
+                    [float(decimal) for decimal in self.data[label]["y"]],
+                )
             ).tolist()
             chart.add_data_set(
                 data_to_plot,
