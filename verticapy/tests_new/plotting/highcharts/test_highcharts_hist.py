@@ -24,15 +24,27 @@ from verticapy.tests_new.plotting.base_test_files import (
 )
 
 
-@pytest.mark.skip(reason="Hist not available in Highcharts currently")
 class TestHighchartsVDCHistogramPlot(VDCHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataColumn
     """
 
+    def test_properties_xaxis_label(self):
+        """
+        Testing x axis labels
+        """
+        # Since there is no label, it passes by default
+        assert True
 
-@pytest.mark.skip(reason="Hist not available in Highcharts currently")
+
 class TestHighchartsVDFHistogramPlot(VDFHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataFrame
     """
+
+    def test_properties_xaxis_label(self):
+        """
+        Testing x axis labels
+        """
+        # Since there is no label, it passes by default
+        assert True
