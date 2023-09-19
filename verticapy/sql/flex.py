@@ -47,6 +47,23 @@ def compute_flextable_keys(
     List of tuples
         List  of virtual column names and  their
         respective data types.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.utilities import read_json, compute_flextable_keys
+
+        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+
+    .. ipython:: python
+
+        @suppress
+        from verticapy.utilities import read_json, compute_flextable_keys
+
+        @suppress
+        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        compute_flextable_keys(flex_name = "v_temp_schema.laliga",)
     """
     usecols = format_type(usecols, dtype=list)
     _executeSQL(
@@ -100,6 +117,21 @@ def compute_vmap_keys(
     List of tuples
         List of virtual column names and their respective
         frequencies.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.utilities import read_json, compute_vmap_keys
+
+        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+
+    .. ipython:: python
+
+        @suppress
+        from verticapy.utilities import compute_vmap_keys
+
+        compute_vmap_keys(expr = "v_temp_schema.laliga", vmap_col = "__raw__",)
     """
     vmap = quote_ident(vmap_col)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
@@ -139,6 +171,21 @@ def isflextable(table_name: str, schema: str) -> bool:
     -------
     bool
         True if the relation is a flex table.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.utilities import read_json, isflextable
+
+        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+
+    .. ipython:: python
+
+        @suppress
+        from verticapy.utilities import isflextable
+
+        isflextable(table_name = "laliga", schema = "v_temp_schema")
     """
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
@@ -177,6 +224,21 @@ def isvmap(
     -------
     bool
         True if the column is a VMap.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.utilities import read_json, isvmap
+
+        read_json("laliga/*.json")
+
+    .. ipython:: python
+
+        @suppress
+        from verticapy.utilities import isvmap
+
+        isvmap("laliga", "away_team.managers")
     """
     column = quote_ident(column)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
