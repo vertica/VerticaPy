@@ -26,16 +26,19 @@ from verticapy.learn.ensemble import RandomForestClassifier
 
 # Expensive models
 @pytest.fixture(name="champion_challenger_plot", scope="package")
-def load_champion_Challenger_plot(schema_loader, dummy_dist_vd):
-    COL_NAME_1 = "binary"
-    COL_NAME_2 = "0"
+def load_champion_challenger_plot(schema_loader, dummy_dist_vd):
+    """
+    Loading the champion challenger plot
+    """
+    col_name_1 = "binary"
+    col_name_2 = "0"
     model = AutoML(f"{schema_loader}.model_automl", lmax=10, print_info=False)
     model.fit(
         dummy_dist_vd,
         [
-            COL_NAME_1,
+            col_name_1,
         ],
-        COL_NAME_2,
+        col_name_2,
     )
     yield model
     model.drop()
@@ -46,11 +49,11 @@ def load_random_forest_model(schema_loader, dummy_dist_vd):
     """
     Load the Random Forest Classifier model
     """
-    COL_NAME_1 = "0"
-    COL_NAME_2 = "1"
-    BY_COL = "binary"
+    col_name_1 = "0"
+    col_name_2 = "1"
+    by_col = "binary"
     model = RandomForestClassifier(f"{schema_loader}.random_forest_plot_test")
     model.drop()
-    model.fit(dummy_dist_vd, [COL_NAME_1, COL_NAME_2], BY_COL)
+    model.fit(dummy_dist_vd, [col_name_1, col_name_2], by_col)
     yield model
     model.drop()

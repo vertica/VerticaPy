@@ -978,6 +978,38 @@ class VDFHistogramPlot(VDCHistogramPlot):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
+class VDFHistogramMultiPlot(BasicPlotTests):
+    """
+    Testing different attributes of Histogram plot on a vDataFrame
+    """
+
+    COL_NAME_1 = "0"
+    COL_NAME_2 = "1"
+
+    @pytest.fixture(autouse=True)
+    def data(self, dummy_dist_vd):
+        """
+        Load test data
+        """
+        self.data = dummy_dist_vd
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [None, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.hist,
+            {"columns": [self.COL_NAME_1, self.COL_NAME_2]},
+        )
+
+
 class VDCLinePlot(BasicPlotTests):
     """
     Testing different attributes of Line plot on a vDataColumn
