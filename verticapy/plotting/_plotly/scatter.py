@@ -80,26 +80,44 @@ class ScatterPlot(PlotlyBase):
         """
         fig_base = self._get_fig(fig)
         color_option = {}
-        data = (
-            np.column_stack((self.data["X"], self.data["c"]))
-            if self.data["c"] is not None
-            else self.data["X"]
-        )
+        data = self.data["X"]
+        if self.data.get("s") is not None:
+            data = np.column_stack((data, self.data["s"]))
+        if self.data.get("c") is not None:
+            data = np.column_stack((data, self.data["c"]))
         column_names = self.layout["columns"]
-        columns = (
-            column_names + [self.layout["c"]]
-            if self.layout["c"] is not None
-            else column_names
-        )
+        columns = column_names
+        if self.layout.get("size") is not None:
+            columns = column_names + [self.layout["size"]]
+        if self.layout.get("c") is not None:
+            columns = columns + [self.layout["c"]]
         df = pd.DataFrame(
             data=data,
             columns=columns,
         )
+        if self.data.get("s") is not None:
+            df[column_names[0]] = df[column_names[0]].astype(float)
+            df[column_names[1]] = df[column_names[1]].astype(float)
+            df[self.layout["size"]] = df[self.layout["size"]].astype(float)
         if self.layout["c"]:
             color_option["color"] = self.layout["c"]
+        user_colors = style_kwargs.get("color", style_kwargs.get("colors"))
+        if isinstance(user_colors, str):
+            user_colors = [user_colors]
+        color_list = (
+            user_colors + self.get_colors() if user_colors else self.get_colors()
+        )
+        if "colors" in style_kwargs:
+            del style_kwargs["colors"]
         if self.data["X"].shape[1] < 3:
             fig = px.scatter(
-                df, x=column_names[0], y=column_names[1], **color_option, **style_kwargs
+                df,
+                x=column_names[0],
+                y=column_names[1],
+                color_discrete_sequence=color_list,
+                size=self.layout["size"] if self.layout["size"] else None,
+                **color_option,
+                **style_kwargs,
             )
             fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         elif self.data["X"].shape[1] == 3:
@@ -108,6 +126,8 @@ class ScatterPlot(PlotlyBase):
                 x=column_names[0],
                 y=column_names[1],
                 z=column_names[2],
+                color_discrete_sequence=color_list,
+                size=self.layout["size"] if self.layout["size"] else None,
                 **color_option,
                 **style_kwargs,
             )
