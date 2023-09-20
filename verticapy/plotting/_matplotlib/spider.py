@@ -58,7 +58,10 @@ class SpiderChart(MatplotlibBase):
         m = self.data["X"].shape[0]
         angles = [i / float(m) * 2 * np.pi for i in range(m)]
         angles += angles[:1]
-        fig = plt.figure()
+        _, fig, style_kwargs = self._get_ax_fig(
+            ax,
+            style_kwargs=style_kwargs,
+        )
         if not ax:
             ax = fig.add_subplot(111, polar=True)
         spider_vals = np.array([])
