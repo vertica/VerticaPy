@@ -16,6 +16,7 @@ permissions and limitations under the License.
 """
 from verticapy.plotting._highcharts.acf import ACFPACFPlot, ACFPlot
 from verticapy.plotting._highcharts.bar import BarChart, BarChart2D, DrillDownBarChart
+from verticapy.plotting._highcharts.hist import Histogram
 from verticapy.plotting._highcharts.barh import (
     HorizontalBarChart,
     HorizontalBarChart2D,
