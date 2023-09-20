@@ -91,7 +91,7 @@ class PieChart(PlotlyBase):
                     labels=labels,
                     values=values,
                     marker=dict(colors=color_list),
-                    **self._update_dict(param),
+                    **param,
                     sort=False,
                 )
             ]
