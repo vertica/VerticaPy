@@ -78,6 +78,7 @@ class LinePlot(MatplotlibBase):
         """
         Draws a time series plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         colors = self.get_colors()
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
@@ -193,6 +194,7 @@ class MultiLinePlot(MatplotlibBase):
         """
         Draws a multi-time series plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         colors = self.get_colors()
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs

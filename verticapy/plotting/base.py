@@ -251,6 +251,15 @@ class PlottingBase(PlottingBaseSQL):
         )
         return kwargs
 
+    def _fix_color_style_kwargs(
+        self,
+        style_kwargs: dict,
+    ) -> dict:
+        if "colors" in style_kwargs:
+            style_kwargs["color"] = style_kwargs["colors"]
+            del style_kwargs["colors"]
+        return style_kwargs
+
     def get_colors(
         self, d: Optional[dict] = None, idx: Optional[int] = None
     ) -> Union[list, str]:

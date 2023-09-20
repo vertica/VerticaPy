@@ -55,6 +55,7 @@ class SpiderChart(MatplotlibBase):
         """
         Draws a spider plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         m = self.data["X"].shape[0]
         angles = [i / float(m) * 2 * np.pi for i in range(m)]
         angles += angles[:1]
