@@ -61,6 +61,14 @@ class PieChart(PlotlyBase):
         Draws a pie chart using the Plotly API.
         """
         fig_base = self._get_fig(fig)
+        user_colors = style_kwargs.get("color", style_kwargs.get("colors"))
+        if isinstance(user_colors, str):
+            user_colors = [user_colors]
+        color_list = (
+            user_colors + self.get_colors() if user_colors else self.get_colors()
+        )
+        if "colors" in style_kwargs:
+            del style_kwargs["colors"]
         labels = self.layout["labels"]
         if self.layout["kind"] == "donut":
             hole_fraction = 0.2
@@ -82,13 +90,14 @@ class PieChart(PlotlyBase):
                 go.Pie(
                     labels=labels,
                     values=values,
-                    **self._update_dict(param, style_kwargs),
+                    marker=dict(colors=color_list),
+                    **self._update_dict(param),
                     sort=False,
                 )
             ]
         )
         fig_base.add_trace(fig.data[0])
-        fig_base.update_layout(**self.init_layout_style)
+        fig_base.update_layout(**self.init_layout_style, **style_kwargs)
         return fig_base
 
 
@@ -124,6 +133,14 @@ class NestedPieChart(PlotlyBase):
         """
         Draws a sunburst/nested pie chart using the plotly API.
         """
+        user_colors = style_kwargs.get("color", style_kwargs.get("colors"))
+        if isinstance(user_colors, str):
+            user_colors = [user_colors]
+        color_list = (
+            user_colors + self.get_colors() if user_colors else self.get_colors()
+        )
+        if "colors" in style_kwargs:
+            del style_kwargs["colors"]
         ids, labels, parents, values = self._convert_labels_and_get_counts(
             self.data["groups"][0]
         )
@@ -134,10 +151,11 @@ class NestedPieChart(PlotlyBase):
             values=values,
             branchvalues="total",
             outsidetextfont={"size": 20},
-            marker={"line": {"width": 2}},
-            **self._update_dict(self.init_trace_style, style_kwargs),
+            marker={"line": {"width": 2}, "colors": color_list},
+            **self.init_trace_style,
         )
         layout = go.Layout(margin=go.layout.Margin(t=0, l=0, r=0, b=0))
         figure = {"data": [trace], "layout": layout}
         fig = go.Figure(figure)
+        fig.update_layout(**style_kwargs)
         return fig
