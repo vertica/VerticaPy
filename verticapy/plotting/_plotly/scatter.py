@@ -117,7 +117,6 @@ class ScatterPlot(PlotlyBase):
                 color_discrete_sequence=color_list,
                 size=self.layout["size"] if self.layout["size"] else None,
                 **color_option,
-                **style_kwargs,
             )
             fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         elif self.data["X"].shape[1] == 3:
@@ -129,7 +128,6 @@ class ScatterPlot(PlotlyBase):
                 color_discrete_sequence=color_list,
                 size=self.layout["size"] if self.layout["size"] else None,
                 **color_option,
-                **style_kwargs,
             )
             fig.update_layout(
                 scene=dict(
