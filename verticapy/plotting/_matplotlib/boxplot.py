@@ -53,6 +53,7 @@ class BoxPlot(MatplotlibBase):
         """
         Draws a multi-box plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         m = self.data["X"].shape[1]
         if m == 1 and "vert" not in style_kwargs:
             style_kwargs["vert"] = False
@@ -77,7 +78,7 @@ class BoxPlot(MatplotlibBase):
             labels=self.layout["labels"],
             patch_artist=True,
             **self.init_style,
-            **style_kwargs,
+            **{key: value for key, value in style_kwargs.items() if key != "color"},
         )
         set_tick(self.layout["labels"], rotation=90)
         for median in box["medians"]:
@@ -86,7 +87,7 @@ class BoxPlot(MatplotlibBase):
                 linewidth=1,
             )
         for i, patch in enumerate(box["boxes"]):
-            patch.set_facecolor(self.get_colors(idx=i))
+            patch.set_facecolor(self.get_colors(d=style_kwargs, idx=i))
         for i, flier in enumerate(box["fliers"]):
             xdata = [i + 1] * len(self.data["fliers"][i])
             ydata = self.data["fliers"][i]

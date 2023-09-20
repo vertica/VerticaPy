@@ -62,7 +62,6 @@ class PieChart(MatplotlibBase):
 
     def _init_style(self) -> None:
         self.init_style = {
-            "colors": self.get_colors(),
             "shadow": True,
             "startangle": 290,
             "textprops": {"color": "w"},
@@ -91,7 +90,17 @@ class PieChart(MatplotlibBase):
         """
         Draws a pie chart using the Matplotlib API.
         """
-        colors = self.get_colors()
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
+        if "color" in style_kwargs and isinstance(style_kwargs["color"], str):
+            raise ValueError("The color input should be a list.")
+        colors = (
+            style_kwargs["color"] + self.get_colors()
+            if "color" in style_kwargs
+            else self.get_colors()
+        )
+        if "color" in style_kwargs:
+            del style_kwargs["color"]
+        self.init_style["colors"] = colors
         n = len(self.data["y"])
         explode = [0 for i in range(n)]
         explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
@@ -250,6 +259,9 @@ class NestedPieChart(MatplotlibBase):
         """
         Draws a nested pie chart using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
+        if "color" in style_kwargs and isinstance(style_kwargs["color"], str):
+            raise ValueError("The color input should be a list.")
         n = len(self.layout["columns"])
         wedgeprops = dict(width=0.3, edgecolor="w")
         colors, wedgeprops, kwargs = self._get_final_style(style_kwargs=style_kwargs)
