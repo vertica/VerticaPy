@@ -71,8 +71,6 @@ class LinePlot(PlotlyBase):
             del style_kwargs["colors"]
         add_params = {}
         add_params["markers"] = markers
-        print("Data:", self.data)
-        print("Layout:", self.layout)
         if "z" in self.data:
             add_params["color"] = "color"
             data_args = dict(
@@ -137,11 +135,16 @@ class MultiLinePlot(PlotlyBase):
     def draw(
         self,
         fig: Optional[Figure] = None,
+        line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
+        if self.layout["kind"] == "step":
+            line_shape = "hv"
+        elif self.layout["kind"] == "spline":
+            line_shape = "spline"
         fig_base = self._get_fig(fig)
         marker_colors = self.get_colors()
         if "colors" in style_kwargs:
@@ -157,7 +160,7 @@ class MultiLinePlot(PlotlyBase):
                     x=self.data["x"],
                     y=self.data["Y"][:, idx],
                     name=elem,
-                    line_shape="hv" if self.layout["kind"] == "step" else None,
+                    line_shape=line_shape,
                     line_color=marker_colors[idx],
                 )
             )
