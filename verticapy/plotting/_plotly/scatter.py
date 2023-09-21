@@ -99,6 +99,11 @@ class ScatterPlot(PlotlyBase):
             df[column_names[0]] = df[column_names[0]].astype(float)
             df[column_names[1]] = df[column_names[1]].astype(float)
             df[self.layout["size"]] = df[self.layout["size"]].astype(float)
+            min_value = df[self.layout["size"]].min()
+            max_value = df[self.layout["size"]].max()
+            df[self.layout["size"]] = (df[self.layout["size"]] - min_value) / (
+                max_value - min_value
+            )
         if self.layout["c"]:
             color_option["color"] = self.layout["c"]
         user_colors = style_kwargs.get("color", style_kwargs.get("colors"))
