@@ -85,7 +85,6 @@ def load_dataset(
                 query = query.format(f"LOCAL '{path}'")
                 _executeSQL(query, title="Ingesting the data.")
 
-            _executeSQL("COMMIT;", title="Commit.")
             vdf = vDataFrame(name, schema=schema)
 
         except:
