@@ -274,6 +274,7 @@ def col_name_param():
     """
     return "0"
 
+
 class VDFBarPlot(BasicPlotTests):
     """
     Testing different attributes of Bar plot on a vDataFrame
