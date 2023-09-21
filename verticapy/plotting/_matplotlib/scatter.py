@@ -168,7 +168,7 @@ class ScatterPlot(MatplotlibBase):
             marker = style_kwargs["marker"] if "marker" in style_kwargs else "o"
             legend = []
             for i, c in enumerate(uniques):
-                color = self.get_colors(idx=i)
+                color = self.get_colors(d=style_kwargs, idx=i)
                 colors[self.data["c"] == c] = color
                 legend += [
                     Line2D(
