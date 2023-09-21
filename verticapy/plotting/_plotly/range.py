@@ -74,7 +74,7 @@ class RangeCurve(PlotlyBase):
         Draws a range curve using the Plotly API.
         """
         fig = self._get_fig(fig)
-        marker_colors = PlotlyBase().get_colors()
+        marker_colors = self.get_colors()
         if "colors" in style_kwargs:
             marker_colors = (
                 style_kwargs["colors"] + marker_colors
