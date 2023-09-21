@@ -100,6 +100,7 @@ class PieChart(MatplotlibBase):
         if "color" in style_kwargs:
             del style_kwargs["color"]
         self.init_style["colors"] = colors
+        self.init_style_donut["colors"] = colors
         n = len(self.data["y"])
         explode = [0 for i in range(n)]
         explode[max(zip(self.data["y"], range(n)))[1]] = 0.13
