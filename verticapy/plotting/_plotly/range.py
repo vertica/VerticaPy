@@ -74,12 +74,15 @@ class RangeCurve(PlotlyBase):
         Draws a range curve using the Plotly API.
         """
         fig = self._get_fig(fig)
-        for idx, col in enumerate(self.layout["columns"]):
-            marker_color = (
-                dict(color=PlotlyBase().get_colors()[idx])
-                if "colors" not in style_kwargs
-                else dict(color=style_kwargs["colors"][idx])
+        marker_colors = PlotlyBase().get_colors()
+        if "colors" in style_kwargs:
+            marker_colors = (
+                style_kwargs["colors"] + marker_colors
+                if isinstance(style_kwargs["colors"], list)
+                else [style_kwargs["colors"]] + marker_colors
             )
+            del style_kwargs["colors"]
+        for idx, col in enumerate(self.layout["columns"]):
             y_data = self.data["Y"][:, idx * 3 : idx * 3 + 3]
             fig.add_trace(
                 go.Scatter(
@@ -89,7 +92,7 @@ class RangeCurve(PlotlyBase):
                     showlegend=False,
                     name=f"{col}:: Bounds:[{self.data['q'][0]},{self.data['q'][1]}]",
                     mode="lines+markers" if not plot_scatter else "markers",
-                    marker=marker_color,
+                    marker=dict(color=marker_colors[idx]),
                     opacity=0.5,
                 )
             )
@@ -99,10 +102,9 @@ class RangeCurve(PlotlyBase):
                         x=self.data["x"],
                         y=y_data[:, 1],
                         name=f"{col}: Median",
-                        marker=marker_color,
+                        marker=dict(color=marker_colors[idx]),
                     )
                 )
-        if "colors" in style_kwargs:
-            del style_kwargs["colors"]
+
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
