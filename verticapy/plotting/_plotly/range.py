@@ -74,24 +74,35 @@ class RangeCurve(PlotlyBase):
         Draws a range curve using the Plotly API.
         """
         fig = self._get_fig(fig)
-        fig.add_trace(
-            go.Scatter(
-                x=np.hstack((self.data["x"], self.data["x"][::-1])),
-                y=np.hstack((self.data["Y"][:, 0], self.data["Y"][:, 2][::-1])),
-                fill="toself",
-                showlegend=False,
-                name=f"Bounds:[{self.data['q'][0]},{self.data['q'][1]}]",
-                mode="lines",
-                opacity=0.1,
+        for idx, col in enumerate(self.layout["columns"]):
+            marker_color = (
+                dict(color=PlotlyBase().get_colors()[idx])
+                if "colors" not in style_kwargs
+                else dict(color=style_kwargs["colors"][idx])
             )
-        )
-        if plot_median:
+            y_data = self.data["Y"][:, idx * 3 : idx * 3 + 3]
             fig.add_trace(
                 go.Scatter(
-                    x=self.data["x"],
-                    y=self.data["Y"][:, 1],
-                    name="Median",
+                    x=np.hstack((self.data["x"], self.data["x"][::-1])),
+                    y=np.hstack((y_data[:, 0], y_data[:, 2][::-1])),
+                    fill="toself",
+                    showlegend=False,
+                    name=f"{col}:: Bounds:[{self.data['q'][0]},{self.data['q'][1]}]",
+                    mode="lines+markers" if not plot_scatter else "markers",
+                    marker=marker_color,
+                    opacity=0.5,
                 )
             )
+            if plot_median:
+                fig.add_trace(
+                    go.Scatter(
+                        x=self.data["x"],
+                        y=y_data[:, 1],
+                        name=f"{col}: Median",
+                        marker=marker_color,
+                    )
+                )
+        if "colors" in style_kwargs:
+            del style_kwargs["colors"]
         fig.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig
