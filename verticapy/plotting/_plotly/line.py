@@ -53,6 +53,7 @@ class LinePlot(PlotlyBase):
         fig: Optional[Figure] = None,
         step: bool = False,
         markers: bool = False,
+        line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
         """
@@ -60,7 +61,9 @@ class LinePlot(PlotlyBase):
         """
         fig_base = self._get_fig(fig)
         if self.layout["kind"] == "step":
-            step = True
+            line_shape = "hv"
+        elif self.layout["kind"] == "spline":
+            line_shape = "spline"
         marker_colors = self.get_colors()
         if "colors" in style_kwargs:
             marker_colors = (
@@ -93,7 +96,7 @@ class LinePlot(PlotlyBase):
                         x=DF["time"],
                         y=DF[self.layout["columns"][0]],
                         name=elem,
-                        line_shape="hv" if step else None,
+                        line_shape=line_shape,
                         line_color=marker_colors[idx],
                     )
                 )
@@ -102,7 +105,7 @@ class LinePlot(PlotlyBase):
                 df,
                 x="time",
                 y=self.layout["columns"][0],
-                line_shape="hv" if step else None,
+                line_shape=line_shape,
                 **add_params,
             )
             fig.update_traces(line=dict(color=marker_colors[0]))
