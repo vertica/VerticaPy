@@ -268,6 +268,13 @@ class VDCBarPlot(BasicPlotTests):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
+def col_name_param():
+    """
+    Get column value to pass as pytest parameter
+    """
+    return "0"
+
+
 class VDFBarPlot(BasicPlotTests):
     """
     Testing different attributes of Bar plot on a vDataFrame
@@ -299,12 +306,6 @@ class VDFBarPlot(BasicPlotTests):
             self.data.bar,
             {"columns": self.COL_NAME_VDF_1},
         )
-
-    def col_name_param():
-        """
-        Get column value to pass as pytest parameter
-        """
-        return "0"
 
     @pytest.mark.parametrize(
         "of_col, method", [(col_name_param(), "min"), (col_name_param(), "max")]
