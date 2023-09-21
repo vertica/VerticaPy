@@ -76,6 +76,49 @@ def create_index(
     -------
     TableSample
         geospatial indexes.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.geo import *
+        from verticapy.datasets import load_world
+
+        world = load_world()
+        world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
+ 
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.geo import *
+        from verticapy.datasets import load_world
+
+        world = load_world()
+        world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
+        #raw directive was throwing error because of unicode symbol
+        #in the country column
+        world["country"].drop()
+        html_file = open("figures/sql_geo_index_create_index.html", "w")
+        html_file.write(world._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_create_index.html
+
+        
+    .. code-block:: python
+
+        create_index(world, "id", "geometry", "world_polygons", True)
+ 
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/sql_geo_index_create_index_2.html", "w")
+        html_file.write(create_index(world, "id", "geometry", "world_polygons", True)._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_create_index_2.html
     """
     gid, g = vdf.format_colnames(gid, g)
     query = f"""
@@ -115,6 +158,58 @@ def describe_index(
     -------
     TableSample
         geospatial indexes.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.geo import *
+
+        # Describes all indexes
+        describe_index()
+ 
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.geo import *
+
+        html_file = open("figures/sql_geo_index_describe_index_1.html", "w")
+        html_file.write(describe_index()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_1.html
+
+    .. code-block:: python
+
+        # Describes a specific index
+        describe_index("world_polygons")
+ 
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/sql_geo_index_describe_index_2.html", "w")
+        html_file.write(describe_index("world_polygons")._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_2.html
+
+    .. code-block:: python
+
+        # Describes all geometries of a specific index
+        describe_index("world_polygons",
+                        list_polygons = True)
+ 
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/sql_geo_index_describe_index_3.html", "w")
+        html_file.write(describe_index("world_polygons", list_polygons=True)._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_3.html
     """
     if not name:
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -156,6 +251,47 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     bool
         True if the index was renamed, False
         otherwise.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.geo import *
+
+        # Describes all indexes
+        describe_index()
+ 
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.geo import *
+
+        html_file = open("figures/sql_geo_index_rename_index_1.html", "w")
+        html_file.write(describe_index()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html
+ 
+    .. ipython:: python
+        
+        # Renames a specific index
+        rename_index("world_polygons", "world_polygons_test")
+
+    .. code-block:: python
+
+        # Index now has the new name
+        describe_index()
+ 
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/sql_geo_index_rename_index_2.html", "w")
+        html_file.write(describe_index()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_2.html
     """
 
     try:
