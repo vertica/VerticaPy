@@ -16,7 +16,6 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-import copy
 import pandas as pd
 import numpy as np
 import plotly.express as px
