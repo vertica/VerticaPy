@@ -79,4 +79,3 @@ class TestPlotlyVDFLinePlot(VDFLinePlot):
     """
     Testing different attributes of Line plot on a vDataFrame
     """
-
