@@ -54,7 +54,7 @@ class ContourPlot(PlotlyBase):
                 linecolor="black",
                 mirror=True,
                 zeroline=False,
-                title=self.layout["columns"][1],
+                title=self.layout["columns"][0],
             ),
             "yaxis": dict(
                 showline=True,
