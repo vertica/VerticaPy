@@ -43,7 +43,12 @@ class LinePlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {"width": 800, "height": 450}
+        self.init_style = {
+            "xaxis_title": "time",
+            "yaxis_title": self.layout["columns"][0] if "z" in self.data else "values",
+            "width": 800,
+            "height": 450,
+        }
 
     # Draw.
 
@@ -51,13 +56,26 @@ class LinePlot(PlotlyBase):
         self,
         fig: Optional[Figure] = None,
         step: bool = False,
-        markers: bool = False,
+        markers: bool = True,
+        line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
         fig_base = self._get_fig(fig)
+        if self.layout["kind"] == "step" or step == True:
+            line_shape = "hv"
+        elif self.layout["kind"] == "spline":
+            line_shape = "spline"
+        marker_colors = self.get_colors()
+        if "colors" in style_kwargs:
+            marker_colors = (
+                style_kwargs["colors"] + marker_colors
+                if isinstance(style_kwargs["colors"], list)
+                else [style_kwargs["colors"]] + marker_colors
+            )
+            del style_kwargs["colors"]
         add_params = {}
         add_params["markers"] = markers
         if "z" in self.data:
@@ -74,19 +92,28 @@ class LinePlot(PlotlyBase):
                 columns=["time", self.layout["columns"][0]],
             )
         df = pd.DataFrame(**data_args)
-        if step and "z" in self.data:
-            for elem in df["color"].unique():
+        if "z" in self.data:
+            for idx, elem in enumerate(df["color"].unique()):
                 DF = df[df["color"] == elem]
                 fig_base.add_trace(
                     go.Scatter(
                         x=DF["time"],
                         y=DF[self.layout["columns"][0]],
                         name=elem,
-                        line_shape="hv",
+                        line_shape=line_shape,
+                        line_color=marker_colors[idx],
+                        mode="lines+markers" if markers else "lines",
                     )
                 )
         else:
-            fig = px.line(df, x="time", y=self.layout["columns"][0], **add_params)
+            fig = px.line(
+                df,
+                x="time",
+                y=self.layout["columns"][0],
+                line_shape=line_shape,
+                **add_params,
+            )
+            fig.update_traces(line=dict(color=marker_colors[0]))
         for i in range(len(fig.data) if fig else 0):
             fig_base.add_trace(fig.data[i])
         fig_base.update_layout(**self._update_dict(self.init_style, style_kwargs))
@@ -111,14 +138,46 @@ class MultiLinePlot(PlotlyBase):
 
     # Styling Methods.
     def _init_style(self) -> None:
-        self.init_style = {"width": 800, "height": 450}
+        self.init_style = {
+            "xaxis_title": "time",
+            "yaxis_title": self.layout["columns"][0]
+            if len(self.layout["columns"]) < 2
+            else "values",
+            "width": 800,
+            "height": 450,
+        }
 
     def draw(
         self,
         fig: Optional[Figure] = None,
+        line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
         """
         Draws a time series plot using the plotly API.
         """
-        return LinePlot.draw(self, fig, **style_kwargs)
+        if self.layout["kind"] == "step":
+            line_shape = "hv"
+        elif self.layout["kind"] == "spline":
+            line_shape = "spline"
+        fig_base = self._get_fig(fig)
+        marker_colors = self.get_colors()
+        if "colors" in style_kwargs:
+            marker_colors = (
+                style_kwargs["colors"] + marker_colors
+                if isinstance(style_kwargs["colors"], list)
+                else [style_kwargs["colors"]] + marker_colors
+            )
+            del style_kwargs["colors"]
+        for idx, elem in enumerate(self.layout["columns"]):
+            fig_base.add_trace(
+                go.Scatter(
+                    x=self.data["x"],
+                    y=self.data["Y"][:, idx],
+                    name=elem,
+                    line_shape=line_shape,
+                    line_color=marker_colors[idx],
+                )
+            )
+        fig_base.update_layout(**self._update_dict(self.init_style, style_kwargs))
+        return fig_base
