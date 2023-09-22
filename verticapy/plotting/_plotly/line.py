@@ -44,7 +44,12 @@ class LinePlot(PlotlyBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        self.init_style = {"width": 800, "height": 450}
+        self.init_style = {
+            "xaxis_title": "time",
+            "yaxis_title": self.layout["columns"][0] if "z" in self.data else "values",
+            "width": 800,
+            "height": 450,
+        }
 
     # Draw.
 
@@ -52,7 +57,7 @@ class LinePlot(PlotlyBase):
         self,
         fig: Optional[Figure] = None,
         step: bool = False,
-        markers: bool = False,
+        markers: bool = True,
         line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
@@ -60,7 +65,7 @@ class LinePlot(PlotlyBase):
         Draws a time series plot using the plotly API.
         """
         fig_base = self._get_fig(fig)
-        if self.layout["kind"] == "step":
+        if self.layout["kind"] == "step" or step == True:
             line_shape = "hv"
         elif self.layout["kind"] == "spline":
             line_shape = "spline"
@@ -98,6 +103,7 @@ class LinePlot(PlotlyBase):
                         name=elem,
                         line_shape=line_shape,
                         line_color=marker_colors[idx],
+                        mode="lines+markers" if markers else "lines",
                     )
                 )
         else:
@@ -133,7 +139,14 @@ class MultiLinePlot(PlotlyBase):
 
     # Styling Methods.
     def _init_style(self) -> None:
-        self.init_style = {"width": 800, "height": 450}
+        self.init_style = {
+            "xaxis_title": "time",
+            "yaxis_title": self.layout["columns"][0]
+            if len(self.layout["columns"]) < 2
+            else "values",
+            "width": 800,
+            "height": 450,
+        }
 
     def draw(
         self,
@@ -167,4 +180,5 @@ class MultiLinePlot(PlotlyBase):
                     line_color=marker_colors[idx],
                 )
             )
+        fig_base.update_layout(**self._update_dict(self.init_style, style_kwargs))
         return fig_base
