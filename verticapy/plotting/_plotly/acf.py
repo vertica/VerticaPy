@@ -88,7 +88,11 @@ class ACFPlot(PlotlyBase):
         Z = self.data["z"]
         fig = self._get_fig(fig)
         if "colors" in style_kwargs:
-            self.init_confidence_style["marker_color"] = style_kwargs["colors"]
+            self.init_confidence_style["marker_color"] = (
+                style_kwargs["colors"]
+                if isinstance(style_kwargs["colors"], str)
+                else style_kwargs["colors"][0]
+            )
             style_kwargs.pop("colors")
         fig.add_scatter(
             x=X,
