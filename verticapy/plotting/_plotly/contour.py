@@ -54,6 +54,7 @@ class ContourPlot(PlotlyBase):
                 linecolor="black",
                 mirror=True,
                 zeroline=False,
+                title=self.layout["columns"][0],
             ),
             "yaxis": dict(
                 showline=True,
@@ -61,6 +62,7 @@ class ContourPlot(PlotlyBase):
                 linecolor="black",
                 mirror=True,
                 zeroline=False,
+                title=self.layout["columns"][1],
             ),
         }
 
@@ -74,8 +76,9 @@ class ContourPlot(PlotlyBase):
                 ]
             }
         else:
-            return {"colorscale": style_kwargs["colorscale"]}
+            tmp_output = {"colorscale": style_kwargs["colorscale"]}
             style_kwargs.pop("colorscale")
+            return tmp_output
 
     # Draw.
 
@@ -88,25 +91,24 @@ class ContourPlot(PlotlyBase):
         Draws a contour plot using the Plotly API.
         """
         fig_base = self._get_fig(fig)
-        x_title = self.layout["columns"][0]
-        y_title = self.layout["columns"][1]
+        if "color_scale" in style_kwargs:
+            style_kwargs["colorscale"] = style_kwargs["color_scale"]
+            style_kwargs.pop("color_scale")
+        color_options = self._get_color_style(style_kwargs)
         fig = go.Figure(
             data=go.Contour(
                 z=self.data["Z"],
                 x=np.unique(self.data["X"]),
                 y=np.unique(self.data["Y"]),
-                hovertemplate=f"{x_title}: "
+                hovertemplate=f"{self.init_style['xaxis']['title']}: "
                 "%{x:.2f} <br> "
-                f"{y_title}:"
+                f"{self.init_style['yaxis']['title']}:"
                 " %{y:.2f} <extra></extra> <br> Color: %{z:.2f}",
-                **self._get_color_style(style_kwargs),
+                **color_options,
             )
         )
         fig.update_layout(width=500, height=500)
-
         fig.update_layout(
-            xaxis_title=x_title,
-            yaxis_title=y_title,
             **self._update_dict(self.init_style, style_kwargs),
         )
         fig_base.add_trace(fig.data[0])
