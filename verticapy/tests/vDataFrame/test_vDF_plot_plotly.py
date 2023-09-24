@@ -1088,7 +1088,7 @@ class TestVDFLinePlot:
         result = amazon_vd["number"].plot(ts="date", by="state")
         # Assert - checking if correct object created
         assert (
-            result.layout["xaxis"]["title"]["text"] == "time"
+            result.layout["xaxis"]["title"]["text"] == "date"
         ), "X axis title incorrect"
 
     def test_properties_y_axis_title(self, load_plotly, amazon_vd):
