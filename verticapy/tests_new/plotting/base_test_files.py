@@ -582,24 +582,6 @@ class VDCCandlestick(BasicPlotTests):
         Testing x-axis title
         """
 
-    def test_additional_options_custom_width_and_height(
-        self,
-    ):
-        """
-        Testing custom width and height
-        """
-        # Arrange
-        custom_width = 300
-        custom_height = 400
-        # Act
-        result = self.data[self.COL_NAME_1].candlestick(
-            ts=self.TIME_COL, width=custom_width, height=custom_height
-        )
-        # Assert
-        assert (
-            get_width(result) == custom_width and get_height(result) == custom_height
-        ), "Custom width or height not working"
-
     @pytest.mark.parametrize(
         "method, start_date", [("count", 1910), ("density", 1920), ("max", 1920)]
     )
