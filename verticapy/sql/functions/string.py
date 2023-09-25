@@ -36,6 +36,32 @@ def length(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        # Apply the length function
+        df["length_x"] = st.length(df["x"])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df["length_x"] = st.length(df["x"])
+        html_file = open("figures/sql_functions_string_length.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_length.html
     """
     expr = format_magic(expr)
     return StringSQL(f"LENGTH({expr})", "int")
@@ -55,6 +81,32 @@ def lower(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        # Applying the lower function
+        df["lower_x"] = st.lower(df["x"])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df["lower_x"] = st.lower(df["x"])
+        html_file = open("figures/sql_functions_string_lower.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_lower.html
     """
     expr = format_magic(expr)
     return StringSQL(f"LOWER({expr})", "text")
@@ -81,6 +133,32 @@ def substr(
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        # Apply the substr function
+        df["substr_x"] = st.substr(df["x"], 1, 1)
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df["substr_x"] = st.substr(df["x"], 1, 1)
+        html_file = open("figures/sql_functions_string_substr.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_substr.html
     """
     expr = format_magic(expr)
     if extent:
@@ -102,6 +180,32 @@ def upper(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        # Apply the upper function
+        df["upper_x"] = st.upper(df["x"])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df["upper_x"] = st.upper(df["x"])
+        html_file = open("figures/sql_functions_string_upper.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_upper.html
     """
     expr = format_magic(expr)
     return StringSQL(f"UPPER({expr})", "text")
@@ -130,6 +234,32 @@ def edit_distance(
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        # Apply the edit distance function
+        df["edit_distance_x"] = st.edit_distance(df["x"], 'heyllow')
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df["edit_distance_x"] = st.edit_distance(df["x"], 'heyllow')
+        html_file = open("figures/sql_functions_string_edit_distance.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_edit_distance.html
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -154,6 +284,32 @@ def soundex(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        # Apply the soundex function
+        df["soundex_x"] = st.soundex(df["x"])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df["soundex_x"] = st.soundex(df["x"])
+        html_file = open("figures/sql_functions_string_soundex.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_soundex.html
     """
     expr = format_magic(expr)
     return StringSQL(f"SOUNDEX({expr})", "varchar")
@@ -181,6 +337,32 @@ def soundex_matches(
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        # Apply the soundex_matches function
+        df["soundex_matches_x"] = st.soundex_matches(df["x"], 'heyllow')
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df["soundex_matches_x"] = st.soundex_matches(df["x"], 'heyllow')
+        html_file = open("figures/sql_functions_string_soundex_matches.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_soundex_matches.html
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -210,6 +392,32 @@ def jaro_distance(
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        # Apply the jaro distance function
+        df["jaro_distance_x"] = st.jaro_distance(df["x"], 'heyllow')
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df["jaro_distance_x"] = st.jaro_distance(df["x"], 'heyllow')
+        html_file = open("figures/sql_functions_string_jaro_distance.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_jaro_distance.html
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -236,6 +444,32 @@ def jaro_winkler_distance(
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        # Apply the jaro-winkler function
+        df["jaro_winkler_distance_x"] = st.jaro_winkler_distance(df["x"], 'heyllow')
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df["jaro_winkler_distance_x"] = st.jaro_winkler_distance(df["x"], 'heyllow')
+        html_file = open("figures/sql_functions_string_jaro_winkler_distance.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_string_jaro_winkler_distance.html
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
