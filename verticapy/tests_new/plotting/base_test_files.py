@@ -268,13 +268,6 @@ class VDCBarPlot(BasicPlotTests):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
-def col_name_param():
-    """
-    Get column value to pass as pytest parameter
-    """
-    return "0"
-
-
 class VDFBarPlot(BasicPlotTests):
     """
     Testing different attributes of Bar plot on a vDataFrame
@@ -306,6 +299,12 @@ class VDFBarPlot(BasicPlotTests):
             self.data.bar,
             {"columns": self.COL_NAME_VDF_1},
         )
+
+    def col_name_param():
+        """
+        Get column value to pass as pytest parameter
+        """
+        return "0"
 
     @pytest.mark.parametrize(
         "of_col, method", [(col_name_param(), "min"), (col_name_param(), "max")]
@@ -589,17 +588,33 @@ class VDCCandlestick(BasicPlotTests):
         Testing custom width and height
         """
         # Arrange
-        custom_width = 3
-        custom_height = 4
+        custom_width = 300
+        custom_height = 400
         # Act
         result = self.data[self.COL_NAME_1].candlestick(
             ts=self.TIME_COL, width=custom_width, height=custom_height
         )
         # Assert
         assert (
-            result.options["chart"].width == custom_width
-            and result.options["chart"].height == custom_height
+            get_width(result) == custom_width and get_height(result) == custom_height
         ), "Custom width or height not working"
+
+    @pytest.mark.parametrize(
+        "method, start_date", [("count", 1910), ("density", 1920), ("max", 1920)]
+    )
+    def test_properties_output_type_for_all_options(
+        self, plotting_library_object, dummy_line_data_vd, method, start_date
+    ):
+        """
+        Test "method" and "start date" parameters
+        """
+        # Arrange
+        # Act
+        result = dummy_line_data_vd[self.COL_NAME_1].candlestick(
+            ts=self.TIME_COL, method=method, start_date=start_date
+        )
+        # Assert - checking if correct object created
+        assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
 class VDFContourPlot(BasicPlotTests):
