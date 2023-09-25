@@ -16,8 +16,6 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-import numpy as np
-
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
 from verticapy.plotting._plotly.base import PlotlyBase
