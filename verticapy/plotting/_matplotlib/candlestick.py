@@ -85,53 +85,59 @@ class CandleStick(MatplotlibBase):
         down = dataframe[dataframe.close < dataframe.open]
         col_up = color_list[0]
         col_down = color_list[1]
-        differences = np.diff(self.data["x"])
-        min_difference = np.min(differences)
-        width = min_difference / 3
-        width2 = min_difference / 20
+        if not isinstance(self.data["x"][0], str):
+            differences = np.diff(self.data["x"])
+            min_difference = np.min(differences)
+            width = min_difference / 3
+            width2 = min_difference / 20
+        else:
+            width = 0.5
+            width2 = 0.08
         # open 1, close 2, high 3, low 4
-        if up.to_numpy().shape[0] > 0:
+        if up.shape()[0] > 0:
+            up = up.to_numpy()
             ax.bar(
-                up.to_numpy()[:, 0],
-                up.to_numpy()[:, 2] - up.to_numpy()[:, 1],
+                up[:, 0],
+                up[:, 2].astype("float") - up[:, 1].astype("float"),
                 width,
-                bottom=up.to_numpy()[:, 1],
+                bottom=up[:, 1].astype("float"),
                 color=col_up,
             )
             ax.bar(
-                up.to_numpy()[:, 0],
-                up.to_numpy()[:, 3] - up.to_numpy()[:, 2],
+                up[:, 0],
+                up[:, 3].astype("float") - up[:, 2].astype("float"),
                 width2,
-                bottom=up.to_numpy()[:, 2],
+                bottom=up[:, 2].astype("float"),
                 color=col_up,
             )
             ax.bar(
-                up.to_numpy()[:, 0],
-                up.to_numpy()[:, 4] - up.to_numpy()[:, 1],
+                up[:, 0],
+                up[:, 4].astype("float") - up[:, 1].astype("float"),
                 width2,
-                bottom=up.to_numpy()[:, 1],
+                bottom=up[:, 1].astype("float"),
                 color=col_up,
             )
-        if down.to_numpy().shape[0] > 0:
+        if down.shape()[0] > 0:
+            down = down.to_numpy()
             ax.bar(
-                down.to_numpy()[:, 0],
-                down.to_numpy()[:, 2] - down.to_numpy()[:, 1],
+                down[:, 0],
+                down[:, 2].astype("float") - down[:, 1].astype("float"),
                 width,
-                bottom=down.to_numpy()[:, 1],
+                bottom=down[:, 1].astype("float"),
                 color=col_down,
             )
             ax.bar(
-                down.to_numpy()[:, 0],
-                down.to_numpy()[:, 3] - down.to_numpy()[:, 1],
+                down[:, 0],
+                down[:, 3].astype("float") - down[:, 1].astype("float"),
                 width2,
-                bottom=down.to_numpy()[:, 1],
+                bottom=down[:, 1].astype("float"),
                 color=col_down,
             )
             ax.bar(
-                down.to_numpy()[:, 0],
-                down.to_numpy()[:, 4] - down.to_numpy()[:, 2],
+                down[:, 0],
+                down[:, 4].astype("float") - down[:, 2].astype("float"),
                 width2,
-                bottom=down.to_numpy()[:, 2],
+                bottom=down[:, 2].astype("float"),
                 color=col_down,
             )
         return ax
