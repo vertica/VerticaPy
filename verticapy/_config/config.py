@@ -117,8 +117,13 @@ def set_option(key: str, value: Any = None) -> None:
         changed.
     mode: str
         Display mode for VerticaPy outputs, either:
-            full  : VerticaPy regular display mode.
-            light : Minimalist display mode.
+
+        **full**  :
+                    VerticaPy regular display mode.
+
+        **light** :
+                    Minimalist display mode.
+
     percent_bar: bool
         If set to True, the percent of non-missing
         values is displayed.
@@ -148,6 +153,182 @@ def set_option(key: str, value: Any = None) -> None:
         using iterative functions.
     value: object, optional
         New value of the option.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic
+        from verticapy import set_option
+
+        titanic = load_titanic()
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_titanic
+        from verticapy import set_option
+
+        titanic = load_titanic()
+        html_file = open("figures/_config_config_set_option_1.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_1.html
+
+    .. code-block:: python
+
+        # Computes and displays the total number of elements
+        set_option("count_on", True)
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("count_on", True)
+        html_file = open("figures/_config_config_set_option_2.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_2.html
+
+    .. code-block:: python
+
+        # Turns off the footer
+        set_option("footer_on", False)
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("footer_on", False)
+        html_file = open("figures/_config_config_set_option_3.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_3.html
+
+    .. code-block:: python
+
+        # Sets the maximum number of columns to display
+        set_option("max_columns", 3)
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("max_columns", 3)
+        html_file = open("figures/_config_config_set_option_4.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_4.html
+
+    .. code-block:: python
+
+        # Sets the maximum number of row to display
+        set_option("max_rows", 5)
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("max_rows", 5)
+        html_file = open("figures/_config_config_set_option_5.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_5.html
+
+    .. code-block:: python
+
+        # Light mode
+        set_option("mode", "light")
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("mode", "light")
+        html_file = open("figures/_config_config_set_option_6.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_6.html
+
+    .. code-block:: python
+
+        # Full mode
+        set_option("mode", "full")
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("mode", "full")
+        html_file = open("figures/_config_config_set_option_7.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_7.html
+
+    .. code-block:: python
+
+        # Display the loading bar
+        set_option("percent_bar", True)
+        display(titanic)
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("percent_bar", True)
+        html_file = open("figures/_config_config_set_option_8.html", "w")
+        html_file.write(titanic._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/_config_config_set_option_8.html
+
+    .. ipython:: python
+
+        # Display queries and their execution times
+        set_option("sql_on", True)
+        set_option("time_on", True)
+        @savefig _config_config_set_option_corr.png
+        titanic.corr()
+
+    .. ipython:: python
+
+        # Hide queires and execution times
+        set_option("sql_on", False)
+        set_option("sql_on", False)
+
+        # Set a seed for the random number generator
+        set_option("random_state", 2)
+
+        # Seed the random state
+        titanic.sample(0.1).shape()
+
+    .. ipython:: python
+
+        # Change graphic colors
+        set_option("colors", ["blue", "red"])
+
+        @savefig _config_config_set_option_hist.png
+        titanic.hist(["pclass", "survived"])
+
+    .. ipython:: python
+
+        #Change the temporary schema
+        set_option("temp_schema", "public")
     """
     if key in _all_options:
         op = _all_options[key]
