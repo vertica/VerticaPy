@@ -62,7 +62,7 @@ class CandleStick(MatplotlibBase):
             color_list = (
                 style_kwargs["color"] + color_list
                 if isinstance(style_kwargs, list)
-                else [style_kwargs["color"]]
+                else [style_kwargs["color"]] + color_list
             )
             style_kwargs.pop("color")
         ax, _, style_kwargs = self._get_ax_fig(
