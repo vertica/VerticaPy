@@ -61,6 +61,7 @@ class RegressionPlot(MatplotlibBase):
         """
         Draws a regression plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         x0 = self.data["X"][:, 0]
         y0 = self.data["X"][:, 1]
         min_reg_x, max_reg_x = min(x0), max(x0)
