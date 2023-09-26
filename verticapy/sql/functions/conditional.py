@@ -32,16 +32,50 @@ def case_when(*args) -> StringSQL:
     args: SQLExpression
         Infinite number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN args[2 * i]
-                       THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN args[2 * i]
-                       THEN args[2 * i + 1] ...
-                       ELSE args[n] END
+        
+        **even**: 
+                CASE ... WHEN args[2 * i]
+                THEN args[2 * i + 1] ... END
+
+        **odd** : 
+                CASE ... WHEN args[2 * i]
+                THEN args[2 * i + 1] ...
+                ELSE args[n] END
 
     Returns
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
+        # apply the case_when function, creating a "x_pos" column
+        df["x_pos"] = st.case_when(df["x"] > 0, 1,
+                                   df["x"] == 0, 0,
+                                   -1)
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
+        df["x_pos"] = st.case_when(df["x"] > 0, 1,
+                                   df["x"] == 0, 0,
+                                   -1)
+        html_file = open("figures/sql_functions_conditional_case_when.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_conditional_case_when.html
     """
     n = len(args)
     if n < 2:
@@ -78,16 +112,52 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     args: SQLExpression
         Infinite number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN expr = args[2 * i]
-                       THEN args[2 * i + 1] ... END
-        odd : CASE ... WHEN expr = args[2 * i]
-                       THEN args[2 * i + 1] ...
-                       ELSE args[n] END
+
+        **even**: 
+                CASE ... WHEN expr = args[2 * i]
+                THEN args[2 * i + 1] ... END
+
+        **odd**: 
+                CASE ... WHEN expr = args[2 * i]
+                THEN args[2 * i + 1] ...
+                ELSE args[n] END
 
     Returns
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
+        # apply the decode function, creating a "type_x" column
+        df["type_x"] = st.decode(df["x"],  
+                        'banana', 'fruit',
+                        'apple', 'fruit',
+                        'vegetable')
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
+        df["type_x"] = st.decode(df["x"],  
+                        'banana', 'fruit',
+                        'apple', 'fruit',
+                        'vegetable')
+        html_file = open("figures/sql_functions_conditional_decode.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_conditional_decode.html
     """
     n = len(args)
     if n < 2:

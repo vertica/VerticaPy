@@ -34,6 +34,30 @@ def avg(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the avg function
+        df.select([st.avg(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_avg.html", "w")
+        html_file.write(df.select([str(st.avg(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_avg.html
     """
     expr = format_magic(expr)
     return StringSQL(f"AVG({expr})", "float")
@@ -57,6 +81,30 @@ def bool_and(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        # apply the bool_and function
+        df.select([st.bool_and(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_bool_and.html", "w")
+        html_file.write(df.select([str(st.bool_and(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_and.html
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_AND({expr})", "int")
@@ -78,6 +126,30 @@ def bool_or(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        # apply the bool_or function
+        df.select([st.bool_or(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_bool_or.html", "w")
+        html_file.write(df.select([str(st.bool_or(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_or.html
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_OR({expr})", "int")
@@ -99,6 +171,30 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        # apply the bool_xor function
+        df.select([st.bool_xor(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_bool_xor.html", "w")
+        html_file.write(df.select([str(st.bool_xor(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_xor.html
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_XOR({expr})", "int")
@@ -120,6 +216,34 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, 2, 3, 4, 5, 6],
+                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
+        # apply the conditional_change_event function
+        df["cchange_event"] = st.conditional_change_event(df["y"] > 0)._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, 2, 3, 4, 5, 6],
+                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()  
+        df["cchange_event"] = st.conditional_change_event(df["y"] > 0)._over(order_by = [df["x"]])
+        html_file = open("figures/sql_functions_analytic_conditional_change_event.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_change_event.html
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
@@ -140,6 +264,34 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, 2, 3, 4, 5, 6],
+                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
+        # apply the conditional_true_event function
+        df["ctrue_event"] = st.conditional_true_event(df["y"] > 0)._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, 2, 3, 4, 5, 6],
+                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()  
+        df["ctrue_event"] = st.conditional_true_event(df["y"] > 0)._over(order_by = [df["x"]])
+        html_file = open("figures/sql_functions_analytic_conditional_true_event.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_true_event.html
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
@@ -159,6 +311,30 @@ def count(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, None, 12]}).to_vdf()
+        # apply the count function
+        df.select([st.count(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, None, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_count.html", "w")
+        html_file.write(df.select([str(st.count(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_count.html
     """
     expr = format_magic(expr)
     return StringSQL(f"COUNT({expr})", "int")
@@ -180,6 +356,34 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        # apply the lag function
+        df["lag"] = st.lag(df["y"], 1)._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()  
+        df["lag"] = st.lag(df["y"], 1)._over(order_by = [df["x"]])
+        html_file = open("figures/sql_functions_analytic_lag.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_lag.html
     """
     expr = format_magic(expr)
     return StringSQL(f"LAG({expr}, {offset})")
@@ -202,6 +406,34 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        # apply the lead function
+        df["lead"] = st.lead(df["y"], 1)._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()  
+        df["lead"] = st.lead(df["y"], 1)._over(order_by = [df["x"]])
+        html_file = open("figures/sql_functions_analytic_lead.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_lead.html
     """
     expr = format_magic(expr)
     return StringSQL(f"LEAD({expr}, {offset})")
@@ -221,6 +453,30 @@ def max(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the max function
+        df.select([st.max(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_max.html", "w")
+        html_file.write(df.select([str(st.max(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_max.html
     """
     expr = format_magic(expr)
     return StringSQL(f"MAX({expr})", "float")
@@ -240,6 +496,30 @@ def median(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the median function
+        df.select([st.median(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_median.html", "w")
+        html_file.write(df.select([str(st.median(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_median.html
     """
     expr = format_magic(expr)
     return StringSQL(f"APPROXIMATE_MEDIAN({expr})", "float")
@@ -259,6 +539,30 @@ def min(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the min function
+        df.select([st.min(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_min.html", "w")
+        html_file.write(df.select([str(st.min(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_min.html
     """
     expr = format_magic(expr)
     return StringSQL(f"MIN({expr})", "float")
@@ -280,6 +584,34 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        # apply the nth_value function
+        df["nth_value"] = st.nth_value(df["y"], 3)._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, 2, 3, 4],
+                          "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()  
+        df["nth_value"] = st.nth_value(df["y"], 3)._over(order_by = [df["x"]])
+        html_file = open("figures/sql_functions_analytic_nth_value.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_nth_value.html
     """
     expr = format_magic(expr)
     return StringSQL(f"NTH_VALUE({expr}, {row_number})", "int")
@@ -302,6 +634,30 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the quantile function
+        df.select([st.quantile(df["x"], 0.25)])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_quantile.html", "w")
+        html_file.write(df.select([str(st.quantile(df["x"], 0.25))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_quantile.html
     """
     expr = format_magic(expr)
     return StringSQL(
@@ -320,6 +676,32 @@ def rank() -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
+        # apply the rank function
+        df["rank"] = st.rank()._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()  
+        df["rank"] = st.rank()._over(order_by = [df["x"]])      
+        html_file = open("figures/sql_functions_analytic_rank.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_rank.html
     """
     return StringSQL("RANK()", "int")
 
@@ -333,6 +715,32 @@ def row_number() -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
+        # apply the row_number function
+        df["row_number"] = st.row_number()._over(order_by = [df["x"]])
+        display(df)
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()  
+        df["row_number"] = st.row_number()._over(order_by = [df["x"]])      
+        html_file = open("figures/sql_functions_analytic_row_number.html", "w")
+        html_file.write(df._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_row_number.html
     """
     return StringSQL("ROW_NUMBER()", "int")
 
@@ -351,6 +759,30 @@ def std(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the std function
+        df.select([st.std(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_std.html", "w")
+        html_file.write(df.select([str(st.std(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_std.html
     """
     expr = format_magic(expr)
     return StringSQL(f"STDDEV({expr})", "float")
@@ -373,6 +805,30 @@ def sum(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the sum function
+        df.select([st.sum(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_sum.html", "w")
+        html_file.write(df.select([str(st.sum(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_sum.html
     """
     expr = format_magic(expr)
     return StringSQL(f"SUM({expr})", "float")
@@ -392,6 +848,30 @@ def var(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
+
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy import *
+        import verticapy.stats as st
+
+        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        # apply the var function
+        df.select([st.var(df["x"])])
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import *
+        import verticapy.stats as st
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()        
+        html_file = open("figures/sql_functions_analytic_var.html", "w")
+        html_file.write(df.select([str(st.var(df["x"]))])._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_var.html
     """
     expr = format_magic(expr)
     return StringSQL(f"VARIANCE({expr})", "float")
