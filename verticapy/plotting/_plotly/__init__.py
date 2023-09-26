@@ -29,7 +29,7 @@ from verticapy.plotting._plotly.outliers import OutliersPlot
 from verticapy.plotting._plotly.acf import ACFPlot
 from verticapy.plotting._plotly.base import PlotlyBase
 from verticapy.plotting._plotly.hist import Histogram
-
+from verticapy.plotting._plotly.candlestick import CandleStick
 
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
 from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve
