@@ -29,7 +29,7 @@ def random() -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -72,7 +72,7 @@ def randomint(n: int) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -116,7 +116,7 @@ def seeded_random(random_state: int) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 

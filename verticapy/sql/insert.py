@@ -77,9 +77,9 @@ def insert_into(
         iris = load_iris()
 
     .. ipython:: python
- 
+
         from verticapy.utilities import insert_into
-        
+
         # copy left as default (True): one copy
         insert_into(table_name = "iris",
                     schema = "public",
@@ -89,7 +89,7 @@ def insert_into(
         # copy set to False: multiple inserts
         insert_into(table_name = "iris",
                     schema = "public",
-                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"], 
+                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
                             [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
                     copy=False,)
 
@@ -97,7 +97,7 @@ def insert_into(
         # copy set to False: multiple inserts
         insert_into(table_name = "iris",
                     schema = "public",
-                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"], 
+                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
                             [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
                     genSQL=True,)
 

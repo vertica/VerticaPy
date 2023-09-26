@@ -40,7 +40,7 @@ def length(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -85,7 +85,7 @@ def lower(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -137,7 +137,7 @@ def substr(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -184,7 +184,7 @@ def upper(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -238,7 +238,7 @@ def edit_distance(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -288,7 +288,7 @@ def soundex(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -341,7 +341,7 @@ def soundex_matches(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -396,7 +396,7 @@ def jaro_distance(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -448,7 +448,7 @@ def jaro_winkler_distance(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 

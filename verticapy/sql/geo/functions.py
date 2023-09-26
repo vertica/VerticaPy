@@ -65,7 +65,7 @@ def coordinate_converter(
     Examples
     --------
     .. code-block:: python
- 
+
         from verticapy.geo import *
         from verticapy.datasets import load_cities
 
@@ -73,10 +73,10 @@ def coordinate_converter(
         cities["lat"] = "ST_X(geometry)"
         cities["lon"] = "ST_Y(geometry)"
         cities
- 
+
     .. ipython:: python
         :suppress:
- 
+
         from verticapy.geo import *
         from verticapy.datasets import load_cities
         from verticapy import set_option
@@ -88,40 +88,40 @@ def coordinate_converter(
         html_file = open("figures/sql_geo_functions_coordinate_converter_1.html", "w")
         html_file.write(cities._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_1.html
 
     .. code-block:: python
- 
+
         # Converting lon, lat to x, y
         convert_xy = coordinate_converter(cities, "lon", "lat")
         convert_xy
- 
+
     .. ipython:: python
         :suppress:
- 
+
         convert_xy = coordinate_converter(cities, "lon", "lat")
         html_file = open("figures/sql_geo_functions_coordinate_converter_2.html", "w")
         html_file.write(convert_xy._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_2.html
 
     .. code-block:: python
- 
+
         # Converting x, y to lon, lat
         convert_reverse_xy = coordinate_converter(convert_xy, "lon", "lat", reverse=True)
         convert_reverse_xy
- 
+
     .. ipython:: python
         :suppress:
- 
+
         html_file = open("figures/sql_geo_functions_coordinate_converter_3.html", "w")
         html_file.write(coordinate_converter(convert_xy, "lon", "lat", reverse=True)._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_3.html
     """
@@ -182,7 +182,7 @@ def intersect(
     Examples
     --------
     .. code-block:: python
- 
+
         from verticapy.geo import *
         from verticapy.datasets import load_world, load_cities
 
@@ -195,10 +195,10 @@ def intersect(
         cities["lat"] = "ST_X(geometry)"
         cities["lon"] = "ST_Y(geometry)"
         display(cities)
- 
+
     .. ipython:: python
         :suppress:
- 
+
         from verticapy.geo import *
         from verticapy.datasets import load_world, load_cities
         from verticapy import set_option
@@ -214,7 +214,7 @@ def intersect(
         html_file = open("figures/sql_geo_functions_intersect_2.html", "w")
         html_file.write(cities._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: figures/sql_geo_functions_intersect_1.html
 
@@ -222,32 +222,32 @@ def intersect(
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html
 
     .. code-block:: python
- 
+
         # Intersect using Geometry
         intersect(cities, "world_polygons", "id", "geometry")
 
     .. ipython:: python
         :suppress:
- 
+
         html_file = open("figures/sql_geo_functions_intersect_3.html", "w")
         html_file.write(intersect(cities, "world_polygons", "id", "geometry")._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html       
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html
 
     .. code-block:: python
- 
+
         # Intersect using Latitude and Longitude
         intersect(cities, "world_polygons", "id", x="lat", y="lon")
 
     .. ipython:: python
         :suppress:
- 
+
         html_file = open("figures/sql_geo_functions_intersect_4.html", "w")
         html_file.write(intersect(cities, "world_polygons", "id", x="lat", y="lon")._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
     """
@@ -312,7 +312,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white",
                                   edgecolor="black")
-    
+
     .. ipython:: python
         :suppress:
 
@@ -337,7 +337,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         html_file = open("figures/sql_geo_functions_split_polygon_n.html", "w")
         html_file.write(split_p._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_split_polygon_n.html
 
@@ -345,7 +345,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
 
         split_p["geom"].geo_plot(color="white",
                                  edgecolor="black")
-    
+
     .. ipython:: python
         :suppress:
 

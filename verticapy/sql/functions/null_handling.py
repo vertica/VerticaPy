@@ -41,7 +41,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -90,7 +90,7 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -134,7 +134,7 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 

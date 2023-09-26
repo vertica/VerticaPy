@@ -32,12 +32,12 @@ def case_when(*args) -> StringSQL:
     args: SQLExpression
         Infinite number of Expressions.
         The expression generated will look like:
-        
-        **even**: 
+
+        **even**:
                 CASE ... WHEN args[2 * i]
                 THEN args[2 * i + 1] ... END
 
-        **odd** : 
+        **odd** :
                 CASE ... WHEN args[2 * i]
                 THEN args[2 * i + 1] ...
                 ELSE args[n] END
@@ -50,7 +50,7 @@ def case_when(*args) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -113,11 +113,11 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
         Infinite number of Expressions.
         The expression generated will look like:
 
-        **even**: 
+        **even**:
                 CASE ... WHEN expr = args[2 * i]
                 THEN args[2 * i + 1] ... END
 
-        **odd**: 
+        **odd**:
                 CASE ... WHEN expr = args[2 * i]
                 THEN args[2 * i + 1] ...
                 ELSE args[n] END
@@ -130,13 +130,13 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
         df = tablesample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
         # apply the decode function, creating a "type_x" column
-        df["type_x"] = st.decode(df["x"],  
+        df["type_x"] = st.decode(df["x"],
                         'banana', 'fruit',
                         'apple', 'fruit',
                         'vegetable')
@@ -148,7 +148,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
         from verticapy import *
         import verticapy.stats as st
         df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
-        df["type_x"] = st.decode(df["x"],  
+        df["type_x"] = st.decode(df["x"],
                         'banana', 'fruit',
                         'apple', 'fruit',
                         'vegetable')

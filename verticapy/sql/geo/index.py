@@ -86,7 +86,7 @@ def create_index(
 
         world = load_world()
         world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
- 
+
     .. ipython:: python
         :suppress:
 
@@ -105,11 +105,11 @@ def create_index(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_create_index.html
 
-        
+
     .. code-block:: python
 
         create_index(world, "id", "geometry", "world_polygons", True)
- 
+
     .. ipython:: python
         :suppress:
 
@@ -167,7 +167,7 @@ def describe_index(
 
         # Describes all indexes
         describe_index()
- 
+
     .. ipython:: python
         :suppress:
 
@@ -184,7 +184,7 @@ def describe_index(
 
         # Describes a specific index
         describe_index("world_polygons")
- 
+
     .. ipython:: python
         :suppress:
 
@@ -200,7 +200,7 @@ def describe_index(
         # Describes all geometries of a specific index
         describe_index("world_polygons",
                         list_polygons = True)
- 
+
     .. ipython:: python
         :suppress:
 
@@ -260,7 +260,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
         # Describes all indexes
         describe_index()
- 
+
     .. ipython:: python
         :suppress:
 
@@ -272,9 +272,9 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html
- 
+
     .. ipython:: python
-        
+
         # Renames a specific index
         rename_index("world_polygons", "world_polygons_test")
 
@@ -282,7 +282,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
         # Index now has the new name
         describe_index()
- 
+
     .. ipython:: python
         :suppress:
 

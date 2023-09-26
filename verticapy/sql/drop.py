@@ -41,30 +41,30 @@ def drop(
         all VerticaPy temporary elements.
     method: str, optional
         Method used to drop.
-            
-        **auto**   : 
+
+        **auto**   :
                     identifies the table / view /
                     index / model to drop.
                     It never drops an entire
                     schema  unless the  method is
                     set to 'schema'.
 
-        **model**  : 
+        **model**  :
                     drops the input model.
 
-        **table**  : 
+        **table**  :
                     drops the input table.
 
-        **view**   : 
+        **view**   :
                     drops the input view.
 
-        **geo**    : 
+        **geo**    :
                     drops the input geo index.
 
-        **text**   : 
+        **text**   :
                     drops the input text index.
 
-        **schema** : 
+        **schema** :
                     drops the input schema.
 
     raise_error: bool, optional

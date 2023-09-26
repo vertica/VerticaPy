@@ -61,7 +61,7 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -203,7 +203,7 @@ def abs(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -247,7 +247,7 @@ def acos(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -291,7 +291,7 @@ def asin(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -335,7 +335,7 @@ def atan(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -382,7 +382,7 @@ def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -427,7 +427,7 @@ def cbrt(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -471,7 +471,7 @@ def ceil(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -517,7 +517,7 @@ def comb(n: int, k: int) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -562,7 +562,7 @@ def cos(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -606,7 +606,7 @@ def cosh(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -650,7 +650,7 @@ def cot(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -694,7 +694,7 @@ def degrees(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -751,7 +751,7 @@ def distance(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -771,10 +771,10 @@ def distance(
         from verticapy import *
         import verticapy.stats as st
         df = TableSample({"name0": ["Paris"],
-                        "lat0": [48.864716], 
-                        "lon0": [2.349014], 
-                        "name1": ["Tunis"], 
-                        "lat1": [33.892166], 
+                        "lat0": [48.864716],
+                        "lon0": [2.349014],
+                        "name1": ["Tunis"],
+                        "lat1": [33.892166],
                         "lon1": [9.561555]}).to_vdf()
         df["distance"] = st.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
         html_file = open("figures/sql_functions_math_distance.html", "w")
@@ -804,7 +804,7 @@ def exp(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -848,7 +848,7 @@ def factorial(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -892,7 +892,7 @@ def floor(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -936,7 +936,7 @@ def gamma(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -981,7 +981,7 @@ def hash(*args) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1028,7 +1028,7 @@ def isfinite(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1074,7 +1074,7 @@ def isinf(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1120,7 +1120,7 @@ def isnan(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1166,7 +1166,7 @@ def lgamma(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1210,7 +1210,7 @@ def ln(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1256,7 +1256,7 @@ def log(expr: SQLExpression, base: int = 10) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1302,7 +1302,7 @@ def radians(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1348,7 +1348,7 @@ def round(expr: SQLExpression, places: int = 0) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1394,7 +1394,7 @@ def sign(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1438,7 +1438,7 @@ def sin(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1482,7 +1482,7 @@ def sinh(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1526,7 +1526,7 @@ def sqrt(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1566,11 +1566,11 @@ def tan(expr: SQLExpression) -> StringSQL:
     -------
     StringSQL
         SQL string.
-    
+
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1614,7 +1614,7 @@ def tanh(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -1660,7 +1660,7 @@ def trunc(expr: SQLExpression, places: int = 0) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 

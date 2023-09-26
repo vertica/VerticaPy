@@ -37,7 +37,7 @@ def date(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -81,7 +81,7 @@ def day(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -128,7 +128,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -175,7 +175,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -231,7 +231,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -273,7 +273,7 @@ def getdate() -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -312,7 +312,7 @@ def getutcdate() -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -356,7 +356,7 @@ def hour(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -402,7 +402,7 @@ def interval(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -447,7 +447,7 @@ def minute(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -494,7 +494,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -541,7 +541,7 @@ def month(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -603,12 +603,12 @@ def overlaps(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
-        df = tablesample({"start0": ['11-03-1993'], 
-                          "end0": ['12-03-1993'], 
+        df = tablesample({"start0": ['11-03-1993'],
+                          "end0": ['12-03-1993'],
                           "start1": ['11-30-1993'],
                           "end1": ['11-30-1994']}).to_vdf()
         df["start0"].astype("timestamp")
@@ -623,8 +623,8 @@ def overlaps(
 
         from verticapy import *
         import verticapy.stats as st
-                df = TableSample({"start0": ['11-03-1993'], 
-                          "end0": ['12-03-1993'], 
+                df = TableSample({"start0": ['11-03-1993'],
+                          "end0": ['12-03-1993'],
                           "start1": ['11-30-1993'],
                           "end1": ['11-30-1994']}).to_vdf()
         df["start0"].astype("timestamp")
@@ -667,7 +667,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -707,44 +707,44 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     precision: str, optional
         A string  constant that  specifies precision
         for the rounded value, one of the following:
-        
-        **Century**: 
+
+        **Century**:
                     CC | SCC
 
-        **Year**: 
+        **Year**:
                     SYYY | YYYY | YEAR | YYY | YY | Y
 
-        **ISO Year**: 
+        **ISO Year**:
                     IYYY | IYY | IY | I
 
         **Quarter**:
                     Q
 
-        **Month**: 
+        **Month**:
                     MONTH | MON | MM | RM
 
-        **Same weekday as first day of year**: 
+        **Same weekday as first day of year**:
                     WW
 
-        **Same weekday as first day of ISO year**: 
+        **Same weekday as first day of ISO year**:
                     IW
 
-        **Same weekday as first day of month**: 
+        **Same weekday as first day of month**:
                     W
 
-        **Day (default)**: 
+        **Day (default)**:
                     DDD | DD | J
 
-        **First weekday**: 
+        **First weekday**:
                     DAY | DY | D
 
-        **Hour**: 
+        **Hour**:
                     HH | HH12 | HH24
 
-        **Minute**: 
+        **Minute**:
                     MI
 
-        **Second**: 
+        **Second**:
                     SS
 
     Returns
@@ -755,7 +755,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -802,7 +802,7 @@ def second(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -849,7 +849,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -896,7 +896,7 @@ def week(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 
@@ -943,7 +943,7 @@ def year(expr: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy import *
         import verticapy.stats as st
 

@@ -49,7 +49,7 @@ def regexp_count(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 
@@ -98,7 +98,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 
@@ -163,7 +163,7 @@ def regexp_instr(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 
@@ -216,7 +216,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 
@@ -280,7 +280,7 @@ def regexp_replace(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 
@@ -343,7 +343,7 @@ def regexp_substr(
     Examples
     --------
     .. code-block:: python
-    
+
         from verticapy.datasets import load_titanic
         import verticapy.stats as st
 

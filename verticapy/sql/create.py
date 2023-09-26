@@ -124,21 +124,21 @@ def create_table(
                      dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"})
 
     .. code-block:: python
- 
+
         %load_ext verticapy.sql
 
         %%sql
         SELECT * FROM public.employees;
-     
+
     .. ipython:: python
         :suppress:
-        
+
         from verticapy import vDataFrame
 
         html_file = open("figures/sql_create_create_table.html", "w")
         html_file.write(vDataFrame(input_relation = '"public"."employees"')._repr_html_())
         html_file.close()
- 
+
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_create_create_table.html
 
