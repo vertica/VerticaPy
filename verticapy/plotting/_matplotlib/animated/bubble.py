@@ -143,8 +143,10 @@ class AnimatedBubblePlot(AnimatedBase):
     ) -> tuple:
         if isinstance(date_f, NoneType):
 
-            def date_f(x: Any) -> str:
+            def new_date_f(x: Any) -> str:
                 return str(x)
+
+            date_f = new_date_f
 
         colors = self._get_final_color(style_kwargs=style_kwargs)
         kwargs = self.init_style

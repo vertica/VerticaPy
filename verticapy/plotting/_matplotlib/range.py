@@ -66,6 +66,7 @@ class RangeCurve(MatplotlibBase):
         """
         Draws a range curve using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid=True, style_kwargs=style_kwargs
         )

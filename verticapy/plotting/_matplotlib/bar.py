@@ -53,6 +53,7 @@ class BarChart(MatplotlibBase):
         """
         Draws a histogram using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(min(int(len(self.data["x"]) / 1.8) + 1, 600), 6),
@@ -111,6 +112,7 @@ class BarChart2D(MatplotlibBase):
         """
         Draws a 2D BarChart using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         colors = self.get_colors()
         m, n = self.data["X"].shape
         ax, fig, style_kwargs = self._get_ax_fig(

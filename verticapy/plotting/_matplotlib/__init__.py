@@ -68,3 +68,4 @@ from verticapy.plotting._matplotlib.pie import PieChart, NestedPieChart
 from verticapy.plotting._matplotlib.range import RangeCurve
 from verticapy.plotting._matplotlib.scatter import ScatterMatrix, ScatterPlot
 from verticapy.plotting._matplotlib.spider import SpiderChart
+from verticapy.plotting._matplotlib.candlestick import CandleStick

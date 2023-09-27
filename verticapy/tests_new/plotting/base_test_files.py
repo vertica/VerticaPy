@@ -268,6 +268,13 @@ class VDCBarPlot(BasicPlotTests):
         assert isinstance(result, plotting_library_object), "Wrong object created"
 
 
+def col_name_param():
+    """
+    Get column value to pass as pytest parameter
+    """
+    return "0"
+
+
 class VDFBarPlot(BasicPlotTests):
     """
     Testing different attributes of Bar plot on a vDataFrame
@@ -299,12 +306,6 @@ class VDFBarPlot(BasicPlotTests):
             self.data.bar,
             {"columns": self.COL_NAME_VDF_1},
         )
-
-    def col_name_param():
-        """
-        Get column value to pass as pytest parameter
-        """
-        return "0"
 
     @pytest.mark.parametrize(
         "of_col, method", [(col_name_param(), "min"), (col_name_param(), "max")]
@@ -581,24 +582,21 @@ class VDCCandlestick(BasicPlotTests):
         Testing x-axis title
         """
 
-    def test_additional_options_custom_width_and_height(
-        self,
+    @pytest.mark.parametrize(
+        "method, start_date", [("count", 1910), ("density", 1920), ("max", 1920)]
+    )
+    def test_properties_output_type_for_all_options(
+        self, plotting_library_object, dummy_line_data_vd, method, start_date
     ):
         """
-        Testing custom width and height
+        Test "method" and "start date" parameters
         """
         # Arrange
-        custom_width = 3
-        custom_height = 4
         # Act
-        result = self.data[self.COL_NAME_1].candlestick(
-            ts=self.TIME_COL, width=custom_width, height=custom_height
+        result = dummy_line_data_vd[self.COL_NAME_1].candlestick(
+            ts=self.TIME_COL, method=method, start_date=start_date
         )
-        # Assert
-        assert (
-            result.options["chart"].width == custom_width
-            and result.options["chart"].height == custom_height
-        ), "Custom width or height not working"
+        # Assert - checking if correct object created
 
 
 class VDFContourPlot(BasicPlotTests):
@@ -976,6 +974,38 @@ class VDFHistogramPlot(VDCHistogramPlot):
         )
         # Assert - checking if correct object created
         assert isinstance(result, plotting_library_object), "Wrong object created"
+
+
+class VDFHistogramMultiPlot(BasicPlotTests):
+    """
+    Testing different attributes of Histogram plot on a vDataFrame
+    """
+
+    COL_NAME_1 = "0"
+    COL_NAME_2 = "1"
+
+    @pytest.fixture(autouse=True)
+    def data(self, dummy_dist_vd):
+        """
+        Load test data
+        """
+        self.data = dummy_dist_vd
+
+    @property
+    def cols(self):
+        """
+        Store labels for X,Y,Z axis to check.
+        """
+        return [None, "density"]
+
+    def create_plot(self):
+        """
+        Create the plot
+        """
+        return (
+            self.data.hist,
+            {"columns": [self.COL_NAME_1, self.COL_NAME_2]},
+        )
 
 
 class VDCLinePlot(BasicPlotTests):

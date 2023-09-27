@@ -1028,6 +1028,9 @@ class vDFCorr(vDFEncode):
             )
             x = val * val * n * min(k, r)
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
+        else:
+            raise ValueError(f"{method} is not a valid method.")
+
         return (val, pvalue)
 
     # Covariance.

@@ -447,7 +447,7 @@ class AutoML(VerticaModel):
                     ]
             else:
                 raise ValueError(
-                    f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {estimator_type}."
+                    f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {self.parameters['estimator_type']}."
                 )
         elif isinstance(
             self.parameters["estimator"],

@@ -64,6 +64,7 @@ class ACFPlot(MatplotlibBase):
         """
         Draws an ACF time series plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(10, 3),
@@ -148,6 +149,7 @@ class ACFPACFPlot(ACFPlot):
         """
         Draws an ACF-PACF time series plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         fig = plt.figure(figsize=(10, 6))
         plt.rcParams["axes.facecolor"] = "#FCFCFC"
         color = self._get_final_color(style_kwargs=style_kwargs)

@@ -97,7 +97,7 @@ class PieChart(HighchartsBase):
                     "name": self.layout["column"]
                     + "="
                     + str(self.layout["labels"][idx]),
-                    "y": y,
+                    "y": float(y),
                 }
             ]
         data[-1] = {**data[-1], "sliced": True, "selected": True}
@@ -164,7 +164,7 @@ class NestedPieChart(HighchartsBase):
                 data += [
                     {
                         "name": self.layout["columns"][0] + "=" + str(c),
-                        "y": y[i],
+                        "y": float(y[i]),
                         "color": self.get_colors(idx=i),
                     }
                 ]
@@ -177,7 +177,7 @@ class NestedPieChart(HighchartsBase):
                 Y = group[group[:, 0] == c][:, -1].astype(float).tolist()
                 data += [
                     {
-                        "y": y[i],
+                        "y": float(y[i]),
                         "color": self.get_colors(idx=i),
                         "drilldown": {
                             "name": c,
