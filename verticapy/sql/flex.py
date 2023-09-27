@@ -54,7 +54,7 @@ def compute_flextable_keys(
 
         import verticapy as vp
         from verticapy.sql import compute_flextable_keys
-    
+
         vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
     .. ipython:: python
@@ -65,7 +65,7 @@ def compute_flextable_keys(
         vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
     .. ipython:: python
-    
+
         compute_flextable_keys(flex_name = "v_temp_schema.laliga",)
     """
     usecols = format_type(usecols, dtype=list)
