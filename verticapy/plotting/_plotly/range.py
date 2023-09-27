@@ -82,8 +82,6 @@ class RangeCurve(PlotlyBase):
                 else [style_kwargs["colors"]] + marker_colors
             )
             del style_kwargs["colors"]
-        print(self.data)
-        print(self.layout)
         for idx, col in enumerate(self.layout["columns"]):
             y_data = self.data["Y"][:, idx * 3 : idx * 3 + 3]
             fig.add_trace(
