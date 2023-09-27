@@ -292,6 +292,7 @@ def learning_curve(
     cutoff: PythonNumber = -1,
     std_coeff: PythonNumber = 1,
     chart: Optional[PlottingObject] = None,
+    return_chart: Optional[bool] = False,
     **style_kwargs,
 ) -> TableSample:
     """
@@ -398,6 +399,8 @@ def learning_curve(
         score.
     chart: PlottingObject, optional
         The chart object to plot on.
+    return_chart: bool, optional
+        Select whether you want to get the chart as the output only.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the
         Plotting functions.
@@ -540,4 +543,6 @@ def learning_curve(
     data = {"x": x, "Y": Y}
     layout = {"columns": columns, "order_by": order_by, "y_label": y_label}
     vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
+    if return_chart:
+        return vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
     return result
