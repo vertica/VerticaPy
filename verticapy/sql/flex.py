@@ -52,17 +52,20 @@ def compute_flextable_keys(
     --------
     .. code-block:: python
 
-        from verticapy.utilities import read_json, compute_flextable_keys
-
-        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        import verticapy as vp
+        from verticapy.sql import compute_flextable_keys
+    
+        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
     .. ipython:: python
+        :suppress:
 
-        @suppress
-        from verticapy.utilities import read_json, compute_flextable_keys
+        import verticapy as vp
+        from verticapy.sql import compute_flextable_keys
+        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
-        @suppress
-        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+    .. ipython:: python
+    
         compute_flextable_keys(flex_name = "v_temp_schema.laliga",)
     """
     usecols = format_type(usecols, dtype=list)
@@ -122,14 +125,15 @@ def compute_vmap_keys(
     --------
     .. code-block:: python
 
-        from verticapy.utilities import read_json, compute_vmap_keys
+        import verticapy as vp
+        from verticapy.sql import compute_vmap_keys
 
-        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
     .. ipython:: python
 
         @suppress
-        from verticapy.utilities import compute_vmap_keys
+        from verticapy.sql import compute_vmap_keys
 
         compute_vmap_keys(expr = "v_temp_schema.laliga", vmap_col = "__raw__",)
     """
@@ -176,14 +180,15 @@ def isflextable(table_name: str, schema: str) -> bool:
     --------
     .. code-block:: python
 
-        from verticapy.utilities import read_json, isflextable
+        import verticapy as vp
+        from verticapy.sql import isflextable
 
-        read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
 
     .. ipython:: python
 
         @suppress
-        from verticapy.utilities import isflextable
+        from verticapy.sql import isflextable
 
         isflextable(table_name = "laliga", schema = "v_temp_schema")
     """
@@ -229,14 +234,15 @@ def isvmap(
     --------
     .. code-block:: python
 
-        from verticapy.utilities import read_json, isvmap
+        import verticapy as vp
+        from verticapy.sql import isvmap
 
-        read_json("laliga/*.json")
+        vp.read_json("laliga/*.json")
 
     .. ipython:: python
 
         @suppress
-        from verticapy.utilities import isvmap
+        from verticapy.sql import isvmap
 
         isvmap("laliga", "away_team.managers")
     """

@@ -82,14 +82,14 @@ def drop(
     .. ipython:: python
         :suppress:
 
-        from verticapy.utilities import create_table
+        from verticapy.sql import create_table
         create_table(table_name = "table_example",
                     schema = "public",
                     dtype = {"name": "VARCHAR(60)"})
 
     .. ipython:: python
 
-        from verticapy.utilities import drop
+        from verticapy.sql import drop
 
         drop(name = "public.table_example")
     """

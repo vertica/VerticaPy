@@ -30,7 +30,7 @@ def random() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
@@ -41,7 +41,7 @@ def random() -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         df["split"] = st.random()
@@ -73,7 +73,7 @@ def randomint(n: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
@@ -84,7 +84,7 @@ def randomint(n: int) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         df["split"] = st.randomint(10)
@@ -117,7 +117,7 @@ def seeded_random(random_state: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
@@ -128,7 +128,7 @@ def seeded_random(random_state: int) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         df["split"] = st.seeded_random(10)

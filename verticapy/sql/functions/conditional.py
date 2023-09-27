@@ -51,7 +51,7 @@ def case_when(*args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
@@ -64,7 +64,7 @@ def case_when(*args) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
         df["x_pos"] = st.case_when(df["x"] > 0, 1,
@@ -131,7 +131,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
@@ -145,7 +145,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
         df["type_x"] = st.decode(df["x"],

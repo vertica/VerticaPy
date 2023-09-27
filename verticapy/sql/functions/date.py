@@ -38,7 +38,7 @@ def date(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -49,7 +49,7 @@ def date(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["date_x"] = st.date(df["x"])
@@ -82,7 +82,7 @@ def day(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
@@ -94,7 +94,7 @@ def day(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
@@ -129,7 +129,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
@@ -141,7 +141,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
@@ -176,7 +176,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
@@ -188,7 +188,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
@@ -232,7 +232,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
@@ -244,7 +244,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
         df["x"].astype("timestamp")
@@ -274,7 +274,7 @@ def getdate() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
@@ -285,7 +285,7 @@ def getdate() -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         df["date"] = st.getdate()
@@ -313,7 +313,7 @@ def getutcdate() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
@@ -324,7 +324,7 @@ def getutcdate() -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         df["date"] = st.getutcdate()
@@ -357,7 +357,7 @@ def hour(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
@@ -369,7 +369,7 @@ def hour(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
@@ -403,7 +403,7 @@ def interval(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['1 day', '2 hours']}).to_vdf()
@@ -414,7 +414,7 @@ def interval(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['1 day', '2 hours']}).to_vdf()
         df["interval_x"] = st.interval(df["x"])
@@ -448,7 +448,7 @@ def minute(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
@@ -460,7 +460,7 @@ def minute(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
         df["x"].astype("timestamp")
@@ -495,7 +495,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -507,7 +507,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
@@ -542,7 +542,7 @@ def month(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -554,7 +554,7 @@ def month(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
@@ -604,7 +604,7 @@ def overlaps(
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"start0": ['11-03-1993'],
@@ -621,7 +621,7 @@ def overlaps(
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
                 df = TableSample({"start0": ['11-03-1993'],
                           "end0": ['12-03-1993'],
@@ -668,7 +668,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -680,7 +680,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
@@ -756,7 +756,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
@@ -768,7 +768,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
         df["x"].astype("date")
@@ -803,7 +803,7 @@ def second(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -815,7 +815,7 @@ def second(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
@@ -850,7 +850,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -861,7 +861,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["timestamp_x"] = st.timestamp(df["x"])
@@ -897,7 +897,7 @@ def week(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -909,7 +909,7 @@ def week(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
@@ -944,7 +944,7 @@ def year(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
@@ -956,7 +956,7 @@ def year(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")

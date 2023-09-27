@@ -78,7 +78,7 @@ def insert_into(
 
     .. ipython:: python
 
-        from verticapy.utilities import insert_into
+        from verticapy.sql import insert_into
 
         # copy left as default (True): one copy
         insert_into(table_name = "iris",

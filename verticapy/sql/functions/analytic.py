@@ -39,7 +39,7 @@ def avg(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -49,7 +49,7 @@ def avg(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_avg.html", "w")
@@ -86,7 +86,7 @@ def bool_and(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [True, False, True, True]}).to_vdf()
@@ -96,7 +96,7 @@ def bool_and(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [True, False, True, True]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_bool_and.html", "w")
@@ -131,7 +131,7 @@ def bool_or(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [True, False, True, True]}).to_vdf()
@@ -141,7 +141,7 @@ def bool_or(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [True, False, True, True]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_bool_or.html", "w")
@@ -176,7 +176,7 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [True, False, True, True]}).to_vdf()
@@ -186,7 +186,7 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [True, False, True, True]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_bool_xor.html", "w")
@@ -221,7 +221,7 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4, 5, 6],
@@ -233,7 +233,7 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
@@ -269,7 +269,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4, 5, 6],
@@ -281,7 +281,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
@@ -316,7 +316,7 @@ def count(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, None, 12]}).to_vdf()
@@ -326,7 +326,7 @@ def count(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, None, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_count.html", "w")
@@ -361,7 +361,7 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4],
@@ -373,7 +373,7 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
@@ -411,7 +411,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4],
@@ -423,7 +423,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
@@ -458,7 +458,7 @@ def max(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -468,7 +468,7 @@ def max(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_max.html", "w")
@@ -501,7 +501,7 @@ def median(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -511,7 +511,7 @@ def median(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_median.html", "w")
@@ -544,7 +544,7 @@ def min(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -554,7 +554,7 @@ def min(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_min.html", "w")
@@ -589,7 +589,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, 2, 3, 4],
@@ -601,7 +601,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
@@ -639,7 +639,7 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -649,7 +649,7 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_quantile.html", "w")
@@ -681,7 +681,7 @@ def rank() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
@@ -692,7 +692,7 @@ def rank() -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
         df["rank"] = st.rank()._over(order_by = [df["x"]])
@@ -720,7 +720,7 @@ def row_number() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
@@ -731,7 +731,7 @@ def row_number() -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
         df["row_number"] = st.row_number()._over(order_by = [df["x"]])
@@ -764,7 +764,7 @@ def std(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -774,7 +774,7 @@ def std(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_std.html", "w")
@@ -810,7 +810,7 @@ def sum(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -820,7 +820,7 @@ def sum(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_sum.html", "w")
@@ -853,7 +853,7 @@ def var(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
 
         df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
@@ -863,7 +863,7 @@ def var(expr: SQLExpression) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import *
+        from verticapy import TableSample
         import verticapy.stats as st
         df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         html_file = open("figures/sql_functions_analytic_var.html", "w")

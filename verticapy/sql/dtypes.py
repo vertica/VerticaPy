@@ -93,7 +93,7 @@ def get_data_types(
     --------
     .. ipython:: python
 
-        from verticapy.utilities import *
+        from verticapy.sql import *
 
         # returns the data type of multiple columns
         get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2")

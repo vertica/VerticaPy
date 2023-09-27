@@ -47,7 +47,7 @@ def create_schema(
     --------
     .. ipython:: python
 
-        from verticapy.utilities import create_schema
+        from verticapy.sql import create_schema
 
         create_schema(schema = "employees")
     """
@@ -110,7 +110,7 @@ def create_table(
     --------
     .. ipython:: python
 
-        from verticapy.utilities import create_table
+        from verticapy.sql import create_table
 
         # Generates the SQL needed to create the Table
         create_table(table_name = "employees",
