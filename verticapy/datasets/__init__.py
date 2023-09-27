@@ -29,6 +29,7 @@ from verticapy.datasets.loaders import (
     load_titanic,
     load_winequality,
     load_world,
+    load_africa_education,
 )
 from verticapy.datasets.tests_loaders import (
     load_dataset_cl,
