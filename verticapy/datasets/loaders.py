@@ -121,6 +121,25 @@ def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
     -------
     vDataFrame
         the market vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_market
+
+        load_market()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_market
+        html_file = open("figures/datasets_loaders_load_market.html", "w")
+        html_file.write(load_market()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_market.html
     """
     return load_dataset(
         schema=schema,
@@ -157,6 +176,25 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
     -------
     vDataFrame
         the iris vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_iris
+
+        load_iris()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_iris
+        html_file = open("figures/datasets_loaders_load_iris.html", "w")
+        html_file.write(load_iris()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
     """
     return load_dataset(
         schema=schema,
@@ -202,6 +240,25 @@ def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
     -------
     vDataFrame
         the titanic vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic
+
+        load_titanic()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_titanic
+        html_file = open("figures/datasets_loaders_load_titanic.html", "w")
+        html_file.write(load_titanic()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
     """
     return load_dataset(
         schema=schema,
@@ -253,6 +310,25 @@ def load_winequality(schema: str = "public", name: str = "winequality") -> vData
     -------
     vDataFrame
         the winequality vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_winequality
+
+        load_winequality()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_winequality
+        html_file = open("figures/datasets_loaders_load_winequality.html", "w")
+        html_file.write(load_winequality()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
     """
     return load_dataset(
         schema=schema,
@@ -306,6 +382,25 @@ def load_airline_passengers(
     -------
     vDataFrame
         the airline passengers vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_airline_passengers
+
+        load_airline_passengers()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_airline_passengers
+        html_file = open("figures/datasets_loaders_load_airline_passengers.html", "w")
+        html_file.write(load_airline_passengers()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_airline_passengers.html
     """
     return load_dataset(
         schema=schema,
@@ -337,6 +432,25 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
     -------
     vDataFrame
         the amazon vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_amazon
+
+        load_amazon()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_amazon
+        html_file = open("figures/datasets_loaders_load_amazon.html", "w")
+        html_file.write(load_amazon()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
     """
     return load_dataset(
         schema=schema,
@@ -368,6 +482,25 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
     -------
     vDataFrame
         the commodities vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_commodities
+
+        load_commodities()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_commodities
+        html_file = open("figures/datasets_loaders_load_commodities.html", "w")
+        html_file.write(load_commodities()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_commodities.html
     """
     return load_dataset(
         schema=schema,
@@ -407,6 +540,25 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
     -------
     vDataFrame
         the gapminder vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_gapminder
+
+        load_gapminder()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_gapminder
+        html_file = open("figures/datasets_loaders_load_gapminder.html", "w")
+        html_file.write(load_gapminder()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_gapminder.html
     """
     return load_dataset(
         schema=schema,
@@ -445,6 +597,25 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
     -------
     vDataFrame
         the pop growth vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_pop_growth
+
+        load_pop_growth()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_pop_growth
+        html_file = open("figures/datasets_loaders_load_pop_growth.html", "w")
+        html_file.write(load_pop_growth()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_pop_growth.html
     """
     return load_dataset(
         schema=schema,
@@ -484,6 +655,25 @@ def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDa
     -------
     vDataFrame
         the smart meters vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_smart_meters
+
+        load_smart_meters()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_smart_meters
+        html_file = open("figures/datasets_loaders_load_smart_meters.html", "w")
+        html_file.write(load_smart_meters()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_smart_meters.html
     """
     return load_dataset(
         schema=schema,
@@ -520,6 +710,25 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
     -------
     vDataFrame
         the Cities vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_cities
+
+        load_cities()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_cities
+        html_file = open("figures/datasets_loaders_load_cities.html", "w")
+        html_file.write(load_cities()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html
     """
     return load_dataset(
         schema=schema,
@@ -556,6 +765,25 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
     -------
     vDataFrame
         the World vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_world
+
+        load_world()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_world
+        html_file = open("figures/datasets_loaders_load_world.html", "w")
+        html_file.write(load_world()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_world.html
     """
     return load_dataset(
         schema=schema,
@@ -601,6 +829,25 @@ def load_africa_education(
     -------
     vDataFrame
         the Africa Education vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_africa_education
+
+        load_africa_education()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_africa_education
+        html_file = open("figures/datasets_loaders_load_africa_education.html", "w")
+        html_file.write(load_africa_education()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_africa_education.html
     """
     return load_dataset(
         schema=schema,
@@ -769,6 +1016,25 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
     -------
     vDataFrame
         the LaLiga vDataFrame.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.datasets import load_laliga
+
+        load_laliga()
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.datasets import load_laliga
+        html_file = open("figures/datasets_loaders_load_laliga.html", "w")
+        html_file.write(load_laliga()._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_laliga.html
     """
     return load_dataset(
         schema=schema,
