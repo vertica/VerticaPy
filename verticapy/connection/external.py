@@ -34,10 +34,22 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
         A special character to identify the connection.
         One of the following:
         "$", "€", "£", "%", "@", "&", "§", "?", "!"
+
         For example, if the symbol is '$', you can call
         external tables with the input cid by writing
         $$$QUERY$$$, where QUERY represents a custom
         query.
+
+    Example
+    -------
+    .. code-block:: python
+
+        import verticapy as vp
+
+        # Set up a connection with a database with the alias "pgdb"
+        vp.set_external_connection(cid = "pgdb",
+                                   rowset = 500,
+                                   symbol = "&")
     """
     gb_conn = get_global_connection()
     gb_conn.set_external_connections(symbol, cid, rowset)

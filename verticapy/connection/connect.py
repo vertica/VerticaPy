@@ -66,6 +66,21 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
     dsn: str, optional
         Path to the file containing the credentials.
         If empty, the  Connection File will be used.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import *
+
+        #Displays all available connections
+        available_connections()
+
+    ['VML', 'VerticaDSN', 'VerticaDSN_test']
+
+    .. code-block:: python
+
+        connect("VerticaDSN")
     """
     gb_conn = get_global_connection()
     prev_conn = gb_conn.get_connection()
@@ -95,6 +110,25 @@ def set_connection(conn: Connection) -> None:
     ODBC connection. This should not be confused with a
     native   VerticaPy   connection  created   by   the
     'new_connection' function.
+
+    Example
+    -------
+    .. code-block:: python
+
+        # Creating a connection
+        import vertica_python
+
+        conn_info = {'host': "10.211.55.14",
+                    'port': 5433,
+                    'user': "dbadmin",
+                    'password': "XxX",
+                    'database': "testdb"}
+        conn = vertica_python.connect(** conn_info)
+
+        # Setting the connection
+        from verticapy.connection import set_connection
+
+        set_connection(conn)
     """
     try:
         conn.cursor().execute("SELECT /*+LABEL('connect.set_connection')*/ 1;")
@@ -114,6 +148,13 @@ Closing DB Connection.
 def close_connection() -> None:
     """
     Closes the connection to the database.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import close_connection
+        close_connection()
     """
     gb_conn = get_global_connection()
     connection = gb_conn.get_connection()
@@ -140,6 +181,22 @@ def current_connection() -> GlobalConnection:
     connect  using  an  auto  connection.  Otherwise,
     VerticaPy  attempts  to connect to a  VerticaLab
     Environment.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import current_connection
+        conn = current_connection()
+        conn
+
+    <vertica_python.vertica.connection.Connection at 0x118c1f8d0>
+
+    .. code-block:: python
+
+        conn.cursor().execute("SELECT version();").fetchone()
+
+    ['Vertica Analytic Database v12.0.4-0']
     """
     gb_conn = get_global_connection()
     conn = gb_conn.get_connection()
@@ -176,6 +233,22 @@ def current_connection() -> GlobalConnection:
 def current_cursor() -> Cursor:
     """
     Returns the current database cursor.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import current_cursor
+        cur = current_cursor()
+        cur
+
+    <vertica_python.vertica.cursor.Cursor at 0x11a7b4748>
+
+    .. code-block:: python
+
+        cur.execute("SELECT version();").fetchone()
+
+    ['Vertica Analytic Database v12.0.4-0']
     """
     return current_connection().cursor()
 
@@ -201,6 +274,16 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     -------
     conn
         Database connection.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import vertica_connection
+
+        vertica_connection("VerticaDSN")
+
+    <vertica_python.vertica.connection.Connection at 0x106526198>
     """
     return vertica_python.connect(**read_dsn(section, dsn))
 
@@ -216,6 +299,16 @@ def verticapylab_connection() -> Connection:
     -------
     conn
         Database connection.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import verticalab_connection
+
+        verticalab_connection()
+
+    <vertica_python.vertica.connection.Connection at 0x106526198>
     """
     gb_conn = get_global_connection()
     conn_info = {

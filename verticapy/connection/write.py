@@ -29,6 +29,23 @@ def change_auto_connection(name: str) -> None:
     ----------
     name: str
         Name of the new auto connection.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import new_connection, change_auto_connection
+
+        new_connection({"host": "10.211.55.14",
+                        "port": "5433",
+                        "database": "testdb",
+                        "password": "XxX",
+                        "user": "dbadmin"},
+                        name = "my_auto_connection",
+                        auto = False)
+
+        # Set the main auto connection
+        change_auto_connection("my_auto_connection")
     """
     gb_conn = get_global_connection()
 
@@ -67,6 +84,33 @@ def delete_connection(name: str) -> bool:
     bool
         True if the connection was deleted,
         False otherwise.
+
+    Example
+    -------
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.connection import new_connection
+
+        new_connection({"host": "10.20.110.10",
+                        "port": "5433",
+                        "database": "vertica_eon",
+                        "password": "vertica",
+                        "user": "dbadmin"},
+                        name = "My_New_Vertica_Connection")
+
+    .. ipython:: python
+
+        from verticapy.connection import available_connections, delete_connection
+
+        # Displays the available connections
+        available_connections()
+
+        # Deletes the VerticaDSN_test connection
+        delete_connection("My_New_Vertica_Connection")
+
+        # The "My_New_Vertica_Connection" connection has been removed
+        available_connections()
     """
     gb_conn = get_global_connection()
 
@@ -112,26 +156,41 @@ def new_connection(
     conn_info: dict
         Dictionnary containing the information to
         set up the connection.
-                database : Database Name.
-                host     : Server ID.
-                password : User Password.
-                port     : Database Port (optional, default: 5433).
-                user     : User ID (optional, default: dbadmin).
-            ...
-            env      : Bool to indicate whether the user and
-                       password are replaced by the associated
-                       environment variables. If True, VerticaPy
-                       reads the associated environment variables
-                       instead of writing and directly using the
-                       username and password.
-                       For example: {'user': 'ENV_USER',
-                                     'password': 'ENV_PASSWORD'}
-                       This works only for the user and password.
-                       The real values of the other variables are
-                       stored plaintext in the VerticaPy connection
-                       file. Using the enviornment variables hides
-                       the username and password in cases where the
-                       local machine is shared.
+
+        **database** :
+                        Database Name.
+
+        **host**     :
+                        Server ID.
+
+        **password** :
+                        User Password.
+
+        **port**     :
+                        Database Port (optional, default: 5433).
+
+        **user**     :
+                        User ID (optional, default: dbadmin).
+
+        ...
+
+        **env**      :
+                        Bool to indicate whether the user and
+                        password are replaced by the associated
+                        environment variables. If True, VerticaPy
+                        reads the associated environment variables
+                        instead of writing and directly using the
+                        username and password.
+                        For example: {'user': 'ENV_USER', 'password'
+                        : 'ENV_PASSWORD'}
+
+                        This works only for the user and password.
+                        The real values of the other variables are
+                        stored plaintext in the VerticaPy connection
+                        file. Using the enviornment variables hides
+                        the username and password in cases where the
+                        local machine is shared.
+
     name: str, optional
         Name of the connection.
     auto: bool, optional
@@ -145,8 +204,23 @@ def new_connection(
         associated environment variables. VerticaPy reads
         the associated environment variables instead of
         writing and directly using the username and password.
-        For example: {'user': 'ENV_USER',
-                      'password': 'ENV_PASSWORD'}
+
+        For example: {'user': 'ENV_USER', 'password'
+        : 'ENV_PASSWORD'}
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import new_connection
+
+        conn_info = {"host": "10.211.55.14",
+                     "port": "5433",
+                     "database": "testdb",
+                     "password": "XxX",
+                     "user": "dbadmin"}
+
+        new_connection(conn_info, name = "VerticaDSN")
     """
     path = get_connection_file()
     confparser = get_confparser()

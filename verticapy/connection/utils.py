@@ -46,6 +46,13 @@ def get_connection_file() -> str:
     -------
     string
         the full path to the auto-connection file.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import get_connection_file
+        get_connection_file()
     """
     if "VERTICAPY_CONNECTION" in os.environ:
         return os.environ["VERTICAPY_CONNECTION"]

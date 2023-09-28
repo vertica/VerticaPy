@@ -30,6 +30,13 @@ def available_connections() -> list[str]:
     -------
     list
         all available connections.
+
+    Example
+    -------
+    .. ipython:: python
+
+        from verticapy.connection import available_connections
+        available_connections()
     """
     gb_conn = get_global_connection()
 
@@ -63,6 +70,41 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     -------
     dict
         dictionary with all the credentials.
+
+    Example
+    -------
+    .. code-block:: python
+
+        from verticapy.connection import read_dsn
+
+        # Reading from DSN (ODBCINI)
+        dsn = read_dsn("VerticaDSN")
+        dsn
+
+    | {'database': 'testdb',
+    | 'description': 'DSN for Vertica',
+    | 'driver': '/Library/Vertica/ODBC/lib/libverticaodbc.dylib',
+    | 'host': '10.211.55.14',
+    | 'kerberos_host_name': 'badr',
+    | 'password': 'XxX',
+    | 'port': '5433',
+    | 'user': 'dbadmin'}
+
+    .. code-block:: python
+
+        dsn = read_dsn("vp_test_config",
+               "/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/tests/verticaPy_test.conf")
+        dsn
+
+    | {'password': 'XxX',
+    | 'port': 5433,
+    | 'user': 'dbadmin',
+    | 'vp_test_database': 'testdb',
+    | 'vp_test_host': '10.211.55.14',
+    | 'vp_test_log_dir': 'mylog/vp_tox_tests_log',
+    | 'vp_test_password': 'XxX',
+    | 'vp_test_port': '5433',
+    | 'vp_test_user': 'dbadmin'}
     """
     confparser = get_confparser(dsn)
 
