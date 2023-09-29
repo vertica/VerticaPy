@@ -40,24 +40,38 @@ def generate_lib_udf(
     ----------
     udf_list: list
         List of tuples that includes the different functions.
-                function     : [function]   Python    Function.
-            arg_types    : [dict/list] List  or  dictionary
-                           of  the  function  input  types.
-                                   Example: {"input1": int,
-                                     "input2": float}    or
-                           [int, float]
-            return_type  : [type/dict] Function output type.
-                           In the case of many outputs, it
-                           must be a dictionary including
-                           all the outputs types and names,
-                           for example:
-                           {"result1": int, "result2": float}
-            parameters   : [dict] Dictionary of the function
-                           input optional parameters.
-                                   Example: {"param1": int,
-                                     "param2": str}
-            new_name     : [str] New function name when
-                           installed in Vertica.
+
+        **function**     :
+                            [function]  Python   Function.
+
+        **arg_types**    :
+                            [dict/list] List or dictionary
+                            of  the function input  types.
+
+                            Example: {"input1": int,
+                            "input2": float}  or
+                            [int, float]
+
+        **return_type**  :
+                            [type/dict] Function output type.
+                            In the case of many  outputs, it
+                            must be a dictionary including
+                            all the outputs types and names.
+
+                            Example: {"result1": int,
+                            "result2": float}
+
+        **parameters**   :
+                            [dict] Dictionary of the function
+                            input optional parameters.
+
+                            Example: {"param1": int,
+                            "param2": str}
+
+        **new_name**     :
+                            [str] New   function   name  when
+                            installed in Vertica.
+
     library_name: str
         Library Name.
     include_dependencies: str / list, optional
@@ -74,6 +88,23 @@ def generate_lib_udf(
     -------
     udx_str, sql
         UDF py file, str needed to install the library.
+
+    Example
+    -------
+    .. ipython:: python
+
+        from verticapy.udf import generate_lib_udf
+        @suppress
+        import math
+
+        udx_str, udx_sql = generate_lib_udf([(math.exp, [float], float, {}, "python_exp"),
+                                             (math.isclose, [float, float], bool, {"abs_tol": float}, "python_isclose"),],
+                                              library_name = "python_math",
+                                              file_path = "",
+                                              create_file = False)
+        print(udx_str)
+
+        print("\\n".join(udx_sql))
     """
     include_dependencies = format_type(include_dependencies, dtype=list)
     if not isinstance(include_dependencies, (list)):

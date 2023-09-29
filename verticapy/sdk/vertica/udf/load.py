@@ -40,24 +40,38 @@ def import_lib_udf(
     ----------
     udf_list: list
         List of tuples that includes the different functions.
-                function     : [function]  Python   Function.
-            arg_types    : [dict/list] List or dictionary
-                           of  the function input  types.
-                                   Example: {"input1": int,
-                                     "input2": float}  or
-                           [int, float]
-            return_type  : [type/dict] Function output type.
-                           In the case of many  outputs, it
-                           must be a dictionary including
-                           all the outputs types and names.
-                           Example: {"result1": int,
-                                     "result2": float}
-            parameters   : [dict] Dictionary of the function
-                           input optional parameters.
-                                   Example: {"param1": int,
-                                     "param2": str}
-            new_name     : [str] New   function   name  when
-                           installed in Vertica.
+
+        **function**     :
+                            [function]  Python   Function.
+
+        **arg_types**    :
+                            [dict/list] List or dictionary
+                            of  the function input  types.
+
+                            Example: {"input1": int,
+                            "input2": float}  or
+                            [int, float]
+
+        **return_type**  :
+                            [type/dict] Function output type.
+                            In the case of many  outputs, it
+                            must be a dictionary including
+                            all the outputs types and names.
+
+                            Example: {"result1": int,
+                            "result2": float}
+
+        **parameters**   :
+                            [dict] Dictionary of the function
+                            input optional parameters.
+
+                            Example: {"param1": int,
+                            "param2": str}
+
+        **new_name**     :
+                            [str] New   function   name  when
+                            installed in Vertica.
+
     library_name: str
         Library Name.
     include_dependencies: str / list, optional
