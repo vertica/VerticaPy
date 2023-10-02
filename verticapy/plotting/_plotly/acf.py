@@ -65,7 +65,7 @@ class ACFPlot(PlotlyBase):
         }
         self.init_confidence_style = {
             "mode": "lines",
-            "marker_color": "red",
+            "marker_color": self.get_colors()[0],
         }
         self.init_scatter_style = {
             "marker_color": "orange",
