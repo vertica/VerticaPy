@@ -45,7 +45,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0.8, -1, None, -2, None]}).to_vdf()
+        df = TableSample({"x": [0.8, -1, None, -2, None]}).to_vdf()
         # apply the coalesce function to create a "coalesce_x" column
         df["coalesce_x"] = st.coalesce(df["x"], 777)
         display(df)
@@ -94,7 +94,7 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, 0, 0.7, 15]}).to_vdf()
+        df = TableSample({"x": [0, 0, 0.7, 15]}).to_vdf()
         # apply the nullifzero function to create a "nullifzero_x" column
         df["nullifzero_x"] = st.nullifzero(df["x"])
         display(df)
@@ -138,7 +138,7 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, None, 0.7, None]}).to_vdf()
+        df = TableSample({"x": [0, None, 0.7, None]}).to_vdf()
         # apply the zeroifnull function to create a "zeroifnull_x" column
         df["zeroifnull_x"] = st.zeroifnull(df["x"])
         display(df)

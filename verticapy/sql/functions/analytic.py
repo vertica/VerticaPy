@@ -42,9 +42,9 @@ def avg(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the avg function
-        df.select([st.avg(df["x"])])
+        df.select([str(st.avg(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -89,9 +89,9 @@ def bool_and(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()
         # apply the bool_and function
-        df.select([st.bool_and(df["x"])])
+        df.select([str(st.bool_and(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -134,9 +134,9 @@ def bool_or(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()
         # apply the bool_or function
-        df.select([st.bool_or(df["x"])])
+        df.select([str(st.bool_or(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -179,9 +179,9 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [True, False, True, True]}).to_vdf()
+        df = TableSample({"x": [True, False, True, True]}).to_vdf()
         # apply the bool_xor function
-        df.select([st.bool_xor(df["x"])])
+        df.select([str(st.bool_xor(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -224,7 +224,7 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4, 5, 6],
+        df = TableSample({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
         # apply the conditional_change_event function
         df["cchange_event"] = st.conditional_change_event(df["y"] > 0)._over(order_by = [df["x"]])
@@ -272,7 +272,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4, 5, 6],
+        df = TableSample({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]}).to_vdf()
         # apply the conditional_true_event function
         df["ctrue_event"] = st.conditional_true_event(df["y"] > 0)._over(order_by = [df["x"]])
@@ -319,9 +319,9 @@ def count(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, None, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, None, 12]}).to_vdf()
         # apply the count function
-        df.select([st.count(df["x"])])
+        df.select([str(st.count(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -364,7 +364,7 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4],
+        df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the lag function
         df["lag"] = st.lag(df["y"], 1)._over(order_by = [df["x"]])
@@ -414,7 +414,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4],
+        df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the lead function
         df["lead"] = st.lead(df["y"], 1)._over(order_by = [df["x"]])
@@ -461,9 +461,9 @@ def max(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the max function
-        df.select([st.max(df["x"])])
+        df.select([str(st.max(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -504,9 +504,9 @@ def median(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the median function
-        df.select([st.median(df["x"])])
+        df.select([str(st.median(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -547,9 +547,9 @@ def min(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the min function
-        df.select([st.min(df["x"])])
+        df.select([str(st.min(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -592,7 +592,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4],
+        df = TableSample({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the nth_value function
         df["nth_value"] = st.nth_value(df["y"], 3)._over(order_by = [df["x"]])
@@ -642,9 +642,9 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the quantile function
-        df.select([st.quantile(df["x"], 0.25)])
+        df.select([str(st.quantile(df["x"], 0.25))])
 
     .. ipython:: python
         :suppress:
@@ -684,7 +684,7 @@ def rank() -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
+        df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
         # apply the rank function
         df["rank"] = st.rank()._over(order_by = [df["x"]])
         display(df)
@@ -723,7 +723,7 @@ def row_number() -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
+        df = TableSample({"x": [1, -10, 1000, 7, 7]}).to_vdf()
         # apply the row_number function
         df["row_number"] = st.row_number()._over(order_by = [df["x"]])
         display(df)
@@ -767,9 +767,9 @@ def std(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the std function
-        df.select([st.std(df["x"])])
+        df.select([str(st.std(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -813,9 +813,9 @@ def sum(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the sum function
-        df.select([st.sum(df["x"])])
+        df.select([str(st.sum(df["x"]))])
 
     .. ipython:: python
         :suppress:
@@ -856,9 +856,9 @@ def var(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, -11, 7, 12]}).to_vdf()
+        df = TableSample({"x": [2, -11, 7, 12]}).to_vdf()
         # apply the var function
-        df.select([st.var(df["x"])])
+        df.select([str(st.var(df["x"]))])
 
     .. ipython:: python
         :suppress:

@@ -65,7 +65,7 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the avg function, creating a "avg_x" column
         df["avg_x"] = st.apply("avg", df["x"])._over()
         display(df)
@@ -207,7 +207,7 @@ def abs(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, -1, -2, -3]}).to_vdf()
+        df = TableSample({"x": [0, -1, -2, -3]}).to_vdf()
         # apply the abs function to create a "abs_x" column
         df["abs_x"] = st.abs(df["x"])
         display(df)
@@ -251,7 +251,7 @@ def acos(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
         # apply the acos function, creating a "acos_x" column
         df["acos_x"] = st.acos(df["x"])
         display(df)
@@ -295,7 +295,7 @@ def asin(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
         # apply the asin function, creating a "asin_x" column
         df["asin_x"] = st.asin(df["x"])
         display(df)
@@ -339,7 +339,7 @@ def atan(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
         # apply the atan function, creating a "atan_x" column
         df["atan_x"] = st.atan(df["x"])
         display(df)
@@ -386,7 +386,7 @@ def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [0, -1, 0.7, 0.5],
+        df = TableSample({"x": [0, -1, 0.7, 0.5],
                           "y": [2, 5, 1, 3]}).to_vdf()
         # apply the atan^2 function, creating a "atan2" column
         df["atan2_x"] = st.atan2(df["x"], df["y"])
@@ -431,7 +431,7 @@ def cbrt(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, -2, 3, -4]}).to_vdf()
+        df = TableSample({"x": [1, -2, 3, -4]}).to_vdf()
         # apply the cbrt function, creating a "cbrt_x" column
         df["cbrt_x"] = st.cbrt(df["x"])
         display(df)
@@ -475,7 +475,7 @@ def ceil(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the ceil function, creating a "ceil_x" column
         df["ceil_x"] = st.ceil(df["x"])
         display(df)
@@ -521,7 +521,7 @@ def comb(n: int, k: int) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, 10, 16, 33]}).to_vdf()
+        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
         df["x"].astype("float")
         # apply the comb function, creating a "comb_x" column
         df["comb_x"] = st.comb(33, df["x"])
@@ -566,7 +566,7 @@ def cos(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the cos function, creating a "cos_x" column
         df["cos_x"] = st.cos(df["x"])
         display(df)
@@ -610,7 +610,7 @@ def cosh(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the cosh function, creating a "cosh_x" column
         df["cosh_x"] = st.cosh(df["x"])
         display(df)
@@ -654,7 +654,7 @@ def cot(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the cot function, creating a "cot_x" column
         df["cot_x"] = st.cot(df["x"])
         display(df)
@@ -698,7 +698,7 @@ def degrees(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the degrees function, creating a "degrees_x" column
         df["degrees_x"] = st.degrees(df["x"])
         display(df)
@@ -755,7 +755,7 @@ def distance(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"name0": ["Paris"],
+        df = TableSample({"name0": ["Paris"],
                           "lat0": [48.864716],
                           "lon0": [2.349014],
                           "name1": ["Tunis"],
@@ -808,7 +808,7 @@ def exp(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
         # apply the exp function, creating a "exp_x" column
         df["exp_x"] = st.exp(df["x"])
         display(df)
@@ -852,7 +852,7 @@ def factorial(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # apply the factorial function, creating a "factorial_x" column
         df["factorial_x"] = st.factorial(df["x"])
         display(df)
@@ -896,7 +896,7 @@ def floor(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
         # apply the floor function, creating a "floor_x" column
         df["floor_x"] = st.floor(df["x"])
         display(df)
@@ -940,7 +940,7 @@ def gamma(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
         # apply the gamma function, creating a "gamma_x" column
         df["gamma_x"] = st.gamma(df["x"])
         display(df)
@@ -985,7 +985,7 @@ def hash(*args) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
+        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
         # apply the hash function, creating a "hash_x" column
         df["hash_x"] = st.hash(df["x"])
         display(df)
@@ -1032,7 +1032,7 @@ def isfinite(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
         df["x"].astype("float")
         # apply the isfinite function, creating a "isfinite_x" column
         df["isfinite_x"] = st.isfinite(df["x"])
@@ -1078,7 +1078,7 @@ def isinf(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['0', 'inf', '0.7', '15']}).to_vdf()
+        df = TableSample({"x": ['0', 'inf', '0.7', '15']}).to_vdf()
         df["x"].astype("float")
         # apply the isinf function, creating a "isinf_x" column
         df["isinf_x"] = st.isinf(df["x"])
@@ -1124,7 +1124,7 @@ def isnan(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
         df["x"].astype("float")
         # apply the isnan function, creating a "isnan_x" column
         df["isnan_x"] = st.isnan(df["x"])
@@ -1170,7 +1170,7 @@ def lgamma(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
         # apply the lgamma function, creating a "lgamma_x" column
         df["lgamma_x"] = st.lgamma(df["x"])
         display(df)
@@ -1214,7 +1214,7 @@ def ln(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
         # apply the ln function, creating a "ln_x" column
         df["ln_x"] = st.ln(df["x"])
         display(df)
@@ -1260,7 +1260,7 @@ def log(expr: SQLExpression, base: int = 10) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2, 10, 16, 33]}).to_vdf()
+        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
         df["x"].astype("float")
         # apply the log function, creating a "log_x" column
         df["log_x"] = st.log(df["x"])
@@ -1306,7 +1306,7 @@ def radians(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [30, 60, 180, 360]}).to_vdf()
+        df = TableSample({"x": [30, 60, 180, 360]}).to_vdf()
         # apply the radians function, creating a "radians_x" column
         df["radians_x"] = st.radians(df["x"])
         display(df)
@@ -1352,7 +1352,7 @@ def round(expr: SQLExpression, places: int = 0) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
         df["x"].astype("float")
         # apply the round function, creating a "round_x" column
         df["round_x"] = st.round(df["x"])
@@ -1398,7 +1398,7 @@ def sign(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [5, 10, -5, -14]}).to_vdf()
+        df = TableSample({"x": [5, 10, -5, -14]}).to_vdf()
         # apply the sign function, creating a "sign_x" column
         df["sign_x"] = st.sign(df["x"])
         display(df)
@@ -1442,7 +1442,7 @@ def sin(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the sin function, creating a "sin_x" column
         df["sin_x"] = st.sin(df["x"])
         display(df)
@@ -1486,7 +1486,7 @@ def sinh(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the sinh function, creating a "sinh_x" column
         df["sinh_x"] = st.sinh(df["x"])
         display(df)
@@ -1530,7 +1530,7 @@ def sqrt(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the sqrt function, creating a "sqrt_x" column
         df["sqrt_x"] = st.sqrt(df["x"])
         display(df)
@@ -1574,7 +1574,7 @@ def tan(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the tan function, creating a "tan_x" column
         df["tan_x"] = st.tan(df["x"])
         display(df)
@@ -1618,7 +1618,7 @@ def tanh(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
         # apply the tanh function, creating a "tanh_x" column
         df["tanh_x"] = st.tanh(df["x"])
         display(df)
@@ -1664,7 +1664,7 @@ def trunc(expr: SQLExpression, places: int = 0) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
         df["x"].astype("float")
         # apply the trunc function, creating a "trunc_x" column
         df["trunc_x"] = st.trunc(df["x"], 1)

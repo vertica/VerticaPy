@@ -308,7 +308,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         from verticapy import TableSample
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
-        poly = tablesample({"triangle": [p]}).to_vdf()
+        poly = TableSample({"triangle": [p]}).to_vdf()
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white",
                                   edgecolor="black")

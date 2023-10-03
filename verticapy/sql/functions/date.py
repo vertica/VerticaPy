@@ -41,7 +41,7 @@ def date(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         # apply the date function, creating a "date_x" column
         df["date_x"] = st.date(df["x"])
         display(df)
@@ -85,7 +85,7 @@ def day(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the day function, creating a "day_x" column
         df["day_x"] = st.day(df["x"])
@@ -132,7 +132,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the dayofweek function, creating a "dayofweek_x" column
         df["dayofweek_x"] = st.dayofweek(df["x"])
@@ -179,7 +179,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the dayofyear function, creating a "dayofyear_x" column
         df["dayofyear_x"] = st.dayofyear(df["x"])
@@ -235,7 +235,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the extract function, creating a "months" column
         df["months"] = st.extract(df["x"], "MONTH")
@@ -277,7 +277,7 @@ def getdate() -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # apply the getdate function, creating a "date" column
         df["date"] = st.getdate()
         display(df)
@@ -316,7 +316,7 @@ def getutcdate() -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # apply the getutcdate function, creating a "date" column
         df["date"] = st.getutcdate()
         display(df)
@@ -360,7 +360,7 @@ def hour(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the hour function, creating a "hour_x" column
         df["hour_x"] = st.hour(df["x"])
@@ -406,7 +406,7 @@ def interval(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['1 day', '2 hours']}).to_vdf()
+        df = TableSample({"x": ['1 day', '2 hours']}).to_vdf()
         # apply the interval function, creating a "interval_x" column
         df["interval_x"] = st.interval(df["x"])
         display(df)
@@ -451,7 +451,7 @@ def minute(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the minute function, creating a "minute_x" column
         df["minute_x"] = st.minute(df["x"])
@@ -498,7 +498,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the microsecond function, creating a "microsecond_x" column
         df["microsecond_x"] = st.microsecond(df["x"])
@@ -545,7 +545,7 @@ def month(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the month function, creating a "month_x" column
         df["month_x"] = st.month(df["x"])
@@ -607,7 +607,7 @@ def overlaps(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"start0": ['11-03-1993'],
+        df = TableSample({"start0": ['11-03-1993'],
                           "end0": ['12-03-1993'],
                           "start1": ['11-30-1993'],
                           "end1": ['11-30-1994']}).to_vdf()
@@ -671,7 +671,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the quarter function, creating a "quarter_x" column
         df["quarter_x"] = st.quarter(df["x"])
@@ -759,7 +759,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
+        df = TableSample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
         df["x"].astype("date")
         # apply the round_date function, creating a "round_x" column
         df["round_x"] = st.round_date(df["x"], 'MM')
@@ -806,7 +806,7 @@ def second(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the second function, creating a "second_x" column
         df["second_x"] = st.second(df["x"])
@@ -853,7 +853,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         # apply the timestamp function, creating a "timestamp_x" column
         df["timestamp_x"] = st.timestamp(df["x"])
         display(df)
@@ -900,7 +900,7 @@ def week(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the week function, creating a "week_x" column
         df["week_x"] = st.week(df["x"])
@@ -947,7 +947,7 @@ def year(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
         df["x"].astype("timestamp")
         # apply the year function, creating a "year_x" column
         df["year_x"] = st.year(df["x"])

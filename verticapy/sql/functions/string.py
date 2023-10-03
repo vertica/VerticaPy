@@ -89,7 +89,7 @@ def lower(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
         # Applying the lower function
         df["lower_x"] = st.lower(df["x"])
         display(df)
@@ -141,7 +141,7 @@ def substr(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
         # Apply the substr function
         df["substr_x"] = st.substr(df["x"], 1, 1)
         display(df)
@@ -188,7 +188,7 @@ def upper(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
+        df = TableSample({"x": ["Badr", "Colin", "Fouad", "Arash"]}).to_vdf()
         # Apply the upper function
         df["upper_x"] = st.upper(df["x"])
         display(df)
@@ -242,7 +242,7 @@ def edit_distance(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
         # Apply the edit distance function
         df["edit_distance_x"] = st.edit_distance(df["x"], 'heyllow')
         display(df)
@@ -292,7 +292,7 @@ def soundex(expr: SQLExpression) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
         # Apply the soundex function
         df["soundex_x"] = st.soundex(df["x"])
         display(df)
@@ -345,7 +345,7 @@ def soundex_matches(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
         # Apply the soundex_matches function
         df["soundex_matches_x"] = st.soundex_matches(df["x"], 'heyllow')
         display(df)
@@ -400,7 +400,7 @@ def jaro_distance(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
         # Apply the jaro distance function
         df["jaro_distance_x"] = st.jaro_distance(df["x"], 'heyllow')
         display(df)
@@ -452,7 +452,7 @@ def jaro_winkler_distance(
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
+        df = TableSample({"x": ["hello", "apple", "heroes", "allo"]}).to_vdf()
         # Apply the jaro-winkler function
         df["jaro_winkler_distance_x"] = st.jaro_winkler_distance(df["x"], 'heyllow')
         display(df)

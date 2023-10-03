@@ -33,7 +33,7 @@ def random() -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # use the random function to create a "split" column
         df["split"] = st.random()
         display(df)
@@ -76,7 +76,7 @@ def randomint(n: int) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # use the randomint function to create a "split" column
         df["split"] = st.randomint(10)
         display(df)
@@ -120,7 +120,7 @@ def seeded_random(random_state: int) -> StringSQL:
         from verticapy import TableSample
         import verticapy.stats as st
 
-        df = tablesample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
         # use the seeded_random function to create a "split" column
         df["split"] = st.seeded_random(10)
         display(df)
