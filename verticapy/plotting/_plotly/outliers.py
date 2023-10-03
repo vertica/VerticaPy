@@ -81,6 +81,12 @@ class OutliersPlot(PlotlyBase):
                 y=self.layout["columns"][0],
                 color="category",
                 stripmode="overlay",
+                color_discrete_sequence=[
+                    self.layout["inliers_color"]
+                    if self.layout["inliers_color"] != "white"
+                    else self.get_colors(idx=2),
+                    self.layout["outliers_color"],
+                ],
             )
             fig_scatter.update_layout(xaxis={"visible": False})
         elif len(self.layout["columns"]) == 2:
@@ -112,6 +118,10 @@ class OutliersPlot(PlotlyBase):
                 x=self.layout["columns"][0],
                 y=self.layout["columns"][1],
                 color="category",
+                color_discrete_sequence=[
+                    self.layout["inliers_color"],
+                    self.layout["outliers_color"],
+                ],
             )
             z_max = self.data["map"]["Z"].max()
             threshold = self.data["th"]
