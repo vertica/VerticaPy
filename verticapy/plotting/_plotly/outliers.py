@@ -160,7 +160,10 @@ class OutliersPlot(PlotlyBase):
                     x0=self.data["map"]["X"][0][0],
                     dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
-                    colorscale=[[0, "blue"], [1, "blue"]],
+                    colorscale=[
+                        [0, self.layout["inliers_border_color"]],
+                        [1, self.layout["inliers_border_color"]],
+                    ],
                     contours_coloring="lines",
                     line_width=2,
                     contours=dict(
