@@ -79,9 +79,3 @@ class TestPlotlyVDFLinePlot(VDFLinePlot):
     """
     Testing different attributes of Line plot on a vDataFrame
     """
-
-    @pytest.mark.skip(reason="Need to change from time to time column name")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """

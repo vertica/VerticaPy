@@ -69,7 +69,10 @@ class BarChart(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
-            self.data["y"], "bar", self.layout["column"], **self.init_style_bar
+            [float(val) for val in self.data["y"]],
+            "bar",
+            self.layout["column"],
+            **self.init_style_bar,
         )
         return chart
 

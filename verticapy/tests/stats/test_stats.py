@@ -306,12 +306,6 @@ class TestStats:
             == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
         )
 
-    def test_regexp_count(self, titanic_vd):
-        assert (
-            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
-            == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
-        )
-
     def test_regexp_instr(self, titanic_vd):
         assert (
             str(st.regexp_instr(titanic_vd["name"], "([A-Za-z])+\\. "))
@@ -334,12 +328,6 @@ class TestStats:
         assert (
             str(st.regexp_substr(titanic_vd["name"], "([A-Za-z])+\\. "))
             == "REGEXP_SUBSTR(\"name\", '([A-Za-z])+\\. ', 1, 1)"
-        )
-
-    def test_regexp_count(self, titanic_vd):
-        assert (
-            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
-            == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
         )
 
     def test_regexp_ilike(self, titanic_vd):

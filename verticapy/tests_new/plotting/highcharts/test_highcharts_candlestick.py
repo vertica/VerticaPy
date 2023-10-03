@@ -59,3 +59,11 @@ class TestHighChartsVDCCandlestick(VDCCandlestick):
         )
         # Assert - checking if correct object created
         assert isinstance(result, Highstock), "Wrong object created"
+
+    @pytest.mark.skip(reason="The plot does not have custom width and height yet")
+    def test_additional_options_custom_width_and_height(
+        self,
+    ):
+        """
+        Testing custom width and height
+        """

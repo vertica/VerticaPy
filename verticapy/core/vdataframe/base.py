@@ -195,10 +195,12 @@ class vDataFrame(vDFAnimatedPlot):
                 )
 
         if isinstance(input_relation, (TableSample, list, np.ndarray, dict)):
-            return self._from_object(input_relation, usecols)
+            self._from_object(input_relation, usecols)
+            return
 
         elif isinstance(input_relation, pd.DataFrame):
-            return self._from_pandas(input_relation, usecols)
+            self._from_pandas(input_relation, usecols)
+            return
 
         elif not _empty:
             if isinstance(input_relation, str) and is_dql(input_relation):
@@ -324,7 +326,7 @@ class vDataFrame(vDFAnimatedPlot):
                 tb_final[col] = tb[col]
             tb = TableSample(tb_final)
 
-        return self.__init__(input_relation=tb.to_sql())
+        self.__init__(input_relation=tb.to_sql())
 
     def _from_pandas(
         self,
@@ -337,7 +339,7 @@ class vDataFrame(vDFAnimatedPlot):
         usecols = format_type(usecols, dtype=list)
         args = object_[usecols] if len(usecols) > 0 else object_
         vdf = read_pd(args)
-        return self.__init__(input_relation=vdf._vars["main_relation"])
+        self.__init__(input_relation=vdf._vars["main_relation"])
 
 
 ##

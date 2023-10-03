@@ -36,7 +36,9 @@ class DensityPlot(HighchartsBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        x_label = self._clean_quotes(self.layout["x_label"])
+        x_label = (
+            self._clean_quotes(self.layout["x_label"]) if self.layout["x_label"] else ""
+        )
         y_label = self._clean_quotes(self.layout["y_label"])
         X = self.data["x"] if "x" in self.data else self.data["X"]
         self.init_style = {

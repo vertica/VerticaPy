@@ -105,6 +105,14 @@ class SVMClassifierPlot(PlotlyBase):
         """
         Draws a SVM Classifier plot using the Plotly API.
         """
+        marker_colors = self.get_colors()
+        if "colors" in style_kwargs:
+            marker_colors = (
+                style_kwargs["colors"] + marker_colors
+                if isinstance(style_kwargs["colors"], list)
+                else [style_kwargs["colors"]] + marker_colors
+            )
+            del style_kwargs["colors"]
         fig = self._get_fig(fig)
         x, w = self.data["X"][:, 0], self.data["X"][:, -1]
         x0, x1 = x[w == 0], x[w == 1]
@@ -145,8 +153,24 @@ class SVMClassifierPlot(PlotlyBase):
                     / self.data["coef"][2]
                     for x in x_svm
                 ]
-                fig.add_trace(go.Scatter(name="0", x=x0, y=y0, **self.hover_style_2d))
-                fig.add_trace(go.Scatter(name="1", x=x1, y=y1, **self.hover_style_2d))
+                fig.add_trace(
+                    go.Scatter(
+                        name="0",
+                        x=x0,
+                        y=y0,
+                        marker=dict(color=marker_colors[0]),
+                        **self.hover_style_2d,
+                    )
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        name="1",
+                        x=x1,
+                        y=y1,
+                        marker=dict(color=marker_colors[1]),
+                        **self.hover_style_2d,
+                    )
+                )
                 fig.add_trace(
                     go.Scatter(
                         name="SVM",
@@ -186,10 +210,24 @@ class SVMClassifierPlot(PlotlyBase):
                     )
                 )
                 fig.add_trace(
-                    go.Scatter3d(name="0", x=x0, y=y0, z=z0, **self.hover_style_3d)
+                    go.Scatter3d(
+                        name="0",
+                        x=x0,
+                        y=y0,
+                        z=z0,
+                        marker=dict(color=marker_colors[0]),
+                        **self.hover_style_3d,
+                    )
                 )
                 fig.add_trace(
-                    go.Scatter3d(name="1", x=x1, y=y1, z=z1, **self.hover_style_3d)
+                    go.Scatter3d(
+                        name="1",
+                        x=x1,
+                        y=y1,
+                        z=z1,
+                        marker=dict(color=marker_colors[1]),
+                        **self.hover_style_3d,
+                    )
                 )
                 fig.update_layout(**self.init_layout_style_3d)
             else:

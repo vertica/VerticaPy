@@ -86,7 +86,11 @@ class HeatMap(PlotlyBase):
         elif "color_continuous_scale" not in style_kwargs:
             return {"color_continuous_scale": [[0, "white"], [1, self.get_colors()[0]]]}
         else:
-            return {}
+            return {
+                key: value
+                for key, value in style_kwargs.items()
+                if key == "color_continuous_scale"
+            }
 
     # Draw.
 
@@ -138,6 +142,8 @@ class HeatMap(PlotlyBase):
             **params,
             **self._get_cmap_style(style_kwargs=style_kwargs),
         )
+        if "color_continuous_scale" in style_kwargs:
+            del style_kwargs["color_continuous_scale"]
         fig.update_xaxes(type="category")
         fig.update_yaxes(type="category")
         fig.layout.yaxis.automargin = True
