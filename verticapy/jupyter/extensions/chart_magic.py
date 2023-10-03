@@ -192,30 +192,427 @@ def chart_magic(
     line: str, cell: Optional[str] = None, local_ns: Optional[dict] = None
 ) -> Union[Highstock, Highchart]:
     """
-    Draws  responsive charts using the High Chart  API:
-    https://api.highcharts.com/highcharts/
+    Draws responsive charts using the Matplotlib,
+    Plotly, or Highcharts library.
+    You can set your plotting library with the
+    set_option function.
     The returned object can be customized using the API
     parameters and the 'set_dict_options' method.
 
-    -c / --command : SQL Command to execute.
+    Parameters
+    ----------
+    -c / --command : str, optional
+        SQL Command to execute.
+    -f / --file : str, optional
+        Input File. You can use this option
+        if  you  want to execute the  input
+        file.
+    -k / --kind  : str, optional
+        Chart Type, one  of  the following:
 
-    -f  /   --file : Input File. You can use this option
-                     if  you  want to execute the  input
-                     file.
+        **area**         :
+                            Area Chart
 
-    -k  /  --kind  : Chart Type, one  of  the following:
-                     area  / area_range  / area_ts / bar
-                     biserial   /   boxplot   /   bubble
-                     candlestick   /   cramer  /   donut
-                     donut3d  / heatmap / hist / kendall
-                     line / negative_bar / pearson / pie
-                     pie_half / pie3d / scatter / spider
-                     spline / stacked_bar / stacked_hist
-                     spearman
+        **area_range**   :
+                            Area Range Chart
 
-     -o / --output : Output File. You can use this option
-                     if  you want to export the result of
-                     the query to the HTML format.
+        **area_ts**      :
+                            Area Chart with Time Series Design
+
+        **bar**          :
+                            Bar Chart
+
+        **biserial**     :
+                            Biserial Point Matrix (Correlation
+                            between binary variables and numerical)
+
+        **boxplot**      :
+                            Box Plot
+
+        **bubble**       :
+                            Bubble Plot
+
+        **candlestick**  :
+                            Candlestick and Volumes (Time Series
+                            Special Plot)
+
+        **cramer**       :
+                            Cramer's V Matrix (Correlation between
+                            categories)
+
+        **donut**        :
+                            Donut Chart
+
+        **donut3d**      :
+                            3D Donut Chart
+
+        **heatmap**      :
+                            Heatmap
+
+        **hist**         :
+                            Histogram
+
+        **kendall**      :
+                            Kendall Correlation Matrix
+
+        .. Warning::
+            This method  uses a CROSS JOIN  during  computation and is
+            therefore computationally expensive at  O(n * n),  where n
+            is the  total  count of  the ``vDataFrame``.
+
+        **line**         :
+                            Line Plot
+
+        **negative_bar** :
+                            Multi-Bar Chart for binary classes
+
+        **pearson**      :
+                            Pearson Correlation Matrix
+
+        **pie**          :
+                            Pie Chart
+
+        **pie_half**     :
+                            Half Pie Chart
+
+        **pie3d**        :
+                            3D Pie Chart
+
+        **scatter**      :
+                            Scatter Plot
+
+        **spider**       :
+                            Spider Chart
+
+        **spline**       :
+                            Spline Plot
+
+        **stacked_bar**  :
+                            Stacker Bar Chart
+
+        **stacked_hist** :
+                            Stacked Histogram
+
+        **spearman**     :
+                            Spearman Correlation Matrix
+
+    -o / --output : str, optional
+        Output File. You can use this option
+        if  you want to export the result of
+        the query to the HTML format.
+
+    Returns
+    -------
+    Chart Object
+
+    Examples
+    --------
+    The following examples demonstrate:
+
+    * Setting up the environment
+    * Drawing graphics
+    * Exporting to HTML
+    * Using variables
+    * Using SQL files
+
+    Setting up the environment
+    ==========================
+
+    If you don't already have one, create a new connection:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+        # Save a new connection
+        vp.new_connection({"host": "10.211.55.14",
+                           "port": "5433",
+                           "database": "testdb",
+                           "password": "XxX",
+                           "user": "dbadmin"},
+                           name = "VerticaDSN")
+
+    Otherwise, to use an existing connection:
+
+    .. code-block:: python
+
+        vp.connect("VerticaDSN")
+
+    Load the chart extension:
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    .. ipython:: python
+        :suppress:
+
+        %load_ext verticapy.hchart
+
+    Run the following to load some sample datasets. Once loaded, these datasets are
+    stored in the 'public' schema. You can change the target schema with the
+    'schema' parameter:
+
+    .. ipython:: python
+
+        from verticapy.datasets import load_titanic, load_amazon, load_iris
+
+        titanic = load_titanic()
+        amazon = load_amazon()
+        iris = load_iris()
+
+    Use the set_option function to choose your desired plotting library:
+
+    .. ipython:: python
+
+        vp.set_option("plotting_lib","plotly")
+
+    Drawing graphics
+    ================
+
+    The following examples draw various responsive charts from SQL queries:
+
+    .. code-block:: python
+
+        %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k pie
+        SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;
+
+    .. ipython:: python
+        :suppress:
+
+        pie_chart = _
+        pie_chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html
+
+    .. code-block:: python
+
+        %%chart -k line
+        SELECT
+            date,
+            AVG(number) AS number
+        FROM amazon
+        GROUP BY 1;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k line
+        SELECT
+            date,
+            AVG(number) AS number
+        FROM amazon
+        GROUP BY 1;
+
+    .. ipython:: python
+        :suppress:
+
+        line_chart = _
+        line_chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html
+
+    .. code-block:: python
+
+        %%chart -k pearson
+        SELECT
+            *
+        FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k pearson
+        SELECT * FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        heatmap = _
+        heatmap.write_html("figures/jupyter_extensions_chart_magic_chart_magic_3.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html
+
+    .. code-block:: python
+
+        %%chart -k hist
+        SELECT
+            pclass,
+            SUM(survived)
+        FROM titanic GROUP BY 1;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k hist
+        SELECT
+            pclass,
+            SUM(survived)
+        FROM titanic GROUP BY 1;
+
+    .. ipython:: python
+        :suppress:
+
+        hist = _
+        hist.write_html("figures/jupyter_extensions_chart_magic_chart_magic_4.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html
+
+    .. code-block:: python
+
+        %%chart -k scatter
+        SELECT
+            PetalLengthCm,
+            PetalWidthCm,
+            Species
+        FROM iris;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k scatter
+        SELECT
+            PetalLengthCm,
+            PetalWidthCm,
+            Species
+        FROM iris;
+
+    .. ipython:: python
+        :suppress:
+
+        scatter = _
+        scatter.write_html("figures/jupyter_extensions_chart_magic_chart_magic_5.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html
+
+    .. code-block:: python
+
+        %%chart -k boxplot
+        SELECT * FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k boxplot
+        SELECT * FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        boxplot = _
+        boxplot.write_html("figures/jupyter_extensions_chart_magic_chart_magic_6.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_6.html
+
+    Exporting to HTML
+    =================
+    Export a chart to HTML:
+
+    .. code-block:: python
+
+        %%chart -k scatter -o "my_graphic"
+        SELECT * FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k spearman
+        SELECT * FROM titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        export = _
+        export.write_html("figures/jupyter_extensions_chart_magic_chart_magic_7.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_7.html
+
+    .. code-block:: python
+
+        file = open("my_graphic.html", "r")
+        file.read()
+        file.close()
+
+    Using Variables
+    ===============
+    You can use variables in charts with the ':' operator:
+
+    .. ipython:: python
+
+        import verticapy.stats as st
+
+        class_fare = titanic.groupby("pclass",
+                                     [st.avg(titanic["fare"])._as("avg_fare")])
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/jupyter_extensions_chart_magic_chart_magic_8.html", "w")
+        html_file.write(class_fare._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_8.html
+
+    .. code-block:: python
+
+        %%chart -k bar
+        SELECT * FROM :class_fare;
+
+    .. ipython:: python
+        :suppress:
+
+        %%chart -k bar
+        SELECT * FROM :class_fare;
+
+    .. ipython:: python
+        :suppress:
+
+        chart = _
+        chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic_9.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_9.html
+
+    Using SQL files
+    ===============
+    Create charts from a SQL file:
+
+    .. ipython:: python
+
+        file = open("query.sql", "w+")
+        file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
+        file.close()
+
+    .. code-block:: python
+
+        %chart -f query.sql -k scatter
+
+    .. ipython:: python
+
+        %chart -f query.sql -k scatter
+
+    .. ipython:: python
+        :suppress:
+
+        sql_file = _
+        sql_file.write_html("figures/jupyter_extensions_chart_magic_chart_magic_10.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_10.html
     """
 
     # Initialization
