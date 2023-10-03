@@ -16,14 +16,13 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 from verticapy._typing import ArrayLike
+from verticapy.plotting._plotly.base import PlotlyBase
 
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
-
-from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class OutliersPlot(PlotlyBase):
@@ -92,8 +91,8 @@ class OutliersPlot(PlotlyBase):
         elif len(self.layout["columns"]) == 2:
             x_1 = self.data["inliers"][:, 0].flatten().tolist()
             x_2 = self.data["outliers"][:, 0].flatten().tolist()
-            Y1 = self.data["inliers"][:, 1].flatten().tolist()
-            Y2 = self.data["outliers"][:, 1].flatten().tolist()
+            y_1 = self.data["inliers"][:, 1].flatten().tolist()
+            y_2 = self.data["outliers"][:, 1].flatten().tolist()
             delta_x = self.data["map"]["X"][0][1] - self.data["map"]["X"][0][0]
             delta_y = self.data["map"]["Y"][1][0] - self.data["map"]["Y"][0][1]
             cat_x1 = ["inliers"] * len(x_1)
@@ -102,14 +101,14 @@ class OutliersPlot(PlotlyBase):
                 {
                     self.layout["columns"][0]: x_1,
                     "category": cat_x1,
-                    self.layout["columns"][1]: Y1,
+                    self.layout["columns"][1]: y_1,
                 }
             )
             data_frame_2 = pd.DataFrame(
                 {
                     self.layout["columns"][0]: x_2,
                     "category": cat_x2,
-                    self.layout["columns"][1]: Y2,
+                    self.layout["columns"][1]: y_2,
                 }
             )
             concatenated_df = pd.concat([data_frame_1, data_frame_2], ignore_index=True)
