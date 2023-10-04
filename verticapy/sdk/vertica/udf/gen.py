@@ -93,16 +93,25 @@ def generate_lib_udf(
     -------
     .. ipython:: python
 
-        from verticapy.udf import generate_lib_udf
+        from verticapy.sdk.vertica.udf import generate_lib_udf
         @suppress
         import math
 
-        udx_str, udx_sql = generate_lib_udf([(math.exp, [float], float, {}, "python_exp"),
-                                             (math.isclose, [float, float], bool, {"abs_tol": float}, "python_isclose"),],
-                                              library_name = "python_math",
-                                              file_path = "",
-                                              create_file = False)
+        udx_str, udx_sql = generate_lib_udf(
+            [(math.exp, [float], float, {}, "python_exp"), (math.isclose, [float, float], bool, {"abs_tol": float}, "python_isclose"),],
+            library_name = "python_math",
+            file_path = "",
+            create_file = False)
+
+    Print the generated UDx Python code:
+
+    .. ipython:: python
+
         print(udx_str)
+
+    Print the SQL statements that install the function:
+
+    .. ipython:: python
 
         print("\\n".join(udx_sql))
     """
