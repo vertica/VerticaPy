@@ -1060,7 +1060,7 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
     -------
     If you call this loader without any arguments, the dataset is
     loaded using the default schema (public).
-    
+
     .. code-block:: python
 
         from verticapy.datasets import load_laliga
