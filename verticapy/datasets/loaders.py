@@ -124,6 +124,9 @@ def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_market
@@ -179,6 +182,9 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_iris
@@ -243,6 +249,9 @@ def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
@@ -313,6 +322,9 @@ def load_winequality(schema: str = "public", name: str = "winequality") -> vData
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_winequality
@@ -385,6 +397,9 @@ def load_airline_passengers(
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_airline_passengers
@@ -435,6 +450,9 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_amazon
@@ -485,6 +503,9 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_commodities
@@ -543,6 +564,9 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_gapminder
@@ -600,6 +624,9 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_pop_growth
@@ -658,6 +685,9 @@ def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDa
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_smart_meters
@@ -713,6 +743,9 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_cities
@@ -768,6 +801,9 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_world
@@ -832,6 +868,9 @@ def load_africa_education(
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+
     .. code-block:: python
 
         from verticapy.datasets import load_africa_education
@@ -1019,6 +1058,9 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
 
     Example
     -------
+    If you call this loader without any arguments, the dataset is
+    loaded using the default schema (public).
+    
     .. code-block:: python
 
         from verticapy.datasets import load_laliga
