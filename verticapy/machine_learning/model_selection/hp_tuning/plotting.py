@@ -221,7 +221,7 @@ def validation_curve(
     data = {"x": x, "Y": Y}
     layout = {"columns": ["train", "test"], "order_by": param_name, "y_label": metric}
     vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
-    if return_chart:
+    if show:
         return vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
     return result
 
