@@ -90,7 +90,9 @@ class RangeCurve(PlotlyBase):
                     y=np.hstack((y_data[:, 0], y_data[:, 2][::-1])),
                     fill="toself",
                     showlegend=False,
-                    name=f"{col}:: Bounds:[{self.data['q'][0]},{self.data['q'][1]}]",
+                    name=f"{col}:: Bounds:[{self.data['q'][0]},{self.data['q'][1]}]"
+                    if "q" in self.data
+                    else col,
                     mode="lines+markers" if not plot_scatter else "markers",
                     marker=dict(color=marker_colors[idx]),
                     opacity=0.5,
