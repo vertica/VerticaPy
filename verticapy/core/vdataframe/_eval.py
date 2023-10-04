@@ -103,6 +103,8 @@ class vDFEval(vDFInOut):
                 "you'll print the SQL code generation and probably "
                 "see why the evaluation didn't work."
             )
+
+        category = "undefined"
         if not ctype:
             ctype = "undefined"
         elif (ctype.lower().startswith(("long varbina", "long varchar"))) and (

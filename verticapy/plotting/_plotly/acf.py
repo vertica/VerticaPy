@@ -38,8 +38,8 @@ class ACFPlot(PlotlyBase):
 
     def _init_style(self) -> None:
         self.init_style = {
-            "height": 400,
-            "width": 1100,
+            "height": 500,
+            "width": 900,
             "xaxis_title": "Lag",
             "yaxis_title": "Value",
             "showlegend": False,
@@ -65,7 +65,7 @@ class ACFPlot(PlotlyBase):
         }
         self.init_confidence_style = {
             "mode": "lines",
-            "marker_color": "red",
+            "marker_color": self.get_colors()[0],
         }
         self.init_scatter_style = {
             "marker_color": "orange",
@@ -87,6 +87,13 @@ class ACFPlot(PlotlyBase):
         Y = self.data["y"]
         Z = self.data["z"]
         fig = self._get_fig(fig)
+        if "colors" in style_kwargs:
+            self.init_confidence_style["marker_color"] = (
+                style_kwargs["colors"]
+                if isinstance(style_kwargs["colors"], str)
+                else style_kwargs["colors"][0]
+            )
+            style_kwargs.pop("colors")
         fig.add_scatter(
             x=X,
             y=Z,

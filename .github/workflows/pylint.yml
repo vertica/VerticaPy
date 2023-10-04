@@ -21,6 +21,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+        pip install .
+        pip install -r requirements-dev.txt
+        pip install -r requirements-testing.txt
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=9 --disable=typecheck,W,C,R $(git ls-files '*.py')
+        pylint --fail-under=10 --disable=typecheck,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
+        pylint --fail-under=9 --disable=typecheck,E,C,R $(git ls-files '*.py')

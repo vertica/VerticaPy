@@ -159,13 +159,13 @@ class AnimatedBarChart(AnimatedBase):
 
         return animate
 
-    def _compute_anim_params(
-        self, date_f: Optional[Callable] = None, **style_kwargs
-    ) -> tuple:
+    def _compute_anim_params(self, date_f: Optional[Callable], **style_kwargs) -> tuple:
         if isinstance(date_f, NoneType):
 
-            def date_f(x: Any) -> str:
+            def new_date_f(x: Any) -> str:
                 return str(x)
+
+            date_f = new_date_f
 
         colors = self._get_style_color(style_kwargs=style_kwargs)
         n, m = self.data["Y"].shape

@@ -777,14 +777,14 @@ class TestVDFBoxPlot:
         # Assert
         assert result.layout["yaxis"]["title"]["text"] == "0", "Y-axis title issue"
 
-    def test_properties_orientation(self, load_plotly, dummy_dist_vd):
+    def test_properties_orientation_default(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
         result = dummy_dist_vd["0"].boxplot()
         # Assert
         assert result.data[0]["orientation"] == "h", "Orientation is not correct"
 
-    def test_properties_orientation(self, load_plotly, dummy_dist_vd):
+    def test_properties_orientation_binary(self, load_plotly, dummy_dist_vd):
         # Arrange
         # Act
         result = dummy_dist_vd["0"].boxplot(by="binary")
@@ -912,7 +912,7 @@ class TestVDFBoxPlot:
             50, 1
         ), "median not computed correctly for binary=0"
 
-    def test_data_median_value_for_partitioned_data_for_x_is_0(
+    def test_data_median_value_for_partitioned_data_for_x_is_1(
         self, load_plotly, dummy_dist_vd
     ):
         # Arrange
@@ -1088,7 +1088,7 @@ class TestVDFLinePlot:
         result = amazon_vd["number"].plot(ts="date", by="state")
         # Assert - checking if correct object created
         assert (
-            result.layout["xaxis"]["title"]["text"] == "time"
+            result.layout["xaxis"]["title"]["text"] == "date"
         ), "X axis title incorrect"
 
     def test_properties_y_axis_title(self, load_plotly, amazon_vd):
@@ -1415,7 +1415,7 @@ class TestVDFRangeCurve:
             result.layout["xaxis"]["title"]["text"] == column_name
         ), "X axis label incorrect"
 
-    def test_properties_xaxis(self, load_plotly, dummy_date_vd):
+    def test_properties_yaxis(self, load_plotly, dummy_date_vd):
         # Arrange
         column_name = "value"
         # Act

@@ -46,7 +46,7 @@ class ACFPlot(HighchartsBase):
                 "title": {"text": "lag"},
                 "categories": self.data["x"].tolist(),
             },
-            "yAxis": {"title": {"text": "value"}, "max": 1},
+            "yAxis": {"title": {"text": "value"}, "max": 1.2, "min": -1.2},
             "tooltip": {
                 "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
                 "pointFormat": "<b>lag</b>: {point.x} <br/> <b>value</b>: {point.y}",
@@ -94,6 +94,13 @@ class ACFPlot(HighchartsBase):
         """
         kind = "PACF" if self.layout["pacf"] else "ACF"
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
+        if "colors" in style_kwargs:
+            self.init_style_confidence["fillColor"] = (
+                style_kwargs["colors"][0]
+                if isinstance(style_kwargs["colors"], list)
+                else style_kwargs["colors"]
+            )
+            style_kwargs.pop("colors")
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         if self.layout["kind"] == "bar":

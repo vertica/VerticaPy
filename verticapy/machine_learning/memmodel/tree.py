@@ -448,7 +448,7 @@ class Tree(InMemoryModel):
             )
         res = graphviz.Source(self.to_graphviz(*args, **kwargs))
         if pic_path:
-            res.view(pic_path)
+            res.render(filename=pic_path)
         return res
 
 

@@ -121,7 +121,7 @@ class TestMCA:
         result = model.plot(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 8
 
-    def test_plot_contrib(self, model):
+    def test_plot_var(self, model):
         result = model.plot_var()
         assert len(result.get_default_bbox_extra_artists()) == 62
         result = model.plot_var(dimensions=(2, 3))

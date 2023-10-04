@@ -78,6 +78,7 @@ class SVMClassifierPlot(MatplotlibBase):
         """
         Draws an SVM classifier plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         x, w = self.data["X"][:, 0], self.data["X"][:, -1]
         x0, x1 = x[w == 0], x[w == 1]
         if len(self.layout["columns"]) == 2:

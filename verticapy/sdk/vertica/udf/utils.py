@@ -92,7 +92,7 @@ def get_set_add_function(
     elif ftype == (datetime.datetime, datetime.tzinfo):
         return f"{func}TimestampTz"
     else:
-        raise (
+        raise ValueError(
             "The input type is not managed by get_set_add_function. "
             "Check the Vertica Python SDK for more information."
         )
