@@ -276,7 +276,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     .. ipython:: python
 
         # Renames a specific index
-        rename_index("world_polygons", "world_polygons_test")
+        rename_index("world_polygons", "world_polygons_new")
 
     .. code-block:: python
 

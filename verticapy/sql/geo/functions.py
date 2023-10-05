@@ -216,10 +216,25 @@ def intersect(
         html_file.close()
 
     .. raw:: html
-        :file: figures/sql_geo_functions_intersect_1.html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_1.html
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html
+
+    .. code-block:: python
+
+        # Creating Index
+        create_index(world, "id", "geometry", "world_polygons", True)
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/sql_geo_functions_intersect_4.html", "w")
+        html_file.write(create_index(world, "id", "geometry", "world_polygons", True)._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
 
     .. code-block:: python
 
