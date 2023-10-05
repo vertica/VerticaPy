@@ -156,10 +156,13 @@ def set_option(key: str, value: Any = None) -> None:
 
     Examples
     --------
+    Import and load the titanic dataset:
+
+    .. hint:: VerticaPy provides multiple datasets, all of which have loaders in the datasets module.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        from verticapy import set_option
 
         titanic = load_titanic()
         display(titanic)
@@ -178,9 +181,16 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_1.html
 
+    Import the set_option function:
+
     .. code-block:: python
 
-        # Computes and displays the total number of elements
+        from verticapy import set_option
+
+    Turn on the "count_on" option, which displays the total number of elements in the dataset:
+
+    .. code-block:: python
+
         set_option("count_on", True)
         display(titanic)
 
@@ -195,9 +205,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_2.html
 
+    Turn off the display footer:
+
     .. code-block:: python
 
-        # Turns off the footer
         set_option("footer_on", False)
         display(titanic)
 
@@ -212,9 +223,12 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_3.html
 
+    Sets the maximum number of columns displayed:
+
+    .. note:: By setting this parameter, we retrieve fewer elements from the database, resulting in faster visualization.
+
     .. code-block:: python
 
-        # Sets the maximum number of columns to display
         set_option("max_columns", 3)
         display(titanic)
 
@@ -229,9 +243,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_4.html
 
+    Sets the maximum number of rows displayed:
+
     .. code-block:: python
 
-        # Sets the maximum number of row to display
         set_option("max_rows", 5)
         display(titanic)
 
@@ -246,9 +261,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_5.html
 
+    Sets the display to light mode:
+
     .. code-block:: python
 
-        # Light mode
         set_option("mode", "light")
         display(titanic)
 
@@ -263,9 +279,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_6.html
 
+    Sets the display to full mode:
+
     .. code-block:: python
 
-        # Full mode
         set_option("mode", "full")
         display(titanic)
 
@@ -280,9 +297,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_7.html
 
+    Turn on the loading bar:
+
     .. code-block:: python
 
-        # Display the loading bar
         set_option("percent_bar", True)
         display(titanic)
 
@@ -297,37 +315,42 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_8.html
 
+    Dispalys the queries and their execution times
+
     .. ipython:: python
 
-        # Display queries and their execution times
         set_option("sql_on", True)
         set_option("time_on", True)
         @savefig _config_config_set_option_corr.png
         titanic.corr()
 
+    Hides the queries and execution times
+
     .. ipython:: python
 
-        # Hide queires and execution times
         set_option("sql_on", False)
-        set_option("sql_on", False)
+        set_option("time_on", False)
 
-        # Set a seed for the random number generator
+    Sets the seed for the random number generator and seeds the random state:
+
+    .. ipython:: python
+
         set_option("random_state", 2)
-
-        # Seed the random state
         titanic.sample(0.1).shape()
 
+    Change the graphic colors:
+
     .. ipython:: python
 
-        # Change graphic colors
         set_option("colors", ["blue", "red"])
 
         @savefig _config_config_set_option_hist.png
         titanic.hist(["pclass", "survived"])
 
+    Change the temporary schema:
+
     .. ipython:: python
 
-        #Change the temporary schema
         set_option("temp_schema", "public")
     """
     if key in _all_options:
