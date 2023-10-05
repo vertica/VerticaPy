@@ -32,19 +32,25 @@ def change_auto_connection(name: str) -> None:
 
     Example
     -------
+    Create a new connection:
+    
     .. code-block:: python
 
         from verticapy.connection import new_connection, change_auto_connection
 
-        new_connection({"host": "10.211.55.14",
-                        "port": "5433",
-                        "database": "testdb",
-                        "password": "XxX",
-                        "user": "dbadmin"},
-                        name = "my_auto_connection",
-                        auto = False)
+        new_connection({
+            "host": "10.211.55.14",
+            "port": "5433",
+            "database": "testdb",
+            "password": "XxX",
+            "user": "dbadmin"},
+            name = "my_auto_connection",
+            auto = False)
 
-        # Set the main auto connection
+    Change the auto connection to "my_auto_connection":
+
+    .. code-block:: python
+
         change_auto_connection("my_auto_connection")
     """
     gb_conn = get_global_connection()
@@ -99,17 +105,18 @@ def delete_connection(name: str) -> bool:
                         "user": "dbadmin"},
                         name = "My_New_Vertica_Connection")
 
+    Display the available connections, delete the "My_New_Vertica_Connection" 
+    connection, and confirm that it no longer appears in the available
+    conenctions:
+
     .. ipython:: python
 
         from verticapy.connection import available_connections, delete_connection
 
-        # Displays the available connections
         available_connections()
 
-        # Deletes the VerticaDSN_test connection
         delete_connection("My_New_Vertica_Connection")
 
-        # The "My_New_Vertica_Connection" connection has been removed
         available_connections()
     """
     gb_conn = get_global_connection()
@@ -210,15 +217,20 @@ def new_connection(
 
     Example
     -------
+    Create a new connection to VerticaPy:
+
+    .. note:: If no errors are raised, the new connection was successful.
+
     .. code-block:: python
 
         from verticapy.connection import new_connection
 
-        conn_info = {"host": "10.211.55.14",
-                     "port": "5433",
-                     "database": "testdb",
-                     "password": "XxX",
-                     "user": "dbadmin"}
+        conn_info = {
+            "host": "10.211.55.14",
+            "port": "5433",
+            "database": "testdb",
+            "password": "XxX",
+            "user": "dbadmin"}
 
         new_connection(conn_info, name = "VerticaDSN")
     """

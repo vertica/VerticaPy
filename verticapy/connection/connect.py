@@ -69,16 +69,21 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
 
     Example
     -------
+    Display all available connections:
+
     .. code-block:: python
 
-        from verticapy.connection import *
+        from verticapy.connection import available_connections
 
-        #Displays all available connections
         available_connections()
+        
+    ``['VML', 'VerticaDSN', 'VerticaDSN_test']``
 
-    ['VML', 'VerticaDSN', 'VerticaDSN_test']
+    Connect using the VerticaDSN connection:
 
     .. code-block:: python
+
+        from verticapy.connection import connect
 
         connect("VerticaDSN")
     """
@@ -113,9 +118,12 @@ def set_connection(conn: Connection) -> None:
 
     Example
     -------
+    Create a connection using the official Vertica Python client:
+
+    .. note:: You can use any connector (ODBC, JDBC, etc.) as long it has both `fetchone` and `fetchall` methods. However, note that VerticaPy works most efficiently with the native client because of its support for various complex data types and certain Vertica optimizations.
+
     .. code-block:: python
 
-        # Creating a connection
         import vertica_python
 
         conn_info = {'host': "10.211.55.14",
@@ -125,7 +133,10 @@ def set_connection(conn: Connection) -> None:
                     'database': "testdb"}
         conn = vertica_python.connect(** conn_info)
 
-        # Setting the connection
+    Set up the connector:
+
+    .. code-block:: python
+
         from verticapy.connection import set_connection
 
         set_connection(conn)
@@ -151,9 +162,14 @@ def close_connection() -> None:
 
     Example
     -------
+    Close all current connections:
+    
+    .. warning:: When you close the connection, your session will terminate and all temporary elements will be automatically dropped.
+
     .. code-block:: python
 
         from verticapy.connection import close_connection
+
         close_connection()
     """
     gb_conn = get_global_connection()
@@ -184,19 +200,27 @@ def current_connection() -> GlobalConnection:
 
     Example
     -------
+    Get the current VerticaPy connection:
+
     .. code-block:: python
 
         from verticapy.connection import current_connection
+
         conn = current_connection()
         conn
 
-    <vertica_python.vertica.connection.Connection at 0x118c1f8d0>
+    ``<vertica_python.vertica.connection.Connection at 0x118c1f8d0>``
+
+    After the connection is established, you can execute SQL
+    queries directly:
+
+    .. note:: Please refer to your connector's API reference for a comprehensive list of its functionalities.
 
     .. code-block:: python
 
         conn.cursor().execute("SELECT version();").fetchone()
 
-    ['Vertica Analytic Database v12.0.4-0']
+    ``['Vertica Analytic Database v12.0.4-0']``
     """
     gb_conn = get_global_connection()
     conn = gb_conn.get_connection()
@@ -236,19 +260,24 @@ def current_cursor() -> Cursor:
 
     Example
     -------
+    Get the current cursor:
+
     .. code-block:: python
 
         from verticapy.connection import current_cursor
+
         cur = current_cursor()
         cur
 
-    <vertica_python.vertica.cursor.Cursor at 0x11a7b4748>
+    ``<vertica_python.vertica.cursor.Cursor at 0x11a7b4748>``
+
+    Directly execute an SQL query:
 
     .. code-block:: python
 
         cur.execute("SELECT version();").fetchone()
 
-    ['Vertica Analytic Database v12.0.4-0']
+    ``['Vertica Analytic Database v12.0.4-0']``
     """
     return current_connection().cursor()
 
@@ -277,13 +306,15 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
 
     Example
     -------
+    Create a connection using the input DSN:
+
     .. code-block:: python
 
         from verticapy.connection import vertica_connection
 
         vertica_connection("VerticaDSN")
 
-    <vertica_python.vertica.connection.Connection at 0x106526198>
+    ``<vertica_python.vertica.connection.Connection at 0x106526198>``
     """
     return vertica_python.connect(**read_dsn(section, dsn))
 
@@ -302,13 +333,17 @@ def verticapylab_connection() -> Connection:
 
     Example
     -------
+    Get the VerticaLab connection:
+
+    .. note:: VerticaLab is a Dockerized environment designed for seamlessly using VerticaPy. This function returns the connection to the Vertica instance within the lab, allowing for necessary environment customization.
+
     .. code-block:: python
 
         from verticapy.connection import verticalab_connection
 
         verticalab_connection()
 
-    <vertica_python.vertica.connection.Connection at 0x106526198>
+    ``<vertica_python.vertica.connection.Connection at 0x106526198>``
     """
     gb_conn = get_global_connection()
     conn_info = {

@@ -52,7 +52,10 @@ def get_connection_file() -> str:
     .. code-block:: python
 
         from verticapy.connection import get_connection_file
+
         get_connection_file()
+
+    ``'C:\\Users\\user\\.vertica\\connections.verticapy'``
     """
     if "VERTICAPY_CONNECTION" in os.environ:
         return os.environ["VERTICAPY_CONNECTION"]
