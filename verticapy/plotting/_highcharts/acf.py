@@ -46,7 +46,7 @@ class ACFPlot(HighchartsBase):
                 "title": {"text": "lag"},
                 "categories": self.data["x"].tolist(),
             },
-            "yAxis": {"title": {"text": "value"}, "max": 1},
+            "yAxis": {"title": {"text": "value"}, "max": 1.2, "min": -1.2},
             "tooltip": {
                 "headerFormat": '<span style="color:{series.color}">\u25CF</span> {series.name} <br/>',
                 "pointFormat": "<b>lag</b>: {point.x} <br/> <b>value</b>: {point.y}",

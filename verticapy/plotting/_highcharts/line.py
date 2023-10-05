@@ -115,12 +115,13 @@ class LinePlot(HighchartsBase):
             },
             "colors": self.get_colors(),
         }
-        if self.layout["order_by_cat"] == "date":
-            self.init_style["xAxis"] = {
-                **self.init_style["xAxis"],
-                "type": "datetime",
-                "dateTimeLabelFormats": {},
-            }
+        if "order_by_cat" in self.layout:
+            if self.layout["order_by_cat"] == "date":
+                self.init_style["xAxis"] = {
+                    **self.init_style["xAxis"],
+                    "type": "datetime",
+                    "dateTimeLabelFormats": {},
+                }
         if "has_category" in self.layout and self.layout["has_category"]:
             self.init_style["legend"] = {
                 "enabled": True,

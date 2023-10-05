@@ -2481,6 +2481,8 @@ def classification_report(
         all_cm_metrics = []
         is_multi = False
     for idx, pos_label in enumerate(labels):
+        y_s = "undefined"
+        y_t = "undefined"
         if is_multi:
             tn, fn, fp, tp = all_cm_metrics[idx]
         else:
