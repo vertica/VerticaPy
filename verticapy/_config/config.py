@@ -346,7 +346,7 @@ def set_option(key: str, value: Any = None) -> None:
 
     Displays the queries and their execution times:
 
-    .. note:: Vertica sometimes caches the SQL query, resulting in no displayed SQL. 
+    .. note:: Vertica sometimes caches the SQL query, resulting in no displayed SQL.
 
     .. code-block:: python
 
