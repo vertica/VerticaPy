@@ -341,10 +341,14 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_8.html
 
+<<<<<<< HEAD
     SQL Generation and Execution Times
     ==================================
     
     Dispalys the queries and their execution times
+=======
+    Displays the queries and their execution times:
+>>>>>>> e1221cbb051f1fbb1ae53ebe9fb732680db70a53
 
     .. ipython:: python
 
@@ -353,7 +357,7 @@ def set_option(key: str, value: Any = None) -> None:
         @savefig _config_config_set_option_corr.png
         titanic.corr()
 
-    Hides the queries and execution times
+    Hides the queries and execution times:
 
     .. ipython:: python
 
