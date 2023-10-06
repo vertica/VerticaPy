@@ -346,19 +346,21 @@ def set_option(key: str, value: Any = None) -> None:
 
     Displays the queries and their execution times:
 
+    .. note:: Vertica sometimes caches the SQL query, resulting in no displayed SQL. 
+
     .. code-block:: python
 
         set_option("sql_on", True)
         set_option("time_on", True)
-        titanic.version()
+        titanic["age"].max()
 
-    **Getting the version**.
+    **Computing the different aggregations**.
 
-    SELECT /*+LABEL('utilities.version')*/ version()
+    SELECT /*+LABEL('vDataframe.aggregate')*/ MAX("age") FROM "public"."titanic" LIMIT 1
 
-    **Execution**: 0.047s
+    **Execution**: 0.072s
 
-    ``[23, 3, 0, 0]``
+    ``80.0``
 
     Hides the queries and execution times:
 
