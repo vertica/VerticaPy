@@ -76,7 +76,7 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         from verticapy.connection import available_connections
 
         available_connections()
-        
+
     ``['VML', 'VerticaDSN', 'VerticaDSN_test']``
 
     Connect using the VerticaDSN connection:
@@ -163,7 +163,7 @@ def close_connection() -> None:
     Example
     -------
     Close all current connections:
-    
+
     .. warning:: When you close the connection, your session will terminate and all temporary elements will be automatically dropped.
 
     .. code-block:: python
