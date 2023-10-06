@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -61,6 +61,7 @@ class RegressionPlot(MatplotlibBase):
         """
         Draws a regression plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         x0 = self.data["X"][:, 0]
         y0 = self.data["X"][:, 1]
         min_reg_x, max_reg_x = min(x0), max(x0)

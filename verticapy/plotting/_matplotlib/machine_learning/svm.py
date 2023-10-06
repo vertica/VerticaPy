@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -78,6 +78,7 @@ class SVMClassifierPlot(MatplotlibBase):
         """
         Draws an SVM classifier plot using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         x, w = self.data["X"][:, 0], self.data["X"][:, -1]
         x0, x1 = x[w == 0], x[w == 1]
         if len(self.layout["columns"]) == 2:

@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -250,6 +250,15 @@ class PlottingBase(PlottingBaseSQL):
             idx=idx,
         )
         return kwargs
+
+    def _fix_color_style_kwargs(
+        self,
+        style_kwargs: dict,
+    ) -> dict:
+        if "colors" in style_kwargs:
+            style_kwargs["color"] = style_kwargs["colors"]
+            del style_kwargs["colors"]
+        return style_kwargs
 
     def get_colors(
         self, d: Optional[dict] = None, idx: Optional[int] = None

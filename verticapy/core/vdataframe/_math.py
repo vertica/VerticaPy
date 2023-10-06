@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -43,20 +43,20 @@ class vDFMath(vDFFilter):
     def __abs__(self) -> "vDataFrame":
         return self.copy().abs()
 
-    def __ceil__(self, n: int) -> "vDataFrame":
+    def __ceil__(self) -> "vDataFrame":
         vdf = self.copy()
         columns = vdf.numcol()
         for col in columns:
             if vdf[col].category() == "float":
-                vdf[col].apply_fun(func="ceil", x=n)
+                vdf[col].apply_fun(func="ceil")
         return vdf
 
-    def __floor__(self, n: int) -> "vDataFrame":
+    def __floor__(self) -> "vDataFrame":
         vdf = self.copy()
         columns = vdf.numcol()
         for col in columns:
             if vdf[col].category() == "float":
-                vdf[col].apply_fun(func="floor", x=n)
+                vdf[col].apply_fun(func="floor")
         return vdf
 
     def __len__(self) -> int:

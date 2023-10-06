@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -31,7 +31,14 @@ import pandas as pd
 # VerticaPy
 import verticapy
 from verticapy import drop
-from verticapy.datasets import load_titanic, load_iris, load_amazon, load_winequality
+from verticapy.datasets import (
+    load_titanic,
+    load_iris,
+    load_amazon,
+    load_winequality,
+    load_market,
+    load_smart_meters,
+)
 from verticapy.core.vdataframe.base import vDataFrame
 
 DUMMY_TEST_SIZE = 100
@@ -448,3 +455,33 @@ def titanic_vd_fun(schema_loader):
     titanic = load_titanic(schema_loader, "titanic")
     yield titanic
     drop(name=f"{schema_loader}.titanic")
+
+
+@pytest.fixture(scope="module")
+def market_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for market dataset
+    """
+    market = load_market(schema_loader, "market")
+    yield market
+    drop(name=f"{schema_loader}.market")
+
+
+@pytest.fixture(scope="module")
+def smart_meters_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for smart_meters dataset
+    """
+    smart_meters = load_smart_meters(schema_loader, "smart_meters")
+    yield smart_meters
+    drop(name=f"{schema_loader}.smart_meters")
+
+
+@pytest.fixture(scope="function")
+def iris_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for iris dataset
+    """
+    iris = load_iris(schema_loader, "iris")
+    yield iris
+    drop(name=f"{schema_loader}.iris")

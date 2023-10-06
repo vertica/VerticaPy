@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -69,7 +69,10 @@ class BarChart(HighchartsBase):
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
         chart.add_data_set(
-            self.data["y"], "bar", self.layout["column"], **self.init_style_bar
+            [float(val) for val in self.data["y"]],
+            "bar",
+            self.layout["column"],
+            **self.init_style_bar,
         )
         return chart
 

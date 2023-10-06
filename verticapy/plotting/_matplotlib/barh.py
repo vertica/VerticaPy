@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -55,6 +55,7 @@ class HorizontalBarChart(MatplotlibBase):
         """
         Draws a bar chart using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         ax, fig, style_kwargs = self._get_ax_fig(
             ax,
             size=(10, min(int(len(self.data["x"]) / 1.8) + 1, 600)),
@@ -109,6 +110,7 @@ class HorizontalBarChart2D(MatplotlibBase):
         """
         Draws a 2D bar chart using the Matplotlib API.
         """
+        style_kwargs = self._fix_color_style_kwargs(style_kwargs)
         colors = self.get_colors()
         n, m = self.data["X"].shape
         if self.layout["kind"] == "fully_stacked":

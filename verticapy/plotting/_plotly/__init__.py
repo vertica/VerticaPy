@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -29,7 +29,7 @@ from verticapy.plotting._plotly.outliers import OutliersPlot
 from verticapy.plotting._plotly.acf import ACFPlot
 from verticapy.plotting._plotly.base import PlotlyBase
 from verticapy.plotting._plotly.hist import Histogram
-
+from verticapy.plotting._plotly.candlestick import CandleStick
 
 from verticapy.plotting._plotly.machine_learning.regression import RegressionPlot
 from verticapy.plotting._plotly.machine_learning.elbow import ElbowCurve

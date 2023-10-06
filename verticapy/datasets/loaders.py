@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -85,7 +85,6 @@ def load_dataset(
                 query = query.format(f"LOCAL '{path}'")
                 _executeSQL(query, title="Ingesting the data.")
 
-            _executeSQL("COMMIT;", title="Commit.")
             vdf = vDataFrame(name, schema=schema)
 
         except:
@@ -575,6 +574,170 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
             "geometry AS ST_GeomFromText(gx)",
         ],
         dataset_name="world",
+    )
+
+
+@save_verticapy_logs
+def load_africa_education(
+    schema: str = "public", name: str = "africa_education"
+) -> vDataFrame:
+    """
+    Ingests  the  Africe Education  dataset  into  the  Vertica
+    database.
+    This  dataset  is  ideal  for  geospatial models.
+    If a  table  with  the  same name  and  schema
+    already exists, this  function creates a
+    vDataFrame from the input relation.
+
+    Parameters
+    ----------
+    schema: str, optional
+        Schema  of  the  new  relation.  If empty, a
+        temporary local table is created.
+    name: str, optional
+        Name of the new relation.
+
+    Returns
+    -------
+    vDataFrame
+        the Africa Education vDataFrame.
+    """
+    return load_dataset(
+        schema=schema,
+        name=name,
+        dtype={
+            "PABSENT": "Integer",
+            "SPUPPR16": "Varchar(20)",
+            "zpmealsc": "Varchar(32)",
+            "PREPEAT": "Varchar(20)",
+            "zmaloct": "Float",
+            "zpses": "Numeric(7,3)",
+            "SPUPPR06": "Varchar(20)",
+            "zraloct": "Float",
+            "COUNTRY": "Varchar(20)",
+            "XSEX": "Varchar(20)",
+            "lon": "Numeric(11,7)",
+            "zralocp": "Float",
+            "district": "Varchar(46)",
+            "SCHOOL": "Integer",
+            "ZRALEVP": "Integer",
+            "SPUPPR13": "Varchar(20)",
+            "ZRALEVT": "Numeric(6,3)",
+            "SPUPPR09": "Varchar(20)",
+            "SPUPPR10": "Varchar(20)",
+            "zpsit": "Varchar(54)",
+            "PNURSERY": "Varchar(38)",
+            "STCHPR08": "Varchar(20)",
+            "country_long": "Varchar(24)",
+            "XQPROFES": "Varchar(20)",
+            "PTRAVEL2": "Varchar(20)",
+            "PTRAVEL": "Varchar(20)",
+            "lat": "Numeric(11,7)",
+            "PLIGHT": "Varchar(20)",
+            "REGION": "Varchar(10)",
+            "PUPIL": "Integer",
+            "SUPPR17": "Varchar(20)",
+            "PMOTHER": "Varchar(80)",
+            "STYPE": "Varchar(20)",
+            "SPUPPR07": "Varchar(20)",
+            "SPUPPR14": "Varchar(20)",
+            "PMALIVE": "Varchar(10)",
+            "zmalocp": "Numeric(11,7)",
+            "STCHPR06": "Varchar(20)",
+            "XNUMYRS": "Integer",
+            "PFATHER": "Varchar(10)",
+            "zsdist": "Numeric(9,7)",
+            "PSEX": "Varchar(10)",
+            "SLOCAT": "Varchar(20)",
+            "ZMALEVP": "Numeric(8,5)",
+            "province": "Varchar(60)",
+            "zphmwkhl": "Varchar(56)",
+            "SPUPPR04": "Varchar(20)",
+            "SPUPPR11": "Varchar(20)",
+            "STCHPR07": "Varchar(20)",
+            "SQACADEM": "Varchar(22)",
+            "STCHPR04": "Varchar(20)",
+            "SINS2006": "Numeric(9,7)",
+            "numstu": "Integer",
+            "ZMALEVT": "Numeric(9,7)",
+            "PFALIVE": "Boolean",
+            "STCHPR09": "Varchar(20)",
+            "SPUPPR15": "Varchar(20)",
+            "PENGLISH": "Varchar(32)",
+            "SPUPPR12": "Varchar(20)",
+            "zpsibs": "Integer",
+            "XAGE": "Numeric(9,7)",
+            "SPUPPR08": "Varchar(20)",
+            "PAGE": "Integer",
+            "schoolname": "Varchar(16)",
+        },
+        copy_cols=[
+            "PABSENT",
+            "SPUPPR16",
+            "zpmealsc",
+            "PREPEAT",
+            "zmaloct",
+            "zpses",
+            "SPUPPR06",
+            "zraloct",
+            "COUNTRY",
+            "XSEX",
+            "lon",
+            "zralocp",
+            "district",
+            "SCHOOL",
+            "ZRALEVP",
+            "SPUPPR13",
+            "ZRALEVT",
+            "SPUPPR09",
+            "SPUPPR10",
+            "zpsit",
+            "PNURSERY",
+            "STCHPR08",
+            "country_long",
+            "XQPROFES",
+            "PTRAVEL2",
+            "PTRAVEL",
+            "lat",
+            "PLIGHT",
+            "REGION",
+            "PUPIL",
+            "SUPPR17",
+            "PMOTHER",
+            "STYPE",
+            "SPUPPR07",
+            "SPUPPR14",
+            "PMALIVE",
+            "zmalocp",
+            "STCHPR06",
+            "XNUMYRS",
+            "PFATHER",
+            "zsdist",
+            "PSEX",
+            "SLOCAT",
+            "ZMALEVP",
+            "province",
+            "zphmwkhl",
+            "SPUPPR04",
+            "SPUPPR11",
+            "STCHPR07",
+            "SQACADEM",
+            "STCHPR04",
+            "SINS2006",
+            "numstu",
+            "ZMALEVT",
+            "PFALIVE",
+            "STCHPR09",
+            "SPUPPR15",
+            "PENGLISH",
+            "SPUPPR12",
+            "zpsibs",
+            "XAGE",
+            "SPUPPR08",
+            "PAGE",
+            "schoolname",
+        ],
+        dataset_name="africa_education",
     )
 
 

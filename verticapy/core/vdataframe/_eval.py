@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -103,6 +103,8 @@ class vDFEval(vDFInOut):
                 "you'll print the SQL code generation and probably "
                 "see why the evaluation didn't work."
             )
+
+        category = "undefined"
         if not ctype:
             ctype = "undefined"
         elif (ctype.lower().startswith(("long varbina", "long varchar"))) and (

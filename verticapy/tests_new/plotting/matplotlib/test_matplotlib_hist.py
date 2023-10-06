@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -18,6 +18,7 @@ permissions and limitations under the License.
 from verticapy.tests_new.plotting.base_test_files import (
     VDCHistogramPlot,
     VDFHistogramPlot,
+    VDFHistogramMultiPlot,
 )
 
 
@@ -31,3 +32,15 @@ class TestMatplotlibVDFHistogramPlot(VDFHistogramPlot):
     """
     Testing different attributes of Histogram plot on a vDataFrame
     """
+
+
+class TestMatplotlibVDFHistogramMultiPlot(VDFHistogramMultiPlot):
+    """
+    Testing different attributes of Multi-Histogram plot on a vDataFrame
+    """
+
+    def test_properties_xaxis_label(self):
+        """
+        Testing x-axis label
+        """
+        assert self.result.get_xlabel() == "", "X axis label incorrect"

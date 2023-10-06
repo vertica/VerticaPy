@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -95,3 +95,12 @@ class TestPlotlyVDFBarPlot2D(VDFBarPlot2D):
     """
     Testing different attributes of 2D Bar plot on a vDataFrame
     """
+
+    def test_stacked_bar_type(self, dummy_dist_vd):
+        """
+        Test bar type
+        """
+        result = dummy_dist_vd.bar(
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="stacked"
+        )
+        assert result.layout["barmode"] == "stack"

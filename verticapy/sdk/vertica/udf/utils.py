@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -92,7 +92,7 @@ def get_set_add_function(
     elif ftype == (datetime.datetime, datetime.tzinfo):
         return f"{func}TimestampTz"
     else:
-        raise (
+        raise ValueError(
             "The input type is not managed by get_set_add_function. "
             "Check the Vertica Python SDK for more information."
         )

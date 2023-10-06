@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -59,3 +59,11 @@ class TestHighChartsVDCCandlestick(VDCCandlestick):
         )
         # Assert - checking if correct object created
         assert isinstance(result, Highstock), "Wrong object created"
+
+    @pytest.mark.skip(reason="The plot does not have custom width and height yet")
+    def test_additional_options_custom_width_and_height(
+        self,
+    ):
+        """
+        Testing custom width and height
+        """

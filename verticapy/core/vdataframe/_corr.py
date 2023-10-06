@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -1028,6 +1028,9 @@ class vDFCorr(vDFEncode):
             )
             x = val * val * n * min(k, r)
             pvalue = scipy_st.chi2.sf(x, (k - 1) * (r - 1))
+        else:
+            raise ValueError(f"{method} is not a valid method.")
+
         return (val, pvalue)
 
     # Covariance.

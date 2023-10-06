@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -36,7 +36,9 @@ class DensityPlot(HighchartsBase):
     # Styling Methods.
 
     def _init_style(self) -> None:
-        x_label = self._clean_quotes(self.layout["x_label"])
+        x_label = (
+            self._clean_quotes(self.layout["x_label"]) if self.layout["x_label"] else ""
+        )
         y_label = self._clean_quotes(self.layout["y_label"])
         X = self.data["x"] if "x" in self.data else self.data["X"]
         self.init_style = {

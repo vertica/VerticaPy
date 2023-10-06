@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -143,8 +143,10 @@ class AnimatedBubblePlot(AnimatedBase):
     ) -> tuple:
         if isinstance(date_f, NoneType):
 
-            def date_f(x: Any) -> str:
+            def new_date_f(x: Any) -> str:
                 return str(x)
+
+            date_f = new_date_f
 
         colors = self._get_final_color(style_kwargs=style_kwargs)
         kwargs = self.init_style

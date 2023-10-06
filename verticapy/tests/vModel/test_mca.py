@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -121,7 +121,7 @@ class TestMCA:
         result = model.plot(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 8
 
-    def test_plot_contrib(self, model):
+    def test_plot_var(self, model):
         result = model.plot_var()
         assert len(result.get_default_bbox_extra_artists()) == 62
         result = model.plot_var(dimensions=(2, 3))

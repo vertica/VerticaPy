@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -137,3 +137,40 @@ class TestPlotlyVDFBarhPlot2D(VDFBarhPlot2D):
         Store labels for X,Y,Z axis to check.
         """
         return ["density", self.COL_NAME_VDF_1]
+
+    def test_stacked_bar_type(self, dummy_dist_vd):
+        """
+        Test bar type
+        """
+        result = dummy_dist_vd.barh(
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="stacked"
+        )
+        assert result.layout["barmode"] == "stack"
+
+    def test_fully_stacked_bar_type(self, dummy_dist_vd):
+        """
+        Test bar type
+        """
+        result = dummy_dist_vd.barh(
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="fully"
+        )
+        assert result.layout["barmode"] == "stack"
+
+    def test_fully_stacked_value(self, dummy_dist_vd):
+        """
+        Test sum of data equal to 1 for every bar
+        """
+        result = dummy_dist_vd.barh(
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="fully"
+        )
+        for i in range(len(result.data[0]["x"])):
+            assert result.data[0]["x"][i] + result.data[1]["x"][i]
+
+    def test_negative_bar_type(self, dummy_dist_vd):
+        """
+        Test bar type
+        """
+        result = dummy_dist_vd.barh(
+            [self.COL_NAME_VDF_1, self.COL_NAME_VDF_2], kind="pyramid"
+        )
+        assert result.layout["barmode"] == "relative"

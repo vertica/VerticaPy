@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -29,6 +29,7 @@ from verticapy.datasets.loaders import (
     load_titanic,
     load_winequality,
     load_world,
+    load_africa_education,
 )
 from verticapy.datasets.tests_loaders import (
     load_dataset_cl,

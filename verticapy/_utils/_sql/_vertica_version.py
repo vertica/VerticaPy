@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -118,8 +118,11 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
     try:
         res += [int(current_version[0])]
         res += [int(current_version[1])]
-        res += [int(current_version[2].split("-")[0])]
-        res += [int(current_version[2].split("-")[1])]
+        minor_version = current_version[2].split("-")
+        res += [int(minor_version[0])]
+        if len(minor_version) > 1:
+            # this is hotfix version
+            res += [int(minor_version[1])]
     except TypeError:
         pass
     if condition:

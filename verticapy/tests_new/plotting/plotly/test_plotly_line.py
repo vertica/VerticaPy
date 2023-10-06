@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -79,9 +79,3 @@ class TestPlotlyVDFLinePlot(VDFLinePlot):
     """
     Testing different attributes of Line plot on a vDataFrame
     """
-
-    @pytest.mark.skip(reason="Need to change from time to time column name")
-    def test_properties_xaxis_label(self):
-        """
-        Testing x-axis title
-        """

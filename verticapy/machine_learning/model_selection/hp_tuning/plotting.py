@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -51,6 +51,7 @@ def validation_curve(
     cutoff: float = -1,
     std_coeff: float = 1,
     chart: Optional[PlottingObject] = None,
+    show: Optional[bool] = False,
     **style_kwargs,
 ) -> TableSample:
     """
@@ -148,6 +149,8 @@ def validation_curve(
         score.
     chart: PlottingObject, optional
         The chart object to plot on.
+    show: bool, optional
+        Select whether you want to get the chart as the output only.
     **style_kwargs
         Any  optional  parameter  to  pass  to  the
         Plotting functions.
@@ -218,6 +221,8 @@ def validation_curve(
     data = {"x": x, "Y": Y}
     layout = {"columns": ["train", "test"], "order_by": param_name, "y_label": metric}
     vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
+    if show:
+        return vpy_plt.RangeCurve(data=data, layout=layout).draw(**kwargs)
     return result
 
 

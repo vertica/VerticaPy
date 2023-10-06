@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -55,14 +55,17 @@ class Histogram(PlotlyBase):
         """
         fig = self._get_fig(fig)
         key = "categories" if self.layout["has_category"] else "columns"
-        fig.add_trace(
-            go.Bar(
-                x=self.data[self.layout[key][0]]["x"],
-                y=self.data[self.layout[key][0]]["y"],
-                width=self.data["width"],
-                offset=0,
+        for i in range(len(self.layout[key])):
+            fig.add_trace(
+                go.Bar(
+                    name=self.layout["columns"][i],
+                    x=self.data[self.layout[key][i]]["x"],
+                    y=self.data[self.layout[key][i]]["y"],
+                    width=self.data["width"],
+                    offset=0,
+                    opacity=0.8 if len(self.layout[key]) > 1 else 1,
+                )
             )
-        )
         fig.update_layout(yaxis_title=self.layout["method_of"])
         if len(self.layout["columns"]) == 1:
             fig.update_layout(xaxis_title=self.layout["columns"][0])

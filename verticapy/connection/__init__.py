@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -31,3 +31,4 @@ from verticapy.connection.write import (
     new_connection,
 )
 from verticapy.connection.read import available_connections, read_dsn
+from verticapy.connection.utils import get_connection_file, get_confparser

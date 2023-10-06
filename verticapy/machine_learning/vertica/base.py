@@ -1,5 +1,5 @@
 """
-(c)  Copyright  [2018-2023]  OpenText  or one of its
+Copyright  (c)  2018-2023 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -907,6 +907,7 @@ class Tree:
     @abstractmethod
     def __init__(self) -> None:
         """Must be overridden in the child class"""
+        self.features_importance_trees_ = {}
         return None
         # self.input_relation = None
         # self.test_relation = None
@@ -1001,10 +1002,7 @@ class Tree:
         )
         importance = self._format_vector(self.X, importance)
         if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
-            if hasattr(self, "features_importance_trees_"):
-                self.features_importance_trees_[tree_id] = importance
-            else:
-                self.features_importance_trees_ = {tree_id: importance}
+            self.features_importance_trees_[tree_id] = importance
         elif isinstance(tree_id, NoneType):
             self.features_importance_ = importance
 
@@ -1017,7 +1015,6 @@ class Tree:
         elif (
             isinstance(tree_id, int)
             and (0 <= tree_id < self.n_estimators_)
-            and hasattr(self, "features_importance_trees_")
             and (tree_id in self.features_importance_trees_)
         ):
             return copy.deepcopy(self.features_importance_trees_[tree_id])
