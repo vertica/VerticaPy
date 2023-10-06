@@ -211,7 +211,7 @@ class TestIsolationForest:
             model.to_python()([["Male", 0, "Cheap", "Low", 1]])[0],
             10e-2,
         )
-        
+
     @pytest.skip("This needs to be investigated")
     def test_to_sql(self, model):
         current_cursor().execute(
