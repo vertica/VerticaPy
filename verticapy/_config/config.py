@@ -346,12 +346,19 @@ def set_option(key: str, value: Any = None) -> None:
 
     Displays the queries and their execution times:
 
-    .. ipython:: python
+    .. code-block:: python
 
         set_option("sql_on", True)
         set_option("time_on", True)
-        @savefig _config_config_set_option_corr.png
-        titanic.corr()
+        titanic.version()
+
+    **Getting the version**.
+
+    SELECT /*+LABEL('utilities.version')*/ version()
+
+    **Execution**: 0.047s
+
+    ``[23, 3, 0, 0]``
 
     Hides the queries and execution times:
 
