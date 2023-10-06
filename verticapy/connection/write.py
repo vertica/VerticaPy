@@ -33,7 +33,7 @@ def change_auto_connection(name: str) -> None:
     Example
     -------
     Create a new connection:
-    
+
     .. code-block:: python
 
         from verticapy.connection import new_connection, change_auto_connection
@@ -105,9 +105,9 @@ def delete_connection(name: str) -> bool:
                         "user": "dbadmin"},
                         name = "My_New_Vertica_Connection")
 
-    Display the available connections, delete the "My_New_Vertica_Connection" 
+    Display the available connections, delete the "My_New_Vertica_Connection"
     connection, and confirm that it no longer appears in the available
-    conenctions:
+    connections:
 
     .. ipython:: python
 
@@ -230,7 +230,8 @@ def new_connection(
             "port": "5433",
             "database": "testdb",
             "password": "XxX",
-            "user": "dbadmin"}
+            "user": "dbadmin"
+        }
 
         new_connection(conn_info, name = "VerticaDSN")
     """

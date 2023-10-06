@@ -23,6 +23,23 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
     """
     Parses the input DSN and returns the linked
     Config Parser.
+
+    Parameters
+    ----------
+    dsn: str, optional
+        Path to the file containing the credentials.
+        If empty, the VERTICAPY_CONNECTION environment
+        variable is used.
+
+    Examples
+    --------
+    Get the Config Parser using the VERTICAPY_CONNECTION environment variable:
+
+    .. ipython:: python
+
+        from verticapy.connection import get_confparser
+
+        get_confparser()
     """
     if not dsn:
         dsn = get_connection_file()
@@ -49,6 +66,10 @@ def get_connection_file() -> str:
 
     Example
     -------
+    The connection file is used to store all connections:
+
+    .. warning:: Connections are stored in plain text format. In shared environments, it's recommended to create connections manually for added security.
+
     .. code-block:: python
 
         from verticapy.connection import get_connection_file

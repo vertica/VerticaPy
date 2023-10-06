@@ -85,14 +85,16 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
         dsn = read_dsn("VerticaDSN")
         dsn
 
-    | ``{'database': 'testdb',``
+    | ``{``
+    | ``'database': 'testdb',``
     | ``'description': 'DSN for Vertica',``
     | ``'driver': '/Library/Vertica/ODBC/lib/libverticaodbc.dylib',``
     | ``'host': '10.211.55.14',``
     | ``'kerberos_host_name': 'badr',``
     | ``'password': 'XxX',``
     | ``'port': '5433',``
-    | ``'user': 'dbadmin'}``
+    | ``'user': 'dbadmin'``
+    | ``}``
 
     Read the DSN information from a input file:
 
@@ -102,7 +104,8 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
                "/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/tests/verticaPy_test.conf")
         dsn
 
-    | ``{'password': 'XxX',``
+    | ``{``
+    | ``'password': 'XxX',``
     | ``'port': 5433,``
     | ``'user': 'dbadmin',``
     | ``'vp_test_database': 'testdb',``
@@ -110,7 +113,8 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     | ``'vp_test_log_dir': 'mylog/vp_tox_tests_log',``
     | ``'vp_test_password': 'XxX',``
     | ``'vp_test_port': '5433',``
-    | ``'vp_test_user': 'dbadmin'}``
+    | ``'vp_test_user': 'dbadmin'``
+    | ``}``
     """
     confparser = get_confparser(dsn)
 

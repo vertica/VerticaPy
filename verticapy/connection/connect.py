@@ -135,6 +135,8 @@ def set_connection(conn: Connection) -> None:
 
     Set up the connector:
 
+    .. warning:: As this connector is used throughout the entire API, if it's closed, you'll need to create a new one. This is why, in some cases, it's better to use auto-connection, which automatically create a new connection if the current one is closed.
+
     .. code-block:: python
 
         from verticapy.connection import set_connection
@@ -308,6 +310,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     -------
     Create a connection using the input DSN:
 
+    .. note:: This example utilizes a Data Source Name (DSN) to establish the connection, which is stored in the file specified by the global variable VERTICAPY_CONNECTION. However, if you prefer a customized file with a different location, you can specify the file path accordingly.
+
     .. code-block:: python
 
         from verticapy.connection import vertica_connection
@@ -333,9 +337,9 @@ def verticapylab_connection() -> Connection:
 
     Example
     -------
-    Get the VerticaLab connection:
+    Get the VerticaPyLab connection:
 
-    .. note:: VerticaLab is a Dockerized environment designed for seamlessly using VerticaPy. This function returns the connection to the Vertica instance within the lab, allowing for necessary environment customization.
+    .. note:: VerticaPyLab is a Dockerized environment designed for seamlessly using VerticaPy. This function returns the connection to the Vertica instance within the lab, allowing for necessary environment customization.
 
     .. code-block:: python
 
