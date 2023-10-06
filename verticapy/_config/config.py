@@ -214,8 +214,8 @@ def set_option(key: str, value: Any = None) -> None:
         set_option("count_on", True)
         display(titanic)
 
-    .. warning:: Exercise caution when enabling this option, as it may result in decreased performance. VerticaPy will perform calculations to determine the number of elements in a displayed vDataFrame, which can have an impact on overall system performance. 
-    
+    .. warning:: Exercise caution when enabling this option, as it may result in decreased performance. VerticaPy will perform calculations to determine the number of elements in a displayed vDataFrame, which can have an impact on overall system performance.
+
     .. ipython:: python
         :suppress:
 
@@ -341,14 +341,10 @@ def set_option(key: str, value: Any = None) -> None:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_8.html
 
-<<<<<<< HEAD
     SQL Generation and Execution Times
     ==================================
-    
-    Dispalys the queries and their execution times
-=======
+
     Displays the queries and their execution times:
->>>>>>> e1221cbb051f1fbb1ae53ebe9fb732680db70a53
 
     .. ipython:: python
 
@@ -400,7 +396,7 @@ def set_option(key: str, value: Any = None) -> None:
         set_option("temp_schema", "public")
 
     .. hint:: The 'cache' option enables you to cache the aggregations, speeding up the process. However, it should only be used on static tables; otherwise, the statistics might become biased.
-    
+
     For a full list of the available options, see the list for the 'key' parameter at the top of the page.
     """
     if key in _all_options:
