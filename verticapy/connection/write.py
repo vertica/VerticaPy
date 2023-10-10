@@ -93,8 +93,9 @@ def delete_connection(name: str) -> bool:
 
     Example
     -------
-    .. ipython:: python
-        :suppress:
+    Create a connection named 'My_New_Vertica_Connection':
+
+    .. code-block:: python
 
         from verticapy.connection import new_connection
 
@@ -105,19 +106,31 @@ def delete_connection(name: str) -> bool:
                         "user": "dbadmin"},
                         name = "My_New_Vertica_Connection")
 
-    Display the available connections, delete the "My_New_Vertica_Connection"
-    connection, and confirm that it no longer appears in the available
-    connections:
+    Display all available connections:
 
-    .. ipython:: python
+    .. code-block:: python
 
-        from verticapy.connection import available_connections, delete_connection
+        from verticapy.connection import available_connections
 
         available_connections()
+
+    ``['VerticaDSN', 'My_New_Vertica_Connection']``
+
+    Delete the 'My_New_Vertica_Connection' connection:
+
+    .. code-block:: python
+
+        from verticapy.connection import delete_connection
 
         delete_connection("My_New_Vertica_Connection")
 
+    Confirm that the connection no longer appears in the available connections:
+
+    .. code-block:: python
+
         available_connections()
+
+    ``['VerticaDSN']``
     """
     gb_conn = get_global_connection()
 
