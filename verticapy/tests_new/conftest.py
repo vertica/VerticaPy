@@ -38,6 +38,7 @@ from verticapy.datasets import (
     load_winequality,
     load_market,
     load_smart_meters,
+    load_laliga,
 )
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -485,3 +486,13 @@ def iris_vd_fun(schema_loader):
     iris = load_iris(schema_loader, "iris")
     yield iris
     drop(name=f"{schema_loader}.iris")
+
+
+@pytest.fixture(scope="module")
+def laliga_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for laliga dataset
+    """
+    laliga = load_laliga(schema_loader, "laliga")
+    yield laliga
+    drop(name=f"{schema_loader}.laliga")
