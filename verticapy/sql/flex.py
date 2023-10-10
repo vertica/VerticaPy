@@ -50,23 +50,37 @@ def compute_flextable_keys(
 
     Examples
     --------
-    .. code-block:: python
+    Create and injest a JSON file, then compute its flextable keys and predicted data types:
+
+    .. ipython:: python
+        :okwarning:
 
         import verticapy as vp
         from verticapy.sql import compute_flextable_keys
+        import json
+        
+        data = {
+            "column1": {
+                "subcolumn1A": "value1A",
+                "subcolumn1B": "value1B"
+                },
+            "column2": {
+                "subcolumn2A": "value2A",
+                "subcolumn2B": "value2B"
+                }
+            }   
 
-        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        json_string = json.dumps(data, indent=4)
 
-    .. ipython:: python
-        :suppress:
+        with open("nested_columns.json", "w") as json_file:
+            json_file.write(str(json_string))
 
-        import verticapy as vp
-        from verticapy.sql import compute_flextable_keys
-        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
-
-    .. ipython:: python
-
-        compute_flextable_keys(flex_name = "v_temp_schema.laliga",)
+        vp.create_schema("temp")
+        @suppress
+        vp.drop("temp.test")
+        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False, materialize = False)
+        compute_flextable_keys(flex_name = "temp.test")
+        vp.drop("temp.test")
     """
     usecols = format_type(usecols, dtype=list)
     _executeSQL(
@@ -123,19 +137,35 @@ def compute_vmap_keys(
 
     Examples
     --------
-    .. code-block:: python
+    Create and injest a JSON file, then compute the most frequent keys in the input VMap's 'column1':
+
+    .. ipython:: python
+        :okwarning:
 
         import verticapy as vp
         from verticapy.sql import compute_vmap_keys
+        import json
 
-        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        data = {
+            "column1": {
+                "subcolumn1A": "value1A",
+                "subcolumn1B": "value1B"
+                },
+            "column2": {
+                "subcolumn2A": "value2A",
+                "subcolumn2B": "value2B"
+                }
+            }   
 
-    .. ipython:: python
+        json_string = json.dumps(data, indent=4)
 
-        @suppress
-        from verticapy.sql import compute_vmap_keys
+        with open("nested_columns.json", "w") as json_file:
+            json_file.write(str(json_string))
 
-        compute_vmap_keys(expr = "v_temp_schema.laliga", vmap_col = "__raw__",)
+        vp.create_schema("temp")
+        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False)
+        compute_vmap_keys(expr = "temp.test", vmap_col = "column1")
+        vp.drop("temp.test")
     """
     vmap = quote_ident(vmap_col)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
@@ -178,19 +208,35 @@ def isflextable(table_name: str, schema: str) -> bool:
 
     Examples
     --------
-    .. code-block:: python
+    Create and injest a JSON file, then check whether it is a flextable:
+
+    .. ipython:: python
+        :okwarning:
 
         import verticapy as vp
         from verticapy.sql import isflextable
+        import json
 
-        vp.read_json("laliga/*.json", table_name = "laliga", materialize = False)
+        data = {
+            "column1": {
+                "subcolumn1A": "value1A",
+                "subcolumn1B": "value1B"
+                },
+            "column2": {
+                "subcolumn2A": "value2A",
+                "subcolumn2B": "value2B"
+                }
+            }   
 
-    .. ipython:: python
+        json_string = json.dumps(data, indent=4)
 
-        @suppress
-        from verticapy.sql import isflextable
+        with open("nested_columns.json", "w") as json_file:
+            json_file.write(str(json_string))
 
-        isflextable(table_name = "laliga", schema = "v_temp_schema")
+        vp.create_schema("temp")
+        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False, materialize = False)
+        isflextable(table_name = "test", schema = "temp")
+        vp.drop("temp.test")
     """
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
@@ -232,19 +278,35 @@ def isvmap(
 
     Examples
     --------
-    .. code-block:: python
+    Create and injest a JSON file, then check whether an input column it is a vmap:
+
+    .. ipython:: python
+        :okwarning:
 
         import verticapy as vp
         from verticapy.sql import isvmap
+        import json
 
-        vp.read_json("laliga/*.json")
+        data = {
+            "column1": {
+                "subcolumn1A": "value1A",
+                "subcolumn1B": "value1B"
+                },
+            "column2": {
+                "subcolumn2A": "value2A",
+                "subcolumn2B": "value2B"
+                }
+            }   
 
-    .. ipython:: python
+        json_string = json.dumps(data, indent=4)
 
-        @suppress
-        from verticapy.sql import isvmap
+        with open("nested_columns.json", "w") as json_file:
+            json_file.write(str(json_string))
 
-        isvmap("laliga", "away_team.managers")
+        vp.create_schema("temp")
+        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False)
+        isvmap("temp.test", "column1")
+        vp.drop("temp.test")
     """
     column = quote_ident(column)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
