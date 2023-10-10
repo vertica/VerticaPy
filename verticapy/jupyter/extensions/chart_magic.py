@@ -194,13 +194,13 @@ def chart_magic(
     """
     Draws responsive charts using the Matplotlib,
     Plotly, or Highcharts library.
-    
+
     Different cutomization parameters are available for Plotly, Highcharts,
-    and Matplotlib. 
+    and Matplotlib.
     For a comprehensive list of customization features, please
-    consult the documentation for the respective plotting libraries: 
-    `plotly <https://plotly.com/python-api-reference/>`_, 
-    `matplotlib <https://matplotlib.org/stable/api/matplotlib_configuration_api.html>`_ 
+    consult the documentation for the respective plotting libraries:
+    `plotly <https://plotly.com/python-api-reference/>`_,
+    `matplotlib <https://matplotlib.org/stable/api/matplotlib_configuration_api.html>`_
     and `highcharts <https://api.highcharts.com/highcharts/>`_.
 
     Parameters
@@ -566,6 +566,10 @@ def chart_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_7.html
 
+    The following lines open the HTML file:
+
+    .. note:: The HTML graphic can be embedded in an external environment, such as a website.
+
     .. code-block:: python
 
         file = open("my_graphic.html", "r")
@@ -582,8 +586,7 @@ def chart_magic(
 
         class_fare = titanic.groupby(
             "pclass",
-            [vpf.avg(titanic["fare"])._as("avg_fare")]
-            )
+            [vpf.avg(titanic["fare"])._as("avg_fare")])
 
     .. ipython:: python
         :suppress:
@@ -598,7 +601,7 @@ def chart_magic(
     You can then use the variable in the query:
 
     .. note:: In this example, we use a vDataFrame, but it's also possible to use a pandas.DataFrame, a numpy.array, and many other in-memory objects.
-        
+
     .. code-block:: python
 
         %%chart -k bar
@@ -629,7 +632,7 @@ def chart_magic(
         file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
         file.close()
 
-    Using the `f` option, we can easily read the above SQL file:
+    Using the `-f` option, we can easily read the above SQL file:
 
     .. code-block:: python
 

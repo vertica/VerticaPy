@@ -640,7 +640,7 @@ def sql_magic(
         file.write("SELECT version();")
         file.close()
 
-    Using the 'f' option, we can easily read SQL files:
+    Using the '-f' option, we can easily read SQL files:
 
     .. code-block:: python
 
