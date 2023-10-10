@@ -63,12 +63,12 @@ def compute_flextable_keys(
             "column1": {
                 "subcolumn1A": "value1A",
                 "subcolumn1B": "value1B"
-                },
+            },
             "column2": {
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
-                }
             }
+        }
 
         json_string = json.dumps(data, indent=4)
 
@@ -150,12 +150,12 @@ def compute_vmap_keys(
             "column1": {
                 "subcolumn1A": "value1A",
                 "subcolumn1B": "value1B"
-                },
+            },
             "column2": {
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
-                }
             }
+        }
 
         json_string = json.dumps(data, indent=4)
 
@@ -221,12 +221,12 @@ def isflextable(table_name: str, schema: str) -> bool:
             "column1": {
                 "subcolumn1A": "value1A",
                 "subcolumn1B": "value1B"
-                },
+            },
             "column2": {
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
-                }
             }
+        }
 
         json_string = json.dumps(data, indent=4)
 
@@ -291,12 +291,12 @@ def isvmap(
             "column1": {
                 "subcolumn1A": "value1A",
                 "subcolumn1B": "value1B"
-                },
+            },
             "column2": {
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
-                }
             }
+        }
 
         json_string = json.dumps(data, indent=4)
 

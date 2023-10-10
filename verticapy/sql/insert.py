@@ -81,29 +81,35 @@ def insert_into(
         from verticapy.sql import insert_into
 
         # copy left as default (True): one copy
-        insert_into(table_name = "iris",
-                    schema = "public",
-                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                            [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],)
+        insert_into(
+            table_name = "iris",
+            schema = "public",
+            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
+        )
 
         # copy set to False: multiple inserts
-        insert_into(table_name = "iris",
-                    schema = "public",
-                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                            [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
-                    copy=False,)
+        insert_into(
+            table_name = "iris",
+            schema = "public",
+            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
+            copy=False,
+        )
 
         # genSQL set to True: SQL for inserting data is generated, but not executed
         # copy set to False: multiple inserts
-        insert_into(table_name = "iris",
-                    schema = "public",
-                    data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                            [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
-                    genSQL=True,)
+        insert_into(
+            table_name = "iris",
+            schema = "public",
+            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
+            genSQL=True,
+        )
 
     .. seealso::
-        | :py:func:`read_json`
-        | :py:func:`read_csv`
+        | :py:module:`read_json`_
+        | :py:module:`read_csv`_
     """
     column_names = format_type(column_names, dtype=list)
     if not schema:

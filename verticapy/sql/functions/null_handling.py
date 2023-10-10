@@ -42,21 +42,21 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0.8, -1, None, -2, None]}).to_vdf()
+        df = vDataFrame({"x": [0.8, -1, None, -2, None]})
         # apply the coalesce function to create a "coalesce_x" column
-        df["coalesce_x"] = st.coalesce(df["x"], 777)
+        df["coalesce_x"] = vpf.coalesce(df["x"], 777)
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0.8, -1, None, -2, None]}).to_vdf()
-        df["coalesce_x"] = st.coalesce(df["x"], 777)
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0.8, -1, None, -2, None]})
+        df["coalesce_x"] = vpf.coalesce(df["x"], 777)
         html_file = open("figures/sql_functions_null_handling_coalesce.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -91,21 +91,21 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, 0, 0.7, 15]}).to_vdf()
+        df = vDataFrame({"x": [0, 0, 0.7, 15]})
         # apply the nullifzero function to create a "nullifzero_x" column
-        df["nullifzero_x"] = st.nullifzero(df["x"])
+        df["nullifzero_x"] = vpf.nullifzero(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, 0, 0.7, 15]}).to_vdf()
-        df["nullifzero_x"] = st.nullifzero(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, 0, 0.7, 15]})
+        df["nullifzero_x"] = vpf.nullifzero(df["x"])
         html_file = open("figures/sql_functions_null_handling_nullifzero.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -135,21 +135,21 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, None, 0.7, None]}).to_vdf()
+        df = vDataFrame({"x": [0, None, 0.7, None]})
         # apply the zeroifnull function to create a "zeroifnull_x" column
-        df["zeroifnull_x"] = st.zeroifnull(df["x"])
+        df["zeroifnull_x"] = vpf.zeroifnull(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, None, 0.7, None]}).to_vdf()
-        df["zeroifnull_x"] = st.zeroifnull(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, None, 0.7, None]})
+        df["zeroifnull_x"] = vpf.zeroifnull(df["x"])
         html_file = open("figures/sql_functions_null_handling_zeroifnull.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()

@@ -62,21 +62,21 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the avg function, creating a "avg_x" column
-        df["avg_x"] = st.apply("avg", df["x"])._over()
+        df["avg_x"] = vpf.apply("avg", df["x"])._over()
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["avg_x"] = st.apply("avg", df["x"])._over()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["avg_x"] = vpf.apply("avg", df["x"])._over()
         html_file = open("figures/sql_functions_math_apply.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -204,21 +204,21 @@ def abs(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, -1, -2, -3]}).to_vdf()
+        df = vDataFrame({"x": [0, -1, -2, -3]})
         # apply the abs function to create a "abs_x" column
-        df["abs_x"] = st.abs(df["x"])
+        df["abs_x"] = vpf.abs(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, -1, -2, -3]}).to_vdf()
-        df["abs_x"] = st.abs(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, -1, -2, -3]})
+        df["abs_x"] = vpf.abs(df["x"])
         html_file = open("figures/sql_functions_math_abs.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -248,21 +248,21 @@ def acos(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         # apply the acos function, creating a "acos_x" column
-        df["acos_x"] = st.acos(df["x"])
+        df["acos_x"] = vpf.acos(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
-        df["acos_x"] = st.acos(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
+        df["acos_x"] = vpf.acos(df["x"])
         html_file = open("figures/sql_functions_math_acos.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -292,21 +292,21 @@ def asin(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         # apply the asin function, creating a "asin_x" column
-        df["asin_x"] = st.asin(df["x"])
+        df["asin_x"] = vpf.asin(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
-        df["asin_x"] = st.asin(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
+        df["asin_x"] = vpf.asin(df["x"])
         html_file = open("figures/sql_functions_math_asin.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -336,21 +336,21 @@ def atan(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         # apply the atan function, creating a "atan_x" column
-        df["atan_x"] = st.atan(df["x"])
+        df["atan_x"] = vpf.atan(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, -1, 0.7, 0.5]}).to_vdf()
-        df["atan_x"] = st.atan(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
+        df["atan_x"] = vpf.atan(df["x"])
         html_file = open("figures/sql_functions_math_atan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -383,22 +383,22 @@ def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0, -1, 0.7, 0.5],
-                          "y": [2, 5, 1, 3]}).to_vdf()
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5],
+                          "y": [2, 5, 1, 3]})
         # apply the atan^2 function, creating a "atan2" column
-        df["atan2_x"] = st.atan2(df["x"], df["y"])
+        df["atan2_x"] = vpf.atan2(df["x"], df["y"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0, -1, 0.7, 0.5], "y": [2, 5, 1, 3]}).to_vdf()
-        df["atan2_x"] = st.atan2(df["x"], df["y"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0, -1, 0.7, 0.5], "y": [2, 5, 1, 3]})
+        df["atan2_x"] = vpf.atan2(df["x"], df["y"])
         html_file = open("figures/sql_functions_math_atan2.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -428,21 +428,21 @@ def cbrt(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, -2, 3, -4]}).to_vdf()
+        df = vDataFrame({"x": [1, -2, 3, -4]})
         # apply the cbrt function, creating a "cbrt_x" column
-        df["cbrt_x"] = st.cbrt(df["x"])
+        df["cbrt_x"] = vpf.cbrt(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, -2, 3, -4]}).to_vdf()
-        df["cbrt_x"] = st.cbrt(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, -2, 3, -4]})
+        df["cbrt_x"] = vpf.cbrt(df["x"])
         html_file = open("figures/sql_functions_math_cbrt.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -472,21 +472,21 @@ def ceil(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the ceil function, creating a "ceil_x" column
-        df["ceil_x"] = st.ceil(df["x"])
+        df["ceil_x"] = vpf.ceil(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["ceil_x"] = st.ceil(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["ceil_x"] = vpf.ceil(df["x"])
         html_file = open("figures/sql_functions_math_ceil.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -518,23 +518,23 @@ def comb(n: int, k: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
+        df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
         # apply the comb function, creating a "comb_x" column
-        df["comb_x"] = st.comb(33, df["x"])
+        df["comb_x"] = vpf.comb(33, df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
-        df["comb_x"] = st.comb(33, df["x"])
+        df["comb_x"] = vpf.comb(33, df["x"])
         html_file = open("figures/sql_functions_math_comb.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -563,21 +563,21 @@ def cos(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the cos function, creating a "cos_x" column
-        df["cos_x"] = st.cos(df["x"])
+        df["cos_x"] = vpf.cos(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["cos_x"] = st.cos(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["cos_x"] = vpf.cos(df["x"])
         html_file = open("figures/sql_functions_math_cos.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -607,21 +607,21 @@ def cosh(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the cosh function, creating a "cosh_x" column
-        df["cosh_x"] = st.cosh(df["x"])
+        df["cosh_x"] = vpf.cosh(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["cosh_x"] = st.cosh(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["cosh_x"] = vpf.cosh(df["x"])
         html_file = open("figures/sql_functions_math_cosh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -651,21 +651,21 @@ def cot(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the cot function, creating a "cot_x" column
-        df["cot_x"] = st.cot(df["x"])
+        df["cot_x"] = vpf.cot(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["cot_x"] = st.cot(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["cot_x"] = vpf.cot(df["x"])
         html_file = open("figures/sql_functions_math_cot.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -695,21 +695,21 @@ def degrees(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the degrees function, creating a "degrees_x" column
-        df["degrees_x"] = st.degrees(df["x"])
+        df["degrees_x"] = vpf.degrees(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["degrees_x"] = st.degrees(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["degrees_x"] = vpf.degrees(df["x"])
         html_file = open("figures/sql_functions_math_degrees.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -752,31 +752,31 @@ def distance(
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"name0": ["Paris"],
+        df = vDataFrame({"name0": ["Paris"],
                           "lat0": [48.864716],
                           "lon0": [2.349014],
                           "name1": ["Tunis"],
                           "lat1": [33.892166],
-                          "lon1": [9.561555]}).to_vdf()
+                          "lon1": [9.561555]})
         # apply the distance function, creating a "distance" column
-        df["distance"] = st.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
+        df["distance"] = vpf.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
         display(df[["name0", "name1", "distance"]])
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"name0": ["Paris"],
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"name0": ["Paris"],
                         "lat0": [48.864716],
                         "lon0": [2.349014],
                         "name1": ["Tunis"],
                         "lat1": [33.892166],
-                        "lon1": [9.561555]}).to_vdf()
-        df["distance"] = st.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
+                        "lon1": [9.561555]})
+        df["distance"] = vpf.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
         html_file = open("figures/sql_functions_math_distance.html", "w")
         html_file.write(df[["name0", "name1", "distance"]]._repr_html_())
         html_file.close()
@@ -805,21 +805,21 @@ def exp(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         # apply the exp function, creating a "exp_x" column
-        df["exp_x"] = st.exp(df["x"])
+        df["exp_x"] = vpf.exp(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [11.4, -2.5, 3.5, -4.2]}).to_vdf()
-        df["exp_x"] = st.exp(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
+        df["exp_x"] = vpf.exp(df["x"])
         html_file = open("figures/sql_functions_math_exp.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -849,21 +849,21 @@ def factorial(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # apply the factorial function, creating a "factorial_x" column
-        df["factorial_x"] = st.factorial(df["x"])
+        df["factorial_x"] = vpf.factorial(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["factorial_x"] = st.factorial(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["factorial_x"] = vpf.factorial(df["x"])
         html_file = open("figures/sql_functions_math_factorial.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -893,21 +893,21 @@ def floor(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         # apply the floor function, creating a "floor_x" column
-        df["floor_x"] = st.floor(df["x"])
+        df["floor_x"] = vpf.floor(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
-        df["floor_x"] = st.floor(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
+        df["floor_x"] = vpf.floor(df["x"])
         html_file = open("figures/sql_functions_math_floor.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -937,21 +937,21 @@ def gamma(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         # apply the gamma function, creating a "gamma_x" column
-        df["gamma_x"] = st.gamma(df["x"])
+        df["gamma_x"] = vpf.gamma(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
-        df["gamma_x"] = st.gamma(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
+        df["gamma_x"] = vpf.gamma(df["x"])
         html_file = open("figures/sql_functions_math_gamma.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -982,21 +982,21 @@ def hash(*args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
+        df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
         # apply the hash function, creating a "hash_x" column
-        df["hash_x"] = st.hash(df["x"])
+        df["hash_x"] = vpf.hash(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
-        df["hash_x"] = st.hash(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
+        df["hash_x"] = vpf.hash(df["x"])
         html_file = open("figures/sql_functions_math_hash.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1029,23 +1029,23 @@ def isfinite(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
         # apply the isfinite function, creating a "isfinite_x" column
-        df["isfinite_x"] = st.isfinite(df["x"])
+        df["isfinite_x"] = vpf.isfinite(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
-        df["isfinite_x"] = st.isfinite(df["x"])
+        df["isfinite_x"] = vpf.isfinite(df["x"])
         html_file = open("figures/sql_functions_math_isfinite.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1075,23 +1075,23 @@ def isinf(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['0', 'inf', '0.7', '15']}).to_vdf()
+        df = vDataFrame({"x": ['0', 'inf', '0.7', '15']})
         df["x"].astype("float")
         # apply the isinf function, creating a "isinf_x" column
-        df["isinf_x"] = st.isinf(df["x"])
+        df["isinf_x"] = vpf.isinf(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['0', 'inf', '0.7', '15']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['0', 'inf', '0.7', '15']})
         df["x"].astype("float")
-        df["isinf_x"] = st.isinf(df["x"])
+        df["isinf_x"] = vpf.isinf(df["x"])
         html_file = open("figures/sql_functions_math_isinf.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1121,23 +1121,23 @@ def isnan(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
         # apply the isnan function, creating a "isnan_x" column
-        df["isnan_x"] = st.isnan(df["x"])
+        df["isnan_x"] = vpf.isnan(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['0', 'inf', 'nan', '15']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
-        df["isnan_x"] = st.isnan(df["x"])
+        df["isnan_x"] = vpf.isnan(df["x"])
         html_file = open("figures/sql_functions_math_isnan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1167,21 +1167,21 @@ def lgamma(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         # apply the lgamma function, creating a "lgamma_x" column
-        df["lgamma_x"] = st.lgamma(df["x"])
+        df["lgamma_x"] = vpf.lgamma(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
-        df["lgamma_x"] = st.lgamma(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
+        df["lgamma_x"] = vpf.lgamma(df["x"])
         html_file = open("figures/sql_functions_math_lgamma.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1211,21 +1211,21 @@ def ln(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         # apply the ln function, creating a "ln_x" column
-        df["ln_x"] = st.ln(df["x"])
+        df["ln_x"] = vpf.ln(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1.32, 2.9, 3.45, 4.33]}).to_vdf()
-        df["ln_x"] = st.ln(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
+        df["ln_x"] = vpf.ln(df["x"])
         html_file = open("figures/sql_functions_math_ln.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1257,23 +1257,23 @@ def log(expr: SQLExpression, base: int = 10) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
+        df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
         # apply the log function, creating a "log_x" column
-        df["log_x"] = st.log(df["x"])
+        df["log_x"] = vpf.log(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [2, 10, 16, 33]}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
-        df["log_x"] = st.log(df["x"], 10)
+        df["log_x"] = vpf.log(df["x"], 10)
         html_file = open("figures/sql_functions_math_log.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1303,21 +1303,21 @@ def radians(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [30, 60, 180, 360]}).to_vdf()
+        df = vDataFrame({"x": [30, 60, 180, 360]})
         # apply the radians function, creating a "radians_x" column
-        df["radians_x"] = st.radians(df["x"])
+        df["radians_x"] = vpf.radians(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [30, 60, 180, 360]}).to_vdf()
-        df["radians_x"] = st.radians(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [30, 60, 180, 360]})
+        df["radians_x"] = vpf.radians(df["x"])
         html_file = open("figures/sql_functions_math_radians.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1349,23 +1349,23 @@ def round(expr: SQLExpression, places: int = 0) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
         # apply the round function, creating a "round_x" column
-        df["round_x"] = st.round(df["x"])
+        df["round_x"] = vpf.round(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
-        df["round_x"] = st.round(df["x"], 1)
+        df["round_x"] = vpf.round(df["x"], 1)
         html_file = open("figures/sql_functions_math_round.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1395,21 +1395,21 @@ def sign(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [5, 10, -5, -14]}).to_vdf()
+        df = vDataFrame({"x": [5, 10, -5, -14]})
         # apply the sign function, creating a "sign_x" column
-        df["sign_x"] = st.sign(df["x"])
+        df["sign_x"] = vpf.sign(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [5, 10, -5, -14]}).to_vdf()
-        df["sign_x"] = st.sign(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [5, 10, -5, -14]})
+        df["sign_x"] = vpf.sign(df["x"])
         html_file = open("figures/sql_functions_math_sign.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1439,21 +1439,21 @@ def sin(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the sin function, creating a "sin_x" column
-        df["sin_x"] = st.sin(df["x"])
+        df["sin_x"] = vpf.sin(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["sin_x"] = st.sin(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["sin_x"] = vpf.sin(df["x"])
         html_file = open("figures/sql_functions_math_sin.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1483,21 +1483,21 @@ def sinh(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the sinh function, creating a "sinh_x" column
-        df["sinh_x"] = st.sinh(df["x"])
+        df["sinh_x"] = vpf.sinh(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["sinh_x"] = st.sinh(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["sinh_x"] = vpf.sinh(df["x"])
         html_file = open("figures/sql_functions_math_sinh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1527,21 +1527,21 @@ def sqrt(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the sqrt function, creating a "sqrt_x" column
-        df["sqrt_x"] = st.sqrt(df["x"])
+        df["sqrt_x"] = vpf.sqrt(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["sqrt_x"] = st.sqrt(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["sqrt_x"] = vpf.sqrt(df["x"])
         html_file = open("figures/sql_functions_math_sqrt.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1571,21 +1571,21 @@ def tan(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the tan function, creating a "tan_x" column
-        df["tan_x"] = st.tan(df["x"])
+        df["tan_x"] = vpf.tan(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["tan_x"] = st.tan(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["tan_x"] = vpf.tan(df["x"])
         html_file = open("figures/sql_functions_math_tan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1615,21 +1615,21 @@ def tanh(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         # apply the tanh function, creating a "tanh_x" column
-        df["tanh_x"] = st.tanh(df["x"])
+        df["tanh_x"] = vpf.tanh(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [3.1415, 6, 4.5, 7]}).to_vdf()
-        df["tanh_x"] = st.tanh(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
+        df["tanh_x"] = vpf.tanh(df["x"])
         html_file = open("figures/sql_functions_math_tanh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -1661,23 +1661,23 @@ def trunc(expr: SQLExpression, places: int = 0) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
         # apply the trunc function, creating a "trunc_x" column
-        df["trunc_x"] = st.trunc(df["x"], 1)
+        df["trunc_x"] = vpf.trunc(df["x"], 1)
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [2.95, 4.50, 4.63, 8.99]}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
-        df["trunc_x"] = st.trunc(df["x"], 1)
+        df["trunc_x"] = vpf.trunc(df["x"], 1)
         html_file = open("figures/sql_functions_math_trunc.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()

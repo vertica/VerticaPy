@@ -38,21 +38,21 @@ def date(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         # apply the date function, creating a "date_x" column
-        df["date_x"] = st.date(df["x"])
+        df["date_x"] = vpf.date(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
-        df["date_x"] = st.date(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+        df["date_x"] = vpf.date(df["x"])
         html_file = open("figures/sql_functions_date_date.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -82,23 +82,23 @@ def day(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         # apply the day function, creating a "day_x" column
-        df["day_x"] = st.day(df["x"])
+        df["day_x"] = vpf.day(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
-        df["day_x"] = st.day(df["x"])
+        df["day_x"] = vpf.day(df["x"])
         html_file = open("figures/sql_functions_date_day.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -129,23 +129,23 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         # apply the dayofweek function, creating a "dayofweek_x" column
-        df["dayofweek_x"] = st.dayofweek(df["x"])
+        df["dayofweek_x"] = vpf.dayofweek(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
-        df["dayofweek_x"] = st.dayofweek(df["x"])
+        df["dayofweek_x"] = vpf.dayofweek(df["x"])
         html_file = open("figures/sql_functions_date_dayofweek.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -176,23 +176,23 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         # apply the dayofyear function, creating a "dayofyear_x" column
-        df["dayofyear_x"] = st.dayofyear(df["x"])
+        df["dayofyear_x"] = vpf.dayofyear(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
-        df["dayofyear_x"] = st.dayofyear(df["x"])
+        df["dayofyear_x"] = vpf.dayofyear(df["x"])
         html_file = open("figures/sql_functions_date_dayofyear.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -232,23 +232,23 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993', '12-03-1993']})
         df["x"].astype("timestamp")
         # apply the extract function, creating a "months" column
-        df["months"] = st.extract(df["x"], "MONTH")
+        df["months"] = vpf.extract(df["x"], "MONTH")
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993', '12-03-1993']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993', '12-03-1993']})
         df["x"].astype("timestamp")
-        df["months"] = st.extract(df["x"], "MONTHS")
+        df["months"] = vpf.extract(df["x"], "MONTHS")
         html_file = open("figures/sql_functions_date_extract.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -274,21 +274,21 @@ def getdate() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # apply the getdate function, creating a "date" column
-        df["date"] = st.getdate()
+        df["date"] = vpf.getdate()
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["date"] = st.getdate()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["date"] = vpf.getdate()
         html_file = open("figures/sql_functions_date_getdate.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -313,21 +313,21 @@ def getutcdate() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # apply the getutcdate function, creating a "date" column
-        df["date"] = st.getutcdate()
+        df["date"] = vpf.getutcdate()
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["date"] = st.getutcdate()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["date"] = vpf.getutcdate()
         html_file = open("figures/sql_functions_date_getutcdate.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -357,23 +357,23 @@ def hour(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         # apply the hour function, creating a "hour_x" column
-        df["hour_x"] = st.hour(df["x"])
+        df["hour_x"] = vpf.hour(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
-        df["hour_x"] = st.hour(df["x"])
+        df["hour_x"] = vpf.hour(df["x"])
         html_file = open("figures/sql_functions_date_hour.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -403,21 +403,21 @@ def interval(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['1 day', '2 hours']}).to_vdf()
+        df = vDataFrame({"x": ['1 day', '2 hours']})
         # apply the interval function, creating a "interval_x" column
-        df["interval_x"] = st.interval(df["x"])
+        df["interval_x"] = vpf.interval(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['1 day', '2 hours']}).to_vdf()
-        df["interval_x"] = st.interval(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['1 day', '2 hours']})
+        df["interval_x"] = vpf.interval(df["x"])
         html_file = open("figures/sql_functions_date_interval.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -448,23 +448,23 @@ def minute(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']})
         df["x"].astype("timestamp")
         # apply the minute function, creating a "minute_x" column
-        df["minute_x"] = st.minute(df["x"])
+        df["minute_x"] = vpf.minute(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']})
         df["x"].astype("timestamp")
-        df["minute_x"] = st.minute(df["x"])
+        df["minute_x"] = vpf.minute(df["x"])
         html_file = open("figures/sql_functions_date_minute.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -495,23 +495,23 @@ def microsecond(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the microsecond function, creating a "microsecond_x" column
-        df["microsecond_x"] = st.microsecond(df["x"])
+        df["microsecond_x"] = vpf.microsecond(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["microsecond_x"] = st.microsecond(df["x"])
+        df["microsecond_x"] = vpf.microsecond(df["x"])
         html_file = open("figures/sql_functions_date_microsecond.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -542,23 +542,23 @@ def month(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the month function, creating a "month_x" column
-        df["month_x"] = st.month(df["x"])
+        df["month_x"] = vpf.month(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["month_x"] = st.month(df["x"])
+        df["month_x"] = vpf.month(df["x"])
         html_file = open("figures/sql_functions_date_month.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -604,34 +604,34 @@ def overlaps(
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"start0": ['11-03-1993'],
+        df = vDataFrame({"start0": ['11-03-1993'],
                           "end0": ['12-03-1993'],
                           "start1": ['11-30-1993'],
-                          "end1": ['11-30-1994']}).to_vdf()
+                          "end1": ['11-30-1994']})
         df["start0"].astype("timestamp")
         df["start1"].astype("timestamp")
         df["end0"].astype("timestamp")
         df["end1"].astype("timestamp")
         # apply the overlaps function, creating a "overlaps" column
-        df["overlaps"] = st.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
+        df["overlaps"] = vpf.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-                df = TableSample({"start0": ['11-03-1993'],
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+                df = vDataFrame({"start0": ['11-03-1993'],
                           "end0": ['12-03-1993'],
                           "start1": ['11-30-1993'],
-                          "end1": ['11-30-1994']}).to_vdf()
+                          "end1": ['11-30-1994']})
         df["start0"].astype("timestamp")
         df["start1"].astype("timestamp")
         df["end0"].astype("timestamp")
         df["end1"].astype("timestamp")
-        df["overlaps"] = st.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
+        df["overlaps"] = vpf.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
         html_file = open("figures/sql_functions_date_overlaps.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -668,23 +668,23 @@ def quarter(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the quarter function, creating a "quarter_x" column
-        df["quarter_x"] = st.quarter(df["x"])
+        df["quarter_x"] = vpf.quarter(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["quarter_x"] = st.quarter(df["x"])
+        df["quarter_x"] = vpf.quarter(df["x"])
         html_file = open("figures/sql_functions_date_quarter.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -756,23 +756,23 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
+        df = vDataFrame({"x": ['11/03/1993', '09/05/1959']})
         df["x"].astype("date")
         # apply the round_date function, creating a "round_x" column
-        df["round_x"] = st.round_date(df["x"], 'MM')
+        df["round_x"] = vpf.round_date(df["x"], 'MM')
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11/03/1993', '09/05/1959']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11/03/1993', '09/05/1959']})
         df["x"].astype("date")
-        df["round_x"] = st.round_date(df["x"], 'MM')
+        df["round_x"] = vpf.round_date(df["x"], 'MM')
         html_file = open("figures/sql_functions_date_round_date.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -803,23 +803,23 @@ def second(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the second function, creating a "second_x" column
-        df["second_x"] = st.second(df["x"])
+        df["second_x"] = vpf.second(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["second_x"] = st.second(df["x"])
+        df["second_x"] = vpf.second(df["x"])
         html_file = open("figures/sql_functions_date_second.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -850,21 +850,21 @@ def timestamp(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         # apply the timestamp function, creating a "timestamp_x" column
-        df["timestamp_x"] = st.timestamp(df["x"])
+        df["timestamp_x"] = vpf.timestamp(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
-        df["timestamp_x"] = st.timestamp(df["x"])
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+        df["timestamp_x"] = vpf.timestamp(df["x"])
         html_file = open("figures/sql_functions_date_timestamp.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -897,23 +897,23 @@ def week(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the week function, creating a "week_x" column
-        df["week_x"] = st.week(df["x"])
+        df["week_x"] = vpf.week(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["week_x"] = st.week(df["x"])
+        df["week_x"] = vpf.week(df["x"])
         html_file = open("figures/sql_functions_date_week.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -944,23 +944,23 @@ def year(expr: SQLExpression) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         # apply the year function, creating a "year_x" column
-        df["year_x"] = st.year(df["x"])
+        df["year_x"] = vpf.year(df["x"])
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']}).to_vdf()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
-        df["year_x"] = st.year(df["x"])
+        df["year_x"] = vpf.year(df["x"])
         html_file = open("figures/sql_functions_date_year.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()

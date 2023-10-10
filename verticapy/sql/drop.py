@@ -87,6 +87,10 @@ def drop(
                     schema = "public",
                     dtype = {"name": "VARCHAR(60)"})
 
+    Drop the table:
+
+    .. warning:: Dropping an element permanently removes it from the database. Please exercise caution, as this action is irreversible.
+
     .. ipython:: python
 
         from verticapy.sql import drop

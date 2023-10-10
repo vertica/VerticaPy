@@ -51,12 +51,12 @@ def case_when(*args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
+        df = vDataFrame({"x": [0.8, -1, 0, -2, 0.5]})
         # apply the case_when function, creating a "x_pos" column
-        df["x_pos"] = st.case_when(df["x"] > 0, 1,
+        df["x_pos"] = vpf.case_when(df["x"] > 0, 1,
                                    df["x"] == 0, 0,
                                    -1)
         display(df)
@@ -64,10 +64,10 @@ def case_when(*args) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [0.8, -1, 0, -2, 0.5]}).to_vdf()
-        df["x_pos"] = st.case_when(df["x"] > 0, 1,
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [0.8, -1, 0, -2, 0.5]})
+        df["x_pos"] = vpf.case_when(df["x"] > 0, 1,
                                    df["x"] == 0, 0,
                                    -1)
         html_file = open("figures/sql_functions_conditional_case_when.html", "w")
@@ -131,12 +131,12 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
+        df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
         # apply the decode function, creating a "type_x" column
-        df["type_x"] = st.decode(df["x"],
+        df["type_x"] = vpf.decode(df["x"],
                         'banana', 'fruit',
                         'apple', 'fruit',
                         'vegetable')
@@ -145,10 +145,10 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": ['banana', 'apple', 'onion', 'potato']}).to_vdf()
-        df["type_x"] = st.decode(df["x"],
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
+        df["type_x"] = vpf.decode(df["x"],
                         'banana', 'fruit',
                         'apple', 'fruit',
                         'vegetable')

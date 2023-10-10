@@ -30,21 +30,21 @@ def random() -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # use the random function to create a "split" column
-        df["split"] = st.random()
+        df["split"] = vpf.random()
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["split"] = st.random()
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["split"] = vpf.random()
         html_file = open("figures/sql_functions_random_random.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -73,21 +73,21 @@ def randomint(n: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # use the randomint function to create a "split" column
-        df["split"] = st.randomint(10)
+        df["split"] = vpf.randomint(10)
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["split"] = st.randomint(10)
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["split"] = vpf.randomint(10)
         html_file = open("figures/sql_functions_random_randomint.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
@@ -117,21 +117,21 @@ def seeded_random(random_state: int) -> StringSQL:
     --------
     .. code-block:: python
 
-        from verticapy import TableSample
-        import verticapy.stats as st
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
 
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
+        df = vDataFrame({"x": [1, 2, 3, 4]})
         # use the seeded_random function to create a "split" column
-        df["split"] = st.seeded_random(10)
+        df["split"] = vpf.seeded_random(10)
         display(df)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import TableSample
-        import verticapy.stats as st
-        df = TableSample({"x": [1, 2, 3, 4]}).to_vdf()
-        df["split"] = st.seeded_random(10)
+        from verticapy import vDataFrame
+        import verticapy.sql.functions as vpf
+        df = vDataFrame({"x": [1, 2, 3, 4]})
+        df["split"] = vpf.seeded_random(10)
         html_file = open("figures/sql_functions_random_seeded_random.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()

@@ -81,7 +81,7 @@ def create_index(
     --------
     .. code-block:: python
 
-        from verticapy.geo import *
+        from verticapy.geo import create_index
         from verticapy.datasets import load_world
 
         world = load_world()
@@ -163,7 +163,7 @@ def describe_index(
     --------
     .. code-block:: python
 
-        from verticapy.geo import *
+        from verticapy.geo import describe_index
 
         # Describes all indexes
         describe_index()
@@ -256,7 +256,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     --------
     .. code-block:: python
 
-        from verticapy.geo import *
+        from verticapy.geo import rename_index, describe_index
 
         # Describes all indexes
         describe_index()

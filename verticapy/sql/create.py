@@ -50,6 +50,13 @@ def create_schema(
         from verticapy.sql import create_schema
 
         create_schema(schema = "employees")
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy import drop
+
+        drop("employees.")
     """
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
@@ -113,15 +120,19 @@ def create_table(
         from verticapy.sql import create_table
 
         # Generates the SQL needed to create the Table
-        create_table(table_name = "employees",
-                     schema = "public",
-                     dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"},
-                     genSQL = True)
+        create_table(
+            table_name = "employees",
+            schema = "public",
+            dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"},
+            genSQL = True
+        )
 
         # Creates the table
-        create_table(table_name = "employees",
-                     schema = "public",
-                     dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"})
+        create_table(
+            table_name = "employees",
+            schema = "public",
+            dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"}
+        )
 
     .. code-block:: python
 
@@ -133,11 +144,13 @@ def create_table(
     .. ipython:: python
         :suppress:
 
-        from verticapy import vDataFrame
+        from verticapy import vDataFrame, drop
 
         html_file = open("figures/sql_create_create_table.html", "w")
         html_file.write(vDataFrame(input_relation = '"public"."employees"')._repr_html_())
         html_file.close()
+
+        drop("public.employees")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_create_create_table.html
