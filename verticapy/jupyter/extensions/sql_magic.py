@@ -100,12 +100,14 @@ def sql_magic(
         import verticapy as vp
 
         # Save a new connection
-        vp.new_connection({"host": "10.211.55.14",
-                           "port": "5433",
-                           "database": "testdb",
-                           "password": "XxX",
-                           "user": "dbadmin"},
-                            name = "VerticaDSN")
+        vp.new_connection({
+            "host": "10.211.55.14",
+            "port": "5433",
+            "database": "testdb",
+            "password": "XxX",
+            "user": "dbadmin"},
+            name = "VerticaDSN"
+            )
 
     If you already have a connection in a connection
     file, you can use it by running the following
@@ -130,6 +132,7 @@ def sql_magic(
     .. code-block:: python
 
         from verticapy.datasets import load_titanic, load_iris
+
         titanic = load_titanic()
         iris = load_iris()
 
@@ -154,6 +157,7 @@ def sql_magic(
 
         import verticapy as vp
         from verticapy.datasets import load_titanic, load_iris
+
         titanic = load_titanic()
         iris = load_iris()
         %load_ext verticapy.sql
@@ -200,6 +204,8 @@ def sql_magic(
 
     You can use a single cell for multiple queries:
 
+    .. warning:: Don't forget to include a semicolon at the end of each query.
+
     .. code-block:: python
 
         %%sql
@@ -230,6 +236,8 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_3.html
 
     To add comments to a query, use one of the following comment syntaxes:
+
+    .. warning:: Vertica uses '/' and '/' for both comments and query hints. Whenever possible, use '--' to avoid conflicts.
 
     .. code-block:: python
 
@@ -315,30 +323,31 @@ def sql_magic(
 
     .. ipython:: python
 
-        @savefig jupyter_extensions_sql_magic_sql_magic_corr.png
-        titanic_clean.corr()
+        titanic_clean["age"].max()
 
     Using variables inside a query
     ==============================
 
     You can use variables in a SQL query with the ':' operator. This
-    variable can be a vDataFrame, a tablesample, a pandas.DataFrame,
+    variable can be a vDataFrame, a TableSample, a pandas.DataFrame,
     or any standard Python type.
 
     .. code-block:: python
 
-        import verticapy.stats as st
+        import verticapy.sql.functions as vpf
 
-        class_fare = titanic_clean.groupby("pclass",
-                                           [st.avg(titanic_clean["fare"])._as("avg_fare")])
+        class_fare = titanic_clean.groupby(
+            "pclass",
+            [vpf.avg(titanic_clean["fare"])._as("avg_fare")]
+            )
         class_fare
 
     .. ipython:: python
         :suppress:
 
-        import verticapy.stats as st
+        import verticapy.sql.functions as vpf
         class_fare = titanic_clean.groupby("pclass",
-                                   [st.avg(titanic_clean["fare"])._as("avg_fare")])
+                                   [vpf.avg(titanic_clean["fare"])._as("avg_fare")])
         html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_6.html", "w")
         html_file.write(class_fare._repr_html_())
         html_file.close()
@@ -380,12 +389,12 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html
 
-    You can do the same with a tablesample:
+    You can do the same with a TableSample:
 
     .. code-block:: python
 
         tb = {"name": ["Badr", "Arash"], "specialty": ["Python", "C++"]}
-        tb = vp.tablesample(tb)
+        tb = vp.TableSample(tb)
 
     .. code-block:: python
 
@@ -447,6 +456,8 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_9.html
 
     You can also use a sample loop with a variable:
+
+    .. note:: VerticaPy will store the object in a temporary local table before executing the overall query, which facilitates integration with in-memory objects.
 
     .. code-block:: python
 
@@ -628,6 +639,8 @@ def sql_magic(
         file = open("query.sql", "w+")
         file.write("SELECT version();")
         file.close()
+
+    Using the 'f' option, we can easily read SQL files:
 
     .. code-block:: python
 
