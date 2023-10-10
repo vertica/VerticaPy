@@ -194,10 +194,14 @@ def chart_magic(
     """
     Draws responsive charts using the Matplotlib,
     Plotly, or Highcharts library.
-    You can set your plotting library with the
-    set_option function.
-    The returned object can be customized using the API
-    parameters and the 'set_dict_options' method.
+    
+    Different cutomization parameters are available for Plotly, Highcharts,
+    and Matplotlib. 
+    For a comprehensive list of customization features, please
+    consult the documentation for the respective plotting libraries: 
+    `plotly <https://plotly.com/python-api-reference/>`_, 
+    `matplotlib <https://matplotlib.org/stable/api/matplotlib_configuration_api.html>`_ 
+    and `highcharts <https://api.highcharts.com/highcharts/>`_.
 
     Parameters
     ----------
@@ -325,12 +329,14 @@ def chart_magic(
         import verticapy as vp
 
         # Save a new connection
-        vp.new_connection({"host": "10.211.55.14",
-                           "port": "5433",
-                           "database": "testdb",
-                           "password": "XxX",
-                           "user": "dbadmin"},
-                           name = "VerticaDSN")
+        vp.new_connection({
+            "host": "10.211.55.14",
+            "port": "5433",
+            "database": "testdb",
+            "password": "XxX",
+            "user": "dbadmin"},
+            name = "VerticaDSN"
+            )
 
     Otherwise, to use an existing connection:
 
@@ -348,7 +354,7 @@ def chart_magic(
     .. ipython:: python
         :suppress:
 
-        %load_ext verticapy.hchart
+        %load_ext verticapy.chart
 
     Run the following to load some sample datasets. Once loaded, these datasets are
     stored in the 'public' schema. You can change the target schema with the
@@ -362,7 +368,7 @@ def chart_magic(
         amazon = load_amazon()
         iris = load_iris()
 
-    Use the set_option function to choose your desired plotting library:
+    Use the :py:module:`set_option`_ function to set your desired plotting library:
 
     .. ipython:: python
 
@@ -371,7 +377,10 @@ def chart_magic(
     Drawing graphics
     ================
 
-    The following examples draw various responsive charts from SQL queries:
+    The following examples draw various responsive charts from SQL queries.
+
+    Pie Chart
+    ^^^^^^^^^
 
     .. code-block:: python
 
@@ -391,6 +400,9 @@ def chart_magic(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html
+
+    Line Plot
+    ^^^^^^^^^
 
     .. code-block:: python
 
@@ -420,6 +432,9 @@ def chart_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html
 
+    Correlation Matrix
+    ^^^^^^^^^^^^^^^^^^
+
     .. code-block:: python
 
         %%chart -k pearson
@@ -442,9 +457,12 @@ def chart_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html
 
+    Bar Chart
+    ^^^^^^^^^
+
     .. code-block:: python
 
-        %%chart -k hist
+        %%chart -k bar
         SELECT
             pclass,
             SUM(survived)
@@ -453,7 +471,7 @@ def chart_magic(
     .. ipython:: python
         :suppress:
 
-        %%chart -k hist
+        %%chart -k bar
         SELECT
             pclass,
             SUM(survived)
@@ -462,11 +480,14 @@ def chart_magic(
     .. ipython:: python
         :suppress:
 
-        hist = _
-        hist.write_html("figures/jupyter_extensions_chart_magic_chart_magic_4.html")
+        bar = _
+        bar.write_html("figures/jupyter_extensions_chart_magic_chart_magic_4.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html
+
+    Scatter Plot
+    ^^^^^^^^^^^^
 
     .. code-block:: python
 
@@ -495,6 +516,9 @@ def chart_magic(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html
+
+    Boxplot
+    ^^^^^^^
 
     .. code-block:: python
 
@@ -552,10 +576,12 @@ def chart_magic(
 
     .. ipython:: python
 
-        import verticapy.stats as st
+        import verticapy.sql.functions as vpf
 
-        class_fare = titanic.groupby("pclass",
-                                     [st.avg(titanic["fare"])._as("avg_fare")])
+        class_fare = titanic.groupby(
+            "pclass",
+            [vpf.avg(titanic["fare"])._as("avg_fare")]
+            )
 
     .. ipython:: python
         :suppress:
@@ -567,6 +593,10 @@ def chart_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_8.html
 
+    You can then use the variable in the query:
+
+    .. note:: In this example, we use a vDataFrame, but it's also possible to use a pandas.DataFrame, a numpy.array, and many other in-memory objects.
+        
     .. code-block:: python
 
         %%chart -k bar
@@ -597,11 +627,14 @@ def chart_magic(
         file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
         file.close()
 
+    Using the `f` option, we can easily read the above SQL file:
+
     .. code-block:: python
 
         %chart -f query.sql -k scatter
 
     .. ipython:: python
+        :suppress:
 
         %chart -f query.sql -k scatter
 
