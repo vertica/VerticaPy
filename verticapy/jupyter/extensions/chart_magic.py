@@ -319,6 +319,8 @@ def chart_magic(
     * Using variables
     * Using SQL files
 
+    .. hint:: To see more examples, please refer to the ref:chart_gallery.guide.
+
     Setting up the environment
     ==========================
 
