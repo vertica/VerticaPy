@@ -132,8 +132,18 @@ class VoronoiPlot(PlotlyBase):
         Draws a KMeans Voronoi plot using the Plotly API.
         """
         fig = self._get_fig(fig)
+        colors = self.get_colors()
         buffer = 0.5
         cluster_points = self.data["clusters"]
+        if "colors" in style_kwargs:
+            colors = (
+                style_kwargs["colors"] + colors
+                if isinstance(style_kwargs["colors"], list)
+                else [style_kwargs["colors"]] + colors
+            )
+            colors = colors[: len(cluster_points)]
+            style_kwargs.pop("colors")
+            self.init_heatmap_style["colorscale"] = colors
         all_points = self.data["X"]
         x_range = [
             cluster_points[:, 0].min() - buffer,

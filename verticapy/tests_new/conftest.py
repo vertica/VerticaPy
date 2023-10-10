@@ -37,6 +37,7 @@ from verticapy.datasets import (
     load_amazon,
     load_winequality,
     load_market,
+    load_smart_meters,
 )
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -464,3 +465,23 @@ def market_vd(schema_loader):
     market = load_market(schema_loader, "market")
     yield market
     drop(name=f"{schema_loader}.market")
+
+
+@pytest.fixture(scope="module")
+def smart_meters_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for smart_meters dataset
+    """
+    smart_meters = load_smart_meters(schema_loader, "smart_meters")
+    yield smart_meters
+    drop(name=f"{schema_loader}.smart_meters")
+
+
+@pytest.fixture(scope="function")
+def iris_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for iris dataset
+    """
+    iris = load_iris(schema_loader, "iris")
+    yield iris
+    drop(name=f"{schema_loader}.iris")

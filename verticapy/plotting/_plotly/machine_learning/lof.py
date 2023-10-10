@@ -72,6 +72,7 @@ class LOFPlot(PlotlyBase):
             " %{y} <br>"
             "IOF: %{customdata:.2f} <extra></extra>",
         }
+        col_hover = self.layout["columns"][2] if len(self.layout["columns"]) > 2 else ""
         self.init_of_scatter3d_style = {
             "customdata": self.data["X"][:, -1],
             "mode": "markers",
@@ -91,7 +92,7 @@ class LOFPlot(PlotlyBase):
             "%{x} <br>"
             f"{self.layout['columns'][1]}: "
             " %{y} <br>"
-            f"{self.layout['columns'][2]}: "
+            f"{col_hover}: "
             " %{z} <br>"
             "IOF: %{customdata:.2f} <extra></extra>",
         }
@@ -107,9 +108,14 @@ class LOFPlot(PlotlyBase):
         """
         Draws a local outlier plot using the Plotly API.
         """
+        if "colors" in style_kwargs:
+            colors = style_kwargs["colors"]
+            style_kwargs.pop("colors")
+        else:
+            colors = None
         X = self.data["X"][:, 0]
         Y = self.data["X"][:, 1]
-        Z = self.data["X"][:, 2] if len(self.data["X"] == 3) else []
+        Z = self.data["X"][:, 2] if self.data["X"].shape[1] == 4 else []
         fig = self._get_fig(fig)
         if 2 <= len(self.layout["columns"]) <= 3:
             fig.add_trace(
@@ -119,6 +125,7 @@ class LOFPlot(PlotlyBase):
                     mode="markers",
                     name="Scatter Points",
                     hoverinfo="none",
+                    marker_color=colors[0] if isinstance(colors, list) else colors,
                 )
             )
 
@@ -127,6 +134,9 @@ class LOFPlot(PlotlyBase):
                     x=X,
                     y=Y,
                     **self.init_of_scatter_style,
+                    marker_line_color=colors[1]
+                    if isinstance(colors, list) and len(colors) > 1
+                    else self.get_colors()[1],
                 )
             )
         elif len(self.layout["columns"]) == 4:
@@ -139,6 +149,7 @@ class LOFPlot(PlotlyBase):
                     marker_size=3,
                     name="Scatter Points",
                     hoverinfo="none",
+                    marker_color=colors[0] if isinstance(colors, list) else colors,
                 )
             )
             fig.add_trace(
@@ -147,6 +158,9 @@ class LOFPlot(PlotlyBase):
                     y=Y,
                     z=Z,
                     **self.init_of_scatter3d_style,
+                    marker_line_color=colors[1]
+                    if isinstance(colors, list) and len(colors) > 1
+                    else self.get_colors()[1],
                 )
             )
             self.init_layout_style["scene"] = dict(
