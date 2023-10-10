@@ -79,40 +79,41 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         func: SQLExpression
-            List of the different aggregations.
-                aad            : average absolute deviation
-                approx_median  : approximate median
-                approx_q%      : approximate q quantile
-                                 (ex: approx_50% for the approximate median)
-                approx_unique  : approximative cardinality
-                count          : number of non-missing elements
-                cvar           : conditional value at risk
-                dtype          : virtual column type
-                iqr            : interquartile range
-                kurtosis       : kurtosis
-                jb             : Jarque-Bera index
-                mad            : median absolute deviation
-                max            : maximum
-                mean           : average
-                median         : median
-                min            : minimum
-                mode           : most occurent element
-                percent        : percent of non-missing elements
-                q%             : q quantile (ex: 50% for the median)
-                                 Use the 'approx_q%' (approximate quantile)
-                                 aggregation to get better performance.
-                prod           : product
-                range          : difference between the max and the min
-                sem            : standard error of the mean
-                skewness       : skewness
-                sum            : sum
-                std            : standard deviation
-                topk           : kth most occurent element
-                                 (ex: top1 for the mode)
-                topk_percent   : kth most occurent element density
-                unique         : cardinality (count distinct)
-                var            : variance
-            Other aggregations will work if supported by your database
+            | List of the different aggregations:
+
+            |    **aad**: average absolute deviation
+            |    **approx_median**: approximate median
+            |    **approx_q%**: approximate q quantile
+                            (ex: approx_50% for the approximate median)
+            |    **approx_unique**: approximative cardinality
+            |    **count**: number of non-missing elements
+            |    **cvar**: conditional value at risk
+            |    **dtype**: virtual column type
+            |    **iqr**: interquartile range
+            |    **kurtosis**: kurtosis
+            |    **jb**: Jarque-Bera index
+            |    **mad**: median absolute deviation
+            |    **max**: maximum
+            |    **mean**: average
+            |    **median**: median
+            |    **min**: minimum
+            |    **mode**: most occurent element
+            |    **percent**: percent of non-missing elements
+            |    **q%**: q quantile (ex: 50% for the median)
+                                    Use the 'approx_q%' (approximate quantile)
+                                    aggregation to get better performance.
+            |    **prod**: product
+            |    **range**: difference between the max and the min
+            |    **sem**: standard error of the mean
+            |    **skewness**: skewness
+            |    **sum**: sum
+            |    **std**: standard deviation
+            |    **topk**: kth most occurent element
+                                    (ex: top1 for the mode)
+            |    **topk_percent**: kth most occurent element density
+            |    **unique**: cardinality (count distinct)
+            |    **var**: variance
+            | Other aggregations will work if supported by your database
             version.
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the
@@ -134,6 +135,37 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
+
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from verticapy.datasets import load_titanic
+            titanic = load_titanic()
+            titanic.aggregate(func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
+                      columns = ["age", "fare", "pclass", "survived"])
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.datasets import load_titanic
+            titanic = load_titanic()
+            result = titanic.aggregate(func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
+                      columns = ["age", "fare", "pclass", "survived"])
+            html_file = open("figures/core_vDataFrame_vDFAgg_aggregate_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aggregate_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.describe` : Summarizes the information for all columns.
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregates for particular columns.
         """
         columns, func = format_type(columns, func, dtype=list)
         if len(columns) == 0:
@@ -1789,46 +1821,96 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def aggregate(self, func: list) -> TableSample:
         """
-        Aggregates the vDataColumn using the input functions.
+        Aggregates the vDataFrame using the input functions.
 
         Parameters
         ----------
-        func: list
-            List of the different aggregation.
-                aad            : average absolute deviation
-                approx_unique  : approximative cardinality
-                count          : number of non-missing elements
-                cvar           : conditional value at risk
-                dtype          : vDataColumn type
-                iqr            : interquartile range
-                kurtosis       : kurtosis
-                jb             : Jarque-Bera index
-                mad            : median absolute deviation
-                max            : maximum
-                mean           : average
-                median         : median
-                min            : minimum
-                mode           : most occurent element
-                percent        : percent of non-missing elements
-                q%             : q quantile (ex: 50% for the median)
-                prod           : product
-                range          : difference between the max and the min
-                sem            : standard error of the mean
-                skewness       : skewness
-                sum            : sum
-                std            : standard deviation
-                topk           : kth most occurent element
-                                 (ex: top1 for the mode)
-                topk_percent   : kth most occurent element density
-                unique         : cardinality (count distinct)
-                var            : variance
-            Other aggregations might work if they are part of the DB
-            version you are using.
+        func: SQLExpression
+            | List of the different aggregations:
+
+            |    **aad**: average absolute deviation
+            |    **approx_median**: approximate median
+            |    **approx_q%**: approximate q quantile
+                            (ex: approx_50% for the approximate median)
+            |    **approx_unique**: approximative cardinality
+            |    **count**: number of non-missing elements
+            |    **cvar**: conditional value at risk
+            |    **dtype**: virtual column type
+            |    **iqr**: interquartile range
+            |    **kurtosis**: kurtosis
+            |    **jb**: Jarque-Bera index
+            |    **mad**: median absolute deviation
+            |    **max**: maximum
+            |    **mean**: average
+            |    **median**: median
+            |    **min**: minimum
+            |    **mode**: most occurent element
+            |    **percent**: percent of non-missing elements
+            |    **q%**: q quantile (ex: 50% for the median)
+                                    Use the 'approx_q%' (approximate quantile)
+                                    aggregation to get better performance.
+            |    **prod**: product
+            |    **range**: difference between the max and the min
+            |    **sem**: standard error of the mean
+            |    **skewness**: skewness
+            |    **sum**: sum
+            |    **std**: standard deviation
+            |    **topk**: kth most occurent element
+                                    (ex: top1 for the mode)
+            |    **topk_percent**: kth most occurent element density
+            |    **unique**: cardinality (count distinct)
+            |    **var**: variance
+            | Other aggregations will work if supported by your database
+            version.
+        columns: SQLColumns, optional
+            List of  the vDataColumn's names. If empty,  depending on the
+            aggregations, all or only numerical vDataColumns are used.
+        ncols_block: int, optional
+            Number  of columns  used per query.  Setting  this  parameter
+            divides  what  would otherwise be  one large query into  many
+            smaller  queries  called "blocks", whose size is determine by
+            the size of ncols_block.
+        processes: int, optional
+            Number  of child processes  to  create. Setting  this  with  the
+            ncols_block  parameter lets you parallelize a  single query into
+            many smaller  queries, where each child process creates  its own
+            connection to the database and sends one query. This can improve
+            query performance, but consumes  more resources. If processes is
+            set to 1, the queries are sent iteratively from a single process.
 
         Returns
         -------
         TableSample
             result.
+
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from verticapy.datasets import load_titanic
+            titanic = load_titanic()
+            titanic["embarked"].aggregate(func = ["unique", "top1", "top2"])
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.datasets import load_titanic
+            titanic = load_titanic()
+            result = titanic["embarked"].aggregate(func = ["unique", "top1", "top2"])
+            html_file = open("figures/core_vDataFrame_vDCAgg_aggregate_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_aggregate_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.describe` : Summarizes the information for all columns.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for a `vDataFrame`.
         """
         return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
 
