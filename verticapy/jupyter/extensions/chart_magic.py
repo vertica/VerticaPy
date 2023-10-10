@@ -338,7 +338,7 @@ def chart_magic(
             "password": "XxX",
             "user": "dbadmin"},
             name = "VerticaDSN"
-            )
+        )
 
     Otherwise, to use an existing connection:
 
@@ -586,7 +586,8 @@ def chart_magic(
 
         class_fare = titanic.groupby(
             "pclass",
-            [vpf.avg(titanic["fare"])._as("avg_fare")])
+            [vpf.avg(titanic["fare"])._as("avg_fare")]
+        )
 
     .. ipython:: python
         :suppress:
@@ -632,7 +633,7 @@ def chart_magic(
         file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
         file.close()
 
-    Using the `-f` option, we can easily read the above SQL file:
+    Using the ``-f`` option, we can easily read the above SQL file:
 
     .. code-block:: python
 

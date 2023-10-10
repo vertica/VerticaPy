@@ -107,7 +107,7 @@ def sql_magic(
             "password": "XxX",
             "user": "dbadmin"},
             name = "VerticaDSN"
-            )
+        )
 
     If you already have a connection in a connection
     file, you can use it by running the following
@@ -339,7 +339,7 @@ def sql_magic(
         class_fare = titanic_clean.groupby(
             "pclass",
             [vpf.avg(titanic_clean["fare"])._as("avg_fare")]
-            )
+        )
         class_fare
 
     .. ipython:: python
@@ -640,7 +640,7 @@ def sql_magic(
         file.write("SELECT version();")
         file.close()
 
-    Using the '-f' option, we can easily read SQL files:
+    Using the ``-f`` option, we can easily read SQL files:
 
     .. code-block:: python
 
