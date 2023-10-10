@@ -58,7 +58,7 @@ def compute_flextable_keys(
         import verticapy as vp
         from verticapy.sql import compute_flextable_keys
         import json
-        
+
         data = {
             "column1": {
                 "subcolumn1A": "value1A",
@@ -68,7 +68,7 @@ def compute_flextable_keys(
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
                 }
-            }   
+            }
 
         json_string = json.dumps(data, indent=4)
 
@@ -155,7 +155,7 @@ def compute_vmap_keys(
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
                 }
-            }   
+            }
 
         json_string = json.dumps(data, indent=4)
 
@@ -226,7 +226,7 @@ def isflextable(table_name: str, schema: str) -> bool:
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
                 }
-            }   
+            }
 
         json_string = json.dumps(data, indent=4)
 
@@ -296,7 +296,7 @@ def isvmap(
                 "subcolumn2A": "value2A",
                 "subcolumn2B": "value2B"
                 }
-            }   
+            }
 
         json_string = json.dumps(data, indent=4)
 
