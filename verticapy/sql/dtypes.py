@@ -88,6 +88,19 @@ def get_data_types(
     list of tuples
         The  list  of the  different columns  and
         their respective type.
+
+    Examples
+    --------
+    .. ipython:: python
+
+        from verticapy.sql import get_data_types
+
+        # returns the data type of multiple columns
+        get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2")
+
+        # returns the data type of one column
+        get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2",
+                        column="pclass")
     """
     usecols = format_type(usecols, dtype=list)
     if not expr and not table_name:
