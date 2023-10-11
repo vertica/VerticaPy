@@ -34,6 +34,34 @@ class LinearModel(InMemoryModel):
         ArrayLike of the model's coefficients.
     intercept: float, optional
         The intercept or constant value.
+        
+    .. note:: memModels are defined entirely by their attributes. For example, 'coefficients' and 'intercept' define a linear regression model.
+    
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy.machine_learning.memmodel.linear_model import LinearModel
+        coefficients = [0.5, 1.2]
+        intercept = 2.0
+        # Create Linear model
+        model_lm = LinearModel(coefficients, intercept)
+        # Predict using model created above
+        model_lm.predict([[1.0,  0.3], 
+                    [2.0, -0.6]])
+     
+    .. ipython:: python
+            :suppress:
+
+        from verticapy.machine_learning.memmodel.linear_model import LinearModel
+        coefficients = [0.5, 1.2]
+        intercept = 2.0
+        # Create Linear model
+        model_lm = LinearModel(coefficients, intercept)
+        # Predict using model created above
+        model_lm.predict([[1.0,  0.3], 
+                    [2.0, -0.6]])
+                    
     """
 
     # Properties.
@@ -169,6 +197,32 @@ class LinearModelClassifier(LinearModel):
         ArrayLike of the model's coefficients.
     intercept: float, optional
         The intercept or constant value.
+        
+    Examples
+    --------
+    .. code-block:: python
+    
+        from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+        coefficients = [0.5, 1.2]
+        intercept = 1.0
+        # Create Linear Classifier model
+        model_lmc = LinearModelClassifier(coefficients, intercept)
+        # Predict using model created above
+        model_lmc.predict([[1.0,  0.3], 
+                       [-0.5, -0.8]])
+     
+    .. ipython:: python
+            :suppress:
+
+        from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+        coefficients = [0.5, 1.2]
+        intercept = 1.0
+        # Create Linear Classifier model
+        model_lmc = LinearModelClassifier(coefficients, intercept)
+        # Predict using model created above
+        model_lmc.predict([[1.0,  0.3], 
+                       [-0.5, -0.8]])
+                    
     """
 
     # Properties.
