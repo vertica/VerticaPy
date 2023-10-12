@@ -3621,7 +3621,7 @@ class vDCAgg(vDCEval):
         .. seealso::
             | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
             | :py:mod:`verticapy.vDataFrame.count_percent` :
-              Percentage count for particular columns.
+            Percentage count for particular columns.
         """
         return self.aggregate(["count"]).values[self._alias][0]
 
@@ -4403,8 +4403,7 @@ class vDCAgg(vDCEval):
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:mod:`verticapy.vDataFrame.duplicated` :
-              Duplicated values for particular columns.
+            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -4544,123 +4543,6 @@ class vDCAgg(vDCEval):
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
             | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
-        """
-        alias_sql_repr = to_varchar(self.category(), self._alias)
-        if "agg" not in kwargs:
-            query = f"""
-                SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ 
-                    {alias_sql_repr} AS {self} 
-                FROM {self._parent} 
-                WHERE {self} IS NOT NULL 
-                GROUP BY {self} 
-                ORDER BY {self}"""
-        else:
-            query = f"""
-                SELECT 
-                    /*+LABEL('vDataColumn.distinct')*/ {self} 
-                FROM 
-                    (SELECT 
-                        {alias_sql_repr} AS {self}, 
-                        {kwargs['agg']} AS verticapy_agg 
-                     FROM {self._parent} 
-                     WHERE {self} IS NOT NULL 
-                     GROUP BY 1) x 
-                ORDER BY verticapy_agg DESC"""
-        query_result = _executeSQL(
-            query=query,
-            title=f"Computing the distinct categories of {self}.",
-            method="fetchall",
-            sql_push_ext=self._parent._vars["sql_push_ext"],
-            symbol=self._parent._vars["symbol"],
-        )
-        return [item for sublist in query_result for item in sublist]
-
-    @save_verticapy_logs
-    def nunique(self, approx: bool = True) -> int:
-        """
-                When aggregating the vDataFrame using ``nunique`` (cardinality),
-                VerticaPy employs the COUNT DISTINCT function to determine the
-                number of unique values in particular columns. It also offers
-                the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient
-                approximation method for calculating cardinality.
-
-                .. hint::
-
-                    This flexibility allows you to optimize the computation
-                    based on your specific requirements, keeping in mind
-                    that using APPROXIMATE_COUNT_DISTINCT can significantly
-                    improve performance when cardinality estimation is sufficient
-                    for your analysis.
-
-                .. important::
-
-                    To calculate the exact cardinality of a column, you should
-                    set the parameter ``approx`` to False. This will ensure that
-                    the cardinality is computed accurately rather than using the
-                    approximate method.
-
-                Parameters
-                ----------
-                approx: bool, optional
-                    If  set  to  True,  the  approximate  cardinality
-                    is   returned.  By  setting  this  parameter   to
-                    False, the function's performance can drastically
-                    decrease.
-
-                Returns
-                -------
-                int
-                    vDataColumn cardinality (or approximate cardinality).
-
-                Examples
-                --------
-                For this example, let's generate a dataset and calculate the
-                cardinality of a column:
-
-                .. ipython:: python
-
-                    import verticapy as vp
-
-                    data = vp.vDataFrame({
-                        "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                        "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                        "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                    })
-                    data["y"].nunique()
-
-                .. note:: All the calculations are pushed to the database.
-
-                .. hint:: For more precise control, please refer to the ``aggregate`` method.
-
-                .. seealso::
-                    | :py:mod:`verticapy.vDataFrame.duplicated` :
-                      Duplicate Values for particular columns.
-                    | :py:mod:`verticapy.vDataFrame.nunique` :
-                      Cardinaility for particular columns.
-        pute
-                all the distinct elements of a column:
-
-                .. ipython:: python
-
-                    import verticapy as vp
-
-                    data = vp.vDataFrame({
-                        "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                        "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                        "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                    })
-                    data["y"].distinct()
-
-                .. note:: All the calculations are pushed to the database.
-
-                .. hint:: For more precise control, please refer to the `aggregate` method.
-
-                .. seealso::
-                    | :py:mod:`verticapy.vDataColumn.aggregate` :
-                      Aggregations for a specific column.
-                    | :py:mod:`verticapy.vDataFrame.aggregate` :
-                      Aggregates for particular columns.
         """
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
