@@ -101,7 +101,7 @@ class vDFAgg(vDFEval):
             |    **mode**: most occurent element
             |    **percent**: percent of non-missing elements
             |    **q%**: q quantile (ex: 50% for the median)
-                         Use the 'approx_q%' (approximate quantile)
+                         Use the ``approx_q%`` (approximate quantile)
                          aggregation to get better performance.
             |    **prod**: product
             |    **range**: difference between the max and the min
@@ -150,7 +150,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
 
-        With the `aggregate` method, you have the flexibility to select specific
+        With the ``aggregate`` method, you have the flexibility to select specific
         aggregates and the columns you wish to include in the query. This
         allows for more precise control over the aggregation process and helps
         tailor the results to your specific needs.
@@ -180,7 +180,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aggregate_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -188,8 +188,8 @@ class vDFAgg(vDFEval):
 
             When the vDataFrame includes a large number of columns and many aggregates
             need to be computed, it can be resource-intensive for the database. To
-            address this, you can use the `ncols_block` parameter to control the number
-            of blocks of aggregates to use and the `processes` parameter to manage
+            address this, you can use the ``ncols_block`` parameter to control the number
+            of blocks of aggregates to use and the ``processes`` parameter to manage
             the number of processes. These blocks consist of specific columns, and
             their aggregates are calculated first (or in parallel), then the subsequent
             ones, and the results are combined at the end.
@@ -722,21 +722,21 @@ class vDFAgg(vDFEval):
                               exact method depends on the vDataColumn type
                               (numerical  dtype:  numerical; timestamp  dtype:
                               range; categorical dtype: length)
-                auto        : Sets  the  method  to  'numerical' if  at  least  one
+                auto        : Sets  the  method  to  ``numerical`` if  at  least  one
                               vDataColumn   of   the   vDataFrame    is   numerical,
-                              'categorical' otherwise.
+                              ``categorical`` otherwise.
                 categorical : Uses only categorical aggregations.
                 length      : Aggregates the vDataFrame using numerical aggregation
                               on the length of all selected vDataColumns.
                 numerical   : Uses  only  numerical  descriptive  statistics, which
-                              are  computed faster than the  'aggregate' method.
+                              are  computed faster than the  ``aggregate`` method.
                 range       : Aggregates the vDataFrame using multiple  statistical
                               aggregations - min, max, range...
                 statistics  : Aggregates the vDataFrame using  multiple statistical
                               aggregations - kurtosis, skewness, min, max...
         columns: SQLColumns, optional
             List of the vDataColumns names.  If empty, the  vDataColumns are
-            selected depending on the parameter 'method'.
+            selected depending on the parameter ``method``.
         unique: bool, optional
             If set to True, computes the cardinality of each element.
         ncols_block: int, optional
@@ -1110,7 +1110,7 @@ class vDFAgg(vDFEval):
         various aggregation functions and gain insights specific to
         each group.
 
-        The 'groupby' method can be applied to one or more columns, and
+        The ``groupby`` method can be applied to one or more columns, and
         it is particularly valuable when we want to calculate aggregate
         statistics or perform operations within distinct categories or
         segments of our data. By grouping the elements, we can perform
@@ -1128,19 +1128,19 @@ class vDFAgg(vDFEval):
             a list of tuples.
         expr: SQLExpression, optional
             List of  the  different  aggregations  in  pure SQL.  Aliases
-            can  be  used.  For  example, 'SUM(column)'  or  'AVG(column)
-            AS  my_new_alias'  are  valid  whereas 'AVG'  is  invalid.
+            can  be  used.  For  example, ``SUM(column)``  or  ``AVG(column)
+            AS  my_new_alias``  are  valid  whereas ``AVG``  is  invalid.
             Aliases  are recommended to keep the track  of  the  features
             and  to  prevent  ambiguous  names.  For  example,  the  MODE
             function  does  not exist,  but can  be replicated  by  using
-            the 'analytic' method and then grouping the result.
+            the ``analytic`` method and then grouping the result.
         rollup: bool / list of bools, optional
             If set to True, the rollup operator is used.
             If  set to a list of bools, the  rollup  operator is  used on
-            the  matching indexes  and the  length of 'rollup' must match
-            the length of 'columns.'
-            For example, for columns = ['col1', ('col2', 'col3'), 'col4']
-            and rollup = [False, True, True], the rollup operator is used
+            the  matching indexes  and the  length of ``rollup`` must match
+            the length of ``columns``.
+            For example, for ``columns = ['col1', ('col2', 'col3'), 'col4']``
+            and ``rollup = [False, True, True]``, the rollup operator is used
             on the set ('col2', 'col3') and on 'col4'.
         having: str, optional
             Expression used to filter the result.
@@ -1191,7 +1191,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         Alternatively, you can achieve grouping using VerticaPy SQL
         functions, which offer a more Pythonic approach.
@@ -1209,7 +1209,7 @@ class vDFAgg(vDFEval):
             )
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         You can also perform rollup aggregations.
 
@@ -1241,11 +1241,11 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For additional aggregation options, please refer to the `aggregate` method.
+        .. hint:: For additional aggregation options, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
@@ -1349,18 +1349,18 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'aad' (Average Absolute Deviation) aggregation
-        method to analyze the vDataColumn. 'AAD' measures the average
+        Utilizes the ``aad`` (Average Absolute Deviation) aggregation
+        method to analyze the vDataColumn. ``AAD`` measures the average
         absolute deviation of data points from their mean, offering
         valuable insights into data variability and dispersion.
-        When we aggregate the vDataFrame using 'aad,' we gain an
+        When we aggregate the vDataFrame using ``aad``, we gain an
         understanding of how data points deviate from the mean on
         average, which is particularly useful for assessing data
         spread and the magnitude of deviations.
 
         This method is valuable in scenarios where we want to evaluate
         data variability while giving equal weight to all data points,
-        regardless of their direction of deviation. Calculating 'aad'
+        regardless of their direction of deviation. Calculating ``aad``
         provides us with information about the overall data consistency
         and can be useful in various analytical and quality assessment
         contexts.
@@ -1427,15 +1427,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aad_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.aad` : Average Absolute Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
 
@@ -1446,9 +1446,9 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Applies the 'BOOL_AND' aggregation method to the vDataFrame.
-        'BOOL_AND,' or Boolean AND, evaluates whether all the
-        conditions within a set of Boolean values are 'true.'
+        Applies the ``BOOL_AND`` aggregation method to the vDataFrame.
+        ``BOOL_AND``, or Boolean AND, evaluates whether all the
+        conditions within a set of Boolean values are ``true``.
         This is useful when you need to ascertain if every condition
         holds. It is particularly handy when working with binary data
         or to ensure that all specified conditions are met within the
@@ -1482,7 +1482,7 @@ class vDFAgg(vDFEval):
                 "z": [True, True, True],
             })
 
-        Now, let's use the 'all' aggregator for specific columns.
+        Now, let's use the ``all`` aggregator for specific columns.
 
         .. code-block:: python
 
@@ -1507,15 +1507,14 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_all_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_all_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.any` : Boolean OR Aggregation.
         """
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs)
 
@@ -1526,8 +1525,8 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Uses the 'BOOL_OR' aggregation method in the vDataFrame.
-        This method checks if at least one 'true' condition exists
+        Uses the ``BOOL_OR`` aggregation method in the vDataFrame.
+        This method checks if at least one ``true`` condition exists
         within a set of Boolean values. It's particularly handy
         for situations involving binary data or when you need to
         determine if any of the conditions are met.
@@ -1560,7 +1559,7 @@ class vDFAgg(vDFEval):
                 "z": [True, True, True],
             })
 
-        Now, let's use the 'any' aggregator for specific columns.
+        Now, let's use the ``any`` aggregator for specific columns.
 
         .. code-block:: python
 
@@ -1585,15 +1584,14 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_any_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_any_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.all` : Boolean AND Aggregation.
         """
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs)
 
@@ -1604,7 +1602,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        This operation aggregates the vDataFrame using the 'AVG'
+        This operation aggregates the vDataFrame using the ``AVG``
         aggregation, which calculates the average value for the
         selected column or columns. It provides insights into the
         central tendency of the data and is a fundamental statistical
@@ -1663,15 +1661,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_avg_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_avg_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.avg` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(func=["avg"], columns=columns, **agg_kwargs)
 
@@ -1685,7 +1684,7 @@ class vDFAgg(vDFEval):
     ) -> TableSample:
         """
         This operation aggregates the vDataFrame using the
-        'COUNT' aggregation, providing the count of non-missing
+        ``COUNT`` aggregation, providing the count of non-missing
         values for specified columns. This is valuable for
         assessing data completeness and quality.
 
@@ -1717,7 +1716,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
 
-        Now, let's calculate the count for specific columns.
+        Now, let`s calculate the count for specific columns.
 
         .. code-block:: python
 
@@ -1742,15 +1741,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.count` : Count for a specific column.
+            | :py:mod:`verticapy.vDataFrame.count_percent` : Count Percent for particular columns.
         """
         return self.aggregate(func=["count"], columns=columns, **agg_kwargs)
 
@@ -1830,15 +1829,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwargs)
 
@@ -1851,17 +1851,17 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'mad' (Median Absolute Deviation) aggregation
-        method with the vDataFrame. 'MAD' measures the dispersion
+        Utilizes the ``mad`` (Median Absolute Deviation) aggregation
+        method with the vDataFrame. ``MAD`` measures the dispersion
         of data points around the median, and it is particularly
         valuable for assessing the robustness of data in the
         presence of outliers. When we aggregate the vDataFrame
-        using 'mad', we gain insights into the variability and
+        using ``mad``, we gain insights into the variability and
         the degree to which data points deviate from the median.
 
         This is especially useful for datasets where we want to
         understand the spread of values while being resistant to
-        the influence of extreme outliers. Calculating 'mad' can
+        the influence of extreme outliers. Calculating ``mad`` can
         involve robust statistical computations, making it a useful
         tool for outlier-robust analysis and data quality evaluation.
 
@@ -1926,15 +1926,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_mad_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_mad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.std` : Mean Absolute Deviation for particular columns.
+            | :py:mod:`verticapy.vDataColumn.mad` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs)
 
@@ -1945,7 +1945,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'MAX' aggregation,
+        Aggregates the vDataFrame by applying the ``MAX`` aggregation,
         which calculates the maximum value, for the specified
         columns. This aggregation provides insights into the highest
         values within the dataset, aiding in understanding the data
@@ -2003,15 +2003,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_max_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_max_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific column.
         """
         return self.aggregate(func=["max"], columns=columns, **agg_kwargs)
 
@@ -2023,7 +2023,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN'
+        Aggregates the vDataFrame using the ``MEDIAN`` or ``APPROX_MEDIAN``
         aggregation, which calculates the median value for the specified
         columns. The median is a robust measure of central tendency and
         helps in understanding the distribution of data, especially in
@@ -2031,9 +2031,9 @@ class vDFAgg(vDFEval):
 
         .. warning::
 
-            When you set `approx` to True, the approximate median is
+            When you set ``approx`` to True, the approximate median is
             computed, which is significantly faster than the exact
-            calculation. However, be cautious when setting `approx`
+            calculation. However, be cautious when setting ``approx``
             to False, as it can significantly slow down the performance.
 
         Parameters
@@ -2043,7 +2043,7 @@ class vDFAgg(vDFEval):
             used.
         approx: bool, optional
             If set to True, the approximate median is returned. By setting this
-            parameter to False, the function's performance can drastically decrease.
+            parameter to False, the function`s performance can drastically decrease.
         **agg_kwargs
             Any optional parameter to pass to the Aggregate function.
 
@@ -2093,15 +2093,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_median_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_median_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:mod:`verticapy.vDataFrame.min` : Maximum for particular columns.
+            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
         """
         return self.quantile(
             0.5,
@@ -2117,7 +2118,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'MIN' aggregation,
+        Aggregates the vDataFrame by applying the ``MIN`` aggregation,
         which calculates the minimum value, for the specified
         columns. This aggregation provides insights into the lowest
         values within the dataset, aiding in understanding the data
@@ -2175,15 +2176,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_min_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_min_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.min` : Minimum for a specific column.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs)
 
@@ -2194,12 +2195,12 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'product'
+        Aggregates the vDataFrame by applying the ``product``
         aggregation function. This function computes the
         product of values within the dataset, providing
         insights into the multiplication of data points.
 
-        The 'product' aggregation can be particularly useful
+        The ``product`` aggregation can be particularly useful
         when we need to assess cumulative effects or when
         multiplying values is a key aspect of the analysis.
         This operation can be relevant in various domains,
@@ -2209,7 +2210,7 @@ class vDFAgg(vDFEval):
 
         .. note::
 
-            Since 'product' is not a conventional SQL
+            Since ``product`` is not a conventional SQL
             aggregation, we employ a unique approach by
             combining the sum of logarithms and the
             exponential function for its computation.
@@ -2271,15 +2272,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_product_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_product_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
             | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.quantile` : Quantile Aggregates for particular columns.
         """
         return self.aggregate(func=["prod"], columns=columns, **agg_kwargs)
 
@@ -2294,8 +2295,8 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using specified 'quantiles'.
-        The 'quantile' function is an indispensable tool for
+        Aggregates the vDataFrame using specified ``quantile``.
+        The ``quantile`` function is an indispensable tool for
         comprehending data distribution. By providing a quantile
         value as input, this aggregation method helps us identify
         the data point below which a certain percentage of the data
@@ -2305,13 +2306,13 @@ class vDFAgg(vDFEval):
 
         .. warning::
 
-            It's important to note that the 'quantile' aggregation
+            It's important to note that the ``quantile`` aggregation
             operates in two distinct modes, allowing flexibility in
-            computation. Depending on the 'approx' parameter, it can
-            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods
-            to derive the final aggregation. The 'APPROXIMATE_QUANTILE'
+            computation. Depending on the ``approx`` parameter, it can
+            use either ``APPROXIMATE_QUANTILE`` or ``QUANTILE`` methods
+            to derive the final aggregation. The ``APPROXIMATE_QUANTILE``
             method provides faster results by estimating the quantile
-            values with an approximation technique, while 'QUANTILE'
+            values with an approximation technique, while ``QUANTILE``
             calculates precise quantiles through rigorous computation.
             This choice empowers users to strike a balance between
             computational efficiency and the level of precision
@@ -2384,11 +2385,11 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_quantile_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_quantile_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
@@ -2410,13 +2411,13 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Leverages the 'sem' (Standard Error of the Mean) aggregation
+        Leverages the ``sem`` (Standard Error of the Mean) aggregation
         technique to perform analysis and aggregation on the vDataFrame.
         Standard Error of the Mean is a valuable statistical measure used
         to estimate the precision of the sample mean as an approximation
         of the population mean.
 
-        When we aggregate the vDataFrame using 'sem', we gain insights
+        When we aggregate the vDataFrame using ``sem``, we gain insights
         into the variability or uncertainty associated with the sample
         mean. This measure helps us assess the reliability of the sample
         mean as an estimate of the true population mean.
@@ -2488,15 +2489,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sem_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sem_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.sem` : Standard Error of Mean for a specific column.
+            | :py:mod:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(func=["sem"], columns=columns, **agg_kwargs)
 
@@ -2507,7 +2508,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'skewness' aggregation method to analyze and
+        Utilizes the ``skewness`` aggregation method to analyze and
         aggregate the vDataFrame. Skewness, a measure of the asymmetry
         in the data's distribution, helps us understand the data's
         deviation from a perfectly symmetrical distribution. When we
@@ -2576,15 +2577,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_skewness_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_skewness_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwargs)
 
@@ -2597,7 +2599,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'STDDEV' aggregation
+        Aggregates the vDataFrame using ``STDDEV`` aggregation
         (Standard Deviation), providing insights into the
         spread or variability of data for the selected columns.
         The standard deviation is a measure of how much individual
@@ -2657,15 +2659,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_std_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_std_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwargs)
 
@@ -2678,7 +2681,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'SUM' aggregation, which
+        Aggregates the vDataFrame using ``SUM`` aggregation, which
         computes the total sum of values for the specified columns,
         providing a cumulative view of numerical data.
 
@@ -2735,15 +2738,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sum_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sum_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.sum` : Sum for a specific column.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs)
 
@@ -2754,7 +2757,7 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'VAR' aggregation
+        Aggregates the vDataFrame using ``VAR`` aggregation
         (Variance), providing insights into the spread or
         variability of data for the selected columns.
         The variance is a measure of how much individual
@@ -2814,15 +2817,16 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_var_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_var_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["variance"], columns=columns, **agg_kwargs)
 
@@ -2840,12 +2844,12 @@ class vDFAgg(vDFEval):
     ) -> TableSample:
         """
         Performs aggregation on the vDataFrame using a list of
-        aggregate functions, including 'count' and 'percent'.
-        The 'count' function computes the number of non-missing
+        aggregate functions, including ``count`` and ``percent``.
+        The ``count`` function computes the number of non-missing
         (non-null) values within the dataset, providing us with
         an understanding of the data's completeness.
 
-        On the other hand, the 'percent' function calculates the
+        On the other hand, the ``percent`` function calculates the
         percentage of non-missing values in relation to the total
         dataset size, offering insights into data integrity and
         completeness as a proportion.
@@ -2858,7 +2862,7 @@ class vDFAgg(vDFEval):
         sort_result: bool, optional
             If set to True, the result is sorted.
         desc: bool, optional
-            If  set  to  True and 'sort_result' is  set  to  True,
+            If  set  to  True and ``sort_result`` is  set  to  True,
             the result is sorted in descending order.
         **agg_kwargs
             Any  optional  parameter  to  pass  to  the Aggregate
@@ -2883,7 +2887,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
 
-        Now, let's calculate the count for specific columns.
+        Now, let's calculate the count percentage for specific columns.
 
         .. code-block:: python
 
@@ -2908,15 +2912,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_percent_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_percent_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.count` : Count for a specific column.
+            | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
         """
         result = self.aggregate(
             func=["count", "percent"],
@@ -3015,15 +3019,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_nunique_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_nunique_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
+            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinaility for a specific column.
         """
         func = ["approx_unique"] if approx else ["unique"]
         return self.aggregate(func=func, columns=columns, **agg_kwargs)
@@ -3043,10 +3047,10 @@ class vDFAgg(vDFEval):
 
         .. warning::
 
-            This function employs the 'ROW_NUMBER' SQL function with
+            This function employs the ``ROW_NUMBER`` SQL function with
             multiple partition criteria. It's essential to note that
             as the number of partition columns increases, the
-            computational cost can rise significantly. The 'ROW_NUMBER'
+            computational cost can rise significantly. The ``ROW_NUMBER``
             function assigns a unique rank to each row within its
             partition, which means that the more columns are involved
             in partitioning, the more complex and resource-intensive
@@ -3110,15 +3114,15 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_duplicated_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_duplicated_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:mod:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -3205,7 +3209,7 @@ class vDCAgg(vDCEval):
             |    **mode**: most occurent element
             |    **percent**: percent of non-missing elements
             |    **q%**: q quantile (ex: 50% for the median)
-                         Use the 'approx_q%' (approximate quantile)
+                         Use the ``approx_q%`` (approximate quantile)
                          aggregation to get better performance.
             |    **prod**: product
             |    **range**: difference between the max and the min
@@ -3254,7 +3258,7 @@ class vDCAgg(vDCEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
 
-        With the `aggregate` method, you have the flexibility to select specific
+        With the ``aggregate`` method, you have the flexibility to select specific
         aggregates you wish to include in the query. This allows for more precise
         control over the aggregation process and helps tailor the results to your
         specific needs.
@@ -3282,7 +3286,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_aggregate_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3311,14 +3315,14 @@ class vDCAgg(vDCEval):
         ----------
         method: str, optional
             The describe method.
-                auto        : Sets  the  method to  'numerical' if
+                auto        : Sets  the  method to  ``numerical`` if
                               the   vDataColumn    is    numerical,
-                              'categorical' otherwise.
+                              ``categorical`` otherwise.
                 categorical : Uses  only categorical  aggregations
                               during the computation.
                 cat_stats   : Computes  statistics  of a numerical
                               column for each vDataColumn category.
-                              In this case,  the parameter 'numcol'
+                              In this case,  the parameter ``numcol``
                               must be defined.
                 numerical   : Uses  popular numerical aggregations
                               during the computation.
@@ -3327,7 +3331,7 @@ class vDCAgg(vDCEval):
             vDataColumn is considered as categorical.
         numcol: str, optional
             Numerical  vDataColumn  to  use  when  the   parameter
-            method is set to 'cat_stats'.
+            method is set to ``cat_stats``.
 
         Returns
         -------
@@ -3474,18 +3478,18 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def aad(self) -> PythonScalar:
         """
-        Utilizes the 'aad' (Average Absolute Deviation) aggregation
-        method to analyze the vDataColumn. 'AAD' measures the average
+        Utilizes the ``aad`` (Average Absolute Deviation) aggregation
+        method to analyze the vDataColumn. ``AAD`` measures the average
         absolute deviation of data points from their mean, offering
         valuable insights into data variability and dispersion.
-        When we aggregate the vDataColumn using 'aad,' we gain an
+        When we aggregate the vDataColumn using ``aad``, we gain an
         understanding of how data points deviate from the mean on
         average, which is particularly useful for assessing data
         spread and the magnitude of deviations.
 
         This method is valuable in scenarios where we want to evaluate
         data variability while giving equal weight to all data points,
-        regardless of their direction of deviation. Calculating 'aad'
+        regardless of their direction of deviation. Calculating ``aad``
         provides us with information about the overall data consistency
         and can be useful in various analytical and quality assessment
         contexts.
@@ -3521,18 +3525,18 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.aad` : Standard Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aad` : Average Absolute Deviation for particular columns.
         """
         return self.aggregate(["aad"]).values[self._alias][0]
 
     @save_verticapy_logs
     def avg(self) -> PythonScalar:
         """
-        This operation aggregates the vDataFrame using the 'AVG'
+        This operation aggregates the vDataFrame using the ``AVG``
         aggregation, which calculates the average value for the
         input column. It provides insights into the central tendency
         of the data and is a fundamental statistical measure often
@@ -3561,11 +3565,12 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.avg` : Aggregations for particular columns.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["avg"]).values[self._alias][0]
 
@@ -3575,7 +3580,7 @@ class vDCAgg(vDCEval):
     def count(self) -> int:
         """
         This operation aggregates the vDataFrame using the
-        'COUNT' aggregation, providing the count of non-missing
+        ``COUNT`` aggregation, providing the count of non-missing
         values for the input column. This is valuable for
         assessing data completeness and quality.
 
@@ -3602,11 +3607,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
+            | :py:mod:`verticapy.vDataFrame.count_percent` : Percentage count for particular columns.
         """
         return self.aggregate(["count"]).values[self._alias][0]
 
@@ -3653,11 +3658,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.kurtosis` : Kurtosis for particular columns.
         """
         return self.aggregate(["kurtosis"]).values[self._alias][0]
 
@@ -3666,17 +3671,17 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def mad(self) -> PythonScalar:
         """
-        Utilizes the 'mad' (Median Absolute Deviation) aggregation
+        Utilizes the ``mad`` (Median Absolute Deviation) aggregation
         method with the vDataFrame. 'MAD' measures the dispersion
         of data points around the median, and it is particularly
         valuable for assessing the robustness of data in the
         presence of outliers. When we aggregate the vDataColumn
-        using 'mad', we gain insights into the variability and
+        using ``mad``, we gain insights into the variability and
         the degree to which data points deviate from the median.
 
         This is especially useful for datasets where we want to
         understand the spread of values while being resistant to
-        the influence of extreme outliers. Calculating 'mad' can
+        the influence of extreme outliers. Calculating ``mad`` can
         involve robust statistical computations, making it a useful
         tool for outlier-robust analysis and data quality evaluation.
 
@@ -3711,11 +3716,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(["mad"]).values[self._alias][0]
 
@@ -3751,11 +3756,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:mod:`verticapy.vDataColumn.min` : Minimum for a specific column.
         """
         return self.aggregate(["max"]).values[self._alias][0]
 
@@ -3765,7 +3770,7 @@ class vDCAgg(vDCEval):
         approx: bool = True,
     ) -> PythonScalar:
         """
-        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN'
+        Aggregates the vDataFrame using the ``MEDIAN`` or ``APPROX_MEDIAN``
         aggregation, which calculates the median value for the specified
         columns. The median is a robust measure of central tendency and
         helps in understanding the distribution of data, especially in
@@ -3808,18 +3813,18 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | :py:mod:`verticapy.vDataFrame.median` : Median for particular columns.
         """
         return self.quantile(0.5, approx=approx)
 
     @save_verticapy_logs
     def min(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame by applying the 'MIN' aggregation,
+        Aggregates the vDataFrame by applying the ``MIN`` aggregation,
         which calculates the minimum value, for the input column.
         This aggregation provides insights into the lowest values
         within the dataset, aiding in understanding the data
@@ -3848,23 +3853,23 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific column.
+            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["min"]).values[self._alias][0]
 
     @save_verticapy_logs
     def product(self) -> PythonScalar:
         """
-        Aggregates the vDataColumn by applying the 'product'
+        Aggregates the vDataColumn by applying the ``product``
         aggregation function. This function computes the
         product of values within the dataset, providing
         insights into the multiplication of data points.
 
-        The 'product' aggregation can be particularly useful
+        The ``product`` aggregation can be particularly useful
         when we need to assess cumulative effects or when
         multiplying values is a key aspect of the analysis.
         This operation can be relevant in various domains,
@@ -3874,7 +3879,7 @@ class vDCAgg(vDCEval):
 
         .. note::
 
-            Since 'product' is not a conventional SQL
+            Since ``product`` is not a conventional SQL
             aggregation, we employ a unique approach by
             combining the sum of logarithms and the
             exponential function for its computation.
@@ -3906,11 +3911,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.quantile` : Quantile Aggregates for a specific column.
         """
         return self.aggregate(func=["prod"]).values[self._alias][0]
 
@@ -3919,8 +3924,8 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def quantile(self, q: PythonNumber, approx: bool = True) -> PythonScalar:
         """
-        Aggregates the vDataColumn using a specified 'quantile'.
-        The 'quantile' function is an indispensable tool for
+        Aggregates the vDataColumn using a specified ``quantile``.
+        The ``quantile`` function is an indispensable tool for
         comprehending data distribution. By providing a quantile
         value as input, this aggregation method helps us identify
         the data point below which a certain percentage of the data
@@ -3930,13 +3935,13 @@ class vDCAgg(vDCEval):
 
         .. warning::
 
-            It's important to note that the 'quantile' aggregation
+            It's important to note that the ``quantile`` aggregation
             operates in two distinct modes, allowing flexibility in
-            computation. Depending on the 'approx' parameter, it can
-            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods
-            to derive the final aggregation. The 'APPROXIMATE_QUANTILE'
+            computation. Depending on the ``approx`` parameter, it can
+            use either ``APPROXIMATE_QUANTILE`` or ``QUANTILE`` methods
+            to derive the final aggregation. The ``APPROXIMATE_QUANTILE``
             method provides faster results by estimating the quantile
-            values with an approximation technique, while 'QUANTILE'
+            values with an approximation technique, while ``QUANTILE``
             calculates precise quantiles through rigorous computation.
             This choice empowers users to strike a balance between
             computational efficiency and the level of precision
@@ -3982,7 +3987,7 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
@@ -3994,13 +3999,13 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def sem(self) -> PythonScalar:
         """
-        Leverages the 'sem' (Standard Error of the Mean) aggregation
+        Leverages the ``sem`` (Standard Error of the Mean) aggregation
         technique to perform analysis and aggregation on the vDataColumn.
         Standard Error of the Mean is a valuable statistical measure used
         to estimate the precision of the sample mean as an approximation
         of the population mean.
 
-        When we aggregate the vDataColumn using 'sem', we gain insights
+        When we aggregate the vDataColumn using ``sem``, we gain insights
         into the variability or uncertainty associated with the sample
         mean. This measure helps us assess the reliability of the sample
         mean as an estimate of the true population mean.
@@ -4041,18 +4046,18 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.mad` : Mean Absolute Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.sem` : Standard Error of Mean for particular columns.
         """
         return self.aggregate(["sem"]).values[self._alias][0]
 
     @save_verticapy_logs
     def skewness(self) -> PythonScalar:
         """
-        Utilizes the 'skewness' aggregation method to analyze and
+        Utilizes the ``skewness`` aggregation method to analyze and
         aggregate the vDataColumn. Skewness, a measure of the asymmetry
         in the data's distribution, helps us understand the data's
         deviation from a perfectly symmetrical distribution. When we
@@ -4091,11 +4096,12 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["skewness"]).values[self._alias][0]
 
@@ -4104,7 +4110,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def std(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'STDDEV' aggregation
+        Aggregates the vDataFrame using ``STDDEV`` aggregation
         (Standard Deviation), providing insights into the
         spread or variability of data for the input column.
         The standard deviation is a measure of how much individual
@@ -4134,11 +4140,12 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["stddev"]).values[self._alias][0]
 
@@ -4147,7 +4154,7 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def sum(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'SUM' aggregation, which
+        Aggregates the vDataFrame using ``SUM`` aggregation, which
         computes the total sum of values for the specified columns,
         providing a cumulative view of numerical data.
 
@@ -4174,18 +4181,18 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataFrame.sum` : Sum for particular columns.
+            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific colum.
         """
         return self.aggregate(["sum"]).values[self._alias][0]
 
     @save_verticapy_logs
     def var(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'VAR' aggregation
+        Aggregates the vDataFrame using ``VAR`` aggregation
         (Variance), providing insights into the spread or
         variability of data for the input column.
         The variance is a measure of how much individual
@@ -4215,7 +4222,7 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
@@ -4283,11 +4290,11 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | :py:mod:`verticapy.vDataFrame.median` : Median for particular columns.
         """
         if n == 1:
             pre_comp = self._parent._get_catalog_value(self._alias, "top")
@@ -4378,15 +4385,15 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_value_counts_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_value_counts_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -4448,15 +4455,15 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_topk_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_topk_table.html
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:mod:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         limit, where, topk_cat = "", "", ""
         if k >= 1:
@@ -4521,11 +4528,124 @@ class vDCAgg(vDCEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: For more precise control, please refer to the `aggregate` method.
+        .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
             | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+        """
+        alias_sql_repr = to_varchar(self.category(), self._alias)
+        if "agg" not in kwargs:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vDataColumn.distinct')*/ 
+                    {alias_sql_repr} AS {self} 
+                FROM {self._parent} 
+                WHERE {self} IS NOT NULL 
+                GROUP BY {self} 
+                ORDER BY {self}"""
+        else:
+            query = f"""
+                SELECT 
+                    /*+LABEL('vDataColumn.distinct')*/ {self} 
+                FROM 
+                    (SELECT 
+                        {alias_sql_repr} AS {self}, 
+                        {kwargs['agg']} AS verticapy_agg 
+                     FROM {self._parent} 
+                     WHERE {self} IS NOT NULL 
+                     GROUP BY 1) x 
+                ORDER BY verticapy_agg DESC"""
+        query_result = _executeSQL(
+            query=query,
+            title=f"Computing the distinct categories of {self}.",
+            method="fetchall",
+            sql_push_ext=self._parent._vars["sql_push_ext"],
+            symbol=self._parent._vars["symbol"],
+        )
+        return [item for sublist in query_result for item in sublist]
+
+    @save_verticapy_logs
+    def nunique(self, approx: bool = True) -> int:
+        """
+                When aggregating the vDataFrame using ``nunique`` (cardinality),
+                VerticaPy employs the COUNT DISTINCT function to determine the
+                number of unique values in particular columns. It also offers
+                the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient
+                approximation method for calculating cardinality.
+
+                .. hint::
+
+                    This flexibility allows you to optimize the computation
+                    based on your specific requirements, keeping in mind
+                    that using APPROXIMATE_COUNT_DISTINCT can significantly
+                    improve performance when cardinality estimation is sufficient
+                    for your analysis.
+
+                .. important::
+
+                    To calculate the exact cardinality of a column, you should
+                    set the parameter ``approx`` to False. This will ensure that
+                    the cardinality is computed accurately rather than using the
+                    approximate method.
+
+                Parameters
+                ----------
+                approx: bool, optional
+                    If  set  to  True,  the  approximate  cardinality
+                    is   returned.  By  setting  this  parameter   to
+                    False, the function's performance can drastically
+                    decrease.
+
+                Returns
+                -------
+                int
+                    vDataColumn cardinality (or approximate cardinality).
+
+                Examples
+                --------
+                For this example, let's generate a dataset and calculate the
+                cardinality of a column:
+
+                .. ipython:: python
+
+                    import verticapy as vp
+
+                    data = vp.vDataFrame({
+                        "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                        "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                        "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    })
+                    data["y"].nunique()
+
+                .. note:: All the calculations are pushed to the database.
+
+                .. hint:: For more precise control, please refer to the ``aggregate`` method.
+
+                .. seealso::
+                    | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
+                    | :py:mod:`verticapy.vDataFrame.nunique` : Cardinaility for particular columns.
+        pute
+                all the distinct elements of a column:
+
+                .. ipython:: python
+
+                    import verticapy as vp
+
+                    data = vp.vDataFrame({
+                        "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                        "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                        "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    })
+                    data["y"].distinct()
+
+                .. note:: All the calculations are pushed to the database.
+
+                .. hint:: For more precise control, please refer to the `aggregate` method.
+
+                .. seealso::
+                    | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+                    | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
