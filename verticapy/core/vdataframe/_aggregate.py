@@ -84,7 +84,8 @@ class vDFAgg(vDFEval):
             |    **aad**: average absolute deviation
             |    **approx_median**: approximate median
             |    **approx_q%**: approximate q quantile
-                            (ex: approx_50% for the approximate median)
+                                (ex: approx_50% for the 
+                                approximate median)
             |    **approx_unique**: approximative cardinality
             |    **count**: number of non-missing elements
             |    **cvar**: conditional value at risk
@@ -113,7 +114,7 @@ class vDFAgg(vDFEval):
             |    **unique**: cardinality (count distinct)
             |    **var**: variance
             | Other aggregations will work if supported by your database
-            version.
+              version.
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the
             aggregations, all or only numerical vDataColumns are used.
@@ -1102,7 +1103,22 @@ class vDFAgg(vDFEval):
         having: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Aggregates the vDataFrame by grouping the elements.
+        This method facilitates the aggregation of the vDataFrame by 
+        grouping its elements based on one or more specified criteria. 
+        Grouping is a critical operation in data analysis, as it allows 
+        us to segment data into subsets, making it easier to apply 
+        various aggregation functions and gain insights specific to 
+        each group.
+
+        The 'groupby' method can be applied to one or more columns, and 
+        it is particularly valuable when we want to calculate aggregate 
+        statistics or perform operations within distinct categories or 
+        segments of our data. By grouping the elements, we can perform 
+        custom analyses, create summary statistics, or uncover patterns 
+        that might not be apparent when looking at the entire dataset as 
+        a whole. It is a foundational method in data analysis and is used 
+        extensively to explore and understand data dynamics in numerous 
+        domains.
 
         Parameters
         ----------
@@ -1133,6 +1149,107 @@ class vDFAgg(vDFEval):
         -------
         vDataFrame
             object result of the grouping.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+        
+        You can perform grouping using a direct SQL statement.
+
+        .. code-block:: python
+
+            data.groupby(
+                columns = ["x"],
+                expr = ["AVG(y) AS avg_y", "MIN(z) AS min_z"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            result = data.groupby(
+                columns = ["x"],
+                expr = ["AVG(y) AS avg_y", "MIN(z) AS min_z"],
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_groupby_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
+
+        Alternatively, you can achieve grouping using VerticaPy SQL 
+        functions, which offer a more Pythonic approach.
+
+        .. code-block:: python
+
+            import verticapy.sql.functions as vpf
+
+            data.groupby(
+                columns = ["x"],
+                expr = [
+                    vpf.avg(data["y"])._as("avg_y"),
+                    vpf.min(data["z"])._as("min_z"),
+                ],
+            )
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
+
+        You can also perform rollup aggregations.
+
+        .. code-block:: python
+
+            data.groupby(
+                columns = ["x"],
+                expr = [
+                    vpf.avg(data["y"])._as("avg_y"),
+                    vpf.min(data["z"])._as("min_z"),
+                ],
+                rollup = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.sql.functions as vpf
+            result = data.groupby(
+                columns = ["x"],
+                expr = [
+                    vpf.avg(data["y"])._as("avg_y"),
+                    vpf.min(data["z"])._as("min_z"),
+                ],
+                rollup = True,
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_groupby_table_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For additional aggregation options, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         columns, expr = format_type(columns, expr, dtype=list)
         assert not isinstance(rollup, list) or len(rollup) == len(columns), ValueError(
@@ -1954,7 +2071,7 @@ class vDFAgg(vDFEval):
         .. code-block:: python
 
             data.median(
-                columns = ["x", "y", "z"],,
+                columns = ["x", "y", "z"],
                 approx = True,
             )
 
@@ -1968,7 +2085,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
             result = data.median(
-                columns = ["x", "y", "z"],,
+                columns = ["x", "y", "z"],
                 approx = True,
             )
             html_file = open("figures/core_vDataFrame_vDFAgg_median_table.html", "w")
@@ -2033,7 +2150,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
         
-        Now, let's calculate the maximum for specific columns.
+        Now, let's calculate the minimum for specific columns.
 
         .. code-block:: python
 
@@ -2077,7 +2194,29 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'product'.
+        Aggregates the vDataFrame by applying the 'product' 
+        aggregation function. This function computes the 
+        product of values within the dataset, providing 
+        insights into the multiplication of data points. 
+
+        The 'product' aggregation can be particularly useful 
+        when we need to assess cumulative effects or when 
+        multiplying values is a key aspect of the analysis. 
+        This operation can be relevant in various domains, 
+        such as finance, economics, and engineering, where 
+        understanding the combined impact of values is 
+        critical for decision-making and modeling.
+
+        .. note::
+
+            Since 'product' is not a conventional SQL 
+            aggregation, we employ a unique approach by 
+            combining the sum of logarithms and the 
+            exponential function for its computation. 
+            This non-standard methodology is utilized to 
+            derive the product of values within the dataset, 
+            offering a distinctive way to understand the 
+            multiplicative effects of data points.
 
         Parameters
         ----------
@@ -2092,6 +2231,55 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+        
+        Now, let's calculate the product for specific columns.
+
+        .. code-block:: python
+
+            data.product(
+                columns = ["x", "y", "z"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            result = data.product(
+                columns = ["x", "y", "z"],
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_product_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_product_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For more precise control, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         return self.aggregate(func=["prod"], columns=columns, **agg_kwargs)
 
@@ -2106,8 +2294,28 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using an ArrayLike of
-        'quantiles'.
+        Aggregates the vDataFrame using specified 'quantiles'. 
+        The 'quantile' function is an indispensable tool for 
+        comprehending data distribution. By providing a quantile 
+        value as input, this aggregation method helps us identify 
+        the data point below which a certain percentage of the data 
+        falls. This can be pivotal for tasks like analyzing data 
+        distributions, assessing skewness, and determining essential 
+        percentiles such as medians or quartiles.
+
+        .. warning::
+
+            It's important to note that the 'quantile' aggregation 
+            operates in two distinct modes, allowing flexibility in 
+            computation. Depending on the 'approx' parameter, it can 
+            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods 
+            to derive the final aggregation. The 'APPROXIMATE_QUANTILE' 
+            method provides faster results by estimating the quantile 
+            values with an approximation technique, while 'QUANTILE' 
+            calculates precise quantiles through rigorous computation. 
+            This choice empowers users to strike a balance between 
+            computational efficiency and the level of precision 
+            required for their specific data analysis tasks.
 
         Parameters
         ----------
@@ -2131,6 +2339,60 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+        
+        Now, let's calculate some approximate quantiles for 
+        specific columns.
+
+        .. code-block:: python
+
+            data.quantile(
+                q = [0.1, 0.2, 0.5, 0.9],
+                columns = ["x", "y", "z"],
+                approx = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            result = data.quantile(
+                q = [0.1, 0.2, 0.5, 0.9],
+                columns = ["x", "y", "z"],
+                approx = True,
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_quantile_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_quantile_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For more precise control, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         if isinstance(q, (int, float)):
             q = [q]
@@ -2370,7 +2632,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
         
-        Now, let's calculate the maximum for specific columns.
+        Now, let's calculate the standard deviation for specific columns.
 
         .. code-block:: python
 
@@ -2448,7 +2710,7 @@ class vDFAgg(vDFEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
         
-        Now, let's calculate the maximum for specific columns.
+        Now, let's calculate the sum for specific columns.
 
         .. code-block:: python
 
@@ -2713,7 +2975,9 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
-
+        
+        Examples
+        --------
         For this example, we will use the following dataset:
 
         .. code-block:: python
@@ -2771,7 +3035,25 @@ class vDFAgg(vDFEval):
         self, columns: Optional[SQLColumns] = None, count: bool = False, limit: int = 30
     ) -> TableSample:
         """
-        Returns the duplicated values.
+        This function returns a list or set of values that occur more 
+        than once within the dataset. It identifies and provides you 
+        with insight into which specific values or entries are duplicated 
+        in the dataset, helping to detect and manage data redundancy and 
+        potential issues related to duplicate information.
+
+        .. warning::
+
+            This function employs the 'ROW_NUMBER' SQL function with 
+            multiple partition criteria. It's essential to note that 
+            as the number of partition columns increases, the 
+            computational cost can rise significantly. The 'ROW_NUMBER' 
+            function assigns a unique rank to each row within its 
+            partition, which means that the more columns are involved 
+            in partitioning, the more complex and resource-intensive 
+            the operation becomes. Therefore, when using a large number 
+            of columns for partitioning, it's important to be mindful 
+            of potential performance implications, as it may become 
+            computationally expensive.
 
         Parameters
         ----------
@@ -2788,6 +3070,55 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 15, 1, 15, 20, 1],
+                "y": [1, 2, 1, 1, 1, 1, 2, 1],
+                "z": [10, 12, 9, 10, 9, 8, 1, 10],
+            })
+        
+        Now, let's find duplicated rows.
+
+        .. code-block:: python
+
+            data.duplicated(
+                columns = ["x", "y", "z"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 15, 1, 15, 20, 1],
+                "y": [1, 2, 1, 1, 1, 1, 2, 1],
+                "z": [10, 12, 9, 10, 9, 8, 1, 10],
+            })
+            result = data.duplicated(
+                columns = ["x", "y", "z"],
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_duplicated_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_duplicated_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For more precise control, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -2857,7 +3188,8 @@ class vDCAgg(vDCEval):
             |    **aad**: average absolute deviation
             |    **approx_median**: approximate median
             |    **approx_q%**: approximate q quantile
-                            (ex: approx_50% for the approximate median)
+                                (ex: approx_50% for the 
+                                approximate median)
             |    **approx_unique**: approximative cardinality
             |    **count**: number of non-missing elements
             |    **cvar**: conditional value at risk
@@ -2881,13 +3213,12 @@ class vDCAgg(vDCEval):
             |    **skewness**: skewness
             |    **sum**: sum
             |    **std**: standard deviation
-            |    **topk**: kth most occurent element
-                           (ex: top1 for the mode)
+            |    **topk**: kth most occurent element (ex: top1 for the mode)
             |    **topk_percent**: kth most occurent element density
             |    **unique**: cardinality (count distinct)
             |    **var**: variance
             | Other aggregations will work if supported by your database
-            version.
+              version.
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the
             aggregations, all or only numerical vDataColumns are used.
@@ -3528,25 +3859,92 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def product(self) -> PythonScalar:
         """
-        Aggregates the vDataColumn using 'product'.
+        Aggregates the vDataColumn by applying the 'product' 
+        aggregation function. This function computes the 
+        product of values within the dataset, providing 
+        insights into the multiplication of data points. 
+
+        The 'product' aggregation can be particularly useful 
+        when we need to assess cumulative effects or when 
+        multiplying values is a key aspect of the analysis. 
+        This operation can be relevant in various domains, 
+        such as finance, economics, and engineering, where 
+        understanding the combined impact of values is 
+        critical for decision-making and modeling.
+
+        .. note::
+
+            Since 'product' is not a conventional SQL 
+            aggregation, we employ a unique approach by 
+            combining the sum of logarithms and the 
+            exponential function for its computation. 
+            This non-standard methodology is utilized to 
+            derive the product of values within the dataset, 
+            offering a distinctive way to understand the 
+            multiplicative effects of data points.
 
         Returns
         -------
         PythonScalar
             product
+
+        Examples
+        --------
+        For this example, let's generate a dataset and calculate the 
+        product of a column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            data["x"].product()
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For more precise control, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         return self.aggregate(func=["prod"]).values[self._alias][0]
 
     prod = product
 
     @save_verticapy_logs
-    def quantile(self, x: PythonNumber, approx: bool = True) -> PythonScalar:
+    def quantile(self, q: PythonNumber, approx: bool = True) -> PythonScalar:
         """
-        Aggregates the vDataColumn using an input 'quantile'.
+        Aggregates the vDataColumn using a specified 'quantile'. 
+        The 'quantile' function is an indispensable tool for 
+        comprehending data distribution. By providing a quantile 
+        value as input, this aggregation method helps us identify 
+        the data point below which a certain percentage of the data 
+        falls. This can be pivotal for tasks like analyzing data 
+        distributions, assessing skewness, and determining essential 
+        percentiles such as medians or quartiles.
+
+        .. warning::
+
+            It's important to note that the 'quantile' aggregation 
+            operates in two distinct modes, allowing flexibility in 
+            computation. Depending on the 'approx' parameter, it can 
+            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods 
+            to derive the final aggregation. The 'APPROXIMATE_QUANTILE' 
+            method provides faster results by estimating the quantile 
+            values with an approximation technique, while 'QUANTILE' 
+            calculates precise quantiles through rigorous computation. 
+            This choice empowers users to strike a balance between 
+            computational efficiency and the level of precision 
+            required for their specific data analysis tasks.
 
         Parameters
         ----------
-        x: PythonNumber
+        q: PythonNumber
             A float between 0 and  1 that represents the
             quantile.  For  example:  0.25 represents Q1.
         approx: bool, optional
@@ -3559,9 +3957,39 @@ class vDCAgg(vDCEval):
         -------
         PythonScalar
             quantile (or approximate quantile).
+
+        Examples
+        --------
+        For this example, let's generate a dataset and calculate the 
+        approximate median of a column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            data["x"].quantile(q = 0.5, approx = True)
+
+        Let's compute the approximate last decile of a column.
+
+        .. ipython:: python
+
+            data["x"].quantile(q = 0.9, approx = True)
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. hint:: For more precise control, please refer to the `aggregate` method.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         prefix = "approx_" if approx else ""
-        return self.aggregate(func=[f"{prefix}{x * 100}%"]).values[self._alias][0]
+        return self.aggregate(func=[f"{prefix}{q * 100}%"]).values[self._alias][0]
 
     @save_verticapy_logs
     def sem(self) -> PythonScalar:
