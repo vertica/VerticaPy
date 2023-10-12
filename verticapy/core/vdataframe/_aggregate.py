@@ -195,9 +195,12 @@ class vDFAgg(vDFEval):
             ones, and the results are combined at the end.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataColumn.describe` : Summarizes the information within the column.
-            | :py:mod:`verticapy.vDataFrame.describe` : Summarizes the information for specific columns.
+            | :py:mod:`verticapy.vDataColumn.aggregate` :
+              Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataColumn.describe` :
+              Summarizes the information within the column.
+            | :py:mod:`verticapy.vDataFrame.describe` :
+              Summarizes the information for specific columns.
         """
         columns, func = format_type(columns, func, dtype=list)
         if len(columns) == 0:
@@ -1434,8 +1437,10 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aad` : Average Absolute Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:mod:`verticapy.vDataColumn.aad` :
+              Average Absolute Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.std` :
+              Standard Deviation for particular columns.
         """
         return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
 
@@ -3292,8 +3297,10 @@ class vDCAgg(vDCEval):
 
         .. seealso::
             | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:mod:`verticapy.vDataColumn.describe` : Summarizes the information within the column.
-            | :py:mod:`verticapy.vDataFrame.describe` : Summarizes the information for specific columns.
+            | :py:mod:`verticapy.vDataColumn.describe` :
+              Summarizes the information within the column.
+            | :py:mod:`verticapy.vDataFrame.describe` :
+              Summarizes the information for specific columns.
         """
         return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
 
@@ -3528,8 +3535,10 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aad` : Standard Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aad` : Average Absolute Deviation for particular columns.
+            | :py:mod:`verticapy.vDataColumn.aad` :
+              Standard Deviation for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aad` :
+              Average Absolute Deviation for particular columns.
         """
         return self.aggregate(["aad"]).values[self._alias][0]
 
@@ -3611,7 +3620,8 @@ class vDCAgg(vDCEval):
 
         .. seealso::
             | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
-            | :py:mod:`verticapy.vDataFrame.count_percent` : Percentage count for particular columns.
+            | :py:mod:`verticapy.vDataFrame.count_percent` :
+              Percentage count for particular columns.
         """
         return self.aggregate(["count"]).values[self._alias][0]
 
@@ -4393,7 +4403,8 @@ class vDCAgg(vDCEval):
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
+            | :py:mod:`verticapy.vDataFrame.duplicated` :
+              Duplicated values for particular columns.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -4623,8 +4634,10 @@ class vDCAgg(vDCEval):
                 .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
                 .. seealso::
-                    | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
-                    | :py:mod:`verticapy.vDataFrame.nunique` : Cardinaility for particular columns.
+                    | :py:mod:`verticapy.vDataFrame.duplicated` :
+                      Duplicate Values for particular columns.
+                    | :py:mod:`verticapy.vDataFrame.nunique` :
+                      Cardinaility for particular columns.
         pute
                 all the distinct elements of a column:
 
@@ -4644,8 +4657,10 @@ class vDCAgg(vDCEval):
                 .. hint:: For more precise control, please refer to the `aggregate` method.
 
                 .. seealso::
-                    | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-                    | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+                    | :py:mod:`verticapy.vDataColumn.aggregate` :
+                      Aggregations for a specific column.
+                    | :py:mod:`verticapy.vDataFrame.aggregate` :
+                      Aggregates for particular columns.
         """
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
