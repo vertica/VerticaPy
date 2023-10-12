@@ -84,7 +84,7 @@ class vDFAgg(vDFEval):
             |    **aad**: average absolute deviation
             |    **approx_median**: approximate median
             |    **approx_q%**: approximate q quantile
-                                (ex: approx_50% for the 
+                                (ex: approx_50% for the
                                 approximate median)
             |    **approx_unique**: approximative cardinality
             |    **count**: number of non-missing elements
@@ -149,10 +149,10 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        With the `aggregate` method, you have the flexibility to select specific 
-        aggregates and the columns you wish to include in the query. This 
-        allows for more precise control over the aggregation process and helps 
+
+        With the `aggregate` method, you have the flexibility to select specific
+        aggregates and the columns you wish to include in the query. This
+        allows for more precise control over the aggregation process and helps
         tailor the results to your specific needs.
 
         .. code-block:: python
@@ -184,14 +184,14 @@ class vDFAgg(vDFEval):
 
         .. note:: All the calculations are pushed to the database.
 
-        .. hint:: 
+        .. hint::
 
-            When the vDataFrame includes a large number of columns and many aggregates 
-            need to be computed, it can be resource-intensive for the database. To 
-            address this, you can use the `ncols_block` parameter to control the number 
-            of blocks of aggregates to use and the `processes` parameter to manage 
-            the number of processes. These blocks consist of specific columns, and 
-            their aggregates are calculated first (or in parallel), then the subsequent 
+            When the vDataFrame includes a large number of columns and many aggregates
+            need to be computed, it can be resource-intensive for the database. To
+            address this, you can use the `ncols_block` parameter to control the number
+            of blocks of aggregates to use and the `processes` parameter to manage
+            the number of processes. These blocks consist of specific columns, and
+            their aggregates are calculated first (or in parallel), then the subsequent
             ones, and the results are combined at the end.
 
         .. seealso::
@@ -1103,21 +1103,21 @@ class vDFAgg(vDFEval):
         having: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        This method facilitates the aggregation of the vDataFrame by 
-        grouping its elements based on one or more specified criteria. 
-        Grouping is a critical operation in data analysis, as it allows 
-        us to segment data into subsets, making it easier to apply 
-        various aggregation functions and gain insights specific to 
+        This method facilitates the aggregation of the vDataFrame by
+        grouping its elements based on one or more specified criteria.
+        Grouping is a critical operation in data analysis, as it allows
+        us to segment data into subsets, making it easier to apply
+        various aggregation functions and gain insights specific to
         each group.
 
-        The 'groupby' method can be applied to one or more columns, and 
-        it is particularly valuable when we want to calculate aggregate 
-        statistics or perform operations within distinct categories or 
-        segments of our data. By grouping the elements, we can perform 
-        custom analyses, create summary statistics, or uncover patterns 
-        that might not be apparent when looking at the entire dataset as 
-        a whole. It is a foundational method in data analysis and is used 
-        extensively to explore and understand data dynamics in numerous 
+        The 'groupby' method can be applied to one or more columns, and
+        it is particularly valuable when we want to calculate aggregate
+        statistics or perform operations within distinct categories or
+        segments of our data. By grouping the elements, we can perform
+        custom analyses, create summary statistics, or uncover patterns
+        that might not be apparent when looking at the entire dataset as
+        a whole. It is a foundational method in data analysis and is used
+        extensively to explore and understand data dynamics in numerous
         domains.
 
         Parameters
@@ -1163,7 +1163,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         You can perform grouping using a direct SQL statement.
 
         .. code-block:: python
@@ -1193,7 +1193,7 @@ class vDFAgg(vDFEval):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
-        Alternatively, you can achieve grouping using VerticaPy SQL 
+        Alternatively, you can achieve grouping using VerticaPy SQL
         functions, which offer a more Pythonic approach.
 
         .. code-block:: python
@@ -1349,28 +1349,28 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'aad' (Average Absolute Deviation) aggregation 
-        method to analyze the vDataColumn. 'AAD' measures the average 
-        absolute deviation of data points from their mean, offering 
-        valuable insights into data variability and dispersion. 
-        When we aggregate the vDataFrame using 'aad,' we gain an 
-        understanding of how data points deviate from the mean on 
-        average, which is particularly useful for assessing data 
+        Utilizes the 'aad' (Average Absolute Deviation) aggregation
+        method to analyze the vDataColumn. 'AAD' measures the average
+        absolute deviation of data points from their mean, offering
+        valuable insights into data variability and dispersion.
+        When we aggregate the vDataFrame using 'aad,' we gain an
+        understanding of how data points deviate from the mean on
+        average, which is particularly useful for assessing data
         spread and the magnitude of deviations.
 
-        This method is valuable in scenarios where we want to evaluate 
-        data variability while giving equal weight to all data points, 
-        regardless of their direction of deviation. Calculating 'aad' 
-        provides us with information about the overall data consistency 
-        and can be useful in various analytical and quality assessment 
+        This method is valuable in scenarios where we want to evaluate
+        data variability while giving equal weight to all data points,
+        regardless of their direction of deviation. Calculating 'aad'
+        provides us with information about the overall data consistency
+        and can be useful in various analytical and quality assessment
         contexts.
 
         .. warning::
 
-            To compute aad, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating aad 
+            To compute aad, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating aad
             is typically slower than some other types of aggregations.
 
         Parameters
@@ -1400,8 +1400,8 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        Now, let's calculate the average absolute deviation for 
+
+        Now, let's calculate the average absolute deviation for
         specific columns.
 
         .. code-block:: python
@@ -1446,12 +1446,12 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Applies the 'BOOL_AND' aggregation method to the vDataFrame. 
-        'BOOL_AND,' or Boolean AND, evaluates whether all the 
-        conditions within a set of Boolean values are 'true.' 
-        This is useful when you need to ascertain if every condition 
-        holds. It is particularly handy when working with binary data 
-        or to ensure that all specified conditions are met within the 
+        Applies the 'BOOL_AND' aggregation method to the vDataFrame.
+        'BOOL_AND,' or Boolean AND, evaluates whether all the
+        conditions within a set of Boolean values are 'true.'
+        This is useful when you need to ascertain if every condition
+        holds. It is particularly handy when working with binary data
+        or to ensure that all specified conditions are met within the
         dataset.
 
         Parameters
@@ -1481,7 +1481,7 @@ class vDFAgg(vDFEval):
                 "y": [False, False, False],
                 "z": [True, True, True],
             })
-        
+
         Now, let's use the 'all' aggregator for specific columns.
 
         .. code-block:: python
@@ -1526,10 +1526,10 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Uses the 'BOOL_OR' aggregation method in the vDataFrame. 
-        This method checks if at least one 'true' condition exists 
-        within a set of Boolean values. It's particularly handy 
-        for situations involving binary data or when you need to 
+        Uses the 'BOOL_OR' aggregation method in the vDataFrame.
+        This method checks if at least one 'true' condition exists
+        within a set of Boolean values. It's particularly handy
+        for situations involving binary data or when you need to
         determine if any of the conditions are met.
 
         Parameters
@@ -1559,7 +1559,7 @@ class vDFAgg(vDFEval):
                 "y": [False, False, False],
                 "z": [True, True, True],
             })
-        
+
         Now, let's use the 'any' aggregator for specific columns.
 
         .. code-block:: python
@@ -1604,10 +1604,10 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        This operation aggregates the vDataFrame using the 'AVG' 
-        aggregation, which calculates the average value for the 
-        selected column or columns. It provides insights into the 
-        central tendency of the data and is a fundamental statistical 
+        This operation aggregates the vDataFrame using the 'AVG'
+        aggregation, which calculates the average value for the
+        selected column or columns. It provides insights into the
+        central tendency of the data and is a fundamental statistical
         measure often used in data analysis and reporting.
 
         Parameters
@@ -1637,7 +1637,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the averages for specific columns.
 
         .. code-block:: python
@@ -1684,9 +1684,9 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        This operation aggregates the vDataFrame using the 
-        'COUNT' aggregation, providing the count of non-missing 
-        values for specified columns. This is valuable for 
+        This operation aggregates the vDataFrame using the
+        'COUNT' aggregation, providing the count of non-missing
+        values for specified columns. This is valuable for
         assessing data completeness and quality.
 
         Parameters
@@ -1716,7 +1716,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the count for specific columns.
 
         .. code-block:: python
@@ -1761,21 +1761,21 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Calculates the kurtosis of the vDataFrame to obtain a measure 
-        of the data's peakedness or tailness. The kurtosis statistic 
-        helps us understand the shape of the data distribution. 
-        It quantifies whether the data has heavy tails or is more peaked 
-        relative to a normal distribution. 
+        Calculates the kurtosis of the vDataFrame to obtain a measure
+        of the data's peakedness or tailness. The kurtosis statistic
+        helps us understand the shape of the data distribution.
+        It quantifies whether the data has heavy tails or is more peaked
+        relative to a normal distribution.
 
-        By aggregating the vDataFrame with kurtosis, we can gain valuable 
+        By aggregating the vDataFrame with kurtosis, we can gain valuable
         insights into the data's distribution characteristics.
 
         .. warning::
 
-            To compute kurtosis, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating kurtosis 
+            To compute kurtosis, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating kurtosis
             is typically slower than some other types of aggregations.
 
         Parameters
@@ -1804,7 +1804,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the kurtosis for specific columns.
 
         .. code-block:: python
@@ -1851,26 +1851,26 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'mad' (Median Absolute Deviation) aggregation 
-        method with the vDataFrame. 'MAD' measures the dispersion 
-        of data points around the median, and it is particularly 
-        valuable for assessing the robustness of data in the 
-        presence of outliers. When we aggregate the vDataFrame 
-        using 'mad', we gain insights into the variability and 
-        the degree to which data points deviate from the median. 
-        
-        This is especially useful for datasets where we want to 
-        understand the spread of values while being resistant to 
-        the influence of extreme outliers. Calculating 'mad' can 
-        involve robust statistical computations, making it a useful 
+        Utilizes the 'mad' (Median Absolute Deviation) aggregation
+        method with the vDataFrame. 'MAD' measures the dispersion
+        of data points around the median, and it is particularly
+        valuable for assessing the robustness of data in the
+        presence of outliers. When we aggregate the vDataFrame
+        using 'mad', we gain insights into the variability and
+        the degree to which data points deviate from the median.
+
+        This is especially useful for datasets where we want to
+        understand the spread of values while being resistant to
+        the influence of extreme outliers. Calculating 'mad' can
+        involve robust statistical computations, making it a useful
         tool for outlier-robust analysis and data quality evaluation.
 
         .. warning::
 
-            To compute mad, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating mad 
+            To compute mad, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating mad
             is typically slower than some other types of aggregations.
 
         Parameters
@@ -1899,8 +1899,8 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        Now, let's calculate the median absolute deviation for 
+
+        Now, let's calculate the median absolute deviation for
         specific columns.
 
         .. code-block:: python
@@ -1945,10 +1945,10 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'MAX' aggregation, 
-        which calculates the maximum value, for the specified 
-        columns. This aggregation provides insights into the highest 
-        values within the dataset, aiding in understanding the data 
+        Aggregates the vDataFrame by applying the 'MAX' aggregation,
+        which calculates the maximum value, for the specified
+        columns. This aggregation provides insights into the highest
+        values within the dataset, aiding in understanding the data
         distribution.
 
         Parameters
@@ -1977,7 +1977,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the maximum for specific columns.
 
         .. code-block:: python
@@ -2023,17 +2023,17 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN' 
-        aggregation, which calculates the median value for the specified 
-        columns. The median is a robust measure of central tendency and 
-        helps in understanding the distribution of data, especially in 
+        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN'
+        aggregation, which calculates the median value for the specified
+        columns. The median is a robust measure of central tendency and
+        helps in understanding the distribution of data, especially in
         the presence of outliers.
 
-        .. warning:: 
+        .. warning::
 
-            When you set `approx` to True, the approximate median is 
-            computed, which is significantly faster than the exact 
-            calculation. However, be cautious when setting `approx` 
+            When you set `approx` to True, the approximate median is
+            computed, which is significantly faster than the exact
+            calculation. However, be cautious when setting `approx`
             to False, as it can significantly slow down the performance.
 
         Parameters
@@ -2065,7 +2065,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the median for specific columns.
 
         .. code-block:: python
@@ -2117,10 +2117,10 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'MIN' aggregation, 
-        which calculates the minimum value, for the specified 
-        columns. This aggregation provides insights into the lowest 
-        values within the dataset, aiding in understanding the data 
+        Aggregates the vDataFrame by applying the 'MIN' aggregation,
+        which calculates the minimum value, for the specified
+        columns. This aggregation provides insights into the lowest
+        values within the dataset, aiding in understanding the data
         distribution.
 
         Parameters
@@ -2149,7 +2149,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the minimum for specific columns.
 
         .. code-block:: python
@@ -2194,28 +2194,28 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame by applying the 'product' 
-        aggregation function. This function computes the 
-        product of values within the dataset, providing 
-        insights into the multiplication of data points. 
+        Aggregates the vDataFrame by applying the 'product'
+        aggregation function. This function computes the
+        product of values within the dataset, providing
+        insights into the multiplication of data points.
 
-        The 'product' aggregation can be particularly useful 
-        when we need to assess cumulative effects or when 
-        multiplying values is a key aspect of the analysis. 
-        This operation can be relevant in various domains, 
-        such as finance, economics, and engineering, where 
-        understanding the combined impact of values is 
+        The 'product' aggregation can be particularly useful
+        when we need to assess cumulative effects or when
+        multiplying values is a key aspect of the analysis.
+        This operation can be relevant in various domains,
+        such as finance, economics, and engineering, where
+        understanding the combined impact of values is
         critical for decision-making and modeling.
 
         .. note::
 
-            Since 'product' is not a conventional SQL 
-            aggregation, we employ a unique approach by 
-            combining the sum of logarithms and the 
-            exponential function for its computation. 
-            This non-standard methodology is utilized to 
-            derive the product of values within the dataset, 
-            offering a distinctive way to understand the 
+            Since 'product' is not a conventional SQL
+            aggregation, we employ a unique approach by
+            combining the sum of logarithms and the
+            exponential function for its computation.
+            This non-standard methodology is utilized to
+            derive the product of values within the dataset,
+            offering a distinctive way to understand the
             multiplicative effects of data points.
 
         Parameters
@@ -2245,7 +2245,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the product for specific columns.
 
         .. code-block:: python
@@ -2294,27 +2294,27 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using specified 'quantiles'. 
-        The 'quantile' function is an indispensable tool for 
-        comprehending data distribution. By providing a quantile 
-        value as input, this aggregation method helps us identify 
-        the data point below which a certain percentage of the data 
-        falls. This can be pivotal for tasks like analyzing data 
-        distributions, assessing skewness, and determining essential 
+        Aggregates the vDataFrame using specified 'quantiles'.
+        The 'quantile' function is an indispensable tool for
+        comprehending data distribution. By providing a quantile
+        value as input, this aggregation method helps us identify
+        the data point below which a certain percentage of the data
+        falls. This can be pivotal for tasks like analyzing data
+        distributions, assessing skewness, and determining essential
         percentiles such as medians or quartiles.
 
         .. warning::
 
-            It's important to note that the 'quantile' aggregation 
-            operates in two distinct modes, allowing flexibility in 
-            computation. Depending on the 'approx' parameter, it can 
-            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods 
-            to derive the final aggregation. The 'APPROXIMATE_QUANTILE' 
-            method provides faster results by estimating the quantile 
-            values with an approximation technique, while 'QUANTILE' 
-            calculates precise quantiles through rigorous computation. 
-            This choice empowers users to strike a balance between 
-            computational efficiency and the level of precision 
+            It's important to note that the 'quantile' aggregation
+            operates in two distinct modes, allowing flexibility in
+            computation. Depending on the 'approx' parameter, it can
+            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods
+            to derive the final aggregation. The 'APPROXIMATE_QUANTILE'
+            method provides faster results by estimating the quantile
+            values with an approximation technique, while 'QUANTILE'
+            calculates precise quantiles through rigorous computation.
+            This choice empowers users to strike a balance between
+            computational efficiency and the level of precision
             required for their specific data analysis tasks.
 
         Parameters
@@ -2353,8 +2353,8 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        Now, let's calculate some approximate quantiles for 
+
+        Now, let's calculate some approximate quantiles for
         specific columns.
 
         .. code-block:: python
@@ -2410,28 +2410,28 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Leverages the 'sem' (Standard Error of the Mean) aggregation 
-        technique to perform analysis and aggregation on the vDataFrame. 
-        Standard Error of the Mean is a valuable statistical measure used 
-        to estimate the precision of the sample mean as an approximation 
-        of the population mean. 
+        Leverages the 'sem' (Standard Error of the Mean) aggregation
+        technique to perform analysis and aggregation on the vDataFrame.
+        Standard Error of the Mean is a valuable statistical measure used
+        to estimate the precision of the sample mean as an approximation
+        of the population mean.
 
-        When we aggregate the vDataFrame using 'sem', we gain insights 
-        into the variability or uncertainty associated with the sample 
-        mean. This measure helps us assess the reliability of the sample 
-        mean as an estimate of the true population mean. 
+        When we aggregate the vDataFrame using 'sem', we gain insights
+        into the variability or uncertainty associated with the sample
+        mean. This measure helps us assess the reliability of the sample
+        mean as an estimate of the true population mean.
 
-        It is worth noting that computing the Standard Error of the Mean 
-        requires statistical calculations and can be particularly useful 
-        when evaluating the precision of sample statistics or making 
+        It is worth noting that computing the Standard Error of the Mean
+        requires statistical calculations and can be particularly useful
+        when evaluating the precision of sample statistics or making
         inferences about a larger dataset based on a sample.
 
         .. warning::
 
-            To compute sem, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating sem is 
+            To compute sem, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating sem is
             typically slower than some other types of aggregations.
 
         Parameters
@@ -2461,8 +2461,8 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        Now, let's calculate the standard error of the mean 
+
+        Now, let's calculate the standard error of the mean
         for specific columns.
 
         .. code-block:: python
@@ -2507,20 +2507,20 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Utilizes the 'skewness' aggregation method to analyze and 
-        aggregate the vDataFrame. Skewness, a measure of the asymmetry 
-        in the data's distribution, helps us understand the data's 
-        deviation from a perfectly symmetrical distribution. When we 
-        aggregate the vDataFrame using skewness, we gain insights into 
-        the data's tendency to be skewed to the left or right, or if 
-        it follows a normal distribution. 
+        Utilizes the 'skewness' aggregation method to analyze and
+        aggregate the vDataFrame. Skewness, a measure of the asymmetry
+        in the data's distribution, helps us understand the data's
+        deviation from a perfectly symmetrical distribution. When we
+        aggregate the vDataFrame using skewness, we gain insights into
+        the data's tendency to be skewed to the left or right, or if
+        it follows a normal distribution.
 
         .. warning::
 
-            To compute skewness, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating skewness 
+            To compute skewness, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating skewness
             is typically slower than some other types of aggregations.
 
         Parameters
@@ -2550,7 +2550,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the skewness for specific columns.
 
         .. code-block:: python
@@ -2597,11 +2597,11 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'STDDEV' aggregation 
-        (Standard Deviation), providing insights into the 
-        spread or variability of data for the selected columns. 
-        The standard deviation is a measure of how much individual 
-        data points deviate from the mean, helping to assess data 
+        Aggregates the vDataFrame using 'STDDEV' aggregation
+        (Standard Deviation), providing insights into the
+        spread or variability of data for the selected columns.
+        The standard deviation is a measure of how much individual
+        data points deviate from the mean, helping to assess data
         consistency and variation.
 
         Parameters
@@ -2631,7 +2631,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the standard deviation for specific columns.
 
         .. code-block:: python
@@ -2678,8 +2678,8 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'SUM' aggregation, which 
-        computes the total sum of values for the specified columns, 
+        Aggregates the vDataFrame using 'SUM' aggregation, which
+        computes the total sum of values for the specified columns,
         providing a cumulative view of numerical data.
 
         Parameters
@@ -2709,7 +2709,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the sum for specific columns.
 
         .. code-block:: python
@@ -2754,11 +2754,11 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Aggregates the vDataFrame using 'VAR' aggregation 
-        (Variance), providing insights into the spread or 
-        variability of data for the selected columns. 
-        The variance is a measure of how much individual 
-        data points deviate from the mean, helping to assess 
+        Aggregates the vDataFrame using 'VAR' aggregation
+        (Variance), providing insights into the spread or
+        variability of data for the selected columns.
+        The variance is a measure of how much individual
+        data points deviate from the mean, helping to assess
         data consistency and variation.
 
         Parameters
@@ -2788,7 +2788,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the variance for specific columns.
 
         .. code-block:: python
@@ -2839,15 +2839,15 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        Performs aggregation on the vDataFrame using a list of 
-        aggregate functions, including 'count' and 'percent'. 
-        The 'count' function computes the number of non-missing 
-        (non-null) values within the dataset, providing us with 
-        an understanding of the data's completeness. 
+        Performs aggregation on the vDataFrame using a list of
+        aggregate functions, including 'count' and 'percent'.
+        The 'count' function computes the number of non-missing
+        (non-null) values within the dataset, providing us with
+        an understanding of the data's completeness.
 
-        On the other hand, the 'percent' function calculates the 
-        percentage of non-missing values in relation to the total 
-        dataset size, offering insights into data integrity and 
+        On the other hand, the 'percent' function calculates the
+        percentage of non-missing values in relation to the total
+        dataset size, offering insights into data integrity and
         completeness as a proportion.
 
         Parameters
@@ -2882,7 +2882,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the count for specific columns.
 
         .. code-block:: python
@@ -2937,25 +2937,25 @@ class vDFAgg(vDFEval):
         **agg_kwargs,
     ) -> TableSample:
         """
-        When aggregating the vDataFrame using `nunique` (cardinality), 
-        VerticaPy employs the COUNT DISTINCT function to determine the 
-        number of unique values in a particular column. It also offers 
-        the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient 
+        When aggregating the vDataFrame using `nunique` (cardinality),
+        VerticaPy employs the COUNT DISTINCT function to determine the
+        number of unique values in a particular column. It also offers
+        the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient
         approximation method for calculating cardinality.
 
         .. hint::
 
-            This flexibility allows you to optimize the computation 
-            based on your specific requirements, keeping in mind 
-            that using APPROXIMATE_COUNT_DISTINCT can significantly 
-            improve performance when cardinality estimation is sufficient 
+            This flexibility allows you to optimize the computation
+            based on your specific requirements, keeping in mind
+            that using APPROXIMATE_COUNT_DISTINCT can significantly
+            improve performance when cardinality estimation is sufficient
             for your analysis.
 
         .. important::
 
-            To calculate the exact cardinality of a column, you should 
-            set the parameter `approx` to False. This will ensure that 
-            the cardinality is computed accurately rather than using the 
+            To calculate the exact cardinality of a column, you should
+            set the parameter `approx` to False. This will ensure that
+            the cardinality is computed accurately rather than using the
             approximate method.
 
         Parameters
@@ -2975,7 +2975,7 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
-        
+
         Examples
         --------
         For this example, we will use the following dataset:
@@ -2989,7 +2989,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the cardinality for specific columns.
 
         .. code-block:: python
@@ -3035,24 +3035,24 @@ class vDFAgg(vDFEval):
         self, columns: Optional[SQLColumns] = None, count: bool = False, limit: int = 30
     ) -> TableSample:
         """
-        This function returns a list or set of values that occur more 
-        than once within the dataset. It identifies and provides you 
-        with insight into which specific values or entries are duplicated 
-        in the dataset, helping to detect and manage data redundancy and 
+        This function returns a list or set of values that occur more
+        than once within the dataset. It identifies and provides you
+        with insight into which specific values or entries are duplicated
+        in the dataset, helping to detect and manage data redundancy and
         potential issues related to duplicate information.
 
         .. warning::
 
-            This function employs the 'ROW_NUMBER' SQL function with 
-            multiple partition criteria. It's essential to note that 
-            as the number of partition columns increases, the 
-            computational cost can rise significantly. The 'ROW_NUMBER' 
-            function assigns a unique rank to each row within its 
-            partition, which means that the more columns are involved 
-            in partitioning, the more complex and resource-intensive 
-            the operation becomes. Therefore, when using a large number 
-            of columns for partitioning, it's important to be mindful 
-            of potential performance implications, as it may become 
+            This function employs the 'ROW_NUMBER' SQL function with
+            multiple partition criteria. It's essential to note that
+            as the number of partition columns increases, the
+            computational cost can rise significantly. The 'ROW_NUMBER'
+            function assigns a unique rank to each row within its
+            partition, which means that the more columns are involved
+            in partitioning, the more complex and resource-intensive
+            the operation becomes. Therefore, when using a large number
+            of columns for partitioning, it's important to be mindful
+            of potential performance implications, as it may become
             computationally expensive.
 
         Parameters
@@ -3084,7 +3084,7 @@ class vDFAgg(vDFEval):
                 "y": [1, 2, 1, 1, 1, 1, 2, 1],
                 "z": [10, 12, 9, 10, 9, 8, 1, 10],
             })
-        
+
         Now, let's find duplicated rows.
 
         .. code-block:: python
@@ -3188,7 +3188,7 @@ class vDCAgg(vDCEval):
             |    **aad**: average absolute deviation
             |    **approx_median**: approximate median
             |    **approx_q%**: approximate q quantile
-                                (ex: approx_50% for the 
+                                (ex: approx_50% for the
                                 approximate median)
             |    **approx_unique**: approximative cardinality
             |    **count**: number of non-missing elements
@@ -3253,10 +3253,10 @@ class vDCAgg(vDCEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
-        With the `aggregate` method, you have the flexibility to select specific 
-        aggregates you wish to include in the query. This allows for more precise 
-        control over the aggregation process and helps tailor the results to your 
+
+        With the `aggregate` method, you have the flexibility to select specific
+        aggregates you wish to include in the query. This allows for more precise
+        control over the aggregation process and helps tailor the results to your
         specific needs.
 
         .. code-block:: python
@@ -3474,28 +3474,28 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def aad(self) -> PythonScalar:
         """
-        Utilizes the 'aad' (Average Absolute Deviation) aggregation 
-        method to analyze the vDataColumn. 'AAD' measures the average 
-        absolute deviation of data points from their mean, offering 
-        valuable insights into data variability and dispersion. 
-        When we aggregate the vDataColumn using 'aad,' we gain an 
-        understanding of how data points deviate from the mean on 
-        average, which is particularly useful for assessing data 
+        Utilizes the 'aad' (Average Absolute Deviation) aggregation
+        method to analyze the vDataColumn. 'AAD' measures the average
+        absolute deviation of data points from their mean, offering
+        valuable insights into data variability and dispersion.
+        When we aggregate the vDataColumn using 'aad,' we gain an
+        understanding of how data points deviate from the mean on
+        average, which is particularly useful for assessing data
         spread and the magnitude of deviations.
 
-        This method is valuable in scenarios where we want to evaluate 
-        data variability while giving equal weight to all data points, 
-        regardless of their direction of deviation. Calculating 'aad' 
-        provides us with information about the overall data consistency 
-        and can be useful in various analytical and quality assessment 
+        This method is valuable in scenarios where we want to evaluate
+        data variability while giving equal weight to all data points,
+        regardless of their direction of deviation. Calculating 'aad'
+        provides us with information about the overall data consistency
+        and can be useful in various analytical and quality assessment
         contexts.
 
         .. warning::
 
-            To compute aad, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating aad 
+            To compute aad, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating aad
             is typically slower than some other types of aggregations.
 
         Returns
@@ -3505,7 +3505,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         average absolute deviation of a column:
 
         .. ipython:: python
@@ -3532,10 +3532,10 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def avg(self) -> PythonScalar:
         """
-        This operation aggregates the vDataFrame using the 'AVG' 
-        aggregation, which calculates the average value for the 
-        input column. It provides insights into the central tendency 
-        of the data and is a fundamental statistical measure often 
+        This operation aggregates the vDataFrame using the 'AVG'
+        aggregation, which calculates the average value for the
+        input column. It provides insights into the central tendency
+        of the data and is a fundamental statistical measure often
         used in data analysis and reporting.
 
         Returns
@@ -3545,7 +3545,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         average of a column:
 
         .. ipython:: python
@@ -3574,9 +3574,9 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def count(self) -> int:
         """
-        This operation aggregates the vDataFrame using the 
-        'COUNT' aggregation, providing the count of non-missing 
-        values for the input column. This is valuable for 
+        This operation aggregates the vDataFrame using the
+        'COUNT' aggregation, providing the count of non-missing
+        values for the input column. This is valuable for
         assessing data completeness and quality.
 
         Returns
@@ -3586,7 +3586,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         count of a column:
 
         .. ipython:: python
@@ -3613,21 +3613,21 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def kurtosis(self) -> PythonScalar:
         """
-        Calculates the kurtosis of the vDataColumn to obtain a measure 
-        of the data's peakedness or tailness. The kurtosis statistic 
-        helps us understand the shape of the data distribution. 
-        It quantifies whether the data has heavy tails or is more peaked 
-        relative to a normal distribution. 
+        Calculates the kurtosis of the vDataColumn to obtain a measure
+        of the data's peakedness or tailness. The kurtosis statistic
+        helps us understand the shape of the data distribution.
+        It quantifies whether the data has heavy tails or is more peaked
+        relative to a normal distribution.
 
-        By aggregating the vDataColumn with kurtosis, we can gain valuable 
+        By aggregating the vDataColumn with kurtosis, we can gain valuable
         insights into the data's distribution characteristics.
 
         .. warning::
 
-            To compute kurtosis, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating kurtosis 
+            To compute kurtosis, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating kurtosis
             is typically slower than some other types of aggregations.
 
         Returns
@@ -3637,7 +3637,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         kurtosis of a column:
 
         .. ipython:: python
@@ -3666,26 +3666,26 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def mad(self) -> PythonScalar:
         """
-        Utilizes the 'mad' (Median Absolute Deviation) aggregation 
-        method with the vDataFrame. 'MAD' measures the dispersion 
-        of data points around the median, and it is particularly 
-        valuable for assessing the robustness of data in the 
-        presence of outliers. When we aggregate the vDataColumn 
-        using 'mad', we gain insights into the variability and 
-        the degree to which data points deviate from the median. 
-        
-        This is especially useful for datasets where we want to 
-        understand the spread of values while being resistant to 
-        the influence of extreme outliers. Calculating 'mad' can 
-        involve robust statistical computations, making it a useful 
+        Utilizes the 'mad' (Median Absolute Deviation) aggregation
+        method with the vDataFrame. 'MAD' measures the dispersion
+        of data points around the median, and it is particularly
+        valuable for assessing the robustness of data in the
+        presence of outliers. When we aggregate the vDataColumn
+        using 'mad', we gain insights into the variability and
+        the degree to which data points deviate from the median.
+
+        This is especially useful for datasets where we want to
+        understand the spread of values while being resistant to
+        the influence of extreme outliers. Calculating 'mad' can
+        involve robust statistical computations, making it a useful
         tool for outlier-robust analysis and data quality evaluation.
 
         .. warning::
 
-            To compute mad, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating mad 
+            To compute mad, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating mad
             is typically slower than some other types of aggregations.
 
         Returns
@@ -3695,7 +3695,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         median absolute deviation of a column:
 
         .. ipython:: python
@@ -3722,10 +3722,10 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def max(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame by applying the 'MAX' aggregation, 
-        which calculates the maximum value, for the input column. 
-        This aggregation provides insights into the highest values 
-        within the dataset, aiding in understanding the data 
+        Aggregates the vDataFrame by applying the 'MAX' aggregation,
+        which calculates the maximum value, for the input column.
+        This aggregation provides insights into the highest values
+        within the dataset, aiding in understanding the data
         distribution.
 
         Returns
@@ -3735,7 +3735,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         maximum of a column:
 
         .. ipython:: python
@@ -3765,17 +3765,17 @@ class vDCAgg(vDCEval):
         approx: bool = True,
     ) -> PythonScalar:
         """
-        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN' 
-        aggregation, which calculates the median value for the specified 
-        columns. The median is a robust measure of central tendency and 
-        helps in understanding the distribution of data, especially in 
+        Aggregates the vDataFrame using the 'MEDIAN' or 'APPROX_MEDIAN'
+        aggregation, which calculates the median value for the specified
+        columns. The median is a robust measure of central tendency and
+        helps in understanding the distribution of data, especially in
         the presence of outliers.
 
-        .. warning:: 
+        .. warning::
 
-            When you set `approx` to True, the approximate median is 
-            computed, which is significantly faster than the exact 
-            calculation. However, be cautious when setting `approx` 
+            When you set `approx` to True, the approximate median is
+            computed, which is significantly faster than the exact
+            calculation. However, be cautious when setting `approx`
             to False, as it can significantly slow down the performance.
 
         Parameters
@@ -3792,7 +3792,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         median of a column:
 
         .. ipython:: python
@@ -3819,10 +3819,10 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def min(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame by applying the 'MIN' aggregation, 
-        which calculates the minimum value, for the input column. 
-        This aggregation provides insights into the lowest values 
-        within the dataset, aiding in understanding the data 
+        Aggregates the vDataFrame by applying the 'MIN' aggregation,
+        which calculates the minimum value, for the input column.
+        This aggregation provides insights into the lowest values
+        within the dataset, aiding in understanding the data
         distribution.
 
         Returns
@@ -3832,7 +3832,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         minimum of a column:
 
         .. ipython:: python
@@ -3859,28 +3859,28 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def product(self) -> PythonScalar:
         """
-        Aggregates the vDataColumn by applying the 'product' 
-        aggregation function. This function computes the 
-        product of values within the dataset, providing 
-        insights into the multiplication of data points. 
+        Aggregates the vDataColumn by applying the 'product'
+        aggregation function. This function computes the
+        product of values within the dataset, providing
+        insights into the multiplication of data points.
 
-        The 'product' aggregation can be particularly useful 
-        when we need to assess cumulative effects or when 
-        multiplying values is a key aspect of the analysis. 
-        This operation can be relevant in various domains, 
-        such as finance, economics, and engineering, where 
-        understanding the combined impact of values is 
+        The 'product' aggregation can be particularly useful
+        when we need to assess cumulative effects or when
+        multiplying values is a key aspect of the analysis.
+        This operation can be relevant in various domains,
+        such as finance, economics, and engineering, where
+        understanding the combined impact of values is
         critical for decision-making and modeling.
 
         .. note::
 
-            Since 'product' is not a conventional SQL 
-            aggregation, we employ a unique approach by 
-            combining the sum of logarithms and the 
-            exponential function for its computation. 
-            This non-standard methodology is utilized to 
-            derive the product of values within the dataset, 
-            offering a distinctive way to understand the 
+            Since 'product' is not a conventional SQL
+            aggregation, we employ a unique approach by
+            combining the sum of logarithms and the
+            exponential function for its computation.
+            This non-standard methodology is utilized to
+            derive the product of values within the dataset,
+            offering a distinctive way to understand the
             multiplicative effects of data points.
 
         Returns
@@ -3890,7 +3890,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         product of a column:
 
         .. ipython:: python
@@ -3919,27 +3919,27 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def quantile(self, q: PythonNumber, approx: bool = True) -> PythonScalar:
         """
-        Aggregates the vDataColumn using a specified 'quantile'. 
-        The 'quantile' function is an indispensable tool for 
-        comprehending data distribution. By providing a quantile 
-        value as input, this aggregation method helps us identify 
-        the data point below which a certain percentage of the data 
-        falls. This can be pivotal for tasks like analyzing data 
-        distributions, assessing skewness, and determining essential 
+        Aggregates the vDataColumn using a specified 'quantile'.
+        The 'quantile' function is an indispensable tool for
+        comprehending data distribution. By providing a quantile
+        value as input, this aggregation method helps us identify
+        the data point below which a certain percentage of the data
+        falls. This can be pivotal for tasks like analyzing data
+        distributions, assessing skewness, and determining essential
         percentiles such as medians or quartiles.
 
         .. warning::
 
-            It's important to note that the 'quantile' aggregation 
-            operates in two distinct modes, allowing flexibility in 
-            computation. Depending on the 'approx' parameter, it can 
-            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods 
-            to derive the final aggregation. The 'APPROXIMATE_QUANTILE' 
-            method provides faster results by estimating the quantile 
-            values with an approximation technique, while 'QUANTILE' 
-            calculates precise quantiles through rigorous computation. 
-            This choice empowers users to strike a balance between 
-            computational efficiency and the level of precision 
+            It's important to note that the 'quantile' aggregation
+            operates in two distinct modes, allowing flexibility in
+            computation. Depending on the 'approx' parameter, it can
+            use either 'APPROXIMATE_QUANTILE' or 'QUANTILE' methods
+            to derive the final aggregation. The 'APPROXIMATE_QUANTILE'
+            method provides faster results by estimating the quantile
+            values with an approximation technique, while 'QUANTILE'
+            calculates precise quantiles through rigorous computation.
+            This choice empowers users to strike a balance between
+            computational efficiency and the level of precision
             required for their specific data analysis tasks.
 
         Parameters
@@ -3960,7 +3960,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         approximate median of a column:
 
         .. ipython:: python
@@ -3994,28 +3994,28 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def sem(self) -> PythonScalar:
         """
-        Leverages the 'sem' (Standard Error of the Mean) aggregation 
-        technique to perform analysis and aggregation on the vDataColumn. 
-        Standard Error of the Mean is a valuable statistical measure used 
-        to estimate the precision of the sample mean as an approximation 
-        of the population mean. 
+        Leverages the 'sem' (Standard Error of the Mean) aggregation
+        technique to perform analysis and aggregation on the vDataColumn.
+        Standard Error of the Mean is a valuable statistical measure used
+        to estimate the precision of the sample mean as an approximation
+        of the population mean.
 
-        When we aggregate the vDataColumn using 'sem', we gain insights 
-        into the variability or uncertainty associated with the sample 
-        mean. This measure helps us assess the reliability of the sample 
-        mean as an estimate of the true population mean. 
+        When we aggregate the vDataColumn using 'sem', we gain insights
+        into the variability or uncertainty associated with the sample
+        mean. This measure helps us assess the reliability of the sample
+        mean as an estimate of the true population mean.
 
-        It is worth noting that computing the Standard Error of the Mean 
-        requires statistical calculations and can be particularly useful 
-        when evaluating the precision of sample statistics or making 
+        It is worth noting that computing the Standard Error of the Mean
+        requires statistical calculations and can be particularly useful
+        when evaluating the precision of sample statistics or making
         inferences about a larger dataset based on a sample.
 
         .. warning::
 
-            To compute sem, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating sem is 
+            To compute sem, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating sem is
             typically slower than some other types of aggregations.
 
         Returns
@@ -4025,7 +4025,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         standard error of the mean of a column:
 
         .. ipython:: python
@@ -4052,20 +4052,20 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def skewness(self) -> PythonScalar:
         """
-        Utilizes the 'skewness' aggregation method to analyze and 
-        aggregate the vDataColumn. Skewness, a measure of the asymmetry 
-        in the data's distribution, helps us understand the data's 
-        deviation from a perfectly symmetrical distribution. When we 
-        aggregate the vDataFrame using skewness, we gain insights into 
-        the data's tendency to be skewed to the left or right, or if 
-        it follows a normal distribution. 
+        Utilizes the 'skewness' aggregation method to analyze and
+        aggregate the vDataColumn. Skewness, a measure of the asymmetry
+        in the data's distribution, helps us understand the data's
+        deviation from a perfectly symmetrical distribution. When we
+        aggregate the vDataFrame using skewness, we gain insights into
+        the data's tendency to be skewed to the left or right, or if
+        it follows a normal distribution.
 
         .. warning::
 
-            To compute skewness, VerticaPy needs to execute multiple 
-            queries. It necessitates, at a minimum, a query that 
-            includes a subquery to perform this type of aggregation. 
-            This complexity is the reason why calculating skewness 
+            To compute skewness, VerticaPy needs to execute multiple
+            queries. It necessitates, at a minimum, a query that
+            includes a subquery to perform this type of aggregation.
+            This complexity is the reason why calculating skewness
             is typically slower than some other types of aggregations.
 
         Returns
@@ -4075,7 +4075,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         skewness of a column:
 
         .. ipython:: python
@@ -4104,11 +4104,11 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def std(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'STDDEV' aggregation 
-        (Standard Deviation), providing insights into the 
-        spread or variability of data for the input column. 
-        The standard deviation is a measure of how much individual 
-        data points deviate from the mean, helping to assess data 
+        Aggregates the vDataFrame using 'STDDEV' aggregation
+        (Standard Deviation), providing insights into the
+        spread or variability of data for the input column.
+        The standard deviation is a measure of how much individual
+        data points deviate from the mean, helping to assess data
         consistency and variation.
 
         Returns
@@ -4118,7 +4118,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         standard deviation of a column:
 
         .. ipython:: python
@@ -4147,8 +4147,8 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def sum(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'SUM' aggregation, which 
-        computes the total sum of values for the specified columns, 
+        Aggregates the vDataFrame using 'SUM' aggregation, which
+        computes the total sum of values for the specified columns,
         providing a cumulative view of numerical data.
 
         Returns
@@ -4158,7 +4158,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         sum of a column:
 
         .. ipython:: python
@@ -4185,11 +4185,11 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def var(self) -> PythonScalar:
         """
-        Aggregates the vDataFrame using 'VAR' aggregation 
-        (Variance), providing insights into the spread or 
-        variability of data for the input column. 
-        The variance is a measure of how much individual 
-        data points deviate from the mean, helping to assess 
+        Aggregates the vDataFrame using 'VAR' aggregation
+        (Variance), providing insights into the spread or
+        variability of data for the input column.
+        The variance is a measure of how much individual
+        data points deviate from the mean, helping to assess
         data consistency and variation.
 
         Returns
@@ -4199,7 +4199,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         variance of a column:
 
         .. ipython:: python
@@ -4230,18 +4230,18 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def mode(self, dropna: bool = False, n: int = 1) -> PythonScalar:
         """
-        This function returns the nth most frequently occurring element 
-        in the vDataColumn. It's a practical method for identifying the 
-        element with a specific rank in terms of its occurrence frequency 
-        within the column. For example, you can use this function to find 
+        This function returns the nth most frequently occurring element
+        in the vDataColumn. It's a practical method for identifying the
+        element with a specific rank in terms of its occurrence frequency
+        within the column. For example, you can use this function to find
         the third, fifth, or any other desired most frequent element.
 
         .. warning::
 
-            This function first groups the data by a specific column, 
-            then computes the count of each group, and finally applies 
-            filtering. It's important to note that this operation can 
-            be computationally expensive, especially for datasets with 
+            This function first groups the data by a specific column,
+            then computes the count of each group, and finally applies
+            filtering. It's important to note that this operation can
+            be computationally expensive, especially for datasets with
             a large cardinality.
 
         Parameters
@@ -4261,7 +4261,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         mode of a column:
 
         .. ipython:: python
@@ -4326,10 +4326,10 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def value_counts(self, k: int = 30) -> TableSample:
         """
-        This function returns the k most frequently occurring 
-        elements in a column, along with information about how 
-        often they occur. Additionally, it provides various 
-        statistical details to give you a comprehensive view of 
+        This function returns the k most frequently occurring
+        elements in a column, along with information about how
+        often they occur. Additionally, it provides various
+        statistical details to give you a comprehensive view of
         the data distribution.
 
         Parameters
@@ -4355,7 +4355,7 @@ class vDCAgg(vDCEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the values and counts for a specific
         column.
 
@@ -4393,10 +4393,10 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def topk(self, k: int = -1, dropna: bool = True) -> TableSample:
         """
-        This function returns the k most frequently occurring elements 
-        in a column, along with their distribution expressed as 
-        percentages. It's a useful tool for understanding the 
-        composition of your data and identifying the most prominent 
+        This function returns the k most frequently occurring elements
+        in a column, along with their distribution expressed as
+        percentages. It's a useful tool for understanding the
+        composition of your data and identifying the most prominent
         elements.
 
         Parameters
@@ -4425,7 +4425,7 @@ class vDCAgg(vDCEval):
                 "y": [1, 2, 1, 2, 1, 1, 2, 1],
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
-        
+
         Now, let's calculate the top k values for a specific
         column.
 
@@ -4493,9 +4493,9 @@ class vDCAgg(vDCEval):
 
     def distinct(self, **kwargs) -> list:
         """
-        This function returns the distinct categories or unique values 
-        within a vDataColumn. It's a valuable method for exploring 
-        the unique elements within a column, which can be particularly 
+        This function returns the distinct categories or unique values
+        within a vDataColumn. It's a valuable method for exploring
+        the unique elements within a column, which can be particularly
         useful when working with categorical data.
 
         Returns
@@ -4505,7 +4505,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and compute 
+        For this example, let's generate a dataset and compute
         all the distinct elements of a column:
 
         .. ipython:: python
@@ -4561,25 +4561,25 @@ class vDCAgg(vDCEval):
     @save_verticapy_logs
     def nunique(self, approx: bool = True) -> int:
         """
-        When aggregating the vDataFrame using `nunique` (cardinality), 
-        VerticaPy employs the COUNT DISTINCT function to determine the 
-        number of unique values in particular columns. It also offers 
-        the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient 
+        When aggregating the vDataFrame using `nunique` (cardinality),
+        VerticaPy employs the COUNT DISTINCT function to determine the
+        number of unique values in particular columns. It also offers
+        the option to use APPROXIMATE_COUNT_DISTINCT, a more efficient
         approximation method for calculating cardinality.
 
         .. hint::
 
-            This flexibility allows you to optimize the computation 
-            based on your specific requirements, keeping in mind 
-            that using APPROXIMATE_COUNT_DISTINCT can significantly 
-            improve performance when cardinality estimation is sufficient 
+            This flexibility allows you to optimize the computation
+            based on your specific requirements, keeping in mind
+            that using APPROXIMATE_COUNT_DISTINCT can significantly
+            improve performance when cardinality estimation is sufficient
             for your analysis.
 
         .. important::
 
-            To calculate the exact cardinality of a column, you should 
-            set the parameter `approx` to False. This will ensure that 
-            the cardinality is computed accurately rather than using the 
+            To calculate the exact cardinality of a column, you should
+            set the parameter `approx` to False. This will ensure that
+            the cardinality is computed accurately rather than using the
             approximate method.
 
         Parameters
@@ -4597,7 +4597,7 @@ class vDCAgg(vDCEval):
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the 
+        For this example, let's generate a dataset and calculate the
         cardinality of a column:
 
         .. ipython:: python
