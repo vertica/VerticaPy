@@ -754,7 +754,13 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the Correlation Matrix of the vDataFrame.
+        Calculates the Correlation Matrix for the vDataFrame.  This matrix 
+        provides  insights  into  how  different numerical columns in  the 
+        dataset are correlated with each other.  It helps in understanding 
+        the relationships and dependencies between variables, facilitating 
+        data  analysis  and  decision-making.  The correlation matrix is a 
+        valuable  tool  for identifying patterns,  trends,  and  potential 
+        associations within the dataset.
 
         Parameters
         ----------
@@ -762,29 +768,31 @@ class vDFCorr(vDFEncode):
             List of the vDataColumns names. If empty, all
             numerical vDataColumns are used.
         method: str, optional
-            Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient
-                            (linear).
-                spearman  : Spearman's correlation coefficient
-                            (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient
-                            using  the   DENSE  RANK  function
-                            instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient
-                            (similar trends).  The method
-                            computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS
-                                             JOIN  during  computation
-                                             and      is     therefore
-                                             computationally expensive
-                                             at  O(n * n),  where n is
-                                             the  total  count of  the
-                                             vDataFrame.
-                cramer    : Cramer's V
-                            (correlation between categories).
-                biserial  : Biserial Point
-                            (correlation between binaries and a
-                            numericals).
+            | Method to use to compute the correlation.
+            
+            |   **pearson**: Pearson's  correlation coefficient (linear).
+            |   **spearman**: Spearman's correlation coefficient (monotonic 
+                              - rank based).
+            |   **spearmanD**: Spearman's correlation coefficient using the   
+                               DENSE  RANK  function instead of the RANK 
+                               function.
+            |   **kendall**: Kendall's  correlation coefficient (similar 
+                             trends).  The method computes the Tau-B 
+                             coefficient.
+
+                             .. warning:: 
+
+                                This method  uses a CROSS
+                                JOIN  during  computation
+                                and      is     therefore
+                                computationally expensive
+                                at  O(n * n),  where n is
+                                the  total  count of  the
+                                vDataFrame.
+
+            |   **cramer**: Cramer's V (correlation between categories).
+            |   **biserial**: Biserial Point (correlation between binaries 
+                              and a numericals).
         mround: int, optional
             Rounds  the coefficient using  the input number of
             digits. This is only used to display the correlation
@@ -804,6 +812,63 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        Let's generate a dataset using the following data.
+
+        .. code-block:: python
+                
+            N = 30 # Number of records
+
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+
+        Let's draw the Pearson correlation matrix.
+
+        .. code-block:: python
+          
+            data.corr(method = "pearson")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import numpy as np
+            N = 30 # Number of records
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+            fig = data.corr(method = "pearson")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_corr_matrix.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_corr_matrix.html
+
+        For more examples, please look at the ``Correlation Page`` of the ``Chart Gallery``.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.corr_pvalue` : Computes correlation and its p-value.
+
         """
         method = str(method).lower()
         columns = format_type(columns, dtype=list, na_out=self.numcol())
