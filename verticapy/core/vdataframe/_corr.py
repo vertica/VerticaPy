@@ -754,12 +754,12 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Calculates the Correlation Matrix for the vDataFrame.  This matrix 
-        provides  insights  into  how  different numerical columns in  the 
-        dataset are correlated with each other.  It helps in understanding 
-        the relationships and dependencies between variables, facilitating 
-        data  analysis  and  decision-making.  The correlation matrix is a 
-        valuable  tool  for identifying patterns,  trends,  and  potential 
+        Calculates the Correlation Matrix for the vDataFrame.  This matrix
+        provides  insights  into  how  different numerical columns in  the
+        dataset are correlated with each other.  It helps in understanding
+        the relationships and dependencies between variables, facilitating
+        data  analysis  and  decision-making.  The correlation matrix is a
+        valuable  tool  for identifying patterns,  trends,  and  potential
         associations within the dataset.
 
         Parameters
@@ -769,29 +769,26 @@ class vDFCorr(vDFEncode):
             numerical vDataColumns are used.
         method: str, optional
             | Method to use to compute the correlation.
-            
+
             |   **pearson**: Pearson's  correlation coefficient (linear).
-            |   **spearman**: Spearman's correlation coefficient (monotonic 
+            |   **spearman**: Spearman's correlation coefficient (monotonic
                               - rank based).
-            |   **spearmanD**: Spearman's correlation coefficient using the   
-                               DENSE  RANK  function instead of the RANK 
+            |   **spearmanD**: Spearman's correlation coefficient using the
+                               DENSE  RANK  function instead of the RANK
                                function.
-            |   **kendall**: Kendall's  correlation coefficient (similar 
-                             trends).  The method computes the Tau-B 
+            |   **kendall**: Kendall's  correlation coefficient (similar
+                             trends).  The method computes the Tau-B
                              coefficient.
 
-                             .. warning:: 
+            .. warning::
 
-                                This method  uses a CROSS
-                                JOIN  during  computation
-                                and      is     therefore
-                                computationally expensive
-                                at  O(n * n),  where n is
-                                the  total  count of  the
-                                vDataFrame.
+                This method  uses a CROSS JOIN  during  computation
+                and      is     therefore computationally expensive
+                at  O(n * n),  where n is the  total  count of  the
+                ``vDataFrame``.
 
             |   **cramer**: Cramer's V (correlation between categories).
-            |   **biserial**: Biserial Point (correlation between binaries 
+            |   **biserial**: Biserial Point (correlation between binaries
                               and a numericals).
         mround: int, optional
             Rounds  the coefficient using  the input number of
@@ -830,7 +827,7 @@ class vDFCorr(vDFEncode):
         Let's generate a dataset using the following data.
 
         .. code-block:: python
-                
+
             N = 30 # Number of records
 
             data = vp.vDataFrame({
@@ -843,7 +840,7 @@ class vDFCorr(vDFEncode):
         Let's draw the Pearson correlation matrix.
 
         .. code-block:: python
-          
+
             data.corr(method = "pearson")
 
         .. ipython:: python
@@ -851,6 +848,7 @@ class vDFCorr(vDFEncode):
 
             import verticapy as vp
             import numpy as np
+            vp.set_option("plotting_lib", "plotly")
             N = 30 # Number of records
             data = vp.vDataFrame({
                 "score1": np.random.normal(5, 1, N),
@@ -916,30 +914,32 @@ class vDFCorr(vDFEncode):
         column2: str
             Input vDataColumn.
         method: str, optional
-            Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient
-                            (linear).
-                spearman  : Spearman's correlation coefficient
-                            (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient
-                            using  the   DENSE  RANK  function
-                            instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient
-                            (similar trends).  The method
-                            computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS
-                                             JOIN  during  computation
-                                             and      is     therefore
-                                             computationally expensive
-                                             at  O(n * n),  where n is
-                                             the  total  count of  the
-                                             vDataFrame.
-                cramer    : Cramer's V
-                            (correlation between categories).
-                biserial  : Biserial Point
-                            (correlation between binaries and a
-                            numericals).
 
+            | Method to use to compute the correlation.
+
+            |   **pearson**: Pearson's  correlation coefficient (linear).
+            |   **spearman**: Spearman's correlation coefficient (monotonic
+                              - rank based).
+            |   **spearmanD**: Spearman's correlation coefficient using the
+                               DENSE  RANK  function instead of the RANK
+                               function.
+            |   **kendall**: Kendall's  correlation coefficient (similar
+                             trends).  The method computes the Tau-B
+                             coefficient.
+
+                            .. warning::
+
+                                This method  uses a CROSS
+                                JOIN  during  computation
+                                and      is     therefore
+                                computationally expensive
+                                at  O(n * n),  where n is
+                                the  total  count of  the
+                                ``vDataFrame``.
+
+            |   **cramer**: Cramer's V (correlation between categories).
+            |   **biserial**: Biserial Point (correlation between binaries
+                              and a numericals).
         Returns
         -------
         tuple
