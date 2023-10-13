@@ -39,16 +39,49 @@ class LinearModel(InMemoryModel):
     
     Examples
     --------
+    
+    **Creating In-memory Linear Model**
+    
+    Import the required module.
+    
     .. code-block:: python
     
         from verticapy.machine_learning.memmodel.linear_model import LinearModel
+        
+    A linear model is defined by its coefficients and an intercept value. In this example, we will use the following:
+    
+    .. code-block:: python
+    
         coefficients = [0.5, 1.2]
         intercept = 2.0
-        # Create Linear model
+
+    Let's create a LinearModel.
+    
+    .. code-block:: python 
+
         model_lm = LinearModel(coefficients, intercept)
-        # Predict using model created above
-        model_lm.predict([[1.0,  0.3], 
-                    [2.0, -0.6]])
+        
+    **Making Predictions**    
+    
+    Create a dataset.        
+ 
+    .. code-block:: python
+
+        data = [[1.0, 0.3], [2.0, -0.6]]
+        
+    Use predict method to do predictions
+    
+    .. code-block:: python
+    
+        model_lm.predict(data)
+        
+    Use predict_sql method to get the SQL code needed to deploy the model using its attributes
+    
+    .. code-block:: python
+    
+        model_lm.predict_sql(data)
+        
+    Let's execute the above example and see the output:
      
     .. ipython:: python
             :suppress:
@@ -56,11 +89,14 @@ class LinearModel(InMemoryModel):
         from verticapy.machine_learning.memmodel.linear_model import LinearModel
         coefficients = [0.5, 1.2]
         intercept = 2.0
-        # Create Linear model
+        # Create LinearModel
         model_lm = LinearModel(coefficients, intercept)
-        # Predict using model created above
-        model_lm.predict([[1.0,  0.3], 
-                    [2.0, -0.6]])
+        # Making Predictions
+        data = [[1.0, 0.3], [2.0, -0.6]]
+        model_lm.predict(data)
+        model_lm.predict_sql(data)
+        
+    .. hint:: This object can be pickled and used in any in-memory environment, just like SKLEARN models.
                     
     """
 
@@ -200,28 +236,78 @@ class LinearModelClassifier(LinearModel):
         
     Examples
     --------
+    
+    **Creating In-memory Linear Classifier Model**
+    
+    Import the required module.
+    
     .. code-block:: python
     
         from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
+        
+    A linear classifier model is defined by its coefficients and an intercept value. In this example, we will use the following:
+    
+    .. code-block:: python
+    
         coefficients = [0.5, 1.2]
-        intercept = 1.0
-        # Create Linear Classifier model
+        intercept = 2.0
+
+    Let's create a LinearModelClassifier.
+    
+    .. code-block:: python 
+
         model_lmc = LinearModelClassifier(coefficients, intercept)
-        # Predict using model created above
-        model_lmc.predict([[1.0,  0.3], 
-                       [-0.5, -0.8]])
+        
+    **Making Predictions**    
+    
+    Create a dataset.        
+ 
+    .. code-block:: python
+
+        data = [[1.0, 0.3], [-0.5, -0.8]]
+        
+    Use predict method to do predictions
+    
+    .. code-block:: python
+    
+        model_lmc.predict(data)
+        
+    Use predict_sql method to get the SQL code needed to deploy the model using its attributes
+    
+    .. code-block:: python
+    
+        model_lmc.predict_sql(data)
+        
+    Use predict_proba method to calculate the predicted probabilities for each class
+    
+    .. code-block:: python
+    
+        model_lmc.predict_proba(data)
+        
+    Use predict_proba_sql method to get the SQL code needed to deploy the model that computes predicted probabilities
+    
+    .. code-block:: python
+    
+        model_lmc.predict_proba_sql(data)
+        
+    Let's execute the above example and see the output:
      
     .. ipython:: python
             :suppress:
 
         from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
         coefficients = [0.5, 1.2]
-        intercept = 1.0
-        # Create Linear Classifier model
+        intercept = 2.0
+        # Create LinearModelClassifier
         model_lmc = LinearModelClassifier(coefficients, intercept)
-        # Predict using model created above
-        model_lmc.predict([[1.0,  0.3], 
-                       [-0.5, -0.8]])
+        # Making Predictions
+        data = [[1.0, 0.3], [-0.5, -0.8]]
+        model_lmc.predict(data)
+        model_lmc.predict_sql(data)
+        model_lmc.predict_proba(data)
+        model_lmc.predict_proba_sql(data)
+        
+    .. hint:: This object can be pickled and used in any in-memory environment, just like SKLEARN models.
                     
     """
 
