@@ -812,19 +812,19 @@ class vDFCorr(vDFEncode):
 
         Examples
         --------
-        Let's begin by importing `VerticaPy`.
+        Import `VerticaPy`.
 
         .. ipython:: python
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Import `numpy` to create a random dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        Let's generate a dataset using the following data.
+        Generate a dataset using the following data.
 
         .. code-block:: python
 
@@ -837,7 +837,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
 
-        Let's draw the Pearson correlation matrix.
+        Draw the Pearson correlation matrix.
 
         .. code-block:: python
 
@@ -862,11 +862,11 @@ class vDFCorr(vDFEncode):
         .. raw:: html
           :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_corr_matrix.html
 
-        For more examples, please look at the ``Correlation Page`` of the ``Chart Gallery``.
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        :ref:`chart_gallery`.
 
         .. seealso::
             | :py:mod:`verticapy.vDataFrame.corr_pvalue` : Computes correlation and its p-value.
-
         """
         method = str(method).lower()
         columns = format_type(columns, dtype=list, na_out=self.numcol())
@@ -914,7 +914,6 @@ class vDFCorr(vDFEncode):
         column2: str
             Input vDataColumn.
         method: str, optional
-
             | Method to use to compute the correlation.
 
             |   **pearson**: Pearson's  correlation coefficient (linear).
@@ -927,15 +926,12 @@ class vDFCorr(vDFEncode):
                              trends).  The method computes the Tau-B
                              coefficient.
 
-                            .. warning::
+            .. warning::
 
-                                This method  uses a CROSS
-                                JOIN  during  computation
-                                and      is     therefore
-                                computationally expensive
-                                at  O(n * n),  where n is
-                                the  total  count of  the
-                                ``vDataFrame``.
+                This method  uses a CROSS JOIN  during  computation
+                and      is     therefore computationally expensive
+                at  O(n * n),  where n is the  total  count of  the
+                ``vDataFrame``.
 
             |   **cramer**: Cramer's V (correlation between categories).
             |   **biserial**: Biserial Point (correlation between binaries
@@ -944,6 +940,30 @@ class vDFCorr(vDFEncode):
         -------
         tuple
             (Correlation Coefficient, pvalue)
+
+        Examples
+        --------
+        For this example, let's generate a dataset and compute
+        the Pearson correlation coefficient and its p-value 
+        between the two features: 'x' and 'y'.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+            })
+            data.corr_pvalue(
+                column1 = "x", 
+                column2 = "y", 
+                method = "pearson",
+            )
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         method = str(method).lower()
         column1, column2 = self.format_colnames(column1, column2)
@@ -1132,6 +1152,65 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Import `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        Generate a dataset using the following data.
+
+        .. code-block:: python
+
+            N = 30 # Number of records
+
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+
+        Draw the covariance matrix.
+
+        .. code-block:: python
+
+            data.cov()
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import numpy as np
+            vp.set_option("plotting_lib", "plotly")
+            N = 30 # Number of records
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+            fig = data.cov()
+            fig.write_html("figures/core_vDataFrame_vDFCorr_cov_matrix.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_cov_matrix.html
+
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
+        customization stays the same for the covariance matrix.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
         columns, focus = self.format_colnames(columns, focus)
@@ -1182,25 +1261,26 @@ class vDFCorr(vDFEncode):
             List  of the  vDataColumns names. If empty, all numerical
             vDataColumns are used.
         method: str, optional
-            Method to use to compute the regression matrix.
-                avgx  : Average  of  the  independent  expression  in
-                        an expression pair.
-                avgy  : Average  of  the dependent  expression in  an
-                        expression pair.
-                count : Count  of  all  rows  in  an expression  pair.
-                alpha : Intercept  of the regression line  determined
-                        by a set of expression pairs.
-                r2    : Square  of  the correlation  coefficient of a
-                        set of expression pairs.
-                beta  : Slope of  the regression  line, determined by
-                        a set of expression pairs.
-                sxx   : Sum of squares of  the independent expression
-                        in an expression pair.
-                sxy   : Sum of products of the independent expression
-                        multiplied by the  dependent expression in an
-                        expression pair.
-                syy   : Returns  the sum of squares of the  dependent
-                        expression in an expression pair.
+            | Method to use to compute the regression matrix.
+            
+            |   **avgx**: Average  of  the  independent  expression  in
+                          an expression pair.
+            |   **avgy**: Average  of  the dependent  expression in  an
+                          expression pair.
+            |   **count**: Count  of  all  rows  in  an expression  pair.
+            |   **alpha**: Intercept  of the regression line  determined
+                           by a set of expression pairs.
+            |   **r2**: Square  of  the correlation  coefficient of a set 
+                        of expression pairs.
+            |   **beta**: Slope of  the regression  line, determined by a 
+                          set of expression pairs.
+            |   **sxx**: Sum of squares of  the independent expression in 
+                         an expression pair.
+            |   **sxy**: Sum of products of the independent expression
+                         multiplied by the  dependent expression in an
+                         expression pair.
+            |   **syy**: Returns  the sum of squares of the  dependent
+                         expression in an expression pair.
         show: bool, optional
             If set to True, the Plotting object is returned.
         chart: PlottingObject, optional
@@ -1212,6 +1292,115 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Import `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        Generate a dataset using the following data.
+
+        .. code-block:: python
+
+            N = 30 # Number of records
+
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+
+        Draw the regression matrix using the Beta coefficient.
+
+        .. code-block:: python
+
+            data.regr(method = "beta")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import numpy as np
+            vp.set_option("plotting_lib", "plotly")
+            N = 30 # Number of records
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+            fig = data.regr(method = "beta")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
+
+        Draw the regression matrix using the Alpha coefficient.
+
+        .. code-block:: python
+
+            data.regr(method = "alpha")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import numpy as np
+            vp.set_option("plotting_lib", "plotly")
+            N = 30 # Number of records
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+            fig = data.regr(method = "alpha")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
+
+        Draw the regression matrix using the R2 correlation coefficient.
+
+        .. code-block:: python
+
+            data.regr(method = "r2")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import numpy as np
+            vp.set_option("plotting_lib", "plotly")
+            N = 30 # Number of records
+            data = vp.vDataFrame({
+                "score1": np.random.normal(5, 1, N),
+                "score2": np.random.normal(8, 1.5, N),
+                "score3": np.random.normal(10, 2, N),
+                "score4": np.random.normal(14, 3, N),
+            })
+            fig = data.regr(method = "r2")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
+
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
+        customization stays the same for the regression matrix.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.corr` : Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
         if method == "beta":
@@ -1366,35 +1555,37 @@ class vDFCorr(vDFEncode):
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
-            Unit used to compute the lags.
-                rows : Natural lags
-                else : Any time unit.  For example,  you  can
-                       write 'hour' to compute the hours lags
-                       or 'day' to compute the days lags.
+            | Unit used to compute the lags.
+            
+            |   **rows**: Natural lags
+            |   **else**: Any time unit. For example, you can
+                          write 'hour' to compute the hours 
+                          lags or 'day' to compute the days 
+                          lags.
         method: str, optional
-            Method used to compute the correlation.
-                pearson   : Pearson's  correlation coefficient
-                            (linear).
-                spearman  : Spearman's correlation coefficient
-                            (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient
-                            using  the   DENSE  RANK  function
-                            instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient
-                            (similar trends).  The method
-                            computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS
-                                             JOIN  during  computation
-                                             and      is     therefore
-                                             computationally expensive
-                                             at  O(n * n),  where n is
-                                             the  total  count of  the
-                                             vDataFrame.
-                cramer    : Cramer's V
-                            (correlation between categories).
-                biserial  : Biserial Point
-                            (correlation between binaries and a
-                            numericals).
+            | Method used to compute the correlation.
+            
+            |   **pearson**: Pearson's  correlation coefficient
+                             (linear).
+            |   **spearman**: Spearman's correlation coefficient
+                              (monotonic - rank based).
+            |   **spearmanD**: Spearman's correlation coefficient
+                               using  the   DENSE  RANK  function
+                               instead of the RANK function.
+            |   **kendall**: Kendall's  correlation coefficient
+                             (similar trends).  The method
+                             computes the Tau-B coefficient.
+                             
+            .. warning::
+
+                This method  uses a CROSS JOIN  during  computation
+                and      is     therefore computationally expensive
+                at  O(n * n),  where n is the  total  count of  the
+                ``vDataFrame``.
+
+            |   **cramer**: Cramer's V (correlation between categories).
+            |   **biserial**: Biserial Point (correlation between binaries 
+                              and a numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
         alpha: float, optional
@@ -1404,11 +1595,11 @@ class vDFCorr(vDFEncode):
                 If  set  to True,  the Plotting object is
                 returned.
         kind: str, optional
-            ACF Type.
-                bar     : Classical Autocorrelation Plot using
-                          bars.
-                heatmap : Draws the ACF heatmap.
-                line    : Draws the ACF using a Line Plot.
+            | ACF Type.
+            
+            |   **bar**: Classical Autocorrelation Plot using bars.
+            |   **heatmap**: Draws the ACF heatmap.
+            |   **line**: Draws the ACF using a Line Plot.
         mround: int, optional
             Round  the  coefficient using the input number  of
             digits. It is used only to display the ACF  Matrix
@@ -1423,6 +1614,53 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Import the amazon dataset from `VerticaPy`.
+
+        .. code-block:: python
+                
+            from verticapy.datasets import load_amazon
+
+            data = load_amazon()
+
+        Draw the ACF Plot.
+
+        .. code-block:: python
+
+            data.acf(
+                column = "number",
+                ts = "date",
+                by = "state",
+                method = "pearson",
+                p = 48,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            from verticapy.datasets import load_amazon
+            vp.set_option("plotting_lib", "plotly")
+            data = load_amazon()
+            fig = data.acf(
+                column = "number",
+                ts = "date",
+                by = "state",
+                method = "pearson",
+                p = 48,
+            )
+            fig.write_html("figures/core_vDataFrame_vDFCorr_acf_plot.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_acf_plot.html
+
+        For more examples, please look at the :ref:`chart_gallery.acf` page of the 
+        :ref:`chart_gallery`.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.pacf` : Computes the partial autocorrelations.
         """
         method = str(method).lower()
         by = format_type(by, dtype=list)
@@ -1534,35 +1772,37 @@ class vDFCorr(vDFEncode):
             different  lags to include during the computation.
             p must be positive or a list of positive integers.
         unit: str, optional
-            Unit to use to compute the lags.
-                rows : Natural lags.
-                else : Any time unit.  For  example, you  can
-                       write 'hour' to compute the hours lags
-                       or 'day' to compute the days lags.
+            | Unit used to compute the lags.
+            
+            |   **rows**: Natural lags
+            |   **else**: Any time unit. For example, you can
+                          write 'hour' to compute the hours 
+                          lags or 'day' to compute the days 
+                          lags.
         method: str, optional
-            Method to use to compute the correlation.
-                pearson   : Pearson's  correlation coefficient
-                            (linear).
-                spearman  : Spearman's correlation coefficient
-                            (monotonic - rank based).
-                spearmanD : Spearman's correlation coefficient
-                            using  the   DENSE  RANK  function
-                            instead of the RANK function.
-                kendall   : Kendall's  correlation coefficient
-                            (similar trends).  The method
-                            computes the Tau-B coefficient.
-                            \u26A0 Warning : This method  uses a CROSS
-                                             JOIN  during  computation
-                                             and      is     therefore
-                                             computationally expensive
-                                             at  O(n * n),  where n is
-                                             the  total  count of  the
-                                             vDataFrame.
-                cramer    : Cramer's V
-                            (correlation between categories).
-                biserial  : Biserial Point
-                            (correlation between binaries and a
-                            numericals).
+            | Method used to compute the correlation.
+            
+            |   **pearson**: Pearson's  correlation coefficient
+                             (linear).
+            |   **spearman**: Spearman's correlation coefficient
+                              (monotonic - rank based).
+            |   **spearmanD**: Spearman's correlation coefficient
+                               using  the   DENSE  RANK  function
+                               instead of the RANK function.
+            |   **kendall**: Kendall's  correlation coefficient
+                             (similar trends).  The method
+                             computes the Tau-B coefficient.
+
+            .. warning::
+
+                This method  uses a CROSS JOIN  during  computation
+                and      is     therefore computationally expensive
+                at  O(n * n),  where n is the  total  count of  the
+                ``vDataFrame``.
+
+            |   **cramer**: Cramer's V (correlation between categories).
+            |   **biserial**: Biserial Point (correlation between binaries 
+                              and a numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
         alpha: float, optional
@@ -1572,10 +1812,10 @@ class vDFCorr(vDFEncode):
                 If  set  to True,  the Plotting object is
                 returned.
         kind: str, optional
-            ACF Type.
-                bar  : Classical  Partial Autocorrelation Plot
-                       using bars.
-                line : Draws  the   PACF  using  a  Line  Plot.
+            | PACF Type.
+            
+            |   **bar**: Classical Partial Autocorrelation Plot using bars.
+            |   **line**: Draws the PACF using a Line Plot.
         chart: PlottingObject, optional
             The chart object used to plot.
         **style_kwargs
@@ -1586,6 +1826,54 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Import the amazon dataset from `VerticaPy`.
+
+        .. code-block:: python
+                
+            from verticapy.datasets import load_amazon
+
+            data = load_amazon()
+
+        Draw the PACF Plot.
+
+        .. code-block:: python
+
+            data.pacf(
+                column = "number",
+                ts = "date",
+                by = "state",
+                method = "pearson",
+                p = 48,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            from verticapy.datasets import load_amazon
+            vp.set_option("plotting_lib", "plotly")
+            data = load_amazon()
+            fig = data.pacf(
+                column = "number",
+                ts = "date",
+                by = "state",
+                method = "pearson",
+                p = 48,
+            )
+            fig.write_html("figures/core_vDataFrame_vDFCorr_pacf_plot.html")
+
+        .. raw:: html
+          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_pacf_plot.html
+
+        For more examples, please look at the :ref:`chart_gallery.acf` page of the 
+        :ref:`chart_gallery`. Those ones are related to ACF plots, but the customization 
+        stays the same for the PACF plot.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.acf` : Computes the autocorrelations.
         """
         vml = get_vertica_mllib()
         if isinstance(by, str):
