@@ -25,8 +25,9 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    :class:`InMemoryModel <verticapy.machine_learning.memmodel.base.InMemoryModel>` implementation  of  linear
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation  of  linear
     algorithms.
+
 
     Parameters
     ----------
@@ -34,70 +35,70 @@ class LinearModel(InMemoryModel):
         ArrayLike of the model's coefficients.
     intercept: float, optional
         The intercept or constant value.
-        
-    .. note:: :mod:`memModels <verticapy.machine_learning.memmodel>` are defined entirely by their attributes. For example, 'coefficients' and 'intercept' define a linear regression model.
-    
+
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined entirely by their attributes. For example, 'coefficients' and 'intercept' define a linear regression model.
+
     Examples
     --------
-    
+
     **Initalization**
-    
+
     Import the required module.
-    
+
     .. ipython:: python
             :suppress:
-    
+
         from verticapy.machine_learning.memmodel.linear_model import LinearModel
-        
+
     A linear model is defined by its coefficients and an intercept value. In this example, we will use the following:
-    
+
     .. ipython:: python
             :suppress:
-    
+
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :class:`LinearModel <verticapy.machine_learning.memmodel.linear_model import LinearModel>`.
-    
+    Let's create a :py:mod:`verticapy.machine_learning.memmodel.linear_model`.
+
     .. ipython:: python
-            :suppress:    
+            :suppress:
 
         model_lm = LinearModel(coefficients, intercept)
-        
-    Create a dataset.        
- 
+
+    Create a dataset.
+
     .. ipython:: python
             :suppress:
 
         data = [[1.0, 0.3], [2.0, -0.6]]
-        
+
     **Making In-Memory Predictions**
 
-    Use :meth:`predict <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict>` method to do predictions
-    
-    .. ipython:: python
-            :suppress:
-    
-        model_lm.predict(data)
-        
-    **Deploy SQL Code**
-    
-    Let's use the following column names:
-    
+    Use :py:mod:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict` method to do predictions
+
     .. ipython:: python
             :suppress:
 
-        cnames = ['col1', 'col2']  
-    
-    Use :meth:`predict_sql <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql>` method to get the SQL code needed to deploy the model using its attributes
-    
+        model_lm.predict(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
     .. ipython:: python
             :suppress:
-    
+
+        cnames = ['col1', 'col2']
+
+    Use :py:mod:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql` method to get the SQL code needed to deploy the model using its attributes
+
+    .. ipython:: python
+            :suppress:
+
         model_lm.predict_sql(cnames)
-        
+
     .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
-                    
+
     """
 
     # Properties.
@@ -224,7 +225,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    :class:`InMemoryModel <verticapy.machine_learning.memmodel.base.InMemoryModel>` Implementation of linear algorithms for
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` Implementation of linear algorithms for
     classification.
 
     Parameters
@@ -233,82 +234,82 @@ class LinearModelClassifier(LinearModel):
         ArrayLike of the model's coefficients.
     intercept: float, optional
         The intercept or constant value.
-        
+
     Examples
     --------
-    
+
     **Initalization**
-    
+
     Import the required module.
-    
+
     .. ipython:: python
             :suppress:
-    
+
         from verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier
-        
+
     A linear classifier model is defined by its coefficients and an intercept value. In this example, we will use the following:
-    
+
     .. ipython:: python
             :suppress:
-    
+
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :class:`LinearModelClassifier <verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier>`.
-    
+    Let's create a :py:mod:`verticapy.machine_learning.memmodel.linear_model`.
+
     .. ipython:: python
-            :suppress:    
+            :suppress:
 
         model_lmc = LinearModelClassifier(coefficients, intercept)
-        
-    Create a dataset.        
- 
+
+    Create a dataset.
+
     .. ipython:: python
             :suppress:
 
         data = [[1.0, 0.3], [-0.5, -0.8]]
-        
+
     **Making In-Memory Predictions**
 
-    Use :meth:`predict <verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict>` method to do predictions
-    
+    Use :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict` method to do predictions
+
     .. ipython:: python
             :suppress:
-    
+
         model_lmc.predict(data)
-        
-    Use :meth:`predict_proba <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba>` method to calculate the predicted probabilities for each class
-    
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba` method to calculate the predicted probabilities for each class
+
     .. ipython:: python
             :suppress:
-    
+
         model_lmc.predict_proba(data)
-        
+
     **Deploy SQL Code**
-    
+
     Let's use the following column names:
-    
+
     .. ipython:: python
-            :suppress:    
+            :suppress:
 
         cnames = ['col1', 'col2']
-    
-    Use :meth:`predict_sql <verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql>` method to get the SQL code needed to deploy the model using its attributes
-    
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql` method to get the SQL code needed to deploy the model using its attributes
+
     .. ipython:: python
             :suppress:
-    
+
         model_lmc.predict_sql(cnames)
 
-    Use :meth:`predict_proba_sql <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql>` method to get the SQL code needed to deploy the model that computes predicted probabilities
-    
+    Use :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql` method to get the SQL code needed to deploy the model that computes predicted probabilities
+
     .. ipython:: python
             :suppress:
-    
+
         model_lmc.predict_proba_sql(cnames)
-        
+
     .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
-                    
+
     """
 
     # Properties.
