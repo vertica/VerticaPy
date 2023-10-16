@@ -25,7 +25,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    InMemoryModel  implementation  of  linear
+    :class:`InMemoryModel <verticapy.machine_learning.memmodel.base.InMemoryModel>` implementation  of  linear
     algorithms.
 
     Parameters
@@ -35,7 +35,7 @@ class LinearModel(InMemoryModel):
     intercept: float, optional
         The intercept or constant value.
         
-    .. note:: memModels are defined entirely by their attributes. For example, 'coefficients' and 'intercept' define a linear regression model.
+    .. note:: :mod:`memModels <verticapy.machine_learning.memmodel>` are defined entirely by their attributes. For example, 'coefficients' and 'intercept' define a linear regression model.
     
     Examples
     --------
@@ -57,7 +57,7 @@ class LinearModel(InMemoryModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a LinearModel.
+    Let's create a :class:`LinearModel <verticapy.machine_learning.memmodel.linear_model import LinearModel>`.
     
     .. ipython:: python
             :suppress:    
@@ -73,7 +73,7 @@ class LinearModel(InMemoryModel):
         
     **Making In-Memory Predictions**
 
-    Use predict method to do predictions
+    Use :meth:`predict <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict>` method to do predictions
     
     .. ipython:: python
             :suppress:
@@ -89,14 +89,14 @@ class LinearModel(InMemoryModel):
 
         cnames = ['col1', 'col2']  
     
-    Use predict_sql method to get the SQL code needed to deploy the model using its attributes
+    Use :meth:`predict_sql <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql>` method to get the SQL code needed to deploy the model using its attributes
     
     .. ipython:: python
             :suppress:
     
         model_lm.predict_sql(cnames)
         
-    .. hint:: This object can be pickled and used in any in-memory environment, just like SKLEARN models.
+    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
                     
     """
 
@@ -224,7 +224,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    InMemoryModel Implementation of linear algorithms for
+    :class:`InMemoryModel <verticapy.machine_learning.memmodel.base.InMemoryModel>` Implementation of linear algorithms for
     classification.
 
     Parameters
@@ -254,7 +254,7 @@ class LinearModelClassifier(LinearModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a LinearModelClassifier.
+    Let's create a :class:`LinearModelClassifier <verticapy.machine_learning.memmodel.linear_model import LinearModelClassifier>`.
     
     .. ipython:: python
             :suppress:    
@@ -270,14 +270,14 @@ class LinearModelClassifier(LinearModel):
         
     **Making In-Memory Predictions**
 
-    Use predict method to do predictions
+    Use :meth:`predict <verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict>` method to do predictions
     
     .. ipython:: python
             :suppress:
     
         model_lmc.predict(data)
         
-    Use predict_proba method to calculate the predicted probabilities for each class
+    Use :meth:`predict_proba <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba>` method to calculate the predicted probabilities for each class
     
     .. ipython:: python
             :suppress:
@@ -293,21 +293,21 @@ class LinearModelClassifier(LinearModel):
 
         cnames = ['col1', 'col2']
     
-    Use predict_sql method to get the SQL code needed to deploy the model using its attributes
+    Use :meth:`predict_sql <verticapy.machine_learning.memmodel.linear_model.LinearModelClassifier.predict_sql>` method to get the SQL code needed to deploy the model using its attributes
     
     .. ipython:: python
             :suppress:
     
         model_lmc.predict_sql(cnames)
 
-    Use predict_proba_sql method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use :meth:`predict_proba_sql <verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_proba_sql>` method to get the SQL code needed to deploy the model that computes predicted probabilities
     
     .. ipython:: python
             :suppress:
     
         model_lmc.predict_proba_sql(cnames)
         
-    .. hint:: This object can be pickled and used in any in-memory environment, just like SKLEARN models.
+    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
                     
     """
 
