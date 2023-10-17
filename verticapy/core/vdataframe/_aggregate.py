@@ -180,7 +180,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aggregate_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -714,29 +714,46 @@ class vDFAgg(vDFEval):
         processes: int = 1,
     ) -> TableSample:
         """
-        Aggregates  the vDataFrame  using  multiple  statistical  aggregations:
-        min, max, median, unique... depending on the types of the vDataColumns.
+        This function aggregates the vDataFrame using multiple statistical
+        aggregations such as minimum (min), maximum (max), median, cardinality
+        (unique), and other relevant statistics. The specific aggregations
+        applied depend on the data types of the vDataColumns. For example,
+        numeric columns are aggregated with numerical aggregations (min, median,
+        max...), while categorical columns are aggregated using categorical ones
+        (cardinality, mode...). This versatile function provides valuable insights
+        into the dataset's statistical properties and can be customized to meet
+        specific analytical requirements.
+
+        .. note::
+
+            This function can offer faster performance compared to the
+            :py:mod:`verticapy.vDataFrame.aggregate` method, as it
+            leverages specialized and optimized backend functions.
 
         Parameters
         ----------
         method: str, optional
-            The describe method.
-                all         : Aggregates all statistics for all vDataColumns. The
-                              exact method depends on the vDataColumn type
-                              (numerical  dtype:  numerical; timestamp  dtype:
-                              range; categorical dtype: length)
-                auto        : Sets  the  method  to  ``numerical`` if  at  least  one
-                              vDataColumn   of   the   vDataFrame    is   numerical,
-                              ``categorical`` otherwise.
-                categorical : Uses only categorical aggregations.
-                length      : Aggregates the vDataFrame using numerical aggregation
-                              on the length of all selected vDataColumns.
-                numerical   : Uses  only  numerical  descriptive  statistics, which
-                              are  computed faster than the  ``aggregate`` method.
-                range       : Aggregates the vDataFrame using multiple  statistical
-                              aggregations - min, max, range...
-                statistics  : Aggregates the vDataFrame using  multiple statistical
-                              aggregations - kurtosis, skewness, min, max...
+            | The describe method.
+
+            |   **all**: Aggregates all statistics for all vDataColumns.
+                         The exact method depends on the vDataColumn type
+                         (numerical  dtype:  numerical; timestamp  dtype:
+                         range; categorical dtype: length)
+            |   **auto**: Sets the method  to  ``numerical`` if  at least
+                          one vDataColumn of the vDataFrame is numerical,
+                          ``categorical`` otherwise.
+            |   **categorical**: Uses only categorical aggregations.
+            |   **length**: Aggregates the vDataFrame using numerical
+                            aggregation on the length of all selected
+                            vDataColumns.
+            |   **numerical**: Uses only numerical descriptive statistics,
+                               which are  computed faster than the `aggregate`
+                               method.
+            |   **range**: Aggregates  the  vDataFrame   using  multiple
+                           statistical aggregations - min, max, range...
+            |   **statistics**: Aggregates  the  vDataFrame  using   multiple
+                                statistical aggregations - kurtosis, skewness,
+                                min, max...
         columns: SQLColumns, optional
             List of the vDataColumns names.  If empty, the  vDataColumns are
             selected depending on the parameter ``method``.
@@ -759,6 +776,129 @@ class vDFAgg(vDFEval):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+
+        The ``describe`` method provides you with a variety of statistical
+        methods.
+
+        The ``numerical`` parameter allows for the computation of numerical
+        aggregations.
+
+        .. code-block:: python
+
+            data.describe(
+                columns = ["x", "y", "z"],
+                method = "numerical",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data.describe(
+                columns = ["x", "y", "z"],
+                method = "numerical",
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_describe_num_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_num_table.html
+
+        The ``categorical`` parameter allows for the computation of categorical
+        aggregations.
+
+        .. code-block:: python
+
+            data.describe(
+                columns = ["x", "y", "z", "c"],
+                method = "categorical",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data.describe(
+                columns = ["x", "y", "z", "c"],
+                method = "categorical",
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_describe_cat_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_cat_table.html
+
+        The ``all`` parameter allows for the computation of both categorical
+        and numerical aggregations.
+
+        .. code-block:: python
+
+            data.describe(
+                columns = ["x", "y", "z", "c"],
+                method = "all",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data.describe(
+                columns = ["x", "y", "z", "c"],
+                method = "all",
+            )
+            html_file = open("figures/core_vDataFrame_vDFAgg_describe_all_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_all_table.html
+
+        .. note::
+
+            Many other methods are available, and their cost in terms of computation can vary.
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | :py:mod:`verticapy.vDataColumn.describe` :
+              Summarizes the information within the column.
         """
         if method == "auto":
             method = "numerical" if (len(self.numcol()) > 0) else "categorical"
@@ -1194,7 +1334,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         Alternatively, you can achieve grouping using VerticaPy SQL
         functions, which offer a more Pythonic approach.
@@ -1212,7 +1352,7 @@ class vDFAgg(vDFEval):
             )
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         You can also perform rollup aggregations.
 
@@ -1244,7 +1384,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1430,7 +1570,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aad_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1512,7 +1652,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_all_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_all_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1589,7 +1729,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_any_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_any_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1666,7 +1806,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_avg_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_avg_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1746,7 +1886,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1834,7 +1974,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1931,7 +2071,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_mad_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_mad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2008,7 +2148,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_max_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_max_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2098,7 +2238,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_median_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_median_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2181,7 +2321,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_min_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_min_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2277,7 +2417,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_product_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_product_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2390,7 +2530,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_quantile_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_quantile_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2494,7 +2634,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sem_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sem_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2582,7 +2722,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_skewness_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_skewness_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2664,7 +2804,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_std_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_std_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2743,7 +2883,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sum_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sum_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2822,7 +2962,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_var_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_var_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2917,7 +3057,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_percent_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_percent_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3024,7 +3164,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_nunique_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_nunique_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3119,7 +3259,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_duplicated_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_duplicated_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3291,7 +3431,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_aggregate_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3314,25 +3454,32 @@ class vDCAgg(vDCEval):
         numcol: Optional[str] = None,
     ) -> TableSample:
         """
-        Aggregates the vDataColumn using multiple statistical
-        aggregations: min, max, median, unique...
-        depending on the input method.
+        This function aggregates the vDataColumn using multiple statistical
+        aggregations such as minimum (min), maximum (max), median, cardinality
+        (unique), and other relevant statistics. The specific aggregations
+        applied depend on the data types of the vDataColumn. For example,
+        numeric columns are aggregated with numerical aggregations (min, median,
+        max...), while categorical columns are aggregated using categorical ones
+        (cardinality, mode...). This versatile function provides valuable insights
+        into the dataset's statistical properties and can be customized to meet
+        specific analytical requirements.
 
         Parameters
         ----------
         method: str, optional
-            The describe method.
-                auto        : Sets  the  method to  ``numerical`` if
-                              the   vDataColumn    is    numerical,
-                              ``categorical`` otherwise.
-                categorical : Uses  only categorical  aggregations
-                              during the computation.
-                cat_stats   : Computes  statistics  of a numerical
-                              column for each vDataColumn category.
-                              In this case,  the parameter ``numcol``
-                              must be defined.
-                numerical   : Uses  popular numerical aggregations
-                              during the computation.
+            | The describe method.
+
+            |   **auto**: Sets  the  method to  ``numerical`` if
+                          the   vDataColumn    is    numerical,
+                          ``categorical`` otherwise.
+            |   **categorical**: Uses  only categorical  aggregations
+                                 during the computation.
+            |   **cat_stats**: Computes  statistics  of a numerical
+                               column for each vDataColumn category.
+                               In this case,  the parameter ``numcol``
+                               must be defined.
+            |   **numerical**: Uses  popular numerical aggregations
+                               during the computation.
         max_cardinality: int, optional
             Cardinality  threshold  to  use  to  determine  if the
             vDataColumn is considered as categorical.
@@ -3344,6 +3491,113 @@ class vDCAgg(vDCEval):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+        For this example, we will use the following dataset:
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+
+        The ``describe`` method provides you with a variety of statistical
+        methods.
+
+        The ``numerical`` parameter allows for the computation of numerical
+        aggregations.
+
+        .. code-block:: python
+
+            data["x"].describe(method = "numerical")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data["x"].describe(method = "numerical")
+            html_file = open("figures/core_vDataFrame_vDCAgg_describe_num_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_num_table.html
+
+        The ``categorical`` parameter allows for the computation of categorical
+        aggregations.
+
+        .. code-block:: python
+
+            data["x"].describe(method = "categorical")
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data["x"].describe(method = "categorical")
+            html_file = open("figures/core_vDataFrame_vDCAgg_describe_cat_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_cat_table.html
+
+        The ``cat_stats`` parameter enables grouping by a categorical column and computing
+        various aggregations on a numerical one.
+
+        .. code-block:: python
+
+            data["c"].describe(
+                method = "cat_stats",
+                numcol = "x"
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            data = vp.vDataFrame({
+                "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+            })
+            result = data["c"].describe(
+                method = "cat_stats",
+                numcol = "x"
+            )
+            html_file = open("figures/core_vDataFrame_vDCAgg_describe_stats_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_stats_table.html
+
+        .. note:: All the calculations are pushed to the database.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | :py:mod:`verticapy.vDataFrame.describe` :
+              Summarizes information within the columns.
         """
         assert (method != "cat_stats") or (numcol), ValueError(
             "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
@@ -4395,7 +4649,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_value_counts_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_value_counts_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -4465,7 +4719,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_topk_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_topk_table.html
 
         .. note:: All the calculations are pushed to the database.
 
