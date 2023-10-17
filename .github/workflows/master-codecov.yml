@@ -32,6 +32,7 @@ jobs:
           done;
           echo "Vertica is up"
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "\l"
+          docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
         run: pip install tox
       - name: Run tests
