@@ -180,7 +180,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aggregate_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -824,7 +824,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_describe_num_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_num_table.html
 
         The ``categorical`` parameter allows for the computation of categorical
         aggregations.
@@ -855,7 +855,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_describe_cat_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_cat_table.html
 
         The ``all`` parameter allows for the computation of both categorical
         and numerical aggregations.
@@ -886,7 +886,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_describe_all_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_all_table.html
 
         .. note::
 
@@ -1334,7 +1334,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         Alternatively, you can achieve grouping using VerticaPy SQL
         functions, which offer a more Pythonic approach.
@@ -1352,7 +1352,7 @@ class vDFAgg(vDFEval):
             )
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html
 
         You can also perform rollup aggregations.
 
@@ -1384,7 +1384,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table_2.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1570,7 +1570,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_aad_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1652,7 +1652,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_all_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_all_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1729,7 +1729,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_any_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_any_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1806,7 +1806,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_avg_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_avg_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1886,7 +1886,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -1974,7 +1974,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_kurtosis_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2071,7 +2071,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_mad_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_mad_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2148,7 +2148,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_max_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_max_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2238,7 +2238,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_median_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_median_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2321,7 +2321,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_min_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_min_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2417,7 +2417,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_product_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_product_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2530,7 +2530,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_quantile_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_quantile_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2634,7 +2634,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sem_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sem_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2722,7 +2722,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_skewness_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_skewness_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2804,7 +2804,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_std_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_std_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2883,7 +2883,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_sum_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sum_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -2962,7 +2962,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_var_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_var_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3057,7 +3057,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_count_percent_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_percent_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3164,7 +3164,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_nunique_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_nunique_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3259,7 +3259,7 @@ class vDFAgg(vDFEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_duplicated_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_duplicated_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3431,7 +3431,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_aggregate_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_aggregate_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -3533,7 +3533,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_describe_num_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_num_table.html
 
         The ``categorical`` parameter allows for the computation of categorical
         aggregations.
@@ -3558,7 +3558,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_describe_cat_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_cat_table.html
 
         The ``cat_stats`` parameter enables grouping by a categorical column and computing
         various aggregations on a numerical one.
@@ -3589,7 +3589,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDCAgg_describe_stats_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_stats_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -4649,7 +4649,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_value_counts_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_value_counts_table.html
 
         .. note:: All the calculations are pushed to the database.
 
@@ -4719,7 +4719,7 @@ class vDCAgg(vDCEval):
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFAgg_topk_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_topk_table.html
 
         .. note:: All the calculations are pushed to the database.
 

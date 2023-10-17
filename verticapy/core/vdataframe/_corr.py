@@ -860,9 +860,9 @@ class vDFCorr(vDFEncode):
             fig.write_html("figures/core_vDataFrame_vDFCorr_corr_matrix.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_corr_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html
 
-        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`.
 
         .. seealso::
@@ -944,7 +944,7 @@ class vDFCorr(vDFEncode):
         Examples
         --------
         For this example, let's generate a dataset and compute
-        the Pearson correlation coefficient and its p-value 
+        the Pearson correlation coefficient and its p-value
         between the two features: 'x' and 'y'.
 
         .. ipython:: python
@@ -957,8 +957,8 @@ class vDFCorr(vDFEncode):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
             data.corr_pvalue(
-                column1 = "x", 
-                column2 = "y", 
+                column1 = "x",
+                column2 = "y",
                 method = "pearson",
             )
 
@@ -1203,9 +1203,9 @@ class vDFCorr(vDFEncode):
             fig.write_html("figures/core_vDataFrame_vDFCorr_cov_matrix.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_cov_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html
 
-        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
         customization stays the same for the covariance matrix.
 
@@ -1262,7 +1262,7 @@ class vDFCorr(vDFEncode):
             vDataColumns are used.
         method: str, optional
             | Method to use to compute the regression matrix.
-            
+
             |   **avgx**: Average  of  the  independent  expression  in
                           an expression pair.
             |   **avgy**: Average  of  the dependent  expression in  an
@@ -1270,11 +1270,11 @@ class vDFCorr(vDFEncode):
             |   **count**: Count  of  all  rows  in  an expression  pair.
             |   **alpha**: Intercept  of the regression line  determined
                            by a set of expression pairs.
-            |   **r2**: Square  of  the correlation  coefficient of a set 
+            |   **r2**: Square  of  the correlation  coefficient of a set
                         of expression pairs.
-            |   **beta**: Slope of  the regression  line, determined by a 
+            |   **beta**: Slope of  the regression  line, determined by a
                           set of expression pairs.
-            |   **sxx**: Sum of squares of  the independent expression in 
+            |   **sxx**: Sum of squares of  the independent expression in
                          an expression pair.
             |   **sxy**: Sum of products of the independent expression
                          multiplied by the  dependent expression in an
@@ -1343,7 +1343,7 @@ class vDFCorr(vDFEncode):
             fig.write_html("figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
 
         Draw the regression matrix using the Alpha coefficient.
 
@@ -1368,7 +1368,7 @@ class vDFCorr(vDFEncode):
             fig.write_html("figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
 
         Draw the regression matrix using the R2 correlation coefficient.
 
@@ -1393,9 +1393,9 @@ class vDFCorr(vDFEncode):
             fig.write_html("figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
 
-        For more examples, please look at the :ref:`chart_gallery.corr` page of the 
+        For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
         customization stays the same for the regression matrix.
 
@@ -1556,15 +1556,15 @@ class vDFCorr(vDFEncode):
             p must be positive or a list of positive integers.
         unit: str, optional
             | Unit used to compute the lags.
-            
+
             |   **rows**: Natural lags
             |   **else**: Any time unit. For example, you can
-                          write 'hour' to compute the hours 
-                          lags or 'day' to compute the days 
+                          write 'hour' to compute the hours
+                          lags or 'day' to compute the days
                           lags.
         method: str, optional
             | Method used to compute the correlation.
-            
+
             |   **pearson**: Pearson's  correlation coefficient
                              (linear).
             |   **spearman**: Spearman's correlation coefficient
@@ -1575,7 +1575,7 @@ class vDFCorr(vDFEncode):
             |   **kendall**: Kendall's  correlation coefficient
                              (similar trends).  The method
                              computes the Tau-B coefficient.
-                             
+
             .. warning::
 
                 This method  uses a CROSS JOIN  during  computation
@@ -1584,7 +1584,7 @@ class vDFCorr(vDFEncode):
                 ``vDataFrame``.
 
             |   **cramer**: Cramer's V (correlation between categories).
-            |   **biserial**: Biserial Point (correlation between binaries 
+            |   **biserial**: Biserial Point (correlation between binaries
                               and a numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
@@ -1596,7 +1596,7 @@ class vDFCorr(vDFEncode):
                 returned.
         kind: str, optional
             | ACF Type.
-            
+
             |   **bar**: Classical Autocorrelation Plot using bars.
             |   **heatmap**: Draws the ACF heatmap.
             |   **line**: Draws the ACF using a Line Plot.
@@ -1620,7 +1620,7 @@ class vDFCorr(vDFEncode):
         Import the amazon dataset from `VerticaPy`.
 
         .. code-block:: python
-                
+
             from verticapy.datasets import load_amazon
 
             data = load_amazon()
@@ -1634,7 +1634,7 @@ class vDFCorr(vDFEncode):
                 ts = "date",
                 by = "state",
                 method = "pearson",
-                p = 48,
+                p = 24,
             )
 
         .. ipython:: python
@@ -1649,14 +1649,16 @@ class vDFCorr(vDFEncode):
                 ts = "date",
                 by = "state",
                 method = "pearson",
-                p = 48,
+                p = 24,
+                width = 600,
+                height = 400,
             )
             fig.write_html("figures/core_vDataFrame_vDFCorr_acf_plot.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_acf_plot.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_acf_plot.html
 
-        For more examples, please look at the :ref:`chart_gallery.acf` page of the 
+        For more examples, please look at the :ref:`chart_gallery.acf` page of the
         :ref:`chart_gallery`.
 
         .. seealso::
@@ -1773,15 +1775,15 @@ class vDFCorr(vDFEncode):
             p must be positive or a list of positive integers.
         unit: str, optional
             | Unit used to compute the lags.
-            
+
             |   **rows**: Natural lags
             |   **else**: Any time unit. For example, you can
-                          write 'hour' to compute the hours 
-                          lags or 'day' to compute the days 
+                          write 'hour' to compute the hours
+                          lags or 'day' to compute the days
                           lags.
         method: str, optional
             | Method used to compute the correlation.
-            
+
             |   **pearson**: Pearson's  correlation coefficient
                              (linear).
             |   **spearman**: Spearman's correlation coefficient
@@ -1801,7 +1803,7 @@ class vDFCorr(vDFEncode):
                 ``vDataFrame``.
 
             |   **cramer**: Cramer's V (correlation between categories).
-            |   **biserial**: Biserial Point (correlation between binaries 
+            |   **biserial**: Biserial Point (correlation between binaries
                               and a numericals).
         confidence: bool, optional
             If set to True, the confidence band width is drawn.
@@ -1813,7 +1815,7 @@ class vDFCorr(vDFEncode):
                 returned.
         kind: str, optional
             | PACF Type.
-            
+
             |   **bar**: Classical Partial Autocorrelation Plot using bars.
             |   **line**: Draws the PACF using a Line Plot.
         chart: PlottingObject, optional
@@ -1832,7 +1834,7 @@ class vDFCorr(vDFEncode):
         Import the amazon dataset from `VerticaPy`.
 
         .. code-block:: python
-                
+
             from verticapy.datasets import load_amazon
 
             data = load_amazon()
@@ -1846,7 +1848,7 @@ class vDFCorr(vDFEncode):
                 ts = "date",
                 by = "state",
                 method = "pearson",
-                p = 48,
+                p = 24,
             )
 
         .. ipython:: python
@@ -1861,15 +1863,17 @@ class vDFCorr(vDFEncode):
                 ts = "date",
                 by = "state",
                 method = "pearson",
-                p = 48,
+                p = 24,
+                width = 600,
+                height = 450,
             )
             fig.write_html("figures/core_vDataFrame_vDFCorr_pacf_plot.html")
 
         .. raw:: html
-          :file: /project/data/plotting/docs/figures/core_vDataFrame_vDFCorr_pacf_plot.html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_pacf_plot.html
 
-        For more examples, please look at the :ref:`chart_gallery.acf` page of the 
-        :ref:`chart_gallery`. Those ones are related to ACF plots, but the customization 
+        For more examples, please look at the :ref:`chart_gallery.acf` page of the
+        :ref:`chart_gallery`. Those ones are related to ACF plots, but the customization
         stays the same for the PACF plot.
 
         .. seealso::
