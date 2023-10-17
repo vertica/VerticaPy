@@ -16,14 +16,13 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 from verticapy._typing import ArrayLike
+from verticapy.plotting._plotly.base import PlotlyBase
 
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.graph_objs._figure import Figure
-
-from verticapy.plotting._plotly.base import PlotlyBase
 
 
 class OutliersPlot(PlotlyBase):
@@ -63,55 +62,65 @@ class OutliersPlot(PlotlyBase):
         """
         fig = self._get_fig(fig)
         if len(self.layout["columns"]) == 1:
-            X1 = self.data["inliers"][:, 0].flatten().tolist()
-            X2 = self.data["outliers"][:, 0].flatten().tolist()
-            cat_X1 = ["inliers"] * len(X1)
-            cat_X2 = ["outliers"] * len(X2)
-            x_axis = [self.layout["columns"][0]] * (len(X1) + len(X2))
-            df = pd.DataFrame(
+            x_1 = self.data["inliers"][:, 0].flatten().tolist()
+            x_2 = self.data["outliers"][:, 0].flatten().tolist()
+            cat_x1 = ["inliers"] * len(x_1)
+            cat_x2 = ["outliers"] * len(x_2)
+            x_axis = [self.layout["columns"][0]] * (len(x_1) + len(x_2))
+            data_frame = pd.DataFrame(
                 {
-                    self.layout["columns"][0]: X1 + X2,
-                    "category": cat_X1 + cat_X2,
+                    self.layout["columns"][0]: x_1 + x_2,
+                    "category": cat_x1 + cat_x2,
                     "x_axis": x_axis,
                 }
             )
             fig_scatter = px.strip(
-                df,
+                data_frame,
                 x="x_axis",
                 y=self.layout["columns"][0],
                 color="category",
                 stripmode="overlay",
+                color_discrete_sequence=[
+                    self.layout["inliers_color"]
+                    if self.layout["inliers_color"] != "white"
+                    else self.get_colors(idx=2),
+                    self.layout["outliers_color"],
+                ],
             )
             fig_scatter.update_layout(xaxis={"visible": False})
         elif len(self.layout["columns"]) == 2:
-            X1 = self.data["inliers"][:, 0].flatten().tolist()
-            X2 = self.data["outliers"][:, 0].flatten().tolist()
-            Y1 = self.data["inliers"][:, 1].flatten().tolist()
-            Y2 = self.data["outliers"][:, 1].flatten().tolist()
+            x_1 = self.data["inliers"][:, 0].flatten().tolist()
+            x_2 = self.data["outliers"][:, 0].flatten().tolist()
+            y_1 = self.data["inliers"][:, 1].flatten().tolist()
+            y_2 = self.data["outliers"][:, 1].flatten().tolist()
             delta_x = self.data["map"]["X"][0][1] - self.data["map"]["X"][0][0]
             delta_y = self.data["map"]["Y"][1][0] - self.data["map"]["Y"][0][1]
-            cat_X1 = ["inliers"] * len(X1)
-            cat_X2 = ["outliers"] * len(X2)
-            df = pd.DataFrame(
+            cat_x1 = ["inliers"] * len(x_1)
+            cat_x2 = ["outliers"] * len(x_2)
+            data_frame_1 = pd.DataFrame(
                 {
-                    self.layout["columns"][0]: X1,
-                    "category": cat_X1,
-                    self.layout["columns"][1]: Y1,
+                    self.layout["columns"][0]: x_1,
+                    "category": cat_x1,
+                    self.layout["columns"][1]: y_1,
                 }
             )
-            df2 = pd.DataFrame(
+            data_frame_2 = pd.DataFrame(
                 {
-                    self.layout["columns"][0]: X2,
-                    "category": cat_X2,
-                    self.layout["columns"][1]: Y2,
+                    self.layout["columns"][0]: x_2,
+                    "category": cat_x2,
+                    self.layout["columns"][1]: y_2,
                 }
             )
-            concatenated_df = pd.concat([df, df2], ignore_index=True)
+            concatenated_df = pd.concat([data_frame_1, data_frame_2], ignore_index=True)
             fig_scatter = px.scatter(
                 concatenated_df,
                 x=self.layout["columns"][0],
                 y=self.layout["columns"][1],
                 color="category",
+                color_discrete_sequence=[
+                    self.layout["inliers_color"],
+                    self.layout["outliers_color"],
+                ],
             )
             z_max = self.data["map"]["Z"].max()
             threshold = self.data["th"]
@@ -150,7 +159,10 @@ class OutliersPlot(PlotlyBase):
                     x0=self.data["map"]["X"][0][0],
                     dy=delta_y * coarse_factor,
                     y0=self.data["map"]["Y"][0][0],
-                    colorscale=[[0, "blue"], [1, "blue"]],
+                    colorscale=[
+                        [0, self.layout["inliers_border_color"]],
+                        [1, self.layout["inliers_border_color"]],
+                    ],
                     contours_coloring="lines",
                     line_width=2,
                     contours=dict(

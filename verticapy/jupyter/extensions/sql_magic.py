@@ -57,19 +57,619 @@ def sql_magic(
     """
     Executes SQL queries in the Jupyter cell.
 
-    -c / --command : SQL Command to execute.
+    Parameters
+    ----------
+    -c / --command : str, optional
+        SQL Command to execute.
+    -f / --file : str, optional
+        Input  File. You  can use this option
+        if  you  want  to  execute the  input
+        file.
+    -ncols : int, optional
+        Maximum number of columns to display.
+    -nrows : int, optional
+        Maximum  number  of rows to  display.
+    -o / --output : str, optional
+        Output File. You  can use this option
+        if  you want to export the  result of
+        the query to  the CSV or JSON format.
 
-    -f  /   --file : Input  File. You  can use this option
-                     if  you  want  to  execute the  input
-                     file.
+    Returns
+    -------
+    vDataFrame
+        Result of the query
 
-            -ncols : Maximum number of columns to display.
+    Examples
+    --------
+    The following examples demonstrate:
 
-            -nrows : Maximum  number  of rows to  display.
+    * Setting up the environment
+    * Using SQL Magic
+    * Getting the vDataFrame of a query
+    * Using variables inside a query
+    * Limiting the number of rows and columns
+    * Exporting a query to JSON or CSV
+    * Executing SQL files
 
-     -o / --output : Output File. You  can use this option
-                     if  you want to export the  result of
-                     the query to  the CSV or JSON format.
+    Setting up the environment
+    ==========================
+    If you don't already have a connection, create one:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+        # Save a new connection
+        vp.new_connection({
+            "host": "10.211.55.14",
+            "port": "5433",
+            "database": "testdb",
+            "password": "XxX",
+            "user": "dbadmin"},
+            name = "VerticaDSN"
+        )
+
+    If you already have a connection in a connection
+    file, you can use it by running the following
+    command:
+
+    .. code-block:: python
+
+        # Connect using the VerticaDSN connection
+        vp.connect("VerticaDSN")
+
+    Load the extension:
+
+    .. code-block:: python
+
+        %load_ext verticapy.sql
+
+    Load a sample dataset. These sample datasets
+    are loaded into the public schema by default.
+    You can specify a target schema with the 'name'
+    and 'schema' parameters:
+
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic, load_iris
+
+        titanic = load_titanic()
+        iris = load_iris()
+
+    SQL Magic
+    =========
+    Use '%%sql' to run a query on the dataset:
+
+    .. code-block:: python
+
+        %%sql
+        SELECT
+            survived,
+            AVG(fare) AS avg_fare,
+            AVG(age) AS avg_age
+        FROM titanic
+        GROUP BY 1;
+
+    **Execution**: 0.006s
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        from verticapy.datasets import load_titanic, load_iris
+
+        titanic = load_titanic()
+        iris = load_iris()
+        %load_ext verticapy.sql
+
+    .. ipython:: python
+        :suppress:
+
+        %sql -c 'SELECT survived, AVG(fare) AS avg_fare, AVG(age) AS avg_age FROM titanic GROUP BY 1;'
+
+    .. ipython:: python
+        :suppress:
+
+        t = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic.html", "w")
+        html_file.write(t._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic.html
+
+    You can also run queries with '%sql' and the '-c' option:
+
+    .. code-block:: python
+
+        %sql -c 'SELECT DISTINCT Species FROM iris;'
+
+    **Execution**: 0.006s
+
+    .. ipython:: python
+        :suppress:
+
+        %sql -c 'SELECT DISTINCT Species FROM iris;'
+
+    .. ipython:: python
+        :suppress:
+
+        result = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_2.html
+
+    You can use a single cell for multiple queries:
+
+    .. warning:: Don't forget to include a semicolon at the end of each query.
+
+    .. code-block:: python
+
+        %%sql
+        DROP TABLE IF EXISTS test;
+        CREATE TABLE test AS SELECT 'Badr Ouali' AS name;
+        SELECT * FROM test;
+
+    **Execution**: 0.05s
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        %%sql
+        DROP TABLE IF EXISTS test;
+        CREATE TABLE test AS SELECT 'Badr Ouali' AS name;
+        SELECT * FROM test;
+
+    .. ipython:: python
+        :suppress:
+
+        test_table = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_3.html", "w")
+        html_file.write(test_table._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_3.html
+
+    To add comments to a query, use one of the following comment syntaxes:
+
+    .. warning:: Vertica uses '/' and '/' for both comments and query hints. Whenever possible, use '--' to avoid conflicts.
+
+    .. code-block:: python
+
+        %%sql
+        -- Comment Test
+        /* My Vertica Version */
+        SELECT version(); -- Select my current version
+
+    **Execution**: 0.005s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        -- Comment Test
+        /* My Vertica Version */
+        SELECT version(); -- Select my current version
+
+    .. ipython:: python
+        :suppress:
+
+        test_comment = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_4.html", "w")
+        html_file.write(test_comment._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_4.html
+
+    Get the vDataFrame of a query
+    =============================
+
+    Results of a SQL Magic query are stored in a vDataFrame, which is assigned
+    to a temporary variable called '_'. You can assign this temporary varaible
+    to a new variable to save your results.
+
+    .. code-block:: python
+
+        %%sql
+        SELECT
+            age,
+            fare,
+            pclass
+        FROM titanic
+        WHERE age IS NOT NULL AND fare IS NOT NULL;
+
+    **Execution**: 0.007s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        SELECT
+            age,
+            fare,
+            pclass
+        FROM titanic
+        WHERE age IS NOT NULL AND fare IS NOT NULL;
+
+    .. ipython:: python
+        :suppress:
+
+        titanic_clean = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_5.html", "w")
+        html_file.write(titanic_clean._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: figures/jupyter_extensions_sql_magic_sql_magic_5.html
+
+    Assign the results to a new variable:
+
+    .. code-block:: python
+
+        titanic_clean = _
+        display(titanic_clean)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_5.html
+
+    Temporary results are stored in a vDataFrame, allowing you to call
+    vDataFrame methods:
+
+    .. ipython:: python
+
+        titanic_clean["age"].max()
+
+    Using variables inside a query
+    ==============================
+
+    You can use variables in a SQL query with the ':' operator. This
+    variable can be a vDataFrame, a TableSample, a pandas.DataFrame,
+    or any standard Python type.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+        class_fare = titanic_clean.groupby(
+            "pclass",
+            [vpf.avg(titanic_clean["fare"])._as("avg_fare")]
+        )
+        class_fare
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.sql.functions as vpf
+        class_fare = titanic_clean.groupby("pclass",
+                                   [vpf.avg(titanic_clean["fare"])._as("avg_fare")])
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_6.html", "w")
+        html_file.write(class_fare._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_6.html
+
+    Use the 'class_fare' variable in a SQL query:
+
+    .. code-block:: python
+
+        %%sql
+        SELECT
+            x.*,
+            y.avg_fare
+        FROM titanic AS x LEFT JOIN (SELECT * FROM :class_fare) AS y
+        ON x.pclass = y.pclass;
+
+    **Execution**: 0.011s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        SELECT
+            x.*,
+            y.avg_fare
+        FROM titanic AS x LEFT JOIN (SELECT * FROM :class_fare) AS y
+        ON x.pclass = y.pclass;
+
+    .. ipython:: python
+        :suppress:
+
+        titanic_class = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_7.html", "w")
+        html_file.write(titanic_class._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html
+
+    You can do the same with a TableSample:
+
+    .. code-block:: python
+
+        tb = {"name": ["Badr", "Arash"], "specialty": ["Python", "C++"]}
+        tb = vp.TableSample(tb)
+
+    .. code-block:: python
+
+        %%sql
+        SELECT * FROM :tb;
+
+    **Execution**: 0.014s
+
+    .. ipython:: python
+        :suppress:
+
+        tb = {"name": ["Badr", "Arash"], "specialty": ["Python", "C++"]}
+        tb = vp.TableSample(tb)
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        SELECT * FROM :tb;
+
+    .. ipython:: python
+        :suppress:
+
+        tb_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_8.html", "w")
+        html_file.write(tb_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_8.html
+
+    And with a pandas.DataFrame:
+
+    .. ipython:: python
+
+        titanic_pandas = titanic.to_pandas()
+        titanic_pandas
+
+    .. code-block:: python
+
+        %%sql
+        SELECT * FROM :titanic_pandas;
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        SELECT * FROM :titanic_pandas;
+
+    .. ipython:: python
+        :suppress:
+
+        pandas_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_9.html", "w")
+        html_file.write(pandas_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_9.html
+
+    You can also use a sample loop with a variable:
+
+    .. note:: VerticaPy will store the object in a temporary local table before executing the overall query, which facilitates integration with in-memory objects.
+
+    .. code-block:: python
+
+        %sql -c 'DROP TABLE IF EXISTS test;'
+        %sql -c 'CREATE TABLE test (id INT);'
+        for i in range(4):
+            %sql -c 'INSERT INTO test(id) SELECT :i;'
+
+    `DROP`
+
+    **Execution**: 0.014s
+
+    `CREATE`
+
+    **Execution**: 0.008s
+
+    `INSERT`
+
+    **Execution**: 0.05s
+
+    `INSERT`
+
+    **Execution**: 0.015s
+
+    `INSERT`
+
+    **Execution**: 0.016s
+
+    `INSERT`
+
+    **Execution**: 0.013s
+
+    .. ipython:: python
+
+        %sql -c 'DROP TABLE IF EXISTS test;'
+        %sql -c 'CREATE TABLE test (id INT);'
+        for i in range(4):
+            %sql -c 'INSERT INTO test(id) SELECT :i;'
+
+    .. code-block:: python
+
+        %%sql
+        SELECT * FROM test;
+
+    **Execution**: 0.005s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql
+        SELECT * FROM test;
+
+    .. ipython:: python
+        :suppress:
+
+        loop_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_10.html", "w")
+        html_file.write(loop_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_10.html
+
+    Change the maximum number of rows/columns to display
+    ====================================================
+
+    Use the '-nrows' and '-ncols' option to limit the number of rows and columns displayed:
+
+    .. code-block:: python
+
+        %%sql -nrows 5 -ncols 2
+        SELECT * FROM public.titanic;
+
+    **Execution**: 0.008s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql -nrows 5 -ncols 2
+        SELECT * FROM public.titanic;
+
+    .. ipython:: python
+        :suppress:
+
+        limit_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_11.html", "w")
+        html_file.write(limit_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_11.html
+
+    Export results to a JSON or CSV file
+    ====================================
+
+    To export the results of a query to a CSV file:
+
+    .. code-block:: python
+
+        %%sql -o titanic_age_clean.csv
+        SELECT
+            *
+        FROM public.titanic
+        WHERE age IS NOT NULL LIMIT 5;
+
+    **Execution**: 0.008s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql -o titanic_age_clean.csv
+        SELECT
+            *
+        FROM public.titanic
+        WHERE age IS NOT NULL LIMIT 5;
+
+    .. ipython:: python
+        :suppress:
+
+        export_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_12.html", "w")
+        html_file.write(export_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_12.html
+
+    .. ipython:: python
+
+        file = open("titanic_age_clean.csv", "r")
+        print(file.read())
+        file.close()
+
+    To export the results of a query to a JSON file:
+
+    .. code-block:: python
+
+        %%sql -o titanic_age_clean.json
+        SELECT
+            *
+        FROM public.titanic
+        WHERE age IS NOT NULL LIMIT 5;
+
+    **Execution**: 0.008s
+
+    .. ipython:: python
+        :suppress:
+
+        %%sql -o titanic_age_clean.json
+        SELECT
+            *
+        FROM public.titanic
+        WHERE age IS NOT NULL LIMIT 5;
+
+    .. ipython:: python
+        :suppress:
+
+        json_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_13.html", "w")
+        html_file.write(json_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_13.html
+
+    .. ipython:: python
+
+        file = open("titanic_age_clean.json", "r")
+        print(file.read())
+        file.close()
+
+    Execute SQL files
+    =================
+
+    To execute commands from a SQL file, use the following syntax:
+
+    .. ipython:: python
+
+        file = open("query.sql", "w+")
+        file.write("SELECT version();")
+        file.close()
+
+    Using the ``-f`` option, we can easily read SQL files:
+
+    .. code-block:: python
+
+        %sql -f query.sql
+
+    **Execution**: 0.006s
+
+    .. ipython:: python
+        :suppress:
+
+        %sql -f query.sql
+
+    .. ipython:: python
+        :suppress:
+
+        sql_test = _
+        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_14.html", "w")
+        html_file.write(sql_test._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_14.html
+
+    Connect to an external database
+    ===============================
+
+    Since v0.12.0, it is possible to connect to external Databases using the connection
+    symbol. Detailled examples are available in
+    `this notebook <https://www.vertica.com/python/workshop/full_stack/dblink_integration/>`_.
     """
 
     # We don't want to display the query/time twice if

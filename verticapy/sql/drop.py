@@ -41,17 +41,32 @@ def drop(
         all VerticaPy temporary elements.
     method: str, optional
         Method used to drop.
-            auto   : identifies the table / view /
-                     index / model to drop.
-                     It never drops an entire
-                     schema  unless the  method is
-                     set to 'schema'.
-            model  : drops the input model.
-            table  : drops the input table.
-            view   : drops the input view.
-            geo    : drops the input geo index.
-            text   : drops the input text index.
-            schema : drops the input schema.
+
+        **auto**   :
+                    identifies the table / view /
+                    index / model to drop.
+                    It never drops an entire
+                    schema  unless the  method is
+                    set to 'schema'.
+
+        **model**  :
+                    drops the input model.
+
+        **table**  :
+                    drops the input table.
+
+        **view**   :
+                    drops the input view.
+
+        **geo**    :
+                    drops the input geo index.
+
+        **text**   :
+                    drops the input text index.
+
+        **schema** :
+                    drops the input schema.
+
     raise_error: bool, optional
         If  the object  couldn't be dropped,  this
         function raises an error.
@@ -61,6 +76,26 @@ def drop(
     bool
         True   if   the   relation   was  dropped,
         False otherwise.
+
+    Examples
+    --------
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.sql import create_table
+        create_table(table_name = "table_example",
+                    schema = "public",
+                    dtype = {"name": "VARCHAR(60)"})
+
+    Drop the table:
+
+    .. warning:: Dropping an element permanently removes it from the database. Please exercise caution, as this action is irreversible.
+
+    .. ipython:: python
+
+        from verticapy.sql import drop
+
+        drop(name = "public.table_example")
     """
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
