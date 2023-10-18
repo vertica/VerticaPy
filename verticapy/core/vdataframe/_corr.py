@@ -862,6 +862,24 @@ class vDFCorr(vDFEncode):
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html
 
+        You can also use the parameter focus to only compute a correlation vector.
+
+        .. code-block:: python
+
+            data.corr(method = "pearson", focus = "score1")
+
+        .. ipython:: python
+            :suppress:
+
+            fig = data.corr(method = "pearson", focus = "score1")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_corr_vector.html")
+
+        .. raw:: html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_vector.html
+
+        It is less expensive and it allows you to focus your search on one specific
+        column.
+
         For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`.
 
@@ -904,8 +922,11 @@ class vDFCorr(vDFEncode):
         ] = "pearson",
     ) -> tuple[float, float]:
         """
-        Computes  the Correlation Coefficient of the two input
-        vDataColumns and its pvalue.
+        Computes the Correlation  Coefficient  between two input
+        vDataColumns,  along  with its  associated p-value. This
+        calculation  helps  assess the  strength  and  direction
+        of the relationship between the two columns and provides
+        statistical significance through the p-value.
 
         Parameters
         ----------
@@ -1130,7 +1151,12 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the covariance matrix of the vDataFrame.
+        Computes the covariance matrix of the vDataFrame. This matrix
+        summarizes the covariances  between pairs of variables in the
+        dataset, shedding light on  how variables move in relation to
+        each  other.  It's an  important tool  in  understanding  the
+        relationships  and interactions between variables, which  can
+        be used for various statistical analyses and modeling tasks.
 
         Parameters
         ----------
@@ -1205,6 +1231,24 @@ class vDFCorr(vDFEncode):
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html
 
+        You can also use the parameter focus to only compute a covariance vector.
+
+        .. code-block:: python
+
+            data.cov(method = "pearson", focus = "score1")
+
+        .. ipython:: python
+            :suppress:
+
+            fig = data.cov(method = "pearson", focus = "score1")
+            fig.write_html("figures/core_vDataFrame_vDFCorr_cov_vector.html")
+
+        .. raw:: html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_vector.html
+
+        It is less expensive and it allows you to focus your search on one specific
+        column.
+
         For more examples, please look at the :ref:`chart_gallery.corr` page of the
         :ref:`chart_gallery`. Those ones are related to correlation matrix, but the
         customization stays the same for the covariance matrix.
@@ -1253,7 +1297,12 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the regression matrix of the vDataFrame.
+        Calculates  the  regression  matrix for  the given  vDataFrame.
+        This matrix is  essential  in  regression  analysis,  enabling
+        the modeling of relationships between variables and predicting
+        outcomes.  It  plays  a  crucial  role  in  understanding  how
+        independent variables influence  the dependent variable, which
+        can be invaluable for various data analysis and modeling tasks.
 
         Parameters
         ----------
@@ -1535,8 +1584,12 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the correlations of the input vDataColumn
-        and its lags.
+        Calculates the  correlations between  the specified vDataColumn
+        and its various time lags. This function is particularly useful
+        for  time  series analysis and forecasting as it helps  uncover
+        relationships  between data points at different time  intervals.
+        Understanding  these  correlations  can  be  vital  for  making
+        predictions  and gaining  insights into temporal data  patterns.
 
         Parameters
         ----------
@@ -1624,6 +1677,9 @@ class vDFCorr(vDFEncode):
             from verticapy.datasets import load_amazon
 
             data = load_amazon()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
         Draw the ACF Plot.
 
@@ -1754,8 +1810,13 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ):
         """
-        Computes the partial autocorrelations of the input
-        vDataColumn.
+        Computes the partial autocorrelations of the specified vDataColumn.
+        Partial autocorrelations  are a fundamental concept in time series
+        analysis and provide essential information about the  dependencies
+        between data  points at  different  time lags. Understanding these
+        partial autocorrelations can aid in modeling and predicting future
+        values,  making it a  valuable  tool for time series analysis  and
+        forecasting.
 
         Parameters
         ----------
@@ -1838,6 +1899,9 @@ class vDFCorr(vDFEncode):
             from verticapy.datasets import load_amazon
 
             data = load_amazon()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
         Draw the PACF Plot.
 
@@ -1996,9 +2060,11 @@ class vDFCorr(vDFEncode):
         **style_kwargs,
     ) -> PlottingObject:
         """
-        Computes the Information Value (IV) Table. This shows
-        the predictive power  of an independent variable in
-        relation to the dependent variable.
+        Calculates the Information Value (IV) Table, a powerful tool
+        for  assessing  the predictive capability of an  independent
+        variable  concerning  a  dependent  variable.  The IV  Table
+        provides insights into how well the independent variable can
+        predict  or  explain  variations  in the dependent  variable.
 
         Parameters
         ----------
@@ -2023,6 +2089,57 @@ class vDFCorr(vDFEncode):
         -------
         obj
             Plotting Object.
+
+        Examples
+        --------
+        Import the titanic dataset from `VerticaPy`.
+
+        .. code-block:: python
+
+            from verticapy.datasets import load_titanic
+
+            data = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        Draw the IV Bar chart.
+
+        .. code-block:: python
+
+            data.iv_woe(y = "survived", nbins = 20)
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            from verticapy.datasets import load_titanic
+            vp.set_option("plotting_lib", "plotly")
+            data = load_titanic()
+            fig = data.iv_woe(y = "survived", nbins = 20)
+            fig.write_html("figures/core_vDataFrame_vDFCorr_iv_woe_plot.html")
+
+        .. raw:: html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html
+
+        .. hint::
+
+            IV  (Information Value) and  WOE (Weight of Evidence) serve as  powerful
+            tools  for identifying factors that influence a response column  without
+            the need to construct a full-fledged machine learning model.
+            These statistical metrics provide  valuable insights into the predictive
+            power of independent variables concerning the dependent variable, aiding
+            in data analysis and decision-making processes.
+
+            Clearly, the  factors that significantly influenced the survival of  the
+            passengers  were  whether they had access to  a  lifeboat,  their gender
+            (women and children were prioritized),  and  their class  (passengers in
+            first  class had a  higher chance  of  evacuation).  These  observations
+            underscore  the  importance of these variables  in  predicting  survival
+            outcomes during the Titanic disaster.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataColumn.iv_woe` : Computes IV / WOE table.
         """
         columns = format_type(columns, dtype=list)
         columns, y = self.format_colnames(columns, y)
@@ -2059,10 +2176,16 @@ class vDCCorr(vDCEncode):
     @save_verticapy_logs
     def iv_woe(self, y: str, nbins: int = 10) -> TableSample:
         """
-        Computes the Information Value (IV) / Weight Of
-        Evidence  (WOE) Table. This shows the predictive
-        power of an independent variable in relation to
-        the dependent variable.
+        Calculates  the  Information Value (IV) / Weight  Of
+        Evidence  (WOE) Table.  This table  illustrates  the
+        predictive  strength  of   an  independent  variable
+        concerning  the  dependent variable.  It  provides a
+        measure of how  well the  independent  variable  can
+        predict  or  explain  variations  in  the  dependent
+        variable.   The  WOE   values   help  quantify   the
+        relationship  between the independent and  dependent
+        variables, offering valuable insights for predictive
+        modeling.
 
         Parameters
         ----------
@@ -2076,6 +2199,50 @@ class vDCCorr(vDCEncode):
         -------
         obj
             Tablesample.
+
+        Examples
+        --------
+        Import the titanic dataset from `VerticaPy`.
+
+        .. code-block:: python
+
+            from verticapy.datasets import load_titanic
+
+            data = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        Draw the IV Bar chart.
+
+        .. code-block:: python
+
+            data["age"].iv_woe(y = "survived", nbins = 20)
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.datasets import load_titanic
+            data = load_titanic()
+            html_file = open("figures/core_vDataFrame_vDFCorr_iv_woe_table.html", "w")
+            html_file.write(data["age"].iv_woe(y = "survived", nbins = 20)._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+          :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_table.html
+
+        .. hint::
+
+            The  IV/WOE  Table  plays a  pivotal  role  in calculating the  global
+            Information   Value   (IV).  This  global  IV  serves  as  a  valuable
+            indicator for  identifying  the predictors  most  strongly  correlated
+            with a  response  column, enabling the discovery of key  relationships
+            without the necessity of constructing a comprehensive machine learning
+            model. It's a powerful  tool for efficient data analysis and  decision
+            -making.
+
+        .. seealso::
+            | :py:mod:`verticapy.vDataFrame.iv_woe` : Draw IV Plot.
         """
         y = self._parent.format_colnames(y)
         assert self._parent[y].nunique() == 2, TypeError(
