@@ -266,7 +266,7 @@ class KMeans(Clustering):
             :suppress:
 
         clusters = [[0.5, 0.6], [1, 2], [100, 200]]
-        p=2        
+        p = 2        
 
     Let's create a :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans` model.
 
@@ -280,8 +280,8 @@ class KMeans(Clustering):
     .. ipython:: python
             :suppress:
 
-        data=[[2, 3]]
-
+        data = [[2, 3]]
+ 
     **Making In-Memory Predictions**
 
     Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict` method to do predictions
@@ -291,7 +291,8 @@ class KMeans(Clustering):
 
         model_km.predict(data)[0]
         
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans` assigns a cluster id to identify each cluster. In this example, cluster with centroid [0.5, 0.6] will have id = 0, with centroid [1,2] will have id =1 and so on.
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans` assigns a cluster id to identify each cluster. 
+        In this example, cluster with centroid [0.5, 0.6] will have id = 0, with centroid [1,2] will have id = 1 and so on.
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict` method returns the id of the predicted cluster. 
 
     Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba` method to compute the predicted probabilities for each cluster
@@ -385,7 +386,7 @@ class NearestCentroid(Clustering):
             :suppress:
 
         clusters = [[0.5, 0.6], [1, 2], [100, 200]]
-        p=2
+        p = 2
         classes = ['class_a', 'class_b', 'class_c']
 
 
@@ -401,7 +402,7 @@ class NearestCentroid(Clustering):
     .. ipython:: python
             :suppress:
 
-        data=[[2, 3]]
+        data = [[2, 3]]
 
     **Making In-Memory Predictions**
 
@@ -542,7 +543,7 @@ class BisectingKMeans(Clustering, Tree):
     .. ipython:: python
             :suppress:
 
-        data=[[2, 3]]
+        data = [[2, 3]]
 
     **Making In-Memory Predictions**
 
@@ -920,7 +921,7 @@ class KPrototypes(Clustering):
             :suppress:
 
         clusters = [[0.5, 'high'], [1, 'low'], [100, 'high']]
-        p=2
+        p = 2
         gamma = 1.0
         is_categorical = [0, 1]        
 
@@ -936,7 +937,7 @@ class KPrototypes(Clustering):
     .. ipython:: python
             :suppress:
 
-        data=[[2, 'low']]
+        data = [[2, 'low']]
 
     **Making In-Memory Predictions**
 
@@ -947,7 +948,8 @@ class KPrototypes(Clustering):
 
         model_kp.predict(data)[0]
         
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes` assigns a cluster id to identify each cluster. In this example, cluster with centroid [0.5, 'high'] will have id = 0, with centroid [1,'low'] will have id =1 and so on.
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes` assigns a cluster id to identify each cluster. 
+        In this example, cluster with centroid [0.5, 'high'] will have id = 0, with centroid [1,'low'] will have id = 1 and so on.
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict` method returns the id of the predicted cluster. 
 
     Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba` method to compute the predicted probabilities for each cluster
