@@ -498,8 +498,10 @@ class LinearRegression(Regressor, LinearModel):
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage. For more
-    detailed examples, please refer to the :ref:`user_guide.machine_learning` or the "Examples"
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
     Load data for machine learning
@@ -516,7 +518,7 @@ class LinearRegression(Regressor, LinearModel):
         By assigning an alias to ``verticapy``, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
-        and "median," which can potentially lead to naming conflicts.
+        and "median", which can potentially lead to naming conflicts.
         The use of an alias ensures that the functions from verticapy are
         used as intended without interfering with functions from other
         libraries.
@@ -530,15 +532,17 @@ class LinearRegression(Regressor, LinearModel):
         data = vpd.load_winequality()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are ideal for training
-        and testing purposes. You can explore the full list of available datasets in
-        the :ref:`api.datasets`, which provides detailed information on each dataset and how to
-        use them effectively. These datasets are invaluable resources for honing your
-        data analysis and machine learning skills within the VerticaPy environment.
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets using the
     :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
@@ -552,12 +556,12 @@ class LinearRegression(Regressor, LinearModel):
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee the
-        reproducibility of your data split. However, please be aware that this
-        approach may lead to reduced performance. For a more efficient data
-        split, you can use the :py:mod:`vDataFrame.to_db` method to save your results
-        into ``tables`` or ``temporary tables``. This will help enhance the
-        overall performance of the process.
+        In this case, VerticaPy utilizes seeded randomization to guarantee
+        the reproducibility of your data split. However, please be aware
+        that this approach may lead to reduced performance. For a more
+        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        method to save your results into ``tables`` or ``temporary tables``.
+        This will help enhance the overall performance of the process.
 
     .. ipython:: python
         :suppress:
@@ -650,14 +654,14 @@ class LinearRegression(Regressor, LinearModel):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html
 
     .. note::
 
@@ -674,7 +678,7 @@ class LinearRegression(Regressor, LinearModel):
         :suppress:
 
         result = model.report()
-        html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -683,7 +687,7 @@ class LinearRegression(Regressor, LinearModel):
         result = model.report()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
 
     .. important::
 
@@ -698,7 +702,7 @@ class LinearRegression(Regressor, LinearModel):
         :suppress:
 
         result = model.report(metrics = "anova")
-        html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -707,7 +711,7 @@ class LinearRegression(Regressor, LinearModel):
         result = model.report(metrics = "anova")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
 
     You can also use the ``LinearModel.score`` function to compute the R-squared
     value:
@@ -756,7 +760,7 @@ class LinearRegression(Regressor, LinearModel):
         )
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
 
     .. note::
 
