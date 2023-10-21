@@ -494,12 +494,12 @@ class LinearRegression(Regressor, LinearModel):
         used in  training the model.  Note that setting
         fit_intercept to false does not work well with the
         BFGS optimizer.
-    
+
     Examples
     ---------
 
-    The following examples provide a basic understanding of usage. For more 
-    detailed examples, please refer to the User Guide or the "Examples" 
+    The following examples provide a basic understanding of usage. For more
+    detailed examples, please refer to the :ref:`user_guide.machine_learning` or the "Examples"
     section on the website.
 
     Load data for machine learning
@@ -511,14 +511,14 @@ class LinearRegression(Regressor, LinearModel):
 
         import verticapy as vp
 
-    .. hint:: 
+    .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code 
-        collisions with other libraries. This precaution is necessary 
-        because verticapy uses commonly known function names like "average" 
-        and "median," which can potentially lead to naming conflicts. 
-        The use of an alias ensures that the functions from verticapy are 
-        used as intended without interfering with functions from other 
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median," which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
         libraries.
 
     For this example, we will use the winequality dataset.
@@ -527,36 +527,36 @@ class LinearRegression(Regressor, LinearModel):
 
         import verticapy.datasets as vpd
 
-        data = vpd.load_winequality()        
+        data = vpd.load_winequality()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
-    
+        :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_winequality.html
+
     .. note::
 
-        VerticaPy offers a wide range of sample datasets that are ideal for training 
-        and testing purposes. You can explore the full list of available datasets in 
-        the :ref: ``, which provides detailed information on each dataset and how to 
-        use them effectively. These datasets are invaluable resources for honing your 
+        VerticaPy offers a wide range of sample datasets that are ideal for training
+        and testing purposes. You can explore the full list of available datasets in
+        the :ref:`api.datasets`, which provides detailed information on each dataset and how to
+        use them effectively. These datasets are invaluable resources for honing your
         data analysis and machine learning skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the 
-    ``vDataFrame.train_test_split`` method. This is a crucial step when preparing 
-    your data for machine learning, as it allows you to evaluate the performance of 
+    You can easily divide your dataset into training and testing subsets using the
+    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
+    your data for machine learning, as it allows you to evaluate the performance of
     your models accurately.
 
     .. code-block:: python
 
         data = vpd.load_winequality()
-        train, test = data.train_test_split(test_size = 0.2)        
+        train, test = data.train_test_split(test_size = 0.2)
 
     .. warning::
 
-        In this case, VerticaPy utilizes seeded randomization to guarantee the 
-        reproducibility of your data split. However, please be aware that this 
-        approach may lead to reduced performance. For a more efficient data 
-        split, you can use the ``vDataFrame.to_db`` method to save your results 
-        into ``tables`` or ``temporary tables``. This will help enhance the 
+        In this case, VerticaPy utilizes seeded randomization to guarantee the
+        reproducibility of your data split. However, please be aware that this
+        approach may lead to reduced performance. For a more efficient data
+        split, you can use the :py:mod:`vDataFrame.to_db` method to save your results
+        into ``tables`` or ``temporary tables``. This will help enhance the
         overall performance of the process.
 
     .. ipython:: python
@@ -575,29 +575,29 @@ class LinearRegression(Regressor, LinearModel):
     .. code-block::
 
         from verticapy.machine_learning.vertica import LinearRegression
-    
+
     Then we can create the model:
 
     .. code-block::
 
         model = LinearRegression(
             tol = 1e-6,
-            max_iter = 100, 
+            max_iter = 100,
             solver = 'Newton',
             fit_intercept = True,
         )
 
-    .. hint:: 
+    .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the 
-        model name, as the name is automatically assigned. If you need to 
-        re-use the model, you can fetch the model name from the model's 
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
         attributes.
 
-    .. important:: 
+    .. important::
 
-        The model name is crucial for the model management system and 
-        versioning. It's highly recommended to provide a name if you 
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
     .. ipython:: python
@@ -606,7 +606,7 @@ class LinearRegression(Regressor, LinearModel):
         from verticapy.machine_learning.vertica import LinearRegression
         model = LinearRegression(
             tol = 1e-6,
-            max_iter = 100, 
+            max_iter = 100,
             solver = 'Newton',
             fit_intercept = True,
         )
@@ -617,27 +617,27 @@ class LinearRegression(Regressor, LinearModel):
     We can now fit the model:
 
     .. ipython:: python
-        
+
         model.fit(
             train,
             [
-                "fixed_acidity", 
-                "volatile_acidity", 
-                "citric_acid", 
-                "residual_sugar", 
-                "chlorides", 
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
                 "density"
             ],
             "quality",
             test,
         )
-    
+
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the 
-        name of the relation stored in the database. The test set is optional 
-        and is only used to compute the test metrics. In ``verticapy``, we 
-        don't work using ``X`` matrices and ``y`` vectors. Instead, we work 
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
     Features Importance
@@ -650,19 +650,19 @@ class LinearRegression(Regressor, LinearModel):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html")
+        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html
+        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_feature.html
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients. 
-        These coefficients are then normalized using the feature distribution. An 
+        For ``LinearModel``, feature importance is computed using the coefficients.
+        These coefficients are then normalized using the feature distribution. An
         activation function is applied to get the final score.
 
     Metrics
@@ -674,7 +674,7 @@ class LinearRegression(Regressor, LinearModel):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+        html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -683,22 +683,22 @@ class LinearRegression(Regressor, LinearModel):
         result = model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
+        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report.html
 
     .. important::
 
-        Most metrics are computed using a single SQL query, but some of them might 
-        require multiple SQL queries. Selecting only the necessary metrics in the 
-        report can help optimize performance. 
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
-    
+
     For ``LinearModel``, we can easily get the ANOVA table using:
 
     .. ipython:: python
         :suppress:
 
         result = model.report(metrics = "anova")
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+        html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -707,19 +707,19 @@ class LinearRegression(Regressor, LinearModel):
         result = model.report(metrics = "anova")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_report_anova.html
 
-    You can also use the ``LinearModel.score`` function to compute the R-squared 
+    You can also use the ``LinearModel.score`` function to compute the R-squared
     value:
 
     .. ipython:: python
 
         model.score()
-    
+
     Prediction
     ^^^^^^^^^^^
 
-    Prediction is straight-forward: 
+    Prediction is straight-forward:
 
     .. ipython:: python
         :suppress:
@@ -727,11 +727,11 @@ class LinearRegression(Regressor, LinearModel):
         result = model.predict(
             test,
             [
-                "fixed_acidity", 
-                "volatile_acidity", 
-                "citric_acid", 
-                "residual_sugar", 
-                "chlorides", 
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
                 "density"
             ],
             "prediction",
@@ -745,41 +745,42 @@ class LinearRegression(Regressor, LinearModel):
         model.predict(
             test,
             [
-                "fixed_acidity", 
-                "volatile_acidity", 
-                "citric_acid", 
-                "residual_sugar", 
-                "chlorides", 
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
                 "density"
             ],
             "prediction",
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
+        :file: /project/data/VerticaPy/docs/figures/machine_learning_vertica_linear_model_lr_prediction.html
 
-    .. note:: 
+    .. note::
 
-        Predictions can be made automatically using the test set, in which 
-        case you don't need to specify the predictors. Alternatively, you 
-        can pass only the ``vDataFrame`` to the ``LinearModel.predict`` 
-        function, but in this case, it's essential that the column names of 
-        the ``vDataFrame`` match the predictors and response name in the 
+        Predictions can be made automatically using the test set, in which
+        case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
         model.
 
     Plots
     ^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example, 
+    If the model allows, you can also generate relevant plots. For example,
     regression plots can be found in the :ref:`chart_gallery.regression_plot`.
 
     .. code-block:: python
 
-        model.plot()    
+        model.plot()
 
-    .. important:: 
+    .. important::
 
-        The plotting feature is typically suitable for models with fewer than 
+        The plotting feature is typically suitable for models with fewer than
         three predictors.
 
     Parameter Modification
@@ -806,7 +807,7 @@ class LinearRegression(Regressor, LinearModel):
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for 
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
     more details on model tracking and versioning.
 
     Model Exporting
@@ -820,12 +821,12 @@ class LinearRegression(Regressor, LinearModel):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine 
-        learning models. They can be used for both in-database and in-memory 
-        prediction tasks. These objects can be pickled in the same way that 
+        ``MemModel`` objects serve as in-memory representations of machine
+        learning models. They can be used for both in-database and in-memory
+        prediction tasks. These objects can be pickled in the same way that
         you would pickle a ``scikit-learn`` model.
 
-    The following methods for exporting the model use ``MemModel``, and it 
+    The following methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
 
     **To SQL**
@@ -847,9 +848,11 @@ class LinearRegression(Regressor, LinearModel):
 
     .. hint::
 
-        The ``LinearModel.to_python`` method is used to retrieve predictions, 
-        probabilities, or cluster distances. For specific details on how to 
-        use this method for different model types, refer to the relevant 
+        The
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        method is used to retrieve predictions,
+        probabilities, or cluster distances. For specific details on how to
+        use this method for different model types, refer to the relevant
         documentation for each model.
     """
 
