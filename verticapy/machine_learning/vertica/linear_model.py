@@ -494,6 +494,317 @@ class LinearRegression(Regressor, LinearModel):
         used in  training the model.  Note that setting
         fit_intercept to false does not work well with the
         BFGS optimizer.
+    
+    Examples
+    ---------
+
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+    .. hint:: 
+
+        By giving an alias to ``verticapy``, we avoid code colission with other libraries.
+        This is verticapy uses some well-known functions names like average, median etc. 
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()        
+
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+    
+
+    .. note:: 
+
+        VerticaPy provides many sample datasets that can be used for training/testing purposes. Check out
+        :ref:`` for all the available datasets.
+
+    We can use the ``vDataFrame.train_test_split`` method to split-up the dataset into training and testing
+    portions.
+
+    .. code-block:: python
+
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)        
+
+    .. warning:: 
+
+        In this case, ``verticapy`` will use seeded random to ensure reproducibility. However,
+        this process can drastically reduce the performance. In order to performa more efficient split
+        you can use ``vDataFrame.to_db`` to save your result in to ``tables`` or ``temporary tables``.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+
+
+    Model Initialziation
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``LinearRegression`` model:
+
+
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import LinearRegression
+    
+    Then we can create the model:
+
+    .. code-block::
+
+        model = LinearRegression(
+            tol = 1e-6,
+            max_iter = 100, 
+            solver = 'Newton',
+            fit_intercept = True,
+        )
+
+    .. hint:: 
+
+        In ``verticapy`` 1.0 and higher, you do not need to specify the model name as the name is automatically
+        assigned. If you need to re-use the model, you can fetch the model name from model attributes.
+
+    .. important:: 
+
+        The model name is really important for the model management system and versioning. It is highly recommended
+        to give a name if you plan to re-use the model later. 
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import LinearRegression
+        model = LinearRegression(
+            tol = 1e-6,
+            max_iter = 100, 
+            solver = 'Newton',
+            fit_intercept = True,
+        )
+
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        
+        model.fit(
+            train,
+            ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "density"],
+            "quality",
+            test,
+        )
+    
+    .. important::
+
+        To train a model you can use directly use the ``vDataFrame`` or the name of the relation stored in
+        the database. The test set is optional and is only used to compute the test metrics. In ``verticapy``
+        we do not work using ``X`` matrix and ``y`` vectors. We work directly with list of predictors and response name.
+
+    Features Importance
+    ^^^^^^^^^^^^^^^^^^^^
+
+    We can conveniently get the features importance:
+
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.features_importance()
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html")
+
+    .. code-block:: python
+
+        result = model.features_importance()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_feature.html
+
+    .. note::
+
+        For ``LinearModel`` the features importance is computed using the coefficients. They are normalized
+        using the feature distribution. Then an activation function is applied to get the final score. 
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        result = model.report()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query but some of them might need multiple SQL queries. 
+        By selecting only the necessary metric in the report 
+        you may be able to optimize performance. E.g. ``model.report(metrics = ["mse", "r2"])``.
+    
+    For ``LinearModel``, we can easily get the ANOVA table using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report(metrics = "anova")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        result = model.report(metrics = "anova")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
+
+    You can also use the ``score`` function to compute the R-squared value:
+
+    .. ipython:: python
+
+        model.score()
+    
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward: 
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(
+            test,
+            ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "density"],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+
+    .. code-block:: python
+
+        model.predict(
+            test,
+            ["fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "density"],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html
+
+    .. note:: 
+
+        Prediction can be done automatically using the test set in which case you do not nee to 
+        specify the predictors. It is also possible to pass only the the ``vDataFrame`` to the ``predict``
+        function. But in this case, it is important that the column names of the ``vDataFrame`` are
+        matching the predictors and response name in the model.
+
+    Plots
+    ^^^^^^
+
+    If the models allows, you can also draw the relevant plots. Example of regression plots can 
+    be found in :ref:`chart_gallery.regression_plot`.
+
+    .. code-block:: python
+
+        model.plot()    
+
+    .. important:: The plot generally works for models which have less than 3 predictors.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'tol': 0.001})
+
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for more details on model tracking
+    and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    To Memmodel
+    """ """""" """""" """"
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``Memmodel`` are in-memory representation of ML models. They can be used to do in-database and
+        in-memory prediction. They can pickled the same way that you pickle your ``scikit-learn`` model.
+
+
+    The following ways of exporting the model uses memmodel and it is perfered to use the ``memmodels`` directly.
+
+    To SQL
+    """ """""" """""" """"
+
+    You can get the SQL code by:
+
+    .. ipython:: python
+
+        model.to_sql()
+
+    To Python
+    """ """""" """""" """"
+
+    To get the prediction function in a python sytanx:
+
+    .. ipython:: python
+
+        X = [[4.2, 0.17, 0.36, 1.8, 0.029, 0.9899]]
+        model.to_python()(X)
     """
 
     # Properties.
