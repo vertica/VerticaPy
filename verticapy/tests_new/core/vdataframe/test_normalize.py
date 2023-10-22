@@ -36,22 +36,16 @@ class TestScaler:
 
         py_data = titanic_pdf[[columns]]
         if method == "zscore":
-            vpy_res = titanic_vd.scale(columns=[columns], method=method)[
-                columns
-            ].std()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].std()
             py_res = ((py_data - py_data.mean()) / py_data.std()).std()
         elif method == "robust_zscore":
-            vpy_res = titanic_vd.scale(columns=[columns], method=method)[
-                columns
-            ].std()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].std()
             py_res = (
                 (py_data - py_data.median())
                 / (1.4826 * median_abs_deviation(py_data, nan_policy="omit"))
             ).std()
         else:
-            vpy_res = titanic_vd.scale(columns=[columns], method=method)[
-                columns
-            ].mean()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].mean()
             py_res = (
                 (py_data - py_data.min()) / (py_data.max() - py_data.min())
             ).mean()

@@ -85,7 +85,7 @@ class AutoDataPrep(VerticaModel):
         merges the others  into one unique category. If
         unspecified, all categories are kept.
     standardize: bool, optional
-        If True, the data is standardized. The 'num_method' 
+        If True, the data is standardized. The 'num_method'
         parameter must be set to 'none'.
     standardize_min_cat: int, optional
         Minimum   feature   cardinality  before   using
