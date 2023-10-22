@@ -40,7 +40,7 @@ from verticapy._utils._sql._sys import _executeSQL
 from verticapy.core.tablesample.base import TableSample
 
 from verticapy.core.vdataframe._machine_learning import vDFMachineLearning
-from verticapy.core.vdataframe._normalize import vDCNorm
+from verticapy.core.vdataframe._scaler import vDCScaler
 
 from verticapy.plotting.base import PlottingBase
 
@@ -1274,7 +1274,7 @@ class vDFPlot(vDFMachineLearning):
         ).draw(**kwargs)
 
 
-class vDCPlot(vDCNorm):
+class vDCPlot(vDCScaler):
     # Special Methods.
 
     def numh(

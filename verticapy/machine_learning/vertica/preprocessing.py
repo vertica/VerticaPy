@@ -656,10 +656,10 @@ class Scaler(Preprocessing):
         name as an existing model overwrites the
         existing model.
     method: str, optional
-        Method used to normalize.
-                zscore        : Normalization   using   the   Z-Score.
+        Method used to scale the data.
+                zscore        : Scaling   using   the   Z-Score.
                             (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score.
+                robust_zscore : Scaling using the Robust Z-Score.
                                 (x - median) / (1.4826 * mad)
                 minmax        : Normalization  using  the  Min  &  Max.
                                 (x - min) / (max - min)

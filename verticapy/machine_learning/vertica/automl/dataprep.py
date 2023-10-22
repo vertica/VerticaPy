@@ -84,13 +84,12 @@ class AutoDataPrep(VerticaModel):
         Keeps  the top-k  most frequent categories  and
         merges the others  into one unique category. If
         unspecified, all categories are kept.
-    normalize: bool, optional
-        If True, the data is normalized using  the
-        z-score. The 'num_method' parameter must be set
-        to 'none'.
-    normalize_min_cat: int, optional
+    standardize: bool, optional
+        If True, the data is standardized. The 'num_method' 
+        parameter must be set to 'none'.
+    standardize_min_cat: int, optional
         Minimum   feature   cardinality  before   using
-        normalization.
+        standardization.
     id_method: str, optional
         Method for handling ID features.
             drop: Drops any feature detected as ID.
@@ -168,8 +167,8 @@ class AutoDataPrep(VerticaModel):
         outliers_threshold: float = 4.0,
         na_method: Literal["auto", "drop"] = "auto",
         cat_topk: int = 10,
-        normalize: bool = True,
-        normalize_min_cat: int = 6,
+        standardize: bool = True,
+        standardize_min_cat: int = 6,
         id_method: Literal["none", "drop"] = "drop",
         apply_pca: bool = False,
         rule: TimeInterval = "auto",
@@ -186,8 +185,8 @@ class AutoDataPrep(VerticaModel):
             "na_method": na_method,
             "cat_topk": cat_topk,
             "rule": rule,
-            "normalize": normalize,
-            "normalize_min_cat": normalize_min_cat,
+            "standardize": standardize,
+            "standardize_min_cat": standardize_min_cat,
             "apply_pca": apply_pca,
             "id_method": id_method,
             "identify_ts": identify_ts,
@@ -288,16 +287,16 @@ class AutoDataPrep(VerticaModel):
                             )
                         if (
                             self.parameters["num_method"] == "none"
-                            and (self.parameters["normalize"])
+                            and (self.parameters["standardize"])
                             and (
-                                self.parameters["normalize_min_cat"] < 2
+                                self.parameters["standardize_min_cat"] < 2
                                 or (
                                     vdf[x].nunique()
-                                    > self.parameters["normalize_min_cat"]
+                                    > self.parameters["standardize_min_cat"]
                                 )
                             )
                         ):
-                            vdf[x].normalize(method="zscore")
+                            vdf[x].scale(method="zscore")
                         if self.parameters["na_method"] == "auto":
                             vdf[x].fillna(method="mean")
                         else:
