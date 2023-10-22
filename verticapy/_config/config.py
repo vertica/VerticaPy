@@ -390,9 +390,9 @@ def set_option(key: str, value: Any = None) -> None:
 
         set_option("colors", ["blue", "red"])
 
-    .. warning:: 
+    .. warning::
 
-        This can be unstable if not enough colors are provided. It is advised to 
+        This can be unstable if not enough colors are provided. It is advised to
         use the plotting library color options to switch colors.
 
     Utilities
