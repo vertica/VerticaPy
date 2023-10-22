@@ -324,7 +324,6 @@ class ElasticNet(Regressor, LinearModel):
         in training the model.  Note that setting
         fit_intercept  to false does  not work well with
         the BFGS optimizer.
-
     Examples
     ---------
 
@@ -757,7 +756,6 @@ class Lasso(Regressor, LinearModel):
         used in  training the model.  Note that setting
         fit_intercept to false does not work well with the
         BFGS optimizer.
-
     Examples
     ---------
 
@@ -1368,7 +1366,7 @@ class LinearRegression(Regressor, LinearModel):
 
     .. code-block:: python
 
-        model.report()
+        result = model.report()
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report.html
@@ -1392,7 +1390,7 @@ class LinearRegression(Regressor, LinearModel):
 
     .. code-block:: python
 
-        model.report(metrics = "anova")
+        result = model.report(metrics = "anova")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_report_anova.html
@@ -1626,7 +1624,6 @@ class Ridge(Regressor, LinearModel):
         is used in training the model.
         Note  that setting fit_intercept to false  does
         not work well with the BFGS optimizer.
-
     Examples
     ---------
 
@@ -2089,7 +2086,6 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         If set to false,  no intercept is used in
         training the model.  Note that setting fit_intercept
         to false does not work well with the BFGS optimizer.
-
     Examples
     ---------
 
