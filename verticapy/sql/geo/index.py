@@ -274,6 +274,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html
 
     .. ipython:: python
+        :okwarning:
 
         # Renames a specific index
         rename_index("world_polygons", "world_polygons_new")

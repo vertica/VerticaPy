@@ -393,6 +393,17 @@ def set_option(key: str, value: Any = None) -> None:
         @savefig _config_config_set_option_hist.png
         titanic.hist(["pclass", "survived"])
 
+    .. warning::
+
+        This can be unstable if not enough colors are provided. It is advised to
+        use the plotting library color options to switch colors.
+
+    .. ipython:: python
+        :suppress:
+
+        set_option("colors", None)
+
+
     Utilities
     =========
 
