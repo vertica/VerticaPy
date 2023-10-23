@@ -344,13 +344,13 @@ class ElasticNet(Regressor, LinearModel):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
-        libraries.
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
 
     For this example, we will use the winequality dataset.
 
@@ -373,10 +373,10 @@ class ElasticNet(Regressor, LinearModel):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the
-    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
-    your data for machine learning, as it allows you to evaluate the performance of
-    your models accurately.
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
 
     .. code-block:: python
 
@@ -777,13 +777,13 @@ class Lasso(Regressor, LinearModel):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
-        libraries.
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
 
     For this example, we will use the winequality dataset.
 
@@ -806,10 +806,10 @@ class Lasso(Regressor, LinearModel):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the
-    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
-    your data for machine learning, as it allows you to evaluate the performance of
-    your models accurately.
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
 
     .. code-block:: python
 
@@ -1198,13 +1198,13 @@ class LinearRegression(Regressor, LinearModel):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
-        libraries.
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
 
     For this example, we will use the winequality dataset.
 
@@ -1227,10 +1227,10 @@ class LinearRegression(Regressor, LinearModel):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the
-    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
-    your data for machine learning, as it allows you to evaluate the performance of
-    your models accurately.
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
 
     .. code-block:: python
 
@@ -1348,9 +1348,10 @@ class LinearRegression(Regressor, LinearModel):
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients.
-        These coefficients are then normalized using the feature distribution. An
-        activation function is applied to get the final score.
+        For ``LinearModel``, feature importance is computed using
+        the coefficients. These coefficients are then normalized using the
+        feature distribution. An activation function is applied to
+        get the final score.
 
     Metrics
     ^^^^^^^^
@@ -1374,9 +1375,9 @@ class LinearRegression(Regressor, LinearModel):
 
     .. important::
 
-        Most metrics are computed using a single SQL query, but some of them might
-        require multiple SQL queries. Selecting only the necessary metrics in the
-        report can help optimize performance.
+        Most metrics are computed using a single SQL query, but some
+        of them might require multiple SQL queries. Selecting only the
+        necessary metrics in the report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     For ``LinearModel``, we can easily get the ANOVA table using:
@@ -1467,8 +1468,8 @@ class LinearRegression(Regressor, LinearModel):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
-        three predictors.
+        The plotting feature is typically suitable for models with fewer
+        than three predictors.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1538,9 +1539,9 @@ class LinearRegression(Regressor, LinearModel):
         The
         :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
-        probabilities, or cluster distances. For specific details on how to
-        use this method for different model types, refer to the relevant
-        documentation for each model.
+        probabilities, or cluster distances. For specific details on how
+        to use this method for different model types, refer to the
+        relevant documentation for each model.
     """
 
     # Properties.
@@ -1646,13 +1647,13 @@ class Ridge(Regressor, LinearModel):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
-        collisions with other libraries. This precaution is necessary
-        because verticapy uses commonly known function names like "average"
-        and "median", which can potentially lead to naming conflicts.
-        The use of an alias ensures that the functions from verticapy are
-        used as intended without interfering with functions from other
-        libraries.
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
 
     For this example, we will use the winequality dataset.
 
@@ -1675,10 +1676,10 @@ class Ridge(Regressor, LinearModel):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the
-    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
-    your data for machine learning, as it allows you to evaluate the performance of
-    your models accurately.
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
 
     .. code-block:: python
 
@@ -1942,8 +1943,8 @@ class Ridge(Regressor, LinearModel):
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -2138,10 +2139,10 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    You can easily divide your dataset into training and testing subsets using the
-    :py:mod:`vDataFrame.train_test_split` method. This is a crucial step when preparing
-    your data for machine learning, as it allows you to evaluate the performance of
-    your models accurately.
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
 
     .. code-block:: python
 
@@ -2412,65 +2413,54 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
     .. note::
 
-        Probabilities are added to the vDataFrame, and VerticaPy uses the 
-        corresponding probability function in SQL behind the scenes. You 
-        can use the ``pos_label`` parameter to add only the probability 
+        Probabilities are added to the vDataFrame, and VerticaPy uses the
+        corresponding probability function in SQL behind the scenes. You
+        can use the ``pos_label`` parameter to add only the probability
         of the selected category.
 
     Confusion Matrix
     ^^^^^^^^^^^^^^^^^
 
-    You can obtain the confusion matrix of your choice by specifying 
+    You can obtain the confusion matrix of your choice by specifying
     the desired cutoff.
 
     .. ipython:: python
-        :suppress:
-
-        result = model.confusion_matrix(cutoff = 0.5)
-        html_file = open("figures/machine_learning_vertica_linear_model_logr_cm.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
-
-    .. code-block:: python
 
         model.confusion_matrix(cutoff = 0.5)
 
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_proba.html
-
     .. note::
 
-        In classification, the ``cutoff`` is a threshold value used to 
-        determine class assignment based on predicted probabilities or 
-        scores from a classification model. In binary classification, 
-        if the predicted probability for a specific class is greater 
-        than or equal to the cutoff, the instance is assigned to the 
-        positive class; otherwise, it is assigned to the negative class. 
-        Adjusting the cutoff allows for trade-offs between true positives 
-        and false positives, enabling the model to be optimized for 
-        specific objectives or to consider the relative costs of different 
-        classification errors. The choice of cutoff is critical for 
+        In classification, the ``cutoff`` is a threshold value used to
+        determine class assignment based on predicted probabilities or
+        scores from a classification model. In binary classification,
+        if the predicted probability for a specific class is greater
+        than or equal to the cutoff, the instance is assigned to the
+        positive class; otherwise, it is assigned to the negative class.
+        Adjusting the cutoff allows for trade-offs between true positives
+        and false positives, enabling the model to be optimized for
+        specific objectives or to consider the relative costs of different
+        classification errors. The choice of cutoff is critical for
         tailoring the model's performance to meet specific needs.
 
     Main Plots (Classification Curves)
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Classification models allow for the creation of various plots that 
-    are very helpful in understanding the model, such as the ROC Curve, 
+    Classification models allow for the creation of various plots that
+    are very helpful in understanding the model, such as the ROC Curve,
     PRC Curve, Cutoff Curve, Gain Curve, and more.
 
-    Most of the classification curves can be found in the 
+    Most of the classification curves can be found in the
     :ref:`chart_gallery.classification_curve`.
 
     For example, let's draw the model's ROC curve.
 
     .. code-block:: python
-          
+
         model.roc_curve()
 
     .. ipython:: python
         :suppress:
-        
+
         fig = model.roc_curve()
         fig.write_html("figures/machine_learning_vertica_linear_model_logr_roc.html")
 
@@ -2479,22 +2469,22 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
     .. important::
 
-        Most of the curves have a parameter called ``nbins``, which is essential 
-        for estimating metrics. The larger the ``nbins``, the more precise the 
-        estimation, but it can significantly impact performance. Exercise caution 
+        Most of the curves have a parameter called ``nbins``, which is essential
+        for estimating metrics. The larger the ``nbins``, the more precise the
+        estimation, but it can significantly impact performance. Exercise caution
         when increasing this parameter excessively.
 
     .. hint::
 
-        In binary classification, various curves can be easily plotted. However, 
-        in multi-class classification, it's important to select the ``pos_label`` 
+        In binary classification, various curves can be easily plotted. However,
+        in multi-class classification, it's important to select the ``pos_label``
         , representing the class to be treated as positive when drawing the curve.
 
     Other Plots
     ^^^^^^^^^^^^
 
-    If the model allows, you can also generate relevant plots. 
-    For example, classification plots can be found in the 
+    If the model allows, you can also generate relevant plots.
+    For example, classification plots can be found in the
     :ref:`chart_gallery.classification_plot`.
 
     .. code-block:: python
@@ -2503,7 +2493,7 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
     .. important::
 
-        The plotting feature is typically suitable for models with 
+        The plotting feature is typically suitable for models with
         fewer than three predictors.
 
     Parameter Modification
@@ -2530,8 +2520,8 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
-    more details on model tracking and versioning.
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
