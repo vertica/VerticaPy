@@ -386,46 +386,46 @@ class TestvDFPreprocessing:
         market_copy["Price"].fill_outliers(method="mean", threshold=1.5)
         assert market_copy["Price"].mean() == pytest.approx(2.07751098603612)
 
-    def test_vDF_normalize(self, titanic_vd):
-        ### Testing vDataFrame.normalize
+    def test_vDF_scale(self, titanic_vd):
+        ### Testing vDataFrame.scale
         # MINMAX
         titanic_copy = titanic_vd.copy()
-        titanic_copy.normalize(method="minmax")
+        titanic_copy.scale(method="minmax")
 
         assert titanic_copy["fare"].mean() == pytest.approx(0.06629291024)
         assert titanic_copy["age"].mean() == pytest.approx(0.3743248069)
 
         # ZSCORE
         titanic_copy = titanic_vd.copy()
-        titanic_copy.normalize(columns=["fare", "age"], method="zscore")
+        titanic_copy.scale(columns=["fare", "age"], method="zscore")
 
         assert titanic_copy["fare"].std() == 1
         assert titanic_copy["age"].std() == 1
 
         # ROBUST_ZSCORE
         titanic_copy = titanic_vd.copy()
-        titanic_copy.normalize(["fare", "age"], method="robust_zscore")
+        titanic_copy.scale(["fare", "age"], method="robust_zscore")
 
         assert titanic_copy["fare"].std() == pytest.approx(5.143143267)
         assert titanic_copy["age"].std() == pytest.approx(1.21705994)
 
-        ### Testing vDataFrame.normalize
+        ### Testing vDataFrame.scale
         titanic_copy = titanic_vd.copy()
 
         # MINMAX
-        titanic_copy["fare"].normalize(method="minmax")
+        titanic_copy["fare"].scale(method="minmax")
         assert titanic_copy["fare"].mean() == pytest.approx(0.06629291024)
 
         # ZSCORE
-        titanic_copy["age"].normalize(method="zscore")
+        titanic_copy["age"].scale(method="zscore")
         assert titanic_copy["age"].std() == 1
 
         # ROBUST_ZSCORE
-        titanic_copy["body"].normalize(method="robust_zscore")
+        titanic_copy["body"].scale(method="robust_zscore")
         assert titanic_copy["body"].std() == pytest.approx(0.727817135)
 
         # using by parameter
-        titanic_copy["sibsp"].normalize(method="minmax", by=["sex"])
+        titanic_copy["sibsp"].scale(method="minmax", by=["sex"])
         assert titanic_copy["sibsp"].mean() == pytest.approx(0.06300648298)
 
     def test_vDF_outliers(self, titanic_vd):

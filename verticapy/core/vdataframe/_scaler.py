@@ -33,15 +33,15 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFNorm(vDFText):
+class vDFScaler(vDFText):
     @save_verticapy_logs
-    def normalize(
+    def scale(
         self,
         columns: Optional[SQLColumns] = None,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
     ) -> "vDataFrame":
         """
-        Normalizes the input vDataColumns using the input method.
+        Scales the input vDataColumns using the input method.
 
         Parameters
         ----------
@@ -49,7 +49,7 @@ class vDFNorm(vDFText):
             List  of the  vDataColumns names.  If empty, all numerical
             vDataColumns are used.
         method: str, optional
-            Method used to normalize.
+            Method used to scale the data.
                 zscore        : Normalization  using the Z-Score  (avg
                                 and std).
                                 (x - avg) / std
@@ -70,33 +70,35 @@ class vDFNorm(vDFText):
         columns = self.numcol() if not columns else self.format_colnames(columns)
         for column in columns:
             if self[column].isnum() and not self[column].isbool():
-                self[column].normalize(method=method)
+                self[column].scale(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
             elif conf.get_option("print_info"):
                 warning_message = (
                     f"The vDataColumn {column} was skipped.\n"
-                    "Normalize only accept numerical data types."
+                    "Scaler only accept numerical data types."
                 )
                 warnings.warn(warning_message, Warning)
         return self
 
+    normalize = scale
 
-class vDCNorm(vDCText):
+
+class vDCScaler(vDCText):
     @save_verticapy_logs
-    def normalize(
+    def scale(
         self,
         method: Literal["zscore", "robust_zscore", "minmax"] = "zscore",
         by: Optional[SQLColumns] = None,
         return_trans: bool = False,
     ) -> "vDataFrame":
         """
-        Normalizes the input vDataColumns using the input method.
+        Scales the input vDataColumns using the input method.
 
         Parameters
         ----------
         method: str, optional
-            Method used to normalize.
+            Method used to scale the data.
                 zscore        : Normalization  using the Z-Score  (avg
                                 and std).
                                 (x - avg) / std
@@ -124,7 +126,7 @@ class vDCNorm(vDCText):
         nullifzero, n = 1, len(by)
 
         if self.isbool():
-            warning_message = "Normalize doesn't work on booleans"
+            warning_message = "Scaler doesn't work on booleans"
             warnings.warn(warning_message, Warning)
 
         elif self.isnum():
@@ -134,7 +136,7 @@ class vDCNorm(vDCText):
                     avg, stddev = self.aggregate(["avg", "std"]).values[self._alias]
                     if stddev == 0:
                         warning_message = (
-                            f"Can not normalize {self} using a "
+                            f"Can not scale {self} using a "
                             "Z-Score - The Standard Deviation is null !"
                         )
                         warnings.warn(warning_message, Warning)
@@ -144,12 +146,12 @@ class vDCNorm(vDCText):
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.scale')*/ 
                                     {by[0]}, 
                                     AVG({self}), 
                                     STDDEV({self}) 
                                 FROM {self._parent} GROUP BY {by[0]}""",
-                            title="Computing the different categories to normalize.",
+                            title="Computing the different categories to scale.",
                             method="fetchall",
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
@@ -196,7 +198,7 @@ class vDCNorm(vDCText):
                         _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.scale')*/ 
                                     {avg},
                                     {stddev} 
                                 FROM {self._parent} 
@@ -231,7 +233,7 @@ class vDCNorm(vDCText):
                 if n > 0:
                     warning_message = (
                         "The method 'robust_zscore' is available only if the "
-                        "parameter 'by' is empty\nIf you want to normalize by "
+                        "parameter 'by' is empty\nIf you want to scale the data by "
                         "grouping by elements, please use a method in zscore|minmax"
                     )
                     warnings.warn(warning_message, Warning)
@@ -251,7 +253,7 @@ class vDCNorm(vDCText):
                         ]
                 else:
                     warning_message = (
-                        f"Can not normalize {self} using a "
+                        f"Can not scale {self} using a "
                         "Robust Z-Score - The MAD is null !"
                     )
                     warnings.warn(warning_message, Warning)
@@ -263,7 +265,7 @@ class vDCNorm(vDCText):
                     cmin, cmax = self.aggregate(["min", "max"]).values[self._alias]
                     if cmax - cmin == 0:
                         warning_message = (
-                            f"Can not normalize {self} using "
+                            f"Can not scale {self} using "
                             "the MIN and the MAX. MAX = MIN !"
                         )
                         warnings.warn(warning_message, Warning)
@@ -273,13 +275,13 @@ class vDCNorm(vDCText):
                         result = _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.scale')*/ 
                                     {by[0]}, 
                                     MIN({self}), 
                                     MAX({self})
                                 FROM {self._parent} 
                                 GROUP BY {by[0]}""",
-                            title=f"Computing the different categories {by[0]} to normalize.",
+                            title=f"Computing the different categories {by[0]} to scale.",
                             method="fetchall",
                             sql_push_ext=self._parent._vars["sql_push_ext"],
                             symbol=self._parent._vars["symbol"],
@@ -321,7 +323,7 @@ class vDCNorm(vDCText):
                         _executeSQL(
                             query=f"""
                                 SELECT 
-                                    /*+LABEL('vDataColumn.normalize')*/ 
+                                    /*+LABEL('vDataColumn.scale')*/ 
                                     {cmax}, 
                                     {cmin} 
                                 FROM {self._parent} 
@@ -399,9 +401,11 @@ class vDCNorm(vDCText):
                 self._catalog["min"] = 0
                 self._catalog["max"] = 1
             self._parent._add_to_history(
-                f"[Normalize]: The vDataColumn '{self}' was "
-                f"normalized with the method '{method}'."
+                f"[Scaler]: The vDataColumn '{self}' was "
+                f"scaled with the method '{method}'."
             )
         else:
             raise TypeError("The vDataColumn must be numerical for Normalization")
         return self._parent
+
+    normalize = scale
