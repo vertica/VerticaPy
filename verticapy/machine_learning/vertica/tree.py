@@ -82,6 +82,12 @@ class DecisionTreeRegressor(RandomForestRegressor):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
+    .. important::
+
+        Many tree-based models inherit from the ``RandomForest`` 
+        base class, and it's recommended to use it directly for 
+        access to a wider range of options.
+
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -226,20 +232,21 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_feature.html
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients.
-        These coefficients are then normalized using the feature distribution. An
-        activation function is applied to get the final score.
+        In models such as ``RandomForest``, feature importance is calculated 
+        using the MDI (Mean Decreased Impurity). To determine the final score, 
+        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        activation function to scale them.
 
     Metrics
     ^^^^^^^^
@@ -250,7 +257,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -259,7 +266,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_report.html
 
     .. important::
 
@@ -268,25 +275,9 @@ class DecisionTreeRegressor(RandomForestRegressor):
         report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
-    For ``LinearModel``, we can easily get the ANOVA table using:
-
-    .. ipython:: python
-        :suppress:
-
-        result = model.report(metrics = "anova")
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
-
-    .. code-block:: python
-
-        model.report(metrics = "anova")
-
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html
-
-    You can also use the ``LinearModel.score`` function to compute the R-squared
-    value:
+    You can utilize the 
+    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
+    function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
 
@@ -312,7 +303,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dtreereg_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_dtreereg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -332,14 +323,14 @@ class DecisionTreeRegressor(RandomForestRegressor):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_prediction.html
 
     .. note::
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -479,6 +470,12 @@ class DummyTreeRegressor(RandomForestRegressor):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
+    .. important::
+
+        Many tree-based models inherit from the ``RandomForest`` 
+        base class, and it's recommended to use it directly for 
+        access to a wider range of options.
+
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -574,7 +571,6 @@ class DummyTreeRegressor(RandomForestRegressor):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-
     Model Training
     ^^^^^^^^^^^^^^^
 
@@ -615,20 +611,21 @@ class DummyTreeRegressor(RandomForestRegressor):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_feature.html
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients.
-        These coefficients are then normalized using the feature distribution. An
-        activation function is applied to get the final score.
+        In models such as ``RandomForest``, feature importance is calculated 
+        using the MDI (Mean Decreased Impurity). To determine the final score, 
+        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        activation function to scale them.
 
     Metrics
     ^^^^^^^^
@@ -639,7 +636,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -648,7 +645,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_report.html
 
     .. important::
 
@@ -657,25 +654,9 @@ class DummyTreeRegressor(RandomForestRegressor):
         report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
-    For ``LinearModel``, we can easily get the ANOVA table using:
-
-    .. ipython:: python
-        :suppress:
-
-        result = model.report(metrics = "anova")
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
-
-    .. code-block:: python
-
-        model.report(metrics = "anova")
-
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html
-
-    You can also use the ``LinearModel.score`` function to compute the R-squared
-    value:
+    You can utilize the 
+    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
+    function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
 
@@ -701,7 +682,7 @@ class DummyTreeRegressor(RandomForestRegressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dummytreereg_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_dummytreereg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -721,14 +702,14 @@ class DummyTreeRegressor(RandomForestRegressor):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_prediction.html
 
     .. note::
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -756,8 +737,6 @@ class DummyTreeRegressor(RandomForestRegressor):
         The above example may not render properly in the doc because
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
-
-
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -892,6 +871,12 @@ class DecisionTreeClassifier(RandomForestClassifier):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
+    .. important::
+
+        Many tree-based models inherit from the ``RandomForest`` 
+        base class, and it's recommended to use it directly for 
+        access to a wider range of options.
+
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -987,7 +972,6 @@ class DecisionTreeClassifier(RandomForestClassifier):
             nbins = 32
         )
 
-
     .. hint::
 
         In ``verticapy`` 1.0.x and higher, you do not need to specify the
@@ -1000,8 +984,6 @@ class DecisionTreeClassifier(RandomForestClassifier):
         The model name is crucial for the model management system and
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
-
-
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1043,20 +1025,21 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_feature.html
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients.
-        These coefficients are then normalized using the feature distribution. An
-        activation function is applied to get the final score.
+        In models such as ``RandomForest``, feature importance is calculated 
+        using the MDI (Mean Decreased Impurity). To determine the final score, 
+        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        activation function to scale them.
 
     Metrics
     ^^^^^^^^
@@ -1067,7 +1050,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1076,7 +1059,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_report.html
 
     .. important::
 
@@ -1092,7 +1075,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :suppress:
 
         result = model.report(cutoff = 0.2)
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_report_cutoff.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_report_cutoff.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1101,11 +1084,12 @@ class DecisionTreeClassifier(RandomForestClassifier):
         model.report(cutoff = 0.2)
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_report_cutoff.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_report_cutoff.html
 
 
-    You can also use the ``LinearModel.score`` function to compute any
-    classification metric. The default metric is the accuracy:
+    You can also use the 
+    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
+    function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
 
@@ -1131,7 +1115,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dtreeclass_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_dtreeclass_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1151,14 +1135,14 @@ class DecisionTreeClassifier(RandomForestClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_prediction.html
 
     .. note::
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -1183,7 +1167,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dtreeclass_proba.html", "w")
+        html_file = open("figures/machine_learning_vertica_dtreeclass_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1203,7 +1187,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_proba.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_proba.html
 
     .. note::
 
@@ -1256,10 +1240,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_linear_model_dtreeclass_roc.html")
+        fig.write_html("figures/machine_learning_vertica_dtreeclass_roc.html")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreeclass_roc.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_roc.html
 
     .. important::
 
@@ -1424,6 +1408,12 @@ class DummyTreeClassifier(RandomForestClassifier):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
+    .. important::
+
+        Many tree-based models inherit from the ``RandomForest`` 
+        base class, and it's recommended to use it directly for 
+        access to a wider range of options.
+
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1526,8 +1516,6 @@ class DummyTreeClassifier(RandomForestClassifier):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-
-
     Model Training
     ^^^^^^^^^^^^^^^
 
@@ -1568,20 +1556,21 @@ class DummyTreeClassifier(RandomForestClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_feature.html
 
     .. note::
 
-        For ``LinearModel``, feature importance is computed using the coefficients.
-        These coefficients are then normalized using the feature distribution. An
-        activation function is applied to get the final score.
+        In models such as ``RandomForest``, feature importance is calculated 
+        using the MDI (Mean Decreased Impurity). To determine the final score, 
+        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        activation function to scale them.
 
     Metrics
     ^^^^^^^^
@@ -1592,7 +1581,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1601,7 +1590,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_report.html
 
     .. important::
 
@@ -1617,7 +1606,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         :suppress:
 
         result = model.report(cutoff = 0.2)
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_report_cutoff.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_report_cutoff.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1626,11 +1615,12 @@ class DummyTreeClassifier(RandomForestClassifier):
         model.report(cutoff = 0.2)
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_report_cutoff.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_report_cutoff.html
 
 
-    You can also use the ``LinearModel.score`` function to compute any
-    classification metric. The default metric is the accuracy:
+    You can also use the 
+    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
+    function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
 
@@ -1656,7 +1646,7 @@ class DummyTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dummytreecl_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_dummytreecl_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1676,14 +1666,14 @@ class DummyTreeClassifier(RandomForestClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_prediction.html
 
     .. note::
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -1708,7 +1698,7 @@ class DummyTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_dummytreecl_proba.html", "w")
+        html_file = open("figures/machine_learning_vertica_dummytreecl_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1728,7 +1718,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_proba.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_proba.html
 
     .. note::
 
@@ -1781,10 +1771,10 @@ class DummyTreeClassifier(RandomForestClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_linear_model_dummytreecl_roc.html")
+        fig.write_html("figures/machine_learning_vertica_dummytreecl_roc.html")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreecl_roc.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_roc.html
 
     .. important::
 
