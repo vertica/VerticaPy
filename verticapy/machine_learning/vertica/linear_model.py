@@ -2309,8 +2309,8 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_report_cutoff.html
 
 
-    You can also use the ``LinearModel.score`` function to compute the
-    accuracy:
+    You can also use the ``LinearModel.score`` function to compute any
+    classification metric. The default metric is the accuracy:
 
     .. ipython:: python
 
@@ -2368,11 +2368,134 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
         the ``vDataFrame`` match the predictors and response name in the
         model.
 
-    Plots
-    ^^^^^^
+    Probabilities
+    ^^^^^^^^^^^^^^
 
-    If the model allows, you can also generate relevant plots. For example,
-    regression plots can be found in the :ref:`chart_gallery.regression_plot`.
+    It is also easy to get the model's probabilities:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict_proba(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_linear_model_logr_proba.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict_proba(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_proba.html
+
+    .. note::
+
+        Probabilities are added to the vDataFrame, and VerticaPy uses the 
+        corresponding probability function in SQL behind the scenes. You 
+        can use the ``pos_label`` parameter to add only the probability 
+        of the selected category.
+
+    Confusion Matrix
+    ^^^^^^^^^^^^^^^^^
+
+    You can obtain the confusion matrix of your choice by specifying 
+    the desired cutoff.
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.confusion_matrix(cutoff = 0.5)
+        html_file = open("figures/machine_learning_vertica_linear_model_logr_cm.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.confusion_matrix(cutoff = 0.5)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_proba.html
+
+    .. note::
+
+        In classification, the ``cutoff`` is a threshold value used to 
+        determine class assignment based on predicted probabilities or 
+        scores from a classification model. In binary classification, 
+        if the predicted probability for a specific class is greater 
+        than or equal to the cutoff, the instance is assigned to the 
+        positive class; otherwise, it is assigned to the negative class. 
+        Adjusting the cutoff allows for trade-offs between true positives 
+        and false positives, enabling the model to be optimized for 
+        specific objectives or to consider the relative costs of different 
+        classification errors. The choice of cutoff is critical for 
+        tailoring the model's performance to meet specific needs.
+
+    Main Plots (Classification Curves)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Classification models allow for the creation of various plots that 
+    are very helpful in understanding the model, such as the ROC Curve, 
+    PRC Curve, Cutoff Curve, Gain Curve, and more.
+
+    Most of the classification curves can be found in the 
+    :ref:`chart_gallery.classification_curve`.
+
+    For example, let's draw the model's ROC curve.
+
+    .. code-block:: python
+          
+        model.roc_curve()
+
+    .. ipython:: python
+        :suppress:
+        
+        fig = model.roc_curve()
+        fig.write_html("figures/machine_learning_vertica_linear_model_logr_roc.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_roc.html
+
+    .. important::
+
+        Most of the curves have a parameter called ``nbins``, which is essential 
+        for estimating metrics. The larger the ``nbins``, the more precise the 
+        estimation, but it can significantly impact performance. Exercise caution 
+        when increasing this parameter excessively.
+
+    .. hint::
+
+        In binary classification, various curves can be easily plotted. However, 
+        in multi-class classification, it's important to select the ``pos_label`` 
+        , representing the class to be treated as positive when drawing the curve.
+
+    Other Plots
+    ^^^^^^^^^^^^
+
+    If the model allows, you can also generate relevant plots. 
+    For example, classification plots can be found in the 
+    :ref:`chart_gallery.classification_plot`.
 
     .. code-block:: python
 
@@ -2380,8 +2503,8 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
     .. important::
 
-        The plotting feature is typically suitable for models with fewer than
-        three predictors.
+        The plotting feature is typically suitable for models with 
+        fewer than three predictors.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
