@@ -110,7 +110,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         data = vpd.load_winequality()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/datasets_loaders_load_winequality.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
     .. note::
 
@@ -225,14 +225,14 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_feature.html
 
     .. note::
 
@@ -249,7 +249,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report()
-        html_file = open("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -258,7 +258,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         model.report()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report.html
 
     .. important::
 
@@ -273,7 +273,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report(metrics = "anova")
-        html_file = open("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -282,7 +282,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         model.report(metrics = "anova")
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_report_anova.html
 
     You can also use the ``LinearModel.score`` function to compute the R-squared
     value:
@@ -331,7 +331,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         )
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dtreereg_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dtreereg_prediction.html
 
     .. note::
 
@@ -346,7 +346,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     Plots
     ^^^^^^
 
-    Tree models can be visualized by drawing their tree plots. 
+    Tree models can be visualized by drawing their tree plots.
     For more examples, check out :ref:`chart_gallery.tree`.
 
     .. code-block:: python
@@ -364,7 +364,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     .. note::
 
         The above example may not render properly in the doc because
-        of the huge size of the tree. But it should render nicely 
+        of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
     Model Register
@@ -506,7 +506,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         data = vpd.load_winequality()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/datasets_loaders_load_winequality.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
     .. note::
 
@@ -614,14 +614,14 @@ class DummyTreeRegressor(RandomForestRegressor):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.features_importance()
-        fig.write_html("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html")
 
     .. code-block:: python
 
         result = model.features_importance()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_feature.html
 
     .. note::
 
@@ -638,7 +638,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report()
-        html_file = open("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -647,7 +647,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         model.report()
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report.html
 
     .. important::
 
@@ -662,7 +662,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         :suppress:
 
         result = model.report(metrics = "anova")
-        html_file = open("/project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -671,7 +671,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         model.report(metrics = "anova")
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_report_anova.html
 
     You can also use the ``LinearModel.score`` function to compute the R-squared
     value:
@@ -720,7 +720,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         )
 
     .. raw:: html
-        :file: /project/data/single_file/docs/figures/machine_learning_vertica_linear_model_dummytreereg_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_dummytreereg_prediction.html
 
     .. note::
 
@@ -735,7 +735,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     Plots
     ^^^^^^
 
-    Tree models can be visualized by drawing their tree plots. 
+    Tree models can be visualized by drawing their tree plots.
     For more examples, check out :ref:`chart_gallery.tree`.
 
     .. code-block:: python
@@ -753,10 +753,10 @@ class DummyTreeRegressor(RandomForestRegressor):
     .. note::
 
         The above example may not render properly in the doc because
-        of the huge size of the tree. But it should render nicely 
+        of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
-        
+
 
     Model Register
     ^^^^^^^^^^^^^^
