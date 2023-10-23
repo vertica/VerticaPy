@@ -84,8 +84,8 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        Many tree-based models inherit from the ``RandomForest`` 
-        base class, and it's recommended to use it directly for 
+        Many tree-based models inherit from the ``RandomForest``
+        base class, and it's recommended to use it directly for
         access to a wider range of options.
 
     Load data for machine learning
@@ -243,9 +243,9 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        In models such as ``RandomForest``, feature importance is calculated 
-        using the MDI (Mean Decreased Impurity). To determine the final score, 
-        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        In models such as ``RandomForest``, feature importance is calculated
+        using the MDI (Mean Decreased Impurity). To determine the final score,
+        VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
     Metrics
@@ -275,7 +275,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
-    You can utilize the 
+    You can utilize the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
@@ -472,8 +472,8 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        Many tree-based models inherit from the ``RandomForest`` 
-        base class, and it's recommended to use it directly for 
+        Many tree-based models inherit from the ``RandomForest``
+        base class, and it's recommended to use it directly for
         access to a wider range of options.
 
     Load data for machine learning
@@ -622,9 +622,9 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. note::
 
-        In models such as ``RandomForest``, feature importance is calculated 
-        using the MDI (Mean Decreased Impurity). To determine the final score, 
-        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        In models such as ``RandomForest``, feature importance is calculated
+        using the MDI (Mean Decreased Impurity). To determine the final score,
+        VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
     Metrics
@@ -654,7 +654,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         report can help optimize performance.
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
-    You can utilize the 
+    You can utilize the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
@@ -873,8 +873,8 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Many tree-based models inherit from the ``RandomForest`` 
-        base class, and it's recommended to use it directly for 
+        Many tree-based models inherit from the ``RandomForest``
+        base class, and it's recommended to use it directly for
         access to a wider range of options.
 
     Load data for machine learning
@@ -1036,9 +1036,9 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        In models such as ``RandomForest``, feature importance is calculated 
-        using the MDI (Mean Decreased Impurity). To determine the final score, 
-        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        In models such as ``RandomForest``, feature importance is calculated
+        using the MDI (Mean Decreased Impurity). To determine the final score,
+        VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
     Metrics
@@ -1087,7 +1087,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_report_cutoff.html
 
 
-    You can also use the 
+    You can also use the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
@@ -1410,8 +1410,8 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        Many tree-based models inherit from the ``RandomForest`` 
-        base class, and it's recommended to use it directly for 
+        Many tree-based models inherit from the ``RandomForest``
+        base class, and it's recommended to use it directly for
         access to a wider range of options.
 
     Load data for machine learning
@@ -1567,9 +1567,9 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. note::
 
-        In models such as ``RandomForest``, feature importance is calculated 
-        using the MDI (Mean Decreased Impurity). To determine the final score, 
-        VerticaPy sums the scores of each tree, normalizes them and applies an 
+        In models such as ``RandomForest``, feature importance is calculated
+        using the MDI (Mean Decreased Impurity). To determine the final score,
+        VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
     Metrics
@@ -1618,7 +1618,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_report_cutoff.html
 
 
-    You can also use the 
+    You can also use the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
