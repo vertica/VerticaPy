@@ -687,9 +687,9 @@ class RandomForestRegressor(Regressor, RandomForest):
         :suppress:
 
         res = model.plot_tree()
-        res.render(filename='figures/machine_learning_vertica_tree_decision', format='png')
+        res.render(filename='figures/machine_learning_vertica_rfreg', format='png')
 
-    .. image:: /../figures/machine_learning_vertica_tree_decision.png
+    .. image:: /../figures/machine_learning_vertica_rfreg.png
 
     .. note::
 
