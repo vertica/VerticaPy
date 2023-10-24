@@ -1097,14 +1097,8 @@ class IsolationForest(Clustering, Tree):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-    .. important::
-
-        Many anomaly detection models inherit from the ``Clustering``
-        base class, and it's recommended to use it directly for
-        access to a wider range of options.
-
     Load data for machine learning
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     We import ``verticapy``:
 
@@ -1205,6 +1199,13 @@ class IsolationForest(Clustering, Tree):
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
+    .. hint::
+
+        For clustering and anomaly detection, the use of predictors is
+        optional. In such cases, all available predictors are considered,
+        which can include solely numerical variables or a combination of
+        numerical and categorical variables, depending on the model's
+        capabilities.
 
     Prediction
     ^^^^^^^^^^^
@@ -1214,25 +1215,22 @@ class IsolationForest(Clustering, Tree):
     .. ipython:: python
         :suppress:
 
-        result = model.predict(data["density", "sulphates"])
+        result = model.predict(data, ["density", "sulphates"])
         html_file = open("figures/machine_learning_vertica_isolation_for_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. code-block:: python
 
-        model.predict(data["density", "sulphates"])
+        model.predict(data, ["density", "sulphates"])
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_prediction.html
 
-
-
     Plots - Anomaly Detection
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     Plots highlighting the outliers can be easily drawn using:
-
 
     .. code-block:: python
 
@@ -1248,9 +1246,15 @@ class IsolationForest(Clustering, Tree):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_plot.html
 
+    .. note::
+
+        Most anomaly detection methods produce a score. In scenarios involving
+        2 or 3 predictors, using a bubble plot to visualize the model's results
+        is a straightforward approach. In such plots, the size of each bubble
+        corresponds to the anomaly score.
 
     Plots - Tree
-    ^^^^^^^^^^^^
+    ^^^^^^^^^^^^^
 
     Tree models can be visualized by drawing their tree plots.
     For more examples, check out :ref:`chart_gallery.tree`.
@@ -1283,7 +1287,6 @@ class IsolationForest(Clustering, Tree):
     This string can then be copied into a DOT file which can be
     parsed by graphviz.
 
-
     Plots - Contour
     ^^^^^^^^^^^^^^^^
 
@@ -1305,9 +1308,12 @@ class IsolationForest(Clustering, Tree):
 
     .. note::
 
-        This plot is only possible for predictors less than 3.
-
-
+        Machine learning models with two predictors can usually benefit
+        from their own contour plot. This visual representation aids in
+        exploring predictions and gaining a deeper understanding of how
+        these models perform in different scenarios. Please refer to
+        :ref:`chart_gallery.contour_plot` for more examples.
+ 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
 

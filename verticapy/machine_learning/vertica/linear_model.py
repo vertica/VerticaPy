@@ -324,6 +324,7 @@ class ElasticNet(Regressor, LinearModel):
         in training the model.  Note that setting
         fit_intercept  to false does  not work well with
         the BFGS optimizer.
+        
     Examples
     ---------
 
