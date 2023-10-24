@@ -1308,7 +1308,6 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_report_cutoff.html
 
-
     You can also use the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
