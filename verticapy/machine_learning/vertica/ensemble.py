@@ -562,7 +562,7 @@ class XGBRegressor(Regressor, XGBoost):
         Float  in  the  range  (0,1]  that  specifies  the
         fraction of columns (features), chosen at  random,
         to use when evaluating each split.
-    
+
     Examples
     ---------
 
