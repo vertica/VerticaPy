@@ -864,6 +864,21 @@ class XGBRegressor(Regressor, XGBoost):
     This string can then be copied into a DOT file which can be
     parsed by graphviz.
 
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour_plot` for more examples.
+
     Model Register
     ^^^^^^^^^^^^^^
 
@@ -1709,6 +1724,21 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     This string can then be copied into a DOT file which can be
     parsed by graphviz.
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour_plot` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
