@@ -877,7 +877,7 @@ class XGBRegressor(Regressor, XGBoost):
     benefit from their own contour plot. This visual representation
     aids in exploring predictions and gaining a deeper understanding
     of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour_plot` for more examples.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1738,7 +1738,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     benefit from their own contour plot. This visual representation
     aids in exploring predictions and gaining a deeper understanding
     of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour_plot` for more examples.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
