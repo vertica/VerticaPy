@@ -686,7 +686,6 @@ class XGBRegressor(Regressor, XGBoost):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-
     Model Training
     ^^^^^^^^^^^^^^^
 
@@ -738,8 +737,8 @@ class XGBRegressor(Regressor, XGBoost):
 
     .. note::
 
-        In models such as ``XGB``, feature importance is calculated
-        using the MDI (Mean Decreased Impurity). To determine the final score,
+        In models such as ``XGBoost``, feature importance is calculated
+        using the average gain of each tree. To determine the final score,
         VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
@@ -873,11 +872,11 @@ class XGBRegressor(Regressor, XGBoost):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1469,8 +1468,8 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. note::
 
-        In models such as ``XGB``, feature importance is calculated
-        using the MDI (Mean Decreased Impurity). To determine the final score,
+        In models such as ``XGBoost``, feature importance is calculated
+        using the average gain of each tree. To determine the final score,
         VerticaPy sums the scores of each tree, normalizes them and applies an
         activation function to scale them.
 
@@ -1518,7 +1517,6 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_report_cutoff.html
-
 
     You can also use the
     :py:mod:`verticapy.machine_learning.vertica.ensemble.XGBClassifier.score`
@@ -1734,11 +1732,11 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
