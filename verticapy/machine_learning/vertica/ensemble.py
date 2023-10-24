@@ -697,6 +697,16 @@ class RandomForestRegressor(Regressor, RandomForest):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -706,11 +716,11 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1900,6 +1910,16 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -1909,11 +1929,11 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -2688,7 +2708,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
-        documentation for each model.
+        documentation for each model.    
     """
 
     # Properties.

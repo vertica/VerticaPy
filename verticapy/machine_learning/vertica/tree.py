@@ -359,6 +359,16 @@ class DecisionTreeRegressor(RandomForestRegressor):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -368,11 +378,11 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -753,6 +763,16 @@ class DummyTreeRegressor(RandomForestRegressor):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -762,11 +782,11 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1312,6 +1332,16 @@ class DecisionTreeClassifier(RandomForestClassifier):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -1321,11 +1351,11 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1858,6 +1888,16 @@ class DummyTreeClassifier(RandomForestClassifier):
         of the huge size of the tree. But it should render nicely
         in jupyter environment.
 
+    In order to plot graph using `graphviz <https://graphviz.org/>`_
+    separately, you can extract the graphviz DOT file code as follows:
+
+    .. ipython:: python
+
+        model.to_graphviz()
+
+    This string can then be copied into a DOT file which can be
+    parsed by graphviz.
+
     **Contour plot** is another useful plot that can be produced
     for models with two predictors.
 
@@ -1867,11 +1907,11 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
