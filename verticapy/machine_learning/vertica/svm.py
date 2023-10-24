@@ -377,6 +377,21 @@ class LinearSVR(Regressor, LinearModel):
         The plotting feature is typically suitable for models with fewer than
         three predictors.
 
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
+
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -969,6 +984,21 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
 
         The plotting feature is typically suitable for models with
         fewer than three predictors.
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
