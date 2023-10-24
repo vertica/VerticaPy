@@ -176,7 +176,7 @@ class Clustering(Unsupervised):
             **style_kwargs,
         }
         if self._model_subcategory == "ANOMALY_DETECTION":
-            fun = vdf.bubble
+            fun = vdf.scatter
             name = "anomaly_score"
             kwargs["cmap_col"] = name
         else:
