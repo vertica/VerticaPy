@@ -1087,7 +1087,7 @@ class IsolationForest(Clustering, Tree):
         Float  in  the  range (0,1] that  specifies  the
         fraction of columns (features), chosen at random,
         used when building each tree.
-    
+
     Examples
     ---------
 
