@@ -324,7 +324,7 @@ class ElasticNet(Regressor, LinearModel):
         in training the model.  Note that setting
         fit_intercept  to false does  not work well with
         the BFGS optimizer.
-        
+
     Examples
     ---------
 
@@ -1026,6 +1026,21 @@ class Lasso(Regressor, LinearModel):
         The plotting feature is typically suitable for models with fewer than
         three predictors.
 
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
+
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1471,6 +1486,21 @@ class LinearRegression(Regressor, LinearModel):
 
         The plotting feature is typically suitable for models with fewer
         than three predictors.
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1919,6 +1949,21 @@ class Ridge(Regressor, LinearModel):
 
         The plotting feature is typically suitable for models with fewer than
         three predictors.
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -2496,6 +2541,21 @@ class LogisticRegression(BinaryClassifier, LinearModelClassifier):
 
         The plotting feature is typically suitable for models with
         fewer than three predictors.
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour()
+
+    .. important::
+
+    Machine learning models with two predictors can usually
+    benefit from their own contour plot. This visual representation
+    aids in exploring predictions and gaining a deeper understanding
+    of how these models perform in different scenarios.
+    Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
