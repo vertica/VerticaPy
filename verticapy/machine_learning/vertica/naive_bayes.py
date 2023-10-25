@@ -275,7 +275,7 @@ class NaiveBayes(MulticlassClassifier):
         For multi-class scoring, ``verticapy`` allows the
         flexibility to use three averaging techniques:
         micro, macro and weighted. Please refer to
-        :ref:`https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f`_
+        `this link <https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f>`_
         for more details on how they are calculated.
 
     Prediction
