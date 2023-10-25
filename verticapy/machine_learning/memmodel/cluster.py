@@ -587,7 +587,7 @@ class BisectingKMeans(Clustering, Tree):
         res = model_bkm.plot_tree()
         res.render(filename='figures/machine_learning_cluster_bisecting_kmeans', format='png')
 
-    .. image:: SPHINX_DIRECTORY/figures/machine_learning_cluster_bisecting_kmeans.png
+    .. image:: /../figures/machine_learning_cluster_bisecting_kmeans.png
 
     .. note:: :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.plot_tree` requires the `Graphviz <https://graphviz.org/download/>`_ module
 
