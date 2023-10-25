@@ -226,7 +226,7 @@ class NaiveBayes(MulticlassClassifier):
         :suppress:
 
         result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_report.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -235,7 +235,7 @@ class NaiveBayes(MulticlassClassifier):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_report.html
 
     .. important::
 
@@ -251,7 +251,7 @@ class NaiveBayes(MulticlassClassifier):
         :suppress:
 
         result = model.report(cutoff = 0.2)
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_report_cutoff.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_report_cutoff.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -260,23 +260,23 @@ class NaiveBayes(MulticlassClassifier):
         model.report(cutoff = 0.2)
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_report_cutoff.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_report_cutoff.html
 
 
-    You can also use the ``LinearModel.score`` function to compute any
+    You can also use the ``NaiveBayes.score`` function to compute any
     classification metric. The default metric is the accuracy:
 
     .. ipython:: python
 
-        model.score(metric= "f1", average = "macro")
+        model.score(metric = "f1", average = "macro")
 
     .. note::
 
         For multi-class scoring, ``verticapy`` allows the
-        flexibility to use three averaging tehcniques:
+        flexibility to use three averaging techniques:
         micro, macro and weighted. Please refer to
         :ref:`https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f`_
-        for more details on how they are calcualted.
+        for more details on how they are calculated.
 
     Prediction
     ^^^^^^^^^^^
@@ -296,7 +296,7 @@ class NaiveBayes(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_naivebayes_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_NB_naivebayes_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -305,25 +305,23 @@ class NaiveBayes(MulticlassClassifier):
         model.predict(
             test,
             [
-                "fixed_acidity",
-                "volatile_acidity",
-                "citric_acid",
-                "residual_sugar",
-                "chlorides",
-                "density"
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
             ],
             "prediction",
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_prediction.html
 
     .. note::
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        :py:mod:`verticapy.machine_learning.vertica.naive_bayes.NaiveBayes.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -346,7 +344,7 @@ class NaiveBayes(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_naivebayes_proba.html", "w")
+        html_file = open("figures/machine_learning_vertica_NB_naivebayes_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -364,7 +362,7 @@ class NaiveBayes(MulticlassClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_proba.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_proba.html
 
     .. note::
 
@@ -376,12 +374,25 @@ class NaiveBayes(MulticlassClassifier):
     Confusion Matrix
     ^^^^^^^^^^^^^^^^^
 
-    You can obtain the confusion matrix of your choice by specifying
-    the desired cutoff.
+    You can obtain the confusion matrix.
 
     .. ipython:: python
 
-        model.confusion_matrix(cutoff = 0.5)
+        model.confusion_matrix()
+
+    .. hint::
+
+        In the context of multi-class classification, you typically work
+        with an overall confusion matrix that summarizes the classification
+        efficiency across all classes. However, you have the flexibility to
+        specify a ``pos_label`` and adjust the cutoff threshold. In this case,
+        a binary confusion matrix is computed, where the chosen class is treated
+        as the positive class, allowing you to evaluate its efficiency as if it
+        were a binary classification problem.
+
+        .. ipython:: python
+
+            model.confusion_matrix(pos_label = "Iris-setosa", cutoff = 0.6)
 
     .. note::
 
@@ -418,10 +429,10 @@ class NaiveBayes(MulticlassClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.roc_curve(pos_label = "Iris-setosa")
-        fig.write_html("figures/machine_learning_vertica_linear_model_naivebayes_roc.html")
+        fig.write_html("figures/machine_learning_vertica_NB_naivebayes_roc.html")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_naivebayes_roc.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_NB_naivebayes_roc.html
 
     .. important::
 
@@ -436,7 +447,6 @@ class NaiveBayes(MulticlassClassifier):
         in multi-class classification, it's important to select the ``pos_label``
         , representing the class to be treated as positive when drawing the curve.
 
-
     Other Plots
     ^^^^^^^^^^^^
 
@@ -449,11 +459,11 @@ class NaiveBayes(MulticlassClassifier):
 
     .. important::
 
-    Machine learning models with two predictors can usually
-    benefit from their own contour plot. This visual representation
-    aids in exploring predictions and gaining a deeper understanding
-    of how these models perform in different scenarios.
-    Please refer to  :ref:`chart_gallery.contour` for more examples.
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
