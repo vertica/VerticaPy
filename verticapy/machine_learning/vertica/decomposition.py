@@ -560,7 +560,7 @@ class PCA(Decomposition):
 
         model.explained_variance_
 
-    Principial Components
+    Principal Components
     ^^^^^^^^^^^^^^^^^^^^^^
 
     To get the transformed dataset in the form of principal
@@ -574,14 +574,16 @@ class PCA(Decomposition):
     for more details on transforming a ``vDataFrame``.
 
     Similarly, you can perform the inverse tranform to get
-    the original fetures using:
+    the original features using:
 
     .. code-block:: python
 
-        model.inverse_transform(vDataFrame)
+        model.inverse_transform(data_transformed)
+
+    The variable ``data_transformed`` includes the PCA components.
 
     Plots - PCA
-    ^^^^^^^^^^^^^
+    ^^^^^^^^^^^^
 
     You can plot the first two components conveniently using:
 
@@ -600,7 +602,7 @@ class PCA(Decomposition):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html
 
     Plots - Scree
-    ^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^
 
     You can also plot the Scree plot:
 
@@ -619,7 +621,6 @@ class PCA(Decomposition):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot_scree.html
-
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -681,7 +682,7 @@ class PCA(Decomposition):
 
     .. ipython:: python
 
-        X=[[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
+        X = [[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
         model.to_python()(X)
 
     .. hint::
@@ -1088,7 +1089,6 @@ class SVD(Decomposition):
 
         data = vpd.load_winequality()
 
-
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
 
@@ -1188,7 +1188,7 @@ class SVD(Decomposition):
 
         model.explained_variance_
 
-    Principial Components
+    Principal Components
     ^^^^^^^^^^^^^^^^^^^^^^
 
     To get the transformed dataset in the form of principal
@@ -1202,14 +1202,16 @@ class SVD(Decomposition):
     for more details on transforming a ``vDataFrame``.
 
     Similarly, you can perform the inverse tranform to get
-    the original fetures using:
+    the original features using:
 
     .. code-block:: python
 
-        model.inverse_transform(vDataFrame)
+        model.inverse_transform(data_transformed)
+
+    The variable ``data_transformed`` includes the PCA components.
 
     Plots - SVD
-    ^^^^^^^^^^^^^
+    ^^^^^^^^^^^^
 
     You can plot the first two dimensions conveniently using:
 
@@ -1228,7 +1230,7 @@ class SVD(Decomposition):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot.html
 
     Plots - Scree
-    ^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^
 
     You can also plot the Scree plot:
 
@@ -1247,7 +1249,6 @@ class SVD(Decomposition):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot_scree.html
-
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1309,7 +1310,7 @@ class SVD(Decomposition):
 
     .. ipython:: python
 
-        X=[[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
+        X = [[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
         model.to_python()(X)
 
     .. hint::

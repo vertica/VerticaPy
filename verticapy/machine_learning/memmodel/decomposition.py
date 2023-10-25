@@ -100,9 +100,10 @@ class PCA(InMemoryModel):
                 "of the vector 'mean'."
             )
         sql = []
-        for i in range(len(X)):
+        m, n = self.principal_components_.shape
+        for i in range(n):
             sql_tmp = []
-            for j in range(len(X)):
+            for j in range(m):
                 sql_tmp += [
                     f"({X[j]} - {self.mean_[j]}) * {self.principal_components_[:, i][j]}"
                 ]
