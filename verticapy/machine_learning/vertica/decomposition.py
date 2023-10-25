@@ -421,7 +421,277 @@ class PCA(Decomposition):
         step.
     method: str, optional
         The method used to calculate PCA.
-                lapack: Lapack definition.
+
+        - lapack:
+            Lapack definition.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    We can drop the "color" column as it is varchar type.
+
+    .. code-block::
+
+        data.drop("color")
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        data.drop("color")
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``PCA`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import PCA
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import PCA
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = PCA(
+            n_components = 3,
+        )
+
+    You can select the number of components by the ``n_component``
+    parameter. If it is not provided, then all are considered.
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data)
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database.
+
+    Scores
+    ^^^^^^
+
+    The decomposition  score  on  the  dataset for  each
+    transformed column can be calculated by:
+
+    .. ipython:: python
+
+        model.score()
+
+    For more details on the function, check out
+    :py:mod:`verticapy.machine_learning.PCA.score`
+
+    You can also fetch the explained variance by:
+
+    .. ipython:: python
+
+        model.explained_variance_
+
+    Principial Components
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    To get the transformed dataset in the form of principal
+    components:
+
+    .. ipython:: python
+
+        model.transform(data)
+
+    Please refer to :py:mod:`verticapy.machine_learning.PCA.transform`
+    for more details on transforming a ``vDataFrame``.
+
+    Similarly, you can perform the inverse tranform to get
+    the original fetures using:
+
+    .. code-block:: python
+
+        model.inverse_transform(vDataFrame)
+
+    Plots - PCA
+    ^^^^^^^^^^^^^
+
+    You can plot the first two components conveniently using:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot()
+        fig.write_html("figures/machine_learning_vertica_pca_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html
+
+    Plots - Scree
+    ^^^^^^^^^^^^^
+
+    You can also plot the Scree plot:
+
+    .. code-block:: python
+
+        model.plot_scree()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "highcharts")
+        fig = model.plot_scree()
+        html_text = fig.htmlcontent.replace("container", "ml_vertica_PCA_scree")
+        with open("figures/machine_learning_vertica_pca_plot_scree.html", "w") as file:
+            file.write(html_text)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot_scree.html
+
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'n_components': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory representations of machine
+        learning models. They can be used for both in-database and in-memory
+        prediction tasks. These objects can be pickled in the same way that
+        you would pickle a ``scikit-learn`` model.
+
+    The preceding methods for exporting the model use ``MemModel``, and it
+    is recommended to use ``MemModel`` directly.
+
+    **Deploy SQL**
+
+    To get the SQL query which uses Vertica functions use below:
+
+    .. ipython:: python
+
+        model.deploySQL()
+
+    **To Python**
+
+    To obtain the prediction function in Python syntax, use the following code:
+
+    .. ipython:: python
+
+        X=[[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
+        model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.PCA.to_python`
+        method is used to retrieve the Principal Component values.
+        For specific details on how to
+        use this method for different model types, refer to the relevant
+        documentation for each model.
     """
 
     # Properties.
@@ -778,7 +1048,278 @@ class SVD(Decomposition):
         number of rows).
     method: str, optional
         The method used to calculate SVD.
-                lapack: Lapack definition.
+
+        - lapack:
+            Lapack definition.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    We can drop the "color" column as it is varchar type.
+
+    .. code-block::
+
+        data.drop("color")
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        data.drop("color")
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``SVD`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import SVD
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import SVD
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = SVD(
+            n_components = 3,
+        )
+
+    You can select the number of components by the ``n_component``
+    parameter. If it is not provided, then all are considered.
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data)
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database.
+
+    Scores
+    ^^^^^^
+
+    The decomposition  score  on  the  dataset for  each
+    transformed column can be calculated by:
+
+    .. ipython:: python
+
+        model.score()
+
+    For more details on the function, check out
+    :py:mod:`verticapy.machine_learning.SVD.score`
+
+    You can also fetch the explained variance by:
+
+    .. ipython:: python
+
+        model.explained_variance_
+
+    Principial Components
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    To get the transformed dataset in the form of principal
+    components:
+
+    .. ipython:: python
+
+        model.transform(data)
+
+    Please refer to :py:mod:`verticapy.machine_learning.SVD.transform`
+    for more details on transforming a ``vDataFrame``.
+
+    Similarly, you can perform the inverse tranform to get
+    the original fetures using:
+
+    .. code-block:: python
+
+        model.inverse_transform(vDataFrame)
+
+    Plots - SVD
+    ^^^^^^^^^^^^^
+
+    You can plot the first two dimensions conveniently using:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot()
+        fig.write_html("figures/machine_learning_vertica_svd_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot.html
+
+    Plots - Scree
+    ^^^^^^^^^^^^^
+
+    You can also plot the Scree plot:
+
+    .. code-block:: python
+
+        model.plot_scree()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "highcharts")
+        fig = model.plot_scree()
+        html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
+        with open("figures/machine_learning_vertica_svd_plot_scree.html", "w") as file:
+            file.write(html_text)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot_scree.html
+
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'n_components': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory representations of machine
+        learning models. They can be used for both in-database and in-memory
+        prediction tasks. These objects can be pickled in the same way that
+        you would pickle a ``scikit-learn`` model.
+
+    The preceding methods for exporting the model use ``MemModel``, and it
+    is recommended to use ``MemModel`` directly.
+
+    **Deploy SQL**
+
+    To get the SQL query which uses Vertica functions use below:
+
+    .. ipython:: python
+
+        model.deploySQL()
+
+    **To Python**
+
+    To obtain the prediction function in Python syntax, use the following code:
+
+    .. ipython:: python
+
+        X=[[3.8, 0.3, 0.02, 11, 0.03, 20, 113, 0.99, 3, 0.4, 12, 6, 0]]
+        model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.SVD.to_python`
+        method is used to retrieve the Principal Component values.
+        For specific details on how to
+        use this method for different model types, refer to the relevant
+        documentation for each model.
     """
 
     # Properties.
