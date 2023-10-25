@@ -420,7 +420,6 @@ class NearestCentroid(Clustering):
         p = 2
         classes = ['class_a', 'class_b', 'class_c']
 
-
     Let's create a
     :py:mod:`verticapy.machine_learning.memmodel.cluster.NearestCentroid` model.
 
@@ -573,7 +572,6 @@ class BisectingKMeans(Clustering, Tree):
         clusters = [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200]]
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
-
 
     Let's create a :py:mod:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans` model.
 
