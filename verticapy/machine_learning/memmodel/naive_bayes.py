@@ -35,51 +35,192 @@ class NaiveBayes(MulticlassClassifier):
         List  of the model's attributes. Each feature  must
         be represented by a dictionary, which differs based
         on the distribution.
-          For 'gaussian':
+
+        - For 'gaussian':
             Key 'type'  must have 'gaussian' as value.
             Each of the model's classes must include a
             dictionary with two keys:
-              sigma_sq: Square  root of  the  standard
-                        deviation.
-              mu: Average.
-            Example: {'type': 'gaussian',
-                      'C': {'mu': 63.9878308300395,
-                            'sigma_sq': 7281.87598377196},
-                      'Q': {'mu': 13.0217386792453,
-                            'sigma_sq': 211.626862330204},
-                      'S': {'mu': 27.6928120412844,
-                            'sigma_sq': 1428.57067393938}}
-          For 'multinomial':
+            sigma_sq: Square  root of  the  standard deviation.
+            mu: Average.
+
+            Example:
+                {'type': 'gaussian',
+                'C': {'mu': 63.9878308300395,
+                'sigma_sq': 7281.87598377196},
+                'Q': {'mu': 13.0217386792453,
+                'sigma_sq': 211.626862330204},
+                'S': {'mu': 27.6928120412844,
+                'sigma_sq': 1428.57067393938}}
+        - For 'multinomial':
             Key 'type' must have 'multinomial' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
-            Example: {'type': 'multinomial',
-                      'C': 0.771666666666667,
-                      'Q': 0.910714285714286,
-                      'S': 0.878216123499142}
-          For 'bernoulli':
+
+            Example:
+                {'type': 'multinomial',
+                'C': 0.771666666666667,
+                'Q': 0.910714285714286,
+                'S': 0.878216123499142}
+        - For 'bernoulli':
             Key 'type' must have 'bernoulli' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
-            Example: {'type': 'bernoulli',
-                      'C': 0.537254901960784,
-                      'Q': 0.277777777777778,
-                      'S': 0.324942791762014}
-          For 'categorical':
+
+            Example:
+                {'type': 'bernoulli',
+                'C': 0.537254901960784,
+                'Q': 0.277777777777778,
+                'S': 0.324942791762014}
+        - For 'categorical':
             Key 'type' must have 'categorical' as value.
             Each  of  the  model's  classes  must  include
             a dictionary with all the feature categories.
-            Example: {'type': 'categorical',
-                      'C': {'female': 0.407843137254902,
-                            'male': 0.592156862745098},
-                      'Q': {'female': 0.416666666666667,
-                            'male': 0.583333333333333},
-                      'S': {'female': 0.311212814645309,
-                            'male': 0.688787185354691}}
-    prior: ArrayLike
-        The model's classes probabilities.
-    classes: ArrayLike
-        The model's classes.
+
+            Example:
+                {'type': 'categorical',
+                'C': {'female': 0.407843137254902,
+                'male': 0.592156862745098},
+                'Q': {'female': 0.416666666666667,
+                'male': 0.583333333333333},
+                'S': {'female': 0.311212814645309,
+                'male': 0.688787185354691}}
+                
+        prior: ArrayLike
+            The model's classes probabilities.
+        classes: ArrayLike
+            The model's classes.
+
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'prior probabilities',
+        'classes' and 'input feature attributes' specific to the type of
+        distribution, defines a NaiveBayes model.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+            :suppress:
+
+        from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
+
+    Here we will be using attributes of model trained on well known
+    `titanic dataset <https://github.com/vertica/VerticaPy/blob/master/verticapy/datasets/data/titanic.csv>`_.
+
+    It tries to predict the port of embarkation (C = Cherbourg,
+    Q = Queenstown, S = Southampton), using *age* (continous),
+    *pclass* (discrete), *survived* (boolean) and
+    *sex* (categorical) as input features.
+
+    Let's define attributes representing each input feature:
+
+    .. ipython:: python
+            :suppress:
+
+        attributes = [
+                            {
+                                "type": "gaussian",
+                                "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
+                                "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
+                                "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
+                            },
+                            {
+                                "type": "multinomial",
+                                "C": 0.771666666666667,
+                                "Q": 0.910714285714286,
+                                "S": 0.878216123499142,
+                            },
+                            {
+                                "type": "bernoulli",
+                                "C": 0.771666666666667,
+                                "Q": 0.910714285714286,
+                                "S": 0.878216123499142,
+                            },
+                            {
+                                "type": "categorical",
+                                "C": {
+                                    "female": 0.407843137254902,
+                                    "male": 0.592156862745098,
+                                },
+                                "Q": {
+                                    "female": 0.416666666666667,
+                                    "male": 0.583333333333333,
+                                },
+                                "S": {
+                                    "female": 0.406666666666667,
+                                    "male": 0.593333333333333,
+                                },
+                            },
+                        ]
+
+    We also need to provide class names and their prior probabilities.
+
+    .. ipython:: python
+            :suppress:
+
+        prior = [0.8, 0.1, 0.1]
+        classes = ["C", "Q", "S"]
+
+    Let's create a :py:mod:`verticapy.machine_learning.memmodel.naive_bayes` model.
+
+    .. ipython:: python
+            :suppress:
+
+        model_nb = NaiveBayes(attributes, prior, classes)
+
+    Create a dataset.
+
+    .. ipython:: python
+            :suppress:
+
+        data = [[40.0, 1, True, "male"], [60.0, 3, True, "male"], [15.0, 2, False, "female"]]
+
+    **Making In-Memory Predictions**
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict` method to do predictions
+
+    .. ipython:: python
+            :suppress:
+
+        model_nb.predict(data)
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
+    method to calculate the predicted probabilities for each class
+
+    .. ipython:: python
+            :suppress:
+
+        model_nb.predict_proba(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+            :suppress:
+
+        cnames = ["age", "pclass", "survived", "sex"]
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
+    method to get the SQL code needed to deploy the model using its attributes
+
+    .. ipython:: python
+            :suppress:
+
+        model_nb.predict_sql(cnames)
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
+    method to get the SQL code needed to deploy the model that computes predicted probabilities
+
+    .. ipython:: python
+            :suppress:
+
+        model_nb.predict_proba_sql(cnames)
+
+    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
