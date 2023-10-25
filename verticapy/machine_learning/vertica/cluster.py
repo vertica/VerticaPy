@@ -564,10 +564,10 @@ class BisectingKMeans(KMeans, Tree):
         The method used to find the initial KMeans
         cluster centers.
 
-        kmeanspp:
+         - kmeanspp:
             Uses  the KMeans++ method  to initialize
             the centers.
-        pseudo:
+         - pseudo:
             Uses "pseudo center" approach used by
             Spark,  bisects given center without iterating
             over points.
@@ -708,6 +708,44 @@ class BisectingKMeans(KMeans, Tree):
         numerical and categorical variables, depending on the model's
         capabilities.
 
+    Metrics
+    ^^^^^^^^
+
+    You can also find the cluster positions by:
+
+    .. ipython:: python
+
+        model.clusters_
+
+    In order to get the size of each cluster, you can use:
+
+    .. ipython:: python
+
+        model.cluster_size_
+
+    To evaluate the model, various attributes are computed, such as 
+    the between sum of squares, the total within clusters sum of 
+    squares, and the total sum of squares.
+
+    .. ipython:: python
+
+        model.between_cluster_ss_
+        model.total_within_cluster_ss_
+        model.total_ss_
+
+    You also have access to the sum of squares of each cluster.
+
+    .. ipython:: python
+
+        model.cluster_i_ss_
+
+    Some other useful attributes can be used to evaluate the model, 
+    like the Elbow Score (the bigger it is, the better it is).
+
+    .. ipython:: python
+
+        model.elbow_score_
+
     Prediction
     ^^^^^^^^^^^
 
@@ -729,22 +767,10 @@ class BisectingKMeans(KMeans, Tree):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_prediction.html
 
     As shown above, a new column has been created, containing
-    the bisected cluster number.
-
-    You can also find the average values of the cluster by:
-
-    .. ipython:: python
-
-        model.clusters_
-
-    In order to get the size of each cluster, you can use:
-
-    .. ipython:: python
-
-        model.cluster_size_
+    the bisected cluster.
 
     Plots - Cluster Plot
-    ^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^
 
     Plots highlighting the different clusters can be easily drawn using:
 
@@ -761,7 +787,6 @@ class BisectingKMeans(KMeans, Tree):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_plot.html
-
 
     Plots - Tree
     ^^^^^^^^^^^^^
