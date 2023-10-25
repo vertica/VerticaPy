@@ -2708,7 +2708,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
-        documentation for each model.    
+        documentation for each model.
     """
 
     # Properties.
