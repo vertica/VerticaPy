@@ -564,10 +564,10 @@ class BisectingKMeans(KMeans, Tree):
         The method used to find the initial KMeans
         cluster centers.
 
-         - kmeanspp:
+        - kmeanspp:
             Uses  the KMeans++ method  to initialize
             the centers.
-         - pseudo:
+        - pseudo:
             Uses "pseudo center" approach used by
             Spark,  bisects given center without iterating
             over points.
@@ -723,8 +723,8 @@ class BisectingKMeans(KMeans, Tree):
 
         model.cluster_size_
 
-    To evaluate the model, various attributes are computed, such as 
-    the between sum of squares, the total within clusters sum of 
+    To evaluate the model, various attributes are computed, such as
+    the between sum of squares, the total within clusters sum of
     squares, and the total sum of squares.
 
     .. ipython:: python
@@ -739,7 +739,7 @@ class BisectingKMeans(KMeans, Tree):
 
         model.cluster_i_ss_
 
-    Some other useful attributes can be used to evaluate the model, 
+    Some other useful attributes can be used to evaluate the model,
     like the Elbow Score (the bigger it is, the better it is).
 
     .. ipython:: python
