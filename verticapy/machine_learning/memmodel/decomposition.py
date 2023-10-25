@@ -233,13 +233,13 @@ class SVD(InMemoryModel):
         list
             SQL code.
         """
-        if len(X) != len(self.values_):
+        if len(X) != len(self.vectors_):
             raise ValueError(
                 "The length of parameter 'X' must be equal to the length "
                 "of the vector 'values'."
             )
         sql = []
-        m, n = self.values_.shape
+        m, n = self.vectors_.shape
         for i in range(n):
             sql_tmp = []
             for j in range(m):
