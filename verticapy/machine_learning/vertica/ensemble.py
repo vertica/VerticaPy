@@ -3165,7 +3165,7 @@ class IsolationForest(Clustering, Tree):
 
     **To SQL**
 
-    You can get the SQL query equivalent of the XGB model by:
+    You can get the SQL query equivalent of the ``IsolationForest`` model by:
 
     .. ipython:: python
 
