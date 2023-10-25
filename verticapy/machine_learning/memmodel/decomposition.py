@@ -100,9 +100,10 @@ class PCA(InMemoryModel):
                 "of the vector 'mean'."
             )
         sql = []
-        for i in range(len(X)):
+        m, n = self.principal_components_.shape
+        for i in range(n):
             sql_tmp = []
-            for j in range(len(X)):
+            for j in range(m):
                 sql_tmp += [
                     f"({X[j]} - {self.mean_[j]}) * {self.principal_components_[:, i][j]}"
                 ]
@@ -232,15 +233,16 @@ class SVD(InMemoryModel):
         list
             SQL code.
         """
-        if len(X) != len(self.values_):
+        if len(X) != len(self.vectors_):
             raise ValueError(
                 "The length of parameter 'X' must be equal to the length "
                 "of the vector 'values'."
             )
         sql = []
-        for i in range(len(X)):
+        m, n = self.vectors_.shape
+        for i in range(n):
             sql_tmp = []
-            for j in range(len(X)):
+            for j in range(m):
                 sql_tmp += [f"{X[j]} * {self.vectors_[:, i][j]} / {self.values_[i]}"]
             sql += [" + ".join(sql_tmp)]
         return sql
