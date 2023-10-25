@@ -36,50 +36,55 @@ class NaiveBayes(MulticlassClassifier):
         be represented by a dictionary, which differs based
         on the distribution.
 
-        For 'gaussian':
+        - For 'gaussian':
             Key 'type'  must have 'gaussian' as value.
             Each of the model's classes must include a
             dictionary with two keys:
             sigma_sq: Square  root of  the  standard deviation.
             mu: Average.
 
-            Example: {'type': 'gaussian',
-                      'C': {'mu': 63.9878308300395,
-                            'sigma_sq': 7281.87598377196},
-                      'Q': {'mu': 13.0217386792453,
-                            'sigma_sq': 211.626862330204},
-                      'S': {'mu': 27.6928120412844,
-                            'sigma_sq': 1428.57067393938}}
-        For 'multinomial':
+            Example:
+                {'type': 'gaussian',
+                'C': {'mu': 63.9878308300395,
+                'sigma_sq': 7281.87598377196},
+                'Q': {'mu': 13.0217386792453,
+                'sigma_sq': 211.626862330204},
+                'S': {'mu': 27.6928120412844,
+                'sigma_sq': 1428.57067393938}}
+        - For 'multinomial':
             Key 'type' must have 'multinomial' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
 
-            Example: {'type': 'multinomial',
-                      'C': 0.771666666666667,
-                      'Q': 0.910714285714286,
-                      'S': 0.878216123499142}
-        For 'bernoulli':
+            Example:
+                {'type': 'multinomial',
+                'C': 0.771666666666667,
+                'Q': 0.910714285714286,
+                'S': 0.878216123499142}
+        - For 'bernoulli':
             Key 'type' must have 'bernoulli' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
 
-            Example: {'type': 'bernoulli',
-                      'C': 0.537254901960784,
-                      'Q': 0.277777777777778,
-                      'S': 0.324942791762014}
-        For 'categorical':
+            Example:
+                {'type': 'bernoulli',
+                'C': 0.537254901960784,
+                'Q': 0.277777777777778,
+                'S': 0.324942791762014}
+        - For 'categorical':
             Key 'type' must have 'categorical' as value.
             Each  of  the  model's  classes  must  include
             a dictionary with all the feature categories.
 
-            Example: {'type': 'categorical',
-                      'C': {'female': 0.407843137254902,
-                            'male': 0.592156862745098},
-                      'Q': {'female': 0.416666666666667,
-                            'male': 0.583333333333333},
-                      'S': {'female': 0.311212814645309,
-                            'male': 0.688787185354691}}
+            Example:
+                {'type': 'categorical',
+                'C': {'female': 0.407843137254902,
+                'male': 0.592156862745098},
+                'Q': {'female': 0.416666666666667,
+                'male': 0.583333333333333},
+                'S': {'female': 0.311212814645309,
+                'male': 0.688787185354691}}
+                
         prior: ArrayLike
             The model's classes probabilities.
         classes: ArrayLike
