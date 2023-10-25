@@ -314,7 +314,7 @@ class KMeans(Clustering):
                n_cluster = 8,
                init = "kmeanspp",
                max_iter = 300,
-               tol = 1e-4
+               tol = 1e-4,
         )
 
     .. hint::
@@ -390,20 +390,20 @@ class KMeans(Clustering):
     .. ipython:: python
         :suppress:
 
-        result = model.predict(data, ["density", "sulphates"], name ="Cluster IDs")
+        result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
         html_file = open("figures/machine_learning_vertica_kmeans_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. code-block:: python
 
-        model.predict(data, ["density", "sulphates"], name ="Cluster IDs")
+        model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html
 
     As shown above, a new column has been created, containing
-    the bisected cluster.
+    the clusters.
 
     .. hint::
         The name of the new column is optional. If not provided,
@@ -431,7 +431,7 @@ class KMeans(Clustering):
     Plots - Voronoi
     ^^^^^^^^^^^^^^^^
 
-    Tree models can be visualized by drawing their voronoi plots.
+    ``KMeans`` models can be visualized by drawing their voronoi plots.
     For more examples, check out :ref:`chart_gallery.voronoi_plot`.
 
     .. code-block:: python
@@ -446,7 +446,6 @@ class KMeans(Clustering):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html
-
 
     Plots - Contour
     ^^^^^^^^^^^^^^^^
@@ -523,7 +522,7 @@ class KMeans(Clustering):
 
     **To SQL**
 
-    You can get the SQL query equivalent of the XGB model by:
+    You can get the SQL query equivalent of the ``KMeans`` model by:
 
     .. ipython:: python
 
@@ -831,7 +830,7 @@ class KPrototypes(KMeans):
             init = "random",
             max_iter = 300,
             tol = 1e-4,
-            gamma = 0.2
+            gamma = 0.2,
         )
 
     .. hint::
@@ -910,20 +909,20 @@ class KPrototypes(KMeans):
     .. ipython:: python
         :suppress:
 
-        result = model.predict(data, ["density", "sulphates"], name ="Cluster IDs")
+        result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
         html_file = open("figures/machine_learning_vertica_kprototypes_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. code-block:: python
 
-        model.predict(data, ["density", "sulphates"], name ="Cluster IDs")
+        model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kprototypes_prediction.html
 
     As shown above, a new column has been created, containing
-    the bisected cluster.
+    the clusters.
 
     .. hint::
         The name of the new column is optional. If not provided,
@@ -948,7 +947,7 @@ class KPrototypes(KMeans):
     Plots - Voronoi
     ^^^^^^^^^^^^^^^^
 
-    Tree models can be visualized by drawing their voronoi plots.
+    ``KPrototypes`` models can be visualized by drawing their voronoi plots.
     For more examples, check out :ref:`chart_gallery.voronoi_plot`.
 
     .. code-block:: python
@@ -1036,7 +1035,7 @@ class KPrototypes(KMeans):
 
     **To SQL**
 
-    You can get the SQL query equivalent of the XGB model by:
+    You can get the SQL query equivalent of the ``KPrototypes`` model by:
 
     .. ipython:: python
 
@@ -1311,7 +1310,7 @@ class BisectingKMeans(KMeans, Tree):
             distance_method = "euclidean",
             init = "kmeanspp",
             max_iter = 300,
-            tol = 1e-4
+            tol = 1e-4,
         )
 
     .. hint::
@@ -1412,7 +1411,7 @@ class BisectingKMeans(KMeans, Tree):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_prediction.html
 
     As shown above, a new column has been created, containing
-    the bisected cluster.
+    the bisected clusters.
 
     Plots - Cluster Plot
     ^^^^^^^^^^^^^^^^^^^^^
