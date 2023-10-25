@@ -733,7 +733,7 @@ class KPrototypes(KMeans):
     init: str / list, optional
         The  method  used  to  find the  initial  cluster
         centers.
-        
+
         - random:
             The centers are initialized randomly.
 
