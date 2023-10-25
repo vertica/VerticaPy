@@ -668,13 +668,13 @@ class PCA(Decomposition):
     The preceding methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
 
-    **Deploy SQL**
+    **SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query use below:
 
     .. ipython:: python
 
-        model.deploySQL()
+        model.to_sql()
 
     **To Python**
 
@@ -1296,13 +1296,13 @@ class SVD(Decomposition):
     The preceding methods for exporting the model use ``MemModel``, and it
     is recommended to use ``MemModel`` directly.
 
-    **Deploy SQL**
+    **SQL**
 
-    To get the SQL query which uses Vertica functions use below:
+    To get the SQL query use below:
 
     .. ipython:: python
 
-        model.deploySQL()
+        model.to_sql()
 
     **To Python**
 
