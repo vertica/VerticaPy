@@ -84,7 +84,7 @@ class NaiveBayes(MulticlassClassifier):
                 'male': 0.583333333333333},
                 'S': {'female': 0.311212814645309,
                 'male': 0.688787185354691}}
-                
+
         prior: ArrayLike
             The model's classes probabilities.
         classes: ArrayLike
