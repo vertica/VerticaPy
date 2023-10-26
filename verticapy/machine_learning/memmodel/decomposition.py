@@ -34,6 +34,109 @@ class PCA(InMemoryModel):
         Matrix   of   the   principal   components.
     mean: ArrayLike
         List of the averages of each input feature.
+        
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined entirely by their attributes. 
+        For example, 'principal components' and 'mean' define a PCA model.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+            :suppress:
+
+        from verticapy.machine_learning.memmodel.decomposition import PCA
+
+    A PCA model is defined by its principal components and mean value. In this example, we will use the following:
+
+    .. ipython:: python
+            :suppress:
+
+        principal_components = [[0.4, 0.5], [0.3, 0.2]]
+        mean = [0.1, 0.3]
+
+    Let's create a :py:mod:`verticapy.machine_learning.memmodel.decomposition.PCA` model.
+
+    .. ipython:: python
+            :suppress:
+
+        model_pca = PCA(principal_components, mean)
+
+    Create a dataset.
+
+    .. ipython:: python
+            :suppress:
+
+        data = [[4, 5]]
+
+    **Making In-Memory Transformation**
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform` method to do transformation
+
+    .. ipython:: python
+            :suppress:
+
+        model_pca.transform(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+            :suppress:
+
+        cnames = ['col1', 'col2']
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform_sql` method 
+    to get the SQL code needed to deploy the model using its attributes
+
+    .. ipython:: python
+            :suppress:
+
+        model_pca.transform_sql(cnames)
+        
+    **Perform an Oblimin Rotation**
+    
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate` method
+    to perform Oblimin (Varimax, Quartimax) rotation on PCA matrix
+
+    .. ipython:: python
+            :suppress:
+
+        model_pca.rotate()
+        
+    .. note:: You can determine the type of rotation by adjusting value of gamma in 
+        :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.rotate` method.
+        It must be between 0.0 and 1.0.
+            
+    Use gamma = 0.0, for Quartimax rotation:
+    
+    .. ipython:: python
+            :suppress:
+
+        gamma = 0.0
+        model_pca.rotate(gamma)
+            
+    Use gamma = 1.0, for Varimax rotation:
+    
+    .. ipython:: python
+            :suppress:
+
+        gamma = 1.0
+        model_pca.rotate(gamma)
+    
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.get_attributes` method
+    to check the attributes of the rotated model 
+    
+    .. ipython:: python
+            :suppress:
+        
+        model_pca.get_attributes()    
+
+    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -153,8 +256,11 @@ class PCA(InMemoryModel):
         gamma: float, optional
             Oblimin rotation factor, determines the type of rotation.
             It must be between 0.0 and 1.0.
-                gamma = 0.0 results in a Quartimax rotation.
-                gamma = 1.0 results in a Varimax rotation.
+            
+            - gamma = 0.0 results in a Quartimax rotation.
+            
+            - gamma = 1.0 results in a Varimax rotation.
+            
         q: int, optional
             Maximum number of iterations.
         tol: float, optional
@@ -176,6 +282,79 @@ class SVD(InMemoryModel):
     values: ArrayLike
         List of the singular values for each input
         feature.
+        
+    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined entirely by their attributes. 
+        For example, 'vectors' and 'values' define a SVD model.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+            :suppress:
+
+        from verticapy.machine_learning.memmodel.decomposition import SVD
+
+    A SVD model is defined by its vectors and values. In this example, we will use the following:
+
+    .. ipython:: python
+            :suppress:
+
+        vectors = [[0.4, 0.5], [0.3, 0.2]]
+        values = [0.1, 0.3]
+
+    Let's create a :py:mod:`verticapy.machine_learning.memmodel.decomposition.SVD` model.
+
+    .. ipython:: python
+            :suppress:
+
+        model_svd = SVD(vectors, values)
+
+    Create a dataset.
+
+    .. ipython:: python
+            :suppress:
+
+        data = [[0.3, 0.5]]
+
+    **Making In-Memory Transformation**
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.transform` method to do transformation
+
+    .. ipython:: python
+            :suppress:
+
+        model_svd.transform(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+            :suppress:
+
+        cnames = ['col1', 'col2']
+
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.transform_sql` method 
+    to get the SQL code needed to deploy the model using its attributes
+
+    .. ipython:: python
+            :suppress:
+
+        model_svd.transform_sql(cnames)
+        
+    Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD.get_attributes` method
+    to check the attributes of the rotated model 
+    
+    .. ipython:: python
+            :suppress:
+        
+        model_svd.get_attributes()    
+
+    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
