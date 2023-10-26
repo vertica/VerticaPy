@@ -326,7 +326,6 @@ class TestModelSelection:
         assert len(result["test_score"]) == 3
         assert len(result.values) == 7
 
-    @pytest.mark.skip(reason="needs some investigation")
     def test_learning_curve(self, winequality_vd):
         for elem in ["efficiency", "performance", "scalability"]:
             result = learning_curve(

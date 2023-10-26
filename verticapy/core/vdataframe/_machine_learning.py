@@ -32,7 +32,7 @@ from verticapy._utils._sql._random import _seeded_random_function
 
 from verticapy.core.tablesample.base import TableSample
 
-from verticapy.core.vdataframe._normalize import vDFNorm
+from verticapy.core.vdataframe._scaler import vDFScaler
 
 from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 from verticapy.machine_learning.metrics import FUNCTIONS_DICTIONNARY
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
 
-class vDFMachineLearning(vDFNorm):
+class vDFMachineLearning(vDFScaler):
     @save_verticapy_logs
     def add_duplicates(
         self, weight: Union[int, str], use_gcd: bool = True

@@ -26,7 +26,7 @@ import verticapy
 from verticapy.udf import generate_lib_udf
 
 
-def normalize_titanic(age, fare):
+def scale_titanic(age, fare):
     return (age - 30.15) / 14.44, (fare - 33.96) / 52.65
 
 
@@ -45,7 +45,7 @@ class TestUdf:
                     "python_isclose",
                 ),
                 (
-                    normalize_titanic,
+                    scale_titanic,
                     [float, float],
                     {"norm_age": float, "norm_fare": float},
                     {},

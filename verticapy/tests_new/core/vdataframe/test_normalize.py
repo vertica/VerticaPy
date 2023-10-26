@@ -18,40 +18,34 @@ from scipy.stats import median_abs_deviation
 import pytest
 
 
-class TestNormalize:
+class TestScaler:
     """
-    test class for Normalize function test
+    test class for Scale function test
     """
 
     @pytest.mark.parametrize(
         "columns, method",
         [("age", "zscore"), ("age", "robust_zscore"), ("age", "minmax")],
     )
-    def test_normalize_vdf(self, titanic_vd, columns, method):
+    def test_scale_vdf(self, titanic_vd, columns, method):
         """
-        test function - normalize for vDataframe
+        test function - scaling for vDataframe
         """
         titanic_pdf = titanic_vd.to_pandas()
         titanic_pdf[columns] = titanic_pdf[columns].astype(float)
 
         py_data = titanic_pdf[[columns]]
         if method == "zscore":
-            vpy_res = titanic_vd.normalize(columns=[columns], method=method)[
-                columns
-            ].std()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].std()
             py_res = ((py_data - py_data.mean()) / py_data.std()).std()
         elif method == "robust_zscore":
-            vpy_res = titanic_vd.normalize(columns=[columns], method=method)[
-                columns
-            ].std()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].std()
             py_res = (
                 (py_data - py_data.median())
                 / (1.4826 * median_abs_deviation(py_data, nan_policy="omit"))
             ).std()
         else:
-            vpy_res = titanic_vd.normalize(columns=[columns], method=method)[
-                columns
-            ].mean()
+            vpy_res = titanic_vd.scale(columns=[columns], method=method)[columns].mean()
             py_res = (
                 (py_data - py_data.min()) / (py_data.max() - py_data.min())
             ).mean()
@@ -67,9 +61,9 @@ class TestNormalize:
         [("age", "zscore"), ("age", "robust_zscore"), ("age", "minmax")],
     )
     @pytest.mark.parametrize("partition_by", ["pclass", None])
-    def test_normalize_vcolumn(self, titanic_vd_fun, partition_by, columns, method):
+    def test_scale_vcolumn(self, titanic_vd_fun, partition_by, columns, method):
         """
-        test function - normalize for vColumns
+        test function - scaling for vColumns
         """
         titanic_pdf = titanic_vd_fun.to_pandas()
         titanic_pdf[columns] = titanic_pdf[columns].astype(float)
@@ -77,17 +71,17 @@ class TestNormalize:
         vpy_data = titanic_vd_fun[columns]
 
         if method == "zscore":
-            vpy_res = vpy_data.normalize(method=method, by=partition_by)[columns].std()
+            vpy_res = vpy_data.scale(method=method, by=partition_by)[columns].std()
             py_res = ((py_data - py_data.mean()) / py_data.std()).std()
         elif method == "robust_zscore":
-            vpy_res = vpy_data.normalize(method=method)[columns].std()
+            vpy_res = vpy_data.scale(method=method)[columns].std()
             # vpy_res = _res.std() if partition_by else _res["age"].std()
             py_res = (
                 (py_data - py_data.median())
                 / (1.4826 * median_abs_deviation(py_data, nan_policy="omit"))
             ).std()
         else:
-            vpy_res = vpy_data.normalize(method=method, by=partition_by)[columns].mean()
+            vpy_res = vpy_data.scale(method=method, by=partition_by)[columns].mean()
             py_res = (
                 (py_data - py_data.min()) / (py_data.max() - py_data.min())
             ).mean()

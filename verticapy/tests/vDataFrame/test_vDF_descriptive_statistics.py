@@ -867,8 +867,8 @@ class TestvDFDescriptiveStat:
         assert result["approx_90%"][1] == pytest.approx(79.13)
 
         # testing vDataFrame[].quantile
-        assert titanic_vd["age"].quantile(x=0.5) == pytest.approx(28.0)
-        assert titanic_vd["fare"].quantile(x=0.1) == pytest.approx(7.5892)
+        assert titanic_vd["age"].quantile(q=0.5) == pytest.approx(28.0)
+        assert titanic_vd["fare"].quantile(q=0.1) == pytest.approx(7.5892)
 
         # testing exact vDataFrame.quantile
         result = titanic_vd.quantile(
@@ -881,8 +881,8 @@ class TestvDFDescriptiveStat:
         assert result["90%"][1] == pytest.approx(79.13)
 
         # testing exact vDataFrame[].quantile
-        assert titanic_vd["age"].quantile(x=0.5, approx=False) == pytest.approx(28.0)
-        assert titanic_vd["fare"].quantile(x=0.1, approx=False) == pytest.approx(7.5892)
+        assert titanic_vd["age"].quantile(q=0.5, approx=False) == pytest.approx(28.0)
+        assert titanic_vd["fare"].quantile(q=0.1, approx=False) == pytest.approx(7.5892)
 
     def test_vDF_score(self, titanic_vd):
         model = LogisticRegression(

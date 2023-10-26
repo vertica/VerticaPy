@@ -602,7 +602,7 @@ class TestvDFFeatureEngineering:
         # Testing vDataFrame.abs
         titanic_copy = titanic_vd.copy()
 
-        titanic_copy.normalize(["fare", "age"])
+        titanic_copy.scale(["fare", "age"])
         assert titanic_copy["fare"].min() == pytest.approx(-0.64513441)
         assert titanic_copy["age"].min() == pytest.approx(-2.0659389)
 
@@ -612,7 +612,7 @@ class TestvDFFeatureEngineering:
 
         # Testing vDataFrame[].abs
         titanic_copy = titanic_vd.copy()
-        titanic_copy["fare"].normalize()
+        titanic_copy["fare"].scale()
         titanic_copy["fare"].abs()
 
         assert titanic_copy["fare"].min() == pytest.approx(0.001082821)

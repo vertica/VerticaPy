@@ -133,7 +133,7 @@ class AutoClustering(VerticaModel):
         preprocess_data: bool = True,
         preprocess_dict: dict = {
             "identify_ts": False,
-            "normalize_min_cat": 0,
+            "standardize_min_cat": 0,
             "outliers_threshold": 3.0,
             "na_method": "drop",
         },
