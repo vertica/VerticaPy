@@ -926,8 +926,9 @@ def sql_magic(
                         usecols=columns,
                     )
 
-                try:
-                    if not (query_subtype.upper().startswith(SPECIAL_WORDS)):
+                is_vdf = False
+                if not(query_subtype.upper().startswith(SPECIAL_WORDS)):
+                    try:
                         result = create_new_vdf(
                             query,
                             _is_sql_magic=True,
@@ -938,10 +939,12 @@ def sql_magic(
                             result._vars["max_rows"] = options["-nrows"]
                         if "-ncols" in options:
                             result._vars["max_columns"] = options["-ncols"]
-                    else:
-                        raise
+                        is_vdf = True
+                    except:
+                        pass # we could not create a vDataFrame out of the query.
 
-                except:
+                if not(is_vdf):
+
                     try:
                         final_result = _executeSQL(
                             query, method="fetchfirstelem", print_time_sql=False
