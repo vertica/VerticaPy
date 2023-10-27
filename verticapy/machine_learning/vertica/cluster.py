@@ -2151,6 +2151,459 @@ class NearestCentroid(MulticlassClassifier):
     p: int, optional
         The p corresponding to the one of the p-distances
         (distance metric used to compute the model).
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the iris dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_iris()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
+
+    .. code-block:: python
+
+        data = vpd.load_iris()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    .. warning::
+
+        In this case, VerticaPy utilizes seeded randomization to guarantee
+        the reproducibility of your data split. However, please be aware
+        that this approach may lead to reduced performance. For a more
+        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        method to save your results into ``tables`` or ``temporary tables``.
+        This will help enhance the overall performance of the process.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_iris()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``NearestCentroid`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import NearestCentroid
+
+    Then we can create the model:
+
+    .. ipython:: python
+
+        model = NearestCentroid(p = 2)
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+
+        model.fit(
+            train,
+            [
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+            ],
+            "Species",
+            test,
+        )
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. ipython:: python
+        :suppress:
+
+        #result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
+        E.g. ``model.report(metrics = ["auc", "accuracy"])``.
+
+    For classification models, we can easily modify the ``cutoff`` to observe
+    the effect on different metrics:
+
+    .. ipython:: python
+        :suppress:
+
+        #result = model.report(cutoff = 0.2)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report_cutoff.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report(cutoff = 0.2)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report_cutoff.html
+
+
+    You can also use the ``NearestCentroid.score`` function to compute any
+    classification metric. The default metric is the accuracy:
+
+    .. ipython:: python
+
+        model.score(metric = "f1", average = "macro")
+
+    .. note::
+
+        For multi-class scoring, ``verticapy`` allows the
+        flexibility to use three averaging techniques:
+        micro, macro and weighted. Please refer to
+        `this link <https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f>`_
+        for more details on how they are calculated.
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(
+            test,
+            [
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+            ],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_cluster_nearest_centroid_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict(
+            test,
+            [
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_prediction.html
+
+    .. note::
+
+        Predictions can be made automatically using the test set, in which
+        case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.naive_bayes.NearestCentroid.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
+        model.
+
+    Probabilities
+    ^^^^^^^^^^^^^^
+
+    It is also easy to get the model's probabilities:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict_proba(
+            test,
+            [
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+            ],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_cluster_nearest_centroid_proba.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict_proba(
+            test,
+            [
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_proba.html
+
+    .. note::
+
+        Probabilities are added to the vDataFrame, and VerticaPy uses the
+        corresponding probability function in SQL behind the scenes. You
+        can use the ``pos_label`` parameter to add only the probability
+        of the selected category.
+
+    Confusion Matrix
+    ^^^^^^^^^^^^^^^^^
+
+    You can obtain the confusion matrix.
+
+    .. ipython:: python
+
+        model.confusion_matrix()
+
+    .. hint::
+
+        In the context of multi-class classification, you typically work
+        with an overall confusion matrix that summarizes the classification
+        efficiency across all classes. However, you have the flexibility to
+        specify a ``pos_label`` and adjust the cutoff threshold. In this case,
+        a binary confusion matrix is computed, where the chosen class is treated
+        as the positive class, allowing you to evaluate its efficiency as if it
+        were a binary classification problem.
+
+        **Specific confusion matrix:**
+
+        .. ipython:: python
+
+            model.confusion_matrix(pos_label = "Iris-setosa", cutoff = 0.6)
+
+    .. note::
+
+        In classification, the ``cutoff`` is a threshold value used to
+        determine class assignment based on predicted probabilities or
+        scores from a classification model. In binary classification,
+        if the predicted probability for a specific class is greater
+        than or equal to the cutoff, the instance is assigned to the
+        positive class; otherwise, it is assigned to the negative class.
+        Adjusting the cutoff allows for trade-offs between true positives
+        and false positives, enabling the model to be optimized for
+        specific objectives or to consider the relative costs of different
+        classification errors. The choice of cutoff is critical for
+        tailoring the model's performance to meet specific needs.
+
+    Main Plots (Classification Curves)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Classification models allow for the creation of various plots that
+    are very helpful in understanding the model, such as the ROC Curve,
+    PRC Curve, Cutoff Curve, Gain Curve, and more.
+
+    Most of the classification curves can be found in the
+    :ref:`chart_gallery.classification_curve`.
+
+    For example, let's draw the model's ROC curve.
+
+    .. code-block:: python
+
+        model.roc_curve(pos_label = "Iris-setosa")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.roc_curve(pos_label = "Iris-setosa")
+        fig.write_html("figures/machine_learning_vertica_cluster_nearest_centroid_roc.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_roc.html
+
+    .. important::
+
+        Most of the curves have a parameter called ``nbins``, which is essential
+        for estimating metrics. The larger the ``nbins``, the more precise the
+        estimation, but it can significantly impact performance. Exercise caution
+        when increasing this parameter excessively.
+
+    .. hint::
+
+        In binary classification, various curves can be easily plotted. However,
+        in multi-class classification, it's important to select the ``pos_label``
+        , representing the class to be treated as positive when drawing the curve.
+
+    Other Plots
+    ^^^^^^^^^^^^
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour(pos_label = "Iris-setosa")
+
+    .. important::
+
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'p': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory representations of machine
+        learning models. They can be used for both in-database and in-memory
+        prediction tasks. These objects can be pickled in the same way that
+        you would pickle a ``scikit-learn`` model.
+
+    The following methods for exporting the model use ``MemModel``, and it
+    is recommended to use ``MemModel`` directly.
+
+    **To SQL**
+
+    You can get the SQL code by:
+
+    .. ipython:: python
+
+        model.to_sql()
+
+    **To Python**
+
+    To obtain the prediction function in Python syntax, use the following code:
+
+    .. ipython:: python
+
+        X = [[5, 2, 3, 1]]
+        #model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:mod:`verticapy.machine_learning.vertica.naive_bayes.NearestCentroid.to_python`
+        method is used to retrieve predictions,
+        probabilities, or cluster distances. For specific details on how to
+        use this method for different model types, refer to the relevant
+        documentation for each model.
     """
 
     # Properties.
