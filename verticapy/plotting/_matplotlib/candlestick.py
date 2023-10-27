@@ -61,7 +61,7 @@ class CandleStick(MatplotlibBase):
         if "color" in style_kwargs:
             color_list = (
                 style_kwargs["color"] + color_list
-                if isinstance(style_kwargs, list)
+                if isinstance(style_kwargs["color"], list)
                 else [style_kwargs["color"]] + color_list
             )
             style_kwargs.pop("color")
