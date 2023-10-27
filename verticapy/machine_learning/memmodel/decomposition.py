@@ -46,14 +46,12 @@ class PCA(InMemoryModel):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.decomposition import PCA
 
     A PCA model is defined by its principal components and mean value. In this example, we will use the following:
 
     .. ipython:: python
-            :suppress:
 
         principal_components = [[0.4, 0.5], [0.3, 0.2]]
         mean = [0.1, 0.3]
@@ -61,14 +59,12 @@ class PCA(InMemoryModel):
     Let's create a :py:mod:`verticapy.machine_learning.memmodel.decomposition.PCA` model.
 
     .. ipython:: python
-            :suppress:
 
         model_pca = PCA(principal_components, mean)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
         data = [[4, 5]]
 
@@ -77,7 +73,6 @@ class PCA(InMemoryModel):
     Use :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA.transform` method to do transformation
 
     .. ipython:: python
-            :suppress:
 
         model_pca.transform(data)
 
@@ -86,7 +81,6 @@ class PCA(InMemoryModel):
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ['col1', 'col2']
 
@@ -94,7 +88,6 @@ class PCA(InMemoryModel):
     to get the SQL code needed to deploy the model using its attributes
 
     .. ipython:: python
-            :suppress:
 
         model_pca.transform_sql(cnames)
 
@@ -104,7 +97,6 @@ class PCA(InMemoryModel):
     to perform Oblimin (Varimax, Quartimax) rotation on PCA matrix
 
     .. ipython:: python
-            :suppress:
 
         model_pca.rotate()
 
@@ -115,7 +107,6 @@ class PCA(InMemoryModel):
     Use gamma = 0.0, for Quartimax rotation:
 
     .. ipython:: python
-            :suppress:
 
         gamma = 0.0
         model_pca.rotate(gamma)
@@ -123,7 +114,6 @@ class PCA(InMemoryModel):
     Use gamma = 1.0, for Varimax rotation:
 
     .. ipython:: python
-            :suppress:
 
         gamma = 1.0
         model_pca.rotate(gamma)
@@ -132,7 +122,6 @@ class PCA(InMemoryModel):
     to check the attributes of the rotated model
 
     .. ipython:: python
-            :suppress:
 
         model_pca.get_attributes()
 
