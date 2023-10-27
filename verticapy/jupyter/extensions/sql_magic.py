@@ -34,6 +34,7 @@ from IPython.display import display, HTML
 import verticapy._config.config as conf
 from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._check import is_procedure
 from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._format import (
     clean_query,
@@ -780,6 +781,12 @@ def sql_magic(
         elif "-c" in options:
             queries = options["-c"]
 
+        # Case when it is a procedure
+        if is_procedure(queries):
+            current_cursor().execute(queries)
+            print("CREATE")
+            return
+
         # Cleaning the Query
         queries = clean_query(queries)
         queries = replace_vars_in_query(queries, locals()["local_ns"])
@@ -860,7 +867,7 @@ def sql_magic(
             if len(query_words) > 1:
                 query_subtype = query_words[idx + 1].upper()
             else:
-                query_subtype = "undefined"
+                query_subtype = "UNDEFINED"
 
             if len(query_type) > 1 and query_type.startswith(("/*", "--")):
                 query_type = "undefined"
