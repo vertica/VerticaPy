@@ -914,7 +914,6 @@ def sql_magic(
                     print(query_type)
 
             else:
-
                 error = ""
 
                 if query_type.lower() in ("show",):
@@ -922,10 +921,13 @@ def sql_magic(
                         query, method="fetchall", print_time_sql=False
                     )
                     columns = [d.name for d in current_cursor().description]
-                    return create_new_vdf(final_result, usecols=columns,)
+                    return create_new_vdf(
+                        final_result,
+                        usecols=columns,
+                    )
 
                 try:
-                    if not(query_subtype.upper().startswith(SPECIAL_WORDS)):
+                    if not (query_subtype.upper().startswith(SPECIAL_WORDS)):
                         result = create_new_vdf(
                             query,
                             _is_sql_magic=True,
