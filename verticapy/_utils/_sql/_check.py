@@ -35,6 +35,39 @@ def is_dql(query: str) -> bool:
     query = erase_comment(query)
     for idx, q in enumerate(query):
         if q not in (" ", "("):
-            result = query[idx:].lower().startswith(("select ", "with "))
+            result = (
+                query[idx:]
+                .lower()
+                .startswith(
+                    (
+                        "select ",
+                        "with ",
+                    )
+                )
+            )
+            break
+    return result
+
+
+def is_procedure(query: str) -> bool:
+    """
+    Returns True if the input SQL query
+    is a procedure.
+    """
+    result = False
+    query = clean_query(query)
+    query = erase_comment(query)
+    for idx, q in enumerate(query):
+        if q not in (" ", "("):
+            result = (
+                query[idx:]
+                .lower()
+                .startswith(
+                    (
+                        "create procedure ",
+                        "create or replace procedure ",
+                    )
+                )
+            )
             break
     return result
