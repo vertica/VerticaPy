@@ -179,7 +179,7 @@ class vDFCorr(vDFEncode):
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-                chi2 = f"""
+                chi2_sql = f"""
                     WITH all_categories AS (
                         SELECT * FROM
                         (SELECT 
@@ -219,8 +219,8 @@ class vDFCorr(vDFEncode):
                     SELECT
                         SUM((POWER(O - E, 2) / E)) 
                     FROM expected_values;"""
-                result = _executeSQL(
-                    chi2,
+                chi2 = _executeSQL(
+                    chi2_sql,
                     title=(
                         f"Computing the CramerV correlation between {columns[0]} "
                         f"and {columns[1]} (Chi2 Statistic)."
@@ -229,13 +229,11 @@ class vDFCorr(vDFEncode):
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-                if min(k - 1, r - 1) == 0:
-                    result = np.nan
-                else:
-                    result = float(math.sqrt(result / n / min(k - 1, r - 1)))
-                    if result > 1 or result < 0:
-                        result = np.nan
-                return result
+                phi2 = chi2 / n
+                phi2corr = max(0, phi2 - ((k - 1) * (r - 1)) / (n - 1))
+                rcorr = r - ((r - 1) ** 2) / (n - 1)
+                kcorr = k - ((k - 1) ** 2) / (n - 1)
+                return np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
             elif method == "kendall":
                 if columns[1] == columns[0]:
                     return 1
