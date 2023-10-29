@@ -921,10 +921,11 @@ def sql_magic(
                         query, method="fetchall", print_time_sql=False
                     )
                     columns = [d.name for d in current_cursor().description]
-                    return create_new_vdf(
+                    result = create_new_vdf(
                         final_result,
                         usecols=columns,
                     )
+                    continue
 
                 is_vdf = False
                 if not (query_subtype.upper().startswith(SPECIAL_WORDS)):
@@ -950,6 +951,10 @@ def sql_magic(
                         )
                         if final_result and conf.get_option("print_info"):
                             print(final_result)
+                        elif (
+                            query_subtype.upper().startswith(SPECIAL_WORDS)
+                        ) and conf.get_option("print_info"):
+                            print(query_subtype.upper())
                         elif conf.get_option("print_info"):
                             print(query_type)
 
