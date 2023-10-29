@@ -615,7 +615,7 @@ class KMeans(Clustering):
         Computes the model's attributes.
         """
         centers = self.get_vertica_attributes("centers")
-        self.clusters_ = centers.to_numpy().astype(float)
+        self.clusters_ = centers.to_numpy()
         self.p_ = 2
         self._compute_metrics()
 
@@ -1128,7 +1128,7 @@ class KPrototypes(KMeans):
         Computes the model's attributes.
         """
         centers = self.get_vertica_attributes("centers")
-        self.clusters_ = centers.to_numpy().astype(float)
+        self.clusters_ = centers.to_numpy()
         self.p_ = 2
         self.gamma_ = self.parameters["gamma"]
         dtypes = centers.dtype
