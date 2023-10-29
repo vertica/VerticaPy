@@ -229,7 +229,7 @@ def _compute_final_score(
             "Parameter 'pos_label' can only be used when parameter 'average' is set to 'binary' or undefined."
         )
     if not (isinstance(pos_label, NoneType)) and not (isinstance(labels, NoneType)):
-        raise ValueError("Parameters 'pos_label' and 'labels' can not be both defined.")
+        labels = None
     if (
         isinstance(pos_label, NoneType)
         and isinstance(labels, NoneType)

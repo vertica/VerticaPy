@@ -615,7 +615,7 @@ class KMeans(Clustering):
         Computes the model's attributes.
         """
         centers = self.get_vertica_attributes("centers")
-        self.clusters_ = centers.to_numpy()
+        self.clusters_ = centers.to_numpy().astype(float)
         self.p_ = 2
         self._compute_metrics()
 
@@ -1128,7 +1128,7 @@ class KPrototypes(KMeans):
         Computes the model's attributes.
         """
         centers = self.get_vertica_attributes("centers")
-        self.clusters_ = centers.to_numpy()
+        self.clusters_ = centers.to_numpy().astype(float)
         self.p_ = 2
         self.gamma_ = self.parameters["gamma"]
         dtypes = centers.dtype
@@ -1648,7 +1648,7 @@ class BisectingKMeans(KMeans, Tree):
         """
         centers = self.get_vertica_attributes("BKTree")
         self.tree_ = copy.deepcopy(centers)
-        self.clusters_ = centers.to_numpy()[:, 1 : len(self.X) + 1]
+        self.clusters_ = centers.to_numpy()[:, 1 : len(self.X) + 1].astype(float)
         self.children_left_ = np.array(centers["left_child"])
         self.children_right_ = np.array(centers["right_child"])
         self.cluster_size_ = np.array(centers["cluster_size"])
@@ -2146,6 +2146,15 @@ class NearestCentroid(MulticlassClassifier):
     This object uses pure SQL to compute the distances and
     final score.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     p: int, optional
@@ -2243,19 +2252,6 @@ class NearestCentroid(MulticlassClassifier):
 
         model = NearestCentroid(p = 2)
 
-    .. hint::
-
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
-
-    .. important::
-
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
-
     Model Training
     ^^^^^^^^^^^^^^^
 
@@ -2283,6 +2279,12 @@ class NearestCentroid(MulticlassClassifier):
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
+
     Metrics
     ^^^^^^^^
 
@@ -2291,7 +2293,7 @@ class NearestCentroid(MulticlassClassifier):
     .. ipython:: python
         :suppress:
 
-        #result = model.report()
+        result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2316,7 +2318,7 @@ class NearestCentroid(MulticlassClassifier):
     .. ipython:: python
         :suppress:
 
-        #result = model.report(cutoff = 0.2)
+        result = model.report(cutoff = 0.2)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_report_cutoff.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2387,7 +2389,7 @@ class NearestCentroid(MulticlassClassifier):
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
         can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.naive_bayes.NearestCentroid.predict`
+        :py:mod:`verticapy.machine_learning.vertica.cluster.NearestCentroid.predict`
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
@@ -2551,14 +2553,9 @@ class NearestCentroid(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
-
-    .. code-block:: python
-
-        model.register("model_v1")
-
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
@@ -2594,12 +2591,12 @@ class NearestCentroid(MulticlassClassifier):
     .. ipython:: python
 
         X = [[5, 2, 3, 1]]
-        #model.to_python()(X)
+        model.to_python()(X)
 
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.naive_bayes.NearestCentroid.to_python`
+        :py:mod:`verticapy.machine_learning.vertica.cluster.NearestCentroid.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -2664,7 +2661,7 @@ class NearestCentroid(MulticlassClassifier):
             ORDER BY {self.y} ASC""",
             title="Getting Model Centroids.",
         )
-        self.clusters_ = centroids.to_numpy()[:, 0:-1]
+        self.clusters_ = centroids.to_numpy()[:, 0:-1].astype(float)
         self.classes_ = self._array_to_int(centroids.to_numpy()[:, -1])
         self.p_ = self.parameters["p"]
 
