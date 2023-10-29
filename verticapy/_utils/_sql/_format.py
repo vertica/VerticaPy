@@ -319,25 +319,32 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
     the temporary schema is used.
     """
     if isinstance(relation, str):
-        quote_nb = relation.count('"')
-        if quote_nb not in (0, 2, 4):
-            raise ParsingError("The format of the input relation is incorrect.")
-        if quote_nb == 4:
-            schema_input_relation = relation.split('"')[1], relation.split('"')[3]
-        elif quote_nb == 4:
-            schema_input_relation = (
-                relation.split('"')[1],
-                relation.split('"')[2][1:]
-                if (relation.split('"')[0] == "")
-                else relation.split('"')[0][0:-1],
-                relation.split('"')[1],
-            )
-        else:
-            schema_input_relation = relation.split(".")
-        if len(schema_input_relation) == 1:
+        rel_transf = relation.replace('""', "__verticapy_doublequotes_")
+        quote_nb = rel_transf.count('"')
+        dot_nb = rel_transf.count(".")
+        if (quote_nb == 0 and dot_nb == 0) or (
+            quote_nb == 2 and rel_transf.startswith('"') and rel_transf.endswith('"')
+        ):
             schema, relation = "public", relation
+        elif quote_nb == 0 and dot_nb == 1:
+            schema, relation = relation.split(".")
+        elif quote_nb == 2 and rel_transf.startswith('"'):
+            schema, relation = rel_transf.split('"')[1:]
+            schema = schema.replace("__verticapy_doublequotes_", '""')
+            relation = relation[1:].replace("__verticapy_doublequotes_", '""')
+        elif quote_nb == 2 and rel_transf.endswith('"'):
+            schema, relation = rel_transf.split('"')[:-1]
+            schema = schema[:-1].replace("__verticapy_doublequotes_", '""')
+            relation = relation.replace("__verticapy_doublequotes_", '""')
+        elif quote_nb == 4 and rel_transf.endswith('"') and rel_transf.startswith('"'):
+            schema = rel_transf.split('"')[1].replace("__verticapy_doublequotes_", '""')
+            relation = rel_transf.split('"')[3].replace(
+                "__verticapy_doublequotes_", '""'
+            )
+            if rel_transf.split('"')[2] != ".":
+                raise ParsingError("The format of the input relation is incorrect.")
         else:
-            schema, relation = schema_input_relation[0], schema_input_relation[1]
+            raise ParsingError("The format of the input relation is incorrect.")
     else:
         schema, relation = conf.get_option("temp_schema"), ""
 
