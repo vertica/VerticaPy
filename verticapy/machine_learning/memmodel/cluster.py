@@ -1100,7 +1100,7 @@ class KPrototypes(Clustering):
         is_categorical: Optional[ArrayLike] = None,
     ) -> None:
         is_categorical = format_type(is_categorical, dtype=list)
-        self.clusters_ = np.array(clusters).astype(float)
+        self.clusters_ = np.array(clusters)
         self.p_ = p
         self.gamma_ = gamma
         self.is_categorical_ = np.array(is_categorical)
