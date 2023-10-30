@@ -282,13 +282,17 @@ class KNeighborsClassifier(MulticlassClassifier):
     pure SQL to compute all the distances and final
     score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
-                     during   computation  and  is  therefore
-                     computationally  expensive at  O(n * n),
-                     where n is the total number of elements.
-                     Since  KNeighborsClassifier uses  the p-
-                     distance,  it  is  highly  sensitive  to
-                     unnormalized data.
+    .. warning :
+
+        This   algorithm   uses  a   CROSS  JOIN
+        during   computation  and  is  therefore
+        computationally  expensive at  O(n * n),
+        where n is the total number of elements.
+        Since  LocalOutlierFactor   uses  the p-
+        distance,  it  is  highly  sensitive  to
+        unnormalized data.
+        A  table  is created at the  end of
+        the learning phase.
 
     Parameters
     ----------
@@ -298,6 +302,433 @@ class KNeighborsClassifier(MulticlassClassifier):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
+
+    .. code-block:: python
+
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    .. warning::
+
+        In this case, VerticaPy utilizes seeded randomization to guarantee
+        the reproducibility of your data split. However, please be aware
+        that this approach may lead to reduced performance. For a more
+        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        method to save your results into ``tables`` or ``temporary tables``.
+        This will help enhance the overall performance of the process.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``KNeighborsClassifier`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import KNeighborsClassifier
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import KNeighborsClassifier
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = KNeighborsClassifier(
+               n_neighbors = 10,
+               p = 2,
+        )
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(
+            train,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "density",
+                "pH",
+            ],
+            "quality",
+            test,
+        )
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+    .. hint::
+
+        For clustering and anomaly detection, the use of predictors is
+        optional. In such cases, all available predictors are considered,
+        which can include solely numerical variables or a combination of
+        numerical and categorical variables, depending on the model's
+        capabilities.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. ipython:: python
+        :suppress:
+
+        #result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
+        E.g. ``model.report(metrics = ["auc", "accuracy"])``.
+
+    For classification models, we can easily modify the ``cutoff`` to observe
+    the effect on different metrics:
+
+    .. ipython:: python
+        :suppress:
+
+        #result = model.report(cutoff = 0.2)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report_cutoff.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.report(cutoff = 0.2)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report_cutoff.html
+
+
+    You can also use the ``KNeighborsClassifier.score`` function to compute any
+    classification metric. The default metric is the accuracy:
+
+    .. ipython:: python
+
+        #model.score(metric = "f1", average = "macro")
+
+    .. note::
+
+        For multi-class scoring, ``verticapy`` allows the
+        flexibility to use three averaging techniques:
+        micro, macro and weighted. Please refer to
+        `this link <https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f>`_
+        for more details on how they are calculated.
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "density",
+                "pH",
+            ],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_niehgbors_kneighborc_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "density",
+                "pH",
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_prediction.html
+
+    .. note::
+
+        Predictions can be made automatically using the test set, in which
+        case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
+        model.
+
+    Probabilities
+    ^^^^^^^^^^^^^^
+
+    It is also easy to get the model's probabilities:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict_proba(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "density",
+                "pH",
+            ],
+            "prediction",
+        )
+        html_file = open("figures/machine_learning_vertica_niehgbors_kneighborc_proba.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict_proba(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "density",
+                "pH",
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_proba.html
+
+    .. note::
+
+        Probabilities are added to the vDataFrame, and VerticaPy uses the
+        corresponding probability function in SQL behind the scenes. You
+        can use the ``pos_label`` parameter to add only the probability
+        of the selected category.
+
+    Confusion Matrix
+    ^^^^^^^^^^^^^^^^^
+
+    You can obtain the confusion matrix of your choice by specifying
+    the desired cutoff.
+
+    .. ipython:: python
+
+        #model.confusion_matrix(cutoff = 0.5)
+
+    .. hint::
+
+        In the context of multi-class classification, you typically work
+        with an overall confusion matrix that summarizes the classification
+        efficiency across all classes. However, you have the flexibility to
+        specify a ``pos_label`` and adjust the cutoff threshold. In this case,
+        a binary confusion matrix is computed, where the chosen class is treated
+        as the positive class, allowing you to evaluate its efficiency as if it
+        were a binary classification problem.
+
+        .. ipython:: python
+
+            model.confusion_matrix(pos_label = "5", cutoff = 0.6)
+
+    .. note::
+
+        In classification, the ``cutoff`` is a threshold value used to
+        determine class assignment based on predicted probabilities or
+        scores from a classification model. In binary classification,
+        if the predicted probability for a specific class is greater
+        than or equal to the cutoff, the instance is assigned to the
+        positive class; otherwise, it is assigned to the negative class.
+        Adjusting the cutoff allows for trade-offs between true positives
+        and false positives, enabling the model to be optimized for
+        specific objectives or to consider the relative costs of different
+        classification errors. The choice of cutoff is critical for
+        tailoring the model's performance to meet specific needs.
+
+
+    Main Plots (Classification Curves)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Classification models allow for the creation of various plots that
+    are very helpful in understanding the model, such as the ROC Curve,
+    PRC Curve, Cutoff Curve, Gain Curve, and more.
+
+    Most of the classification curves can be found in the
+    :ref:`chart_gallery.classification_curve`.
+
+    For example, let's draw the model's ROC curve.
+
+    .. code-block:: python
+
+        model.roc_curve(pos_label = "5")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.roc_curve(pos_label = "5")
+        fig.write_html("figures/machine_learning_vertica_neighbors_knclassifier_roc.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knclassifier_roc.html
+
+    .. important::
+
+        Most of the curves have a parameter called ``nbins``, which is essential
+        for estimating metrics. The larger the ``nbins``, the more precise the
+        estimation, but it can significantly impact performance. Exercise caution
+        when increasing this parameter excessively.
+
+    .. hint::
+
+        In binary classification, various curves can be easily plotted. However,
+        in multi-class classification, it's important to select the ``pos_label``
+        , representing the class to be treated as positive when drawing the curve.
+
+    Other Plots
+    ^^^^^^^^^^^^
+
+    **Contour plot** is another useful plot that can be produced
+    for models with two predictors.
+
+    .. code-block:: python
+
+        model.contour(pos_label = "5")
+
+    .. important::
+
+        Machine learning models with two predictors can usually
+        benefit from their own contour plot. This visual representation
+        aids in exploring predictions and gaining a deeper understanding
+        of how these models perform in different scenarios.
+        Please refer to  :ref:`chart_gallery.contour` for more examples.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'n_neighbors': 8})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
     """
 
     # Properties.
@@ -1144,15 +1575,17 @@ class LocalOutlierFactor(VerticaModel):
     Sander. This object is using pure SQL to compute all
     the distances and final score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
-                     during   computation  and  is  therefore
-                     computationally  expensive at  O(n * n),
-                     where n is the total number of elements.
-                     Since  LocalOutlierFactor   uses  the p-
-                     distance,  it  is  highly  sensitive  to
-                     unnormalized data.
-                     A  table  is created at the  end of
-                     the learning phase.
+    .. warning :
+
+        This   algorithm   uses  a   CROSS  JOIN
+        during   computation  and  is  therefore
+        computationally  expensive at  O(n * n),
+        where n is the total number of elements.
+        Since  LocalOutlierFactor   uses  the p-
+        distance,  it  is  highly  sensitive  to
+        unnormalized data.
+        A  table  is created at the  end of
+        the learning phase.
 
     Parameters
     ----------
@@ -1170,6 +1603,198 @@ class LocalOutlierFactor(VerticaModel):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
+
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``LocalOutlierFactor`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import LocalOutlierFactor
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = LocalOutlierFactor(
+                n_neighbors = 10,
+                p = 2,
+        )
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, X = ["density", "sulphates"])
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+    .. hint::
+
+        For clustering and anomaly detection, the use of predictors is
+        optional. In such cases, all available predictors are considered,
+        which can include solely numerical variables or a combination of
+        numerical and categorical variables, depending on the model's
+        capabilities.
+
+
+    Prediction
+    ^^^^^^^^^^^
+
+    To find out the LOF score for each datapoint:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict()
+        html_file = open("figures/machine_learning_vertica_lof_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_prediction.html
+
+    As shown above, a new column has been created, containing
+    the lof score.
+
+
+    Plots - Outliers
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Plots highlighting the outliers can be easily drawn using:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(width = 600)
+        fig.write_html("figures/machine_learning_vertica_lof_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html
+
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'p': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
     """
 
     # Properties.
