@@ -294,6 +294,15 @@ class KNeighborsClassifier(MulticlassClassifier):
         A  table  is created at the  end of
         the learning phase.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     n_neighbors: int, optional
@@ -399,8 +408,8 @@ class KNeighborsClassifier(MulticlassClassifier):
         :okwarning:
 
         model = KNeighborsClassifier(
-               n_neighbors = 10,
-               p = 2,
+           n_neighbors = 10,
+           p = 2,
         )
 
     .. hint::
@@ -409,12 +418,6 @@ class KNeighborsClassifier(MulticlassClassifier):
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
-
-    .. important::
-
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -444,14 +447,11 @@ class KNeighborsClassifier(MulticlassClassifier):
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
-    .. hint::
+    .. important::
 
-        For clustering and anomaly detection, the use of predictors is
-        optional. In such cases, all available predictors are considered,
-        which can include solely numerical variables or a combination of
-        numerical and categorical variables, depending on the model's
-        capabilities.
-
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Metrics
     ^^^^^^^^
@@ -461,8 +461,8 @@ class KNeighborsClassifier(MulticlassClassifier):
     .. ipython:: python
         :suppress:
 
-        #result = model.report()
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report.html", "w")
+        result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -471,7 +471,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         model.report()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_report.html
 
     .. important::
 
@@ -486,8 +486,8 @@ class KNeighborsClassifier(MulticlassClassifier):
     .. ipython:: python
         :suppress:
 
-        #result = model.report(cutoff = 0.2)
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report_cutoff.html", "w")
+        result = model.report(cutoff = 0.2)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_report_cutoff.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -496,7 +496,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         model.report(cutoff = 0.2)
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_report_cutoff.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_report_cutoff.html
 
 
     You can also use the ``KNeighborsClassifier.score`` function to compute any
@@ -504,7 +504,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. ipython:: python
 
-        #model.score(metric = "f1", average = "macro")
+        model.score(metric = "f1", average = "macro")
 
     .. note::
 
@@ -532,7 +532,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_niehgbors_kneighborc_prediction.html", "w")
+        html_file = open("figures/machine_learning_vertica_neighbors_knc_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -550,7 +550,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_prediction.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_prediction.html
 
     .. note::
 
@@ -580,7 +580,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_niehgbors_kneighborc_proba.html", "w")
+        html_file = open("figures/machine_learning_vertica_neighbors_knc_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -598,7 +598,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         )
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_niehgbors_kneighborc_proba.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_proba.html
 
     .. note::
 
@@ -615,7 +615,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. ipython:: python
 
-        #model.confusion_matrix(cutoff = 0.5)
+        model.confusion_matrix(cutoff = 0.5)
 
     .. hint::
 
@@ -667,10 +667,10 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.roc_curve(pos_label = "5")
-        fig.write_html("figures/machine_learning_vertica_neighbors_knclassifier_roc.html")
+        fig.write_html("figures/machine_learning_vertica_neighbors_knc_roc.html")
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knclassifier_roc.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_roc.html
 
     .. important::
 
@@ -721,14 +721,17 @@ class KNeighborsClassifier(MulticlassClassifier):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
 
-    .. code-block:: python
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
 
-        model.register("model_v1")
-
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    It is not possible to export this type of model, but you can still 
+    examine the SQL code generated by using the 
+    :py:mod:`verticapy.machine_learning.vertica.neighbors.KNeighborsClassifier.deploySQL`
+    method.
     """
 
     # Properties.
@@ -1597,6 +1600,15 @@ class LocalOutlierFactor(VerticaModel):
         A  table  is created at the  end of
         the learning phase.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     name: str, optional
@@ -1613,7 +1625,6 @@ class LocalOutlierFactor(VerticaModel):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
-
 
     Examples
     ---------
@@ -1690,22 +1701,15 @@ class LocalOutlierFactor(VerticaModel):
         :okwarning:
 
         model = LocalOutlierFactor(
-                n_neighbors = 10,
-                p = 2,
+            n_neighbors = 10,
+            p = 2,
         )
-
-    .. hint::
-
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
 
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1733,6 +1737,11 @@ class LocalOutlierFactor(VerticaModel):
         numerical and categorical variables, depending on the model's
         capabilities.
 
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Prediction
     ^^^^^^^^^^^
@@ -1759,7 +1768,7 @@ class LocalOutlierFactor(VerticaModel):
 
 
     Plots - Outliers
-    ^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^
 
     Plots highlighting the outliers can be easily drawn using:
 
@@ -1777,6 +1786,9 @@ class LocalOutlierFactor(VerticaModel):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html
 
+    .. important::
+
+        Please refer to :ref:`chart_gallery.lof` for more examples.
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
@@ -1796,15 +1808,9 @@ class LocalOutlierFactor(VerticaModel):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
-
-    .. code-block:: python
-
-        model.register("model_v1")
-
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
-
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
     """
 
     # Properties.

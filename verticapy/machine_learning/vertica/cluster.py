@@ -1811,6 +1811,15 @@ class DBSCAN(VerticaModel):
         and clustering. A table is created at
         the end of the learning phase.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     name: str, optional
@@ -1900,18 +1909,11 @@ class DBSCAN(VerticaModel):
             p = 2,
         )
 
-    .. hint::
-
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
-
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1935,6 +1937,12 @@ class DBSCAN(VerticaModel):
         which can include solely numerical variables or a combination of
         numerical and categorical variables, depending on the model's
         capabilities.
+
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Prediction
     ^^^^^^^^^^^
@@ -1981,14 +1989,9 @@ class DBSCAN(VerticaModel):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
-
-    .. code-block:: python
-
-        model.register("model_v1")
-
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
     """
 
     # Properties.

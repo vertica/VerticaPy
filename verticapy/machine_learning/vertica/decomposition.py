@@ -542,7 +542,7 @@ class PCA(Decomposition):
         name of the relation stored in the database.
 
     Scores
-    ^^^^^^
+    ^^^^^^^
 
     The decomposition  score  on  the  dataset for  each
     transformed column can be calculated by:
@@ -561,7 +561,7 @@ class PCA(Decomposition):
         model.explained_variance_
 
     Principal Components
-    ^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^
 
     To get the transformed dataset in the form of principal
     components:
@@ -784,6 +784,15 @@ class MCA(PCA):
     transformed to a TCDT (transformed  complete  disjunctive
     table) before applying the PCA.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     name: str, optional
@@ -868,24 +877,17 @@ class MCA(PCA):
     You can select the number of components by the ``n_component``
     parameter. If it is not provided, then all are considered.
 
-    .. hint::
-
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
-        model name, as the name is automatically assigned. If you need to
-        re-use the model, you can fetch the model name from the model's
-        attributes.
-
     .. important::
 
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
 
     Model Training
     ^^^^^^^^^^^^^^^
 
-    Befire fitting the model, we need to calculate the Transformed Completely Disjontive
-    Table before fitting the model:
+    Before fitting the model, we need to calculate the Transformed Completely 
+    Disjontive Table before fitting the model:
 
     .. ipython:: python
         :okwarning:
@@ -986,13 +988,13 @@ class MCA(PCA):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html
 
     Plots - Decomposition Circle
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    You can also plot the Scree plot:
+    You can also plot the Decomposition Circles:
 
     .. code-block:: python
 
-        model.plot_scree()
+        model.plot_circle()
 
     .. ipython:: python
         :suppress:
@@ -1007,14 +1009,9 @@ class MCA(PCA):
     Model Register
     ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
-
-    .. code-block:: python
-
-        model.register("model_v1")
-
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
 
     Model Exporting
     ^^^^^^^^^^^^^^^^
