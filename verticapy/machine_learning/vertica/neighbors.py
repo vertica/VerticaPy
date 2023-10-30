@@ -900,7 +900,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         Returns the final relation used to do the predictions.
         """
         filter_sql = ""
-        if not(isinstance(pos_label, NoneType)):
+        if not (isinstance(pos_label, NoneType)):
             filter_sql = f"WHERE predict_neighbors = '{pos_label}'"
         return f"""
             (SELECT 
