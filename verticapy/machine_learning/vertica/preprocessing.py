@@ -914,7 +914,7 @@ class OneHotEncoder(Preprocessing):
 
         model = OneHotEncoder(
                 drop_first = False,
-                column_naming = "values"
+                column_naming = "values",
         )
 
     .. hint::
@@ -955,10 +955,6 @@ class OneHotEncoder(Preprocessing):
 
         model.categories_
 
-    For more details on the function, check out
-    :py:mod:`verticapy.machine_learning.OneHotEncoder.categories_`
-
-
     Conversion/Transformation
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -966,13 +962,13 @@ class OneHotEncoder(Preprocessing):
     we can use the ``transform`` function. Let us transform the data
     and display the first 20 datapoints.
 
-
     .. ipython:: python
         :okwarning:
 
         model.transform(data)[:20]
 
-    Please refer to :py:mod:`verticapy.machine_learning.OneHotEncoder.transform`
+    Please refer to
+    :py:mod:`verticapy.machine_learning.OneHotEncoder.transform`
     for more details on transforming a ``vDataFrame``.
 
     Similarly, you can perform the inverse tranform to get
@@ -982,7 +978,8 @@ class OneHotEncoder(Preprocessing):
 
         model.inverse_transform(data_transformed)
 
-    The variable ``data_transformed`` includes the OneHotEncoder components.
+    The variable ``data_transformed`` includes the OneHotEncoder
+    components.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1029,17 +1026,17 @@ class OneHotEncoder(Preprocessing):
 
     .. ipython:: python
 
-        X = [['1','3']]
+        X = [['1', '3']]
         model.to_python()(X)
 
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.OneHotEncoder.to_python`
-        method is used to retrieve the Principal Component values.
-        For specific details on how to
-        use this method for different model types, refer to the relevant
-        documentation for each model.
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
+        method is used to transform the data and compute the different
+        categories. For specific details on how to use this method for
+        different model types, refer to the relevant documentation for
+        each model.
     """
 
     # Properties.
