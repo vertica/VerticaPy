@@ -906,7 +906,7 @@ class vDFMachineLearning(vDFScaler):
         random_seed = (
             random_state
             if isinstance(random_state, int)
-            else random.randint(-10e6, 10e6)
+            else random.randint(int(-10e6), int(10e6))
         )
         random_func = _seeded_random_function(random_seed)
         q = _executeSQL(
