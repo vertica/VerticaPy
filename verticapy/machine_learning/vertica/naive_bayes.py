@@ -21,6 +21,7 @@ from verticapy._typing import PythonNumber
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
+from verticapy.errors import MissingRelation
 
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -593,7 +594,10 @@ class NaiveBayes(MulticlassClassifier):
         Returns a list of dictionary for each of the NB
         variables. It is used to translate NB to Python.
         """
-        vdf = vDataFrame(self.input_relation)
+        try:
+            vdf = vDataFrame(self.input_relation)
+        except MissingRelation:
+            return []
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
         for idx, elem in enumerate(self.X):
