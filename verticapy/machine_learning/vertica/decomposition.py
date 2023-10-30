@@ -886,7 +886,7 @@ class MCA(PCA):
     Model Training
     ^^^^^^^^^^^^^^^
 
-    Before fitting the model, we need to calculate the Transformed Completely 
+    Before fitting the model, we need to calculate the Transformed Completely
     Disjontive Table before fitting the model:
 
     .. ipython:: python
