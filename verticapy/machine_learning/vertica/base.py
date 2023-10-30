@@ -2215,7 +2215,7 @@ class MulticlassClassifier(Supervised):
         kwargs = {}
         if metric not in ("aic", "bic"):
             labels = None
-            if isinstance(pos_label, NoneType):
+            if isinstance(pos_label, NoneType) or not (self._is_native):
                 labels = self.classes_
             kwargs = {
                 "average": average,

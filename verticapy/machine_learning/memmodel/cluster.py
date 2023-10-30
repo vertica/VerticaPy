@@ -69,7 +69,7 @@ class Clustering(InMemoryModel):
         clusters_names: Optional[ArrayLike] = None,
     ) -> None:
         clusters_names = format_type(clusters_names, dtype=list)
-        self.clusters_ = np.array(clusters)
+        self.clusters_ = np.array(clusters).astype(float)
         self.classes_ = np.array(clusters_names)
         self.p_ = p
 
@@ -380,7 +380,7 @@ class KMeans(Clustering):
     # System & Special Methods.
 
     def __init__(self, clusters: ArrayLike, p: int = 2) -> None:
-        self.clusters_ = np.array(clusters)
+        self.clusters_ = np.array(clusters).astype(float)
         self.p_ = p
 
 
@@ -518,7 +518,7 @@ class NearestCentroid(Clustering):
         classes: ArrayLike,
         p: int = 2,
     ) -> None:
-        self.clusters_ = np.array(clusters)
+        self.clusters_ = np.array(clusters).astype(float)
         self.classes_ = np.array(classes)
         self.p_ = p
 
@@ -720,7 +720,7 @@ class BisectingKMeans(Clustering, Tree):
         cluster_size, cluster_score = format_type(
             cluster_size, cluster_score, dtype=list
         )
-        self.clusters_ = np.array(clusters)
+        self.clusters_ = np.array(clusters).astype(float)
         self.children_left_ = np.array(children_left)
         self.children_right_ = np.array(children_right)
         self.cluster_size_ = np.array(cluster_size)
