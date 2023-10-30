@@ -785,6 +785,7 @@ class OneHotEncoder(Preprocessing):
 
     Parameters
     ----------
+
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
@@ -812,18 +813,220 @@ class OneHotEncoder(Preprocessing):
     column_naming: str, optional
         Appends   categorical  levels  to  column   names
         according to the specified method:
-            indices : Uses  integer indices to  represent
-                      categorical levels.
-            values  : Uses  categorical  level names.  If
-                      duplicate  column names occur,  the
-                      function attempts  to  disambiguate
-                      them  by appending _n,  where n  is
-                      a zero-based integer index (_0, _1,
-                      ..., _n).
+
+        - indices:
+            Uses  integer indices to  represent
+            categorical levels.
+
+        - values :
+            Uses  categorical  level names.  If
+            duplicate  column names occur,  the
+            function attempts  to  disambiguate
+            them  by appending _n,  where n  is
+            a zero-based integer index (_0, _1,
+            ..., _n).
+
     null_column_name: str, optional
         The  string used in  naming the indicator  column
         for null values,  used only if ignore_null is set
         to false and column_naming is set to 'values'.
+
+    Examples
+    --------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_titanic()
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``OneHotEncoder`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import OneHotEncoder
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = OneHotEncoder(
+            drop_first = False,
+            column_naming = "values",
+        )
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, ["sex", "parch"])
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame``
+        or the name of the relation stored in the database.
+
+    Classes
+    ^^^^^^^^
+
+    To have a look at the identified classes/categories you
+    can use:
+
+    .. ipython:: python
+
+        model.categories_
+
+    Conversion/Transformation
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    To get the transformed dataset in the form that is encoded,
+    we can use the ``transform`` function. Let us transform the data
+    and display the first 20 datapoints.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.transform(data)[:20]
+
+    Please refer to
+    :py:mod:`verticapy.machine_learning.OneHotEncoder.transform`
+    for more details on transforming a ``vDataFrame``.
+
+    Similarly, you can perform the inverse tranform to get
+    the original features using:
+
+    .. code-block:: python
+
+        model.inverse_transform(data_transformed)
+
+    The variable ``data_transformed`` includes the OneHotEncoder
+    components.
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory representations of
+        machine learning models. They can be used for both in-database
+        and in-memory prediction tasks. These objects can be pickled
+        in the same way that you would pickle a ``scikit-learn`` model.
+
+    The preceding methods for exporting the model use ``MemModel``,
+    and it is recommended to use ``MemModel`` directly.
+
+    **SQL**
+
+    To get the SQL query use below:
+
+    .. ipython:: python
+
+        model.to_sql()
+
+    **To Python**
+
+    To obtain the prediction function in Python syntax, use the
+    following code:
+
+    .. ipython:: python
+
+        X = [['1', '3']]
+        model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
+        method is used to transform the data and compute the different
+        categories. For specific details on how to use this method for
+        different model types, refer to the relevant documentation for
+        each model.
     """
 
     # Properties.
