@@ -340,14 +340,7 @@ class OneHotEncoder(InMemoryModel):
         from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
 
     A OneHotEncoder model is defined by categories, column naming
-    criteria and drop_first flag. In this example, we will use the
-    following:
-
-    .. ipython:: python
-
-        categories = [["male", "female"], [1, 2, 3]]
-        drop_first = False
-        column_naming = None
+    criteria and drop_first flag.
 
     Let's create a
     :py:mod:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
@@ -355,7 +348,11 @@ class OneHotEncoder(InMemoryModel):
 
     .. ipython:: python
 
-        model_ohe = OneHotEncoder(categories, drop_first, column_naming)
+        model_ohe = OneHotEncoder(
+            categories = [["male", "female"], [1, 2, 3]],
+            drop_first = False,
+            column_naming = None,
+        )
 
     Create a dataset.
 
