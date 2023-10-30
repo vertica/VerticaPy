@@ -28,7 +28,8 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation of scalers.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of scalers.
 
     Parameters
     ----------
@@ -100,7 +101,8 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation of standard scaler.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of standard scaler.
 
     Parameters
     ----------
@@ -109,9 +111,12 @@ class StandardScaler(Scaler):
     std: ArrayLike
         Model's features standard deviations.
 
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'mean',
-        and 'standard deviation' of feature(S) define a StandardScaler model.
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'mean', and
+        'standard deviation' of feature(S) define a StandardScaler
+        model.
 
     Examples
     --------
@@ -124,14 +129,17 @@ class StandardScaler(Scaler):
 
         from verticapy.machine_learning.memmodel.preprocessing import StandardScaler
 
-    A StandardScaler model is defined by mean and standard deviation values. In this example, we will use the following:
+    A StandardScaler model is defined by mean and standard deviation
+    values. In this example, we will use the following:
 
     .. ipython:: python
 
         mean = [0.4, 0.1]
         std = [0.5, 0.2]
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler` model.
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+    model.
 
     .. ipython:: python
 
@@ -145,7 +153,9 @@ class StandardScaler(Scaler):
 
     **Making In-Memory Transformation**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform` method to do transformation
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform`
+    method to do transformation.
 
     .. ipython:: python
 
@@ -159,14 +169,18 @@ class StandardScaler(Scaler):
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
 
         model_mms.transform_sql(cnames)
 
-    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment, just
+        like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -184,7 +198,8 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation of MinMax scaler.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of MinMax scaler.
 
     Parameters
     ----------
@@ -194,9 +209,12 @@ class MinMaxScaler(Scaler):
     max\_: ArrayLike
         Model's features maximums.
 
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'minimum',
-        and 'maximum' values of feature(S) defines a MinMaxScaler model.
+        and 'maximum' values of the input features define a
+        MinMaxScaler model.
 
     Examples
     --------
@@ -209,14 +227,17 @@ class MinMaxScaler(Scaler):
 
         from verticapy.machine_learning.memmodel.preprocessing import MinMaxScaler
 
-    A MinMaxScaler model is defined by minimum and maximum values. In this example, we will use the following:
+    A MinMaxScaler model is defined by minimum and maximum values.
+    In this example, we will use the following:
 
     .. ipython:: python
 
         min = [0.4, 0.1]
         max = [0.5, 0.2]
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler` model.
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+    model.
 
     .. ipython:: python
 
@@ -230,7 +251,9 @@ class MinMaxScaler(Scaler):
 
     **Making In-Memory Transformation**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform` method to do transformation
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform`
+    method to do transformation.
 
     .. ipython:: python
 
@@ -244,14 +267,18 @@ class MinMaxScaler(Scaler):
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
 
         model_mms.transform_sql(cnames)
 
-    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -269,7 +296,8 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation of one-hot encoder.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of one-hot encoder.
 
     Parameters
     ----------
@@ -280,20 +308,25 @@ class OneHotEncoder(InMemoryModel):
         Appends  categorical  levels  to column  names  according
         to the specified method:
 
-        - indices              : Uses integer  indices to represent categorical levels.
+        - indices              : Uses integer  indices to represent
+            categorical levels.
 
         - values/values_relaxed: Both methods use categorical level names.
             If duplicate column  names occur,  the  function attempts  to
-            disambiguate them by appending _n, where  n  is a zero-based  integer index (_0, _1,…).
+            disambiguate them by appending _n, where  n  is a zero-based
+            integer index (_0, _1,…).
 
     drop_first: bool, optional
         If set to False, the first dummy of each category is
         dropped.
 
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined
-        entirely by their attributes. For example, 'categories' to encode
-        defines a OneHotEncoder model. You can optionally provide 'column naming'
-        criteria and a 'drop_first' flag to denote whether to drop first dummy of each category.
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'categories' to
+        encode defines a OneHotEncoder model. You can optionally
+        provide 'column naming' criteria and a 'drop_first' flag to
+        denote whether to drop first dummy of each category.
 
     Examples
     --------
@@ -306,7 +339,9 @@ class OneHotEncoder(InMemoryModel):
 
         from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
 
-    A OneHotEncoder model is defined by categories, column naming criteria and drop_first flag. In this example, we will use the following:
+    A OneHotEncoder model is defined by categories, column naming
+    criteria and drop_first flag. In this example, we will use the
+    following:
 
     .. ipython:: python
 
@@ -314,7 +349,9 @@ class OneHotEncoder(InMemoryModel):
         drop_first = False
         column_naming = None
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder` model.
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+    model.
 
     .. ipython:: python
 
@@ -328,7 +365,9 @@ class OneHotEncoder(InMemoryModel):
 
     **Making In-Memory Transformation**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform` method to do transformation
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform`
+    method to do transformation.
 
     .. ipython:: python
 
@@ -342,14 +381,18 @@ class OneHotEncoder(InMemoryModel):
 
         cnames = ['sex', 'pclass']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
 
         model_ohe.transform_sql(cnames)
 
-    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment, just
+        like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
