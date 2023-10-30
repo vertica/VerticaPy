@@ -165,37 +165,12 @@ class vDFCorr(vDFEncode):
             elif method == "cramer":
                 if columns[1] == columns[0]:
                     return 1
-                table_0_1 = f"""
-                    SELECT 
-                        {columns[0]}, 
-                        {columns[1]}, 
-                        COUNT(*) AS nij 
-                    FROM {self} 
-                    WHERE {columns[0]} IS NOT NULL 
-                      AND {columns[1]} IS NOT NULL 
-                    GROUP BY 1, 2"""
-                table_0 = f"""
-                    SELECT 
-                        {columns[0]}, 
-                        COUNT(*) AS ni 
-                    FROM {self} 
-                    WHERE {columns[0]} IS NOT NULL 
-                      AND {columns[1]} IS NOT NULL 
-                    GROUP BY 1"""
-                table_1 = f"""
-                    SELECT 
-                        {columns[1]}, 
-                        COUNT(*) AS nj 
-                    FROM {self} 
-                    WHERE {columns[0]} IS NOT NULL 
-                      AND {columns[1]} IS NOT NULL 
-                    GROUP BY 1"""
                 n, k, r = _executeSQL(
                     query=f"""
                         SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
                             COUNT(*) AS n, 
-                            APPROXIMATE_COUNT_DISTINCT({columns[0]}) AS k, 
-                            APPROXIMATE_COUNT_DISTINCT({columns[1]}) AS r 
+                            COUNT(DISTINCT {columns[0]}) AS k, 
+                            COUNT(DISTINCT {columns[1]}) AS r 
                          FROM {self} 
                          WHERE {columns[0]} IS NOT NULL 
                            AND {columns[1]} IS NOT NULL""",
@@ -204,20 +179,48 @@ class vDFCorr(vDFEncode):
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-                chi2 = f"""
-                    SELECT /*+LABEL('vDataframe._aggregate_matrix')*/
-                        SUM((nij - ni * nj / {n}) * (nij - ni * nj / {n}) 
-                            / ((ni * nj) / {n})) AS chi2 
-                    FROM 
+                chi2_sql = f"""
+                    WITH all_categories AS (
+                        SELECT * FROM
                         (SELECT 
-                            * 
-                         FROM ({table_0_1}) table_0_1 
-                         LEFT JOIN ({table_0}) table_0 
-                         ON table_0_1.{columns[0]} = table_0.{columns[0]}) x 
-                         LEFT JOIN ({table_1}) table_1 
-                         ON x.{columns[1]} = table_1.{columns[1]}"""
-                result = _executeSQL(
-                    chi2,
+                            DISTINCT {columns[0]} 
+                         FROM {self} WHERE {columns[0]} IS NOT NULL) table_0
+                        CROSS JOIN
+                        (SELECT 
+                            DISTINCT {columns[1]}
+                         FROM {self} WHERE {columns[1]} IS NOT NULL) table_1
+                    ), categories_counts AS (
+                        SELECT 
+                            {columns[0]},
+                            {columns[1]},
+                            COUNT(*) AS _nij
+                        FROM {self}
+                        WHERE 
+                            {columns[0]} IS NOT NULL
+                        AND {columns[1]} IS NOT NULL
+                        GROUP BY 1, 2
+                    ), contingent_table AS (
+                        SELECT 
+                            all_categories.{columns[0]},
+                            all_categories.{columns[1]},
+                            COALESCE(_nij, 0) AS _nij
+                        FROM all_categories 
+                        LEFT JOIN categories_counts
+                        ON  all_categories.{columns[0]} = categories_counts.{columns[0]}
+                        AND all_categories.{columns[1]} = categories_counts.{columns[1]}
+                    ), expected_values AS (
+                        SELECT
+                            _nij AS O,
+                              SUM(_nij) OVER(PARTITION BY {columns[0]}) 
+                            * SUM(_nij) OVER(PARTITION BY {columns[1]})
+                            / SUM(_nij) OVER () AS E
+                        FROM contingent_table
+                    )
+                    SELECT
+                        SUM((POWER(O - E, 2) / E)) 
+                    FROM expected_values;"""
+                chi2 = _executeSQL(
+                    chi2_sql,
                     title=(
                         f"Computing the CramerV correlation between {columns[0]} "
                         f"and {columns[1]} (Chi2 Statistic)."
@@ -226,13 +229,14 @@ class vDFCorr(vDFEncode):
                     sql_push_ext=self._vars["sql_push_ext"],
                     symbol=self._vars["symbol"],
                 )
-                if min(k - 1, r - 1) == 0:
-                    result = np.nan
-                else:
-                    result = float(math.sqrt(result / n / min(k - 1, r - 1)))
-                    if result > 1 or result < 0:
-                        result = np.nan
-                return result
+                phi2 = chi2 / n
+                phi2corr = max(0, phi2 - ((k - 1) * (r - 1)) / (n - 1))
+                rcorr = r - ((r - 1) ** 2) / (n - 1)
+                kcorr = k - ((k - 1) ** 2) / (n - 1)
+                div = min((kcorr - 1), (rcorr - 1))
+                if div == 0:
+                    return np.nan
+                return np.sqrt(phi2corr / div)
             elif method == "kendall":
                 if columns[1] == columns[0]:
                     return 1
@@ -1122,8 +1126,8 @@ class vDFCorr(vDFEncode):
             k, r = _executeSQL(
                 query=f"""
                     SELECT /*+LABEL('vDataframe.corr_pvalue')*/
-                        APPROXIMATE_COUNT_DISTINCT({column1}) AS k, 
-                        APPROXIMATE_COUNT_DISTINCT({column2}) AS r 
+                        COUNT(DISTINCT {column1}) AS k, 
+                        COUNT(DISTINCT {column2}) AS r 
                     FROM {self} 
                     WHERE {column1} IS NOT NULL 
                       AND {column2} IS NOT NULL""",

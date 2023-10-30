@@ -296,13 +296,13 @@ class TestvDFCorrelation:
         )
         # plt.close("all")
         assert result5["survived"][0] == 1.0
-        assert result5["survived"][1] == pytest.approx(0.3358661117846154, 1e-2)
-        assert result5["survived"][2] == pytest.approx(0.18608072188932145, 1e-2)
-        assert result5["pclass"][0] == pytest.approx(0.3358661117846154, 1e-2)
+        assert result5["survived"][1] == pytest.approx(0.3335779245846321, 1e-2)
+        assert result5["survived"][2] == pytest.approx(0.1817365402078066, 1e-2)
+        assert result5["pclass"][0] == pytest.approx(0.3335779245846321, 1e-2)
         assert result5["pclass"][1] == 1.0
-        assert result5["pclass"][2] == pytest.approx(0.27453049870161333, 1e-2)
-        assert result5["embarked"][0] == pytest.approx(0.18608072188932145, 1e-2)
-        assert result5["embarked"][1] == pytest.approx(0.27453049870161333, 1e-2)
+        assert result5["pclass"][2] == pytest.approx(0.27177620037368444, 1e-2)
+        assert result5["embarked"][0] == pytest.approx(0.1817365402078066, 1e-2)
+        assert result5["embarked"][1] == pytest.approx(0.27177620037368444, 1e-2)
         assert result5["embarked"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'cramer') with focus
@@ -312,8 +312,8 @@ class TestvDFCorrelation:
             show=False,
         )
         # plt.close("all")
-        assert result5_f["survived"][1] == pytest.approx(0.5531019147439457, 1e-2)
-        assert result5_f["survived"][2] == pytest.approx(0.3358661117846154, 1e-2)
+        assert result5_f["survived"][1] == pytest.approx(0.46510584526020793, 1e-2)
+        assert result5_f["survived"][2] == pytest.approx(0.3335779245846321, 1e-2)
 
         #
         # DENSE SPEARMAN
