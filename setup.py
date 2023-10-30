@@ -37,7 +37,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.8",
     install_requires=[
-        "matplotlib<=3.5.3",
+        "matplotlib>=3.5.3",
         "numpy>=1.11.0",
         "pandas>=0.23.0",
         "vertica-highcharts>=0.1.2",
