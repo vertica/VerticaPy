@@ -785,6 +785,7 @@ class OneHotEncoder(Preprocessing):
 
     Parameters
     ----------
+
     name: str, optional
         Name of the model.
     overwrite_model: bool, optional
@@ -831,7 +832,7 @@ class OneHotEncoder(Preprocessing):
         to false and column_naming is set to 'values'.
 
     Examples
-    ---------
+    --------
 
     The following examples provide a basic understanding of usage.
     For more detailed examples, please refer to the
@@ -879,24 +880,11 @@ class OneHotEncoder(Preprocessing):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-    Next we can select a subset of columns that have multi-classes:
-
-    .. code-block: python
-
-        data = data["pclass", "parch"]
-
-    .. important:
-
-        These columns should have numeric classes for OneHoteEncoder
-        to work properly.
-
     .. ipython:: python
         :suppress:
 
         import verticapy.datasets as vpd
         data = vpd.load_titanic()
-        data = data["pclass", "parch"]
-
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -913,8 +901,8 @@ class OneHotEncoder(Preprocessing):
         :okwarning:
 
         model = OneHotEncoder(
-                drop_first = False,
-                column_naming = "values",
+            drop_first = False,
+            column_naming = "values",
         )
 
     .. hint::
@@ -938,12 +926,12 @@ class OneHotEncoder(Preprocessing):
     .. ipython:: python
         :okwarning:
 
-        model.fit(data)
+        model.fit(data, ["sex", "parch"])
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
-        name of the relation stored in the database.
+        To train a model, you can directly use the ``vDataFrame``
+        or the name of the relation stored in the database.
 
     Classes
     ^^^^^^^^
@@ -990,7 +978,8 @@ class OneHotEncoder(Preprocessing):
 
         model.register("model_v1")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    Please refer to
+    :ref:`notebooks/ml/model_tracking_versioning/index.html`
     for more details on model tracking and versioning.
 
     Model Exporting
@@ -1004,13 +993,13 @@ class OneHotEncoder(Preprocessing):
 
     .. note::
 
-        ``MemModel`` objects serve as in-memory representations of machine
-        learning models. They can be used for both in-database and in-memory
-        prediction tasks. These objects can be pickled in the same way that
-        you would pickle a ``scikit-learn`` model.
+        ``MemModel`` objects serve as in-memory representations of
+        machine learning models. They can be used for both in-database
+        and in-memory prediction tasks. These objects can be pickled
+        in the same way that you would pickle a ``scikit-learn`` model.
 
-    The preceding methods for exporting the model use ``MemModel``, and it
-    is recommended to use ``MemModel`` directly.
+    The preceding methods for exporting the model use ``MemModel``,
+    and it is recommended to use ``MemModel`` directly.
 
     **SQL**
 
@@ -1022,7 +1011,8 @@ class OneHotEncoder(Preprocessing):
 
     **To Python**
 
-    To obtain the prediction function in Python syntax, use the following code:
+    To obtain the prediction function in Python syntax, use the
+    following code:
 
     .. ipython:: python
 
