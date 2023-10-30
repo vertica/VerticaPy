@@ -899,11 +899,14 @@ class KNeighborsClassifier(MulticlassClassifier):
         """
         Returns the final relation used to do the predictions.
         """
+        filter_sql = ""
+        if not(isinstance(pos_label, NoneType)):
+            filter_sql = f"WHERE predict_neighbors = '{pos_label}'"
         return f"""
             (SELECT 
                 * 
-            FROM {self.deploySQL()} 
-            WHERE predict_neighbors = '{pos_label}') 
+                FROM {self.deploySQL()}
+            {filter_sql}) 
             final_centroids_relation"""
 
     def _get_y_proba(
@@ -925,7 +928,14 @@ class KNeighborsClassifier(MulticlassClassifier):
         Returns the input that represents the model's scoring.
         """
         cutoff = self._check_cutoff(cutoff=cutoff)
-        return f"(CASE WHEN proba_predict > {cutoff} THEN 1 ELSE 0 END)"
+        if isinstance(pos_label, NoneType):
+            return "predict_neighbors"
+        else:
+            return f"""
+                (CASE 
+                    WHEN proba_predict < {cutoff} AND predict_neighbors = '{pos_label}' THEN NULL
+                    ELSE predict_neighbors 
+                 END)"""
 
     def _compute_accuracy(self) -> float:
         """
@@ -951,7 +961,7 @@ class KNeighborsClassifier(MulticlassClassifier):
                                       ORDER BY proba_predict DESC) AS pos 
                  FROM {self.deploySQL()}) neighbors_table WHERE pos = 1"""
             return mt.confusion_matrix(
-                self.y, "predict_neighbors", input_relation, classes=self.classes_
+                self.y, "predict_neighbors", input_relation, labels=self.classes_
             )
         else:
             cutoff = self._check_cutoff(cutoff=cutoff)
