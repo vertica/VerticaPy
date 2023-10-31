@@ -1982,7 +1982,12 @@ def roc_auc_score(
     y_true: str
         Response column.
     y_score: str |  ArrayLike
-        Prediction.
+        When 'pos_label' and 'labels' are not defined, it
+        should be a list of  probabilities represented by
+        SQL  code for  the different classes in  the same
+        order   as  the  labels.  Otherwise,   'pos_label'
+        represents   the   main   class,   and   'y_score'
+        represents its probability.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can
         be a view, table, or a customized relation (if
@@ -2040,6 +2045,12 @@ def roc_auc_score(
             fun_sql_name="roc",
         )[1:]
         return _compute_area(true_positive, false_positive)
+    elif isinstance(y_score, str):
+        raise ValueError(
+            "Type Error: 'y_score' must be an ArrayLike, not a string. "
+            "It is expected to be a list of strings, with each string "
+            "representing the probabilities of the classes."
+        )
     elif average == "micro":
         _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
         _, false_positive, true_positive = _compute_micro_multiclass_metric(
@@ -2114,7 +2125,12 @@ def prc_auc_score(
     y_true: str
         Response column.
     y_score: str | ArrayLike
-        Prediction.
+        When 'pos_label' and 'labels' are not defined, it
+        should be a list of  probabilities represented by
+        SQL  code for  the different classes in  the same
+        order   as  the  labels.  Otherwise,   'pos_label'
+        represents   the   main   class,   and   'y_score'
+        represents its probability.
     input_relation: SQLRelation
         Relation to use for scoring. This relation can
         be a view, table, or a customized relation (if
@@ -2168,6 +2184,12 @@ def prc_auc_score(
             fun_sql_name="prc",
         )[1:]
         return _compute_area(precision, recall)
+    elif isinstance(y_score, str):
+        raise ValueError(
+            "Type Error: 'y_score' must be an ArrayLike, not a string. "
+            "It is expected to be a list of strings, with each string "
+            "representing the probabilities of the classes."
+        )
     elif average == "micro":
         _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
         _, recall, precision = _compute_micro_multiclass_metric(
