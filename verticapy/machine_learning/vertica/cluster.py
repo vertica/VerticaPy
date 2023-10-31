@@ -1793,21 +1793,32 @@ class DBSCAN(VerticaModel):
     compute the distances and neighbors, and uses Python to
     compute the cluster propagation (non-scalable phase).
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
-                     during   computation  and  is  therefore
-                     computationally  expensive at  O(n * n),
-                     where n is the total number of elements.
-                     This  algorithm indexes elements of  the
-                     table in order to be optimal  (the CROSS
-                     JOIN will happen only with IDs which are
-                     integers).
-                     Since  DBSCAN uses  the  p-distance, it
-                     is highly sensitive  to unnormalized data.
-                     However,  DBSCAN is robust to outliers and
-                     can find non-linear clusters. It is a very
-                     powerful algorithm for outlier  detection
-                     and clustering. A table is created at
-                     the end of the learning phase.
+    .. warning :
+
+        This   algorithm   uses  a   CROSS  JOIN
+        during   computation  and  is  therefore
+        computationally  expensive at  O(n * n),
+        where n is the total number of elements.
+        This  algorithm indexes elements of  the
+        table in order to be optimal  (the CROSS
+        JOIN will happen only with IDs which are
+        integers).
+        Since  DBSCAN uses  the  p-distance, it
+        is highly sensitive  to unnormalized data.
+        However,  DBSCAN is robust to outliers and
+        can find non-linear clusters. It is a very
+        powerful algorithm for outlier  detection
+        and clustering. A table is created at
+        the end of the learning phase.
+
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
 
     Parameters
     ----------
@@ -1828,6 +1839,159 @@ class DBSCAN(VerticaModel):
     p: int, optional
         The p of the p-distance (distance metric used
         during the model computation).
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will create a small dataset.
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"col":[1.2, 1.1, 1.3, 1.5, 2, 2.2, 1.09, 0.9, 100, 102]})
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``DBSCAN`` model:
+
+    .. code-block::
+
+        from verticapy.machine_learning.vertica import DBSCAN
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.vertica import DBSCAN
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = DBSCAN(
+            eps = 0.5,
+            min_samples = 2,
+            p = 2,
+        )
+
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, X = ["col"])
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database.
+
+    .. hint::
+
+        For clustering and anomaly detection, the use of predictors is
+        optional. In such cases, all available predictors are considered,
+        which can include solely numerical variables or a combination of
+        numerical and categorical variables, depending on the model's
+        capabilities.
+
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Predicting or ranking the dataset is straight-forward:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict()
+        html_file = open("figures/machine_learning_vertica_dbscan_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dbscan_prediction.html
+
+    As shown above, a new column has been created, containing
+    the clusters.
+
+    .. hint::
+        The name of the new column is optional. If not provided,
+        it is randomly assigned.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'min_samples': 5})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
     """
 
     # Properties.

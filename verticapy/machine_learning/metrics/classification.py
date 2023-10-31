@@ -226,7 +226,10 @@ def _compute_final_score(
         and average != "binary"
     ):
         raise ValueError(
-            "Parameter 'pos_label' can only be used when parameter 'average' is set to 'binary' or undefined."
+            "The 'pos_label' parameter can only be used when the 'average' "
+            "parameter is set to 'binary' or left undefined. This error can "
+            "also occur when you are using a binary classifier; in that case, "
+            "the 'average' parameter can only be set to 'binary' or left undefined."
         )
     if not (isinstance(pos_label, NoneType)) and not (isinstance(labels, NoneType)):
         labels = None

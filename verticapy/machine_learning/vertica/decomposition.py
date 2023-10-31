@@ -542,7 +542,7 @@ class PCA(Decomposition):
         name of the relation stored in the database.
 
     Scores
-    ^^^^^^
+    ^^^^^^^
 
     The decomposition  score  on  the  dataset for  each
     transformed column can be calculated by:
@@ -561,7 +561,7 @@ class PCA(Decomposition):
         model.explained_variance_
 
     Principal Components
-    ^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^
 
     To get the transformed dataset in the form of principal
     components:
@@ -784,6 +784,15 @@ class MCA(PCA):
     transformed to a TCDT (transformed  complete  disjunctive
     table) before applying the PCA.
 
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
+
     Parameters
     ----------
     name: str, optional
@@ -793,6 +802,261 @@ class MCA(PCA):
         If set to True, training a model with the same
         name as an existing model overwrites the
         existing model.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_titanic()
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``MCA`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import MCA
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = MCA()
+
+    You can select the number of components by the ``n_component``
+    parameter. If it is not provided, then all are considered.
+
+    .. important::
+
+        As this model is not native, it solely relies on SQL statements to
+        compute various attributes, storing them within the object. No data
+        is saved in the database.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    Before fitting the model, we need to calculate the Transformed Completely
+    Disjontive Table before fitting the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        tcdt = data[["survived", "pclass", "sex"]].cdt()
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(tcdt)
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database.
+
+    Scores
+    ^^^^^^
+
+    The decomposition  score  on  the  dataset for  each
+    transformed column can be calculated by:
+
+    .. ipython:: python
+
+        model.score()
+
+    For more details on the function, check out
+    :py:mod:`verticapy.machine_learning.MCA.score`
+
+    You can also fetch the explained variance by:
+
+    .. ipython:: python
+
+        model.explained_variance_
+
+    Principal Components
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    To get the transformed dataset in the form of principal
+    components:
+
+    .. ipython:: python
+
+        model.transform(tcdt)
+
+    Please refer to :py:mod:`verticapy.machine_learning.MCA.transform`
+    for more details on transforming a ``vDataFrame``.
+
+    Similarly, you can perform the inverse tranform to get
+    the original features using:
+
+    .. code-block:: python
+
+        model.inverse_transform(data_transformed)
+
+    The variable ``data_transformed`` includes the MCA components.
+
+    Plots - MCA
+    ^^^^^^^^^^^^
+
+    You can plot the first two dimensions conveniently using:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot()
+        fig.write_html("figures/machine_learning_vertica_mca_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot.html
+
+    Plots - Scree
+    ^^^^^^^^^^^^^^
+
+    You can also plot the Scree plot:
+
+    .. code-block:: python
+
+        model.plot_scree()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "highcharts")
+        fig = model.plot_scree()
+        html_text = fig.htmlcontent.replace("container", "ml_vertica_MCA_scree")
+        with open("figures/machine_learning_vertica_mca_plot_scree.html", "w") as file:
+            file.write(html_text)
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html
+
+    Plots - Decomposition Circle
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    You can also plot the Decomposition Circles:
+
+    .. code-block:: python
+
+        model.plot_circle()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot_circle()
+        fig.write_html("figures/machine_learning_vertica_mca_plot_circle.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    As this model is not native, it does not support model management and
+    versioning. However, it is possible to use the SQL code it generates
+    for deployment.
+
+    Model Exporting
+    ^^^^^^^^^^^^^^^^
+
+    **To Memmodel**
+
+    .. code-block:: python
+
+        model.to_memmodel()
+
+    .. note::
+
+        ``MemModel`` objects serve as in-memory representations of machine
+        learning models. They can be used for both in-database and in-memory
+        prediction tasks. These objects can be pickled in the same way that
+        you would pickle a ``scikit-learn`` model.
+
+    The preceding methods for exporting the model use ``MemModel``, and it
+    is recommended to use ``MemModel`` directly.
+
+    **SQL**
+
+    To get the SQL query use below:
+
+    .. ipython:: python
+
+        model.to_sql()
+
+    **To Python**
+
+    To obtain the prediction function in Python syntax, use the following code:
+
+    .. ipython:: python
+
+        X = [[0, 1, 0, 1, 1, 0, 1]]
+        model.to_python()(X)
+
+    .. hint::
+
+        The
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.MCA.to_python`
+        method is used to retrieve the Principal Component values.
+        For specific details on how to
+        use this method for different model types, refer to the relevant
+        documentation for each model.
     """
 
     # Properties.
