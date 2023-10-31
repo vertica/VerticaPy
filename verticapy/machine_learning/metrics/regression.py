@@ -69,6 +69,67 @@ def aic_score(
 ) -> float:
     """
     Returns the AIC score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import aic_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        aic_score(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "aic",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="aic", k=k)
 
@@ -81,6 +142,67 @@ def bic_score(
 ) -> float:
     """
     Returns the BIC score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import bic_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        bic_score(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "bic",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="bic", k=k)
 
@@ -106,6 +228,67 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import explained_variance
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        explained_variance(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "explained_variance",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="explained_variance"
@@ -133,6 +316,67 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import max_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        max_error(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "max_error",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="max_error")
 
@@ -160,6 +404,67 @@ def mean_absolute_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import mean_absolute_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        mean_absolute_error(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "mean_absolute_error",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="mae")
 
@@ -190,6 +495,67 @@ def mean_squared_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import mean_squared_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        mean_squared_error(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "mean_squared_error",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="rmse" if root else "mse"
@@ -219,6 +585,67 @@ def mean_squared_log_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import mean_squared_log_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        mean_squared_log_error(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "mean_squared_log_error",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="msle")
 
@@ -246,6 +673,67 @@ def median_absolute_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import median_absolute_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        median_absolute_error(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "median_absolute_error",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="median_absolute_error"
@@ -280,6 +768,57 @@ def quantile_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import quantile_error
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        quantile_error(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+            q = 0.25, # First Quartile
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return regression_report(y_true, y_score, input_relation, metrics=f"qe{100 * q}%")
 
@@ -316,6 +855,67 @@ def r2_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import r2_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        r2_score(
+            y_true = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "r2",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if adj:
         kwargs = {"metrics": "r2_adj", "k": k}
@@ -357,6 +957,56 @@ def anova_table(
     -------
     TableSample
         ANOVA table.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import anova_table
+
+    Now we can conveniently compute the ANOVA table:
+
+    .. ipython:: python
+
+        anova_table(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     n, avg = _executeSQL(
         query=f"""
@@ -426,21 +1076,43 @@ def regression_report(
     metrics: list, optional
         List of the metrics used to compute the final
         report.
-            aic    : Akaike’s Information Criterion
-            bic    : Bayesian Information Criterion
-            max    : Max Error
-            mae    : Mean Absolute Error
-            median : Median Absolute Error
-            mse    : Mean Squared Error
-            msle   : Mean Squared Log Error
-            r2     : R squared coefficient
-            r2a    : R2 adjusted
-            qe     : quantile error, the quantile must be
-                     included in the name. Example:
-                        qe50.1% will  return the quantile
-                        error using q=0.501.
-            rmse   : Root Mean Squared Error
-            var    : Explained Variance
+
+        - aic:
+            Akaike's Information Criterion
+
+        - bic:
+            Bayesian Information Criterion
+
+        - max:
+            Max Error
+
+        - mae:
+            Mean Absolute Error
+
+        - median:
+            Median Absolute Error
+
+        - mse:
+            Mean Squared Error
+
+        - msle:
+            Mean Squared Log Error
+
+        - r2:
+            R squared coefficient
+
+        - r2a:
+            R2 adjusted
+
+        - qe:
+            quantile error, the quantile must be
+            included in the name. Example:
+            qe50.1% will  return the quantile
+            error using q=0.501.
+
+        - rmse   : Root Mean Squared Error
+        - var    : Explained Variance
+
     k: int, optional
         Number  of predictors. Used  to compute the adjusted
         R2.
@@ -450,6 +1122,56 @@ def regression_report(
     -------
     TableSample
         report.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 1.5, 3, 2, 5],
+                "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5],
+            }
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import regression_report
+
+    Now we can conveniently compute the report:
+
+    .. ipython:: python
+
+        regression_report(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return_scalar = False
     if isinstance(metrics, str):
