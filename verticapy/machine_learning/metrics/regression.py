@@ -123,7 +123,7 @@ def aic_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -196,7 +196,7 @@ def bic_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -282,7 +282,7 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -370,7 +370,7 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -458,7 +458,7 @@ def mean_absolute_error(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -549,7 +549,7 @@ def mean_squared_error(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -639,7 +639,7 @@ def mean_squared_log_error(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -727,7 +727,7 @@ def median_absolute_error(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -812,7 +812,7 @@ def quantile_error(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -909,7 +909,7 @@ def r2_score(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -1000,7 +1000,7 @@ def anova_table(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
@@ -1165,7 +1165,7 @@ def regression_report(
     .. note::
 
         VerticaPy uses simple SQL queries to compute various metrics.
-        You can use the :py:mod:`verticapy.set_option` function with 
+        You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
 
