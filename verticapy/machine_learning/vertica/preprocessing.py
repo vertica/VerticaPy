@@ -57,8 +57,8 @@ def Balance(
     ratio: float = 0.5,
 ) -> vDataFrame:
     """
-    Creates a view with an equal distribution of the
-    input data based on the response_column.
+    Creates a view with an equal distribution of
+    the input data based on the response_column.
 
     Parameters
     ----------
@@ -179,13 +179,8 @@ def Balance(
             method = "under"
         )
 
-    .. important::
-
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
-
-    The output vDataFrame can then be used or stored for later analysis.
+    The output vDataFrame can then be used or stored for later
+    analysis.
 
     .. seealso::
         | :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler` :
@@ -851,7 +846,7 @@ class Scaler(Preprocessing):
         plan to reuse the model later.
 
     Model Fitting
-    ^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^
 
     We can now fit the model:
 
@@ -883,7 +878,7 @@ class Scaler(Preprocessing):
     Conversion/Transformation
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    To get the scaled dataset, we can use the ``transform`` 
+    To get the scaled dataset, we can use the ``transform``
     function. Let us transform the data:
 
     .. ipython:: python
@@ -958,8 +953,8 @@ class Scaler(Preprocessing):
 
         The
         :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
-        method is used to scale the data. For specific details on how 
-        to use this method for different model types, refer to the 
+        method is used to scale the data. For specific details on how
+        to use this method for different model types, refer to the
         relevant documentation for each model.
 
     .. seealso::
