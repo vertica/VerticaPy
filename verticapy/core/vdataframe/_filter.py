@@ -594,7 +594,7 @@ class vDFFilter(vDFAgg):
         assert 0 < x < 1, ValueError("Parameter 'x' must be between 0 and 1")
         if method == "random":
             random_state = conf.get_option("random_state")
-            random_seed = random.randint(-10e6, 10e6)
+            random_seed = random.randint(int(-10e6), int(10e6))
             if isinstance(random_state, int):
                 random_seed = random_state
             random_func = _seeded_random_function(random_seed)

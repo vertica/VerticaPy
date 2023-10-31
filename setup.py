@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="1.0.0-beta.2",
+    version="1.0.0",
     author="Badr Ouali",
     author_email="badr.ouali@vertica.com",
     url="https://github.com/vertica/VerticaPy",
@@ -35,7 +35,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "matplotlib<=3.5.3",
         "numpy>=1.11.0",
@@ -58,8 +58,10 @@ setuptools.setup(
     classifiers=[
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Database",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
