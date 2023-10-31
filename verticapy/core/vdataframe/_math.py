@@ -285,7 +285,7 @@ class vDFMath(vDFFilter):
                 elif func == "mad":
                     self.eval(
                         name,
-                        f"AVG(ABS({columns[0]} - {median_name})) OVER ({by})",
+                        f"MEDIAN(ABS({columns[0]} - {median_name})) OVER ({by})",
                     )
             elif func == "top":
                 if not by:
@@ -738,7 +738,9 @@ class vDCMath(vDCFilter):
             func = "ARRAY_DIMS"
         if func not in ("log", "mod", "pow", "round", "contain", "find"):
             expr = f"{func.upper()}({{}})"
-        elif func in ("log", "mod", "pow", "round"):
+        elif func in ("log",):
+            expr = f"{func.upper()}({x}, {{}})"
+        elif func in ("mod", "pow", "round"):
             expr = f"{func.upper()}({{}}, {x})"
         elif func in ("contain", "find"):
             if func == "contain":
