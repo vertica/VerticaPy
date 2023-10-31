@@ -286,12 +286,12 @@ class ElasticNet(Regressor, LinearModel):
         specified accuracy result.
     solver: str, optional
         The optimizer method used to train the model.
-        
-        - newton: 
+
+        - newton:
             Newton Method.
-        - bfgs: 
+        - bfgs:
             Broyden Fletcher Goldfarb Shanno.
-        - cgd: 
+        - cgd:
             Coordinate Gradient Descent.
     l1_ratio: float, optional
         ENet mixture parameter that defines the provided
@@ -1598,10 +1598,11 @@ class LinearRegression(Regressor, LinearModel):
             "fit_intercept": fit_intercept,
         }
 
+
 class PoissonRegressor(LinearModel, Regressor):
     """
     Creates an PoissonRegressor object using the
-    Vertica Poisson Regression algorithm. 
+    Vertica Poisson Regression algorithm.
 
     Parameters
     ----------
@@ -1631,7 +1632,7 @@ class PoissonRegressor(LinearModel, Regressor):
         specified accuracy result.
     solver: str, optional
         The optimizer method used to train the model.
-        
+
         - newton:
             Newton Method.
     fit_intercept: bool, optional
