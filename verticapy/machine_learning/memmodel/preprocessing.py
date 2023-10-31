@@ -28,7 +28,8 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    InMemoryModel implementation of scalers.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of scalers.
 
     Parameters
     ----------
@@ -100,7 +101,8 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    InMemoryModel implementation of standard scaler.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of standard scaler.
 
     Parameters
     ----------
@@ -108,6 +110,77 @@ class StandardScaler(Scaler):
         Model's features averages.
     std: ArrayLike
         Model's features standard deviations.
+
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'mean', and
+        'standard deviation' of feature(S) define a StandardScaler
+        model.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.memmodel.preprocessing import StandardScaler
+
+    A StandardScaler model is defined by mean and standard deviation
+    values. In this example, we will use the following:
+
+    .. ipython:: python
+
+        mean = [0.4, 0.1]
+        std = [0.5, 0.2]
+
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+    model.
+
+    .. ipython:: python
+
+        model_sts = StandardScaler(mean, std)
+
+    Create a dataset.
+
+    .. ipython:: python
+
+        data = [[0.45, 0.17]]
+
+    **Making In-Memory Transformation**
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform`
+    method to do transformation.
+
+    .. ipython:: python
+
+        model_sts.transform(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ['col1', 'col2']
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
+
+    .. ipython:: python
+
+        model_mms.transform_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment, just
+        like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -125,14 +198,87 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    InMemoryModel implementation of MinMax scaler.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of MinMax scaler.
 
     Parameters
     ----------
-    min_: ArrayLike
+
+    min\_: ArrayLike
         Model's features minimums.
-    max_: ArrayLike
+    max\_: ArrayLike
         Model's features maximums.
+
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'minimum',
+        and 'maximum' values of the input features define a
+        MinMaxScaler model.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.memmodel.preprocessing import MinMaxScaler
+
+    A MinMaxScaler model is defined by minimum and maximum values.
+    In this example, we will use the following:
+
+    .. ipython:: python
+
+        min = [0.4, 0.1]
+        max = [0.5, 0.2]
+
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+    model.
+
+    .. ipython:: python
+
+        model_mms = MinMaxScaler(min, max)
+
+    Create a dataset.
+
+    .. ipython:: python
+
+        data = [[0.45, 0.17]]
+
+    **Making In-Memory Transformation**
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform`
+    method to do transformation.
+
+    .. ipython:: python
+
+        model_mms.transform(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ['col1', 'col2']
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
+
+    .. ipython:: python
+
+        model_mms.transform_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -150,26 +296,100 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    InMemoryModel implementation of one-hot encoder.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of one-hot encoder.
 
     Parameters
     ----------
+
     categories: ArrayLike
         ArrayLike  of the categories of  the different  features.
     column_naming: str, optional
         Appends  categorical  levels  to column  names  according
         to the specified method:
-        indices              : Uses integer  indices to represent
-                               categorical levels.
-        values/values_relaxed: Both methods use categorical level
-                               names.  If duplicate column  names
-                               occur,  the  function attempts  to
-                               disambiguate them by appending _n,
-                               where  n  is a zero-based  integer
-                               index (_0, _1,…).
+
+        - indices              : Uses integer  indices to represent
+            categorical levels.
+
+        - values/values_relaxed: Both methods use categorical level names.
+            If duplicate column  names occur,  the  function attempts  to
+            disambiguate them by appending _n, where  n  is a zero-based
+            integer index (_0, _1,…).
+
     drop_first: bool, optional
         If set to False, the first dummy of each category is
         dropped.
+
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        entirely by their attributes. For example, 'categories' to
+        encode defines a OneHotEncoder model. You can optionally
+        provide 'column naming' criteria and a 'drop_first' flag to
+        denote whether to drop first dummy of each category.
+
+    Examples
+    --------
+
+    **Initalization**
+
+    Import the required module.
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.memmodel.preprocessing import OneHotEncoder
+
+    A OneHotEncoder model is defined by categories, column naming
+    criteria and drop_first flag.
+
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+    model.
+
+    .. ipython:: python
+
+        model_ohe = OneHotEncoder(
+            categories = [["male", "female"], [1, 2, 3]],
+            drop_first = False,
+            column_naming = None,
+        )
+
+    Create a dataset.
+
+    .. ipython:: python
+
+        data = [["male", 1], ["female", 3]]
+
+    **Making In-Memory Transformation**
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform`
+    method to do transformation.
+
+    .. ipython:: python
+
+        model_ohe.transform(data)
+
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ['sex', 'pclass']
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder.transform_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
+
+    .. ipython:: python
+
+        model_ohe.transform_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment, just
+        like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
