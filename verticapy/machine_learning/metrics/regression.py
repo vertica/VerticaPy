@@ -554,9 +554,46 @@ def quantile_error(
     float
         score.
 
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"y_true": [1, 1.5, 3, 2, 5],
+            "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Next, we can import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import quantile_error
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        quantile_error(y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+            q = 0.25,
+        )
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.max_error`
+        :py:mod:`verticapy.machine_learning.metrics.classification_report`
     """
     return regression_report(y_true, y_score, input_relation, metrics=f"qe{100 * q}%")
 
@@ -668,6 +705,46 @@ def anova_table(
     -------
     TableSample
         ANOVA table.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"y_true": [1, 1.5, 3, 2, 5],
+            "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Next, we can import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import anova_table
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        anova_table(y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.classification_report`
     """
     n, avg = _executeSQL(
         query=f"""
@@ -783,6 +860,46 @@ def regression_report(
     -------
     TableSample
         report.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"y_true": [1, 1.5, 3, 2, 5],
+            "y_pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Next, we can import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import regression_report
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        regression_report(y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.classification_report`
     """
     return_scalar = False
     if isinstance(metrics, str):
