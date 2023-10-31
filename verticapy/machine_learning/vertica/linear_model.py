@@ -49,20 +49,6 @@ class LinearModel:
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "features_importance_"]
 
-    # System & Special Methods.
-
-    @abstractmethod
-    def __init__(self) -> None:
-        """Must be overridden in the child class"""
-        return None
-        # self.input_relation = None
-        # self.test_relation = None
-        # self.X = None
-        # self.y = None
-        # self.parameters = {}
-        # for att in self._attributes:
-        #    setattr(self, att, None)
-
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -208,18 +194,6 @@ class LinearModelClassifier(LinearModel):
     def _attributes(self) -> list[str]:
         return ["coef_", "intercept_", "classes_", "features_importance_"]
 
-    # System & Special Methods.
-
-    @abstractmethod
-    def __init__(self) -> None:
-        """Must be overridden in the child class"""
-        return None
-        # self.input_relation = None
-        # self.test_relation = None
-        # self.X = None
-        # self.y = None
-        # self.classes_ = None
-
     # Attributes Methods.
 
     def _compute_attributes(self) -> None:
@@ -283,7 +257,7 @@ Algorithms used for regression.
 """
 
 
-class ElasticNet(Regressor, LinearModel):
+class ElasticNet(LinearModel, Regressor):
     """
     Creates an ElasticNet object using the Vertica
     Linear Regression  algorithm. The Elastic Net
@@ -1162,7 +1136,7 @@ class Lasso(Regressor, LinearModel):
         }
 
 
-class LinearRegression(Regressor, LinearModel):
+class LinearRegression(LinearModel, Regressor):
     """
     Creates a LinearRegression object using the Vertica
     Linear Regression algorithm.
@@ -2091,7 +2065,7 @@ Algorithms used for classification.
 """
 
 
-class LogisticRegression(BinaryClassifier, LinearModelClassifier):
+class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     """
     Creates a LogisticRegression  object using the Vertica
     Logistic Regression algorithm.
