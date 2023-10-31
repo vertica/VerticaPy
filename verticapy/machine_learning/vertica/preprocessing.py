@@ -70,18 +70,25 @@ def Balance(
         Response column.
     method: str, optional
         Method used to do the balancing.
-            hybrid : Performs  over-sampling   and
-                     under-sampling  on  different
-                     classes so that each class is
-                     equally represented.
-            over   : Over-samples on  all classes,
-                     except the most represented
-                     class, towards the  most
-                     represented class's cardinality.
-            under  : Under-samples on  all classes,
-                     except the least represented
-                     class,  towards  the least
-                     represented class's cardinality.
+
+        - hybrid :
+            Performs  over-sampling   and
+            under-sampling  on  different
+            classes so that each class is
+            equally represented.
+
+        - over   :
+            Over-samples on  all classes,
+            except the most represented
+            class, towards the  most
+            represented class's cardinality.
+
+        - under:
+            Under-samples on  all classes,
+            except the least represented
+            class,  towards  the least
+            represented class's cardinality.
+
     ratio: float, optional
         The desired ratio between the majority class
         and the minority class. This value has no
@@ -92,6 +99,100 @@ def Balance(
     -------
     vDataFrame
         vDataFrame of the created view.
+
+
+    Examples
+    --------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    For this example, we will use the Titanic dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        data = vpd.load_titanic()
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+
+    Model Application
+    ^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``Balance`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import Balance
+
+    Then we can directly apply it to the dataset:
+
+    .. ipython:: python
+        :okwarning:
+
+        @suppress
+        vp.drop("balance_model")
+
+        Balance(name = "balance_model",
+                input_relation = data,
+                y = "survived",
+                method = "under"
+        )
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    The output vDataFrame can then be used or stored for later analysis.
+
+
+
+    .. seealso::
+        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler` :
+          Normalizing the dataset.
     """
     _executeSQL(
         query=f"""
@@ -712,9 +813,6 @@ class Scaler(Preprocessing):
     .. ipython:: python
 
         data = vp.vDataFrame({"values": [1, 1.01, 1.02, 1.05, 1.024]})
-
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
     .. note::
 
