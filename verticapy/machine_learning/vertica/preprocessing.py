@@ -168,23 +168,33 @@ def Balance(
 
     .. ipython:: python
         :okwarning:
+        :suppress:
 
-        @suppress
+
         vp.drop("balance_model")
+        result = Balance(name = "balance_model",
+                input_relation = data,
+                y = "survived",
+                method = "under"
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
 
-        Balance(
-            name = "balance_model",
-            input_relation = data,
-            y = "survived",
-            method = "under"
+    .. code-block:: python
+
+        Balance(name = "balance_model",
+                input_relation = data,
+                y = "survived",
+                method = "under"
         )
 
-    The output vDataFrame can then be used or stored for later
-    analysis.
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html
 
     .. seealso::
-        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler` :
-          Normalizing the dataset.
+        | :py:mod:`verticapy.vDataFrame.sample` :
+          Sampling the dataset.
     """
     _executeSQL(
         query=f"""
@@ -756,21 +766,21 @@ class Scaler(Preprocessing):
 
         .. math::
 
-            (x - avg) / std
+            Z_score = (x - avg) / std
 
         - robust_zscore:
         Scaling using the Robust Z-Score.
 
         .. math::
 
-            (x - median) / (1.4826 * mad)
+            Z_rscore = (x - median) / (1.4826 * mad)
 
         - minmax:
         Normalization  using  the  Min  &  Max.
 
         .. math::
 
-            (x - min) / (max - min)
+            Z_minmax = (x - min) / (max - min)
 
     Examples
     --------
