@@ -69,6 +69,40 @@ def aic_score(
 ) -> float:
     """
     Returns the AIC score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "aic"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.bic_score`
     """
     return regression_report(y_true, y_score, input_relation, metrics="aic", k=k)
 
@@ -81,6 +115,41 @@ def bic_score(
 ) -> float:
     """
     Returns the BIC score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "bic"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.aic_score`
+
     """
     return regression_report(y_true, y_score, input_relation, metrics="bic", k=k)
 
@@ -106,6 +175,40 @@ def explained_variance(y_true: str, y_score: str, input_relation: SQLRelation) -
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "explained_variance"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.bic_score`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="explained_variance"
@@ -133,6 +236,40 @@ def max_error(y_true: str, y_score: str, input_relation: SQLRelation) -> float:
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "max_error"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.mean_absolute_error`
     """
     return regression_report(y_true, y_score, input_relation, metrics="max_error")
 
@@ -160,6 +297,40 @@ def mean_absolute_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "mean_absolute_error"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     return regression_report(y_true, y_score, input_relation, metrics="mae")
 
@@ -190,6 +361,40 @@ def mean_squared_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "mean_squared_error"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="rmse" if root else "mse"
@@ -219,6 +424,40 @@ def mean_squared_log_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "mean_squared_log_error"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     return regression_report(y_true, y_score, input_relation, metrics="msle")
 
@@ -246,6 +485,40 @@ def median_absolute_error(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "median_absolute_error"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     return regression_report(
         y_true, y_score, input_relation, metrics="median_absolute_error"
@@ -280,6 +553,10 @@ def quantile_error(
     -------
     float
         score.
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     return regression_report(y_true, y_score, input_relation, metrics=f"qe{100 * q}%")
 
@@ -316,6 +593,40 @@ def r2_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Then we can create a small dataset that has
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame({"true": [1, 1.5, 3, 2, 5],
+            "pred": [1.1, 1.55, 2.9, 2.01, 4.5]}
+        )
+
+    Now we can conveniently calcualte the score:
+
+    .. ipython:: python
+
+        data.score(y_true  = "true",
+           y_score = "pred",
+           metric  = "r2"
+        )
+
+    .. seealso::
+
+        :py:mod:`verticapy.machine_learning.metrics.max_error`
     """
     if adj:
         kwargs = {"metrics": "r2_adj", "k": k}
@@ -426,21 +737,43 @@ def regression_report(
     metrics: list, optional
         List of the metrics used to compute the final
         report.
-            aic    : Akaike’s Information Criterion
-            bic    : Bayesian Information Criterion
-            max    : Max Error
-            mae    : Mean Absolute Error
-            median : Median Absolute Error
-            mse    : Mean Squared Error
-            msle   : Mean Squared Log Error
-            r2     : R squared coefficient
-            r2a    : R2 adjusted
-            qe     : quantile error, the quantile must be
-                     included in the name. Example:
-                        qe50.1% will  return the quantile
-                        error using q=0.501.
-            rmse   : Root Mean Squared Error
-            var    : Explained Variance
+
+        - aic:
+            Akaike's Information Criterion
+
+        - bic:
+            Bayesian Information Criterion
+
+        - max:
+            Max Error
+
+        - mae:
+            Mean Absolute Error
+
+        - median:
+            Median Absolute Error
+
+        - mse:
+            Mean Squared Error
+
+        - msle:
+            Mean Squared Log Error
+
+        - r2:
+            R squared coefficient
+
+        - r2a:
+            R2 adjusted
+
+        - qe:
+            quantile error, the quantile must be
+            included in the name. Example:
+            qe50.1% will  return the quantile
+            error using q=0.501.
+
+        - rmse   : Root Mean Squared Error
+        - var    : Explained Variance
+
     k: int, optional
         Number  of predictors. Used  to compute the adjusted
         R2.
