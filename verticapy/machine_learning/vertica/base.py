@@ -757,6 +757,7 @@ class Supervised(VerticaModel):
         X: SQLColumns,
         y: str,
         test_relation: SQLRelation = "",
+        return_report: bool = False,
     ) -> Optional[str]:
         """
         Trains the model.
@@ -764,13 +765,18 @@ class Supervised(VerticaModel):
         Parameters
         ----------
         input_relation: SQLRelation
-                Training relation.
+            Training relation.
         X: SQLColumns
-                List of the predictors.
+            List of the predictors.
         y: str
-                Response column.
+            Response column.
         test_relation: SQLRelation, optional
-                Relation used to test the model.
+            Relation used to test the model.
+        return_report: bool, optional
+            [For native models]
+            When set to True, the model summary
+            will be returned. Otherwise, it will
+            be printed.
 
         Returns
         -------
@@ -890,7 +896,10 @@ class Supervised(VerticaModel):
                     drop(relation, method="view")
         self._compute_attributes()
         if self._is_native:
-            return self.summarize()
+            report = self.summarize()
+            if return_report:
+                return report
+            print(report)
         return None
 
 
@@ -2869,7 +2878,10 @@ class Unsupervised(VerticaModel):
     # Model Fitting Method.
 
     def fit(
-        self, input_relation: SQLRelation, X: Optional[SQLColumns] = None
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        return_report: bool = False,
     ) -> Optional[str]:
         """
         Trains the model.
@@ -2877,15 +2889,20 @@ class Unsupervised(VerticaModel):
         Parameters
         ----------
         input_relation: SQLRelation
-                Training relation.
+            Training relation.
         X: SQLColumns, optional
-                List of the predictors. If empty, all the
-            numerical columns are used.
+            List of the predictors. If empty, all
+            the numerical columns are used.
+        return_report: bool, optional
+            [For native models]
+            When set to True, the model summary
+            will be returned. Otherwise, it will
+            be printed.
 
         Returns
         -------
         str
-                model's summary.
+            model's summary.
         """
         if self.overwrite_model:
             self.drop()
@@ -3060,5 +3077,8 @@ class Unsupervised(VerticaModel):
                 drop(name_init, method="table")
         self._compute_attributes()
         if self._is_native:
-            return self.summarize()
+            report = self.summarize()
+            if return_report:
+                return report
+            print(report)
         return None
