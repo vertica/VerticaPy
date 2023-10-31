@@ -396,7 +396,7 @@ class TestvDFFeatureEngineering:
         # func = "mad"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func="mad", columns="age", name="mad")
-        assert titanic_copy["mad"].min() == pytest.approx(11.14643931)
+        assert titanic_copy["mad"].min() == pytest.approx(8.0)
 
         # func = "max"
         titanic_copy = titanic_vd.copy()
@@ -713,7 +713,7 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].apply_fun(func="log")
 
-        assert titanic_copy["age"].min() == pytest.approx(-8.312950414)
+        assert titanic_copy["age"].min() == pytest.approx(-1.59946207041627)
 
         # func = "log10"
         titanic_copy = titanic_vd.copy()
