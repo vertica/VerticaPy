@@ -57,8 +57,8 @@ def Balance(
     ratio: float = 0.5,
 ) -> vDataFrame:
     """
-    Creates a view with an equal distribution of the
-    input data based on the response_column.
+    Creates a view with an equal distribution of
+    the input data based on the response_column.
 
     Parameters
     ----------
@@ -99,7 +99,6 @@ def Balance(
     -------
     vDataFrame
         vDataFrame of the created view.
-
 
     Examples
     --------
@@ -156,11 +155,10 @@ def Balance(
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
+    Function Application
+    ^^^^^^^^^^^^^^^^^^^^^
 
-    Model Application
-    ^^^^^^^^^^^^^^^^^^^
-
-    First we import the ``Balance`` model:
+    First we import the ``Balance`` function:
 
     .. ipython:: python
 
@@ -170,44 +168,23 @@ def Balance(
 
     .. ipython:: python
         :okwarning:
-        :suppress:
 
-
+        @suppress
         vp.drop("balance_model")
-        result = Balance(name = "balance_model",
-                input_relation = data,
-                y = "survived",
-                method = "under"
-        )
-        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html", "w")
-        html_file.write(result._repr_html_())
-        html_file.close()
 
-    .. code-block:: python
-
-        Balance(name = "balance_model",
-                input_relation = data,
-                y = "survived",
-                method = "under"
+        Balance(
+            name = "balance_model",
+            input_relation = data,
+            y = "survived",
+            method = "under"
         )
 
-    .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html
-
-
-    .. important::
-
-        The model name is crucial for the model management system and
-        versioning. It's highly recommended to provide a name if you
-        plan to reuse the model later.
-
-    The output vDataFrame can then be used or stored for later analysis.
-
-
+    The output vDataFrame can then be used or stored for later
+    analysis.
 
     .. seealso::
-        | :py:mod:`verticapy.vDataFrame.sample` :
-          Sampling the dataset.
+        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler` :
+          Normalizing the dataset.
     """
     _executeSQL(
         query=f"""
@@ -779,21 +756,21 @@ class Scaler(Preprocessing):
 
         .. math::
 
-            Z_score = (x - avg) / std
+            (x - avg) / std
 
         - robust_zscore:
         Scaling using the Robust Z-Score.
 
         .. math::
 
-            Z_rscore = (x - median) / (1.4826 * mad)
+            (x - median) / (1.4826 * mad)
 
         - minmax:
         Normalization  using  the  Min  &  Max.
 
         .. math::
 
-            Z_minmax = (x - min) / (max - min)
+            (x - min) / (max - min)
 
     Examples
     --------
@@ -839,7 +816,6 @@ class Scaler(Preprocessing):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
@@ -870,7 +846,7 @@ class Scaler(Preprocessing):
         plan to reuse the model later.
 
     Model Fitting
-    ^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^
 
     We can now fit the model:
 
@@ -902,9 +878,8 @@ class Scaler(Preprocessing):
     Conversion/Transformation
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    To get the scaled dataset, we can use the ``transform`` function.
-    Let us transform the data:
-
+    To get the scaled dataset, we can use the ``transform``
+    function. Let us transform the data:
 
     .. ipython:: python
         :okwarning:
@@ -925,7 +900,7 @@ class Scaler(Preprocessing):
     The variable ``data_transformed`` is the scaled dataset.
 
     Model Register
-    ^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^
 
     In order to register the model for tracking and versioning:
 
@@ -978,9 +953,9 @@ class Scaler(Preprocessing):
 
         The
         :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
-        method is used to scale the data. For specific details on how to use this method for
-        different model types, refer to the relevant documentation for
-        each model.
+        method is used to scale the data. For specific details on how
+        to use this method for different model types, refer to the
+        relevant documentation for each model.
 
     .. seealso::
         | :py:mod:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
@@ -1077,7 +1052,6 @@ class StandardScaler(Scaler):
         This is a child class. See
         :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
-
     """
 
     @property
@@ -1097,7 +1071,6 @@ class RobustScaler(Scaler):
         This is a child class. See
         :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
-
     """
 
     @property
@@ -1117,7 +1090,6 @@ class MinMaxScaler(Scaler):
         This is a child class. See
         :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
-
     """
 
     @property
@@ -1301,8 +1273,8 @@ class OneHotEncoder(Preprocessing):
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     To get the transformed dataset in the form that is encoded,
-    we can use the ``transform`` function. Let us transform the data
-    and display the first 20 datapoints.
+    we can use the ``transform`` function. Let us transform the
+    data and display the first 20 datapoints.
 
     .. ipython:: python
         :okwarning:
@@ -1324,7 +1296,7 @@ class OneHotEncoder(Preprocessing):
     components.
 
     Model Register
-    ^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^
 
     In order to register the model for tracking and versioning:
 
