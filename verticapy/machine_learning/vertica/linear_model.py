@@ -694,7 +694,7 @@ class ElasticNet(LinearModel, Regressor):
         }
 
 
-class Lasso(Regressor, LinearModel):
+class Lasso(LinearModel, Regressor):
     """
     Creates  a  Lasso  object using the  Vertica
     Linear  Regression  algorithm.
@@ -1595,7 +1595,7 @@ class LinearRegression(LinearModel, Regressor):
         }
 
 
-class Ridge(Regressor, LinearModel):
+class Ridge(LinearModel, Regressor):
     """
     Creates  a  Ridge  object using the  Vertica
     Linear  Regression  algorithm.
