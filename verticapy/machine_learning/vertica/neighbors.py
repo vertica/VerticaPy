@@ -931,8 +931,14 @@ class KNeighborsClassifier(MulticlassClassifier):
         Returns the input that represents the model's scoring.
         """
         cutoff = self._check_cutoff(cutoff=cutoff)
-        if isinstance(pos_label, NoneType):
+        if isinstance(pos_label, NoneType) and not (self._is_binary_classifier()):
             return "predict_neighbors"
+        elif self._is_binary_classifier():
+            return f"""
+                (CASE 
+                    WHEN proba_predict > {cutoff} THEN '{self.classes_[1]}'
+                    ELSE '{self.classes_[0]}'
+                 END)"""
         else:
             return f"""
                 (CASE 
