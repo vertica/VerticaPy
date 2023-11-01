@@ -285,11 +285,10 @@ def confusion_matrix(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -300,7 +299,7 @@ def confusion_matrix(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -315,9 +314,27 @@ def confusion_matrix(
                 input_relation = data,
                 )
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "confusion_matrix",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
@@ -437,11 +454,10 @@ def accuracy_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -452,7 +468,7 @@ def accuracy_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -478,9 +494,27 @@ def accuracy_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "accuracy_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.confusion_matrix`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _accuracy_score,
@@ -559,11 +593,10 @@ def balanced_accuracy_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -574,7 +607,7 @@ def balanced_accuracy_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -599,9 +632,29 @@ def balanced_accuracy_score(
         - macro
         - scores
         - weighted
+
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "balanced_accuracy_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _balanced_accuracy_score,
@@ -682,11 +735,10 @@ def critical_success_index(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -697,7 +749,7 @@ def critical_success_index(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -722,9 +774,28 @@ def critical_success_index(
         - macro
         - scores
         - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "critical_success_index",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _critical_success_index,
@@ -808,11 +879,10 @@ def diagnostic_odds_ratio(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -823,7 +893,7 @@ def diagnostic_odds_ratio(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -848,9 +918,28 @@ def diagnostic_odds_ratio(
         - macro
         - scores
         - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "diagnostic_odds_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _diagnostic_odds_ratio,
@@ -931,11 +1020,10 @@ def f1_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -946,7 +1034,7 @@ def f1_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -972,9 +1060,27 @@ def f1_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "f1_score",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _f1_score,
@@ -1054,11 +1160,10 @@ def false_negative_rate(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1069,7 +1174,7 @@ def false_negative_rate(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1095,9 +1200,27 @@ def false_negative_rate(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_negative_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.accuracy_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(_false_negative_rate, **locals())
 
@@ -1174,11 +1297,10 @@ def false_positive_rate(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1189,7 +1311,7 @@ def false_positive_rate(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1215,9 +1337,27 @@ def false_positive_rate(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_positive_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_positive_rate,
@@ -1297,11 +1437,10 @@ def false_discovery_rate(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1312,7 +1451,7 @@ def false_discovery_rate(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1338,9 +1477,27 @@ def false_discovery_rate(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_discovery_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_discovery_rate,
@@ -1420,11 +1577,10 @@ def false_omission_rate(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1435,7 +1591,7 @@ def false_omission_rate(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1461,9 +1617,27 @@ def false_omission_rate(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_omission_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_omission_rate,
@@ -1543,11 +1717,10 @@ def fowlkes_mallows_index(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1558,7 +1731,7 @@ def fowlkes_mallows_index(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1584,9 +1757,27 @@ def fowlkes_mallows_index(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "fowlkes_mallows_index",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _fowlkes_mallows_index,
@@ -1666,11 +1857,10 @@ def informedness(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1681,7 +1871,7 @@ def informedness(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1707,9 +1897,27 @@ def informedness(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "informedness",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _informedness,
@@ -1791,11 +1999,10 @@ def markedness(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1806,7 +2013,7 @@ def markedness(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1832,9 +2039,27 @@ def markedness(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "markedness",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _markedness,
@@ -1918,11 +2143,10 @@ def matthews_corrcoef(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -1933,7 +2157,7 @@ def matthews_corrcoef(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -1959,9 +2183,27 @@ def matthews_corrcoef(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "matthews_corrcoef",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _matthews_corrcoef,
@@ -2041,11 +2283,10 @@ def negative_predictive_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2056,7 +2297,7 @@ def negative_predictive_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2082,9 +2323,27 @@ def negative_predictive_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "negative_predictive_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _negative_predictive_score,
@@ -2164,11 +2423,10 @@ def negative_likelihood_ratio(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2179,7 +2437,7 @@ def negative_likelihood_ratio(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2205,9 +2463,27 @@ def negative_likelihood_ratio(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "negative_likelihood_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.false_negative_rate`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _negative_likelihood_ratio,
@@ -2288,11 +2564,10 @@ def positive_likelihood_ratio(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2303,7 +2578,7 @@ def positive_likelihood_ratio(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2329,9 +2604,27 @@ def positive_likelihood_ratio(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "positive_likelihood_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.negative_likelihood_ratio`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _positive_likelihood_ratio,
@@ -2411,11 +2704,10 @@ def precision_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2426,7 +2718,7 @@ def precision_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2452,9 +2744,27 @@ def precision_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "precision_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.f1_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _precision_score,
@@ -2535,11 +2845,10 @@ def prevalence_threshold(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2550,7 +2859,7 @@ def prevalence_threshold(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2576,9 +2885,27 @@ def prevalence_threshold(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "prevalence_threshold",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.f1_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _prevalence_threshold,
@@ -2658,11 +2985,10 @@ def recall_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2673,7 +2999,7 @@ def recall_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2699,9 +3025,27 @@ def recall_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "recall_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.f1_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _recall_score,
@@ -2781,11 +3125,10 @@ def specificity_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -2796,7 +3139,7 @@ def specificity_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -2822,9 +3165,27 @@ def specificity_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "specificity_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.f1_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _specificity_score,
@@ -3114,11 +3475,10 @@ def best_cutoff(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -3129,7 +3489,7 @@ def best_cutoff(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -3155,9 +3515,27 @@ def best_cutoff(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "best_cutoff",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.specificity_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         threshold, false_positive, true_positive = _compute_function_metrics(
@@ -3254,11 +3632,10 @@ def average_precision_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -3269,7 +3646,7 @@ def average_precision_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -3295,9 +3672,27 @@ def average_precision_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "average_precision_score",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.specificity_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         recall, precision = _compute_function_metrics(
@@ -3449,11 +3844,10 @@ def roc_auc_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -3464,7 +3858,7 @@ def roc_auc_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -3490,9 +3884,27 @@ def roc_auc_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "roc_auc_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.specificity_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if (
         not isinstance(pos_label, NoneType)
@@ -3652,11 +4064,10 @@ def prc_auc_score(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -3667,7 +4078,7 @@ def prc_auc_score(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -3693,9 +4104,27 @@ def prc_auc_score(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "prc_auc_score",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.roc_auc_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         recall, precision = _compute_function_metrics(
@@ -3830,11 +4259,10 @@ def log_loss(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -3845,7 +4273,7 @@ def log_loss(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -3871,9 +4299,27 @@ def log_loss(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "log_loss",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.roc_auc_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         y_s = _get_yscore(y_score, labels, pos_label)
@@ -4143,11 +4589,10 @@ def classification_report(
     We should first import verticapy.
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
-    Then we can create a small dataset that has
+    Let's create a small dataset that has:
 
     - true value
     - predicted value
@@ -4158,7 +4603,7 @@ def classification_report(
             "y_pred": [1, 1, 1, 0, 1]}
         )
 
-    Next, we can import the metric:
+    Next, we import the metric:
 
     .. ipython:: python
 
@@ -4184,9 +4629,27 @@ def classification_report(
         - scores
         - weighted
 
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "classification_report",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
     .. seealso::
 
-        :py:mod:`verticapy.machine_learning.metrics.roc_auc_score`
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return_scalar = False
     if isinstance(metrics, str):
