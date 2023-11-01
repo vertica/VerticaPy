@@ -113,6 +113,7 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "fm": fowlkes_mallows_index,
     "prevalence_threshold": prevalence_threshold,
     "pm": prevalence_threshold,
+    "confusion_matrix": confusion_matrix,
 }
 
 FUNCTIONS_REGRESSION_DICTIONNARY = {
