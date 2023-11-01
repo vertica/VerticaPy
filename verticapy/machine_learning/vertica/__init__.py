@@ -34,6 +34,7 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    PoissonRegressor,
     Ridge,
 )
 from verticapy.machine_learning.vertica.model_management import load_model
