@@ -214,7 +214,7 @@ class vDFInOut(vDFSystem):
                 tmp_row = []
                 for item in row:
                     if isinstance(item, str):
-                        tmp_row += [quotechar + item.replace('"', '""') + quotechar]
+                        tmp_row += [quotechar + item.replace(quotechar, quotechar * 2) + quotechar]
                     elif isinstance(item, NoneType):
                         tmp_row += ["" if isinstance(na_rep, NoneType) else na_rep]
                     else:
