@@ -2567,6 +2567,58 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.boxplot`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["score1"].boxplot()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["score1"].boxplot(width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_boxplot_single.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_boxplot_single.html
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BoxPlot",
@@ -2608,14 +2660,23 @@ class vDCPlot(vDCScaler):
         ----------
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn ``of``.
-                min     : Minimum of the  vDataColumn ``of``.
-                max     : Maximum of the  vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -2649,6 +2710,59 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.bar`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["grade"].bar()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["grade"].bar()
+            fig.write_html("figures/core_vdataframe_plotting_vdc_bar_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_bar_1d.html
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BarChart",
@@ -2687,14 +2801,23 @@ class vDCPlot(vDCScaler):
         ----------
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn ``of``.
-                min     : Minimum of the  vDataColumn ``of``.
-                max     : Maximum of the  vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -2728,6 +2851,59 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.bar`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["grade"].barh()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["grade"].barh()
+            fig.write_html("figures/core_vdataframe_plotting_vdc_barh_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_barh_1d.html
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="HorizontalBarChart",
@@ -2764,14 +2940,22 @@ class vDCPlot(vDCScaler):
         ----------
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn ``of``
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -2801,6 +2985,59 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.pie`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["grade"].pie()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["grade"].pie(width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_pie_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_pie_1d.html
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="PieChart",
@@ -2838,14 +3075,23 @@ class vDCPlot(vDCScaler):
             vDataColumn used to partition the data.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn ``of``
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -2867,6 +3113,59 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.spider`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "category": [np.random.choice(['A','B','C']) for _ in range(N)],
+            "score1": np.random.normal(5, 1, N),
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["score1"].spider()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["score1"].spider(width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_spider_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_spider_1d.html
         """
         by, of = self._parent.format_colnames(by, of)
         columns = [self._alias]
@@ -2911,14 +3210,23 @@ class vDCPlot(vDCScaler):
             vDataColumn  used  to  partition  the  data.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn ``of``.
-                min     : Minimum of the  vDataColumn ``of``.
-                max     : Maximum of the  vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -2954,6 +3262,58 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.hist`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["score1"].hist()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["score1"].hist(width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_hist_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_hist_1d.html
         """
         if self.isnum() and not (self.isbool()):
             vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3042,6 +3402,58 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.density`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["score1"].density()
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["score1"].density(width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_density_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_density_1d.html
         """
         vml = get_vertica_mllib()
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
@@ -3117,13 +3529,23 @@ class vDCPlot(vDCScaler):
             like (date, datetime, timestamp...) or  numerical.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn ``of``
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
         q: tuple, optional
@@ -3147,6 +3569,59 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.candlestick`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "date": [1990 + i for i in range(N)] * 5,
+                "population": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+            })
+
+        Now we are ready to draw the plot:
+
+        .. code-block:: python
+
+            data["population"].candlestick(ts = "date")
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["population"].candlestick(ts = "date", width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html
         """
         ts = self._parent.format_colnames(ts)
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3198,12 +3673,18 @@ class vDCPlot(vDCScaler):
             the 3rd of November 1993.
         kind: str, optional
             The plot type.
-                area_stacked : Stacked Area Plot.
-                area_percent : Fully Stacked Area Plot.
-                line         : Line Plot.
-                spline       : Spline Plot.
-                area         : Area Plot.
-                step         : Step Plot.
+
+            - line:
+                Line Plot.
+            - spline:
+                Spline Plot.
+            - step:
+                Step Plot.
+            - area_stacked:
+                Stacked Area Plot.
+            - area_percent:
+                Fully Stacked Area Plot.
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -3214,6 +3695,64 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.line`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "date": [1900, 1950, 2000],
+                "Asia": [947, 1402, 3634],
+                "Africa": [133, 221, 767],
+                "Europe": [408, 547, 729],
+                "America": [156, 339, 818],
+                "Oceania": [6, 13, 30],
+            })
+
+        Now we are ready to draw the plot:
+
+
+        .. code-block:: python
+
+            data["Asia"].plot(ts = "date", kind = "spline")
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["Asia"].plot(ts = "date", kind = "spline", width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_plot_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_plot_1d.html
         """
         ts, by = self._parent.format_colnames(ts, by)
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3275,6 +3814,62 @@ class vDCPlot(vDCScaler):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.range`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "date": [1990 + i for i in range(N)] * 5,
+                "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+                "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
+            })
+
+        Now we are ready to draw the plot:
+
+
+        .. code-block:: python
+
+            data["population1"].range_plot(ts = "date")
+
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = data["population1"].range_plot(ts = "date", width = 600)
+            fig.write_html("figures/core_vdataframe_plotting_vdc_range_plot_1d.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_range_plot_1d.html
+
         """
         return self._parent.range_plot(
             columns=[self._alias],
@@ -3307,6 +3902,57 @@ class vDCPlot(vDCScaler):
         -------
         ax
             Axes
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.geo`_
+
+        Let's begin by importing the dataset module of `VerticaPy`.
+        It provides a range of datasets for both training and
+        exploring VerticaPy's capabilities.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+        Let's utilize the World dataset to demonstrate geospatial capabilities.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            world = vpd.load_world()
+
+            # We filter to select only the African continent
+            africa = world[world["continent"] == "Africa"]
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+
+            vp.set_option("plotting_lib", "matplotlib")
+
+            world = vpd.load_world()
+
+            # We filter to select only the African continent
+            africa = world[world["continent"] == "Africa"]
+
+
+        Now we can draw the plot:
+
+
+        .. ipython:: python
+            :okwarning:
+
+            @savefig core_vdataframe_plotting_vdc_geo_plot.png
+            africa["geometry"].geo_plot(edgecolor = "black", color = "white")
         """
         columns = [self._alias]
         check = True
