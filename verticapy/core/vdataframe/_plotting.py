@@ -85,6 +85,85 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.boxplot`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            "score2": np.random.normal(8, 1.5, N),
+            "score3": np.random.normal(10, 2, N),
+            })
+
+        Below are examples of two types of boxplot:
+
+        - Single (for one column)
+        - Multi (for more than one column)
+
+        Check out the tabs below for specific examples.
+
+        .. tab:: Single
+
+            .. code-block:: python
+
+                data.boxplot(["score1"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.boxplot(["score1"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_boxplot_single.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_single.html
+
+        .. tab:: Multi
+
+            .. code-block:: python
+
+                data.boxplot(columns = ["score1", "score2", "score3"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.boxplot(columns = ["score1", "score2", "score3"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_boxplot_multi.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_multi.html
+
         """
         columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -125,14 +204,23 @@ class vDFPlot(vDFMachineLearning):
             have one or two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage  of  the  distribution.
-                mean    : Average  of the  vDataColumn 'of'.
-                min     : Minimum  of the  vDataColumn 'of'.
-                max     : Maximum  of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation, for example:
             AVG(column1) + 5
         of: str, optional
@@ -148,12 +236,18 @@ class vDFPlot(vDFMachineLearning):
             empty or invalid.
         kind: str, optional
             The BarChart Type.
-                auto      : Regular  BarChart  based on  1  or 2
-                            vDataColumns.
-                drilldown : Drill   Down  BarChart  based  on  2
-                            vDataColumns.
-                stacked   : Stacked   BarChart    based    on  2
-                            vDataColumns.
+
+            - auto:
+                Regular Bar Chart  based on 1 or 2 vDataColumns.
+            - pyramid:
+                Pyramid  Density  Bar  Chart. Only works if one
+                of the two vDataColumns is binary and the
+                'method' is set to 'density'.
+            - stacked:
+                Stacked  Bar  Chart   based  on  2 vDataColumns.
+            - fully_stacked:
+                Fully Stacked Bar Chart based on 2 vDataColumns.
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -164,6 +258,82 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.bar`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Below are examples of two types of bar plots:
+
+        - 1D
+        - 2D
+
+        .. tab:: 1D
+
+            .. code-block:: python
+
+                data.bar(["grade"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.bar(["grade"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_bar_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_1d.html
+
+        .. tab:: 2D
+
+            .. code-block:: python
+
+                data.bar(columns = ["grade", "gender"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.bar(columns = ["grade", "gender"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_bar_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_2d.html
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -241,14 +411,23 @@ class vDFPlot(vDFMachineLearning):
             have one or two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage  of  the  distribution.
-                mean    : Average  of the  vDataColumn 'of'.
-                min     : Minimum  of the  vDataColumn 'of'.
-                max     : Maximum  of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation, for example:
             AVG(column1) + 5
         of: str, optional
@@ -264,16 +443,18 @@ class vDFPlot(vDFMachineLearning):
             empty or invalid.
         kind: str, optional
             The BarChart Type.
-                auto          : Regular Bar Chart  based on 1 or 2
-                                vDataColumns.
-                pyramid       : Pyramid  Density  Bar  Chart. Only
-                                works   if    one   of   the   two
-                                vDataColumns  is  binary  and  the
-                                'method' is set to 'density'.
-                stacked       : Stacked  Bar  Chart   based  on  2
-                                vDataColumns.
-                fully_stacked : Fully Stacked Bar Chart based on 2
-                                vDataColumns.
+
+            - auto:
+                Regular Bar Chart  based on 1 or 2 vDataColumns.
+            - pyramid:
+                Pyramid  Density  Bar  Chart. Only works if one
+                of the two vDataColumns is binary and the
+                'method' is set to 'density'.
+            - stacked:
+                Stacked  Bar  Chart   based  on  2 vDataColumns.
+            - fully_stacked:
+                Fully Stacked Bar Chart based on 2 vDataColumns.
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -284,6 +465,81 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.barh`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Below are examples of two types of barh plots:
+
+        - 1D
+        - 2D
+
+        .. tab:: 1D
+
+            .. code-block:: python
+
+                data.barh(["grade"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.barh(["grade"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_barh_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_1d.html
+
+        .. tab:: 2D
+
+            .. code-block:: python
+
+                data.barh(columns = ["grade", "gender"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.barh(columns = ["grade", "gender"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_barh_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_2d.html
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -374,6 +630,81 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.pie`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+            "grade": ['A','B','C','A','B','B', 'B'],
+            })
+
+        Below are examples of two types of pie plots:
+
+        - Regular
+        - Nested
+
+        .. tab:: Regular
+
+            .. code-block:: python
+
+                data.pie(["grade"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.pie(["grade"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_pie_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_1d.html
+
+        .. tab:: Nested
+
+            .. code-block:: python
+
+                data.pie(columns = ["grade", "gender"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.pie(columns = ["grade", "gender"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_pie_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_2d.html
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="NestedPieChart",
@@ -411,14 +742,23 @@ class vDFPlot(vDFMachineLearning):
             have less than 5 elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage  of  the  distribution.
-                mean    : Average  of the  vDataColumn 'of'.
-                min     : Minimum  of the  vDataColumn 'of'.
-                max     : Maximum  of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation, for example:
             AVG(column1) + 5
         of: str, optional
@@ -437,6 +777,82 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.hist`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            "score2": np.random.normal(8, 1.5, N),
+            "score3": np.random.normal(10, 2, N),
+            })
+
+        Below are examples of two types of hist plots:
+
+        - Single
+        - Multi
+
+        .. tab:: Single
+
+            .. code-block:: python
+
+                data.hist(["score1"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.hist(["score1"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_hist_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_1d.html
+
+        .. tab:: Multi
+
+            .. code-block:: python
+
+                data.hist(columns = ["score1", "score2"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.hist(columns = ["score1", "score2"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_hist_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_2d.html
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="Histogram",
@@ -474,10 +890,16 @@ class vDFPlot(vDFMachineLearning):
             The bandwidth of the kernel.
         kernel: str, optional
             The method used for the plot.
-                gaussian  : Gaussian Kernel.
-                logistic  : Logistic Kernel.
-                sigmoid   : Sigmoid Kernel.
-                silverman : Silverman Kernel.
+
+            - gaussian:
+                Gaussian Kernel.
+            - logistic:
+                Logistic Kernel.
+            - sigmoid:
+                Sigmoid Kernel.
+            - silverman:
+                Silverman Kernel.
+
         nbins: int, optional
             Maximum  number of  points used to  evaluate
             the approximate density function.
@@ -496,6 +918,82 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.density`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "score1": np.random.normal(5, 1, N),
+            "score2": np.random.normal(8, 1.5, N),
+            "score3": np.random.normal(10, 2, N),
+            })
+
+        Below are examples of two types of density plots:
+
+        - Single
+        - Multi
+
+        .. tab:: Single
+
+            .. code-block:: python
+
+                data.density(["score1"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.density(["score1"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_density_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_1d.html
+
+        .. tab:: Multi
+
+            .. code-block:: python
+
+                data.density(columns = ["score1", "score2"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.density(columns = ["score1", "score2"], width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_density_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_2d.html
         """
         vml = get_vertica_mllib()
         columns = format_type(columns, dtype=list)
@@ -591,11 +1089,18 @@ class vDFPlot(vDFMachineLearning):
             'ts' is greater than the 3rd of November 1993.
         kind: str, optional
             The plot type.
-                line         : Line Plot.
-                spline       : Spline Plot.
-                step         : Step Plot.
-                area_stacked : Stacked Area Plot.
-                area_percent : Fully Stacked Area Plot.
+
+            - line:
+                Line Plot.
+            - spline:
+                Spline Plot.
+            - step:
+                Step Plot.
+            - area_stacked:
+                Stacked Area Plot.
+            - area_percent:
+                Fully Stacked Area Plot.
+
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -606,6 +1111,85 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.line`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 50
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "date": [1900, 1950, 2000],
+                "Asia": [947, 1402, 3634],
+                "Africa": [133, 221, 767],
+                "Europe": [408, 547, 729],
+                "America": [156, 339, 818],
+                "Oceania": [6, 13, 30],
+            })
+
+        Below are examples of two types of plot plots:
+
+        - Single
+        - Multi
+
+        .. tab:: Single
+
+            .. code-block:: python
+
+                data.plot(columns = ["Asia"], ts = "date", kind = "spline")
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.plot(columns = ["Asia"], ts = "date", kind = "spline", width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_plot_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_1d.html
+
+        .. tab:: Multi
+
+            .. code-block:: python
+
+                data.plot(columns = ["Asia", "Africa", "Europe", "America", "Oceania"], ts = "date")
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.plot(columns = ["Asia", "Africa", "Europe", "America", "Oceania"], ts = "date", width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_plot_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_2d.html
         """
         columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -670,6 +1254,82 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.range`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "date": [1990 + i for i in range(N)] * 5,
+                "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+                "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
+            })
+
+        Below are examples of two types of range_plot plots:
+
+        - Single
+        - Multi
+
+        .. tab:: Single
+
+            .. code-block:: python
+
+                data.range_plot(columns = ["population1", "population2"], ts = "date")
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.range_plot(columns = ["population1"], ts = "date", width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_range_plot_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_1d.html
+
+        .. tab:: Multi
+
+            .. code-block:: python
+
+                data.range_plot(columns = ["population1", "population2"], ts = "date")
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.range_plot(columns = ["population1", "population2"], ts = "date", width = 600)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_range_plot_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_2d.html
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="RangeCurve",
@@ -716,10 +1376,10 @@ class vDFPlot(vDFMachineLearning):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
             It can also be a cutomized aggregation,
@@ -793,10 +1453,10 @@ class vDFPlot(vDFMachineLearning):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
             It can also be a cutomized aggregation
@@ -928,10 +1588,10 @@ class vDFPlot(vDFMachineLearning):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q  Quantile  of the  vDataColumn
                           'of (ex: 50% to get the median).
             It can also be a cutomized aggregation
@@ -1005,10 +1665,10 @@ class vDFPlot(vDFMachineLearning):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of  the vDataColumn 'of'.
-                min     : Minimum of  the vDataColumn 'of'.
-                max     : Maximum of  the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of  the vDataColumn ``of``.
+                min     : Minimum of  the vDataColumn ``of``.
+                max     : Maximum of  the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
         of: str, optional
@@ -1473,10 +2133,10 @@ class vDCPlot(vDCScaler):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn 'of'.
-                min     : Minimum of the  vDataColumn 'of'.
-                max     : Maximum of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the  vDataColumn ``of``.
+                min     : Minimum of the  vDataColumn ``of``.
+                max     : Maximum of the  vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
             It can also be a cutomized aggregation
@@ -1552,10 +2212,10 @@ class vDCPlot(vDCScaler):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn 'of'.
-                min     : Minimum of the  vDataColumn 'of'.
-                max     : Maximum of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the  vDataColumn ``of``.
+                min     : Minimum of the  vDataColumn ``of``.
+                max     : Maximum of the  vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
             It can also be a cutomized aggregation
@@ -1629,11 +2289,11 @@ class vDCPlot(vDCScaler):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
+                q%      : q Quantile of the vDataColumn ``of``
                           (ex: 50% to get the median).
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
@@ -1703,11 +2363,11 @@ class vDCPlot(vDCScaler):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
+                q%      : q Quantile of the vDataColumn ``of``
                           (ex: 50% to get the median).
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
@@ -1776,10 +2436,10 @@ class vDCPlot(vDCScaler):
             The method used to aggregate the data.
                 count   : Number of elements.
                 density : Percentage of the distribution.
-                mean    : Average of the  vDataColumn 'of'.
-                min     : Minimum of the  vDataColumn 'of'.
-                max     : Maximum of the  vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
+                mean    : Average of the  vDataColumn ``of``.
+                min     : Minimum of the  vDataColumn ``of``.
+                max     : Maximum of the  vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
                 q%      : q Quantile of the vDataColumn 'of
                           (ex: 50% to get the median).
             It can also be a cutomized aggregation
@@ -1981,11 +2641,11 @@ class vDCPlot(vDCScaler):
         method: str, optional
             The method used to aggregate the data.
                 count   : Number of elements.
-                mean    : Average of the vDataColumn 'of'.
-                min     : Minimum of the vDataColumn 'of'.
-                max     : Maximum of the vDataColumn 'of'.
-                sum     : Sum of the vDataColumn 'of'.
-                q%      : q Quantile of the vDataColumn 'of'
+                mean    : Average of the vDataColumn ``of``.
+                min     : Minimum of the vDataColumn ``of``.
+                max     : Maximum of the vDataColumn ``of``.
+                sum     : Sum of the vDataColumn ``of``.
+                q%      : q Quantile of the vDataColumn ``of``
                           (ex: 50% to get the median).
             It   can  also  be  a  cutomized   aggregation
             (ex: AVG(column1) + 5).
