@@ -489,23 +489,32 @@ class BinaryTreeRegressor(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
 
-    A BinaryTreeRegressor model is defined by its left and right child node id's,
-    feature and threshold value to split a node. Final values at leaf nodes are also required.
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor` model.:
+    A BinaryTreeRegressor model is defined by its left and right
+    child node id's, feature and threshold value to split a node. 
+    Final values at leaf nodes are also required.
+
+    Let's create a 
+    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor` model.:
 
     .. ipython:: python
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeRegressor
+        
+        # Different Attributes
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
         feature = [0, 1, None, None, None]
         threshold = ["female", 30, None, None, None]
         value = [None, None, 3, 11, 1993]
-        model_btr = BinaryTreeRegressor(children_left = children_left,
-                        children_right = children_right,
-                        feature = feature,
-                        threshold = threshold,
-                        value = value)
+        
+        # Building the Model
+        model_btr = BinaryTreeRegressor(
+            children_left = children_left,
+            children_right = children_right,
+            feature = feature,
+            threshold = threshold,
+            value = value,
+        )
 
     Create a dataset.
 
@@ -515,12 +524,49 @@ class BinaryTreeRegressor(Tree):
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict`
-    method to do predictions
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict`
+    method to do predictions.
 
     .. ipython:: python
 
         model_btr.predict(data)
+
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.to_graphviz`
+    method to generate code for a 
+    `Graphviz <https://graphviz.org/>`_ tree.
+
+    .. ipython:: python
+
+        model_btr.to_graphviz()
+
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.plot_tree`
+    method to draw the input tree.
+
+    .. code-block:: python
+
+        model_btr.plot_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = model_btr.plot_tree()
+        res.render(filename='figures/machine_learning_memmodel_tree_binarytreereg', format='png')
+
+    .. image:: /../figures/machine_learning_memmodel_tree_binarytreereg.png
+
+    .. important:: 
+
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+
+    .. note::
+
+        The above example is a very basic one. For
+        other more detailed examples and customization
+        options, please see :ref:`chart_gallery.tree`_
 
     **Deploy SQL Code**
 
@@ -530,8 +576,9 @@ class BinaryTreeRegressor(Tree):
 
         cnames = ["sex", "fare"]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
 
@@ -598,11 +645,10 @@ class BinaryTreeAnomaly(Tree):
         A  list of thresholds, where threshold[i] is  the
         threshold for the internal node i.
     value: ArrayLike
-        Contains  the  constant  prediction value of each
-        node.   If  used  for   classification   and
-        return_proba is set to True,  each element of the
-        list must be a sublist  with the probabilities of
-        each class.
+        List of elements,  which are  null except for the 
+        leaves,  where each  leaf contains a list of  two 
+        elements   representing  the  number  of   points 
+        classified as outliers and those that are not.
     psy: int, optional
         Sampling  size used to  compute the final  score.
 
@@ -617,23 +663,47 @@ class BinaryTreeAnomaly(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeAnomaly
 
-    A BinaryTreeAnomaly model is defined by its left and right child node id's,
-    feature and threshold value to split a node. Final values at leaf nodes are also required.
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly` model.:
+    A BinaryTreeAnomaly model is defined by its left and right 
+    child node id's, feature and threshold value to split a node. 
+    Final values at leaf nodes are also required.
+    Let's create a 
+    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly` 
+    model.:
 
     .. ipython:: python
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeAnomaly
+
+        # Different Attributes
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
         feature = [0, 1, None, None, None]
         threshold = ["female", 30, None, None, None]
-        value = [None, None, 3, 11, 1993]
-        model_bta = BinaryTreeAnomaly(children_left = children_left,
-                        children_right = children_right,
-                        feature = feature,
-                        threshold = threshold,
-                        value = value)
+        value = [None, None, [2, 10], [3, 4], [7, 8]]
+
+        # Building the Model
+        model_bta = BinaryTreeAnomaly(
+            children_left = children_left,
+            children_right = children_right,
+            feature = feature,
+            threshold = threshold,
+            value = value,
+            psy = 100,
+        )
+
+    .. important::
+
+        The parameter ``psy`` corresponds to the sampling 
+        size used to compute the final  score. This parameter 
+        is needed to compute the final score. A wrong parameter 
+        can lead to a wrong computation.
+
+    .. note::
+
+        For ``BinaryTreeAnomaly``, the parameter ``value``
+        represent the number of points classified as outliers
+        and those that are not. Leaves are then a list of
+        two elements.
 
     Create a dataset.
 
@@ -643,12 +713,49 @@ class BinaryTreeAnomaly(Tree):
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict`
-    method to do predictions
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict`
+    method to do predictions.
 
     .. ipython:: python
 
-        #model_bta.predict(data)
+        model_bta.predict(data)
+
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.to_graphviz`
+    method to generate code for a 
+    `Graphviz <https://graphviz.org/>`_ tree.
+
+    .. ipython:: python
+
+        model_bta.to_graphviz()
+
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.plot_tree`
+    method to draw the input tree.
+
+    .. code-block:: python
+
+        model_bta.plot_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = model_bta.plot_tree()
+        res.render(filename='figures/machine_learning_memmodel_tree_binarytreeanomaly', format='png')
+
+    .. image:: /../figures/machine_learning_memmodel_tree_binarytreeanomaly.png
+
+    .. important:: 
+
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+
+    .. note::
+
+        The above example is a very basic one. For
+        other more detailed examples and customization
+        options, please see :ref:`chart_gallery.tree`_
 
     **Deploy SQL Code**
 
@@ -658,12 +765,14 @@ class BinaryTreeAnomaly(Tree):
 
         cnames = ["sex", "fare"]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict_sql`
+    method to get the SQL code needed to deploy the model 
+    using its attributes.
 
     .. ipython:: python
 
-        #model_bta.predict_sql(cnames)
+        model_bta.predict_sql(cnames)
 
     .. hint::
 
@@ -755,24 +864,32 @@ class BinaryTreeClassifier(Tree):
 
         from verticapy.machine_learning.memmodel.tree import BinaryTreeClassifier
 
-    A BinaryTreeClassifier tree model is defined by its left and right child node id's,
-    feature and threshold value to split a node. Final values at leaf nodes and name of
-    classes are also required. Let's create a :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier` model.
+    A BinaryTreeClassifier tree model is defined by its left 
+    and right child node id's, feature and threshold value to 
+    split a node. Final values at leaf nodes and name of classes 
+    are also required. Let's create a 
+    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier` 
+    model.
 
     .. ipython:: python
-
+        
+        # Different Attributes
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
         feature = [0, 1, None, None, None]
         threshold = ["female", 30, None, None, None]
         value = [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]]
         classes = ["a", "b", "c"]
-        model_btc = BinaryTreeClassifier(children_left = children_left,
-                            children_right = children_right,
-                            feature = feature,
-                            threshold = threshold,
-                            value = value,
-                            classes = classes)
+
+        # Building the Model
+        model_btc = BinaryTreeClassifier(
+            children_left = children_left,
+            children_right = children_right,
+            feature = feature,
+            threshold = threshold,
+            value = value,
+            classes = classes,
+        )
 
     Create a dataset.
 
@@ -783,28 +900,33 @@ class BinaryTreeClassifier(Tree):
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict`
-    method to do predictions
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict`
+    method to do predictions.
 
     .. ipython:: python
 
         model_btc.predict(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba`
-    method to compute the predicted probabilities for each class
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba`
+    method to compute the predicted probabilities for each class.
 
     .. ipython:: python
 
         model_btc.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.to_graphviz`
-    method to generate code for a `Graphviz <https://graphviz.org/>`_ tree
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.to_graphviz`
+    method to generate code for a 
+    `Graphviz <https://graphviz.org/>`_ tree.
 
     .. ipython:: python
 
         model_btc.to_graphviz()
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -819,8 +941,16 @@ class BinaryTreeClassifier(Tree):
 
     .. image:: /../figures/machine_learning_memmodel_tree_binarytreeclassifier.png
 
-    .. note:: :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module
+    .. important:: 
+
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+
+    .. note::
+
+        The above example is a very basic one. For
+        other more detailed examples and customization
+        options, please see :ref:`chart_gallery.tree`_
 
     **Deploy SQL Code**
 
@@ -830,16 +960,19 @@ class BinaryTreeClassifier(Tree):
 
         cnames = ["sex", "fare"]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_sql`
+    method to get the SQL code needed to deploy the model 
+    using its attributes.
 
     .. ipython:: python
 
-
         model_btc.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba_sql`
+    method to get the SQL code needed to deploy the model that 
+    computes predicted probabilities.
 
     .. ipython:: python
 
@@ -929,15 +1062,17 @@ class NonBinaryTree(Tree):
 
         from verticapy.machine_learning.memmodel.tree import NonBinaryTree
 
-    A NonBinaryTree tree model is defined by the non-binary decision tree and name of
-    classes.
+    A NonBinaryTree tree model is defined by the non-binary 
+    decision tree and name of classes.
 
-    We will first generate a non-binary tree using :py:meth:`verticapy.vDataFrame.chaid` method
+    We will first generate a non-binary tree using 
+    :py:meth:`verticapy.vDataFrame.chaid` method.
     For this example, we will use the Titanic dataset.
 
     .. code-block:: python
 
         import verticapy.datasets as vpd
+
         data = vpd.load_titanic()
 
     .. raw:: html
@@ -958,14 +1093,17 @@ class NonBinaryTree(Tree):
         import verticapy.datasets as vpd
         data = vpd.load_titanic()
 
-    Lets create a non-binary tree using :py:meth:`verticapy.vDataFrame.chaid` method
+    Lets create a non-binary tree using 
+    :py:meth:`verticapy.vDataFrame.chaid` method.
 
     .. ipython:: python
 
         tree = data.chaid("survived", ["sex", "fare"]).tree_
 
-    Our non-binary tree is ready, we will now provide information about classes and
-    create a :py:mod:`verticapy.machine_learning.memmodel.tree.NonBinaryTree` model.
+    Our non-binary tree is ready, we will now provide 
+    information about classes and create a 
+    :py:mod:`verticapy.machine_learning.memmodel.tree.NonBinaryTree` 
+    model.
 
     .. ipython:: python
 
@@ -980,28 +1118,33 @@ class NonBinaryTree(Tree):
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict`
-    method to do predictions
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict`
+    method to do predictions.
 
     .. ipython:: python
 
         model_nbt.predict(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba`
-    method to compute the predicted probabilities for each class
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba`
+    method to compute the predicted probabilities for each class.
 
     .. ipython:: python
 
         model_nbt.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.to_graphviz`
-    method to generate code for a `Graphviz <https://graphviz.org/>`_ tree
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.to_graphviz`
+    method to generate code for a 
+    `Graphviz <https://graphviz.org/>`_ tree.
 
     .. ipython:: python
 
         model_nbt.to_graphviz()
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.plot_tree`
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -1016,8 +1159,16 @@ class NonBinaryTree(Tree):
 
     .. image:: /../figures/machine_learning_memmodel_tree_NonBinaryTree.png
 
-    .. note:: :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.plot_tree`
-        requires the `Graphviz <https://graphviz.org/download/>`_ module
+    .. important:: 
+
+        :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
+
+    .. note::
+
+        The above example is a very basic one. For
+        other more detailed examples and customization
+        options, please see :ref:`chart_gallery.tree`_
 
     **Deploy SQL Code**
 
@@ -1027,15 +1178,19 @@ class NonBinaryTree(Tree):
 
         cnames = ["sex", "fare"]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_sql`
+    method to get the SQL code needed to deploy the model 
+    using its attributes.
 
     .. ipython:: python
 
         model_nbt.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use 
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba_sql`
+    method to get the SQL code needed to deploy the 
+    model that computes predicted probabilities.
 
     .. ipython:: python
 
