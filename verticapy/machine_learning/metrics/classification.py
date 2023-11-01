@@ -296,7 +296,7 @@ def confusion_matrix(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -469,7 +469,7 @@ def accuracy_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -612,7 +612,7 @@ def balanced_accuracy_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -757,7 +757,7 @@ def critical_success_index(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -905,7 +905,7 @@ def diagnostic_odds_ratio(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1050,7 +1050,7 @@ def f1_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1194,7 +1194,7 @@ def false_negative_rate(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1335,7 +1335,7 @@ def false_positive_rate(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1479,7 +1479,7 @@ def false_discovery_rate(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1623,7 +1623,7 @@ def false_omission_rate(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1767,7 +1767,7 @@ def fowlkes_mallows_index(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -1911,7 +1911,7 @@ def informedness(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2057,7 +2057,7 @@ def markedness(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2205,7 +2205,7 @@ def matthews_corrcoef(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2349,7 +2349,7 @@ def negative_predictive_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2493,7 +2493,7 @@ def negative_likelihood_ratio(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2638,7 +2638,7 @@ def positive_likelihood_ratio(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2782,7 +2782,7 @@ def precision_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -2927,7 +2927,7 @@ def prevalence_threshold(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -3071,7 +3071,7 @@ def recall_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -3215,7 +3215,7 @@ def specificity_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -3569,7 +3569,7 @@ def best_cutoff(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -3730,7 +3730,7 @@ def average_precision_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
@@ -3946,7 +3946,7 @@ def roc_auc_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
             },
@@ -4170,7 +4170,7 @@ def prc_auc_score(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
             },
@@ -4369,7 +4369,7 @@ def log_loss(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
             },
@@ -4703,7 +4703,7 @@ def classification_report(
     .. ipython:: python
 
         data = vp.vDataFrame(
-            {   
+            {
                 "y_true": [1, 1, 0, 0, 1],
                 "y_pred": [1, 1, 1, 0, 1],
             },
