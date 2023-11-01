@@ -278,6 +278,67 @@ def confusion_matrix(
     -------
     Array
         confusion matrix.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import confusion_matrix
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        confusion_matrix(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "confusion_matrix",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if isinstance(pos_label, NoneType) and isinstance(labels, NoneType):
         pos_label = 1
@@ -356,18 +417,29 @@ def accuracy_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
-            None     : accuracy.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -379,6 +451,78 @@ def accuracy_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import accuracy_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        accuracy_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "accuracy",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _accuracy_score,
@@ -416,18 +560,29 @@ def balanced_accuracy_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
-            None     : balanced accuracy.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
     labels: ArrayLike, optional
         List   of   the  response  column   categories.
     pos_label: PythonScalar, optional
@@ -439,6 +594,78 @@ def balanced_accuracy_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import balanced_accuracy_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        balanced_accuracy_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "balanced_accuracy",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _balanced_accuracy_score,
@@ -476,17 +703,29 @@ def critical_success_index(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -500,6 +739,78 @@ def critical_success_index(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import critical_success_index
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        critical_success_index(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "critical_success_index",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _critical_success_index,
@@ -541,17 +852,28 @@ def diagnostic_odds_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -565,6 +887,78 @@ def diagnostic_odds_ratio(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import diagnostic_odds_ratio
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        diagnostic_odds_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "diagnostic_odds_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _diagnostic_odds_ratio,
@@ -603,17 +997,28 @@ def f1_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -627,6 +1032,78 @@ def f1_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import f1_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        f1_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "f1_score",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _f1_score,
@@ -664,17 +1141,28 @@ def false_negative_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -688,6 +1176,78 @@ def false_negative_rate(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import false_negative_rate
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        false_negative_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_negative_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(_false_negative_rate, **locals())
 
@@ -722,17 +1282,28 @@ def false_positive_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -746,6 +1317,78 @@ def false_positive_rate(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import false_positive_rate
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        false_positive_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_positive_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_positive_rate,
@@ -783,17 +1426,28 @@ def false_discovery_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -807,6 +1461,78 @@ def false_discovery_rate(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import false_discovery_rate
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        false_discovery_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_discovery_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_discovery_rate,
@@ -844,17 +1570,28 @@ def false_omission_rate(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -868,6 +1605,78 @@ def false_omission_rate(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import false_omission_rate
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        false_omission_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "false_omission_rate",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _false_omission_rate,
@@ -905,17 +1714,28 @@ def fowlkes_mallows_index(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -929,6 +1749,78 @@ def fowlkes_mallows_index(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import fowlkes_mallows_index
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        fowlkes_mallows_index(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "fowlkes_mallows_index",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _fowlkes_mallows_index,
@@ -966,17 +1858,28 @@ def informedness(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -990,6 +1893,78 @@ def informedness(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import informedness
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        informedness(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "informedness",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _informedness,
@@ -1029,17 +2004,28 @@ def markedness(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1053,6 +2039,78 @@ def markedness(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import markedness
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        markedness(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "markedness",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _markedness,
@@ -1094,17 +2152,28 @@ def matthews_corrcoef(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1118,6 +2187,78 @@ def matthews_corrcoef(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import matthews_corrcoef
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        matthews_corrcoef(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "mcc",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _matthews_corrcoef,
@@ -1155,17 +2296,28 @@ def negative_predictive_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1179,6 +2331,78 @@ def negative_predictive_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import negative_predictive_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        negative_predictive_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "negative_predictive_value",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _negative_predictive_score,
@@ -1216,17 +2440,28 @@ def negative_likelihood_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1240,6 +2475,78 @@ def negative_likelihood_ratio(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import negative_likelihood_ratio
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        negative_likelihood_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "negative_likelihood_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _negative_likelihood_ratio,
@@ -1278,17 +2585,28 @@ def positive_likelihood_ratio(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1302,6 +2620,78 @@ def positive_likelihood_ratio(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import positive_likelihood_ratio
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        positive_likelihood_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "positive_likelihood_ratio",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _positive_likelihood_ratio,
@@ -1339,17 +2729,28 @@ def precision_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1363,6 +2764,78 @@ def precision_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import precision_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        precision_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "precision",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _precision_score,
@@ -1401,17 +2874,28 @@ def prevalence_threshold(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1425,6 +2909,78 @@ def prevalence_threshold(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import prevalence_threshold
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        prevalence_threshold(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "prevalence_threshold",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _prevalence_threshold,
@@ -1462,17 +3018,28 @@ def recall_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1486,6 +3053,78 @@ def recall_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import recall_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        recall_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "recall",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _recall_score,
@@ -1523,17 +3162,28 @@ def specificity_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1547,6 +3197,78 @@ def specificity_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import specificity_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        specificity_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "specificity",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return _compute_final_score(
         _specificity_score,
@@ -1784,17 +3506,28 @@ def best_cutoff(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1818,6 +3551,78 @@ def best_cutoff(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import best_cutoff
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        best_cutoff(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "best_cutoff",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         threshold, false_positive, true_positive = _compute_function_metrics(
@@ -1871,13 +3676,19 @@ def average_precision_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - scores:
+            scores  for   all  the  classes.
+
+        - weighted:
+            weighted average of the score of each class.
+
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -1901,6 +3712,78 @@ def average_precision_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import average_precision_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        average_precision_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "average_precision_score",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         recall, precision = _compute_function_metrics(
@@ -1999,17 +3882,29 @@ def roc_auc_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -2033,6 +3928,78 @@ def roc_auc_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import roc_auc_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        roc_auc_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "roc_auc",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if (
         not isinstance(pos_label, NoneType)
@@ -2142,17 +4109,26 @@ def prc_auc_score(
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -2176,6 +4152,78 @@ def prc_auc_score(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import prc_auc_score
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        prc_auc_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "prc_auc",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         recall, precision = _compute_function_metrics(
@@ -2267,17 +4315,29 @@ def log_loss(
     average: str, optional
         The  method  used  to  compute  the final score for
         multiclass-classification.
-            binary   : considers  one  of  the  classes  as
-                       positive   and    use   the   binary
-                       confusion   matrix  to  compute  the
-                       score.
-            micro    : positive    and    negative   values
-                       globally.
-            macro    : average   of   the   score  of  each
-                       class.
-            scores   : scores  for   all  the  classes.
-            weighted : weighted  average  of  the score  of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
         If  empty,  the  behaviour  is  similar to  the
         'scores' option.
     labels: ArrayLike, optional
@@ -2291,6 +4351,78 @@ def log_loss(
     -------
     float
         score.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import log_loss
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        log_loss(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "log_loss",
+        )
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
         y_s = _get_yscore(y_score, labels, pos_label)
@@ -2410,40 +4542,124 @@ def classification_report(
     metrics: list, optional
         List of the metrics used to compute the final
         report.
-            accuracy    : Accuracy
-            aic         : Akaike’s  Information  Criterion
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            best_cutoff : Cutoff  which optimised the  ROC
-                          Curve prediction.
-            bic         : Bayesian  Information  Criterion
-            bm          : Informedness = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall = tp / (tp + fn)
-            specificity : Specificity = tn / (tn + fp)
+
+        - accuracy:
+            Accuracy
+
+        - aic:
+            Akaike's  Information  Criterion
+
+        - auc:
+            Area Under the Curve (ROC)
+
+        - ba:
+            Balanced Accuracy
+
+            .. math::
+
+                ba = (tpr + tnr) / 2
+
+        - best_cutoff:
+            Cutoff  which optimised the  ROC
+            Curve prediction.
+
+        - bic:
+            Bayesian  Information  Criterion
+
+        - bm:
+            Informedness = tpr + tnr - 1
+
+        - csi:
+            Critical Success Index
+
+            .. math::
+
+                csi = tp / (tp + fn + fp)
+
+        - f1:
+            F1 Score
+
+        - fdr:
+            False Discovery Rate = 1 - ppv
+
+        - fm:
+            Fowlkes-Mallows index
+
+            .. math::
+
+                fm = sqrt(ppv * tpr)
+
+        - fnr:
+            False Negative Rate
+
+            .. math::
+
+                fnr = fn / (fn + tp)
+
+        - for:
+            False Omission Rate = 1 - npv
+
+        - fpr:
+            .. math::
+
+                False Positive Rate = fp / (fp + tn)
+
+        - logloss:
+            Log Loss
+
+        - lr+:
+            Positive Likelihood Ratio
+
+            .. math::
+
+                lr+ = tpr / fpr
+
+        - lr-:
+            Negative Likelihood Ratio
+
+            .. math::
+
+                lr- = fnr / tnr
+
+        - dor:
+            Diagnostic Odds Ratio
+
+        - mc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness = ppv + npv - 1
+
+        - npv:
+            Negative Predictive Value
+
+            .. math::
+
+                npv = tn / (tn + fn)
+
+        - prc_auc:
+            Area Under the Curve (PRC)
+
+        - precision:
+            .. math::
+
+                Precision = tp / (tp + fp)
+
+        - pt:
+            Prevalence Threshold
+
+            .. math::
+
+                pt = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+        - recall:
+            .. math::
+
+                Recall = tp / (tp + fn)
+
+        - specificity:
+            Specificity = tn / (tn + fp)
+
     labels: ArrayLike, optional
         List of the response column categories to use.
     cutoff: PythonNumber, optional
@@ -2469,6 +4685,77 @@ def classification_report(
     -------
     TableSample
         report.
+
+    Examples
+    ---------
+
+    We should first import verticapy.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Let's create a small dataset that has:
+
+    - true value
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import classification_report
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        #classification_report(y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    input_relation = data,
+        #)
+
+    .. note::
+
+        For multi-class classification, we can select
+        the ``average`` method for averaging from the
+        following options:
+        - binary
+        - micro
+        - macro
+        - scores
+        - weighted
+
+    It is also possible to directly compute the score
+    from the vDataFrame:
+
+    .. ipython:: python
+
+        #data.score(
+        #    y_true  = "y_true",
+        #    y_score = "y_pred",
+        #    metric  = "classification_report",
+        #)
+
+    .. note::
+
+        VerticaPy uses simple SQL queries to compute various metrics.
+        You can use the :py:mod:`verticapy.set_option` function with
+        the ``sql_on`` parameter to enable SQL generation and examine
+        the generated queries.
+
+    .. seealso::
+
+        :py:mod:`verticapy.vDataFrame.score`
     """
     return_scalar = False
     if isinstance(metrics, str):
