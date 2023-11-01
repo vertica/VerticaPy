@@ -1374,14 +1374,23 @@ class vDFPlot(vDFMachineLearning):
             have one or two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation,
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -1403,6 +1412,7 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             TableSample.
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -1451,14 +1461,23 @@ class vDFPlot(vDFMachineLearning):
             have one or two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -1492,6 +1511,64 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.pivot`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "category1": [np.random.choice(['A','B','C']) for _ in range(N)],
+                "category2": [np.random.choice(['D','E']) for _ in range(N)],
+            })
+
+        Below are examples of one types of pivot_table plots:
+
+        - Pivot Plot
+
+
+        .. tab:: Pivot Plot
+
+            .. code-block:: python
+
+                data.pivot_table(columns = ["category1", "category2"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.pivot_table(columns = ["category1", "category2"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_pivot_table_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pivot_table_1d.html
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -1548,6 +1625,71 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.contour`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        For contour plots, we also need a function to apply:
+
+        .. ipython:: python
+
+            def f(x, y):
+                return x ** 2 - y + 1
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "x": np.random.normal(5, 1, N),
+                "y": np.random.normal(8, 1.5, N),
+            })
+
+        Below is an examples of one type of contour plots:
+
+        - Contour Plot
+
+
+        .. tab:: Contour Plot
+
+            .. code-block:: python
+
+                data.contour(columns = ["x", "y"], func = f)
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.contour(columns = ["x", "y"], func = f)
+                fig.write_html("figures/core_vdataframe_plotting_vdf_contour_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_contour_1d.html
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ContourPlot",
@@ -1586,14 +1728,23 @@ class vDFPlot(vDFMachineLearning):
             have two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of the vDataColumn ``of``.
-                min     : Minimum of the vDataColumn ``of``.
-                max     : Maximum of the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q  Quantile  of the  vDataColumn
-                          'of (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
             It can also be a cutomized aggregation
             (ex: AVG(column1) + 5).
         of: str, optional
@@ -1612,6 +1763,64 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "x": np.random.normal(5, 1, N),
+                "y": np.random.normal(8, 1.5, N),
+            })
+
+        Below is an examples of one type of heatmap plots:
+
+        - Heatmap
+
+
+        .. tab:: Heatmap
+
+            .. code-block:: python
+
+                data.heatmap(columns = ["x", "y"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.heatmap(columns = ["x", "y"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_heatmap_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_heatmap_1d.html
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
@@ -1663,14 +1872,23 @@ class vDFPlot(vDFMachineLearning):
             have two elements.
         method: str, optional
             The method used to aggregate the data.
-                count   : Number of elements.
-                density : Percentage of the distribution.
-                mean    : Average of  the vDataColumn ``of``.
-                min     : Minimum of  the vDataColumn ``of``.
-                max     : Maximum of  the vDataColumn ``of``.
-                sum     : Sum of the vDataColumn ``of``.
-                q%      : q Quantile of the vDataColumn 'of
-                          (ex: 50% to get the median).
+
+            - count:
+                Number of elements.
+            - density:
+                Percentage  of  the  distribution.
+            - mean:
+                Average  of the  vDataColumn ``of``.
+            - min:
+                Minimum  of the  vDataColumn ``of``.
+            - max:
+                Maximum  of the  vDataColumn ``of``.
+            - sum:
+                Sum of the vDataColumn ``of``.
+            - q%:
+                q Quantile of the vDataColumn ``of``
+                (ex: 50% to get the median).
+
         of: str, optional
             The vDataColumn used to compute the aggregation.
         bbox: list, optional
@@ -1689,6 +1907,57 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "x": np.random.normal(5, 1, N),
+                "y": np.random.normal(8, 1.5, N),
+            })
+
+        Below is an examples of one type of hexbin plots:
+
+        - Hexbin
+
+        .. tab:: Hexbin
+
+            .. ipython:: python
+
+                @suppress
+                vp.set_option("plotting_lib", "matplotlib")
+
+                @savefig core_vdataframe_plotting_vdf_hexbin_1.png
+                data.hexbin(columns = ["x", "y"])
+
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
@@ -1771,6 +2040,83 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.scatter`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+            "category": [np.random.choice(['A','B','C']) for _ in range(N)],
+            "x": np.random.normal(5, 1, N),
+            "y": np.random.normal(8, 1.5, N),
+            "z": np.random.normal(10, 2, N),
+            })
+
+        Below are examples of two types of scatter plots:
+
+        - 2D
+        - 3D
+
+        .. tab:: 2D
+
+            .. code-block:: python
+
+                data.scatter(columns = ["x", "y"], by = "category")
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.scatter(columns = ["x", "y"], by = "category")
+                fig.write_html("figures/core_vdataframe_plotting_vdf_scatter_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_2d.html
+
+        .. tab:: 3D
+
+            .. code-block:: python
+
+                data.scatter(columns = ["x", "y", "z"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.scatter(columns = ["x", "y", "z"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_scatter_3d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_3d.html
         """
         vml = get_vertica_mllib()
         if img and not bbox and len(columns) == 2:
@@ -1860,6 +2206,57 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            data = vp.vDataFrame({
+                "x": np.random.normal(5, 1, N),
+                "y": np.random.normal(8, 1.5, N),
+            })
+
+        Below is an examples of one type of scatter_matrix plots:
+
+        - Scatter Matrix
+
+
+        .. tab:: Scatter Matrix
+
+            .. ipython:: python
+
+                @suppress
+                vp.set_option("plotting_lib", "matplotlib")
+
+                @savefig core_vdataframe_plotting_vdf_scatter_matrix.png
+                data.scatter_matrix(columns = ["x", "y"])
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -1914,6 +2311,86 @@ class vDFPlot(vDFMachineLearning):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.outliers`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        Let's also import `numpy` to create a random dataset.
+
+        .. ipython:: python
+
+            import numpy as np
+
+        We can create a variable ``N`` to fix the size:
+
+        .. ipython:: python
+
+            N = 30
+
+        Let's generate a dataset using the following data.
+
+        .. ipython:: python
+
+            # Normal Distributions
+            x = np.random.normal(5, 1, round(N / 2))
+            y = np.random.normal(3, 1, round(N / 2))
+
+            # Creating a vDataFrame with a few outlers
+            data = vp.vDataFrame({
+                "x": np.concatenate([x, [15]]),
+                "y": np.concatenate([y, [12]]),
+            })
+
+        Below are examples of two types of outliers_plot plots:
+
+        - 1D
+        - 2D
+
+        .. tab:: 1D
+
+            .. code-block:: python
+
+                data.outliers_plot(columns = ["x"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.outliers_plot(columns = ["x"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_outliers_plot_1d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_1d.html
+
+        .. tab:: 2D
+
+            .. code-block:: python
+
+                data.outliers_plot(columns = ["x", "y"])
+
+
+            .. ipython:: python
+                :suppress:
+
+                vp.set_option("plotting_lib", "plotly")
+                fig = data.outliers_plot(columns = ["x", "y"])
+                fig.write_html("figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html")
+
+            .. raw:: html
+                :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="OutliersPlot",
