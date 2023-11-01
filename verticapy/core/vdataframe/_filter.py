@@ -349,12 +349,28 @@ class vDFFilter(vDFAgg):
             records where the vDataColumn 'column' is greater
             than 5 and less than 10, you can write:
             ['"column" > 5', '"column" < 10'].
+        force_filter: bool, optional
+            Default Value: True
+            When set to True, the vDataFrame will be modified
+            even if no filtering occurred. This parameter can
+            be used to enforce filtering  and ensure pipeline
+            consistency.
+        raise_error: bool, optional
+            Default Value: False
+            If set to True and the input filtering is incorrect,
+            an error is raised.
 
         Returns
         -------
         vDataFrame
             self
         """
+        force_filter = True
+        if "force_filter" in kwargs:
+            force_filter = kwargs["force_filter"]
+        raise_error = False
+        if "raise_error" in kwargs:
+            raise_error = kwargs["raise_error"]
         count = self.shape()[0]
         conj = "s were " if count > 1 else " was "
         if not isinstance(conditions, str) or (args):
@@ -366,7 +382,12 @@ class vDFFilter(vDFAgg):
                 conditions = list(conditions)
             conditions += list(args)
             for condition in conditions:
-                self.filter(str(condition), print_info=False)
+                self.filter(
+                    str(condition),
+                    print_info=False,
+                    raise_error=raise_error,
+                    force_filter=force_filter,
+                )
             count -= self.shape()[0]
             if count > 0:
                 if conf.get_option("print_info"):
@@ -397,7 +418,7 @@ class vDFFilter(vDFAgg):
                     symbol=self._vars["symbol"],
                 )
                 count -= new_count
-            except QueryError:
+            except QueryError as e:
                 del self._vars["where"][-1]
                 if conf.get_option("print_info"):
                     warning_message = (
@@ -405,8 +426,10 @@ class vDFFilter(vDFAgg):
                         "Nothing was filtered."
                     )
                     warnings.warn(warning_message, Warning)
+                if raise_error:
+                    raise (e)
                 return self
-            if count > 0:
+            if count > 0 or force_filter:
                 self._update_catalog(erase=True)
                 self._vars["count"] = new_count
                 conj = "s were " if count > 1 else " was "
