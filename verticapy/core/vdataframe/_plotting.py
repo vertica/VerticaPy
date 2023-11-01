@@ -101,7 +101,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -117,11 +117,13 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            "score2": np.random.normal(8, 1.5, N),
-            "score3": np.random.normal(10, 2, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                    "score2": np.random.normal(8, 1.5, N),
+                    "score3": np.random.normal(10, 2, N),
+                }
+            )
 
         Below are examples of two types of boxplot:
 
@@ -135,7 +137,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.boxplot(["score1"])
-
 
             .. ipython:: python
                 :suppress:
@@ -153,7 +154,6 @@ class vDFPlot(vDFMachineLearning):
 
                 data.boxplot(columns = ["score1", "score2", "score3"])
 
-
             .. ipython:: python
                 :suppress:
 
@@ -163,7 +163,6 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_multi.html
-
         """
         columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -274,26 +273,22 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Below are examples of two types of bar plots:
 
@@ -305,7 +300,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.bar(["grade"])
-
 
             .. ipython:: python
                 :suppress:
@@ -323,7 +317,6 @@ class vDFPlot(vDFMachineLearning):
 
                 data.bar(columns = ["grade", "gender"])
 
-
             .. ipython:: python
                 :suppress:
 
@@ -333,7 +326,6 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_2d.html
-
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -481,26 +473,22 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Below are examples of two types of barh plots:
 
@@ -512,7 +500,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.barh(["grade"])
-
 
             .. ipython:: python
                 :suppress:
@@ -529,7 +516,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.barh(columns = ["grade", "gender"])
-
 
             .. ipython:: python
                 :suppress:
@@ -646,26 +632,22 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Below are examples of two types of pie plots:
 
@@ -677,7 +659,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.pie(["grade"])
-
 
             .. ipython:: python
                 :suppress:
@@ -694,7 +675,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.pie(columns = ["grade", "gender"])
-
 
             .. ipython:: python
                 :suppress:
@@ -793,7 +773,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -809,11 +789,13 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            "score2": np.random.normal(8, 1.5, N),
-            "score3": np.random.normal(10, 2, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                    "score2": np.random.normal(8, 1.5, N),
+                    "score3": np.random.normal(10, 2, N),
+                }
+            )
 
         Below are examples of two types of hist plots:
 
@@ -825,7 +807,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.hist(["score1"])
-
 
             .. ipython:: python
                 :suppress:
@@ -842,7 +823,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.hist(columns = ["score1", "score2"])
-
 
             .. ipython:: python
                 :suppress:
@@ -934,7 +914,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -950,11 +930,13 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            "score2": np.random.normal(8, 1.5, N),
-            "score3": np.random.normal(10, 2, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                    "score2": np.random.normal(8, 1.5, N),
+                    "score3": np.random.normal(10, 2, N),
+                }
+            )
 
         Below are examples of two types of density plots:
 
@@ -966,7 +948,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.density(["score1"])
-
 
             .. ipython:: python
                 :suppress:
@@ -983,7 +964,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.density(columns = ["score1", "score2"])
-
 
             .. ipython:: python
                 :suppress:
@@ -1127,30 +1107,26 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "date": [1900, 1950, 2000],
-                "Asia": [947, 1402, 3634],
-                "Africa": [133, 221, 767],
-                "Europe": [408, 547, 729],
-                "America": [156, 339, 818],
-                "Oceania": [6, 13, 30],
-            })
+            data = vp.vDataFrame(
+                {
+                    "date": [1900, 1950, 2000],
+                    "Asia": [947, 1402, 3634],
+                    "Africa": [133, 221, 767],
+                    "Europe": [408, 547, 729],
+                    "America": [156, 339, 818],
+                    "Oceania": [6, 13, 30],
+                }
+            )
 
         Below are examples of two types of plot plots:
 
@@ -1162,7 +1138,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.plot(columns = ["Asia"], ts = "date", kind = "spline")
-
 
             .. ipython:: python
                 :suppress:
@@ -1179,7 +1154,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.plot(columns = ["Asia", "Africa", "Europe", "America", "Oceania"], ts = "date")
-
 
             .. ipython:: python
                 :suppress:
@@ -1270,7 +1244,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -1286,11 +1260,13 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "date": [1990 + i for i in range(N)] * 5,
-                "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
-                "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
-            })
+            data = vp.vDataFrame(
+                {
+                    "date": [1990 + i for i in range(N)] * 5,
+                    "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+                    "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
+                }
+            )
 
         Below are examples of two types of range_plot plots:
 
@@ -1302,7 +1278,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.range_plot(columns = ["population1", "population2"], ts = "date")
-
 
             .. ipython:: python
                 :suppress:
@@ -1319,7 +1294,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.range_plot(columns = ["population1", "population2"], ts = "date")
-
 
             .. ipython:: python
                 :suppress:
@@ -1527,7 +1501,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -1543,22 +1517,22 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "category1": [np.random.choice(['A','B','C']) for _ in range(N)],
-                "category2": [np.random.choice(['D','E']) for _ in range(N)],
-            })
+            data = vp.vDataFrame(
+                {
+                    "category1": [np.random.choice(['A','B','C']) for _ in range(N)],
+                    "category2": [np.random.choice(['D','E']) for _ in range(N)],
+                }
+            )
 
         Below are examples of one types of pivot_table plots:
 
         - Pivot Plot
-
 
         .. tab:: Pivot Plot
 
             .. code-block:: python
 
                 data.pivot_table(columns = ["category1", "category2"])
-
 
             .. ipython:: python
                 :suppress:
@@ -1641,7 +1615,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -1664,22 +1638,22 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "x": np.random.normal(5, 1, N),
-                "y": np.random.normal(8, 1.5, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": np.random.normal(5, 1, N),
+                    "y": np.random.normal(8, 1.5, N),
+                }
+            )
 
         Below is an examples of one type of contour plots:
 
         - Contour Plot
-
 
         .. tab:: Contour Plot
 
             .. code-block:: python
 
                 data.contour(columns = ["x", "y"], func = f)
-
 
             .. ipython:: python
                 :suppress:
@@ -1779,7 +1753,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -1795,22 +1769,22 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "x": np.random.normal(5, 1, N),
-                "y": np.random.normal(8, 1.5, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": np.random.normal(5, 1, N),
+                    "y": np.random.normal(8, 1.5, N),
+                }
+            )
 
         Below is an examples of one type of heatmap plots:
 
         - Heatmap
-
 
         .. tab:: Heatmap
 
             .. code-block:: python
 
                 data.heatmap(columns = ["x", "y"])
-
 
             .. ipython:: python
                 :suppress:
@@ -1923,7 +1897,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -1939,10 +1913,12 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "x": np.random.normal(5, 1, N),
-                "y": np.random.normal(8, 1.5, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": np.random.normal(5, 1, N),
+                    "y": np.random.normal(8, 1.5, N),
+                }
+            )
 
         Below is an examples of one type of hexbin plots:
 
@@ -2056,7 +2032,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -2072,12 +2048,14 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "category": [np.random.choice(['A','B','C']) for _ in range(N)],
-            "x": np.random.normal(5, 1, N),
-            "y": np.random.normal(8, 1.5, N),
-            "z": np.random.normal(10, 2, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "category": [np.random.choice(['A','B','C']) for _ in range(N)],
+                    "x": np.random.normal(5, 1, N),
+                    "y": np.random.normal(8, 1.5, N),
+                    "z": np.random.normal(10, 2, N),
+                }
+            )
 
         Below are examples of two types of scatter plots:
 
@@ -2089,7 +2067,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.scatter(columns = ["x", "y"], by = "category")
-
 
             .. ipython:: python
                 :suppress:
@@ -2106,7 +2083,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.scatter(columns = ["x", "y", "z"])
-
 
             .. ipython:: python
                 :suppress:
@@ -2222,7 +2198,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -2238,15 +2214,16 @@ class vDFPlot(vDFMachineLearning):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "x": np.random.normal(5, 1, N),
-                "y": np.random.normal(8, 1.5, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": np.random.normal(5, 1, N),
+                    "y": np.random.normal(8, 1.5, N),
+                }
+            )
 
         Below is an examples of one type of scatter_matrix plots:
 
         - Scatter Matrix
-
 
         .. tab:: Scatter Matrix
 
@@ -2327,7 +2304,7 @@ class vDFPlot(vDFMachineLearning):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -2347,11 +2324,13 @@ class vDFPlot(vDFMachineLearning):
             x = np.random.normal(5, 1, round(N / 2))
             y = np.random.normal(3, 1, round(N / 2))
 
-            # Creating a vDataFrame with a few outlers
-            data = vp.vDataFrame({
-                "x": np.concatenate([x, [15]]),
-                "y": np.concatenate([y, [12]]),
-            })
+            # Creating a vDataFrame with a few outliers
+            data = vp.vDataFrame(
+                {
+                    "x": np.concatenate([x, [15]]),
+                    "y": np.concatenate([y, [12]]),
+                }
+            )
 
         Below are examples of two types of outliers_plot plots:
 
@@ -2363,7 +2342,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.outliers_plot(columns = ["x"])
-
 
             .. ipython:: python
                 :suppress:
@@ -2380,7 +2358,6 @@ class vDFPlot(vDFMachineLearning):
             .. code-block:: python
 
                 data.outliers_plot(columns = ["x", "y"])
-
 
             .. ipython:: python
                 :suppress:
@@ -2583,7 +2560,7 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -2599,16 +2576,17 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["score1"].boxplot()
-
 
         .. ipython:: python
             :suppress:
@@ -2726,33 +2704,28 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["grade"].bar()
-
 
         .. ipython:: python
             :suppress:
@@ -2867,33 +2840,28 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["grade"].barh()
-
 
         .. ipython:: python
             :suppress:
@@ -3001,33 +2969,28 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
-            "grade": ['A','B','C','A','B','B', 'B'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "gender": ['M', 'M', 'M', 'F', 'F', 'F', 'F'],
+                    "grade": ['A','B','C','A','B','B', 'B'],
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["grade"].pie()
-
 
         .. ipython:: python
             :suppress:
@@ -3129,33 +3092,28 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "category": [np.random.choice(['A','B','C']) for _ in range(N)],
-            "score1": np.random.normal(5, 1, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "category": [np.random.choice(['A','B','C']) for _ in range(N)],
+                    "score1": np.random.normal(5, 1, N),
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["score1"].spider()
-
 
         .. ipython:: python
             :suppress:
@@ -3278,7 +3236,7 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -3294,16 +3252,17 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["score1"].hist()
-
 
         .. ipython:: python
             :suppress:
@@ -3418,7 +3377,7 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -3434,16 +3393,17 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-            "score1": np.random.normal(5, 1, N),
-            })
+            data = vp.vDataFrame(
+                {
+                    "score1": np.random.normal(5, 1, N),
+                }
+            )
 
         Now we are ready to draw the plot:
 
         .. code-block:: python
 
             data["score1"].density()
-
 
         .. ipython:: python
             :suppress:
@@ -3585,26 +3545,22 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "date": [1990 + i for i in range(N)] * 5,
-                "population": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
-            })
+            data = vp.vDataFrame(
+                {
+                    "date": [1990 + i for i in range(N)] * 5,
+                    "population": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+                }
+            )
 
         Now we are ready to draw the plot:
 
@@ -3711,38 +3667,32 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
             import numpy as np
 
-        We can create a variable ``N`` to fix the size:
-
-        .. ipython:: python
-
-            N = 50
-
         Let's generate a dataset using the following data.
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "date": [1900, 1950, 2000],
-                "Asia": [947, 1402, 3634],
-                "Africa": [133, 221, 767],
-                "Europe": [408, 547, 729],
-                "America": [156, 339, 818],
-                "Oceania": [6, 13, 30],
-            })
+            data = vp.vDataFrame(
+                {
+                    "date": [1900, 1950, 2000],
+                    "Asia": [947, 1402, 3634],
+                    "Africa": [133, 221, 767],
+                    "Europe": [408, 547, 729],
+                    "America": [156, 339, 818],
+                    "Oceania": [6, 13, 30],
+                }
+            )
 
         Now we are ready to draw the plot:
-
 
         .. code-block:: python
 
             data["Asia"].plot(ts = "date", kind = "spline")
-
 
         .. ipython:: python
             :suppress:
@@ -3830,7 +3780,7 @@ class vDCPlot(vDCScaler):
 
             import verticapy as vp
 
-        Let's also import `numpy` to create a random dataset.
+        Let's also import `numpy` to create a dataset.
 
         .. ipython:: python
 
@@ -3846,19 +3796,19 @@ class vDCPlot(vDCScaler):
 
         .. ipython:: python
 
-            data = vp.vDataFrame({
-                "date": [1990 + i for i in range(N)] * 5,
-                "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
-                "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
-            })
+            data = vp.vDataFrame(
+                {
+                    "date": [1990 + i for i in range(N)] * 5,
+                    "population1": [100 + i for i in range(N)] + [300 + i * 2 for i in range(N)] + [200 + i ** 2 - 3 * i for i in range(N)] + [50 + i ** 2 - 6 * i for i in range(N)] + [700 + i ** 2 - 10 * i for i in range(N)],
+                    "population2": [200 + i ** 2 - i for i in range(N)] + [1000 + i * 2 for i in range(N)] + [500 + i ** 2 - 5 * i for i in range(N)] + [900 + i ** 2 + 3 * i for i in range(N)] + [100 + i ** 2 - 0.5 * i for i in range(N)],
+                }
+            )
 
         Now we are ready to draw the plot:
-
 
         .. code-block:: python
 
             data["population1"].range_plot(ts = "date")
-
 
         .. ipython:: python
             :suppress:
@@ -3944,9 +3894,7 @@ class vDCPlot(vDCScaler):
             # We filter to select only the African continent
             africa = world[world["continent"] == "Africa"]
 
-
         Now we can draw the plot:
-
 
         .. ipython:: python
             :okwarning:
