@@ -295,8 +295,11 @@ def confusion_matrix(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -305,14 +308,15 @@ def confusion_matrix(
 
         from verticapy.machine_learning.metrics import confusion_matrix
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        confusion_matrix(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        confusion_matrix(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     It is also possible to directly compute the score
     from the vDataFrame:
@@ -464,8 +468,11 @@ def accuracy_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -474,20 +481,21 @@ def accuracy_score(
 
         from verticapy.machine_learning.metrics import accuracy_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        accuracy_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        accuracy_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -603,8 +611,11 @@ def balanced_accuracy_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -613,26 +624,26 @@ def balanced_accuracy_score(
 
         from verticapy.machine_learning.metrics import balanced_accuracy_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        balanced_accuracy_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        balanced_accuracy_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
         - scores
         - weighted
-
 
     It is also possible to directly compute the score
     from the vDataFrame:
@@ -745,8 +756,11 @@ def critical_success_index(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -755,20 +769,21 @@ def critical_success_index(
 
         from verticapy.machine_learning.metrics import critical_success_index
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        critical_success_index(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        critical_success_index(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -889,8 +904,11 @@ def diagnostic_odds_ratio(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -899,20 +917,21 @@ def diagnostic_odds_ratio(
 
         from verticapy.machine_learning.metrics import diagnostic_odds_ratio
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        diagnostic_odds_ratio(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        diagnostic_odds_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1030,8 +1049,11 @@ def f1_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1040,20 +1062,21 @@ def f1_score(
 
         from verticapy.machine_learning.metrics import f1_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        f1_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        f1_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1170,8 +1193,11 @@ def false_negative_rate(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1180,20 +1206,21 @@ def false_negative_rate(
 
         from verticapy.machine_learning.metrics import false_negative_rate
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        false_negative_rate(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        false_negative_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1307,8 +1334,11 @@ def false_positive_rate(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1317,20 +1347,21 @@ def false_positive_rate(
 
         from verticapy.machine_learning.metrics import false_positive_rate
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        false_positive_rate(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        false_positive_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1447,8 +1478,11 @@ def false_discovery_rate(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1457,20 +1491,21 @@ def false_discovery_rate(
 
         from verticapy.machine_learning.metrics import false_discovery_rate
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        false_discovery_rate(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        false_discovery_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1587,8 +1622,11 @@ def false_omission_rate(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1597,20 +1635,21 @@ def false_omission_rate(
 
         from verticapy.machine_learning.metrics import false_omission_rate
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        false_omission_rate(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        false_omission_rate(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1727,8 +1766,11 @@ def fowlkes_mallows_index(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1737,20 +1779,21 @@ def fowlkes_mallows_index(
 
         from verticapy.machine_learning.metrics import fowlkes_mallows_index
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        fowlkes_mallows_index(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        fowlkes_mallows_index(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -1867,8 +1910,11 @@ def informedness(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -1877,20 +1923,21 @@ def informedness(
 
         from verticapy.machine_learning.metrics import informedness
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        informedness(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        informedness(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2009,8 +2056,11 @@ def markedness(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2019,20 +2069,21 @@ def markedness(
 
         from verticapy.machine_learning.metrics import markedness
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        markedness(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        markedness(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2153,8 +2204,11 @@ def matthews_corrcoef(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2163,20 +2217,21 @@ def matthews_corrcoef(
 
         from verticapy.machine_learning.metrics import matthews_corrcoef
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        matthews_corrcoef(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        matthews_corrcoef(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2293,8 +2348,11 @@ def negative_predictive_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2303,20 +2361,21 @@ def negative_predictive_score(
 
         from verticapy.machine_learning.metrics import negative_predictive_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        negative_predictive_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        negative_predictive_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2433,8 +2492,11 @@ def negative_likelihood_ratio(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2443,20 +2505,21 @@ def negative_likelihood_ratio(
 
         from verticapy.machine_learning.metrics import negative_likelihood_ratio
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        negative_likelihood_ratio(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        negative_likelihood_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2574,8 +2637,11 @@ def positive_likelihood_ratio(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2584,20 +2650,21 @@ def positive_likelihood_ratio(
 
         from verticapy.machine_learning.metrics import positive_likelihood_ratio
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        positive_likelihood_ratio(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        positive_likelihood_ratio(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2714,8 +2781,11 @@ def precision_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2724,20 +2794,21 @@ def precision_score(
 
         from verticapy.machine_learning.metrics import precision_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        precision_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        precision_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2855,8 +2926,11 @@ def prevalence_threshold(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -2865,20 +2939,21 @@ def prevalence_threshold(
 
         from verticapy.machine_learning.metrics import prevalence_threshold
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        prevalence_threshold(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        prevalence_threshold(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -2995,8 +3070,11 @@ def recall_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -3005,20 +3083,21 @@ def recall_score(
 
         from verticapy.machine_learning.metrics import recall_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        recall_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        recall_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -3135,8 +3214,11 @@ def specificity_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -3145,20 +3227,21 @@ def specificity_score(
 
         from verticapy.machine_learning.metrics import specificity_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        specificity_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        specificity_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -3485,8 +3568,11 @@ def best_cutoff(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -3495,20 +3581,21 @@ def best_cutoff(
 
         from verticapy.machine_learning.metrics import best_cutoff
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        best_cutoff(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        best_cutoff(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -3642,8 +3729,11 @@ def average_precision_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -3652,20 +3742,21 @@ def average_precision_score(
 
         from verticapy.machine_learning.metrics import average_precision_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        average_precision_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        average_precision_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -3854,8 +3945,11 @@ def roc_auc_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
         )
 
     Next, we import the metric:
@@ -3864,20 +3958,21 @@ def roc_auc_score(
 
         from verticapy.machine_learning.metrics import roc_auc_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        roc_auc_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        roc_auc_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -3889,11 +3984,11 @@ def roc_auc_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "roc_auc_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "roc_auc",
+        )
 
     .. note::
 
@@ -4074,8 +4169,11 @@ def prc_auc_score(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
         )
 
     Next, we import the metric:
@@ -4084,20 +4182,21 @@ def prc_auc_score(
 
         from verticapy.machine_learning.metrics import prc_auc_score
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        prc_auc_score(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        prc_auc_score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -4109,11 +4208,11 @@ def prc_auc_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "prc_auc_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "prc_auc",
+        )
 
     .. note::
 
@@ -4269,8 +4368,11 @@ def log_loss(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+            },
         )
 
     Next, we import the metric:
@@ -4279,20 +4381,21 @@ def log_loss(
 
         from verticapy.machine_learning.metrics import log_loss
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
-        log_loss(y_true  = "y_true",
-                y_score = "y_pred",
-                input_relation = data,
-                )
+        log_loss(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            input_relation = data,
+        )
 
     .. note::
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
@@ -4599,8 +4702,11 @@ def classification_report(
 
     .. ipython:: python
 
-        data = vp.vDataFrame({"y_true": [1, 1, 0, 0, 1],
-            "y_pred": [1, 1, 1, 0, 1]}
+        data = vp.vDataFrame(
+            {   
+                "y_true": [1, 1, 0, 0, 1],
+                "y_pred": [1, 1, 1, 0, 1],
+            },
         )
 
     Next, we import the metric:
@@ -4609,7 +4715,7 @@ def classification_report(
 
         from verticapy.machine_learning.metrics import classification_report
 
-    Now we can conveniently calcualte the score:
+    Now we can conveniently calculate the score:
 
     .. ipython:: python
 
@@ -4622,7 +4728,7 @@ def classification_report(
 
         For multi-class classification, we can select
         the ``average`` method for averaging from the
-        following options
+        following options:
         - binary
         - micro
         - macro
