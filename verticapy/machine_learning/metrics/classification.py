@@ -319,11 +319,11 @@ def confusion_matrix(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "confusion_matrix",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "confusion_matrix",
+        )
 
     .. note::
 
@@ -499,11 +499,11 @@ def accuracy_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "accuracy_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "accuracy",
+        )
 
     .. note::
 
@@ -639,11 +639,11 @@ def balanced_accuracy_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "balanced_accuracy_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "balanced_accuracy",
+        )
 
     .. note::
 
@@ -2188,11 +2188,11 @@ def matthews_corrcoef(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "matthews_corrcoef",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "mcc",
+        )
 
     .. note::
 
@@ -2328,11 +2328,11 @@ def negative_predictive_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "negative_predictive_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "negative_predictive_value",
+        )
 
     .. note::
 
@@ -2749,11 +2749,11 @@ def precision_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "precision_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "precision",
+        )
 
     .. note::
 
@@ -3030,11 +3030,11 @@ def recall_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "recall_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "recall",
+        )
 
     .. note::
 
@@ -3170,11 +3170,11 @@ def specificity_score(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "specificity_score",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            metric  = "specificity",
+        )
 
     .. note::
 
