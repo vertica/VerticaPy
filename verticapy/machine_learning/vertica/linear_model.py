@@ -2031,7 +2031,7 @@ class PoissonRegressor(LinearModel, Regressor):
         }
 
 
-class Ridge(Regressor, LinearModel):
+class Ridge(LinearModel, Regressor):
     """
     Creates  a  Ridge  object using the  Vertica
     Linear  Regression  algorithm.
