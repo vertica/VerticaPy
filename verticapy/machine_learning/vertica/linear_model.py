@@ -257,7 +257,7 @@ Algorithms used for regression.
 """
 
 
-class ElasticNet(Regressor, LinearModel):
+class ElasticNet(LinearModel, Regressor):
     """
     Creates an ElasticNet object using the Vertica
     Linear Regression  algorithm. The Elastic Net
@@ -698,7 +698,7 @@ class ElasticNet(Regressor, LinearModel):
         }
 
 
-class Lasso(Regressor, LinearModel):
+class Lasso(LinearModel, Regressor):
     """
     Creates  a  Lasso  object using the  Vertica
     Linear  Regression  algorithm.
@@ -1140,7 +1140,7 @@ class Lasso(Regressor, LinearModel):
         }
 
 
-class LinearRegression(Regressor, LinearModel):
+class LinearRegression(LinearModel, Regressor):
     """
     Creates a LinearRegression object using the Vertica
     Linear Regression algorithm.
@@ -2031,7 +2031,7 @@ class PoissonRegressor(LinearModel, Regressor):
         }
 
 
-class Ridge(Regressor, LinearModel):
+class Ridge(LinearModel, Regressor):
     """
     Creates  a  Ridge  object using the  Vertica
     Linear  Regression  algorithm.
@@ -2501,7 +2501,7 @@ Algorithms used for classification.
 """
 
 
-class LogisticRegression(BinaryClassifier, LinearModelClassifier):
+class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     """
     Creates a LogisticRegression  object using the Vertica
     Logistic Regression algorithm.

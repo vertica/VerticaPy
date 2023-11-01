@@ -805,7 +805,7 @@ class TestBaseModelMethods:
                 "features_importance_trees_",
             ]
         else:
-            vpy_model_attributes = []
+            vpy_model_attributes = ["coef_", "intercept_", "features_importance_"]
 
         assert get_models.vpy.model.get_attributes() == vpy_model_attributes
 
