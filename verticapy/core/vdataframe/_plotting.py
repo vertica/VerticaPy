@@ -163,6 +163,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_multi.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.outliers_plot`
+            | :py:mod:`verticapy.vDataColumn.boxplot`
+
         """
         columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -326,6 +332,13 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.barh`
+            | :py:mod:`verticapy.vDataColumn.bar`
+            | :py:mod:`verticapy.vDataColumn.barh`
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -526,6 +539,14 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.bar`
+            | :py:mod:`verticapy.vDataColumn.barh`
+            | :py:mod:`verticapy.vDataColumn.bar`
+
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -685,6 +706,13 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hist`
+            | :py:mod:`verticapy.vDataColumn.bar`
+            | :py:mod:`verticapy.vDataColumn.pie`
+
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="NestedPieChart",
@@ -833,6 +861,13 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.bar`
+            | :py:mod:`verticapy.vDataFrame.barh`
+            | :py:mod:`verticapy.vDataColumn.hist`
+
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="Histogram",
@@ -974,6 +1009,13 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hist`
+            | :py:mod:`verticapy.vDataFrame.range_plot`
+            | :py:mod:`verticapy.vDataColumn.density`
+
         """
         vml = get_vertica_mllib()
         columns = format_type(columns, dtype=list)
@@ -1164,6 +1206,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.range_plot`
+            | :py:mod:`verticapy.vDataColumn.plot`
+
         """
         columns = format_type(columns, dtype=list)
         vpy_plt, kwargs = self.get_plotting_lib(
@@ -1304,6 +1352,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.plot`
+            | :py:mod:`verticapy.vDataColumn.range_plot`
+
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="RangeCurve",
@@ -1543,6 +1597,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pivot_table_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.contour`
+            | :py:mod:`verticapy.vDataFrame.scatter_matrix`
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=[1, 2])
@@ -1664,6 +1724,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_contour_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hexbin`
+            | :py:mod:`verticapy.vDataFrame.heatmap`
+
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="ContourPlot",
@@ -1795,6 +1861,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_heatmap_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hexbin`
+            | :py:mod:`verticapy.vDataFrame.contour`
+
         """
         columns = format_type(columns, dtype=list)
         columns, of = self.format_colnames(columns, of, expected_nb_of_cols=2)
@@ -1933,6 +2005,11 @@ class vDFPlot(vDFMachineLearning):
 
                 @savefig core_vdataframe_plotting_vdf_hexbin_1.png
                 data.hexbin(columns = ["x", "y"])
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.heatmap`
+            | :py:mod:`verticapy.vDataFrame.contour`
 
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
@@ -2093,6 +2170,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_3d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.density`
+            | :py:mod:`verticapy.vDataFrame.outliers_plot`
+
         """
         vml = get_vertica_mllib()
         if img and not bbox and len(columns) == 2:
@@ -2234,6 +2317,12 @@ class vDFPlot(vDFMachineLearning):
 
                 @savefig core_vdataframe_plotting_vdf_scatter_matrix.png
                 data.scatter_matrix(columns = ["x", "y"])
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.contour`
+            | :py:mod:`verticapy.vDataFrame.heatmap`
+
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -2368,6 +2457,12 @@ class vDFPlot(vDFMachineLearning):
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.scatter`
+            | :py:mod:`verticapy.vDataFrame.boxplot`
+
         """
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="OutliersPlot",
@@ -2597,6 +2692,12 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_boxplot_single.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.boxplot`
+            | :py:mod:`verticapy.vDataColumn.outliers_plot`
+
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BoxPlot",
@@ -2736,6 +2837,13 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_bar_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.bar`
+            | :py:mod:`verticapy.vDataFrame.barh`
+            | :py:mod:`verticapy.vDataColumn.barh`
+
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="BarChart",
@@ -2872,6 +2980,13 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_barh_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.bar`
+            | :py:mod:`verticapy.vDataFrame.barh`
+            | :py:mod:`verticapy.vDataColumn.bar`
+
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="HorizontalBarChart",
@@ -3001,6 +3116,13 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_pie_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hist`
+            | :py:mod:`verticapy.vDataFrame.pie`
+            | :py:mod:`verticapy.vDataColumn.bar`
+
         """
         vpy_plt, kwargs = self._parent.get_plotting_lib(
             class_name="PieChart",
@@ -3124,6 +3246,12 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_spider_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.pie`
+            | :py:mod:`verticapy.vDataColumn.pie`
+
         """
         by, of = self._parent.format_colnames(by, of)
         columns = [self._alias]
@@ -3273,6 +3401,13 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_hist_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.hist`
+            | :py:mod:`verticapy.vDataFrame.barh`
+            | :py:mod:`verticapy.vDataColumn.bar`
+
         """
         if self.isnum() and not (self.isbool()):
             vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3414,6 +3549,13 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_density_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.density`
+            | :py:mod:`verticapy.vDataFrame.range_plot`
+            | :py:mod:`verticapy.vDataColumn.hist`
+
         """
         vml = get_vertica_mllib()
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="kde")
@@ -3578,6 +3720,12 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.range_plot`
+            | :py:mod:`verticapy.vDataColumn.range_plot`
+
         """
         ts = self._parent.format_colnames(ts)
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3703,6 +3851,12 @@ class vDCPlot(vDCScaler):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_plot_1d.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.plot`
+            | :py:mod:`verticapy.vDataColumn.range_plot`
+
         """
         ts, by = self._parent.format_colnames(ts, by)
         vpy_plt, kwargs = self._parent.get_plotting_lib(
@@ -3820,6 +3974,11 @@ class vDCPlot(vDCScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_range_plot_1d.html
 
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.range_plot`
+            | :py:mod:`verticapy.vDataColumn.plot`
+
         """
         return self._parent.range_plot(
             columns=[self._alias],
@@ -3901,6 +4060,11 @@ class vDCPlot(vDCScaler):
 
             @savefig core_vdataframe_plotting_vdc_geo_plot.png
             africa["geometry"].geo_plot(edgecolor = "black", color = "white")
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataColumn.plot`
+
         """
         columns = [self._alias]
         check = True
