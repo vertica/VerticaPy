@@ -4757,6 +4757,25 @@ def classification_report(
 
         :py:mod:`verticapy.vDataFrame.score`
     """
+
+    # Initialization
+
+    # Case when a list of probabilities is used
+    if isinstance(y_score[0], list):
+        new_score = "CASE"
+        n = len(y_score[0])
+        if isinstance(labels, NoneType):
+            labels = [i for i in range(n)]
+        elif len(labels) < n:
+            raise ValueError(
+                f"Incorrect Parameter Label. The size should be: {n}; Found: {len(labels)}"
+            )
+        for i, yi in enumerate(y_score[0]):
+            new_score += f" WHEN '{{0}}' = '{labels[i]}' THEN {yi}"
+    new_score += " END"
+    y_score[0] = new_score
+
+    # Other parameters
     return_scalar = False
     if isinstance(metrics, str):
         metrics = [metrics]
@@ -4782,11 +4801,13 @@ def classification_report(
             "csi",
         ]
     values = {"index": metrics}
+
+    # Computation
     if isinstance(cutoff, NoneType) and num_classes > 2:
         if estimator:
             cm = estimator.confusion_matrix()
         else:
-            cm = confusion_matrix(y_true, y_score, input_relation, labels=labels)
+            cm = confusion_matrix(y_true, y_score[1], input_relation, labels=labels)
         all_cm_metrics = _compute_classes_tn_fn_fp_tp_from_cm(cm)
         is_multi = True
     else:
@@ -4797,6 +4818,8 @@ def classification_report(
         y_t = "undefined"
         if is_multi:
             tn, fn, fp, tp = all_cm_metrics[idx]
+            y_s = y_score[0].format(pos_label)
+            y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
         else:
             if estimator:
                 cm = estimator.confusion_matrix(pos_label=pos_label, cutoff=cutoff)
