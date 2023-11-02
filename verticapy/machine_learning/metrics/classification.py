@@ -3360,6 +3360,17 @@ def _compute_function_metrics(
 
 # Main AUC / Lift Methods.
 
+# Functions to simplify the code.
+
+
+def _check_labels(y_true, labels, input_relation):
+    distinct_values = _executeSQL(
+        query=f"SELECT DISTINCT {y_true} AS value FROM {input_relation}",
+        method="fetchall",
+    )
+    if set(item[0] for item in distinct_values) != set(labels):
+        raise ValueError("Mismatch between distinct values and provided labels")
+
 
 @save_verticapy_logs
 def _compute_multiclass_metric(
@@ -3477,6 +3488,134 @@ def _get_yscore(
         return y_score[1]
     else:
         raise ValueError("Wrong parameter 'y_score'.")
+
+
+@save_verticapy_logs
+def _compute_final_auc_score(
+    y_true: str,
+    y_score: Union[str, ArrayLike],
+    input_relation: SQLRelation,
+    average: Literal[None, "binary", "micro", "macro", "scores", "weighted"] = None,
+    labels: Optional[ArrayLike] = None,
+    pos_label: Optional[PythonScalar] = None,
+    nbins: int = 10000,
+    fun_sql_name: Literal["roc", "prc", None] = None,
+) -> Union[float, list[float]]:
+    """
+    Method used to simplify the code and compute
+    the AUC.
+    """
+    if (
+        not isinstance(pos_label, NoneType)
+        or isinstance(labels, NoneType)
+        and isinstance(y_score, str)
+    ):
+        false_positive, true_positive = _compute_function_metrics(
+            y_true=y_true,
+            y_score=_get_yscore(y_score, labels, pos_label),
+            input_relation=input_relation,
+            pos_label=pos_label,
+            nbins=nbins,
+            fun_sql_name=fun_sql_name,
+        )[1:]
+        return _compute_area(true_positive, false_positive)
+    elif isinstance(y_score, str):
+        raise ValueError(
+            "Type Error: 'y_score' must be an ArrayLike, not a string. "
+            "It is expected to be a list of strings, with each string "
+            "representing the probabilities of the classes."
+        )
+    elif average == "micro":
+        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
+        _, false_positive, true_positive = _compute_micro_multiclass_metric(
+            y_true, y_score, input_relation, labels, nbins, fun_sql_name=fun_sql_name
+        )
+        return _compute_area(true_positive, false_positive)
+    elif average == "macro":
+        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
+        fpr = {}
+        tpr = {}
+        for i in range(len(y_score)):
+            fpr[i], tpr[i] = _compute_function_metrics(
+                y_true=y_true,
+                y_score=y_score[i],
+                input_relation=input_relation,
+                pos_label=labels[i],
+                nbins=nbins,
+                fun_sql_name=fun_sql_name,
+            )[1:]
+
+        fpr_grid = np.linspace(0.0, 1.0, nbins)
+        mean_tpr = np.zeros_like(fpr_grid)
+
+        for i in range(len(y_score)):
+            sorted_pairs = sorted(zip(fpr[i], tpr[i]))
+            fpr_sorted, tpr_sorted = zip(*sorted_pairs)
+            mean_tpr += np.interp(
+                fpr_grid, fpr_sorted, tpr_sorted
+            )  # linear interpolation
+
+        # Average it and compute AUC
+        mean_tpr /= len(y_score)
+        roc_auc = _compute_area(mean_tpr.tolist()[::-1], fpr_grid.tolist()[::-1])
+        return roc_auc
+    elif average in (
+        "weighted",
+        "scores",
+        None,
+    ):
+        all_scores = []
+        for i in range(len(y_score)):
+            recall, precision = _compute_function_metrics(
+                y_true=y_true,
+                y_score=y_score[i],
+                input_relation=input_relation,
+                pos_label=labels[i],
+                nbins=nbins,
+                fun_sql_name=fun_sql_name,
+            )[1:]
+            all_scores += [_compute_area(precision, recall)]
+        if average in (
+            "scores",
+            None,
+        ):
+            return all_scores
+        else:
+            cardinality = _executeSQL(
+                query=f"""
+                    SELECT
+                        {y_true},
+                        COUNT(*)
+                    FROM {input_relation}
+                    GROUP BY 1""",
+                title=f"Computing the cardinality of all categories.",
+                method="fetchall",
+            )
+            score = 0.0
+            weights = 0.0
+            for i, l in enumerate(labels):
+                for c in cardinality:
+                    if str(c[0]) == str(l):
+                        score += c[1] * all_scores[i]
+                        weights += c[1]
+                        break
+            return score / weights
+    else:
+        correct_values = [
+            "None",
+            "'binary'",
+            "'micro'",
+            "'macro'",
+            "'scores'",
+            "'weighted'",
+        ]
+        raise ValueError(
+            f"Incorrect Parameter 'average': Found '{average}'; "
+            f"Expected: {', '.join(correct_values)}"
+        )
+
+
+# Main functions.
 
 
 @save_verticapy_logs
@@ -4001,79 +4140,16 @@ def roc_auc_score(
 
         :py:mod:`verticapy.vDataFrame.score`
     """
-    if (
-        not isinstance(pos_label, NoneType)
-        or isinstance(labels, NoneType)
-        and isinstance(y_score, str)
-    ):
-        false_positive, true_positive = _compute_function_metrics(
-            y_true=y_true,
-            y_score=_get_yscore(y_score, labels, pos_label),
-            input_relation=input_relation,
-            pos_label=pos_label,
-            nbins=nbins,
-            fun_sql_name="roc",
-        )[1:]
-        return _compute_area(true_positive, false_positive)
-    elif isinstance(y_score, str):
-        raise ValueError(
-            "Type Error: 'y_score' must be an ArrayLike, not a string. "
-            "It is expected to be a list of strings, with each string "
-            "representing the probabilities of the classes."
-        )
-    elif average == "micro":
-        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
-        _, false_positive, true_positive = _compute_micro_multiclass_metric(
-            y_true, y_score, input_relation, labels, nbins, fun_sql_name="roc"
-        )
-        return _compute_area(true_positive, false_positive)
-    elif average == "macro":
-        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
-        fpr = {}
-        tpr = {}
-        for i in range(len(y_score)):
-            fpr[i], tpr[i] = _compute_function_metrics(
-                y_true=y_true,
-                y_score=y_score[i],
-                input_relation=input_relation,
-                pos_label=labels[i],
-                nbins=nbins,
-                fun_sql_name="roc",
-            )[1:]
-
-        fpr_grid = np.linspace(0.0, 1.0, nbins)
-        mean_tpr = np.zeros_like(fpr_grid)
-
-        for i in range(len(y_score)):
-            sorted_pairs = sorted(zip(fpr[i], tpr[i]))
-            fpr_sorted, tpr_sorted = zip(*sorted_pairs)
-            mean_tpr += np.interp(
-                fpr_grid, fpr_sorted, tpr_sorted
-            )  # linear interpolation
-
-        # Average it and compute AUC
-        mean_tpr /= len(y_score)
-        roc_auc = _compute_area(mean_tpr.tolist()[::-1], fpr_grid.tolist()[::-1])
-        return roc_auc
-    else:
-        return _compute_multiclass_metric(
-            metric=roc_auc_score,
-            y_true=y_true,
-            y_score=y_score,
-            input_relation=input_relation,
-            average=average,
-            labels=labels,
-            nbins=nbins,
-        )
-
-
-def _check_labels(y_true, labels, input_relation):
-    distinct_values = _executeSQL(
-        query=f"SELECT DISTINCT {y_true} AS value FROM {input_relation}",
-        method="fetchall",
+    return _compute_final_auc_score(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="roc",
     )
-    if set(item[0] for item in distinct_values) != set(labels):
-        raise ValueError("Mismatch between distinct values and provided labels")
 
 
 @save_verticapy_logs
@@ -4225,65 +4301,16 @@ def prc_auc_score(
 
         :py:mod:`verticapy.vDataFrame.score`
     """
-    if not isinstance(pos_label, NoneType) or isinstance(labels, NoneType):
-        recall, precision = _compute_function_metrics(
-            y_true=y_true,
-            y_score=_get_yscore(y_score, labels, pos_label),
-            input_relation=input_relation,
-            pos_label=pos_label,
-            nbins=nbins,
-            fun_sql_name="prc",
-        )[1:]
-        return _compute_area(precision, recall)
-    elif isinstance(y_score, str):
-        raise ValueError(
-            "Type Error: 'y_score' must be an ArrayLike, not a string. "
-            "It is expected to be a list of strings, with each string "
-            "representing the probabilities of the classes."
-        )
-    elif average == "micro":
-        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
-        _, recall, precision = _compute_micro_multiclass_metric(
-            y_true, y_score, input_relation, labels, nbins, fun_sql_name="prc"
-        )
-        return _compute_area(precision, recall)
-    elif average == "macro":
-        _check_labels(y_true=y_true, labels=labels, input_relation=input_relation)
-        recall = {}
-        precision = {}
-        for i in range(len(y_score)):
-            recall[i], precision[i] = _compute_function_metrics(
-                y_true=y_true,
-                y_score=y_score[i],
-                input_relation=input_relation,
-                pos_label=labels[i],
-                nbins=nbins,
-                fun_sql_name="prc",
-            )[1:]
-
-        recall_grid = np.linspace(0.0, 1.0, nbins)
-        mean_precision = np.zeros_like(recall_grid)
-
-        for i in range(len(y_score)):
-            sorted_pairs = sorted(zip(recall[i], precision[i]))
-            recall_sorted, precision_sorted = zip(*sorted_pairs)
-            mean_precision += np.interp(recall_grid, recall_sorted, precision_sorted)
-        mean_precision /= len(y_score)
-        prc_auc = _compute_area(
-            mean_precision.tolist()[::-1], recall_grid.tolist()[::-1]
-        )
-        return prc_auc
-    else:
-        return _compute_multiclass_metric(
-            metric=prc_auc_score,
-            y_true=y_true,
-            y_score=y_score,
-            input_relation=input_relation,
-            average=average,
-            labels=labels,
-            nbins=nbins,
-            fun_sql_name="prc",
-        )
+    return _compute_final_auc_score(
+        y_true=y_true,
+        y_score=y_score,
+        input_relation=input_relation,
+        average=average,
+        labels=labels,
+        pos_label=pos_label,
+        nbins=nbins,
+        fun_sql_name="prc",
+    )
 
 
 # Logloss Metric.
