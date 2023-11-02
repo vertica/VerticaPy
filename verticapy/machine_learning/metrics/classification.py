@@ -4761,7 +4761,11 @@ def classification_report(
     # Initialization
 
     # Case when a list of probabilities is used
-    if isinstance(y_score[0], list):
+    if (
+        isinstance(y_score, list)
+        and (len(y_score) > 0)
+        and isinstance(y_score[0], list)
+    ):
         new_score = "CASE"
         n = len(y_score[0])
         if isinstance(labels, NoneType):
