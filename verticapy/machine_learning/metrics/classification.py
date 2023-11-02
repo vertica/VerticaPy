@@ -4761,6 +4761,7 @@ def classification_report(
     # Initialization
 
     # Case when a list of probabilities is used
+    prob_list = False
     if (
         isinstance(y_score, list)
         and (len(y_score) > 0)
@@ -4778,6 +4779,7 @@ def classification_report(
             new_score += f" WHEN '{{0}}' = '{labels[i]}' THEN {yi}"
         new_score += " END"
         y_score[0] = new_score
+        prob_list = True
 
     # Other parameters
     return_scalar = False
@@ -4810,6 +4812,8 @@ def classification_report(
     if isinstance(cutoff, NoneType) and num_classes > 2:
         if estimator:
             cm = estimator.confusion_matrix()
+        elif isinstance(y_score, (NoneType, str)):
+            cm = confusion_matrix(y_true, y_score, input_relation, labels=labels)
         else:
             cm = confusion_matrix(y_true, y_score[1], input_relation, labels=labels)
         all_cm_metrics = _compute_classes_tn_fn_fp_tp_from_cm(cm)
@@ -4822,8 +4826,9 @@ def classification_report(
         y_t = "undefined"
         if is_multi:
             tn, fn, fp, tp = all_cm_metrics[idx]
-            y_s = y_score[0].format(pos_label)
-            y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
+            if prob_list:
+                y_s = y_score[0].format(pos_label)
+                y_t = f"DECODE({y_true}, '{pos_label}', 1, 0)"
         else:
             if estimator:
                 cm = estimator.confusion_matrix(pos_label=pos_label, cutoff=cutoff)
