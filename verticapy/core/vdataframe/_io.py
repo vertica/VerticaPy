@@ -130,7 +130,7 @@ class vDFInOut(vDFSystem):
         new_header: list, optional
             List of columns used to replace vDataColumns name in the
             CSV.
-        order_by: str / dict / list, optional
+        order_by: SQLColumns / dict, optional
             List of the vDataColumns used to sort  the data, using asc
             order or a dictionary of all sorting methods. For example,
             to sort by "column1" ASC and "column2" DESC, write:
@@ -251,6 +251,8 @@ class vDFInOut(vDFSystem):
         inplace: bool = False,
         db_filter: SQLExpression = "",
         nb_split: int = 0,
+        order_by: Union[None, SQLColumns, dict] = None,
+        segmented_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
         Saves the vDataFrame current relation to the Vertica database.
@@ -284,6 +286,16 @@ class vDFInOut(vDFSystem):
             '_verticapy_split_' to the final relation. This column
             contains values in [0;nb_split - 1] where each category
             represents 1 / nb_split of the entire distribution.
+        order_by: SQLColumns / dict, optional
+            List of the vDataColumns used to sort  the data, using asc
+            order or a dictionary of all sorting methods. For example,
+            to sort by "column1" ASC and "column2" DESC, write:
+            {"column1": "asc", "column2": "desc"}
+        segmented_by: SQLColumns, optional
+            This  parameter is only  used when relation_type is 'table'
+            or 'temporary'. Otherwise, it is ignored.
+            List of the vDataColumns used to segment the data; All the
+            columns used will be passed to the HASH function.
 
         Returns
         -------
@@ -291,13 +303,19 @@ class vDFInOut(vDFSystem):
             self
         """
         relation_type = relation_type.lower()
-        usecols = format_type(usecols, dtype=list)
+        usecols, order_by = format_type(usecols, order_by, dtype=list)
         usecols = self.format_colnames(usecols)
-        commit = (
-            " ON COMMIT PRESERVE ROWS"
-            if (relation_type in ("local", "temporary"))
-            else ""
-        )
+        if relation_type in ("local", "temporary"):
+            commit = " ON COMMIT PRESERVE ROWS"
+        else:
+            commit = ""
+        order_by = self._get_sort_syntax(order_by)
+        if not order_by:
+            order_by = self._get_last_order_by()
+        if relation_type in ("table", "temporary"):
+            segmented_by = self._get_hash_syntax(segmented_by)
+        else:
+            segmented_by = ""
         if relation_type == "temporary":
             relation_type += " table"
         elif relation_type == "local":
@@ -335,7 +353,11 @@ class vDFInOut(vDFSystem):
                         {select}{nb_split} 
                     FROM {self}
                     {db_filter}
-                    {self._get_last_order_by()}"""
+                    {order_by}"""
+            title = f"Inserting data in {name}."
+            history_message = (
+                "[Insert]: The vDataFrame was inserted into the " f"table '{name}'."
+            )
         else:
             query = f"""
                 CREATE 
@@ -347,17 +369,20 @@ class vDFInOut(vDFSystem):
                     {select}{nb_split} 
                 FROM {self}
                 {db_filter}
-                {self._get_last_order_by()}"""
+                {order_by}
+                {segmented_by}"""
+            title = f"Creating a new {relation_type} to save the vDataFrame."
+            history_message = (
+                "[Save]: The vDataFrame was saved into a "
+                f"{relation_type} named '{name}'."
+            )
         _executeSQL(
             query=query,
-            title=f"Creating a new {relation_type} to save the vDataFrame.",
+            title=title,
         )
         if relation_type == "insert":
             _executeSQL(query="COMMIT;", title="Commit.")
-        self._add_to_history(
-            "[Save]: The vDataFrame was saved into a "
-            f"{relation_type} named '{name}'."
-        )
+        self._add_to_history(history_message)
         if inplace:
             history = self._vars["history"]
             catalog_vars = {}

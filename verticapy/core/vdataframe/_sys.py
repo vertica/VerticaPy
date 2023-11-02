@@ -245,7 +245,16 @@ class vDFSystem(vDFTyping):
             order_by = self._vars["order_by"][max_pos]
         return order_by
 
-    def _get_sort_syntax(self, columns: SQLColumns) -> str:
+    def _get_hash_syntax(self, columns: Union[dict, SQLColumns]) -> str:
+        """
+        Returns the SQL syntax used to segment using the input columns.
+        """
+        if not columns:
+            return ""
+        segment_cols = quote_ident(columns)
+        return f" SEGMENTED BY HASH({', '.join(segment_cols)}) ALL NODES"
+
+    def _get_sort_syntax(self, columns: Union[dict, SQLColumns]) -> str:
         """
         Returns the SQL syntax used to sort the input columns.
         """
