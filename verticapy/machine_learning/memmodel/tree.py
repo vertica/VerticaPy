@@ -352,7 +352,7 @@ class Tree(InMemoryModel):
                 res += f'[label="{not_q} {self.threshold_[i]}"{self._flat_dict(arrow_style)}]'
             else:
                 color = ""
-                if isinstance(self.value_[i], float):
+                if isinstance(self.value_[i], (int, float)):
                     label = f'"{self.value_[i]}"'
                 elif hasattr(self, "psy"):
                     if not leaf_style:
