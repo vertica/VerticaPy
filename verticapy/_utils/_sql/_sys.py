@@ -19,9 +19,15 @@ from typing import Any, Literal, Optional
 
 import verticapy._config.config as conf
 from verticapy.connection.global_connection import get_global_connection
+from verticapy._typing import NoneType
 from verticapy._utils._sql._dblink import replace_external_queries
 from verticapy._utils._sql._display import print_query, print_time
-from verticapy._utils._sql._format import clean_query, erase_label, format_type
+from verticapy._utils._sql._format import (
+    clean_query,
+    erase_label,
+    format_type,
+    replace_label,
+)
 from verticapy.connection.connect import current_cursor
 
 
@@ -42,6 +48,14 @@ def _executeSQL(
     """
     data = format_type(data, dtype=list)
     special_symbols = get_global_connection().special_symbols
+    # Replacing the label
+    separator = conf.get_option("label_separator")
+    suffix = conf.get_option("label_suffix")
+    if isinstance(suffix, NoneType):
+        separator = None
+    if isinstance(suffix, str) and isinstance(separator, NoneType):
+        separator = "__"  # Default separator
+    query = replace_label(query, separator=separator, suffix=suffix)
     # Cleaning the query
     if sql_push_ext and (symbol in special_symbols):
         query = erase_label(query)

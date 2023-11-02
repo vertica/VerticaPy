@@ -24,6 +24,7 @@ from verticapy._config.validators import (
     bool_validator,
     in_validator,
     optional_positive_int_validator,
+    optional_str_validator,
     str_validator,
     st_positive_int_validator,
 )
@@ -113,6 +114,16 @@ def set_option(key: str, value: Any = None) -> None:
         **interactive**: bool
             If set to True, VerticaPy outputs are displayed
             in interactive tables.
+
+        **label_separator**: str
+            Separator used to separate the query label from
+            the ``label_suffix``. The default value is '__'.
+
+        **label_suffix**: str
+            Label suffix to add to VerticaPy's query labels.
+            It can be useful to track some specific activities.
+            For example: Looking which user runs some specific
+            VerticaPy functions. The default value is None.
 
         **max_columns**: int
             Maximum number of columns to display. If the
@@ -437,6 +448,8 @@ register_option(Option("cache", True, "", bool_validator))
 register_option(Option("interactive", False, "", bool_validator))
 register_option(Option("count_on", False, "", bool_validator))
 register_option(Option("footer_on", True, "", bool_validator))
+register_option(Option("label_separator", None, "", optional_str_validator))
+register_option(Option("label_suffix", None, "", optional_str_validator))
 register_option(Option("max_columns", 50, "", st_positive_int_validator))
 register_option(Option("max_rows", 100, "", st_positive_int_validator))
 register_option(Option("mode", "full", "", in_validator(["full", "light"])))

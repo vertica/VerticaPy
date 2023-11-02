@@ -261,6 +261,31 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
         return str(column)
 
 
+def replace_label(
+    query: str,
+    new_label: Optional[str] = None,
+    separator: Optional[str] = None,
+    suffix: Optional[str] = None,
+) -> str:
+    """
+    Replace the current query's label by a new one.
+    """
+    if isinstance(separator, NoneType):
+        separator = ""
+    if isinstance(suffix, NoneType):
+        suffix = ""
+    labels = re.findall(r"\/\*\+LABEL\(\'(.*?)\'\)\*\/", query)
+    for label in labels:
+        if isinstance(new_label, NoneType):
+            nlabel = label
+        else:
+            nlabel = new_label
+        query = query.replace(
+            f"/*+LABEL('{label}')*/", f"/*+LABEL('{nlabel}{separator}{suffix}')*/"
+        )
+    return query.strip()
+
+
 def replace_vars_in_query(query: str, locals_dict: dict) -> str:
     """
     Replaces the input variables with their respective SQL
