@@ -4772,8 +4772,8 @@ def classification_report(
             )
         for i, yi in enumerate(y_score[0]):
             new_score += f" WHEN '{{0}}' = '{labels[i]}' THEN {yi}"
-    new_score += " END"
-    y_score[0] = new_score
+        new_score += " END"
+        y_score[0] = new_score
 
     # Other parameters
     return_scalar = False
