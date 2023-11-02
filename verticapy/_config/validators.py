@@ -67,6 +67,17 @@ def optional_positive_int_validator(val: Optional[int]) -> Literal[True]:
         raise ValueError("The option must be positive.")
 
 
+def optional_str_validator(val: Optional[str]) -> Literal[True]:
+    """
+    Validates that the value of a given option is
+    a string.
+    """
+    if isinstance(val, (str, NoneType)):
+        return True
+    else:
+        raise ValueError("The option must be a string or None.")
+
+
 def str_validator(val: str) -> Literal[True]:
     """
     Validates that the value of a given option is
