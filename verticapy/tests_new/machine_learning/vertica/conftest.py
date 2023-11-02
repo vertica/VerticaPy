@@ -231,6 +231,21 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
                 if kwargs.get("fit_intercept")
                 else True,
             )
+        elif model_class == "PoissonRegressor":
+            model = getattr(vpy_linear_model, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                penalty=kwargs.get("penalty") if kwargs.get("penalty") else "l2",
+                tol=kwargs.get("tol") if kwargs.get("tol") else 1e-6,
+                C=kwargs.get("c") if kwargs.get("c") else 1.0,
+                max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+                solver=solver,
+                fit_intercept=kwargs.get("fit_intercept")
+                if kwargs.get("fit_intercept")
+                else True,
+            )
         else:
             model = getattr(vpy_linear_model, model_class)(
                 f"{schema_name}.{model_name}",
@@ -376,7 +391,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
     getter function for python model
     """
 
-    def _get_py_model(model_class, py_fit_intercept=None, **kwargs):
+    def _get_py_model(model_class, py_fit_intercept=None, py_tol=None, **kwargs):
         # sklearn
         if model_class in [
             "RandomForestClassifier",
@@ -479,6 +494,12 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
         elif model_class == "LinearSVR":
             model = getattr(skl_svm, model_class)(
                 fit_intercept=py_fit_intercept if py_fit_intercept else True
+            )
+        elif model_class == "PoissonRegressor":
+            model = getattr(skl_linear_model, model_class)(
+                alpha=0.00005,
+                fit_intercept=py_fit_intercept if py_fit_intercept else True,
+                tol=py_tol if py_tol else 1e-06,
             )
         else:
             model = getattr(skl_linear_model, model_class)(

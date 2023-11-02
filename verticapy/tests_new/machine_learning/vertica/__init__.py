@@ -31,4 +31,5 @@ rel_tolerance_map = {
     "ElasticNet": 1e-02,
     "LinearRegression": 1e-02,
     "LinearSVR": 1e-01,
+    "PoissonRegressor": 1e-01,
 }
