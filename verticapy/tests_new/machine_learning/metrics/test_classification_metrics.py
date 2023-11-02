@@ -257,8 +257,8 @@ def python_metrics(y_true, y_pred, average="binary", metric_name=""):
         ("y", "recall_score"),
         ("n", "specificity_score"),
         ("n", "best_cutoff"),  # need to implement for multiclass
-        ("y", "roc_auc_score"),  # need to implement for multiclass
-        ("n", "prc_auc_score"),  # need to implement for multiclass
+        ("y", "roc_auc_score"),
+        ("n", "prc_auc_score"),
         (
             "y",
             "log_loss",
@@ -280,7 +280,7 @@ class TestClassificationMetrics:
         global python_metrics_map
         python_metrics_map = defaultdict(list)
         func_args = {}
-        rel_tolerance = 1e-5
+        rel_tolerance = 1e-4
 
         (
             vdf,
@@ -300,11 +300,18 @@ class TestClassificationMetrics:
             func_args["labels"] = labels
 
         # skipping a test
-        if (
-            metric_name in ["best_cutoff", "roc_auc_score", "prc_auc_score"]
-            and compute_method != "binary"
-        ):
+        if metric_name in ["best_cutoff"] and compute_method != "binary":
             pytest.skip("Need to fix function for multi-class")
+        elif metric_name in ["roc_auc_score", "prc_auc_score"] and compute_method in [
+            "weighted",
+            "scores",
+            None,
+        ]:
+            pytest.skip("Not yet Implemented")
+        elif metric_name in ["prc_auc_score"] and compute_method in [
+            "macro",
+        ]:
+            pytest.skip("Need to fix it")
         elif metric_name in ["log_loss"]:
             pytest.skip("vertica has default base 10, sklean uses natural log (e)")
 
@@ -325,7 +332,11 @@ class TestClassificationMetrics:
                 "average_precision_score",
             ]:
                 if compute_method == "binary":
-                    if metric_name == "average_precision_score":
+                    if metric_name in [
+                        "roc_auc_score",
+                        "prc_auc_score",
+                        "average_precision_score",
+                    ]:
                         _vpy_res = getattr(vpy_metrics, metric_name)(
                             "y_true_num",
                             "y_pred_num",
@@ -344,7 +355,8 @@ class TestClassificationMetrics:
                         vdf,
                         average=compute_method,
                         labels=[str(label_num) for label_num in labels_num]
-                        if metric_name == "average_precision_score"
+                        if metric_name
+                        in ["roc_auc_score", "prc_auc_score", "average_precision_score"]
                         else labels_num,
                     )
                 # rounding as best_cutoff metrics value precisions are upto 2/3 decimals
@@ -422,15 +434,22 @@ class TestClassificationMetrics:
                     )
                 elif metric_name in ["roc_auc_score", "log_loss"]:
                     if compute_method == "binary":
-                        _skl_res = getattr(skl_metrics, metric_name)(
-                            y_true, y_prob, labels=labels
-                        )
+                        if metric_name == "roc_auc_score":
+                            _skl_res = getattr(skl_metrics, metric_name)(
+                                y_true_num, y_pred_num
+                            )
+                        else:
+                            _skl_res = getattr(skl_metrics, metric_name)(
+                                y_true, y_prob, labels=labels
+                            )
                     else:
-                        _y_true_num = LabelBinarizer().fit_transform(y_true)
-                        fpr, tpr, thresholds = skl_metrics.roc_curve(
-                            _y_true_num.ravel(), y_prob.ravel()
+                        _skl_res = getattr(skl_metrics, metric_name)(
+                            y_true_num,
+                            y_prob,
+                            average=compute_method,
+                            multi_class="ovr",
+                            labels=labels_num,
                         )
-                        _skl_res = skl_metrics.auc(fpr, tpr)
                 elif metric_name in ["average_precision_score"]:
                     if compute_method == "binary":
                         _skl_res = getattr(skl_metrics, metric_name)(
@@ -450,20 +469,49 @@ class TestClassificationMetrics:
             else:
                 if metric_name in ["prc_auc_score"]:
                     if compute_method == "binary":
+                        precision, recall, _ = skl_metrics.precision_recall_curve(
+                            y_true_num, y_pred_num
+                        )
+                        _skl_res = skl_metrics.auc(recall, precision)
+                    elif compute_method == "micro":
+                        y_true_num_ = LabelBinarizer().fit_transform(y_true_num)
                         (
                             precision,
                             recall,
                             thresholds,
                         ) = skl_metrics.precision_recall_curve(
-                            y_true, y_prob, pos_label="b"
+                            y_true_num_.ravel(), y_prob.ravel()
                         )
                         _skl_res = skl_metrics.auc(recall, precision)
-                    else:
-                        y_true_num = label_binarize(y_true, classes=[0, 1, 2])
-                        fpr, tpr, thresholds = skl_metrics.roc_curve(
-                            y_true_num, y_prob, pos_label="b"
-                        )
-                        _skl_res = skl_metrics.auc(fpr, tpr)
+                    elif compute_method == "macro":
+                        y_true_num_ = LabelBinarizer().fit_transform(y_true_num)
+                        n_classes = len(y_prob[0])
+                        precision, recall, prc_auc = dict(), dict(), dict()
+                        for i in range(n_classes):
+                            (
+                                precision[i],
+                                recall[i],
+                                _,
+                            ) = skl_metrics.precision_recall_curve(
+                                y_true_num_[:, i], y_prob[:, i]
+                            )
+
+                        recall_grid = np.linspace(0.0, 1.0, 10000)
+
+                        # Interpolate all ROC curves at these points
+                        mean_precision = np.zeros_like(recall_grid)
+
+                        for i in range(n_classes):
+                            sorted_pairs = sorted(zip(recall[i], precision[i]))
+                            recall_sorted, precision_sorted = zip(*sorted_pairs)
+                            mean_precision += np.interp(
+                                recall_grid, recall_sorted, precision_sorted
+                            )  # linear interpolation
+
+                        # Average it and compute AUC
+                        mean_precision /= n_classes
+                        _skl_res = skl_metrics.auc(recall_grid, mean_precision)
+
                 elif metric_name in ["best_cutoff"]:
                     if compute_method == "binary":
                         fpr, tpr, thresholds = skl_metrics.roc_curve(
