@@ -31,7 +31,7 @@ from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, schema_relation
 from verticapy._utils._sql._vertica_version import vertica_version
-
+from verticapy.errors import ModelError
 
 from verticapy.core.tablesample.base import TableSample
 from verticapy.core.vdataframe.base import vDataFrame
@@ -629,6 +629,10 @@ class AutoML(VerticaModel):
                 "model_class": [elem[7] for elem in data],
             }
         )
+        if len(result["model_type"]) == 0:
+            raise ModelError(
+                "Error: 'AutoML' failed to converge. Please retry fitting the estimator."
+            )
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mFinal Model\033[0m\033[0m\n")
             print(
