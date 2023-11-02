@@ -310,12 +310,18 @@ def pred_cl_dataset_multi():
     y_true_num = np.array([random.randint(0, 2) for _ in range(len(y_true))])
     y_pred_num = np.array([random.randint(0, 2) for _ in range(len(y_true))])
 
-    y_prob = np.array(
+    _y_prob = np.array(
         [
             [random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)]
             for _ in range(len(y_true))
         ]
     )
+    # for some of the sklearn metrics (like roc_auc_score), probabilities should be sum up to 1 for multiclass
+    y_prob = []
+    for i in _y_prob:
+        row = [j / sum(i) for j in i]
+        y_prob.append(row)
+    y_prob = np.array(y_prob)
 
     input_relation = np.column_stack(
         (
