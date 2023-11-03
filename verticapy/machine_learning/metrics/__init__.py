@@ -114,6 +114,7 @@ FUNCTIONS_CLASSIFICATION_DICTIONNARY = {
     "prevalence_threshold": prevalence_threshold,
     "pm": prevalence_threshold,
     "confusion_matrix": confusion_matrix,
+    "classification_report": classification_report,
 }
 
 FUNCTIONS_REGRESSION_DICTIONNARY = {
