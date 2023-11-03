@@ -113,7 +113,7 @@ class RandomForestRegressor(Ensemble):
                         children_right = [2, 4, None, None, None],
                         feature = [0, 1, None, None, None],
                         threshold = ["female", 30, None, None, None],
-                        value = [None, None, 3, 11, 23])
+                        value = [None, None, 3.0, 11.0, 23.5])
         model2 = BinaryTreeRegressor(children_left = [1, 3, None, None, None],
                         children_right = [2, 4, None, None, None],
                         feature = [0, 1, None, None, None],
@@ -142,12 +142,33 @@ class RandomForestRegressor(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.RandomForestRegressor.predict`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict`
     method to do predictions.
 
     .. ipython:: python
 
         model_rfr.predict(data)
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
+    method to draw the input tree.
+
+    .. code-block:: python
+
+        model_rfr.plot_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = model_rfr.plot_tree()
+        res.render(filename='figures/machine_learning_memmodel_tree_rndforestreg', format='png')
+
+    .. image:: /../figures/machine_learning_memmodel_tree_rndforestreg.png
+
+    .. important::
+
+        :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
 
     **Deploy SQL Code**
 
@@ -158,7 +179,7 @@ class RandomForestRegressor(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.RandomForestRegressor.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -329,7 +350,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.RandomForestClassifier.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -337,7 +358,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         model_rfc.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.RandomForestClassifier.predict_proba_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -508,12 +529,33 @@ class XGBRegressor(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.XGBRegressor.predict`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict`
     method to do predictions.
 
     .. ipython:: python
 
         model_xgbr.predict(data)
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
+    method to draw the input tree.
+
+    .. code-block:: python
+
+        model_xgbr.plot_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = model_xgbr.plot_tree()
+        res.render(filename='figures/machine_learning_memmodel_tree_xgbreg', format='png')
+
+    .. image:: /../figures/machine_learning_memmodel_tree_xgbreg.png
+
+    .. important::
+
+        :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
 
     **Deploy SQL Code**
 
@@ -524,7 +566,7 @@ class XGBRegressor(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.XGBRegressor.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -702,7 +744,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     .. important::
 
-        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.plot_tree`
+        :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.plot_tree`
         requires the `Graphviz <https://graphviz.org/download/>`_ module.
 
     **Deploy SQL Code**
@@ -714,7 +756,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.XGBClassifier.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -722,7 +764,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         model_xgbc.predict_sql(cnames)
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.XGBClassifier.predict_proba_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
@@ -875,12 +917,33 @@ class IsolationForest(Ensemble):
     **Making In-Memory Predictions**
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.IsolationForest.predict`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict`
     method to do predictions.
 
     .. ipython:: python
 
         model_isf.predict(data)
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
+    method to draw the input tree.
+
+    .. code-block:: python
+
+        model_isf.plot_tree()
+
+    .. ipython:: python
+        :suppress:
+
+        res = model_isf.plot_tree()
+        res.render(filename='figures/machine_learning_memmodel_ensemble_iforest', format='png')
+
+    .. image:: /../figures/machine_learning_memmodel_ensemble_iforest.png
+
+    .. important::
+
+        :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_ module.
 
     **Deploy SQL Code**
 
@@ -891,7 +954,7 @@ class IsolationForest(Ensemble):
         cnames = ["sex", "fare"]
 
     Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.IsolationForest.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict_sql`
     method to get the SQL code needed to deploy the model using its attributes.
 
     .. ipython:: python
