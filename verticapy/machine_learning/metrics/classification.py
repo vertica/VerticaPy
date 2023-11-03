@@ -254,14 +254,6 @@ def _compute_final_score(
     return _compute_final_score_from_cm(metric, cm, average=average, multi=multi)
 
 
-@param_docstring(
-    PARAMETER_DESCRIPTIONS,
-    "y_true",
-    "y_score",
-    "input_relation",
-    "labels",
-    "cm_pos_label",
-)
 @check_minimum_version
 @save_verticapy_logs
 def confusion_matrix(
@@ -273,6 +265,50 @@ def confusion_matrix(
 ) -> np.ndarray:
     """
     Computes the confusion matrix.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation  used for  scoring.  This  relation
+        can  be a view, table, or a customized  relation
+        (if an alias is used at the end of the relation).
+        For example: (SELECT ... FROM ...) x
+    average: str, optional
+        The method used to  compute the final score for
+        multiclass-classification.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+
+        - micro:
+            positive  and   negative  values globally.
+
+        - macro:
+            average  of  the  score of  each class.
+
+        - score:
+            scores  for   all  the  classes.
+
+        - weighted :
+            weighted average of the score of
+            each class.
+
+        - None:
+            accuracy.
+
+    labels: ArrayLike, optional
+        List   of   the  response  column   categories.
+    pos_label: PythonScalar, optional
+        Label used to identify the positive class. If
+        pos_label is NULL then the global accuracy is
+        be computed.
 
     Returns
     -------
