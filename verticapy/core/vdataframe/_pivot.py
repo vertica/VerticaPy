@@ -21,6 +21,7 @@ from verticapy._utils._object import create_new_vdf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
+from verticapy._utils._gen import gen_col_name
 from verticapy.errors import EmptyParameter
 
 from verticapy.core.vdataframe._join_union_sort import vDFJoinUnionSort
@@ -246,3 +247,53 @@ class vDFPivot(vDFJoinUnionSort):
             FROM {self}
             GROUP BY 1""",
         )
+
+    @save_verticapy_logs
+    def explode_array(
+            self,
+            index: str,
+            column_name: SQLColumns,
+            prefix: Optional[str] = "col_",
+            delimiter: Optional[bool] = True
+    ) -> "vDataFrame":
+        """
+        Explode an array-like column in a Vertica dataframe.
+
+        Args:
+            input_relation (verticapy.vDataFrame): The Vertica input_relation containing the array-like column.
+            index (str): The name of the identifier column in the input_relation.
+            column_name (str): The name of the array-like column to explode.
+            prefix (str, optional): The prefix for the column names of exploded values. Defaults to "col_".
+            delimiter (bool, optional): Specify if array-like data is separated by a comma. Defaults to True.
+
+        Returns:
+            verticapy.vDataFrame: A new Vertica data frame with exploded values.
+
+        """
+
+        if not isinstance(index, str):
+            raise TypeError("The 'index' parameter must be a string.")
+        if not isinstance(column_name, str):
+            raise TypeError("The 'column_name' parameter must be a string.")
+
+        vdf = create_new_vdf(self.current_relation())
+        # Replace tabs with commas if specified
+        if not delimiter:
+            vdf[column_name].str_replace(to_replace='[\t]+', value=",")
+
+        # Apply the STRING_TO_ARRAY function to convert str array to array of strings
+        vdf[column_name].apply(func="STRING_TO_ARRAY({})")
+
+        # To avoid any name conflict
+        position_col_name = gen_col_name(n=6)
+        value_col_name = gen_col_name(n=6)
+        # Create a new vDataFrame with exploded values
+        vdf = create_new_vdf(f"""SELECT {index}, 
+                                        {column_name}, 
+                                        EXPLODE({column_name} 
+                                        USING PARAMETERS 
+                                        skip_partitioning=True) AS ({position_col_name}, {value_col_name})
+                                        FROM {vdf};""")
+        # Convert the "value" column to float and pivot the data
+        return vdf.astype({value_col_name: "float"}).pivot(index=index, columns=position_col_name,
+                                                           values=value_col_name, prefix=prefix)
