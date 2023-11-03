@@ -58,6 +58,84 @@ def het_breuschpagan(
     tuple
         Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
+
+    Examples
+    ---------
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - X (a predictor)
+    - True value
+    - Prediction
+
+
+    .. note::
+
+        This metric requires 'eps,' which represents
+        the difference between the predicted value
+        and the true value. If you already have 'eps'
+        available, you can directly use it instead of
+        recomputing it, as demonstrated in the example
+        below.
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X":[0,1,2,3],
+            "Y_true": [1.1, 1.2, 1.3, 1.4],
+            "Y_pred": [1.15, 1.23, 1.26, 1.4]}
+        )
+
+    Then we can calculate the ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["Y_true"] - vdf["Y_pred"]
+
+    To test its score, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.stats import het_breuschpagan
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        het_breuschpagan(vdf, eps = "eps", X = "X")
+
+    We can contrast the results with a dataset that
+    has homoscedastic noise:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X":[0,1,2,3],
+            "eps": [1, 1, 1, 1]}
+        )
+
+    .. note::
+
+        In the above dataframe we directly input
+        the ``eps`` value.
+
+    Now we can perform the test on this dataset:
+
+    .. ipython:: python
+
+        het_breuschpagan(vdf, eps = "eps", X = "X")
+
+    Notice the contrast of the two test results.
+    For more information check out
+    `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()

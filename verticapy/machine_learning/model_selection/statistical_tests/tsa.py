@@ -273,12 +273,14 @@ def mkt(
     """
     Mann Kendall test (Time Series trend).
 
-    \u26A0 Warning : This Test is  computationally  expensive
-                     because it uses a CROSS  JOIN  during the
-                     computation.  The complexity is O(n * k),
-                     n being the total count of the vDataFrame
-                     and k the number of rows to use to do the
-                     test.
+    .. warning::
+
+        This Test is  computationally  expensive
+        because it uses a CROSS  JOIN  during the
+        computation.  The complexity is O(n * k),
+        n being the total count of the vDataFrame
+        and k the number of rows to use to do the
+        test.
 
     Parameters
     ----------
@@ -297,6 +299,62 @@ def mkt(
     -------
     TableSample
         result of the test.
+
+    Examples
+    ---------
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4],
+            "year": [1990, 1991, 1992, 1993, 1994],}
+        )
+
+    To test its score, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.stats import mkt
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        mkt(vdf, column = "X", ts= "year")
+
+    We can contrast the results with a dataset that
+    has barely any trend:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X":[0,1,1,1,1],
+            "year": [1990, 1991, 1992, 1993, 1994],}
+        )
+
+
+    Now we can perform the test on this dataset:
+
+    .. ipython:: python
+
+        mkt(vdf, column = "X", ts= "year")
+
+    Notice the contrast of the two test results.
+    For more information check out
+    `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()

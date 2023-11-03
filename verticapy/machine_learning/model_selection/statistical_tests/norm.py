@@ -43,6 +43,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
     -------
     tuple
         statistic, p_value
+
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -107,6 +108,100 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     -------
     tuple
         statistic, p_value
+
+    Examples
+    ---------
+
+    Let's try this test on two set of distribution to
+    obverse the contrast in test results:
+
+    - nomraly distributed dataset
+    - uniformly distributed dataset
+
+    Nomraly Distributed
+    ^^^^^^^^^^^^^^^^^^^^
+
+    Import the necessary libraries:
+
+    .. code-block:: python
+
+        import verticapy as vp
+        import numpy as np
+        import random
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import numpy as np
+        import random
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Then we can define the basic parameters for the
+    normal distribution:
+
+    .. code-block:: python
+
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Now we can create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"col":data})
+
+    To test its score, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.stats import normaltest
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        normaltest(vdf,column = "col")
+
+    Uniform Distribution
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    .. ipython:: python
+        :suppress:
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col":data})
+
+
+    We can define the basic parameters for the
+    uniform distribution:
+
+    .. code-block:: python
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col":data})
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        normaltest(vdf,column = "col")
+
+    .. note::
+
+        ``p_value`` is the probability of the Null
+        Hypothesis. For more details on how to interpret
+        p_value and statistic score please refer
+        to `this link <https://medium.com/analytics-vidhya/everything-you-should-know-about-p-value-from-scratch-for-data-science-f3c0bfa3c4cc>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
