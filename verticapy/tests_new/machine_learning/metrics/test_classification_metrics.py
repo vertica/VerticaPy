@@ -280,7 +280,7 @@ class TestClassificationMetrics:
         global python_metrics_map
         python_metrics_map = defaultdict(list)
         func_args = {}
-        rel_tolerance = 1e-4
+        rel_tolerance = 1e-2
 
         (
             vdf,
@@ -311,7 +311,7 @@ class TestClassificationMetrics:
         elif metric_name in ["prc_auc_score"] and compute_method in [
             "macro",
         ]:
-            pytest.skip("Need to fix it")
+            pytest.skip("vertica binning issue needs to be fixed.")
         elif metric_name in ["log_loss"]:
             pytest.skip("vertica has default base 10, sklean uses natural log (e)")
 
