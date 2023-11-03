@@ -101,8 +101,8 @@ class RandomForestRegressor(Ensemble):
 
     **Initalization**
 
-    A Random Forest Regressor model is an ensemble of multiple binary 
-    tree regressor models. In this example, we will create three 
+    A Random Forest Regressor model is an ensemble of multiple binary
+    tree regressor models. In this example, we will create three
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models:
 
@@ -133,7 +133,7 @@ class RandomForestRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor` 
+    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
     model.
 
     .. ipython:: python
@@ -168,7 +168,7 @@ class RandomForestRegressor(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using 
+    method to get the SQL code needed to deploy the model using
     its attributes.
 
     .. ipython:: python
@@ -178,7 +178,7 @@ class RandomForestRegressor(Ensemble):
     .. hint::
 
         This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ 
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -266,7 +266,7 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` 
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the random forest classifier algorithm.
 
     Parameters
@@ -282,7 +282,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     **Initalization**
 
     A Random Forest Classifier model is an ensemble of multiple binary
-    tree classifier models. In this example, we will create three 
+    tree classifier models. In this example, we will create three
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
@@ -316,7 +316,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier` 
+    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
     model.
 
     .. ipython:: python
@@ -344,7 +344,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
         model_rfc.predict(data)
 
-    Use 
+    Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_proba`
     method to compute the predicted probabilities for each class.
 
@@ -362,7 +362,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model using 
+    method to get the SQL code needed to deploy the model using
     its attributes.
 
     .. ipython:: python
@@ -381,7 +381,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
     .. hint::
 
         This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ 
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -526,7 +526,7 @@ class XGBRegressor(Ensemble):
     **Initalization**
 
     A  model is an ensemble of multiple binary tree regressors.
-    In this example, we will create three 
+    In this example, we will create three
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models.
 
@@ -557,7 +557,7 @@ class XGBRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor` 
+    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
     model.
 
     .. ipython:: python
@@ -570,7 +570,7 @@ class XGBRegressor(Ensemble):
             eta = 0.9,
         )
 
-    .. note::  
+    .. note::
 
         We have used *mean* that represents average of the response column
         and *eta* that represents learning rate of XG Boost regressor model.
@@ -602,7 +602,7 @@ class XGBRegressor(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using 
+    method to get the SQL code needed to deploy the model using
     its attributes.
 
     .. ipython:: python
@@ -612,7 +612,7 @@ class XGBRegressor(Ensemble):
     .. hint::
 
         This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ 
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -708,7 +708,7 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` 
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the XGBoost classifier algorithm.
 
     Parameters
@@ -728,8 +728,8 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     **Initalization**
 
-    A XGBoost Classifier model is an ensemble of multiple binary 
-    tree classifier models. In this example, we will create three 
+    A XGBoost Classifier model is an ensemble of multiple binary
+    tree classifier models. In this example, we will create three
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
@@ -763,7 +763,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier` 
+    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
     model.
 
     .. ipython:: python
@@ -777,10 +777,10 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
             learning_rate = 0.1,
         )
 
-    .. note::  
+    .. note::
 
-        We have used *logodds* that represents logodds of the response 
-        column and *learning_rate* that represents learning rate of 
+        We have used *logodds* that represents logodds of the response
+        column and *learning_rate* that represents learning rate of
         XGBoost regressor model. Both are optional parameters.
 
     Create a dataset.
@@ -799,7 +799,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
         model_xgbc.predict(data)
 
-    Use 
+    Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_proba`
     method to compute the predicted probabilities for each class.
 
@@ -817,7 +817,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model using 
+    method to get the SQL code needed to deploy the model using
     its attributes.
 
     .. ipython:: python
@@ -836,7 +836,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
     .. hint::
 
         This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ 
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
@@ -953,7 +953,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`  
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the isolation forest algorithm.
 
     Parameters
@@ -966,8 +966,8 @@ class IsolationForest(Ensemble):
 
     **Initalization**
 
-    An Isolation Forest model is an ensemble of multiple binary tree 
-    anomaly models. In this example, we will create three 
+    An Isolation Forest model is an ensemble of multiple binary tree
+    anomaly models. In this example, we will create three
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     models:
 
@@ -1001,7 +1001,7 @@ class IsolationForest(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.IsolationForest` 
+    :py:mod:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
     model.
 
     .. ipython:: python
@@ -1036,7 +1036,7 @@ class IsolationForest(Ensemble):
 
     Use
     :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest.predict_sql`
-    method to get the SQL code needed to deploy the model using 
+    method to get the SQL code needed to deploy the model using
     its attributes.
 
     .. ipython:: python
@@ -1046,7 +1046,7 @@ class IsolationForest(Ensemble):
     .. hint::
 
         This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ 
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_
         models.
 
     **Drawing Trees**
