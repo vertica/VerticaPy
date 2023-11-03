@@ -70,6 +70,20 @@ def aic_score(
     """
     Returns the AIC score.
 
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number of predictors.
+
     Examples
     ---------
 
@@ -142,6 +156,20 @@ def bic_score(
 ) -> float:
     """
     Returns the BIC score.
+
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    input_relation: SQLRelation
+        Relation to use for scoring. This relation can be a
+        view, table,  or a customized relation (if an alias
+        is used at the end of the relation).
+        For example: (SELECT ... FROM ...) x
+    k: int, optional
+        Number of predictors.
 
     Examples
     ---------
