@@ -312,7 +312,6 @@ def mkt(
     Before we begin we can import the necessary libraries:
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
@@ -320,8 +319,11 @@ def mkt(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4],
-            "year": [1990, 1991, 1992, 1993, 1994],}
+        vdf = vp.vDataFrame(
+            {
+                "X": [0, 1, 2, 3, 4],
+                "year": [1990, 1991, 1992, 1993, 1994],
+            }
         )
 
     To test its score, we can import the test function:
@@ -334,17 +336,19 @@ def mkt(
 
     .. ipython:: python
 
-        mkt(vdf, column = "X", ts= "year")
+        mkt(vdf, column = "X", ts = "year")
 
     We can contrast the results with a dataset that
     has barely any trend:
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X":[0,1,1,1,1],
-            "year": [1990, 1991, 1992, 1993, 1994],}
+        vdf = vp.vDataFrame(
+            {
+                "X":[0, 1, 1, 1, 1],
+                "year": [1990, 1991, 1992, 1993, 1994],
+            }
         )
-
 
     Now we can perform the test on this dataset:
 

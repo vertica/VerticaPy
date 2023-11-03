@@ -69,10 +69,9 @@ def het_breuschpagan(
     - True value
     - Prediction
 
-
     .. note::
 
-        This metric requires 'eps,' which represents
+        This metric requires 'eps', which represents
         the difference between the predicted value
         and the true value. If you already have 'eps'
         available, you can directly use it instead of
@@ -82,7 +81,6 @@ def het_breuschpagan(
     Before we begin we can import the necessary libraries:
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
 
@@ -90,9 +88,12 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X":[0,1,2,3],
-            "Y_true": [1.1, 1.2, 1.3, 1.4],
-            "Y_pred": [1.15, 1.23, 1.26, 1.4]}
+        vdf = vp.vDataFrame(
+            {
+                "X": [0,1,2,3],
+                "Y_true": [1.1, 1.2, 1.3, 1.4],
+                "Y_pred": [1.15, 1.23, 1.26, 1.4],
+            }
         )
 
     Then we can calculate the ``eps``:
@@ -118,8 +119,11 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X":[0,1,2,3],
-            "eps": [1, 1, 1, 1]}
+        vdf = vp.vDataFrame(
+            {
+                "X":[0, 1, 2, 3],
+                "eps": [1, 1, 1, 1],
+            }
         )
 
     .. note::
@@ -134,8 +138,11 @@ def het_breuschpagan(
         het_breuschpagan(vdf, eps = "eps", X = "X")
 
     Notice the contrast of the two test results.
-    For more information check out
-    `this link <https://www.statology.org/breusch-pagan-test/>`_.
+
+    .. note::
+
+        For more information check out
+        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()

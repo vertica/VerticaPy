@@ -94,8 +94,8 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 @save_verticapy_logs
 def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-    Test whether a sample differs from a normal
-    distribution.
+    This function tests the null hypothesis that a
+    sample comes from a normal distribution.
 
     Parameters
     ----------
@@ -115,11 +115,11 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     Let's try this test on two set of distribution to
     obverse the contrast in test results:
 
-    - nomraly distributed dataset
+    - normally distributed dataset
     - uniformly distributed dataset
 
-    Nomraly Distributed
-    ^^^^^^^^^^^^^^^^^^^^
+    Normally Distributed
+    ^^^^^^^^^^^^^^^^^^^^^
 
     Import the necessary libraries:
 
@@ -145,28 +145,37 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
     .. code-block:: python
 
-        N = 100
+        # Distribution parameters
+        N = 100 # Number of rows
         mean = 0
         std_dev = 1
+
+        # Dataset
         data = np.random.normal(mean, std_dev, N)
 
     Now we can create the ``vDataFrame``:
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"col":data})
+        vdf = vp.vDataFrame({"col": data})
 
-    To test its score, we can import the test function:
+    To find the test p-value, we can import the test function:
 
     .. ipython:: python
 
-        from verticapy.stats import normaltest
+        from verticapy.machine_learning.model_selection.statistical_tests import normaltest
 
     And simply apply it on the ``vDataFrame``:
 
     .. ipython:: python
 
-        normaltest(vdf,column = "col")
+        normaltest(vdf, column = "col")
+
+    .. note::
+
+        The p-value is high meaning that we can not reject
+        the null hypothesis. It does not mean necessary
+        that the data are normally distributed.
 
     Uniform Distribution
     ^^^^^^^^^^^^^^^^^^^^^
@@ -177,24 +186,33 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         low = 0
         high = 1
         data = np.random.uniform(low, high, N)
-        vdf = vp.vDataFrame({"col":data})
-
+        vdf = vp.vDataFrame({"col": data})
 
     We can define the basic parameters for the
     uniform distribution:
 
     .. code-block:: python
 
+        # Distribution parameters
         low = 0
         high = 1
+
+        # Dataset
         data = np.random.uniform(low, high, N)
-        vdf = vp.vDataFrame({"col":data})
+
+        # vDataFrame
+        vdf = vp.vDataFrame({"col": data})
 
     And simply apply it on the ``vDataFrame``:
 
     .. ipython:: python
 
-        normaltest(vdf,column = "col")
+        normaltest(vdf, column = "col")
+
+    .. note::
+
+        The p-value is really low meaning that it is highly
+        probable that the data are not normally distributed.
 
     .. note::
 
