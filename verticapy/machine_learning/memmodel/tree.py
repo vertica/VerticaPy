@@ -532,6 +532,29 @@ class BinaryTreeRegressor(Tree):
 
         model_btr.predict(data)
 
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ["sex", "fare"]
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict_sql`
+    method to get the SQL code needed to deploy the model using its attributes.
+
+    .. ipython:: python
+
+        model_btr.predict_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+
+    **Drawing Tree**
+
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.to_graphviz`
     method to generate code for a
@@ -567,27 +590,6 @@ class BinaryTreeRegressor(Tree):
         The above example is a very basic one. For
         other more detailed examples and customization
         options, please see :ref:`chart_gallery.tree`_
-
-    **Deploy SQL Code**
-
-    Let's use the following column names:
-
-    .. ipython:: python
-
-        cnames = ["sex", "fare"]
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes.
-
-    .. ipython:: python
-
-        model_btr.predict_sql(cnames)
-
-    .. hint::
-
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -721,6 +723,30 @@ class BinaryTreeAnomaly(Tree):
 
         model_bta.predict(data)
 
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ["sex", "fare"]
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
+
+    .. ipython:: python
+
+        model_bta.predict_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+
+    **Drawing Tree**
+
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.to_graphviz`
     method to generate code for a
@@ -756,28 +782,6 @@ class BinaryTreeAnomaly(Tree):
         The above example is a very basic one. For
         other more detailed examples and customization
         options, please see :ref:`chart_gallery.tree`_
-
-    **Deploy SQL Code**
-
-    Let's use the following column names:
-
-    .. ipython:: python
-
-        cnames = ["sex", "fare"]
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly.predict_sql`
-    method to get the SQL code needed to deploy the model
-    using its attributes.
-
-    .. ipython:: python
-
-        model_bta.predict_sql(cnames)
-
-    .. hint::
-
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -916,6 +920,39 @@ class BinaryTreeClassifier(Tree):
 
         model_btc.predict_proba(data)
 
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ["sex", "fare"]
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
+
+    .. ipython:: python
+
+        model_btc.predict_sql(cnames)
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba_sql`
+    method to get the SQL code needed to deploy the model that
+    computes predicted probabilities.
+
+    .. ipython:: python
+
+        model_btc.predict_proba_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+
+    **Drawing Tree**
+
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.to_graphviz`
     method to generate code for a
@@ -951,37 +988,6 @@ class BinaryTreeClassifier(Tree):
         The above example is a very basic one. For
         other more detailed examples and customization
         options, please see :ref:`chart_gallery.tree`_
-
-    **Deploy SQL Code**
-
-    Let's use the following column names:
-
-    .. ipython:: python
-
-        cnames = ["sex", "fare"]
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_sql`
-    method to get the SQL code needed to deploy the model
-    using its attributes.
-
-    .. ipython:: python
-
-        model_btc.predict_sql(cnames)
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that
-    computes predicted probabilities.
-
-    .. ipython:: python
-
-        model_btc.predict_proba_sql(cnames)
-
-    .. hint::
-
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -1134,6 +1140,39 @@ class NonBinaryTree(Tree):
 
         model_nbt.predict_proba(data)
 
+    **Deploy SQL Code**
+
+    Let's use the following column names:
+
+    .. ipython:: python
+
+        cnames = ["sex", "fare"]
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
+
+    .. ipython:: python
+
+        model_nbt.predict_sql(cnames)
+
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba_sql`
+    method to get the SQL code needed to deploy the
+    model that computes predicted probabilities.
+
+    .. ipython:: python
+
+        model_nbt.predict_proba_sql(cnames)
+
+    .. hint::
+
+        This object can be pickled and used in any in-memory
+        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+
+    **Drawing Tree**
+
     Use
     :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.to_graphviz`
     method to generate code for a
@@ -1169,37 +1208,6 @@ class NonBinaryTree(Tree):
         The above example is a very basic one. For
         other more detailed examples and customization
         options, please see :ref:`chart_gallery.tree`_
-
-    **Deploy SQL Code**
-
-    Let's use the following column names:
-
-    .. ipython:: python
-
-        cnames = ["sex", "fare"]
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_sql`
-    method to get the SQL code needed to deploy the model
-    using its attributes.
-
-    .. ipython:: python
-
-        model_nbt.predict_sql(cnames)
-
-    Use
-    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree.predict_proba_sql`
-    method to get the SQL code needed to deploy the
-    model that computes predicted probabilities.
-
-    .. ipython:: python
-
-        model_nbt.predict_proba_sql(cnames)
-
-    .. hint::
-
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
