@@ -288,6 +288,9 @@ def confusion_matrix(
 
         import verticapy as vp
 
+    Binary Classification
+    ^^^^^^^^^^^^^^^^^^^^^^
+
     Let's create a small dataset that has:
 
     - true value
@@ -335,6 +338,40 @@ def confusion_matrix(
         You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
+
+    Multi-class Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Let's create a small dataset that has:
+
+    - true value with more than two classes
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 2, 0, 0, 1],
+                "y_pred": [1, 2, 0, 1, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import confusion_matrix
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        confusion_matrix(
+            y_true  = "y_true",
+            y_score = "y_pred",
+            labels = [0,1,2],
+            input_relation = data,
+        )
 
     .. seealso::
 
@@ -4080,14 +4117,21 @@ def roc_auc_score(
     Let's create a small dataset that has:
 
     - true value
-    - predicted value
+    - probability of the true value
+
+    .. important::
+
+        This classification metric does not use the
+        predicted value. Instead, it measures the performance
+        of a classification model by evaluating the likelihood
+        of the true labels given the predicted probabilities.
 
     .. ipython:: python
 
         data = vp.vDataFrame(
             {
                 "y_true": [1, 1, 0, 0, 1],
-                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+                "y_prob": [0.5, 0.9, 0.2, 0.5, 0.6],
             },
         )
 
@@ -4103,7 +4147,7 @@ def roc_auc_score(
 
         roc_auc_score(
             y_true  = "y_true",
-            y_score = "y_pred",
+            y_score = "y_prob",
             input_relation = data,
         )
 
@@ -4125,7 +4169,7 @@ def roc_auc_score(
 
         data.score(
             y_true  = "y_true",
-            y_score = "y_pred",
+            y_score = "y_prob",
             metric  = "roc_auc",
         )
 
@@ -4241,7 +4285,14 @@ def prc_auc_score(
     Let's create a small dataset that has:
 
     - true value
-    - predicted value
+    - probability of the true value
+
+    .. important::
+
+        This classification metric does not use the
+        predicted value. Instead, it measures the performance
+        of a classification model by evaluating the likelihood
+        of the true labels given the predicted probabilities.
 
     .. ipython:: python
 
@@ -4391,14 +4442,21 @@ def log_loss(
     Let's create a small dataset that has:
 
     - true value
-    - predicted value
+    - probability of the true value
+
+    .. important::
+
+        This classification metric does not use the
+        predicted value. Instead, it measures the performance
+        of a classification model by evaluating the likelihood
+        of the true labels given the predicted probabilities.
 
     .. ipython:: python
 
         data = vp.vDataFrame(
             {
                 "y_true": [1, 1, 0, 0, 1],
-                "y_pred": [0.5, 0.9, 0.2, 0.5, 0.6],
+                "y_prob": [0.5, 0.9, 0.2, 0.5, 0.6],
             },
         )
 
@@ -4414,7 +4472,7 @@ def log_loss(
 
         log_loss(
             y_true  = "y_true",
-            y_score = "y_pred",
+            y_score = "y_prob",
             input_relation = data,
         )
 
@@ -4436,7 +4494,7 @@ def log_loss(
 
         data.score(
             y_true  = "y_true",
-            y_score = "y_pred",
+            y_score = "y_prob",
             metric  = "log_loss",
         )
 
@@ -4594,7 +4652,11 @@ def classification_report(
             Bayesian  Information  Criterion
 
         - bm:
-            Informedness = tpr + tnr - 1
+            Informedness
+
+            .. math::
+
+                tpr + tnr - 1
 
         - csi:
             Critical Success Index
@@ -4607,7 +4669,11 @@ def classification_report(
             F1 Score
 
         - fdr:
-            False Discovery Rate = 1 - ppv
+            False Discovery Rate
+
+            .. math::
+
+                1 - ppv
 
         - fm:
             Fowlkes-Mallows index
@@ -4655,7 +4721,11 @@ def classification_report(
             Matthews Correlation Coefficient
 
         - mk:
-            Markedness = ppv + npv - 1
+            Markedness
+
+            .. math::
+
+                mk = ppv + npv - 1
 
         - npv:
             Negative Predictive Value
@@ -4722,9 +4792,13 @@ def classification_report(
 
         import verticapy as vp
 
+    Binary Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
     Let's create a small dataset that has:
 
     - true value
+    - probability of the true value
     - predicted value
 
     .. ipython:: python
@@ -4732,7 +4806,8 @@ def classification_report(
         data = vp.vDataFrame(
             {
                 "y_true": [1, 1, 0, 0, 1],
-                "y_pred": [1, 1, 1, 0, 1],
+                "y_prob": [0.8, 0.2, 0.1, 0.6, 0.8],
+                "y_pred": [1, 0, 0, 1, 1]
             },
         )
 
@@ -4746,10 +4821,24 @@ def classification_report(
 
     .. ipython:: python
 
-        #classification_report(y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    input_relation = data,
-        #)
+        classification_report(
+            y_true  = "y_true",
+            y_score = ["y_prob", "y_pred"],
+            input_relation = data,
+        )
+
+    .. important::
+
+        In binary classification, ``y_score`` should
+        be a list of two column names:
+        - Probability of true value
+        - Prediction value
+
+        In the case of multi-class, ``y_score``,
+        is the list of two elements:
+        - list of column names for class probabilities
+          for each class
+        - Prediction value
 
     .. note::
 
@@ -4767,11 +4856,11 @@ def classification_report(
 
     .. ipython:: python
 
-        #data.score(
-        #    y_true  = "y_true",
-        #    y_score = "y_pred",
-        #    metric  = "classification_report",
-        #)
+        data.score(
+            y_true  = "y_true",
+            y_score = ["y_prob", "y_pred"],
+            metric  = "classification_report",
+        )
 
     .. note::
 
@@ -4779,6 +4868,44 @@ def classification_report(
         You can use the :py:mod:`verticapy.set_option` function with
         the ``sql_on`` parameter to enable SQL generation and examine
         the generated queries.
+
+    Multi-class Classification
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Let's create a small dataset that has:
+
+    - true value with more than two classes
+    - probability of each class
+    - predicted value
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "y_true": [1, 2, 0, 0, 1],
+                "y_prob_0": [0.1, 0.1, 0.1, 0.1, 0.1],
+                "y_prob_1": [0.8, 0.6, 0.4, 0.6, 0.2],
+                "y_prob_2": [0.1, 0.3, 0.5, 0.3, 0.7],
+                "y_pred": [1, 2, 0, 1, 1],
+            },
+        )
+
+    Next, we import the metric:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.metrics import classification_report
+
+    Now we can conveniently calculate the score:
+
+    .. ipython:: python
+
+        classification_report(
+            y_true  = "y_true",
+            y_score =[["y_prob_0","y_prob_1","y_prob_1"], "y_pred"],
+            labels = [0,1,2],
+            input_relation = data,
+        )
 
     .. seealso::
 
