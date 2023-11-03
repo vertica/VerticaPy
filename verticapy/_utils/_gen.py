@@ -34,6 +34,15 @@ def gen_name(L: list) -> str:
     )
 
 
+def gen_col_name(n: int = 5) -> str:
+    """
+    Generate a name using n character
+    """
+    import secrets
+    import string
+
+    return ''.join(secrets.choice(string.ascii_letters) for _ in range(n)).lower()
+
 def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> str:
     """
     Generates a temporary name using the input schema
