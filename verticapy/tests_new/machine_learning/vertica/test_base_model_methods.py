@@ -15,6 +15,9 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from collections import namedtuple
+
+import numpy as np
+
 from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
@@ -203,6 +206,12 @@ def model_params(model_class):
                 (1e-4, 1, 3, "unregularized", 0.5, 500),
             ],
         ),
+        "PoissonRegressor": (
+            "tol, penalty, c, max_iter, solver, fit_intercept",
+            [
+                (1e-6, "l2", 1, 100, "newton", True),
+            ],
+        ),
     }
 
     return model_params_map[model_class]
@@ -309,6 +318,8 @@ def regression_report_details(
             py_res = "DummyTreeRegressor"
         elif model_class == "LinearSVR":
             py_res = "LinearSVR"
+        elif model_class == "PoissonRegressor":
+            py_res = "PoissonRegressor"
         else:
             py_res = "LinearRegression"
     elif metric == "No. Predictors":
@@ -496,6 +507,17 @@ def model_score(
             max_iter=_model_class_tuple.max_iter,
         )
         vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
+    elif model_class == "PoissonRegressor":
+        vpy_model_obj = get_vpy_model(
+            model_class,
+            penalty=_model_class_tuple.penalty,
+            tol=_model_class_tuple.tol,
+            C=_model_class_tuple.c,
+            max_iter=_model_class_tuple.max_iter,
+            solver=_model_class_tuple.solver,
+            fit_intercept=_model_class_tuple.fit_intercept,
+        )
+        vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
     elif model_class == "LinearRegression":
         vpy_model_obj = get_vpy_model(
             model_class,
@@ -627,6 +649,9 @@ def model_score(
     elif model_class in ["LinearSVR"]:
         metrics_map = _metrics(model_class, fit_intercept=True)
         py_score = metrics_map[py_metric_name]
+    elif model_class in ["PoissonRegressor"]:
+        metrics_map = _metrics(model_class, fit_intercept=True)
+        py_score = metrics_map[py_metric_name]
     else:
         metrics_map = _metrics(
             model_class, fit_intercept=_model_class_tuple.fit_intercept
@@ -652,6 +677,7 @@ def model_score(
         "ElasticNet",
         "LinearRegression",
         # "LinearSVR",
+        "PoissonRegressor",
     ],
 )
 # @pytest.mark.parametrize("model_class", ["XGBClassifier"])
@@ -736,6 +762,8 @@ class TestBaseModelMethods:
             pred_fun_name = "PREDICT_XGB_CLASSIFIER"
         elif model_class == "LinearSVR":
             pred_fun_name = "PREDICT_SVM_REGRESSOR"
+        elif model_class == "PoissonRegressor":
+            pred_fun_name = "PREDICT_POISSON_REG"
         else:
             pred_fun_name = "PREDICT_LINEAR_REG"
 
@@ -858,6 +886,15 @@ class TestBaseModelMethods:
                 "acceptable_error_margin": 0.1,
                 "max_iter": 100,
             }
+        elif model_class == "PoissonRegressor":
+            model_params_map = {
+                "penalty": "l2",
+                "tol": 1e-06,
+                "C": 1,
+                "max_iter": 100,
+                "solver": "newton",
+                "fit_intercept": True,
+            }
         else:
             model_params_map = {
                 "tol": 1e-06,
@@ -976,6 +1013,27 @@ class TestBaseModelMethods:
                 "#_of_rows": [4, 1, 1, 1, 1],
             }
             expected = attr_map[attributes]
+        elif model_class == "PoissonRegressor":
+            attr_map = {
+                "attr_name": [
+                    "details",
+                    "regularization",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "predictor, coefficient, std_err, z_value, p_value",
+                    "type, lambda",
+                    "iteration_count",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1, 1],
+            }
+            expected = attr_map[attributes]
 
         assert model_attributes[attributes] == expected
 
@@ -1037,7 +1095,10 @@ class TestBaseModelMethods:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy()[10]
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        assert vpy_res == pytest.approx(
+            np.exp(py_res) if model_class == "PoissonRegressor" else py_res,
+            rel=rel_tolerance_map[model_class],
+        )
 
     def test_to_sql(self, get_models, model_class):
         """
@@ -1063,6 +1124,7 @@ class TestBaseModelMethods:
             "XGBRegressor": "PREDICT_XGB_REGRESSOR",
             "XGBClassifier": "PREDICT_XGB_CLASSIFIER",
             "LinearSVR": "PREDICT_SVM_REGRESSOR",
+            "PoissonRegressor": "PREDICT_POISSON_REG",
             **dict.fromkeys(
                 ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
                 "PREDICT_LINEAR_REG",
@@ -1081,7 +1143,11 @@ class TestBaseModelMethods:
 
         current_cursor().execute(pred_sql)
         prediction = current_cursor().fetchone()
-        assert prediction[0] == pytest.approx(prediction[1])
+        assert prediction[0] == pytest.approx(
+            np.exp(prediction[1])
+            if model_class == "PoissonRegressor"
+            else prediction[1]
+        )
 
     def test_does_model_exists(self, get_models):
         """
@@ -1106,6 +1172,7 @@ class TestBaseModelMethods:
         ) in [
             "LINEAR_REGRESSION",
             "SVM_REGRESSOR",
+            "POISSON_REGRESSION",
             "RF_REGRESSOR",
             "RF_CLASSIFIER",
             "XGB_REGRESSOR",
@@ -1245,6 +1312,9 @@ class TestBaseModelMethods:
             elif model_class == "LinearSVR":
                 # features_importance_map["index"] = ['alcohol', 'residual_sugar', 'citric_acid']
                 features_importance_map["importance"] = [52.68, 33.27, 14.05]
+            elif model_class == "PoissonRegressor":
+                # features_importance_map["index"] = ['alcohol', 'residual_sugar', 'citric_acid']
+                features_importance_map["importance"] = [51.94, 32.48, 15.58]
             elif model_class in ["Lasso", "ElasticNet"]:
                 _X = features_importance_map["index"] = [
                     "total_sulfur_dioxide",

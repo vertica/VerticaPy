@@ -36,6 +36,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
         "ElasticNet",
         "LinearRegression",
         # "LinearSVR",
+        "PoissonRegressor",
     ],
 )
 class TestLinearModel:
