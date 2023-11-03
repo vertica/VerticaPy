@@ -352,7 +352,7 @@ def confusion_matrix(
         data = vp.vDataFrame(
             {
                 "y_true": [1, 2, 0, 0, 1],
-                "y_pred": [1, 2, 0, 1, 1]
+                "y_pred": [1, 2, 0, 1, 1],
             },
         )
 
@@ -366,7 +366,8 @@ def confusion_matrix(
 
     .. ipython:: python
 
-        confusion_matrix(y_true  = "y_true",
+        confusion_matrix(
+            y_true  = "y_true",
             y_score = "y_pred",
             labels = [0,1,2],
             input_relation = data,
@@ -4820,7 +4821,8 @@ def classification_report(
 
     .. ipython:: python
 
-        classification_report(y_true  = "y_true",
+        classification_report(
+            y_true  = "y_true",
             y_score = ["y_prob", "y_pred"],
             input_relation = data,
         )
@@ -4884,7 +4886,7 @@ def classification_report(
                 "y_prob_0": [0.1, 0.1, 0.1, 0.1, 0.1],
                 "y_prob_1": [0.8, 0.6, 0.4, 0.6, 0.2],
                 "y_prob_2": [0.1, 0.3, 0.5, 0.3, 0.7],
-                "y_pred": [1, 2, 0, 1, 1]
+                "y_pred": [1, 2, 0, 1, 1],
             },
         )
 
@@ -4898,7 +4900,8 @@ def classification_report(
 
     .. ipython:: python
 
-        classification_report(y_true  = "y_true",
+        classification_report(
+            y_true  = "y_true",
             y_score =[["y_prob_0","y_prob_1","y_prob_1"], "y_pred"],
             labels = [0,1,2],
             input_relation = data,
