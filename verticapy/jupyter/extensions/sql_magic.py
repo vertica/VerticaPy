@@ -47,6 +47,10 @@ from verticapy.errors import QueryError
 
 from verticapy.jupyter.extensions._utils import get_magic_options
 
+if conf.get_import_success("graphviz"):
+    import graphviz
+    from graphviz import Source
+
 if TYPE_CHECKING:
     from verticapy.core.vdataframe.base import vDataFrame
 
@@ -888,10 +892,16 @@ def sql_magic(
 
                 _executeSQL(query, method="copy", path=file_name, print_time_sql=False)
 
-            elif (i < n - 1) or (
-                (i == n - 1)
-                and (query_type.lower() not in ("select", "show", "with", "undefined"))
-            ):
+            elif (
+                (i < n - 1)
+                or (
+                    (i == n - 1)
+                    and (
+                        query_type.lower()
+                        not in ("select", "show", "with", "undefined")
+                    )
+                )
+            ) and query_type.lower() not in ("explain",):
                 error = ""
 
                 try:
@@ -926,7 +936,22 @@ def sql_magic(
                         usecols=columns,
                     )
                     continue
-
+                elif query_type.lower() in ("explain",):
+                    final_result = _executeSQL(
+                        query, method="fetchall", print_time_sql=False
+                    )
+                    final_result = "\n".join([l[0] for l in final_result])
+                    tree = "digraph G {" + final_result.split("\ndigraph G {")[1]
+                    plan = final_result.split("\ndigraph G {")[0]
+                    print(plan)
+                    if i < n - 1 or not conf.get_import_success("graphviz"):
+                        print(tree)
+                    else:
+                        res = graphviz.Source(tree)
+                        if i == n - 1:
+                            return res
+                        else:
+                            print(res)
                 is_vdf = False
                 if not (query_subtype.upper().startswith(SPECIAL_WORDS)):
                     try:
