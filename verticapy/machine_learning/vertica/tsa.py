@@ -391,6 +391,16 @@ class TimeSeriesModelBase(VerticaModel):
         vDataFrame
             a new object.
         """
+        if self._model_type in (
+            "AR",
+            "MA",
+        ):
+            if isinstance(vdf, NoneType):
+                vdf = self.input_relation
+            if isinstance(ts, NoneType):
+                ts = self.ts
+            if isinstance(y, NoneType):
+                y = self.y
         sql = "SELECT " + self.deploySQL(
             ts=ts,
             y=y,
@@ -401,6 +411,98 @@ class TimeSeriesModelBase(VerticaModel):
         if not (isinstance(vdf, NoneType)):
             sql += f" FROM {vdf}"
         return vDataFrame(sql)
+
+    # Plotting Methods.
+
+    def plot(
+        self,
+        vdf: Optional[SQLRelation] = None,
+        ts: Optional[str] = None,
+        y: Optional[str] = None,
+        start: Optional[int] = None,
+        npredictions: int = 10,
+        chart: Optional[PlottingObject] = None,
+        **style_kwargs,
+    ) -> PlottingObject:
+        """
+        Draws the model.
+
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            and "SELECT 1" are invalid.
+        ts: str, optional
+            TS (Time Series)  vDataColumn used to order
+            the data.  The vDataColumn type must be  date
+            (date, datetime, timestamp...) or numerical.
+        y: str, optional
+            Response column.
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (ts):
+
+              - No provided timeseries-column: start must
+                be an integer greater or equal to 0, where
+                zero indicates to start prediction at the
+                end of the in-sample data. If start is a
+                positive value, the function predicts the
+                values between the end of the in-sample
+                data and the start index, and then uses the
+                predicted values as time series inputs for
+                the subsequent npredictions.
+              - timeseries-column provided: start must be an
+                integer greater or equal to 1 and identifies
+                the index (row) of the timeseries-column at
+                which to begin prediction. If the start index
+                is greater than the number of rows, N, in the
+                input data, the function predicts the values
+                between N and start and uses the predicted
+                values as time series inputs for the subsequent
+                npredictions.
+
+            Default:
+
+              - No provided timeseries-column: prediction begins
+                from the end of the in-sample data.
+              - timeseries-column provided: prediction begins from
+                the end of the provided input data.
+        npredictions: int, optional
+            Integer greater or equal to 1, the number of predicted
+            timesteps.
+        chart: PlottingObject, optional
+            The chart object to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the
+            Plotting functions.
+
+        Returns
+        -------
+        object
+            Plotting Object.
+        """
+        vpy_plt, kwargs = self.get_plotting_lib(
+            class_name="TSPlot",
+            chart=chart,
+            style_kwargs=style_kwargs,
+        )
+        return vpy_plt.TSPlot(
+            vdf=vDataFrame(self.input_relation),
+            columns=self.y,
+            order_by=self.ts,
+            prediction=self.predict(
+                vdf=vdf,
+                ts=ts,
+                y=y,
+                start=start,
+                npredictions=npredictions,
+                output_standard_errors=True,
+            ),
+        ).draw(**kwargs)
 
 
 class ARIMA(TimeSeriesModelBase):

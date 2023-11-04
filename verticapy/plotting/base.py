@@ -170,6 +170,7 @@ class PlottingBase(PlottingBaseSQL):
                 "range": self._compute_range,
                 "rollup": self._compute_rollup,
                 "sample": self._sample,
+                "tsa": self._compute_tsa,
             }
             if self._compute_method in functions:
                 functions[self._compute_method](*args, **kwds)
@@ -1487,6 +1488,42 @@ class PlottingBase(PlottingBaseSQL):
             "has_category": has_category,
             "limit": limit,
             "limit_over": limit_over,
+        }
+
+    def _compute_tsa(
+        self,
+        vdf: "vDataFrame",
+        order_by: str,
+        columns: str,
+        prediction: "vDataFrame",
+    ) -> None:
+        columns, order_by = vdf.format_colnames(columns, order_by)
+        X = vdf[[order_by, columns]].sort(columns=[order_by]).to_numpy()
+        X_pred = prediction.to_numpy()
+        self.data = {
+            "x": X[:, 0],
+            "y": X[:, 1],
+            "y_pred": X_pred[:, 0],
+        }
+        has_se = False
+        if X_pred.shape[1] > 1:
+            self.data["se"] = X_pred[:, 1]
+            has_se = True
+        delta = self.data["x"][1] - self.data["x"][0]
+        n = len(self.data["y_pred"])
+        self.data["x_pred"] = np.array(
+            [self.data["x"][-1] + delta * i for i in range(n)]
+        )
+        if has_se:
+            self.data["se_low"] = self.data["y_pred"] - 1.96 * self.data["se"]
+            self.data["se_high"] = self.data["y_pred"] + 1.96 * self.data["se"]
+        else:
+            self.data["se_low"] = None
+            self.data["se_high"] = None
+        self.layout = {
+            "columns": self._clean_quotes(columns),
+            "order_by": self._clean_quotes(order_by),
+            "has_se": has_se,
         }
 
     def _compute_range(
