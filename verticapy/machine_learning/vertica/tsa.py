@@ -15,11 +15,13 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 from abc import abstractmethod
+import copy
 from typing import Literal, Optional, Union
 
 import numpy as np
 
 from verticapy._typing import (
+    PlottingObject,
     PythonNumber,
     NoneType,
     SQLRelation,
@@ -36,7 +38,7 @@ from verticapy._utils._sql._vertica_version import (
     check_minimum_version,
 )
 
-from verticapy.core.vdataframe.base import vDataFrame
+from verticapy.core.vdataframe.base import TableSample, vDataFrame
 
 from verticapy.machine_learning.vertica.base import VerticaModel
 
@@ -73,6 +75,7 @@ class TimeSeriesModelBase(VerticaModel):
             return [
                 "phi_",
                 "intercept_",
+                "features_importance_",
             ] + common_params
         else:
             return [
@@ -228,6 +231,7 @@ class TimeSeriesModelBase(VerticaModel):
         y: Optional[str] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
+        output_standard_errors: bool = False,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model.
@@ -273,6 +277,9 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
+        output_standard_errors
+            Boolean,  whether to return estimates  of the standard
+            error of each prediction.
 
         Returns
         -------
@@ -293,13 +300,20 @@ class TimeSeriesModelBase(VerticaModel):
                 start = ""
             else:
                 start = f"start = {start},"
+            if output_standard_errors:
+                output_standard_errors = (
+                    f", output_standard_errors = {output_standard_errors}"
+                )
+            else:
+                output_standard_errors = ""
             # Deployment
             sql = f"""
                 {self._vertica_predict_sql}({y}
                                             USING PARAMETERS 
                                             model_name = '{self.model_name}',
                                             {start}
-                                            npredictions = {npredictions}) 
+                                            npredictions = {npredictions}
+                                            {output_standard_errors}) 
                                             OVER ({ts})"""
             return clean_query(sql)
         else:
@@ -316,6 +330,7 @@ class TimeSeriesModelBase(VerticaModel):
         y: Optional[str] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
+        output_standard_errors: bool = False,
     ) -> vDataFrame:
         """
         Predicts using the input relation.
@@ -367,6 +382,9 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
+        output_standard_errors
+            Boolean,  whether to return estimates  of the standard
+            error of each prediction.
 
         Returns
         -------
@@ -374,7 +392,11 @@ class TimeSeriesModelBase(VerticaModel):
             a new object.
         """
         sql = "SELECT " + self.deploySQL(
-            ts=ts, y=y, start=start, npredictions=npredictions
+            ts=ts,
+            y=y,
+            start=start,
+            npredictions=npredictions,
+            output_standard_errors=output_standard_errors,
         )
         if not (isinstance(vdf, NoneType)):
             sql += f" FROM {vdf}"
@@ -704,6 +726,66 @@ class AR(TimeSeriesModelBase):
             "missing": str(missing).lower(),
             "compute_mse": True,
         }
+
+    # Features Importance Methods.
+
+    def _compute_features_importance(self) -> None:
+        """
+        Computes the features importance.
+        """
+        self.features_importance_ = self.phi_ / sum(abs(self.phi_))
+
+    def _get_features_importance(self) -> np.ndarray:
+        """
+        Returns the features' importance.
+        """
+        if not hasattr(self, "features_importance_"):
+            self._compute_features_importance()
+        return copy.deepcopy(self.features_importance_)
+
+    def features_importance(
+        self, show: bool = True, chart: Optional[PlottingObject] = None, **style_kwargs
+    ) -> PlottingObject:
+        """
+        Computes the model's features importance.
+
+        Parameters
+        ----------
+        show: bool
+            If set to True,  draw the feature's importance.
+        chart: PlottingObject, optional
+            The chart object to plot on.
+        **style_kwargs
+            Any optional parameter to pass to the Plotting
+            functions.
+
+        Returns
+        -------
+        obj
+            features importance.
+        """
+        fi = self._get_features_importance()
+        columns = [
+            copy.deepcopy(self.y) + f"[t-{i + 1}]"
+            for i in range(self.get_params()["p"])
+        ]
+        if show:
+            data = {
+                "importance": fi,
+            }
+            layout = {"columns": columns}
+            vpy_plt, kwargs = self.get_plotting_lib(
+                class_name="ImportanceBarChart",
+                chart=chart,
+                style_kwargs=style_kwargs,
+            )
+            return vpy_plt.ImportanceBarChart(data=data, layout=layout).draw(**kwargs)
+        importances = {
+            "index": [quote_ident(x)[1:-1].lower() for x in columns],
+            "importance": list(abs(fi)),
+            "sign": list(np.sign(fi)),
+        }
+        return TableSample(values=importances).sort(column="importance", desc=True)
 
 
 class MA(TimeSeriesModelBase):
