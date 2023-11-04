@@ -69,7 +69,7 @@ class TSPlot(MatplotlibBase):
         )
         # Standard Error
         if self.layout["has_se"]:
-            args = [self.data["se_low"], self.data["se_high"]]
+            args = [self.data["x_pred"], self.data["se_low"], self.data["se_high"]]
             kwargs = self._update_dict(
                 self.init_style, {**color_kwargs, **style_kwargs}, color_idx=2
             )

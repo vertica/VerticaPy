@@ -1496,6 +1496,7 @@ class PlottingBase(PlottingBaseSQL):
         order_by: str,
         columns: str,
         prediction: "vDataFrame",
+        start: Optional[int],
     ) -> None:
         columns, order_by = vdf.format_colnames(columns, order_by)
         X = vdf[[order_by, columns]].sort(columns=[order_by]).to_numpy()
@@ -1505,6 +1506,8 @@ class PlottingBase(PlottingBaseSQL):
             "y": X[:, 1],
             "y_pred": X_pred[:, 0],
         }
+        if isinstance(start, NoneType):
+            start = -1
         has_se = False
         if X_pred.shape[1] > 1:
             self.data["se"] = X_pred[:, 1]
@@ -1512,7 +1515,7 @@ class PlottingBase(PlottingBaseSQL):
         delta = self.data["x"][1] - self.data["x"][0]
         n = len(self.data["y_pred"])
         self.data["x_pred"] = np.array(
-            [self.data["x"][-1] + delta * i for i in range(n)]
+            [self.data["x"][start] + delta * i for i in range(1, n + 1)]
         )
         if has_se:
             self.data["se_low"] = self.data["y_pred"] - 1.96 * self.data["se"]

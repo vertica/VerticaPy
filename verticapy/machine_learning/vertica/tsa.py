@@ -502,6 +502,7 @@ class TimeSeriesModelBase(VerticaModel):
                 npredictions=npredictions,
                 output_standard_errors=True,
             ),
+            start=start,
         ).draw(**kwargs)
 
 
