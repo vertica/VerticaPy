@@ -22,6 +22,8 @@ from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
 
 MINIMUM_VERTICA_VERSION = {
+    "ARIMA": [12, 0, 0],
+    "AR": [11, 0, 0],
     "Balance": [8, 1, 1],
     "BernoulliNB": [8, 0, 0],
     "BisectingKMeans": [9, 3, 1],
@@ -47,6 +49,7 @@ MINIMUM_VERTICA_VERSION = {
     "LogisticRegression": [8, 0, 0],
     "KMeans": [8, 0, 0],
     "KPrototypes": [12, 0, 3],
+    "MA": [11, 0, 0],
     "MCA": [9, 1, 0],
     "MinMaxScaler": [8, 1, 0],
     "MultinomialNB": [8, 0, 0],

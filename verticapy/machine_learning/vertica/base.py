@@ -783,6 +783,8 @@ class Supervised(VerticaModel):
         str
             model's summary.
         """
+
+        # Initialization
         if self.overwrite_model:
             self.drop()
         else:
@@ -819,7 +821,7 @@ class Supervised(VerticaModel):
                     ROW_NUMBER() OVER 
                     (ORDER BY {', '.join(X)}) 
                     AS {id_column_name}"""
-            tmp_view = False
+        tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
             if isinstance(input_relation, vDataFrame):
@@ -830,10 +832,9 @@ class Supervised(VerticaModel):
                 relation = gen_tmp_name(
                     schema=schema_relation(self.model_name)[0], name="view"
                 )
-                drop(relation, method="view")
                 _executeSQL(
                     query=f"""
-                        CREATE VIEW {relation} AS 
+                        CREATE OR REPLACE VIEW {relation} AS 
                             SELECT 
                                 /*+LABEL('learn.VerticaModel.fit')*/ 
                                 *{id_column} 
@@ -849,6 +850,7 @@ class Supervised(VerticaModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
+        # Fitting
         if self._is_native:
             parameters = self._get_vertica_param_dict()
             if (
@@ -917,15 +919,6 @@ class Tree:
     def __init__(self) -> None:
         """Must be overridden in the child class"""
         self.features_importance_trees_ = {}
-        return None
-        # self.input_relation = None
-        # self.test_relation = None
-        # self.X = None
-        # self.y = None
-        # self.parameters = {}
-        # self.classes_ = None
-        # for att in self._attributes:
-        #    setattr(self, att, None)
 
     def _compute_trees_arrays(
         self, tree: TableSample, X: list, return_probability: bool = False
@@ -1265,6 +1258,10 @@ class Tree:
 
 
 class BinaryClassifier(Supervised):
+    """
+    Base Class for Vertica Binary Classifier.
+    """
+
     # Properties.
 
     @property
@@ -1805,13 +1802,16 @@ class BinaryClassifier(Supervised):
 
 
 class MulticlassClassifier(Supervised):
+    """
+    Base Class for Vertica Multiclass Classifiers.
+    """
+
     # System & Special Methods.
 
     @abstractmethod
     def __init__(self, name: str, overwrite_model: bool = False) -> None:
         """Must be overridden in the child class"""
         super().__init__(name, overwrite_model)
-        # self.classes_ = None
 
     def _check_pos_label(self, pos_label: PythonScalar) -> PythonScalar:
         """
@@ -2645,6 +2645,10 @@ class MulticlassClassifier(Supervised):
 
 
 class Regressor(Supervised):
+    """
+    Base Class for Vertica Regressors.
+    """
+
     # System & Special Methods.
 
     @abstractmethod
@@ -2845,7 +2849,7 @@ class Regressor(Supervised):
         Returns
         -------
         vDataFrame
-                the input object.
+            the input object.
         """
         if hasattr(self, "_predict"):
             return self._predict(vdf=vdf, X=X, name=name, inplace=inplace)
@@ -2904,6 +2908,8 @@ class Unsupervised(VerticaModel):
         str
             model's summary.
         """
+
+        # Initialization
         if self.overwrite_model:
             self.drop()
         else:
@@ -2938,10 +2944,9 @@ class Unsupervised(VerticaModel):
             relation = gen_tmp_name(
                 schema=schema_relation(self.model_name)[0], name="view"
             )
-            drop(relation, method="view")
             _executeSQL(
                 query=f"""
-                    CREATE VIEW {relation} AS 
+                    CREATE OR REPLACE VIEW {relation} AS 
                         SELECT 
                             /*+LABEL('learn.VerticaModel.fit')*/ *
                             {id_column} 
@@ -2962,6 +2967,7 @@ class Unsupervised(VerticaModel):
         parameters = self._get_vertica_param_dict()
         if "num_components" in parameters and not parameters["num_components"]:
             del parameters["num_components"]
+        # Fitting
         fun = self._vertica_fit_sql if self._model_type != "MCA" else "PCA"
         query = f"""
             SELECT 

@@ -1,0 +1,432 @@
+"""
+Copyright  (c)  2018-2023 Open Text  or  one  of its
+affiliates.  Licensed  under  the   Apache  License,
+Version 2.0 (the  "License"); You  may  not use this
+file except in compliance with the License.
+
+You may obtain a copy of the License at:
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless  required  by applicable  law or  agreed to in
+writing, software  distributed  under the  License is
+distributed on an  "AS IS" BASIS,  WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied.
+See the  License for the specific  language governing
+permissions and limitations under the License.
+"""
+from abc import abstractmethod
+from typing import Literal, Optional, Union
+
+import numpy as np
+
+from verticapy._typing import (
+    NoneType,
+    SQLRelation,
+)
+from verticapy._utils._gen import gen_name, gen_tmp_name
+from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import (
+    clean_query,
+    quote_ident,
+    schema_relation,
+)
+from verticapy._utils._sql._sys import _executeSQL
+from verticapy._utils._sql._vertica_version import (
+    check_minimum_version,
+)
+
+from verticapy.core.vdataframe.base import vDataFrame
+
+from verticapy.machine_learning.vertica.base import VerticaModel
+
+from verticapy.sql.drop import drop
+
+"""
+General Classes.
+"""
+
+
+class TimeSeriesModelBase(VerticaModel):
+    """
+    Base Class for Vertica Time Series Models.
+    """
+
+    # Properties.
+
+    @property
+    def _attributes(self) -> list[str]:
+        return [
+            "phi_",
+            "theta_",
+            "mse_",
+            "mean_",
+        ]
+
+    # Attributes Methods.
+
+    def _compute_attributes(self) -> None:
+        """
+        Computes the model's attributes.
+        """
+        coefficients = self.get_vertica_attributes("coefficients")
+        if "p" in self.parameters:
+            p = self.parameters["p"]
+        elif "order" in self.parameters:
+            p = self.parameters["order"][0]
+        else:
+            p = 0
+        self.phi_ = np.array(coefficients["value"][:p])
+        self.theta_ = np.array(coefficients["value"][p:])
+        self.mse_ = self.get_vertica_attributes("mean_squared_error")[
+            "mean_squared_error"
+        ][0]
+        self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
+
+    # System & Special Methods.
+
+    @abstractmethod
+    def __init__(self, name: str, overwrite_model: bool = False) -> None:
+        """Must be overridden in the child class"""
+        super().__init__(name, overwrite_model)
+
+    # Model Fitting Method.
+
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        ts: str,
+        y: str,
+        test_relation: SQLRelation = "",
+        return_report: bool = False,
+    ) -> Optional[str]:
+        """
+        Trains the model.
+
+        Parameters
+        ----------
+        input_relation: SQLRelation
+            Training relation.
+        ts: str
+            TS (Time Series)  vDataColumn used to order
+            the data.  The vDataColumn type must be  date
+            (date, datetime, timestamp...) or numerical.
+        y: str
+            Response column.
+        test_relation: SQLRelation, optional
+            Relation used to test the model.
+        return_report: bool, optional
+            [For native models]
+            When set to True, the model summary
+            will be returned. Otherwise, it will
+            be printed.
+
+        Returns
+        -------
+        str
+            model's summary.
+        """
+
+        # Initialization
+        if self.overwrite_model:
+            self.drop()
+        else:
+            self._is_already_stored(raise_error=True)
+        self.ts = quote_ident(ts)
+        self.y = quote_ident(y)
+        tmp_view = False
+        if isinstance(input_relation, vDataFrame) and self._is_native:
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation.current_relation()
+            else:
+                self.input_relation = input_relation
+            relation = gen_tmp_name(
+                schema=schema_relation(self.model_name)[0], name="view"
+            )
+            _executeSQL(
+                query=f"""
+                    CREATE OR REPLACE VIEW {relation} AS 
+                        SELECT 
+                            /*+LABEL('learn.VerticaModel.fit')*/ 
+                            {self.ts}, {self.y}
+                        FROM {self.input_relation}""",
+                title="Creating a temporary view to fit the model.",
+            )
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.current_relation()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
+        # Fitting
+        if self._is_native:
+            parameters = self._get_vertica_param_dict()
+            if "order" in parameters:
+                parameters["p"] = parameters["order"][0]
+                parameters["q"] = parameters["order"][-1]
+                if len(parameters["order"]) == 3:
+                    parameters["d"] = parameters["order"][1]
+                del parameters["order"]
+            query = f"""
+                SELECT 
+                    /*+LABEL('learn.VerticaModel.fit')*/ 
+                    {self._vertica_fit_sql}
+                    ('{self.model_name}', 
+                     '{relation}',
+                     '{self.y}',
+                     '{self.ts}' 
+                     USING PARAMETERS 
+                     {', '.join([f"{p} = {parameters[p]}" for p in parameters])})"""
+            try:
+                _executeSQL(query, title="Fitting the model.")
+            finally:
+                if tmp_view:
+                    drop(relation, method="view")
+        self._compute_attributes()
+        if self._is_native:
+            report = self.summarize()
+            if return_report:
+                return report
+            print(report)
+        return None
+
+    # I/O Methods.
+
+    def deploySQL(
+        self,
+        ts: Optional[str] = None,
+        y: Optional[str] = None,
+        start: Optional[int] = None,
+        npredictions: int = 10,
+    ) -> str:
+        """
+        Returns the SQL code needed to deploy the model.
+
+        Parameters
+        ----------
+        ts: str, optional
+            TS (Time Series)  vDataColumn used to order
+            the data.  The vDataColumn type must be  date
+            (date, datetime, timestamp...) or numerical.
+        y: str, optional
+            Response column.
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (ts):
+
+              - No provided timeseries-column: start must
+                be an integer greater or equal to 0, where
+                zero indicates to start prediction at the
+                end of the in-sample data. If start is a
+                positive value, the function predicts the
+                values between the end of the in-sample
+                data and the start index, and then uses the
+                predicted values as time series inputs for
+                the subsequent npredictions.
+              - timeseries-column provided: start must be an
+                integer greater or equal to 1 and identifies
+                the index (row) of the timeseries-column at
+                which to begin prediction. If the start index
+                is greater than the number of rows, N, in the
+                input data, the function predicts the values
+                between N and start and uses the predicted
+                values as time series inputs for the subsequent
+                npredictions.
+
+            Default:
+
+              - No provided timeseries-column: prediction begins
+                from the end of the in-sample data.
+              - timeseries-column provided: prediction begins from
+                the end of the provided input data.
+        npredictions: int, optional
+            Integer greater or equal to 1, the number of predicted
+            timesteps.
+
+        Returns
+        -------
+        str
+            the SQL code needed to deploy the model.
+        """
+        if self._vertica_predict_sql:
+            # Initialization
+            if isinstance(ts, NoneType):
+                ts = ""
+            else:
+                ts = quote_ident(X)
+            if isinstance(y, NoneType):
+                y = ""
+            else:
+                y = quote_ident(y)
+            if isinstance(start, NoneType):
+                start = ""
+            else:
+                start = f"start = {start},"
+            # Deployment
+            sql = f"""
+                {self._vertica_predict_sql}({y}
+                                            USING PARAMETERS 
+                                            model_name = '{self.model_name}',
+                                            {start}
+                                            npredictions = {npredictions}) 
+                                            OVER ({ts})"""
+            return clean_query(sql)
+        else:
+            raise AttributeError(
+                f"Method 'deploySQL' does not exist for {self._model_type} models."
+            )
+
+    # Prediction / Transformation Methods.
+
+    def predict(
+        self,
+        vdf: Optional[SQLRelation] = None,
+        ts: Optional[str] = None,
+        y: Optional[str] = None,
+        start: Optional[int] = None,
+        npredictions: int = 10,
+    ) -> vDataFrame:
+        """
+        Predicts using the input relation.
+
+        Parameters
+        ----------
+        vdf: SQLRelation
+            Object  used to run  the prediction.  You can
+            also  specify a  customized  relation,  but you
+            must  enclose  it with an alias.  For  example,
+            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            and "SELECT 1" are invalid.
+        ts: str, optional
+            TS (Time Series)  vDataColumn used to order
+            the data.  The vDataColumn type must be  date
+            (date, datetime, timestamp...) or numerical.
+        y: str, optional
+            Response column.
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (ts):
+
+              - No provided timeseries-column: start must
+                be an integer greater or equal to 0, where
+                zero indicates to start prediction at the
+                end of the in-sample data. If start is a
+                positive value, the function predicts the
+                values between the end of the in-sample
+                data and the start index, and then uses the
+                predicted values as time series inputs for
+                the subsequent npredictions.
+              - timeseries-column provided: start must be an
+                integer greater or equal to 1 and identifies
+                the index (row) of the timeseries-column at
+                which to begin prediction. If the start index
+                is greater than the number of rows, N, in the
+                input data, the function predicts the values
+                between N and start and uses the predicted
+                values as time series inputs for the subsequent
+                npredictions.
+
+            Default:
+
+              - No provided timeseries-column: prediction begins
+                from the end of the in-sample data.
+              - timeseries-column provided: prediction begins from
+                the end of the provided input data.
+        npredictions: int, optional
+            Integer greater or equal to 1, the number of predicted
+            timesteps.
+
+        Returns
+        -------
+        vDataFrame
+            a new object.
+        """
+        sql = "SELECT " + self.deploySQL(
+            ts=ts, y=y, start=start, npredictions=npredictions
+        )
+        if not (isinstance(vdf, NoneType)):
+            sql += f" FROM {vdf}"
+        return vDataFrame(sql)
+
+
+class ARIMA(TimeSeriesModelBase):
+    """
+    Creates a
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The  model is stored  in the
+        database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
+    ...
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["ARIMA"]:
+        return "ARIMA"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_ARIMA"]:
+        return "PREDICT_ARIMA"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["ARIMA"]:
+        return "ARIMA"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        order: Union[tuple[int], list[int]] = (0, 0, 0),
+        tol: float = 1e-6,
+        max_iter: int = 100,
+        init: Literal["zero", "hr"] = "zero",
+        missing: Literal[
+            "drop", "raise", "zero", "linear_interpolation"
+        ] = "linear_interpolation",
+    ) -> None:
+        super().__init__(name, overwrite_model)
+        if not (isinstance(order, (tuple, list)) or len(order)) != 3:
+            raise ValueError(
+                "Parameter 'order' must be a tuple or a list of 3 elements."
+            )
+        for x in order:
+            if not (isinstance(x, int)):
+                raise ValueError(
+                    "Parameter 'order' must be a tuple or a list of integers."
+                )
+        self.parameters = {
+            "order": order,
+            "tol": tol,
+            "max_iter": max_iter,
+            "init": str(init).lower(),
+            "missing": str(missing).lower(),
+        }
