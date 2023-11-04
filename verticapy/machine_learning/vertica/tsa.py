@@ -20,6 +20,7 @@ from typing import Literal, Optional, Union
 import numpy as np
 
 from verticapy._typing import (
+    PythonNumber,
     NoneType,
     SQLRelation,
 )
@@ -54,13 +55,31 @@ class TimeSeriesModelBase(VerticaModel):
     # Properties.
 
     @property
+    def _model_category(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
     def _attributes(self) -> list[str]:
-        return [
-            "phi_",
-            "theta_",
+        common_params = [
             "mse_",
-            "mean_",
         ]
+        if self._model_type == "ARIMA":
+            return [
+                "phi_",
+                "theta_",
+                "mean_",
+            ] + common_params
+        elif self._model_type == "AR":
+            return [
+                "phi_",
+                "intercept_",
+            ] + common_params
+        else:
+            return [
+                "theta_",
+                "mu_",
+                "mean_",
+            ] + common_params
 
     # Attributes Methods.
 
@@ -69,18 +88,26 @@ class TimeSeriesModelBase(VerticaModel):
         Computes the model's attributes.
         """
         coefficients = self.get_vertica_attributes("coefficients")
+        i = 1
         if "p" in self.parameters:
             p = self.parameters["p"]
-        elif "order" in self.parameters:
-            p = self.parameters["order"][0]
+            self.intercept_ = coefficients["value"][0]
         else:
-            p = 0
-        self.phi_ = np.array(coefficients["value"][:p])
-        self.theta_ = np.array(coefficients["value"][p:])
-        self.mse_ = self.get_vertica_attributes("mean_squared_error")[
-            "mean_squared_error"
-        ][0]
-        self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
+            self.mean_ = self.get_vertica_attributes("mean")["mean"][0]
+            if "order" in self.parameters:
+                p = self.parameters["order"][0]
+                i = 0
+            else:
+                p = 0
+            self.mu_ = coefficients["value"][0]
+        self.phi_ = np.array(coefficients["value"][i : p + i])
+        self.theta_ = np.array(coefficients["value"][p + i :])
+        try:
+            self.mse_ = self.get_vertica_attributes("mean_squared_error")[
+                "mean_squared_error"
+            ][0]
+        except:
+            self.mse_ = None
 
     # System & Special Methods.
 
@@ -257,7 +284,7 @@ class TimeSeriesModelBase(VerticaModel):
             if isinstance(ts, NoneType):
                 ts = ""
             else:
-                ts = quote_ident(X)
+                ts = "ORDER BY " + quote_ident(ts)
             if isinstance(y, NoneType):
                 y = ""
             else:
@@ -356,7 +383,7 @@ class TimeSeriesModelBase(VerticaModel):
 
 class ARIMA(TimeSeriesModelBase):
     """
-    Creates a
+    Creates a inDB ARIMA model.
 
     Parameters
     ----------
@@ -367,7 +394,36 @@ class ARIMA(TimeSeriesModelBase):
         If set to True, training a model with the same
         name as an existing model overwrites the
         existing model.
-    ...
+    order: tuple, optional
+        The (p,d,q) order of the model for the autoregressive,
+        differences, and moving average components.
+    tol: float, optional
+        Determines  whether the algorithm has reached
+        the specified accuracy result.
+    max_iter: int, optional
+        Determines  the maximum number of  iterations
+        the  algorithm performs before  achieving the
+        specified accuracy result.
+    init: str, optional
+        Initialization method, one of the following:
+
+        - 'zero': Coefficients are initialized to zero.
+        - 'hr': Coefficients are initialized using the
+            Hannan-Rissanen algorithm.
+
+    missing: str, optional
+        Method for handling missing values, one of the
+        following strings:
+
+        - 'drop': Missing values are ignored.
+        - 'raise': Missing values raise an error.
+        - 'zero': Missing values are set to zero.
+        - 'linear_interpolation': Missing values are
+            replaced by a linearly interpolated value
+            based on the nearest valid entries before
+            and after the missing value. In cases
+            where the first or last values in a
+            dataset are missing, the function errors.
 
     Examples
     ---------
@@ -377,6 +433,8 @@ class ARIMA(TimeSeriesModelBase):
     :ref:`user_guide.machine_learning` or the
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
+
+    ...
     """
 
     # Properties.
@@ -429,4 +487,316 @@ class ARIMA(TimeSeriesModelBase):
             "max_iter": max_iter,
             "init": str(init).lower(),
             "missing": str(missing).lower(),
+        }
+
+
+class ARMA(TimeSeriesModelBase):
+    """
+    Creates a inDB ARMA model.
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The  model is stored  in the
+        database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
+    order: tuple, optional
+        The (p,q) order of the model for the autoregressive,
+        and moving average components.
+    tol: float, optional
+        Determines  whether the algorithm has reached
+        the specified accuracy result.
+    max_iter: int, optional
+        Determines  the maximum number of  iterations
+        the  algorithm performs before  achieving the
+        specified accuracy result.
+    init: str, optional
+        Initialization method, one of the following:
+
+        - 'zero': Coefficients are initialized to zero.
+        - 'hr': Coefficients are initialized using the
+            Hannan-Rissanen algorithm.
+
+    missing: str, optional
+        Method for handling missing values, one of the
+        following strings:
+
+        - 'drop': Missing values are ignored.
+        - 'raise': Missing values raise an error.
+        - 'zero': Missing values are set to zero.
+        - 'linear_interpolation': Missing values are
+            replaced by a linearly interpolated value
+            based on the nearest valid entries before
+            and after the missing value. In cases
+            where the first or last values in a
+            dataset are missing, the function errors.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    ...
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["ARIMA"]:
+        return "ARIMA"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_ARIMA"]:
+        return "PREDICT_ARIMA"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["ARMA"]:
+        return "ARMA"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        order: Union[tuple[int], list[int]] = (0, 0),
+        tol: float = 1e-6,
+        max_iter: int = 100,
+        init: Literal["zero", "hr"] = "zero",
+        missing: Literal[
+            "drop", "raise", "zero", "linear_interpolation"
+        ] = "linear_interpolation",
+    ) -> None:
+        super().__init__(name, overwrite_model)
+        if not (isinstance(order, (tuple, list)) or len(order)) != 3:
+            raise ValueError(
+                "Parameter 'order' must be a tuple or a list of 2 elements."
+            )
+        for x in order:
+            if not (isinstance(x, int)):
+                raise ValueError(
+                    "Parameter 'order' must be a tuple or a list of integers."
+                )
+        self.parameters = {
+            "order": order,
+            "tol": tol,
+            "max_iter": max_iter,
+            "init": str(init).lower(),
+            "missing": str(missing).lower(),
+        }
+
+
+class AR(TimeSeriesModelBase):
+    """
+    Creates a inDB Autoregressor model.
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The  model is stored  in the
+        database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
+    p: int, optional
+        Integer in the range [1, 1999], the number of
+        lags to consider in the computation. Larger
+        values for p weaken the correlation.
+    method: str, optional
+        One of the following algorithms for training the
+        model:
+
+        - ols:
+            Ordinary Least Squares
+        - yule-walker:
+            Yule-Walker
+    penalty: str, optional
+        Method of regularization.
+
+        - none:
+            No regularization.
+        - l2:
+            L2 regularization.
+    C: PythonNumber, optional
+        The regularization parameter value. The value
+        must be zero or non-negative.
+
+    missing: str, optional
+        Method for handling missing values, one of the
+        following strings:
+
+        - 'drop': Missing values are ignored.
+        - 'raise': Missing values raise an error.
+        - 'zero': Missing values are set to zero.
+        - 'linear_interpolation': Missing values are
+            replaced by a linearly interpolated value
+            based on the nearest valid entries before
+            and after the missing value. In cases
+            where the first or last values in a
+            dataset are missing, the function errors.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    ...
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["AUTOREGRESSOR"]:
+        return "AUTOREGRESSOR"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_AUTOREGRESSOR"]:
+        return "PREDICT_AUTOREGRESSOR"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["AR"]:
+        return "AR"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        p: int = 3,
+        method: Literal["ols", "yule-walker"] = "ols",
+        penalty: Literal[None, "none", "l2"] = "none",
+        C: PythonNumber = 1.0,
+        missing: Literal[
+            "drop", "raise", "zero", "linear_interpolation"
+        ] = "linear_interpolation",
+    ) -> None:
+        super().__init__(name, overwrite_model)
+        self.parameters = {
+            "p": int(p),
+            "method": str(method).lower(),
+            "penalty": str(penalty).lower(),
+            "C": C,
+            "missing": str(missing).lower(),
+            "compute_mse": True,
+        }
+
+
+class MA(TimeSeriesModelBase):
+    """
+    Creates a inDB Moving Average model.
+
+    Parameters
+    ----------
+    name: str, optional
+        Name of the model. The  model is stored  in the
+        database.
+    overwrite_model: bool, optional
+        If set to True, training a model with the same
+        name as an existing model overwrites the
+        existing model.
+    q: int, optional
+        Integer in the range [1, 67), the number of lags
+        to consider in the computation.
+    penalty: str, optional
+        Method of regularization.
+
+        - none:
+            No regularization.
+        - l2:
+            L2 regularization.
+    C: PythonNumber, optional
+        The regularization parameter value. The value
+        must be zero or non-negative.
+
+    missing: str, optional
+        Method for handling missing values, one of the
+        following strings:
+
+        - 'drop': Missing values are ignored.
+        - 'raise': Missing values raise an error.
+        - 'zero': Missing values are set to zero.
+        - 'linear_interpolation': Missing values are
+            replaced by a linearly interpolated value
+            based on the nearest valid entries before
+            and after the missing value. In cases
+            where the first or last values in a
+            dataset are missing, the function errors.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    ...
+    """
+
+    # Properties.
+
+    @property
+    def _vertica_fit_sql(self) -> Literal["MOVING_AVERAGE"]:
+        return "MOVING_AVERAGE"
+
+    @property
+    def _vertica_predict_sql(self) -> Literal["PREDICT_MOVING_AVERAGE"]:
+        return "PREDICT_MOVING_AVERAGE"
+
+    @property
+    def _model_subcategory(self) -> Literal["TIMESERIES"]:
+        return "TIMESERIES"
+
+    @property
+    def _model_type(self) -> Literal["MA"]:
+        return "MA"
+
+    # System & Special Methods.
+
+    @check_minimum_version
+    @save_verticapy_logs
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        q: int = 1,
+        penalty: Literal[None, "none", "l2"] = "none",
+        C: PythonNumber = 1.0,
+        missing: Literal[
+            "drop", "raise", "zero", "linear_interpolation"
+        ] = "linear_interpolation",
+    ) -> None:
+        super().__init__(name, overwrite_model)
+        self.parameters = {
+            "q": int(q),
+            "penalty": str(penalty).lower(),
+            "C": C,
+            "missing": str(missing).lower(),
+            "compute_mse": True,
         }

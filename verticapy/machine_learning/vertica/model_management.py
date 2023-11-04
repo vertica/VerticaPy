@@ -38,11 +38,13 @@ from verticapy.machine_learning.vertica.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    PoissonRegressor,
     Ridge,
 )
 from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.tsa import ARIMA, AR, MA
 
 
 @save_verticapy_logs
@@ -139,6 +141,9 @@ def load_model(
         info = info[0]
     info = eval("[" + info + "]")
     lookup_table = {
+        "arima": ARIMA,
+        "autoregressor": AR,
+        "moving_average": MA,
         "rf_regressor": RandomForestRegressor,
         "rf_classifier": RandomForestClassifier,
         "iforest": IsolationForest,
@@ -149,6 +154,7 @@ def load_model(
         "svm_regressor": LinearSVR,
         "svm_classifier": LinearSVC,
         "linear_reg": LinearRegression,
+        "poisson_reg": PoissonRegressor,
         "kmeans": KMeans,
         "kprototypes": KPrototypes,
         "bisecting_kmeans": BisectingKMeans,
@@ -158,9 +164,20 @@ def load_model(
     }
     model = lookup_table[model_type](name)
     if model_type != "svd":
+        # Variables used in the CALL STRING
         true, false = True, False
         squarederror = "squarederror"
         crossentropy = "crossentropy"
+        ols = "ols"
+        hr = "hr"
+        linear_interpolation = "linear_interpolation"
+        zero = "zero"
+        error = "error"
+        drop = "drop"
+        if "method=yule-walker," in parameters:
+            parameters = parameters.replace(
+                "method=yule-walker,", "method='yule-walker',"
+            )
         if " lambda=" in parameters:
             parameters = parameters.replace(" lambda=", " C=")
         try:
@@ -186,6 +203,15 @@ def load_model(
         model.y = info[2]
         model.X = eval("[" + info[3] + "]")
         model.test_relation = test_relation if (test_relation) else model.input_relation
+    elif model._model_category == "TIMESERIES":
+        model.y = info[2]
+        model.ts = info[3]
+        model.test_relation = test_relation if (test_relation) else model.input_relation
+        if model._model_type == "ARIMA":
+            p = int(model.get_vertica_attributes("p")["p"][0])
+            d = int(model.get_vertica_attributes("d")["d"][0])
+            q = int(model.get_vertica_attributes("q")["q"][0])
+            model.set_params({"order": (p, d, q)})
     else:
         model.X = eval("[" + info[2] + "]")
     model._compute_attributes()
