@@ -311,6 +311,7 @@ class TimeSeriesModelBase(VerticaModel):
                 {self._vertica_predict_sql}({y}
                                             USING PARAMETERS 
                                             model_name = '{self.model_name}',
+                                            add_mean = False,
                                             {start}
                                             npredictions = {npredictions}
                                             {output_standard_errors}) 

@@ -96,7 +96,9 @@ class TSPlot(MatplotlibBase):
         kwargs = {**kwargs, **{"linestyle": "dashed"}}
         ax.plot(*args, **kwargs, label="prediction")
         # Labels
-        ax.set_xlim(min(self.data["x"]), max(self.data["x_pred"]))
+        min_x = min(min(self.data["x"]), min(self.data["x_pred"]))
+        max_x = max(max(self.data["x"]), max(self.data["x_pred"]))
+        ax.set_xlim(min_x, max_x)
         ax.set_xlabel(self.layout["order_by"])
         ax.set_ylabel(self.layout["columns"])
         for tick in ax.get_xticklabels():
