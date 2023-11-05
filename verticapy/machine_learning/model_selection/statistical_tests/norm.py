@@ -43,6 +43,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
     -------
     tuple
         statistic, p_value
+
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -93,8 +94,8 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 @save_verticapy_logs
 def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     """
-    Test whether a sample differs from a normal
-    distribution.
+    This function tests the null hypothesis that a
+    sample comes from a normal distribution.
 
     Parameters
     ----------
@@ -107,6 +108,161 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     -------
     tuple
         statistic, p_value
+
+    Examples
+    ---------
+
+    Let's try this test on two set of distribution to
+    obverse the contrast in test results:
+
+    - normally distributed dataset
+    - uniformly distributed dataset
+
+    Normally Distributed
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Import the necessary libraries:
+
+    .. code-block:: python
+
+        import verticapy as vp
+        import numpy as np
+        import random
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import numpy as np
+        import random
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Then we can define the basic parameters for the
+    normal distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        N = 100 # Number of rows
+        mean = 0
+        std_dev = 1
+
+        # Dataset
+        data = np.random.normal(mean, std_dev, N)
+
+    Now we can create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["col"].hist()
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_1.html
+
+    To find the test p-value, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import normaltest
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        normaltest(vdf, column = "col")
+
+    We can see that the p-value is high meaning that
+    we cannot reject the null hypothesis.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test distribution does not belong
+        to a normal distribution.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Uniform Distribution
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    .. ipython:: python
+        :suppress:
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col": data})
+
+    We can define the basic parameters for the
+    uniform distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        low = 0
+        high = 1
+
+        # Dataset
+        data = np.random.uniform(low, high, N)
+
+        # vDataFrame
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["col"].hist()
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_2.html
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        normaltest(vdf, column = "col")
+
+
+    In this case, the p-value is quite low
+    meaning that it is highly probable that
+    the data is not normally distributed.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
