@@ -40,6 +40,7 @@ from verticapy._utils._sql._vertica_version import (
 
 from verticapy.core.vdataframe.base import TableSample, vDataFrame
 
+import verticapy.machine_learning.metrics as mt
 from verticapy.machine_learning.vertica.base import VerticaModel
 
 from verticapy.sql.drop import drop
@@ -64,6 +65,7 @@ class TimeSeriesModelBase(VerticaModel):
     def _attributes(self) -> list[str]:
         common_params = [
             "mse_",
+            "n_",
         ]
         if self._model_type == "ARIMA":
             return [
@@ -111,6 +113,9 @@ class TimeSeriesModelBase(VerticaModel):
             ][0]
         except:
             self.mse_ = None
+        self.n_ = self.get_vertica_attributes("accepted_row_count")[
+            "accepted_row_count"
+        ][0]
 
     # System & Special Methods.
 
@@ -232,6 +237,7 @@ class TimeSeriesModelBase(VerticaModel):
         start: Optional[int] = None,
         npredictions: int = 10,
         output_standard_errors: bool = False,
+        output_index: bool = False,
     ) -> str:
         """
         Returns the SQL code needed to deploy the model.
@@ -277,9 +283,11 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
-        output_standard_errors
+        output_standard_errors: bool, optional
             Boolean,  whether to return estimates  of the standard
             error of each prediction.
+        output_index: bool, optional
+            Boolean,  whether to return the index of each position.
 
         Returns
         -------
@@ -300,10 +308,8 @@ class TimeSeriesModelBase(VerticaModel):
                 start = ""
             else:
                 start = f"start = {start},"
-            if output_standard_errors:
-                output_standard_errors = (
-                    f", output_standard_errors = {output_standard_errors}"
-                )
+            if output_standard_errors or output_index:
+                output_standard_errors = f", output_standard_errors = true"
             else:
                 output_standard_errors = ""
             # Deployment
@@ -332,6 +338,7 @@ class TimeSeriesModelBase(VerticaModel):
         start: Optional[int] = None,
         npredictions: int = 10,
         output_standard_errors: bool = False,
+        output_index: bool = False,
     ) -> vDataFrame:
         """
         Predicts using the input relation.
@@ -383,15 +390,18 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
-        output_standard_errors
+        output_standard_errors: bool, optional
             Boolean,  whether to return estimates  of the standard
             error of each prediction.
+        output_index: bool, optional
+            Boolean,  whether to return the index of each position.
 
         Returns
         -------
         vDataFrame
             a new object.
         """
+        ar_ma = False
         if self._model_type in (
             "AR",
             "MA",
@@ -402,16 +412,191 @@ class TimeSeriesModelBase(VerticaModel):
                 ts = self.ts
             if isinstance(y, NoneType):
                 y = self.y
+            ar_ma = True
         sql = "SELECT " + self.deploySQL(
             ts=ts,
             y=y,
             start=start,
             npredictions=npredictions,
             output_standard_errors=output_standard_errors,
+            output_index=output_index,
         )
+        no_relation = True
         if not (isinstance(vdf, NoneType)):
             sql += f" FROM {vdf}"
+            no_relation = False
+        if output_index:
+            j = self.n_
+            if no_relation:
+                if not (isinstance(start, NoneType)):
+                    j = j + start
+            elif not (isinstance(start, NoneType)):
+                j = start
+            if output_standard_errors and not (ar_ma):
+                output_standard_errors = ", std_err"
+            else:
+                output_standard_errors = ""
+            if ar_ma:
+                order_by = ""
+            else:
+                order_by = 'ORDER BY "std_err"'
+            sql = f"""
+                SELECT 
+                    ROW_NUMBER() OVER ({order_by}) + {j} - 1 AS idx,
+                    prediction{output_standard_errors}
+                FROM ({sql}) VERTICAPY_SUBTABLE"""
         return vDataFrame(sql)
+
+    # Model Evaluation Methods.
+
+    def _evaluation_relation(self):
+        """
+        Returns the relation needed to evaluate the
+        model.
+        """
+        if hasattr(self, "test_relation"):
+            test_relation = self.test_relation
+        elif hasattr(self, "input_relation"):
+            test_relation = self.input_relation
+        else:
+            raise AttributeError(
+                "No attributes found. The model is probably not yet fitted."
+            )
+        parameters = self.get_params()
+        if "order" in parameters:
+            start = max(parameters["order"]) * 2
+        elif "q" in parameters:
+            start = parameters["q"] * 2
+        elif "p" in parameters:
+            start = parameters["p"] * 2
+        else:
+            start = 1
+        npredictions = self.n_ - start
+        prediction = self.predict(
+            vdf=test_relation,
+            ts=self.ts,
+            y=self.y,
+            start=start,
+            npredictions=npredictions,
+            output_index=True,
+        )
+        sql = f"""
+            (SELECT
+                true_values.y_true,
+                prediction_relation.prediction AS y_pred
+            FROM 
+                (
+                    SELECT
+                        ROW_NUMBER() OVER (ORDER BY {self.ts}) AS idx,
+                        {self.y} AS y_true
+                    FROM {test_relation}
+                ) AS true_values
+                NATURAL JOIN
+                (SELECT * FROM {prediction}) AS prediction_relation) VERTICAPY_SUBTABLE
+        """
+        return clean_query(sql)
+
+    def regression_report(
+        self,
+        metrics: Union[
+            str,
+            Literal[None, "anova", "details"],
+            list[Literal[tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)]],
+        ] = None,
+    ) -> Union[float, TableSample]:
+        """
+        Computes a regression report using multiple metrics to
+        evaluate the model (r2, mse, max error...).
+
+        Parameters
+        ----------
+        metrics: str, optional
+            The metrics used to compute the regression report.
+                None    : Computes the model different metrics.
+                anova   : Computes the model ANOVA table.
+                details : Computes the model details.
+            You can also provide a list of different metrics,
+            including the following:
+                aic    : Akaike’s Information Criterion
+                bic    : Bayesian Information Criterion
+                max    : Max Error
+                mae    : Mean Absolute Error
+                median : Median Absolute Error
+                mse    : Mean Squared Error
+                msle   : Mean Squared Log Error
+                qe     : quantile  error,  the quantile must be
+                         included in the name. Example:
+                         qe50.1% will return the quantile error
+                         using q=0.501.
+                r2     : R squared coefficient
+                r2a    : R2 adjusted
+                rmse   : Root Mean Squared Error
+                var    : Explained Variance
+
+        Returns
+        -------
+        TableSample
+            report.
+        """
+        return mt.regression_report(
+            "y_true",
+            "y_pred",
+            self._evaluation_relation(),
+            metrics=metrics,
+            k=1,
+        )
+
+    report = regression_report
+
+    def score(
+        self,
+        metric: Literal[
+            tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
+            + ("r2a", "r2_adj", "rsquared_adj", "r2adj", "r2adjusted", "rmse")
+        ] = "r2",
+    ) -> float:
+        """
+        Computes the model score.
+
+        Parameters
+        ----------
+        metric: str, optional
+            The metric used to compute the score.
+                aic    : Akaike’s Information Criterion
+                bic    : Bayesian Information Criterion
+                max    : Max Error
+                mae    : Mean Absolute Error
+                median : Median Absolute Error
+                mse    : Mean Squared Error
+                msle   : Mean Squared Log Error
+                r2     : R squared coefficient
+                r2a    : R2 adjusted
+                rmse   : Root Mean Squared Error
+                var    : Explained Variance
+
+        Returns
+        -------
+        float
+            score.
+        """
+        # Initialization
+        metric = str(metric).lower()
+        if metric in ["r2adj", "r2adjusted"]:
+            metric = "r2a"
+        adj, root = False, False
+        if metric in ("r2a", "r2adj", "r2adjusted", "r2_adj", "rsquared_adj"):
+            metric, adj = "r2", True
+        elif metric == "rmse":
+            metric, root = "mse", True
+        fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[metric]
+
+        # Scoring
+        arg = ["y_true", "y_pred", self._evaluation_relation()]
+        if metric in ("aic", "bic") or adj:
+            arg += [1]
+        if root or adj:
+            arg += [True]
+        return fun(*arg)
 
     # Plotting Methods.
 

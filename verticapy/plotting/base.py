@@ -1507,12 +1507,17 @@ class PlottingBase(PlottingBaseSQL):
             "y": X[:, 1],
             "y_pred": X_pred[:, 0],
         }
-        if isinstance(start, NoneType):
-            start = 0
         if not (dataset_provided):
-            start = -start - 1
+            if isinstance(start, NoneType):
+                start = 0
+            j = -1
         else:
-            start = max(start - 1, 0)
+            if isinstance(start, NoneType):
+                start = 1
+                j = -1
+            else:
+                j = start - 1
+                start = 0
         has_se = False
         if X_pred.shape[1] > 1:
             self.data["se"] = np.array([0.0] + list(X_pred[:, 1]))
@@ -1520,11 +1525,10 @@ class PlottingBase(PlottingBaseSQL):
         delta = self.data["x"][1] - self.data["x"][0]
         n = len(self.data["y_pred"])
         self.data["x_pred"] = np.array(
-            [self.data["x"][start] + delta * i for i in range(0, n + 1)]
+            [self.data["x"][j]]
+            + [self.data["x"][j] + delta * i for i in range(start, n + start)]
         )
-        self.data["y_pred"] = np.array(
-            [self.data["y"][start]] + list(self.data["y_pred"])
-        )
+        self.data["y_pred"] = np.array([self.data["y"][j]] + list(self.data["y_pred"]))
         if has_se:
             self.data["se_low"] = self.data["y_pred"] - 1.96 * self.data["se"]
             self.data["se_high"] = self.data["y_pred"] + 1.96 * self.data["se"]
