@@ -192,7 +192,7 @@ def het_breuschpagan(
         Generally a ``p-value`` less than 0.05
         is considered the threshold to reject the
         null hypothesis. But it is not always
-        the case - 
+        the case -
         `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
 
     .. note::
@@ -210,7 +210,7 @@ def het_breuschpagan(
     has **heteroscedestic noise** below:
 
     .. ipython:: python
-        
+
         # y values
         y_vals = np.array([0, 2, 4, 6, 8, 10])
 
