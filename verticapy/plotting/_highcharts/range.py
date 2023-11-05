@@ -53,9 +53,7 @@ class RangeCurve(LinePlot):
         self.init_style_area_range = {
             "zIndex": 0,
             "lineWidth": 0,
-            "linkedTo": ":previous",
             "fillOpacity": 0.3,
-            "zIndex": 0,
         }
 
     # Draw.
