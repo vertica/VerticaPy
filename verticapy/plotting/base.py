@@ -1509,7 +1509,7 @@ class PlottingBase(PlottingBaseSQL):
         }
         if not (dataset_provided):
             if isinstance(start, NoneType):
-                start = 0
+                start = 1
             j = -1
         else:
             if isinstance(start, NoneType):

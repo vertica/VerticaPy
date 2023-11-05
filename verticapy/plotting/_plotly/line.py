@@ -54,7 +54,7 @@ class LinePlot(PlotlyBase):
         self.init_stack = None
         if self.layout["kind"] == "area":
             return "tozeroy"
-        elif self.layout["kind"] in {"area_stacked", "area_percent"}:
+        elif self.layout["kind"] in ("area_stacked", "area_percent"):
             self.init_stack = "group"
             return "tonexty"
 
