@@ -311,7 +311,7 @@ class TimeSeriesModelBase(VerticaModel):
                 {self._vertica_predict_sql}({y}
                                             USING PARAMETERS 
                                             model_name = '{self.model_name}',
-                                            add_mean = False,
+                                            add_mean = True,
                                             {start}
                                             npredictions = {npredictions}
                                             {output_standard_errors}) 
@@ -488,7 +488,7 @@ class TimeSeriesModelBase(VerticaModel):
         """
         dataset_provided = True
         if isinstance(vdf, NoneType):
-            dataset_provided = False 
+            dataset_provided = False
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="TSPlot",
             chart=chart,
