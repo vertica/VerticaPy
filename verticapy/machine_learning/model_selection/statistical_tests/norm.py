@@ -175,7 +175,6 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_1.html
 
-
     To find the test p-value, we can import the test function:
 
     .. ipython:: python
@@ -189,28 +188,29 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         normaltest(vdf, column = "col")
 
     We can see that the p-value is high meaning that
-    we cannot reject the null hypothesis.     
-    
+    we cannot reject the null hypothesis.
+
     .. note::
 
-        A ``p_value`` in statistics represents the 
-        probability of obtaining results as extreme 
-        as, or more extreme than, the observed data, 
-        assuming the null hypothesis is true. 
-        A *smaller* p-value typically suggests 
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
         stronger evidence against the null hypothesis
         i.e. the test distribution does not belong
         to a normal distribution.
 
-        However, *small* is a relative term. And 
-        the choice for the threshold value which 
+        However, *small* is a relative term. And
+        the choice for the threshold value which
         determines a "small" should be made before
         analyzing the data.
-    
+
         Generally a ``p-value`` less than 0.05
         is considered the threshold to reject the
         null hypothesis. But it is not always
-        the case - `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+        the case - 
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
 
     Uniform Distribution
     ^^^^^^^^^^^^^^^^^^^^^
@@ -260,10 +260,9 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         normaltest(vdf, column = "col")
 
 
-    In this case, the p-value is quite low 
-    meaning that it is highly probable that 
+    In this case, the p-value is quite low
+    meaning that it is highly probable that
     the data is not normally distributed.
-
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()

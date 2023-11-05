@@ -303,6 +303,9 @@ def mkt(
     Examples
     ---------
 
+    Initialization
+    ^^^^^^^^^^^^^^^
+
     Let's try this test on a dummy dataset that has the
     following elements:
 
@@ -312,9 +315,11 @@ def mkt(
     Before we begin we can import the necessary libraries:
 
     .. ipython:: python
-        :suppress:
 
         import verticapy as vp
+
+    Example 1: Trend
+    ^^^^^^^^^^^^^^^^^
 
     Now we can create the dummy dataset:
 
@@ -344,7 +349,7 @@ def mkt(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html
 
-    Thouse the increasing trend is obvious, 
+    Thouse the increasing trend is obvious,
     we can test its ``mkt`` score by first importing
     the function:
 
@@ -367,25 +372,28 @@ def mkt(
 
     .. note::
 
-        A ``p_value`` in statistics represents the 
-        probability of obtaining results as extreme 
-        as, or more extreme than, the observed data, 
-        assuming the null hypothesis is true. 
-        A *smaller* p-value typically suggests 
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
         stronger evidence against the null hypothesis
         i.e. the test data does not have
         a trend with respect to time in the current case.
 
-        However, *small* is a relative term. And 
-        the choice for the threshold value which 
+        However, *small* is a relative term. And
+        the choice for the threshold value which
         determines a "small" should be made before
         analyzing the data.
-    
+
         Generally a ``p-value`` less than 0.05
         is considered the threshold to reject the
         null hypothesis. But it is not always
-        the case - `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+        the case - 
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
 
+    Example 1: No Trend
+    ^^^^^^^^^^^^^^^^^^^^
 
     We can contrast the results with a dataset that
     has barely any trend:
@@ -419,11 +427,11 @@ def mkt(
 
     .. ipython:: python
 
-        mkt(vdf, column = "X", ts= "year")
+        mkt(vdf, column = "X", ts = "year")
 
     Notice the extreme p-value which is
     significant to disprove the null hypothesis.
-    
+
     For more information check out
     `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
