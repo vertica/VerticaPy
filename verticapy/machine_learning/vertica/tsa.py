@@ -486,6 +486,9 @@ class TimeSeriesModelBase(VerticaModel):
         object
             Plotting Object.
         """
+        dataset_provided = True
+        if isinstance(vdf, NoneType):
+            dataset_provided = False 
         vpy_plt, kwargs = self.get_plotting_lib(
             class_name="TSPlot",
             chart=chart,
@@ -504,6 +507,7 @@ class TimeSeriesModelBase(VerticaModel):
                 output_standard_errors=True,
             ),
             start=start,
+            dataset_provided=dataset_provided,
         ).draw(**kwargs)
 
 
