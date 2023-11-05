@@ -312,6 +312,7 @@ def mkt(
     Before we begin we can import the necessary libraries:
 
     .. ipython:: python
+        :suppress:
 
         import verticapy as vp
 
@@ -319,36 +320,94 @@ def mkt(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame(
-            {
-                "X": [0, 1, 2, 3, 4],
-                "year": [1990, 1991, 1992, 1993, 1994],
-            }
+        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5, 6],
+            "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],}
         )
 
-    To test its score, we can import the test function:
+    We can visually inspect the trend by drawing the
+    appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["X"].plot(ts="year")
+        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html
+
+    Thouse the increasing trend is obvious, 
+    we can test its ``mkt`` score by first importing
+    the function:
 
     .. ipython:: python
 
         from verticapy.stats import mkt
 
-    And simply apply it on the ``vDataFrame``:
+    And then simply applying it on the ``vDataFrame``:
 
     .. ipython:: python
 
-        mkt(vdf, column = "X", ts = "year")
+        mkt(vdf, column = "X", ts= "year")
+
+    In the above context, the low p-value is
+    evidence of the presence of trend. The function
+    also gives us information about the nature of
+    trend. In this case, we can see that it is a
+    monotonically increasing trend which conforms
+    with our plot that we observed above.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the 
+        probability of obtaining results as extreme 
+        as, or more extreme than, the observed data, 
+        assuming the null hypothesis is true. 
+        A *smaller* p-value typically suggests 
+        stronger evidence against the null hypothesis
+        i.e. the test data does not have
+        a trend with respect to time in the current case.
+
+        However, *small* is a relative term. And 
+        the choice for the threshold value which 
+        determines a "small" should be made before
+        analyzing the data.
+    
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case - `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
 
     We can contrast the results with a dataset that
     has barely any trend:
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame(
-            {
-                "X":[0, 1, 1, 1, 1],
-                "year": [1990, 1991, 1992, 1993, 1994],
-            }
+        vdf = vp.vDataFrame({"X":[1, 1, 1, 1, 1, 1, 1],
+            "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],}
         )
+
+    We can visually inspect the absence of trend
+    by drawing the appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["X"].plot(ts="year")
+        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt_2.html
 
     Now we can perform the test on this dataset:
 
@@ -356,7 +415,9 @@ def mkt(
 
         mkt(vdf, column = "X", ts= "year")
 
-    Notice the contrast of the two test results.
+    Notice the extreme p-value which is
+    significant to disprove the null hypothesis.
+    
     For more information check out
     `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """

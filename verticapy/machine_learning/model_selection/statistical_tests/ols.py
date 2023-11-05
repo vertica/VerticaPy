@@ -67,13 +67,13 @@ def het_breuschpagan(
 
     - X (a predictor)
     - True value
-    - Prediction
+    - Random noise
 
     .. note::
 
-        This metric requires 'eps', which represents
+        This metric requires ``eps``, which represents
         the difference between the predicted value
-        and the true value. If you already have 'eps'
+        and the true value. If you already have ``eps``
         available, you can directly use it instead of
         recomputing it, as demonstrated in the example
         below.
@@ -83,24 +83,67 @@ def het_breuschpagan(
     .. ipython:: python
 
         import verticapy as vp
-
-    Now we can create the dummy dataset:
+        import numpy as np
+        from verticapy.learn.linear_model import LinearRegression
+        
+    Next, we can create some values with random
+    noise:
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame(
-            {
-                "X": [0,1,2,3],
-                "Y_true": [1.1, 1.2, 1.3, 1.4],
-                "Y_pred": [1.15, 1.23, 1.26, 1.4],
-            }
+        y_vals = [0, 2, 4, 6, 8, 10] + np.random.normal(0, 0.4, 6)
+
+    We can use those values to create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5],
+            "y_true": y_vals}
         )
 
-    Then we can calculate the ``eps``:
+    We can intialize a regression model:
 
     .. ipython:: python
 
-        vdf["eps"] = vdf["Y_true"] - vdf["Y_pred"]
+        model = LinearRegression()
+
+    Fit that model on the dataset:
+
+    .. ipython:: python
+
+        model.fit(input_relation = vdf, X= ["X"], y = "y_true")
+
+    We can create a column in the ``vDataFrame`` that
+    has the predictions:
+
+    .. ipython:: python
+
+        model.predict(vdf, X = "X", name = "y_pred")
+
+    Then we can calculate the residuals i.e. ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["y_true"] - vdf["y_pred"]
+
+    We can plot the residuals to see the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["X", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["X", "eps"])
+        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_breuschpagan.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan.html
+
+    Notice the randomness of the residuals with respect to X. 
+    This shows that the noise is homoscedestic. 
 
     To test its score, we can import the test function:
 
@@ -112,37 +155,119 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        het_breuschpagan(vdf, eps = "eps", X = "X")
-
-    We can contrast the results with a dataset that
-    has homoscedastic noise:
+        lm_statistic, lm_pvalue, f_statistic, f_pvalue = het_breuschpagan(vdf, eps = "eps", X = "X")
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame(
-            {
-                "X":[0, 1, 2, 3],
-                "eps": [1, 1, 1, 1],
-            }
-        )
+        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+
+    As the noise was not heteroscedestic, we got higher
+    p_value scores and lower statistics score.
+    
+    .. note::
+
+        A ``p_value`` in statistics represents the 
+        probability of obtaining results as extreme 
+        as, or more extreme than, the observed data, 
+        assuming the null hypothesis is true. 
+        A *smaller* p-value typically suggests 
+        stronger evidence against the null hypothesis
+        i.e. the test data does not have
+        a heterscedestic noise in the current case.
+
+        However, *small* is a relative term. And 
+        the choice for the threshold value which 
+        determines a "small" should be made before
+        analyzing the data.
+    
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case - `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
 
     .. note::
 
-        In the above dataframe we directly input
-        the ``eps`` value.
+        F-statistics tests the overall significance
+        of a model, while LM statistics tests the 
+        validity of linear restrictions on model 
+        parameters. High values indicate heterescedestic
+        noise in this case.
+
+    We can contrast the above result with a dataset that
+    has **heteroscedestic noise** below:
+
+    .. ipython:: python
+
+        y_vals = [0, 2, 4, 6, 8, 10] + [0.5, 0.3, 0.2, 0.1, 0.05, 0]
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5],
+            "y_true": y_vals}
+        )
+
+    We can intialize a regression model:
+
+    .. ipython:: python
+
+        model = LinearRegression()
+
+    Fit that model on the dataset:
+
+    .. ipython:: python
+
+        model.fit(input_relation = vdf, X= ["X"], y = "y_true")
+
+    We can create a column in the ``vDataFrame`` that
+    has the predictions:
+
+    .. ipython:: python
+
+        model.predict(vdf, X = "X", name = "y_pred")
+
+    Then we can calculate the residual i.e. ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["y_true"] - vdf["Y_pred"]
+
+    We can plot the residuals to see the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["X", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf.scatter(["X", "eps"])
+        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_breuschpagan_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan_2.html
+
+    Notice the relationship of the residuals with
+    respect to X. This shows that the noise is 
+    heteroscedestic.
 
     Now we can perform the test on this dataset:
 
     .. ipython:: python
 
-        het_breuschpagan(vdf, eps = "eps", X = "X")
+        lm_statistic, lm_pvalue, f_statistic, f_pvalue = het_breuschpagan(vdf, eps = "eps", X = "X")
 
-    Notice the contrast of the two test results.
+    .. ipython:: python
 
-    .. note::
+        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
-        For more information check out
-        `this link <https://www.statology.org/breusch-pagan-test/>`_.
+    Notice the contrast of the two test results. In this
+    dataset, the noise was heteroscedestic so we got very low
+    p_value scores and higher statistics score. Thus confirming
+    that the noise was in fact heteroscedestic
+
+    For more information check out
+    `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
