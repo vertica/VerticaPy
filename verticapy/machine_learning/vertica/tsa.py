@@ -255,31 +255,31 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (ts):
 
-              - No provided timeseries-column: 
-                    start must be an integer greater or equal 
-                    to 0, where zero indicates to start prediction 
+              - No provided timeseries-column:
+                    start must be an integer greater or equal
+                    to 0, where zero indicates to start prediction
                     at the end of the in-sample data. If start is a
-                    positive value, the function predicts the values 
-                    between the end of the in-sample data and the 
-                    start index, and then uses the predicted values 
-                    as time series inputs for the subsequent 
+                    positive value, the function predicts the values
+                    between the end of the in-sample data and the
+                    start index, and then uses the predicted values
+                    as time series inputs for the subsequent
                     npredictions.
               - timeseries-column provided:
-                    start must be an integer greater or equal to 1 
+                    start must be an integer greater or equal to 1
                     and identifies the index (row) of the timeseries
-                    -column at which to begin prediction. If the start 
+                    -column at which to begin prediction. If the start
                     index is greater than the number of rows, N, in the
-                    input data, the function predicts the values between 
-                    N and start and uses the predicted values as time 
+                    input data, the function predicts the values between
+                    N and start and uses the predicted values as time
                     series inputs for the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column: 
-                    prediction begins from the end of the in-sample 
+              - No provided timeseries-column:
+                    prediction begins from the end of the in-sample
                     data.
-              - timeseries-column provided: 
-                    prediction begins from the end of the provided 
+              - timeseries-column provided:
+                    prediction begins from the end of the provided
                     input data.
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
@@ -335,8 +335,12 @@ class TimeSeriesModelBase(VerticaModel):
         """
         Computes the features importance.
         """
-        if self._model_type == "MA" or (self._model_type in ("ARMA", "ARIMA") and self.get_params()["order"][0] == 0):
-            raise AttributeError("Features Importance can not be computed for Moving Averages.")
+        if self._model_type == "MA" or (
+            self._model_type in ("ARMA", "ARIMA") and self.get_params()["order"][0] == 0
+        ):
+            raise AttributeError(
+                "Features Importance can not be computed for Moving Averages."
+            )
         else:
             self.features_importance_ = self.phi_ / sum(abs(self.phi_))
 
@@ -370,10 +374,7 @@ class TimeSeriesModelBase(VerticaModel):
             features importance.
         """
         fi = self._get_features_importance()
-        columns = [
-            copy.deepcopy(self.y) + f"[t-{i + 1}]"
-            for i in range(len(fi))
-        ]
+        columns = [copy.deepcopy(self.y) + f"[t-{i + 1}]" for i in range(len(fi))]
         if show:
             data = {
                 "importance": fi,
@@ -427,31 +428,31 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (ts):
 
-              - No provided timeseries-column: 
-                    start must be an integer greater or equal 
-                    to 0, where zero indicates to start prediction 
+              - No provided timeseries-column:
+                    start must be an integer greater or equal
+                    to 0, where zero indicates to start prediction
                     at the end of the in-sample data. If start is a
-                    positive value, the function predicts the values 
-                    between the end of the in-sample data and the 
-                    start index, and then uses the predicted values 
-                    as time series inputs for the subsequent 
+                    positive value, the function predicts the values
+                    between the end of the in-sample data and the
+                    start index, and then uses the predicted values
+                    as time series inputs for the subsequent
                     npredictions.
               - timeseries-column provided:
-                    start must be an integer greater or equal to 1 
+                    start must be an integer greater or equal to 1
                     and identifies the index (row) of the timeseries
-                    -column at which to begin prediction. If the start 
+                    -column at which to begin prediction. If the start
                     index is greater than the number of rows, N, in the
-                    input data, the function predicts the values between 
-                    N and start and uses the predicted values as time 
+                    input data, the function predicts the values between
+                    N and start and uses the predicted values as time
                     series inputs for the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column: 
-                    prediction begins from the end of the in-sample 
+              - No provided timeseries-column:
+                    prediction begins from the end of the in-sample
                     data.
-              - timeseries-column provided: 
-                    prediction begins from the end of the provided 
+              - timeseries-column provided:
+                    prediction begins from the end of the provided
                     input data.
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
@@ -723,31 +724,31 @@ class TimeSeriesModelBase(VerticaModel):
             range of accepted values depends on whether
             you provide a timeseries-column (ts):
 
-              - No provided timeseries-column: 
-                    start must be an integer greater or equal 
-                    to 0, where zero indicates to start prediction 
+              - No provided timeseries-column:
+                    start must be an integer greater or equal
+                    to 0, where zero indicates to start prediction
                     at the end of the in-sample data. If start is a
-                    positive value, the function predicts the values 
-                    between the end of the in-sample data and the 
-                    start index, and then uses the predicted values 
-                    as time series inputs for the subsequent 
+                    positive value, the function predicts the values
+                    between the end of the in-sample data and the
+                    start index, and then uses the predicted values
+                    as time series inputs for the subsequent
                     npredictions.
               - timeseries-column provided:
-                    start must be an integer greater or equal to 1 
+                    start must be an integer greater or equal to 1
                     and identifies the index (row) of the timeseries
-                    -column at which to begin prediction. If the start 
+                    -column at which to begin prediction. If the start
                     index is greater than the number of rows, N, in the
-                    input data, the function predicts the values between 
-                    N and start and uses the predicted values as time 
+                    input data, the function predicts the values between
+                    N and start and uses the predicted values as time
                     series inputs for the subsequent npredictions.
 
             Default:
 
-              - No provided timeseries-column: 
-                    prediction begins from the end of the in-sample 
+              - No provided timeseries-column:
+                    prediction begins from the end of the in-sample
                     data.
-              - timeseries-column provided: 
-                    prediction begins from the end of the provided 
+              - timeseries-column provided:
+                    prediction begins from the end of the provided
                     input data.
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
@@ -814,9 +815,9 @@ class ARIMA(TimeSeriesModelBase):
     init: str, optional
         Initialization method, one of the following:
 
-        - 'zero': 
+        - 'zero':
             Coefficients are initialized to zero.
-        - 'hr': 
+        - 'hr':
             Coefficients are initialized using the
             Hannan-Rissanen algorithm.
 
@@ -824,18 +825,18 @@ class ARIMA(TimeSeriesModelBase):
         Method for handling missing values, one of the
         following strings:
 
-        - 'drop': 
+        - 'drop':
             Missing values are ignored.
-        - 'raise': 
+        - 'raise':
             Missing values raise an error.
-        - 'zero': 
+        - 'zero':
             Missing values are set to zero.
-        - 'linear_interpolation': 
-            Missing values are replaced by a linearly 
-            interpolated value based on the nearest 
-            valid entries before and after the missing 
-            value. In cases where the first or last 
-            values in a dataset are missing, the function 
+        - 'linear_interpolation':
+            Missing values are replaced by a linearly
+            interpolated value based on the nearest
+            valid entries before and after the missing
+            value. In cases where the first or last
+            values in a dataset are missing, the function
             errors.
 
     Examples
@@ -929,9 +930,9 @@ class ARMA(TimeSeriesModelBase):
     init: str, optional
         Initialization method, one of the following:
 
-        - 'zero': 
+        - 'zero':
             Coefficients are initialized to zero.
-        - 'hr': 
+        - 'hr':
             Coefficients are initialized using the
             Hannan-Rissanen algorithm.
 
@@ -939,18 +940,18 @@ class ARMA(TimeSeriesModelBase):
         Method for handling missing values, one of the
         following strings:
 
-        - 'drop': 
+        - 'drop':
             Missing values are ignored.
-        - 'raise': 
+        - 'raise':
             Missing values raise an error.
-        - 'zero': 
+        - 'zero':
             Missing values are set to zero.
-        - 'linear_interpolation': 
-            Missing values are replaced by a linearly 
-            interpolated value based on the nearest 
-            valid entries before and after the missing 
-            value. In cases where the first or last 
-            values in a dataset are missing, the function 
+        - 'linear_interpolation':
+            Missing values are replaced by a linearly
+            interpolated value based on the nearest
+            valid entries before and after the missing
+            value. In cases where the first or last
+            values in a dataset are missing, the function
             errors.
 
     Examples
@@ -1058,18 +1059,18 @@ class AR(TimeSeriesModelBase):
         Method for handling missing values, one of the
         following strings:
 
-        - 'drop': 
+        - 'drop':
             Missing values are ignored.
-        - 'raise': 
+        - 'raise':
             Missing values raise an error.
-        - 'zero': 
+        - 'zero':
             Missing values are set to zero.
-        - 'linear_interpolation': 
-            Missing values are replaced by a linearly 
-            interpolated value based on the nearest 
-            valid entries before and after the missing 
-            value. In cases where the first or last 
-            values in a dataset are missing, the function 
+        - 'linear_interpolation':
+            Missing values are replaced by a linearly
+            interpolated value based on the nearest
+            valid entries before and after the missing
+            value. In cases where the first or last
+            values in a dataset are missing, the function
             errors.
 
     Examples
@@ -1160,18 +1161,18 @@ class MA(TimeSeriesModelBase):
         Method for handling missing values, one of the
         following strings:
 
-        - 'drop': 
+        - 'drop':
             Missing values are ignored.
-        - 'raise': 
+        - 'raise':
             Missing values raise an error.
-        - 'zero': 
+        - 'zero':
             Missing values are set to zero.
-        - 'linear_interpolation': 
-            Missing values are replaced by a linearly 
-            interpolated value based on the nearest 
-            valid entries before and after the missing 
-            value. In cases where the first or last 
-            values in a dataset are missing, the function 
+        - 'linear_interpolation':
+            Missing values are replaced by a linearly
+            interpolated value based on the nearest
+            valid entries before and after the missing
+            value. In cases where the first or last
+            values in a dataset are missing, the function
             errors.
 
     Examples
