@@ -320,8 +320,11 @@ def mkt(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5, 6],
-            "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],}
+        vdf = vp.vDataFrame(
+            {
+                "X": [0, 1, 2, 3, 4, 5, 6],
+                "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],
+            }
         )
 
     We can visually inspect the trend by drawing the
@@ -389,8 +392,11 @@ def mkt(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X":[1, 1, 1, 1, 1, 1, 1],
-            "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],}
+        vdf = vp.vDataFrame(
+            {
+                "X":[1, 1, 1, 1, 1, 1, 1],
+                "year": [1990, 1991, 1992, 1993, 1994, 1995, 1996],
+            }
         )
 
     We can visually inspect the absence of trend

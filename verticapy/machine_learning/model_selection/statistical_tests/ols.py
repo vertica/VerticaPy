@@ -97,8 +97,11 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5],
-            "y_true": y_vals}
+        vdf = vp.vDataFrame(
+            {
+                "X": [0, 1, 2, 3, 4, 5],
+                "y_true": y_vals
+            }
         )
 
     We can intialize a regression model:
@@ -203,8 +206,11 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        vdf = vp.vDataFrame({"X": [0, 1, 2, 3, 4, 5],
-            "y_true": y_vals}
+        vdf = vp.vDataFrame(
+            {
+                "X": [0, 1, 2, 3, 4, 5],
+                "y_true": y_vals
+            }
         )
 
     We can intialize a regression model:
