@@ -533,7 +533,7 @@ class TimeSeriesModelBase(VerticaModel):
                        FROM {self.input_relation}) VERTICAPY_SUBTABLE)"""
             sql = f"""
                 SELECT
-                    {delta} + idx * {min_value} AS {self.ts},
+                    idx * {delta} + {min_value} AS {self.ts},
                     prediction{stde_out}
                 FROM ({sql}) VERTICAPY_SUBTABLE
             """
