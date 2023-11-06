@@ -252,18 +252,21 @@ class vDFPivot(vDFJoinUnionSort):
     def explode_array(
         self,
         index: str,
-        column_name: SQLColumns,
+        column: str,
         prefix: Optional[str] = "col_",
         delimiter: Optional[bool] = True,
     ) -> "vDataFrame":
         """
-        Returns exploded vDataFrame of array-like column in a vDataFrame.
+        Returns exploded vDataFrame of array-like columns in a
+        vDataFrame.
+
+        .. versionadded:: 10.0.0
 
         Parameters
         ----------
-        index: SQLColumns
-            Index(es) used to identify the Row.
-        column_name: SQLColumns
+        index: str
+            Index used to identify the Row.
+        column: str
             The name of the array-like column to explode.
         prefix: str, optional
             The prefix for the column names of exploded values
@@ -275,60 +278,90 @@ class vDFPivot(vDFJoinUnionSort):
         Returns
         -------
         vDataFrame
-            horizontal exploded vDataFame.
+            horizontal exploded vDataFrame.
 
         Examples
         --------
-        For this example, let's generate a dataset and calculate the
-        cardinality of a column:
+        For this example, let's generate a dataset:
 
         .. ipython:: python
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "id": [1, 2, 3, 4],
-                'values': [[70, 80, 90, 5],
-                          [47, 34, 93, 20, 13, 16],
-                          [1, 45, 56, 21, 10, 35, 56, 8, 39],
-                          [89]]})
+            data = vp.vDataFrame(
+                {
+                    "id": [1, 2, 3, 4],
+                    "values": [
+                                [70, 80, 90, 5],
+                                [47, 34, 93, 20, 13, 16],
+                                [1, 45, 56, 21, 10, 35, 56, 8, 39],
+                                [89],
+                              ]
+                }
+            )
 
-            data.explode_array(index='id', column_name='values')
+        We can compute the exploded vDataFrame.
 
-        .. note:: This function operates on various data types, including arrays and varchar representations of arrays.
-            For arrays with elements separated by commas, as well as varchar representations of arrays with no delimiter
-            (in which case you must specify `delimiter` as `False`).
+        .. code-block:: python
+
+            data.explode_array(index = "id", column = "values")
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.explode_array(index = "id", column = "values")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html
+
+        .. note::
+
+            This function operates on various data types, including arrays
+            and varchar representations of arrays.
+            For arrays with elements separated by commas, as well as varchar
+            representations of arrays with no delimiter (in which case you
+            must specify `delimiter` as `False`).
 
         .. seealso::
             | :py:mod:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
         """
 
+        # Type check
         if not isinstance(index, str):
             raise TypeError("The 'index' parameter must be a string.")
-        if not isinstance(column_name, str):
-            raise TypeError("The 'column_name' parameter must be a string.")
+        if not isinstance(column, str):
+            raise TypeError("The 'column' parameter must be a string.")
 
-        vdf = create_new_vdf(self.current_relation())
+        # Creating a vDataFrame copy
+        vdf = self.copy()
+
         # Replace tabs with commas if specified
         if not delimiter:
-            vdf[column_name].str_replace(to_replace="[\t]+", value=",")
+            vdf[column].str_replace(to_replace="[\t]+", value=",")
 
         # check if the column type is an array
-        if vdf[column_name].dtype().find("array"):
+        if vdf[column].dtype().find("array"):
             # Apply the STRING_TO_ARRAY function to convert str array to array of strings
-            vdf[column_name].apply(func="STRING_TO_ARRAY({})")
+            vdf[column].apply(func="STRING_TO_ARRAY({})")
 
         # To avoid any name conflict
         position_col_name = gen_col_name(n=6)
         value_col_name = gen_col_name(n=6)
+
         # Create a new vDataFrame with exploded values
         vdf = create_new_vdf(
             f"""
             SELECT 
-                /*+LABEL('vDataframe.explode')*/ {index}, {column_name}, 
-                    EXPLODE({column_name} USING PARAMETERS skip_partitioning=True) 
-                    AS ({position_col_name}, {value_col_name}) 
-                    FROM {vdf};"""
+                /*+LABEL('vDataframe.explode')*/ 
+                {index}, 
+                {column}, 
+                EXPLODE({column} 
+                        USING PARAMETERS skip_partitioning=True) 
+                        AS ({position_col_name}, {value_col_name}) 
+            FROM {vdf};"""
         )
         # Convert the "value" column to float and pivot the data
         return vdf.astype({value_col_name: "float"}).pivot(
