@@ -60,30 +60,39 @@ class vDFText(vDFRolling):
             The regular expression.
         method: str, optional
             Method used to compute the regular  expressions.
-                count     : Returns the number of times a
-                            regular expression matches each
-                            element of the input vDataColumn.
-                ilike     : Returns  True if  the  vDataColumn
-                            element  contains a match for  the
-                            regular expression.
-                instr     : Returns  the  starting  or  ending
-                            position in  a vDataColumn element
-                            where a regular expression matches.
-                like      : Returns  True  if the  vDataColumn
-                            element    matches   the   regular
-                            expression.
-                not_ilike : Returns  True  if the  vDataColumn
-                            element  does  not match the  case
-                            -insensitive  regular   expression.
-                not_like  : Returns  True if  the  vDataColumn
-                            element  does not contain a  match
-                            for the regular expression.
-                replace   : Replaces   all  occurrences  of  a
-                            substring  that  match  a  regular
-                            expression  with another substring.
-                substr    : Returns the substring that matches
-                            a  regular   expression  within  a
-                            vDataColumn.
+
+                 - count:
+                    Returns the number of times a
+                    regular expression matches each
+                    element of the input vDataColumn.
+                 - ilike:
+                    Returns  True if  the  vDataColumn
+                    element  contains a match for  the
+                    regular expression.
+                 - instr:
+                    Returns  the  starting  or  ending
+                    position in  a vDataColumn element
+                    where a regular expression matches.
+                 - like:
+                    Returns  True  if the  vDataColumn
+                    element    matches   the   regular
+                    expression.
+                 - not_ilike :
+                    Returns  True  if the  vDataColumn
+                    element  does  not match the  case
+                    -insensitive  regular   expression.
+                 - not_like:
+                    Returns  True if  the  vDataColumn
+                    element  does not contain a  match
+                    for the regular expression.
+                 - replace:
+                    Replaces   all  occurrences  of  a
+                    substring  that  match  a  regular
+                    expression  with another substring.
+                 - substr:
+                    Returns the substring that matches
+                    a  regular   expression  within  a
+                    vDataColumn.
         position: int, optional
             The number of characters from the start of the string
             where the function should start searching for matches.
@@ -117,58 +126,76 @@ class vDFText(vDFRolling):
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "rollno": ['1', '2', '3', '4'],
-                                "subjects": ['English, Math', 'English, Math, Computer', 'Math, Computer, Science', 'Math, Science'],
-                            })
+                {
+                    "rollno": ['1', '2', '3', '4'],
+                    "subjects": [
+                        'English, Math',
+                        'English, Math, Computer',
+                        'Math, Computer, Science',
+                        'Math, Science',
+                    ],
+                }
+            )
 
         Let's retrieve the second subject.
 
         .. code-block:: python
 
-            data.regexp(column = "subjects",
-                                 pattern = "[^,]+",
-                                 method = "substr",
-                                 occurrence = 2,
-                                 name = "subject_2").select(["subjects",
-                                                          "subject_2"])
-
+            data.regexp(
+                column = "subjects",
+                pattern = "[^,]+",
+                method = "substr",
+                occurrence = 2,
+                name = "subject_2").select(
+                    [
+                        "subjects",
+                        "subject_2",
+                    ]
+                )
 
         .. ipython:: python
             :suppress:
 
-            res = data.regexp(column = "subjects",
-                                 pattern = "[^,]+",
-                                 method = "substr",
-                                 occurrence = 2,
-                                 name = "subject_2").select(["subjects",
-                                                          "subject_2"])
+            res = data.regexp(
+                column = "subjects",
+                pattern = "[^,]+",
+                method = "substr",
+                occurrence = 2,
+                name = "subject_2").select(
+                    [
+                        "subjects",
+                        "subject_2",
+                    ]
+                )
             html_file = open("figures/core_vDataFrame_text_regex1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_regex1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_regex1.html
 
         Let's count the number of subjects.
 
         .. code-block:: python
 
-            data.regexp(column = "subjects",
-                                 pattern = ",",
-                                 method = "count",
-                                 name = "nb_subjects")
+            data.regexp(
+                column = "subjects",
+                pattern = ",",
+                method = "count",
+                name = "nb_subjects",
+            )
             data["nb_subjects"].add(1)
             data.select(["subjects", "nb_subjects"])
-
 
         .. ipython:: python
             :suppress:
 
-            data.regexp(column = "subjects",
-                                 pattern = ",",
-                                 method = "count",
-                                 name = "nb_subjects")
+            data.regexp(
+                column = "subjects",
+                pattern = ",",
+                method = "count",
+                name = "nb_subjects",
+            )
             data["nb_subjects"].add(1)
             res = data.select(["subjects", "nb_subjects"])
             html_file = open("figures/core_vDataFrame_text_regex2.html", "w")
@@ -176,7 +203,7 @@ class vDFText(vDFRolling):
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_regex2.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_regex2.html
 
         .. seealso::
 
@@ -232,29 +259,43 @@ class vDCText(vDCCorr):
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "rollno": ['1', '2', '3', '4'],
-                                "subjects": ['English, Math', 'English, Math, Computer', 'Math, Computer, Science', 'Math, Science'],
-                            })
+                {
+                    "rollno": ['1', '2', '3', '4'],
+                    "subjects": [
+                        'English, Math',
+                        'English, Math, Computer',
+                        'Math, Computer, Science',
+                        'Math, Science',
+                    ],
+                }
+            )
 
         Let's retrieve the second subject.
 
         .. code-block:: python
 
-            data["subjects"].str_contains(pat = "English").select(["rollno",
-                                              "subjects as has_english"])
+            data["subjects"].str_contains(pat = "English").select(
+                [
+                    "rollno",
+                    "subjects as has_english",
+                ]
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = data["subjects"].str_contains(pat = "English").select(["rollno",
-                                              "subjects as has_english"])
+            res = data["subjects"].str_contains(pat = "English").select(
+                [
+                    "rollno",
+                    "subjects as has_english",
+                ]
+            )
             html_file = open("figures/core_vDataFrame_text_str_contains.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_str_contains.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_contains.html
 
         .. seealso::
 
@@ -292,35 +333,49 @@ class vDCText(vDCCorr):
 
             import verticapy as vp
 
-
         Let's generate a small dataset using the following data:
 
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "rollno": ['1', '2', '3', '4'],
-                                "subjects": ['English, Math', 'English, Math, Computer', 'Math, Computer, Science', 'Math, Science'],
-                            })
+                {
+                    "rollno": ['1', '2', '3', '4'],
+                    "subjects": [
+                        'English, Math',
+                        'English, Math, Computer',
+                        'Math, Computer, Science',
+                        'Math, Science',
+                    ],
+                }
+            )
 
-        Let's count number of times "English" appears in "subjects" vDataColumn.
+        Let's count number of times "English" appears in "subjects"
+        vDataColumn.
 
         .. code-block:: python
 
-            data["subjects"].str_count(pat = "English").select(["rollno",
-                                              "subjects as english_count"])
+            data["subjects"].str_count(pat = "English").select(
+                [
+                    "rollno",
+                    "subjects as english_count",
+                ]
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = data["subjects"].str_count(pat = "English").select(["rollno",
-                                              "subjects as english_count"])
+            res = data["subjects"].str_count(pat = "English").select(
+                [
+                    "rollno",
+                    "subjects as english_count",
+                ]
+            )
             html_file = open("figures/core_vDataFrame_text_str_count.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_str_count.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_count.html
 
         .. seealso::
 
@@ -363,10 +418,15 @@ class vDCText(vDCCorr):
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "name": ['Mr. Steve Smith', 'Mr. Charlie Dickens', 'Mrs. Helen Ross', 'Dr. Jack Smith']
-                            }
-                        )
+                {
+                    "name": [
+                        'Mr. Steve Smith',
+                        'Mr. Charlie Dickens',
+                        'Mrs. Helen Ross',
+                        'Dr. Jack Smith',
+                    ]
+                }
+            )
 
         Let's extract the name prefix.
 
@@ -383,7 +443,7 @@ class vDCText(vDCCorr):
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_str_extract.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_extract.html
 
         .. seealso::
 
@@ -423,35 +483,44 @@ class vDCText(vDCCorr):
 
             import verticapy as vp
 
-
         Let's generate a small dataset using the following data:
 
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "name": ['Mr. Steve Smith', 'Mr. Charlie Dickens', 'Mrs. Helen Ross', 'Dr. Jack Smith']
-                            }
-                        )
+                {
+                    "name": [
+                        'Mr. Steve Smith',
+                        'Mr. Charlie Dickens',
+                        'Mrs. Helen Ross',
+                        'Dr. Jack Smith',
+                    ]
+                }
+            )
 
-        Let's replace the name prefix with static text "[Name_Prefix]".
+        Let's replace the name prefix with static text
+        "[Name_Prefix]".
 
         .. code-block:: python
 
-            data["name"].str_replace(to_replace  = "([A-Za-z])+\.",
-                                    value = "[Name_Prefix]")
+            data["name"].str_replace(
+                to_replace  = "([A-Za-z])+\.",
+                value = "[Name_Prefix]"
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = data["name"].str_replace(to_replace  = "([A-Za-z])+\.",
-                                           value = "[Name_Prefix]")
+            res = data["name"].str_replace(
+                to_replace  = "([A-Za-z])+\.",
+                value = "[Name_Prefix]"
+            )
             html_file = open("figures/core_vDataFrame_text_str_replace.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_str_replace.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_replace.html
 
         .. seealso::
 
@@ -496,10 +565,15 @@ class vDCText(vDCCorr):
         .. ipython:: python
 
             data = vp.vDataFrame(
-                            {
-                                "name": ['Mr. Steve Smith', 'Mr. Charlie Dickens', 'Mrs. Helen Ross', 'Dr. Jack Smith']
-                            }
-                        )
+                {
+                    "name": [
+                        'Mr. Steve Smith',
+                        'Mr. Charlie Dickens',
+                        'Mrs. Helen Ross',
+                        'Dr. Jack Smith',
+                    ]
+                }
+            )
 
         Let's extract the first 3 alphabets of name.
 
@@ -516,7 +590,7 @@ class vDCText(vDCCorr):
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_text_str_slice.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_slice.html
 
         .. seealso::
 
