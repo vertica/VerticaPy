@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal
+
 from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
@@ -45,6 +47,56 @@ from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 from verticapy.machine_learning.vertica.tsa import ARIMA, AR, MA
+
+
+@save_verticapy_logs
+def export_models(
+    name: str,
+    path: str,
+    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None],
+) -> bool:
+    """
+    Exports machine learning models.
+
+    Parameters
+    ----------
+    name: str
+        Specifies which models to export as follows:
+
+        ``[schema.]{ model-name | * }``
+
+        where schema optionally specifies to export
+        models from the specified schema. If omitted,
+        ``export_models`` uses the default schema.
+        Supply * (asterisk) to export all models from
+        the schema.
+    path: str
+        Absolute path of an output directory to store
+        the exported models.
+    kind: str, optional
+        The category of models to export, one of the
+        following:
+
+            - vertica
+            - pmml
+            - tensorflow
+
+        ``export_models`` exports models of the specified
+        category according to the scope of the export
+        operation—that is, whether it applies to a single
+        model, or to all models within a schema.
+
+        If you omit this parameter, ``export_models``
+        exports the model, or models in the specified
+        schema, according to their model type.
+
+    Returns
+    -------
+    bool
+        True if the model(s) was(were) successfully
+        exported.
+    """
+    return VerticaModel.export_models(name=name, path=path, kind=kind)
 
 
 @save_verticapy_logs

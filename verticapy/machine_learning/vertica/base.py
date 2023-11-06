@@ -592,6 +592,83 @@ class VerticaModel(PlottingUtils):
                 f"Method 'deploySQL' does not exist for {self._model_type} models."
             )
 
+    @staticmethod
+    def export_models(
+        name: str,
+        path: str,
+        kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None],
+    ) -> bool:
+        """
+        Exports machine learning models.
+        """
+        if isinstance(kind, NoneType):
+            params = ""
+        else:
+            lookup_table = {"tf": "tensorflow", "vertica": "vertica_models"}
+            kind = str(kind).lower()
+            if kind in lookup_table:
+                kind = lookup_table[kind]
+            params = f" USING PARAMETERS category = '{kind}'"
+        result = _executeSQL(
+            query=f"""
+                SELECT EXPORT_MODELS('{path}',
+                                     '{name}'{params})""",
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
+        return result == "Success"
+
+    def to_binary(self, path: str):
+        """
+        Exports the model to the Vertica Binary format.
+
+        Parameters
+        ----------
+        path: str
+            Absolute path of an output directory to store
+            the exported models.
+
+        Returns
+        -------
+        bool
+            True if the model was successfully exported.
+        """
+        return self.export_models(name=self.model_name, path=path, kind="vertica")
+
+    def to_pmml(self, path: str):
+        """
+        Exports the model to PMML.
+
+        Parameters
+        ----------
+        path: str
+            Absolute path of an output directory to store
+            the exported models.
+
+        Returns
+        -------
+        bool
+            True if the model was successfully exported.
+        """
+        return self.export_models(name=self.model_name, path=path, kind="pmml")
+
+    def to_tf(self, path: str):
+        """
+        Exports the model to the Frozen Graph format (TensorFlow).
+
+        Parameters
+        ----------
+        path: str
+            Absolute path of an output directory to store
+            the exported model.
+
+        Returns
+        -------
+        bool
+            True if the model was successfully exported.
+        """
+        return self.export_models(name=self.model_name, path=path, kind="tensorflow")
+
     def to_python(
         self,
         return_proba: bool = False,
