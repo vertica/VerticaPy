@@ -15,6 +15,8 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import uuid
+import secrets
+import string
 from typing import Optional
 
 from verticapy._utils._sql._format import quote_ident
@@ -32,6 +34,13 @@ def gen_name(L: list) -> str:
             for elem in L
         ]
     )
+
+
+def gen_col_name(n: int = 5) -> str:
+    """
+    Generate a name using n character
+    """
+    return "".join(secrets.choice(string.ascii_letters) for _ in range(n)).lower()
 
 
 def gen_tmp_name(schema: Optional[str] = None, name: Optional[str] = None) -> str:
