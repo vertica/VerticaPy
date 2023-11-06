@@ -43,6 +43,10 @@ General Classes.
 
 
 class LinearModel:
+    """
+    Base Class for Vertica Linear Models.
+    """
+
     # Properties.
 
     @property
@@ -188,6 +192,10 @@ class LinearModel:
 
 
 class LinearModelClassifier(LinearModel):
+    """
+    Base Class for Vertica Linear Models Classifiers.
+    """
+
     # Properties.
 
     @property

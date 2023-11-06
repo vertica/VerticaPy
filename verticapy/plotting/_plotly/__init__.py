@@ -54,6 +54,7 @@ from verticapy.plotting._plotly.machine_learning.champion_challenger import (
     ChampionChallengerPlot,
 )
 from verticapy.plotting._plotly.machine_learning.stepwise import StepwisePlot
+from verticapy.plotting._plotly.machine_learning.tsa import TSPlot
 
 
 import plotly.io as pio

@@ -55,8 +55,9 @@ class TestLinearModel:
         """
         test function - fit
         """
-        vpy_model_obj, py_model_obj = get_vpy_model(model_class), get_py_model(
-            model_class
+        vpy_model_obj, py_model_obj = (
+            get_vpy_model(model_class),
+            get_py_model(model_class),
         )
 
         if fit_attr == "score":

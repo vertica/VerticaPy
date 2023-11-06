@@ -68,3 +68,4 @@ from verticapy.machine_learning.vertica.tree import (
     DummyTreeClassifier,
     DummyTreeRegressor,
 )
+from verticapy.machine_learning.vertica.tsa import ARIMA, ARMA, AR, MA

@@ -55,6 +55,7 @@ from verticapy.plotting._highcharts.machine_learning.regression_tree import (
 )
 from verticapy.plotting._highcharts.machine_learning.stepwise import StepwisePlot
 from verticapy.plotting._highcharts.machine_learning.svm import SVMClassifierPlot
+from verticapy.plotting._highcharts.machine_learning.tsa import TSPlot
 from verticapy.plotting._highcharts.line import LinePlot, MultiLinePlot
 from verticapy.plotting._highcharts.outliers import OutliersPlot
 from verticapy.plotting._highcharts.pie import NestedPieChart, PieChart

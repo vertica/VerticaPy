@@ -55,7 +55,6 @@ class RangeCurve(LinePlot):
             "lineWidth": 0,
             "linkedTo": ":previous",
             "fillOpacity": 0.3,
-            "zIndex": 0,
         }
 
     # Draw.

@@ -48,6 +48,7 @@ from verticapy.plotting._matplotlib.machine_learning.regression_tree import (
 )
 from verticapy.plotting._matplotlib.machine_learning.stepwise import StepwisePlot
 from verticapy.plotting._matplotlib.machine_learning.svm import SVMClassifierPlot
+from verticapy.plotting._matplotlib.machine_learning.tsa import TSPlot
 
 from verticapy.plotting._matplotlib.acf import ACFPlot, ACFPACFPlot
 from verticapy.plotting._matplotlib.bar import BarChart, BarChart2D

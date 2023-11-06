@@ -61,8 +61,9 @@ class TestBaseTreeModel:
         """
         test function - fit
         """
-        vpy_model_obj, py_model_obj = get_vpy_model(model_class), get_py_model(
-            model_class
+        vpy_model_obj, py_model_obj = (
+            get_vpy_model(model_class),
+            get_py_model(model_class),
         )
 
         vpy_res = getattr(vpy_model_obj.model, fit_attr)()
