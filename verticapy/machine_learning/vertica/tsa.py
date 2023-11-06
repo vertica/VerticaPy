@@ -967,6 +967,51 @@ class ARIMA(TimeSeriesModelBase):
         import verticapy.datasets as vpd
         data = vpd.load_airline_passengers()
 
+    We can plot the data to visually inspect it for the
+    presence of any trends:
+
+    .. code-block::
+
+        data["passengers"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = data["passengers"].plot(ts = "date")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html
+
+    Though the increasing trend is obvious in our example,
+    we can confirm it by the
+    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    (Mann Kendall test) test:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        mkt(data, column = "passengers", ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        result = mkt(data, column = "passengers", ts = "date")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_mkt_result.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_mkt_result.html
+
+    The above tests gives us some more insights into the data
+    such as that the data is monotonic, and is increasing.
+    Furthermore, the low p-value confirms the presence of
+    a trend with respect to time. Now we are sure of the trend
+    so we can apply a time-series model to fit it.
+
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
@@ -1056,7 +1101,7 @@ class ARIMA(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.report()
+        #result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -1411,6 +1456,51 @@ class ARMA(TimeSeriesModelBase):
         import verticapy.datasets as vpd
         data = vpd.load_airline_passengers()
 
+    We can plot the data to visually inspect it for the
+    presence of any trends:
+
+    .. code-block::
+
+        data["passengers"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = data["passengers"].plot(ts = "date")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html
+
+    Though the increasing trend is obvious in our example,
+    we can confirm it by the
+    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    (Mann Kendall test) test:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        mkt(data, column = "passengers", ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        result = mkt(data, column = "passengers", ts = "date")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_mkt_result.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_mkt_result.html
+
+    The above tests gives us some more insights into the data
+    such as that the data is monotonic, and is increasing.
+    Furthermore, the low p-value confirms the presence of
+    a trend with respect to time. Now we are sure of the trend
+    so we can apply a time-series model to fit it.
+
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
@@ -1500,7 +1590,7 @@ class ARMA(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.report()
+        #result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -1864,6 +1954,51 @@ class AR(TimeSeriesModelBase):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
+    We can plot the data to visually inspect it for the
+    presence of any trends:
+
+    .. code-block::
+
+        data["GB"].plot(ts = "month")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = data["GB"].plot(ts = "month")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data_plot.html
+
+    Though the increasing trend is obvious in our example,
+    we can confirm it by the
+    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    (Mann Kendall test) test:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        mkt(data, column = "GB", ts = "month")
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        result = mkt(data, column = "GB", ts = "month")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data_mkt_result.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data_mkt_result.html
+
+    The above tests gives us some more insights into the data
+    such as that the data is monotonic, and is increasing.
+    Furthermore, the low p-value confirms the presence of
+    a trend with respect to time. Now we are sure of the trend
+    so we can apply a time-series model to fit it.
+
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
@@ -1945,7 +2080,7 @@ class AR(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.report()
+        result = model.report(start = 4)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -1965,7 +2100,7 @@ class AR(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.report(start = 40, npredictions = 30)
+        #result = model.report(start = 40, npredictions = 30)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report_pred_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2110,7 +2245,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "month", "GB", npredictions = 80, start = 120, width = 650)
+        fig = model.plot(data, "month", "GB", npredictions = 5, start = 10, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_ar_plot_1.html")
 
     .. raw:: html
@@ -2236,7 +2371,364 @@ class MA(TimeSeriesModelBase):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-    ...
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    For this example, we will generate a dummy time-series
+    dataset.
+
+    .. code-block:: python
+
+        N =30
+        temp = [23] * N
+        noisy_temp = [x + random.uniform(-5, 5) for x in temp]
+        data = vp.vDataFrame(
+            {
+                "day": [i for i in range(1, N+1)],
+                "temp": noisy_temp
+            }
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        import random
+        N =30
+        temp = [23] * N
+        noisy_temp = [x + random.uniform(-5, 5) for x in temp]
+        data = vp.vDataFrame(
+            {
+                "day": [i for i in range(1, N+1)],
+                "temp": noisy_temp
+            }
+        )
+        html_file = open("figures/machine_learning_vertica_tsa_ma_data.html", "w")
+        html_file.write(data._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    We can plot the data to visually inspect it for the
+    presence of any trends:
+
+    .. code-block::
+
+        data["temp"].plot(ts = "day")
+
+    .. ipython:: python
+        :suppress:
+
+        fig = data["GB"].plot(ts = "month")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_plot.html
+
+    A trend is not obvious in our example, but
+    we can confirm it by the
+    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    (Mann Kendall test) test:
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        mkt(data, column = "temp", ts = "day")
+
+    .. ipython:: python
+        :suppress:
+
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
+        result = mkt(data, column = "temp", ts = "day")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_mkt_result.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_mkt_result.html
+
+    The above report confirms that there is no trend
+    in our data and hence it is stationary. Once we have
+    established that the data is statioanry, we can
+    then apply MovingAverage model on it.
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``MA`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.tsa import MA
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = MA(p = 2)
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, "day", "temp")
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. code-block:: python
+
+        model.report()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        #result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report.html
+
+    You can also choose the number of predictions and where to start the forecast.
+    For example, the following code will allow you to generate a report with 30
+    predictions, starting the forecasting process at index 40.
+
+    .. code-block:: python
+
+        model.report(start = 40, npredictions = 30)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, npredictions = 30)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report_pred_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report_pred_2.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
+        E.g. ``model.report(metrics = ["mse", "r2"])``.
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.MA.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score()
+
+    The same applies to the score. You can choose where to start and
+    the number of predictions to use.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30)
+
+    .. important::
+
+        If you do not specify a starting point and the number of
+        predictions, the forecast will begin at one-fourth of the
+        dataset, which can result in an inaccurate score, especially
+        for large datasets. It's important to choose these parameters
+        carefully.
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict()
+        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction.html
+
+    .. hint::
+
+        You can control the number of prediction steps by changing
+        the ``npredictions`` parameter:
+        ``model.predict(npredictions = 30)``.
+
+    .. note::
+
+        Predictions can be made automatically by using the training set,
+        in which case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.MA.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
+        model.
+
+    If you would like to have the 'time-stamps' (ts) in the output then
+    you can switch the ``output_estimated_ts`` the parameter.
+
+    .. code-block:: python
+
+        model.predict(output_estimated_ts = True)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(output_estimated_ts = True)
+        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction_2.html
+
+    .. important::
+
+        The ``output_estimated_ts`` parameter provides an estimation of
+        'ts' assuming that 'ts' is regularly spaced.
+
+    If you don't provide any input, the function will begin forecasting
+    after the last known value. If you want to forecast starting from a
+    specific value within the input dataset or another dataset, you can
+    use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "day",
+            "temp",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "day", "temp", start = 40, npredictions = 20, output_estimated_ts = True)
+        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction_3.html
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot(data, "day", "temp", npredictions = 80, start=120)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(data, "day", "temp", npredictions = 80, start = 120, width = 650)
+        fig.write_html("figures/machine_learning_vertica_tsa_ma_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_plot_1.html
+
+    .. note::
+
+        You can control the number of prediction steps by changing
+        the ``npredictions`` parameter:
+        ``model.plot(npredictions = 30)``.
+
+    Please refer to  :ref:`chart_gallery.tsa` for more examples.
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
     """
 
     # Properties.
