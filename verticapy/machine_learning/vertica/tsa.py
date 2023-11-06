@@ -1023,6 +1023,8 @@ class AR(TimeSeriesModelBase):
     """
     Creates a inDB Autoregressor model.
 
+    .. versionadded: 11.0.0
+
     Parameters
     ----------
     name: str, optional
@@ -1082,7 +1084,245 @@ class AR(TimeSeriesModelBase):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-    ...
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    For this example, we will generate a dummy time-series 
+    dataset.
+
+    .. ipython:: python
+
+        data = vp.vDataFrame(
+            {
+                "month": [i for i in range(1, 11)],
+                "GB": [5, 10, 20, 35, 55, 80, 110, 145, 185, 230]
+            }
+        )
+        
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("figures/machine_learning_vertica_tsa_ar_data.html", "w")
+        html_file.write(data._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``AR`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.tsa import AR
+
+    Then we can create the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model = AR(p=2)
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.fit(data, "month", "GB")
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+    Features Importance
+    ^^^^^^^^^^^^^^^^^^^^
+
+    We can conveniently get the features importance:
+
+    .. ipython:: python
+        :okwarning:
+
+        model.features_importance()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.features_importance()
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_features.html")
+
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_features.html
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. code-block:: python
+        
+        model.report()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some of them might
+        require multiple SQL queries. Selecting only the necessary metrics in the
+        report can help optimize performance.
+        E.g. ``model.report(metrics = ["mse", "r2"])``.
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.AR.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score()
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict()
+        html_file = open("figures/machine_learning_vertica_tsa_ar_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_prediction.html
+
+    .. hint::
+
+        You can control the number of prediction steps by changing
+        the ``npredictions`` parameter:
+        ``model.predict(npredictions=30)``. 
+
+    .. note::
+
+        Predictions can be made automatically calculated using the test set, in which
+        case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.AR.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
+        model.
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot()
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(width=550)
+        fig.write_html("figures/machine_learning_vertica_tsa_plot_1.html")
+
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_plot_1.html
+
+    .. note::
+
+        You can control the number of prediction steps by changing
+        the ``npredictions`` parameter:
+        ``model.plot(npredictions=30)``. 
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
     """
 
     # Properties.
