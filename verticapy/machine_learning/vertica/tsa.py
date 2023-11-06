@@ -34,9 +34,7 @@ from verticapy._utils._sql._format import (
     schema_relation,
 )
 from verticapy._utils._sql._sys import _executeSQL
-from verticapy._utils._sql._vertica_version import (
-    check_minimum_version,
-)
+from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import TableSample, vDataFrame
 
@@ -535,13 +533,16 @@ class TimeSeriesModelBase(VerticaModel):
                 SELECT
                     idx * {delta} + {min_value} AS {self.ts},
                     prediction{stde_out}
-                FROM ({sql}) VERTICAPY_SUBTABLE
-            """
+                FROM ({sql}) VERTICAPY_SUBTABLE"""
         return vDataFrame(clean_query(sql))
 
     # Model Evaluation Methods.
 
-    def _evaluation_relation(self):
+    def _evaluation_relation(
+        self,
+        start: Optional[int] = None,
+        npredictions: Optional[int] = None,
+    ):
         """
         Returns the relation needed to evaluate the
         model.
@@ -555,15 +556,10 @@ class TimeSeriesModelBase(VerticaModel):
                 "No attributes found. The model is probably not yet fitted."
             )
         parameters = self.get_params()
-        if "order" in parameters:
-            start = max(parameters["order"]) * 2
-        elif "q" in parameters:
-            start = parameters["q"] * 2
-        elif "p" in parameters:
-            start = parameters["p"] * 2
-        else:
-            start = 1
-        npredictions = self.n_ - start
+        if isinstance(start, NoneType):
+            start = self.n_ / 4
+        if isinstance(npredictions, NoneType):
+            npredictions = self.n_ - start
         prediction = self.predict(
             vdf=test_relation,
             ts=self.ts,
@@ -584,8 +580,7 @@ class TimeSeriesModelBase(VerticaModel):
                     FROM {test_relation}
                 ) AS true_values
                 NATURAL JOIN
-                (SELECT * FROM {prediction}) AS prediction_relation) VERTICAPY_SUBTABLE
-        """
+                (SELECT * FROM {prediction}) AS prediction_relation) VERTICAPY_SUBTABLE"""
         return clean_query(sql)
 
     def regression_report(
@@ -595,6 +590,8 @@ class TimeSeriesModelBase(VerticaModel):
             Literal[None, "anova", "details"],
             list[Literal[tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)]],
         ] = None,
+        start: Optional[int] = None,
+        npredictions: Optional[int] = None,
     ) -> Union[float, TableSample]:
         """
         Computes a regression report using multiple metrics to
@@ -624,6 +621,40 @@ class TimeSeriesModelBase(VerticaModel):
                 r2a    : R2 adjusted
                 rmse   : Root Mean Squared Error
                 var    : Explained Variance
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (ts):
+
+              - No provided timeseries-column:
+                    start must be an integer greater or equal
+                    to 0, where zero indicates to start prediction
+                    at the end of the in-sample data. If start is a
+                    positive value, the function predicts the values
+                    between the end of the in-sample data and the
+                    start index, and then uses the predicted values
+                    as time series inputs for the subsequent
+                    npredictions.
+              - timeseries-column provided:
+                    start must be an integer greater or equal to 1
+                    and identifies the index (row) of the timeseries
+                    -column at which to begin prediction. If the start
+                    index is greater than the number of rows, N, in the
+                    input data, the function predicts the values between
+                    N and start and uses the predicted values as time
+                    series inputs for the subsequent npredictions.
+
+            Default:
+
+              - No provided timeseries-column:
+                    prediction begins from the end of the in-sample
+                    data.
+              - timeseries-column provided:
+                    prediction begins from the end of the provided
+                    input data.
+        npredictions: int, optional
+            Integer greater or equal to 1, the number of predicted
+            timesteps.
 
         Returns
         -------
@@ -633,7 +664,7 @@ class TimeSeriesModelBase(VerticaModel):
         return mt.regression_report(
             "y_true",
             "y_pred",
-            self._evaluation_relation(),
+            self._evaluation_relation(start=start, npredictions=npredictions),
             metrics=metrics,
             k=1,
         )
@@ -646,6 +677,8 @@ class TimeSeriesModelBase(VerticaModel):
             tuple(mt.FUNCTIONS_REGRESSION_DICTIONNARY)
             + ("r2a", "r2_adj", "rsquared_adj", "r2adj", "r2adjusted", "rmse")
         ] = "r2",
+        start: Optional[int] = None,
+        npredictions: Optional[int] = None,
     ) -> float:
         """
         Computes the model score.
@@ -665,6 +698,40 @@ class TimeSeriesModelBase(VerticaModel):
                 r2a    : R2 adjusted
                 rmse   : Root Mean Squared Error
                 var    : Explained Variance
+        start: int, optional
+            The behavior of the start parameter and its
+            range of accepted values depends on whether
+            you provide a timeseries-column (ts):
+
+              - No provided timeseries-column:
+                    start must be an integer greater or equal
+                    to 0, where zero indicates to start prediction
+                    at the end of the in-sample data. If start is a
+                    positive value, the function predicts the values
+                    between the end of the in-sample data and the
+                    start index, and then uses the predicted values
+                    as time series inputs for the subsequent
+                    npredictions.
+              - timeseries-column provided:
+                    start must be an integer greater or equal to 1
+                    and identifies the index (row) of the timeseries
+                    -column at which to begin prediction. If the start
+                    index is greater than the number of rows, N, in the
+                    input data, the function predicts the values between
+                    N and start and uses the predicted values as time
+                    series inputs for the subsequent npredictions.
+
+            Default:
+
+              - No provided timeseries-column:
+                    prediction begins from the end of the in-sample
+                    data.
+              - timeseries-column provided:
+                    prediction begins from the end of the provided
+                    input data.
+        npredictions: int, optional
+            Integer greater or equal to 1, the number of predicted
+            timesteps.
 
         Returns
         -------
@@ -683,7 +750,11 @@ class TimeSeriesModelBase(VerticaModel):
         fun = mt.FUNCTIONS_REGRESSION_DICTIONNARY[metric]
 
         # Scoring
-        arg = ["y_true", "y_pred", self._evaluation_relation()]
+        arg = [
+            "y_true",
+            "y_pred",
+            self._evaluation_relation(start=start, npredictions=npredictions),
+        ]
         if metric in ("aic", "bic") or adj:
             arg += [1]
         if root or adj:
@@ -793,7 +864,7 @@ class ARIMA(TimeSeriesModelBase):
     """
     Creates a inDB ARIMA model.
 
-    .. versionadded:: 12.0.3
+    .. versionadded:: 23.3.0
 
     Parameters
     ----------
@@ -850,9 +921,8 @@ class ARIMA(TimeSeriesModelBase):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-
-    Load data for machine learning
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Initialization
+    ^^^^^^^^^^^^^^^
 
     We import ``verticapy``:
 
@@ -911,7 +981,7 @@ class ARIMA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = ARIMA(order = (12, 0, 2))
+        model = ARIMA(order = (12, 2, 2))
 
     .. hint::
 
@@ -925,7 +995,6 @@ class ARIMA(TimeSeriesModelBase):
         The model name is crucial for the model management system and
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
-
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -963,10 +1032,16 @@ class ARIMA(TimeSeriesModelBase):
         fig = model.features_importance()
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_features.html")
 
-
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_features.html
 
+    .. important::
+
+        Feature importance is determined by using the coefficients of the
+        auto-regressive (AR) process and normalizing them. This method
+        tends to be precise when your time series primarily consists of an
+        auto-regressive component. However, its accuracy may be a topic of
+        discussion if the time series contains other components as well.
 
     Metrics
     ^^^^^^^^
@@ -989,6 +1064,26 @@ class ARIMA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report.html
 
+    You can also choose the number of predictions and where to start the forecast.
+    For example, the following code will allow you to generate a report with 30
+    predictions, starting the forecasting process at index 40.
+
+    .. code-block:: python
+
+        model.report(start = 40, npredictions = 30)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, npredictions = 30)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report_pred_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report_pred_2.html
+
     .. important::
 
         Most metrics are computed using a single SQL query, but some of them might
@@ -1005,6 +1100,22 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         model.score()
+
+    The same applies to the score. You can choose where to start and
+    the number of predictions to use.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30)
+
+    .. important::
+
+        If you do not specify a starting point and the number of
+        predictions, the forecast will begin at one-fourth of the
+        dataset, which can result in an inaccurate score, especially
+        for large datasets. It's important to choose these parameters
+        carefully.
 
     Prediction
     ^^^^^^^^^^^
@@ -1031,7 +1142,7 @@ class ARIMA(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.predict(npredictions=30)``.
+        ``model.predict(npredictions = 30)``.
 
     .. note::
 
@@ -1043,8 +1154,8 @@ class ARIMA(TimeSeriesModelBase):
         the ``vDataFrame`` match the predictors and response name in the
         model.
 
-    If you would like to have the time-stamps in the output then you
-    can switch the ``output_estimated_ts`` the parameter. And if you
+    If you would like to have the 'time-stamps' (ts) in the output then
+    you can switch the ``output_estimated_ts`` the parameter. And if you
     also would like to see the standard error then you can switch the
     ``output_standard_errors``parameter:
 
@@ -1064,6 +1175,40 @@ class ARIMA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_prediction_2.html
 
+    .. important::
+
+        The ``output_estimated_ts`` parameter provides an estimation of
+        'ts' assuming that 'ts' is regularly spaced.
+
+    If you don't provide any input, the function will begin forecasting
+    after the last known value. If you want to forecast starting from a
+    specific value within the input dataset or another dataset, you can
+    use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "date",
+            "passengers",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True)
+        html_file = open("figures/machine_learning_vertica_tsa_arima_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_prediction_3.html
+
     Plots
     ^^^^^^
 
@@ -1079,9 +1224,8 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "date", "passengers", npredictions = 80, start=120, width =650)
+        fig = model.plot(data, "date", "passengers", npredictions = 80, start = 120, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_arima_plot_1.html")
-
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_plot_1.html
@@ -1090,7 +1234,9 @@ class ARIMA(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.plot(npredictions=30)``.
+        ``model.plot(npredictions = 30)``.
+
+    Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1162,7 +1308,7 @@ class ARMA(TimeSeriesModelBase):
     """
     Creates a inDB ARMA model.
 
-    .. versionadded:: 12.0.0
+    .. versionadded:: 12.0.3
 
     Parameters
     ----------
@@ -1219,9 +1365,8 @@ class ARMA(TimeSeriesModelBase):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-
-    Load data for machine learning
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Initialization
+    ^^^^^^^^^^^^^^^
 
     We import ``verticapy``:
 
@@ -1280,7 +1425,7 @@ class ARMA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = ARIMA(order = (12, 2))
+        model = ARMA(order = (12, 2))
 
     .. hint::
 
@@ -1294,7 +1439,6 @@ class ARMA(TimeSeriesModelBase):
         The model name is crucial for the model management system and
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
-
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1332,10 +1476,16 @@ class ARMA(TimeSeriesModelBase):
         fig = model.features_importance()
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_features.html")
 
-
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_features.html
 
+    .. important::
+
+        Feature importance is determined by using the coefficients of the
+        auto-regressive (AR) process and normalizing them. This method
+        tends to be precise when your time series primarily consists of an
+        auto-regressive component. However, its accuracy may be a topic of
+        discussion if the time series contains other components as well.
 
     Metrics
     ^^^^^^^^
@@ -1358,6 +1508,26 @@ class ARMA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_report.html
 
+    You can also choose the number of predictions and where to start the forecast.
+    For example, the following code will allow you to generate a report with 30
+    predictions, starting the forecasting process at index 40.
+
+    .. code-block:: python
+
+        model.report(start = 40, npredictions = 30)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, npredictions = 30)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_report_pred_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_report_pred_2.html
+
     .. important::
 
         Most metrics are computed using a single SQL query, but some of them might
@@ -1374,6 +1544,22 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         model.score()
+
+    The same applies to the score. You can choose where to start and
+    the number of predictions to use.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30)
+
+    .. important::
+
+        If you do not specify a starting point and the number of
+        predictions, the forecast will begin at one-fourth of the
+        dataset, which can result in an inaccurate score, especially
+        for large datasets. It's important to choose these parameters
+        carefully.
 
     Prediction
     ^^^^^^^^^^^
@@ -1400,7 +1586,7 @@ class ARMA(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.predict(npredictions=30)``.
+        ``model.predict(npredictions = 30)``.
 
     .. note::
 
@@ -1412,8 +1598,8 @@ class ARMA(TimeSeriesModelBase):
         the ``vDataFrame`` match the predictors and response name in the
         model.
 
-    If you would like to have the time-stamps in the output then you
-    can switch the ``output_estimated_ts`` the parameter. And if you
+    If you would like to have the 'time-stamps' (ts) in the output then
+    you can switch the ``output_estimated_ts`` the parameter. And if you
     also would like to see the standard error then you can switch the
     ``output_standard_errors``parameter:
 
@@ -1433,6 +1619,40 @@ class ARMA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_prediction_2.html
 
+    .. important::
+
+        The ``output_estimated_ts`` parameter provides an estimation of
+        'ts' assuming that 'ts' is regularly spaced.
+
+    If you don't provide any input, the function will begin forecasting
+    after the last known value. If you want to forecast starting from a
+    specific value within the input dataset or another dataset, you can
+    use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "date",
+            "passengers",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True)
+        html_file = open("figures/machine_learning_vertica_tsa_arma_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_prediction_3.html
+
     Plots
     ^^^^^^
 
@@ -1448,9 +1668,8 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "date", "passengers", npredictions = 80, start=120, width =650)
+        fig = model.plot(data, "date", "passengers", npredictions = 80, start = 120, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_arma_plot_1.html")
-
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_plot_1.html
@@ -1459,7 +1678,9 @@ class ARMA(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.plot(npredictions=30)``.
+        ``model.plot(npredictions = 30)``.
+
+    Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1592,9 +1813,8 @@ class AR(TimeSeriesModelBase):
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
-
-    Load data for machine learning
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    Initialization
+    ^^^^^^^^^^^^^^^
 
     We import ``verticapy``:
 
@@ -1620,7 +1840,7 @@ class AR(TimeSeriesModelBase):
         data = vp.vDataFrame(
             {
                 "month": [i for i in range(1, 11)],
-                "GB": [5, 10, 20, 35, 55, 80, 110, 145, 185, 230]
+                "GB": [5, 10, 20, 35, 55, 80, 110, 145, 185, 230],
             }
         )
 
@@ -1644,7 +1864,6 @@ class AR(TimeSeriesModelBase):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 
@@ -1659,7 +1878,7 @@ class AR(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = AR(p=2)
+        model = AR(p = 2)
 
     .. hint::
 
@@ -1673,7 +1892,6 @@ class AR(TimeSeriesModelBase):
         The model name is crucial for the model management system and
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
-
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -1711,10 +1929,8 @@ class AR(TimeSeriesModelBase):
         fig = model.features_importance()
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_features.html")
 
-
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_features.html
-
 
     Metrics
     ^^^^^^^^
@@ -1737,6 +1953,26 @@ class AR(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report.html
 
+    You can also choose the number of predictions and where to start the forecast.
+    For example, the following code will allow you to generate a report with 30
+    predictions, starting the forecasting process at index 40.
+
+    .. code-block:: python
+
+        model.report(start = 40, npredictions = 30)
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, npredictions = 30)
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report_pred_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report_pred_2.html
+
     .. important::
 
         Most metrics are computed using a single SQL query, but some of them might
@@ -1753,6 +1989,22 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         model.score()
+
+    The same applies to the score. You can choose where to start and
+    the number of predictions to use.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30)
+
+    .. important::
+
+        If you do not specify a starting point and the number of
+        predictions, the forecast will begin at one-fourth of the
+        dataset, which can result in an inaccurate score, especially
+        for large datasets. It's important to choose these parameters
+        carefully.
 
     Prediction
     ^^^^^^^^^^^
@@ -1779,7 +2031,7 @@ class AR(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.predict(npredictions=30)``.
+        ``model.predict(npredictions = 30)``.
 
     .. note::
 
@@ -1791,8 +2043,8 @@ class AR(TimeSeriesModelBase):
         the ``vDataFrame`` match the predictors and response name in the
         model.
 
-    If you would like to have the time-stamps in the output then you
-    can use:
+    If you would like to have the 'time-stamps' (ts) in the output then
+    you can switch the ``output_estimated_ts`` the parameter.
 
     .. code-block:: python
 
@@ -1812,9 +2064,36 @@ class AR(TimeSeriesModelBase):
 
     .. important::
 
-        In order to get the standard error use the
-        ``output_standard_errors`` parameter and switch
-        it to True.
+        The ``output_estimated_ts`` parameter provides an estimation of
+        'ts' assuming that 'ts' is regularly spaced.
+
+    If you don't provide any input, the function will begin forecasting
+    after the last known value. If you want to forecast starting from a
+    specific value within the input dataset or another dataset, you can
+    use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "month",
+            "GB",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "month", "GB", start = 40, npredictions = 20, output_estimated_ts = True)
+        html_file = open("figures/machine_learning_vertica_tsa_ar_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_prediction_3.html
 
     Plots
     ^^^^^^
@@ -1824,16 +2103,15 @@ class AR(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.plot()
+        model.plot(data, "month", "GB", npredictions = 80, start=120)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(width=550)
+        fig = model.plot(data, "month", "GB", npredictions = 80, start = 120, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_ar_plot_1.html")
-
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_plot_1.html
@@ -1842,7 +2120,9 @@ class AR(TimeSeriesModelBase):
 
         You can control the number of prediction steps by changing
         the ``npredictions`` parameter:
-        ``model.plot(npredictions=30)``.
+        ``model.plot(npredictions = 30)``.
+
+    Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
     Model Register
     ^^^^^^^^^^^^^^
@@ -1855,7 +2135,6 @@ class AR(TimeSeriesModelBase):
 
     Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
     for more details on model tracking and versioning.
-
     """
 
     # Properties.
