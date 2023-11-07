@@ -53,7 +53,7 @@ from verticapy.machine_learning.vertica.tsa import ARIMA, AR, MA
 def export_models(
     name: str,
     path: str,
-    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None],
+    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None] = None,
 ) -> bool:
     """
     Exports machine learning models.
@@ -97,6 +97,71 @@ def export_models(
         exported.
     """
     return VerticaModel.export_models(name=name, path=path, kind=kind)
+
+
+@save_verticapy_logs
+def import_models(
+    path: str,
+    schema: Optional[str] = None,
+    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None] = None,
+) -> bool:
+    """
+    Imports machine learning models.
+
+    Parameters
+    ----------
+    path: str
+        The absolute path of the location from which
+        to import models, one of the following:
+
+         - The directory of a single model:
+            ``path/model-directory``
+         - The parent directory of multiple model
+         directories:
+            ``parent-dir-path/*``
+    schema: str, optional
+        An existing schema where the machine learning
+        models are imported. If omitted, models are
+        imported to the default schema.
+        ``import_models`` extracts the name of the
+        imported model from its metadata.json file,
+        if it exists. Otherwise, the function uses
+        the name of the model directory.
+    kind: str, optional
+        The category of models to import, one of the
+        following:
+
+            - vertica
+            - pmml
+            - tensorflow
+
+        This parameter is required if the model directory
+        has no metadata.json file. ``import_models``
+        returns with an error if one of the following
+        cases is true:
+
+            - No category is specified and the model
+              directory has no metadata.json.
+            - The specified category does not match the
+              model type.
+
+        .. note::
+
+            If the category is `tensorflow`, ``import_models``
+            only imports the following files from the model
+            directory:
+
+                - model-name.pb
+                - model-name.json
+                - model-name.pbtxt (optional)
+
+    Returns
+    -------
+    bool
+        True if the model(s) was(were) successfully
+        imported.
+    """
+    return VerticaModel.import_models(path=path, schema=schema, kind=kind)
 
 
 @save_verticapy_logs

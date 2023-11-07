@@ -578,7 +578,7 @@ class VerticaModel(PlottingUtils):
         str
             the SQL code needed to deploy the model.
         """
-        if self._vertica_predict_sql:
+        if hasattr(self, "_vertica_predict_sql"):
             X = format_type(X, dtype=list, na_out=self.X)
             X = quote_ident(X)
             sql = f"""
@@ -596,7 +596,9 @@ class VerticaModel(PlottingUtils):
     def export_models(
         name: str,
         path: str,
-        kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None],
+        kind: Literal[
+            "pmml", "vertica", "vertica_models", "tensorflow", "tf", None
+        ] = None,
     ) -> bool:
         """
         Exports machine learning models.
@@ -613,6 +615,34 @@ class VerticaModel(PlottingUtils):
             query=f"""
                 SELECT EXPORT_MODELS('{path}',
                                      '{name}'{params})""",
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
+        return result == "Success"
+
+    @staticmethod
+    def import_models(
+        path: str,
+        schema: Optional[str] = None,
+        kind: Literal[
+            "pmml", "vertica", "vertica_models", "tensorflow", "tf", None
+        ] = None,
+    ) -> bool:
+        """
+        Imports machine learning models.
+        """
+        if isinstance(schema, NoneType):
+            schema = "public"
+        schema = schema.replace("'", "''")
+        params = f" USING PARAMETERS new_schema='{schema}'"
+        if not (isinstance(kind, NoneType)):
+            lookup_table = {"tf": "tensorflow", "vertica": "vertica_models"}
+            kind = str(kind).lower()
+            if kind in lookup_table:
+                kind = lookup_table[kind]
+            params += f", category = '{kind}'"
+        result = _executeSQL(
+            query=f"""SELECT IMPORT_MODELS('{path}'{params})""",
             method="fetchfirstelem",
             print_time_sql=False,
         )
@@ -1645,6 +1675,7 @@ class BinaryClassifier(Supervised):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
+            inplace = True
         X = quote_ident(X)
         if not name:
             name = gen_name([self._model_type, self.model_name])
@@ -1702,6 +1733,7 @@ class BinaryClassifier(Supervised):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
+            inplace = True
         X = quote_ident(X)
         if not name:
             name = gen_name([self._model_type, self.model_name])
@@ -2374,6 +2406,7 @@ class MulticlassClassifier(Supervised):
             )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
+            inplace = True
 
         # In Place
         vdf_return = vdf if inplace else vdf.copy()
@@ -2448,6 +2481,7 @@ class MulticlassClassifier(Supervised):
         )
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
+            inplace = True
         if not name:
             name = gen_name([self._model_type, self.model_name])
 
@@ -2920,8 +2954,8 @@ class Regressor(Supervised):
             Name of the added vDataColumn. If empty, a name
             is generated.
         inplace: bool, optional
-                If set to True, the prediction is added to
-            the vDataFrame.
+            If set to True, the prediction is added to the
+            vDataFrame.
 
         Returns
         -------
@@ -2934,10 +2968,9 @@ class Regressor(Supervised):
         X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
+            inplace = True
         if not name:
-            name = f"{self._model_type}_" + "".join(
-                ch for ch in self.model_name if ch.isalnum()
-            )
+            name = gen_name([self._model_type, self.model_name])
         if inplace:
             return vdf.eval(name, self.deploySQL(X=X))
         else:

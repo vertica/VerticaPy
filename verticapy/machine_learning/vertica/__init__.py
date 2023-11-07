@@ -37,7 +37,11 @@ from verticapy.machine_learning.vertica.linear_model import (
     PoissonRegressor,
     Ridge,
 )
-from verticapy.machine_learning.vertica.model_management import load_model
+from verticapy.machine_learning.vertica.model_management import (
+    export_models,
+    import_models,
+    load_model,
+)
 from verticapy.machine_learning.vertica.naive_bayes import (
     BernoulliNB,
     CategoricalNB,
@@ -52,6 +56,7 @@ from verticapy.machine_learning.vertica.neighbors import (
     LocalOutlierFactor,
 )
 from verticapy.machine_learning.vertica.pipeline import Pipeline
+from verticapy.machine_learning.vertica.pmml import PMMLModel
 from verticapy.machine_learning.vertica.preprocessing import (
     Balance,
     CountVectorizer,

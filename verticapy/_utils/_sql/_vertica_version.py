@@ -57,6 +57,7 @@ MINIMUM_VERTICA_VERSION = {
     "NaiveBayes": [8, 0, 0],
     "OneHotEncoder": [9, 0, 0],
     "PCA": [9, 1, 0],
+    "PMMLModel": [10, 0, 0],
     "PoissonRegressor": [12, 0, 0],
     "prc_curve": [9, 1, 0],
     "RandomForestClassifier": [8, 1, 1],
