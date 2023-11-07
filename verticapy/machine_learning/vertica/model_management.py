@@ -14,6 +14,8 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from typing import Literal, Optional
+
 from verticapy._typing import SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
@@ -45,6 +47,121 @@ from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
 from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
 from verticapy.machine_learning.vertica.tsa import ARIMA, AR, MA
+
+
+@save_verticapy_logs
+def export_models(
+    name: str,
+    path: str,
+    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None] = None,
+) -> bool:
+    """
+    Exports machine learning models.
+
+    Parameters
+    ----------
+    name: str
+        Specifies which models to export as follows:
+
+        ``[schema.]{ model-name | * }``
+
+        where schema optionally specifies to export
+        models from the specified schema. If omitted,
+        ``export_models`` uses the default schema.
+        Supply * (asterisk) to export all models from
+        the schema.
+    path: str
+        Absolute path of an output directory to store
+        the exported models.
+    kind: str, optional
+        The category of models to export, one of the
+        following:
+
+            - vertica
+            - pmml
+            - tensorflow
+
+        ``export_models`` exports models of the specified
+        category according to the scope of the export
+        operation—that is, whether it applies to a single
+        model, or to all models within a schema.
+
+        If you omit this parameter, ``export_models``
+        exports the model, or models in the specified
+        schema, according to their model type.
+
+    Returns
+    -------
+    bool
+        True if the model(s) was(were) successfully
+        exported.
+    """
+    return VerticaModel.export_models(name=name, path=path, kind=kind)
+
+
+@save_verticapy_logs
+def import_models(
+    path: str,
+    schema: Optional[str] = None,
+    kind: Literal["pmml", "vertica", "vertica_models", "tensorflow", "tf", None] = None,
+) -> bool:
+    """
+    Imports machine learning models.
+
+    Parameters
+    ----------
+    path: str
+        The absolute path of the location from which
+        to import models, one of the following:
+
+         - The directory of a single model:
+            ``path/model-directory``
+         - The parent directory of multiple model
+         directories:
+            ``parent-dir-path/*``
+    schema: str, optional
+        An existing schema where the machine learning
+        models are imported. If omitted, models are
+        imported to the default schema.
+        ``import_models`` extracts the name of the
+        imported model from its metadata.json file,
+        if it exists. Otherwise, the function uses
+        the name of the model directory.
+    kind: str, optional
+        The category of models to import, one of the
+        following:
+
+            - vertica
+            - pmml
+            - tensorflow
+
+        This parameter is required if the model directory
+        has no metadata.json file. ``import_models``
+        returns with an error if one of the following
+        cases is true:
+
+            - No category is specified and the model
+              directory has no metadata.json.
+            - The specified category does not match the
+              model type.
+
+        .. note::
+
+            If the category is `tensorflow`, ``import_models``
+            only imports the following files from the model
+            directory:
+
+                - model-name.pb
+                - model-name.json
+                - model-name.pbtxt (optional)
+
+    Returns
+    -------
+    bool
+        True if the model(s) was(were) successfully
+        imported.
+    """
+    return VerticaModel.import_models(path=path, schema=schema, kind=kind)
 
 
 @save_verticapy_logs
