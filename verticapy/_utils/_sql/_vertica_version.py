@@ -22,9 +22,9 @@ from verticapy.connection.connect import current_cursor
 from verticapy.errors import VersionError
 
 MINIMUM_VERTICA_VERSION = {
-    "ARIMA": [23, 3, 0],
+    "ARIMA": [23, 4, 0],
     "AR": [11, 0, 0],
-    "ARMA": [12, 0, 3],
+    "ARMA": [12, 0, 4],
     "Balance": [8, 1, 1],
     "BernoulliNB": [8, 0, 0],
     "BisectingKMeans": [9, 3, 1],
