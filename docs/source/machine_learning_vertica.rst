@@ -77,6 +77,16 @@ Vertica
          :class-card: custom-card-4
          :class-img-top: custom-class-img-top
 
+
+    .. grid-item::
+    
+      .. card:: Integrations
+         :img-top: _static/pipeline.svg
+         :link: api.machine_learning.vertica.integrations
+         :link-type: ref
+         :text-align: center
+         :class-card: custom-card-4
+         :class-img-top: custom-class-img-top
 ______
 
 .. toctree::
@@ -89,6 +99,7 @@ ______
   machine_learning_vertica_time_series
   machine_learning_vertica_decomposition
   machine_learning_vertica_pipeline
+  machine_learning_vertica_integrations
 
 
 
