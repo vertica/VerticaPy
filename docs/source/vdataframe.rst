@@ -351,8 +351,8 @@ Normalization and Global Outliers
    .. autosummary:: 
       :toctree: 
 
-      normalize
       outliers
+      scale
       
 
 
