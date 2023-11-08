@@ -35,7 +35,6 @@ TensorFlow
    TensorFlowModel.predict
    TensorFlowModel.register
    TensorFlowModel.set_params
-   TensorFlowModel.transform
    TensorFlowModel.summarize
    TensorFlowModel.to_binary
    TensorFlowModel.to_pmml
@@ -80,7 +79,6 @@ PMML
    PMMLModel.predict
    PMMLModel.register
    PMMLModel.set_params
-   PMMLModel.transform
    PMMLModel.summarize
    PMMLModel.to_binary
    PMMLModel.to_pmml
