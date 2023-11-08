@@ -52,8 +52,8 @@ TensorFlow
 
 ______
 
-TensorFlow
-~~~~~~~~~~~
+PMML
+~~~~~
 
 
 .. currentmodule:: verticapy.machine_learning.vertica
