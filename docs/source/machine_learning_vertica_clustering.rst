@@ -44,8 +44,10 @@ K-Means
    KMeans.set_params
    KMeans.summarize
    KMeans.to_memmodel
+   KMeans.to_pmml
    KMeans.to_python
    KMeans.to_sql
+   KMeans.to_tf
 
 **Attributes:**
 
@@ -109,8 +111,10 @@ Bisecting K-Means
    BisectingKMeans.set_params
    BisectingKMeans.summarize  
    BisectingKMeans.to_memmodel
+   BisectingKMeans.to_pmml
    BisectingKMeans.to_python
    BisectingKMeans.to_sql
+   BisectingKMeans.to_tf
 
 **Attributes:**
 
@@ -153,8 +157,10 @@ DBSCAN (Beta)
    DBSCAN.register
    DBSCAN.set_params
    DBSCAN.summarize
+   DBSCAN.to_pmml
    DBSCAN.to_python
    DBSCAN.to_sql
+   DBSCAN.to_tf
 
 _____________
 
@@ -195,8 +201,10 @@ Isolation Forest
    IsolationForest.set_params
    IsolationForest.summarize
    IsolationForest.to_memmodel
+   IsolationForest.to_pmml
    IsolationForest.to_python
    IsolationForest.to_sql
+   IsolationForest.to_tf
 
 **Attributes:**
 

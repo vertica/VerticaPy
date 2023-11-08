@@ -56,8 +56,12 @@ Linear SVC
    LinearSVC.set_params
    LinearSVC.summarize
    LinearSVC.to_memmodel
+   LinearSVC.to_pmml
    LinearSVC.to_python
    LinearSVC.to_sql
+   LinearSVC.to_tf
+
+
 
 **Attributes:**
 
@@ -108,8 +112,12 @@ Logistic Regression
    LogisticRegression.set_params
    LogisticRegression.summarize
    LogisticRegression.to_memmodel
+   LinLogisticRegressionearSVC.to_pmml
    LogisticRegression.to_python
-   LogisticRegression.to_sql
+   LineLogisticRegressionarSVC.to_sql
+   LineLogisticRegressionarSVC.to_tf
+
+
 
 **Attributes:**
 
@@ -170,8 +178,10 @@ Dummy Tree
    DummyTreeClassifier.summarize
    DummyTreeClassifier.to_graphviz
    DummyTreeClassifier.to_memmodel
+   DummyTreeClassifier.to_pmml
    DummyTreeClassifier.to_python
    DummyTreeClassifier.to_sql
+   DummyTreeClassifier.to_tf
 
 **Attributes:**
 
@@ -227,8 +237,10 @@ Decision Tree
    DecisionTreeClassifier.set_params
    DecisionTreeClassifier.summarize
    DecisionTreeClassifier.to_memmodel
+   DecisionTreeClassifier.to_pmml
    DecisionTreeClassifier.to_python
    DecisionTreeClassifier.to_sql
+   DecisionTreeClassifier.to_tf
 
 **Attributes:**
 
@@ -284,8 +296,10 @@ Random Forest Classifier
    RandomForestClassifier.summarize
    RandomForestClassifier.to_graphviz
    RandomForestClassifier.to_memmodel
+   RandomForestClassifier.to_pmml
    RandomForestClassifier.to_python
    RandomForestClassifier.to_sql
+   RandomForestClassifier.to_tf
 
 **Attributes:**
 
@@ -341,8 +355,10 @@ XGBoost Classifier
    XGBClassifier.summarize
    XGBClassifier.to_graphviz
    XGBClassifier.to_memmodel
+   XGBClassifier.to_pmml
    XGBClassifier.to_python
    XGBClassifier.to_sql
+   XGBClassifier.to_tf
 
 **Attributes:**
 
@@ -396,8 +412,10 @@ Naive Bayes
    NaiveBayes.score
    NaiveBayes.set_params
    NaiveBayes.summarize
+   NaiveBayes.to_pmml
    NaiveBayes.to_python
    NaiveBayes.to_sql
+   NaiveBayes.to_tf
 
 **Attributes:**
 
@@ -450,8 +468,10 @@ K-Nearest Neighbors Classifier (Beta)
    KNeighborsClassifier.score
    KNeighborsClassifier.set_params
    KNeighborsClassifier.summarize
+   KNeighborsClassifier.to_pmml
    KNeighborsClassifier.to_python
    KNeighborsClassifier.to_sql
+   KNeighborsClassifier.to_tf
 
 
 **Attributes:**
@@ -502,8 +522,10 @@ Nearest Centroid (Beta)
    NearestCentroid.score
    NearestCentroid.set_params
    NearestCentroid.summarize
+   NearestCentroid.to_pmml
    NearestCentroid.to_python
    NearestCentroid.to_sql
+   NearestCentroid.to_tf
 
 
 **Attributes:**

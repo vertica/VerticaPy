@@ -46,8 +46,10 @@ PCA
    PCA.score
    PCA.set_params
    PCA.summarize
+   PCA.to_pmml
    PCA.to_python
    PCA.to_sql
+   PCA.to_tf
    PCA.transform
 
 
@@ -87,8 +89,10 @@ SVD
    SVD.score
    SVD.set_params
    SVD.summarize
+   SVD.to_pmml
    SVD.to_python
    SVD.to_sql
+   SVD.to_tf
    SVD.transform
 
 
@@ -130,8 +134,10 @@ MCA (Beta)
    MCA.register
    MCA.set_params
    MCA.summarize
+   MCA.to_pmml
    MCA.to_python
    MCA.to_sql
+   MCA.to_tf
    MCA.transform
 
 
@@ -174,8 +180,10 @@ One-Hot Encoder
    OneHotEncoder.set_params
    OneHotEncoder.summarize
    OneHotEncoder.to_memmodel
+   OneHotEncoder.to_pmml
    OneHotEncoder.to_python
    OneHotEncoder.to_sql
+   OneHotEncoder.to_tf
    OneHotEncoder.transform
 
 
@@ -217,8 +225,10 @@ Scaler
    Scaler.set_params
    Scaler.summarize
    Scaler.to_memmodel
+   Scaler.to_pmml
    Scaler.to_python
    Scaler.to_sql
+   Scaler.to_tf
    Scaler.transform
 
 
@@ -263,8 +273,10 @@ Standard Scaler
    StandardScaler.set_params
    StandardScaler.summarize
    StandardScaler.to_memmodel
+   StandardScaler.to_pmml
    StandardScaler.to_python
    StandardScaler.to_sql
+   StandardScaler.to_tf
    StandardScaler.transform
 
 **Attributes:**
@@ -307,8 +319,10 @@ Min Max Scaler
    MinMaxScaler.set_params
    MinMaxScaler.summarize
    MinMaxScaler.to_memmodel
+   MinMaxScaler.to_pmml
    MinMaxScaler.to_python
    MinMaxScaler.to_sql
+   MinMaxScaler.to_tf
    MinMaxScaler.transform
 
 **Attributes:**
@@ -351,8 +365,10 @@ Robust Scaler
    RobustScaler.set_params
    RobustScaler.summarize
    RobustScaler.to_memmodel
+   RobustScaler.to_pmml
    RobustScaler.to_python
    RobustScaler.to_sql
+   RobustScaler.to_tf
    RobustScaler.transform
 
 **Attributes:**
@@ -403,8 +419,10 @@ Count Vectorizor (Beta)
    CountVectorizer.register
    CountVectorizer.set_params
    CountVectorizer.summarize
+   CountVectorizer.to_pmml
    CountVectorizer.to_python
    CountVectorizer.to_sql
+   CountVectorizer.to_tf
    CountVectorizer.transform
 
 _____
@@ -451,7 +469,9 @@ Kernel Density (Beta)
    KernelDensity.score
    KernelDensity.set_params
    KernelDensity.summarize
+   KernelDensity.to_pmml
    KernelDensity.to_python
    KernelDensity.to_sql
+   KernelDensity.to_tf
 
 ______

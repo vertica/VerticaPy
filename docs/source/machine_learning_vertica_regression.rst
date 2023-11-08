@@ -49,8 +49,10 @@ Linear Regression
    LinearRegression.set_params
    LinearRegression.summarize
    LinearRegression.to_memmodel
+   LinearRegression.to_pmml
    LinearRegression.to_python
    LinearRegression.to_sql
+   LinearRegression.to_tf
 
 **Attributes:**
 
@@ -95,8 +97,10 @@ Ridge
    Ridge.set_params
    Ridge.summarize
    Ridge.to_memmodel
+   Ridge.to_pmml
    Ridge.to_python
    Ridge.to_sql
+   Ridge.to_tf
 
 **Attributes:**
 
@@ -141,8 +145,10 @@ Lasso
    Lasso.set_params
    Lasso.summarize
    Lasso.to_memmodel
+   Lasso.to_pmml
    Lasso.to_python
    Lasso.to_sql
+   Lasso.to_tf
 
 **Attributes:**
 
@@ -187,8 +193,10 @@ Elastic Net
    ElasticNet.set_params
    ElasticNet.summarize
    ElasticNet.to_memmodel
+   ElasticNet.to_pmml
    ElasticNet.to_python
    ElasticNet.to_sql
+   ElasticNet.to_tf
 
 **Attributes:**
 
@@ -234,8 +242,10 @@ Linear SVR
    LinearSVR.set_params
    LinearSVR.summarize
    LinearSVR.to_memmodel
+   LinearSVR.to_pmml
    LinearSVR.to_python
    LinearSVR.to_sql
+   LinearSVR.to_tf
 
 
 **Attributes:**
@@ -284,8 +294,10 @@ Poisson Regression
    PoissonRegressor.set_params
    PoissonRegressor.summarize
    PoissonRegressor.to_memmodel
+   PoissonRegressor.to_pmml
    PoissonRegressor.to_python
    PoissonRegressor.to_sql
+   PoissonRegressor.to_tf
 _____
 
 
@@ -334,8 +346,10 @@ Dummy Tree
    DummyTreeRegressor.set_params
    DummyTreeRegressor.summarize
    DummyTreeRegressor.to_memmodel
+   DummyTreeRegressor.to_pmml
    DummyTreeRegressor.to_python
    DummyTreeRegressor.to_sql
+   DummyTreeRegressor.to_tf
 
 
 **Attributes:**
@@ -386,8 +400,10 @@ Decision Tree Regressor
    DecisionTreeRegressor.set_params
    DecisionTreeRegressor.summarize
    DecisionTreeRegressor.to_memmodel
+   DecisionTreeRegressor.to_pmml
    DecisionTreeRegressor.to_python
    DecisionTreeRegressor.to_sql
+   DecisionTreeRegressor.to_tf
 
 **Attributes:**
 
@@ -434,8 +450,10 @@ Random Forest Regressor
    RandomForestRegressor.set_params
    RandomForestRegressor.summarize
    RandomForestRegressor.to_memmodel
+   RandomForestRegressor.to_pmml
    RandomForestRegressor.to_python
    RandomForestRegressor.to_sql
+   RandomForestRegressor.to_tf
 
 **Attributes:**
 
@@ -482,8 +500,10 @@ XGB Regressor
    XGBRegressor.set_params
    XGBRegressor.summarize
    XGBRegressor.to_memmodel
+   XGBRegressor.to_pmml
    XGBRegressor.to_python
    XGBRegressor.to_sql
+   XGBRegressor.to_tf
 
 
 **Attributes:**
@@ -531,8 +551,10 @@ K-Nearest Neighbors Regressor (Beta)
    KNeighborsRegressor.score
    KNeighborsRegressor.set_params
    KNeighborsRegressor.summarize
+   KNeighborsRegressor.to_pmml
    KNeighborsRegressor.to_python
    KNeighborsRegressor.to_sql
+   KNeighborsRegressor.to_tf
 
 **Attributes:**
 
