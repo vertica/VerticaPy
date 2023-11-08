@@ -34,6 +34,7 @@ Linear Regression
    LinearRegression.deploySQL
    LinearRegression.does_model_exists
    LinearRegression.drop
+   LinearRegression.export_models
    LinearRegression.features_importance
    LinearRegression.fit
    LinearRegression.get_attributes
@@ -41,6 +42,7 @@ Linear Regression
    LinearRegression.get_params
    LinearRegression.get_plotting_lib
    LinearRegression.get_vertica_attributes
+   LinearRegression.import_models
    LinearRegression.plot
    LinearRegression.predict
    LinearRegression.regression_report
@@ -82,6 +84,7 @@ Ridge
    Ridge.deploySQL
    Ridge.does_model_exists
    Ridge.drop
+   Ridge.export_models
    Ridge.features_importance
    Ridge.fit
    Ridge.get_attributes
@@ -89,6 +92,7 @@ Ridge
    Ridge.get_params
    Ridge.get_plotting_lib
    Ridge.get_vertica_attributes
+   Ridge.import_models
    Ridge.plot
    Ridge.predict
    Ridge.regression_report
@@ -130,6 +134,7 @@ Lasso
    Lasso.deploySQL
    Lasso.does_model_exists
    Lasso.drop
+   Lasso.export_models
    Lasso.features_importance
    Lasso.fit
    Lasso.get_attributes
@@ -137,6 +142,7 @@ Lasso
    Lasso.get_params
    Lasso.get_plotting_lib
    Lasso.get_vertica_attributes
+   Lasso.import_models
    Lasso.plot
    Lasso.predict
    Lasso.regression_report
@@ -178,6 +184,7 @@ Elastic Net
    ElasticNet.deploySQL
    ElasticNet.does_model_exists
    ElasticNet.drop
+   ElasticNet.export_models
    ElasticNet.features_importance
    ElasticNet.fit
    ElasticNet.get_attributes
@@ -185,6 +192,7 @@ Elastic Net
    ElasticNet.get_params
    ElasticNet.get_plotting_lib
    ElasticNet.get_vertica_attributes
+   ElasticNet.import_models
    ElasticNet.plot
    ElasticNet.predict
    ElasticNet.regression_report
@@ -227,6 +235,7 @@ Linear SVR
    LinearSVR.deploySQL
    LinearSVR.does_model_exists
    LinearSVR.drop
+   LinearSVR.export_models
    LinearSVR.features_importance
    LinearSVR.fit
    LinearSVR.get_attributes
@@ -234,6 +243,7 @@ Linear SVR
    LinearSVR.get_params
    LinearSVR.get_plotting_lib
    LinearSVR.get_vertica_attributes
+   LinearSVR.import_models
    LinearSVR.plot
    LinearSVR.predict
    LinearSVR.regression_report
@@ -279,6 +289,7 @@ Poisson Regression
    PoissonRegressor.deploySQL
    PoissonRegressor.does_model_exists
    PoissonRegressor.drop
+   PoissonRegressor.export_models
    PoissonRegressor.features_importance
    PoissonRegressor.fit
    PoissonRegressor.get_attributes
@@ -286,6 +297,7 @@ Poisson Regression
    PoissonRegressor.get_params
    PoissonRegressor.get_plotting_lib
    PoissonRegressor.get_vertica_attributes
+   PoissonRegressor.import_models
    PoissonRegressor.plot
    PoissonRegressor.predict
    PoissonRegressor.regression_report
@@ -328,6 +340,7 @@ Dummy Tree
    DummyTreeRegressor.deploySQL
    DummyTreeRegressor.does_model_exists
    DummyTreeRegressor.drop
+   DummyTreeRegressor.export_models
    DummyTreeRegressor.features_importance
    DummyTreeRegressor.fit
    DummyTreeRegressor.get_attributes
@@ -337,6 +350,7 @@ Dummy Tree
    DummyTreeRegressor.get_score
    DummyTreeRegressor.get_tree
    DummyTreeRegressor.get_vertica_attributes
+   DummyTreeRegressor.import_models
    DummyTreeRegressor.plot
    DummyTreeRegressor.plot_tree
    DummyTreeRegressor.predict
@@ -382,6 +396,7 @@ Decision Tree Regressor
    DecisionTreeRegressor.deploySQL
    DecisionTreeRegressor.does_model_exists
    DecisionTreeRegressor.drop
+   DecisionTreeRegressor.export_models
    DecisionTreeRegressor.features_importance
    DecisionTreeRegressor.fit
    DecisionTreeRegressor.get_attributes
@@ -391,6 +406,7 @@ Decision Tree Regressor
    DecisionTreeRegressor.get_score
    DecisionTreeRegressor.get_tree
    DecisionTreeRegressor.get_vertica_attributes
+   DecisionTreeRegressor.import_models
    DecisionTreeRegressor.plot
    DecisionTreeRegressor.plot_tree
    DecisionTreeRegressor.predict
@@ -435,6 +451,7 @@ Random Forest Regressor
    RandomForestRegressor.deploySQL
    RandomForestRegressor.does_model_exists
    RandomForestRegressor.drop
+   RandomForestRegressor.export_models
    RandomForestRegressor.features_importance
    RandomForestRegressor.fit
    RandomForestRegressor.get_attributes
@@ -442,6 +459,7 @@ Random Forest Regressor
    RandomForestRegressor.get_params
    RandomForestRegressor.get_plotting_lib
    RandomForestRegressor.get_vertica_attributes
+   RandomForestRegressor.import_models
    RandomForestRegressor.plot
    RandomForestRegressor.predict
    RandomForestRegressor.regression_report
@@ -485,6 +503,7 @@ XGB Regressor
    XGBRegressor.deploySQL
    XGBRegressor.does_model_exists
    XGBRegressor.drop
+   XGBRegressor.export_models
    XGBRegressor.features_importance
    XGBRegressor.fit
    XGBRegressor.get_attributes
@@ -492,6 +511,7 @@ XGB Regressor
    XGBRegressor.get_params
    XGBRegressor.get_plotting_lib
    XGBRegressor.get_vertica_attributes
+   XGBRegressor.import_models
    XGBRegressor.plot
    XGBRegressor.predict
    XGBRegressor.regression_report
@@ -539,12 +559,14 @@ K-Nearest Neighbors Regressor (Beta)
    KNeighborsRegressor.deploySQL
    KNeighborsRegressor.does_model_exists
    KNeighborsRegressor.drop
+   KNeighborsRegressor.export_models
    KNeighborsRegressor.fit
    KNeighborsRegressor.get_attributes
    KNeighborsRegressor.get_match_index
    KNeighborsRegressor.get_params
    KNeighborsRegressor.get_plotting_lib
    KNeighborsRegressor.get_vertica_attributes
+   KNeighborsRegressor.import_models
    KNeighborsRegressor.predict
    KNeighborsRegressor.regression_report
    KNeighborsRegressor.report

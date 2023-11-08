@@ -31,12 +31,14 @@ K-Means
    KMeans.deploySQL
    KMeans.does_model_exists
    KMeans.drop
+   KMeans.export_models
    KMeans.fit
    KMeans.get_attributes
    KMeans.get_match_index
    KMeans.get_params
    KMeans.get_plotting_lib
    KMeans.get_vertica_attributes
+   KMeans.import_models
    KMeans.plot
    KMeans.plot_voronoi
    KMeans.predict
@@ -96,6 +98,7 @@ Bisecting K-Means
    BisectingKMeans.deploySQL
    BisectingKMeans.does_model_exists
    BisectingKMeans.drop
+   BisectingKMeans.export_models
    BisectingKMeans.features_importance
    BisectingKMeans.fit
    BisectingKMeans.get_attributes
@@ -103,6 +106,7 @@ Bisecting K-Means
    BisectingKMeans.get_params
    BisectingKMeans.get_plotting_lib
    BisectingKMeans.get_vertica_attributes
+   BisectingKMeans.import_models
    BisectingKMeans.plot
    BisectingKMeans.plot_tree
    BisectingKMeans.plot_voronoi
@@ -146,12 +150,14 @@ DBSCAN (Beta)
    DBSCAN.deploySQL
    DBSCAN.does_model_exists
    DBSCAN.drop
+   DBSCAN.export_models
    DBSCAN.fit
    DBSCAN.get_attributes
    DBSCAN.get_match_index
    DBSCAN.get_params
    DBSCAN.get_plotting_lib
    DBSCAN.get_vertica_attributes
+   DBSCAN.import_models
    DBSCAN.plot
    DBSCAN.predict
    DBSCAN.register
@@ -188,6 +194,7 @@ Isolation Forest
    IsolationForest.deploySQL
    IsolationForest.does_model_exists
    IsolationForest.drop
+   IsolationForest.export_models
    IsolationForest.features_importance
    IsolationForest.fit
    IsolationForest.get_attributes
@@ -195,6 +202,7 @@ Isolation Forest
    IsolationForest.get_params
    IsolationForest.get_plotting_lib
    IsolationForest.get_vertica_attributes
+   IsolationForest.import_models
    IsolationForest.plot
    IsolationForest.predict
    IsolationForest.register
