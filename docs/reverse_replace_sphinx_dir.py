@@ -19,7 +19,7 @@ def search_replace_in_file(file_path):
 # Recursively search for Python files and perform the search and replace
 for root, dirs, files in os.walk(search_directory):
     for file in files:
-        if file.endswith(".py"):
+        if file.endswith(".py") and not file.endswith("replace_sphinx_dir.py"):
             file_path = os.path.join(root, file)
             search_replace_in_file(file_path)
             print(f"Updated: {file_path}")
