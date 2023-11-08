@@ -864,13 +864,19 @@ class ARIMA(TimeSeriesModelBase):
     """
     Creates a inDB ARIMA model.
 
-    .. versionadded:: 23.3.0
+    .. versionadded:: 23.4.0
 
     .. note::
 
         The AR model is much faster than ARIMA(p, 0, 0)
         or ARMA(p, 0) because the underlying algorithm
         of AR is quite different.
+
+    .. note::
+
+        The MA model may be faster and more accurate
+        than ARIMA(0, 0, q) or ARMA(0, q) because the
+        underlying algorithm of MA is quite different.
 
     Parameters
     ----------
@@ -998,6 +1004,7 @@ class ARIMA(TimeSeriesModelBase):
     .. code-block:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
+
         mkt(data, column = "passengers", ts = "date")
 
     .. ipython:: python
@@ -1367,6 +1374,12 @@ class ARMA(TimeSeriesModelBase):
         or ARMA(p, 0) because the underlying algorithm
         of AR is quite different.
 
+    .. note::
+
+        The MA model may be faster and more accurate
+        than ARIMA(0, 0, q) or ARMA(0, q) because the
+        underlying algorithm of MA is quite different.
+
     Parameters
     ----------
     name: str, optional
@@ -1493,6 +1506,7 @@ class ARMA(TimeSeriesModelBase):
     .. code-block:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
+
         mkt(data, column = "passengers", ts = "date")
 
     .. ipython:: python
@@ -1912,7 +1926,6 @@ class AR(TimeSeriesModelBase):
             values in a dataset are missing, the function
             errors.
 
-
     Examples
     ---------
 
@@ -1998,6 +2011,7 @@ class AR(TimeSeriesModelBase):
     .. code-block:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
+
         mkt(data, column = "GB", ts = "month")
 
     .. ipython:: python
@@ -2143,7 +2157,6 @@ class AR(TimeSeriesModelBase):
     :py:mod:`verticapy.machine_learning.vertica.tsa.AR.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
-
 
     .. ipython:: python
         :okwarning:
@@ -2421,13 +2434,16 @@ class MA(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        N = 30
+        # Initialization
+        N = 30 # Number of rows
         temp = [23] * N
         noisy_temp = [x + random.uniform(-5, 5) for x in temp]
+
+        # Building the vDataFrame
         data = vp.vDataFrame(
             {
-                "day": [i for i in range(1, N+1)],
-                "temp": noisy_temp
+                "day": [i for i in range(1, N + 1)],
+                "temp": noisy_temp,
             }
         )
 
@@ -2435,13 +2451,13 @@ class MA(TimeSeriesModelBase):
         :suppress:
 
         import random
-        N =30
+        N = 30
         temp = [23] * N
         noisy_temp = [x + random.uniform(-5, 5) for x in temp]
         data = vp.vDataFrame(
             {
                 "day": [i for i in range(1, N+1)],
-                "temp": noisy_temp
+                "temp": noisy_temp,
             }
         )
         html_file = open("figures/machine_learning_vertica_tsa_ma_data.html", "w")
@@ -2478,14 +2494,15 @@ class MA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_plot.html
 
-    A trend is not obvious in our example, but
-    we can confirm it by the
+    It is obvious there is no trend in our example,
+    but we can confirm it by the
     :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
     (Mann Kendall test) test:
 
     .. code-block:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
+
         mkt(data, column = "temp", ts = "day")
 
     .. ipython:: python
@@ -2553,7 +2570,6 @@ class MA(TimeSeriesModelBase):
         and is only used to compute the test metrics. In ``verticapy``, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
-
 
     Metrics
     ^^^^^^^^
