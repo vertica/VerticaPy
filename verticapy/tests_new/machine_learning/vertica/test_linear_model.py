@@ -15,6 +15,7 @@ See the  License for the specific  language governing
 permissions and limitations under the License.
 """
 import pytest
+import sklearn.metrics as skl_metrics
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
     regression_metrics_args,
@@ -37,6 +38,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
         "LinearRegression",
         # "LinearSVR",
         "PoissonRegressor",
+        "AR",
     ],
 )
 class TestLinearModel:
@@ -44,13 +46,22 @@ class TestLinearModel:
     test class - TestLinearModel
     """
 
-    @pytest.mark.parametrize("fit_attr", ["coef_", "intercept_", "score"])
+    @pytest.mark.parametrize(
+        "fit_attr, ts_fit_attr, py_ts_fit_attr",
+        [
+            ("coef_", "phi_", "params"),
+            ("intercept_", "intercept_", "params"),
+            ("score", "mse_", "mse"),
+        ],
+    )
     def test_fit(
         self,
         get_vpy_model,
         get_py_model,
         model_class,
         fit_attr,
+        ts_fit_attr,
+        py_ts_fit_attr,
     ):
         """
         test function - fit
@@ -60,14 +71,27 @@ class TestLinearModel:
             get_py_model(model_class),
         )
 
-        if fit_attr == "score":
-            vpy_res = getattr(vpy_model_obj.model, fit_attr)()
-            py_res = getattr(py_model_obj.model, fit_attr)(
-                py_model_obj.X, py_model_obj.y
-            )
+        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            vpy_res = getattr(vpy_model_obj.model, ts_fit_attr)
+            if ts_fit_attr == "phi_":
+                py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[1:]
+            elif ts_fit_attr == "intercept_":
+                py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[0]
+            else:
+                py_model_obj = get_py_model(model_class, npredictions=None)
+
+                py_res = getattr(skl_metrics, "mean_squared_error")(
+                    py_model_obj.y, py_model_obj.pred
+                )
         else:
-            vpy_res = getattr(vpy_model_obj.model, fit_attr)
-            py_res = getattr(py_model_obj.model, fit_attr)
+            if fit_attr == "score":
+                vpy_res = getattr(vpy_model_obj.model, fit_attr)()
+                py_res = getattr(py_model_obj.model, fit_attr)(
+                    py_model_obj.X, py_model_obj.y
+                )
+            else:
+                vpy_res = getattr(vpy_model_obj.model, fit_attr)
+                py_res = getattr(py_model_obj.model, fit_attr)
 
         assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
@@ -83,6 +107,7 @@ class TestLinearModel:
         vpy_metric_name,
         py_metric_name,
         _rel_tolerance,
+        model_params,
     ):
         """
         test function - regression/report None
@@ -97,6 +122,7 @@ class TestLinearModel:
             vpy_metric_name,
             py_metric_name,
             _rel_tolerance,
+            model_params,
         )
         assert vpy_score == pytest.approx(
             py_score,
@@ -122,28 +148,39 @@ class TestLinearModel:
         """
         test function - regression/report details
         """
-        vpy_reg_rep_details_map, py_res = regression_report_details(
-            model_class,
-            get_vpy_model,
-            get_py_model,
-            regression_metrics,
-            fun_name,
-            metric,
-            expected,
-            _rel_tolerance,
-            _abs_tolerance,
-        )
-        if py_res == 0:
-            assert vpy_reg_rep_details_map[metric] == pytest.approx(
-                py_res, abs=_abs_tolerance
+        if model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            pytest.skip(
+                f"report function with metrics details/anova is not available for {model_class} model"
             )
         else:
-            assert vpy_reg_rep_details_map[metric] == pytest.approx(
-                py_res,
-                rel=_rel_tolerance[model_class]
-                if isinstance(_rel_tolerance, dict)
-                else _rel_tolerance,
+            vpy_reg_rep_details_map, py_res = regression_report_details(
+                model_class,
+                get_vpy_model,
+                get_py_model,
+                regression_metrics,
+                fun_name,
+                metric,
+                expected,
+                _rel_tolerance,
+                _abs_tolerance,
             )
+
+            if py_res == 0:
+                assert vpy_reg_rep_details_map[metric] == pytest.approx(
+                    py_res, abs=_abs_tolerance
+                )
+            else:
+                assert vpy_reg_rep_details_map[metric] == pytest.approx(
+                    py_res,
+                    rel=_rel_tolerance[model_class]
+                    if isinstance(_rel_tolerance, dict)
+                    else _rel_tolerance,
+                )
 
     @pytest.mark.parametrize(*anova_report_args)
     @pytest.mark.parametrize("fun_name", ["regression", "report"])
@@ -162,27 +199,38 @@ class TestLinearModel:
         """
         test function - regression/report anova
         """
-        reg_rep_anova, regression_metrics_map = regression_report_anova(
-            model_class,
-            get_vpy_model,
-            get_py_model,
-            regression_metrics,
-            fun_name,
-            _rel_tolerance,
-            _abs_tolerance,
-        )
-        for vpy_res, metric_type in zip(reg_rep_anova[metric], metric_types):
-            py_res = regression_metrics_map[metric_type]
+        if model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            pytest.skip(
+                f"report function with metrics details/anova is not available for {model_class} model"
+            )
+        else:
+            reg_rep_anova, regression_metrics_map = regression_report_anova(
+                model_class,
+                get_vpy_model,
+                get_py_model,
+                regression_metrics,
+                fun_name,
+                _rel_tolerance,
+                _abs_tolerance,
+            )
 
-            if py_res == 0:
-                assert vpy_res == pytest.approx(py_res, abs=1e-9)
-            else:
-                assert vpy_res == pytest.approx(
-                    py_res,
-                    rel=_rel_tolerance[model_class]
-                    if isinstance(_rel_tolerance, dict)
-                    else _rel_tolerance,
-                )
+            for vpy_res, metric_type in zip(reg_rep_anova[metric], metric_types):
+                py_res = regression_metrics_map[metric_type]
+
+                if py_res == 0:
+                    assert vpy_res == pytest.approx(py_res, abs=1e-9)
+                else:
+                    assert vpy_res == pytest.approx(
+                        py_res,
+                        rel=_rel_tolerance[model_class]
+                        if isinstance(_rel_tolerance, dict)
+                        else _rel_tolerance,
+                    )
 
     @pytest.mark.parametrize(*regression_metrics_args)
     def test_score(

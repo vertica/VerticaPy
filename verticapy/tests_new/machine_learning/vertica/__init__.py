@@ -32,4 +32,5 @@ rel_tolerance_map = {
     "LinearRegression": 1e-02,
     "LinearSVR": 1e-01,
     "PoissonRegressor": 1e-01,
+    "AR": 1e-01,
 }
