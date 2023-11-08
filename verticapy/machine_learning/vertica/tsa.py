@@ -866,6 +866,12 @@ class ARIMA(TimeSeriesModelBase):
 
     .. versionadded:: 23.3.0
 
+    .. note::
+
+        The AR model is much faster than ARIMA(p, 0, 0)
+        or ARMA(p, 0) because the underlying algorithm
+        of AR is quite different.
+
     Parameters
     ----------
     name: str, optional
@@ -978,7 +984,7 @@ class ARIMA(TimeSeriesModelBase):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = data["passengers"].plot(ts = "date")
+        fig = data["passengers"].plot(ts = "date", width = 650)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html")
 
     .. raw:: html
@@ -1010,7 +1016,7 @@ class ARIMA(TimeSeriesModelBase):
     such as that the data is monotonic, and is increasing.
     Furthermore, the low p-value confirms the presence of
     a trend with respect to time. Now we are sure of the trend
-    so we can apply a time-series model to fit it.
+    so we can apply the appropriate time-series model to fit it.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -1026,7 +1032,7 @@ class ARIMA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = ARIMA(order = (12, 2, 2))
+        model = ARIMA(order = (12, 1, 2))
 
     .. hint::
 
@@ -1041,7 +1047,7 @@ class ARIMA(TimeSeriesModelBase):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-    Model Training
+    Model Fitting
     ^^^^^^^^^^^^^^^
 
     We can now fit the model:
@@ -1101,7 +1107,7 @@ class ARIMA(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        #result = model.report()
+        result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -1202,7 +1208,7 @@ class ARIMA(TimeSeriesModelBase):
     If you would like to have the 'time-stamps' (ts) in the output then
     you can switch the ``output_estimated_ts`` the parameter. And if you
     also would like to see the standard error then you can switch the
-    ``output_standard_errors``parameter:
+    ``output_standard_errors`` parameter:
 
     .. code-block:: python
 
@@ -1262,14 +1268,14 @@ class ARIMA(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.plot(data, "date", "passengers", npredictions = 80, start=120)
+        model.plot(data, "date", "passengers", npredictions = 20, start = 140)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "date", "passengers", npredictions = 80, start = 120, width = 650)
+        fig = model.plot(data, "date", "passengers", npredictions = 20, start = 140, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_arima_plot_1.html")
 
     .. raw:: html
@@ -1354,6 +1360,12 @@ class ARMA(TimeSeriesModelBase):
     Creates a inDB ARMA model.
 
     .. versionadded:: 12.0.3
+
+    .. note::
+
+        The AR model is much faster than ARIMA(p, 0, 0)
+        or ARMA(p, 0) because the underlying algorithm
+        of AR is quite different.
 
     Parameters
     ----------
@@ -1467,7 +1479,7 @@ class ARMA(TimeSeriesModelBase):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = data["passengers"].plot(ts = "date")
+        fig = data["passengers"].plot(ts = "date", width = 600)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_data_plot.html")
 
     .. raw:: html
@@ -1499,7 +1511,7 @@ class ARMA(TimeSeriesModelBase):
     such as that the data is monotonic, and is increasing.
     Furthermore, the low p-value confirms the presence of
     a trend with respect to time. Now we are sure of the trend
-    so we can apply a time-series model to fit it.
+    so we can apply the appropriate time-series model to fit it.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -1530,7 +1542,7 @@ class ARMA(TimeSeriesModelBase):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-    Model Training
+    Model Fitting
     ^^^^^^^^^^^^^^^
 
     We can now fit the model:
@@ -1590,7 +1602,7 @@ class ARMA(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        #result = model.report()
+        result = model.report()
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -1751,14 +1763,14 @@ class ARMA(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.plot(data, "date", "passengers", npredictions = 80, start=120)
+        model.plot(data, "date", "passengers", npredictions = 20, start=135)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "date", "passengers", npredictions = 80, start = 120, width = 650)
+        fig = model.plot(data, "date", "passengers", npredictions = 20, start=135, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_arma_plot_1.html")
 
     .. raw:: html
@@ -1844,6 +1856,12 @@ class AR(TimeSeriesModelBase):
 
     .. versionadded:: 11.0.0
 
+    .. note::
+
+        The AR model is much faster than ARIMA(p, 0, 0)
+        or ARMA(p, 0) because the underlying algorithm
+        of AR is quite different.
+
     Parameters
     ----------
     name: str, optional
@@ -1893,6 +1911,7 @@ class AR(TimeSeriesModelBase):
             value. In cases where the first or last
             values in a dataset are missing, the function
             errors.
+
 
     Examples
     ---------
@@ -1965,7 +1984,7 @@ class AR(TimeSeriesModelBase):
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = data["GB"].plot(ts = "month")
+        fig = data["GB"].plot(ts = "month", width = 650)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data_plot.html")
 
     .. raw:: html
@@ -1997,7 +2016,7 @@ class AR(TimeSeriesModelBase):
     such as that the data is monotonic, and is increasing.
     Furthermore, the low p-value confirms the presence of
     a trend with respect to time. Now we are sure of the trend
-    so we can apply a time-series model to fit it.
+    so we can apply the appropriate time-series model to fit it.
 
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
@@ -2028,7 +2047,7 @@ class AR(TimeSeriesModelBase):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-    Model Training
+    Model Fitting
     ^^^^^^^^^^^^^^^
 
     We can now fit the model:
@@ -2074,7 +2093,7 @@ class AR(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.report()
+        model.report(start = 4)
 
     .. ipython:: python
         :suppress:
@@ -2088,19 +2107,24 @@ class AR(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report.html
 
+    .. important::
+
+        The value for ``start`` cannot be less than the
+        ``p`` value selected for the AR model.
+
     You can also choose the number of predictions and where to start the forecast.
     For example, the following code will allow you to generate a report with 30
     predictions, starting the forecasting process at index 40.
 
     .. code-block:: python
 
-        model.report(start = 40, npredictions = 30)
+        model.report(start = 4, npredictions = 10)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
-        #result = model.report(start = 40, npredictions = 30)
+        result = model.report(start = 4, npredictions = 10)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_report_pred_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2120,18 +2144,11 @@ class AR(TimeSeriesModelBase):
     function to calculate various regression metrics, with the explained
     variance being the default.
 
-    .. ipython:: python
-        :okwarning:
-
-        model.score()
-
-    The same applies to the score. You can choose where to start and
-    the number of predictions to use.
 
     .. ipython:: python
         :okwarning:
 
-        model.score(start = 40, npredictions = 30)
+        model.score(start = 3, npredictions = 30)
 
     .. important::
 
@@ -2213,8 +2230,8 @@ class AR(TimeSeriesModelBase):
             data,
             "month",
             "GB",
-            start = 40,
-            npredictions = 20,
+            start = 7,
+            npredictions = 10,
             output_estimated_ts = True,
         )
 
@@ -2222,7 +2239,7 @@ class AR(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.predict(data, "month", "GB", start = 40, npredictions = 20, output_estimated_ts = True)
+        result = model.predict(data, "month", "GB", start = 7, npredictions = 10, output_estimated_ts = True)
         html_file = open("figures/machine_learning_vertica_tsa_ar_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2238,14 +2255,14 @@ class AR(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.plot(data, "month", "GB", npredictions = 80, start=120)
+        model.plot(data, "month", "GB", npredictions = 10, start=7)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "month", "GB", npredictions = 5, start = 10, width = 650)
+        fig = model.plot(data, "month", "GB", npredictions = 10, start = 7, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_ar_plot_1.html")
 
     .. raw:: html
@@ -2321,6 +2338,14 @@ class MA(TimeSeriesModelBase):
     """
     Creates a inDB Moving Average model.
 
+    .. versionadded:: 11.0.0
+
+    .. note::
+
+        The MA model may be faster and more accurate
+        than ARIMA(0, 0, q) or ARMA(0, q) because the
+        underlying algorithm of MA is quite different.
+
     Parameters
     ----------
     name: str, optional
@@ -2391,11 +2416,12 @@ class MA(TimeSeriesModelBase):
         from other libraries.
 
     For this example, we will generate a dummy time-series
-    dataset.
+    dataset that has some noise variation centered around a
+    mean value.
 
     .. code-block:: python
 
-        N =30
+        N = 30
         temp = [23] * N
         noisy_temp = [x + random.uniform(-5, 5) for x in temp]
         data = vp.vDataFrame(
@@ -2445,7 +2471,8 @@ class MA(TimeSeriesModelBase):
     .. ipython:: python
         :suppress:
 
-        fig = data["GB"].plot(ts = "month")
+        vp.set_option("plotting_lib", "plotly")
+        fig = data["temp"].plot(ts = "day", width = 650)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_plot.html")
 
     .. raw:: html
@@ -2474,7 +2501,9 @@ class MA(TimeSeriesModelBase):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data_mkt_result.html
 
     The above report confirms that there is no trend
-    in our data and hence it is stationary. Once we have
+    in our data and hence it is stationary. Note the
+    high p-value which is also indicative of the
+    absemce of trend. Once we have
     established that the data is statioanry, we can
     then apply MovingAverage model on it.
 
@@ -2492,7 +2521,7 @@ class MA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = MA(p = 2)
+        model = MA(q = 2)
 
     .. hint::
 
@@ -2507,7 +2536,7 @@ class MA(TimeSeriesModelBase):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-    Model Training
+    Model Fitting
     ^^^^^^^^^^^^^^^
 
     We can now fit the model:
@@ -2533,13 +2562,13 @@ class MA(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.report()
+        model.report(start = 3)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
-        #result = model.report()
+        result = model.report(start = 3)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2547,19 +2576,24 @@ class MA(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report.html
 
+    .. important::
+
+        The value for ``start`` has to be greater than the
+        ``q`` value selected for the MA model.
+
     You can also choose the number of predictions and where to start the forecast.
-    For example, the following code will allow you to generate a report with 30
-    predictions, starting the forecasting process at index 40.
+    For example, the following code will allow you to generate a report with 10
+    predictions, starting the forecasting process at index 25.
 
     .. code-block:: python
 
-        model.report(start = 40, npredictions = 30)
+        model.report(start = 25, npredictions = 10)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
-        result = model.report(start = 40, npredictions = 30)
+        result = model.report(start = 25, npredictions = 10)
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_report_pred_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2582,15 +2616,7 @@ class MA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model.score()
-
-    The same applies to the score. You can choose where to start and
-    the number of predictions to use.
-
-    .. ipython:: python
-        :okwarning:
-
-        model.score(start = 40, npredictions = 30)
+        model.score(start = 25, npredictions = 10)
 
     .. important::
 
@@ -2672,8 +2698,8 @@ class MA(TimeSeriesModelBase):
             data,
             "day",
             "temp",
-            start = 40,
-            npredictions = 20,
+            start = 25,
+            npredictions = 10,
             output_estimated_ts = True,
         )
 
@@ -2681,7 +2707,7 @@ class MA(TimeSeriesModelBase):
         :suppress:
         :okwarning:
 
-        result = model.predict(data, "day", "temp", start = 40, npredictions = 20, output_estimated_ts = True)
+        result = model.predict(data, "day", "temp", start = 25, npredictions = 10, output_estimated_ts = True)
         html_file = open("figures/machine_learning_vertica_tsa_ma_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -2697,14 +2723,14 @@ class MA(TimeSeriesModelBase):
 
     .. code-block:: python
 
-        model.plot(data, "day", "temp", npredictions = 80, start=120)
+        model.plot(data, "day", "temp", npredictions = 15, start=25)
 
     .. ipython:: python
         :suppress:
         :okwarning:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = model.plot(data, "day", "temp", npredictions = 80, start = 120, width = 650)
+        fig = model.plot(data, "day", "temp", npredictions = 15, start = 25, width = 650)
         fig.write_html("figures/machine_learning_vertica_tsa_ma_plot_1.html")
 
     .. raw:: html
