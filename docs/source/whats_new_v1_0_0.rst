@@ -1,8 +1,8 @@
-.. _whats_new_v1_0_0_beta:
+.. _whats_new_v1_0_0:
 
-===================
-Version 1.0.0-beta
-===================
+===============
+Version 1.0.0
+===============
 
 
 
@@ -12,9 +12,12 @@ This release contains some major changes, including:
 - Micro Focus is now OpenText. All the documentation containing copyright information has been updated to represent the new ownership of Vertica and its associated products.
 
 
-- Requirements update: Python version 3.8 is now required.
+- Requirements update: Python version 3.13 is now supported.
+- Minimum supported Python version is 3.8.
 
-.. note:: An internal minimum function python decorator (@check_minimum_version) 
+.. note:: 
+  
+  An internal minimum function python decorator (@check_minimum_version) 
   warns users if any of  the Vertica modules do not meet the requirement for the function in use.
 
   
@@ -28,18 +31,35 @@ Bug fixes
 - load_model accepts feature names with parentheses
 - pandas_to_vertica() now works with dataframes that have a column full of NaN values
 - CountVectorizer supports larger datasets
+- AutoML Error: An error prompt is now displayed when no model fits.
+- Cramer's V calculation is now fixed.
+- Colors can now be changed correctly for Matplotlib Candlestick plot 
+- Isolation Forest Anomaly plot is now fixed.
+- Plotly LOF 3D plot is fixed.
+- Graphviz tree plot display is fixed.
 
 ____
 
 Machine Learning Support
 --------------------------
 
-- VerticaPy now supports the KPrototypes algorithm.
+- New Vertica algorithms supported:
+    - KPrototypes
+    - Poisson Regression
+    - AutoRegressive (AR)
+    - MovingAverages (MA)
+    - AutoRegressive Moving Averages (ARMA)
+    - AutoRegressive Integrated Moving Averages (ARIMA)
+
 - New function for finding the feature importance for XGBoost models.
-- Classification metrics are now available for multiclass data/model using three methods: micro, macro, and weighted.
-  - average_precision_score is another new metric that is added to classification metrics.
-  - roc_auc and prc_auc now work for multi-class classification using different averaging techniques stated above. 
+- Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
+  - ``average_precision_score`` is another new metric that is added to classification metrics.
+  - ``roc_auc`` and ``prc_auc`` now work for multi-class classification using different averaging techniques stated above. 
 - Model names are now optional
+- Model Tracking and Versioning now supported.
+  Check out :ref:`notebooks/ml/model_tracking_versioning/index.ipynb` for more details.
+- Model Export and Import:
+  Now models can be exported to ``pmml``, ``tensorflow``, and ``binary``. 
 
 _____
 
@@ -68,6 +88,28 @@ Plotting
 -----------
 
 - Plotly is now the default plotting library, introducing improved visualizations. The Plotly plots are more interactive and enhance the user experience.
+- Plotly Outliers plot now has the option to customize colors using the ``colors`` parameter.
+- Plotly Voronoi plot colors can also be changed.
+- Plotly LOF plot colors can be changed. 
+- Validation Curve Plot now has the option to either return the curve or only display results.
+- Fixed bounds for Highcharts ACF plot.
+- For majority of plots, the colors can be changed by ``colors`` parameter.
+- Added Plotly line plots: area, stacked, and fully-stacked.
+- Plotly Contout plot colors can be modified.
+- Plotly Range plot
+  - Can draw multiple plots.
+  - Color change is very easy with ``colors`` = ``List`` option e.g.
+
+  .. code-block:: python
+
+    fig=data.range_plot(["col1","col2"],ts = "date", plot_median=True,
+      colors=["black","yellow"]
+    )
+
+- Plotly Scatter plot now has the option to plot Bubble plot.
+- Plotly Pie chart now has the option to change color and size.
+- Highcharts Histogram plot is now available.
+- PLotly Histogram plot now allows multiple plots.
 - You can now easily switch between the plotting libraries using the following syntax:
 
 
@@ -105,7 +147,9 @@ Plotting
 .. code-block:: python
 
   %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
-  
+
+
+
 Classification Metrics
 -------------------------
 
@@ -220,6 +264,16 @@ Example:
 Others
 ---------
 
+- Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
+- A new dataset "Africa Education" has been added to the dataset library. It can be easily imported using:
+
+.. code-block:: python
+
+  from verticapy.datasets import load_africa_education
+
+- Now we use the DISTRIBUTED_SEEDED_RANDOM function instead of SEEDED_RANDOM in Vertica versions higher than 23.
+- Some new functions taht help in viewing and using nested data:
+  - ``explode_array`` is a ``vDataFrame`` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
 
   - Code restructuring to improve readability and better collaboration using PEP8 standard.
