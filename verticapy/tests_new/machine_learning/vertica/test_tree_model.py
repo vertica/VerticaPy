@@ -183,6 +183,7 @@ class TestRegressionTreeModel:
         vpy_metric_name,
         py_metric_name,
         _rel_tolerance,
+        model_params,
     ):
         """
         test function - test_regression_report_none
@@ -196,6 +197,7 @@ class TestRegressionTreeModel:
             vpy_metric_name,
             py_metric_name,
             _rel_tolerance,
+            model_params,
         )
 
         assert vpy_score == pytest.approx(
