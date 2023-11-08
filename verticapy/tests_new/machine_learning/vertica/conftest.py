@@ -27,6 +27,7 @@ import sklearn.dummy as skl_dummy
 from sklearn.preprocessing import LabelEncoder
 import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.ar_model import AutoReg
 from scipy.stats import f
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
@@ -257,6 +258,23 @@ def get_vpy_model_fixture(
                 if kwargs.get("overwrite_model")
                 else False,
                 p=kwargs.get("p") if kwargs.get("p") else 3,
+                method=kwargs.get("method") if kwargs.get("method") else "ols",
+                penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
+                C=kwargs.get("c") if kwargs.get("c") else 1.0,
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+                # compute_mse=kwargs.get("compute_mse")
+                # if kwargs.get("compute_mse")
+                # else True,
+            )
+        elif model_class == "MA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                q=kwargs.get("p") if kwargs.get("p") else 3,
                 method=kwargs.get("method") if kwargs.get("method") else "ols",
                 penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
                 C=kwargs.get("c") if kwargs.get("c") else 1.0,

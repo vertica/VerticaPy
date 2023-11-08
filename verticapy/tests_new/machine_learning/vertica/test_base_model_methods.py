@@ -218,6 +218,12 @@ def model_params(model_class):
                 (3, "ols", "none", 1, "linear_interpolation", 144),
             ],
         ),
+        "MA": (
+            "q, method, penalty, c, missing, npredictions",
+            [
+                (3, "ols", "none", 1, "linear_interpolation", 144),
+            ],
+        ),
     }
 
     return model_params_map[model_class]
