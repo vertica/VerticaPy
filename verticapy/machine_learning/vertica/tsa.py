@@ -470,6 +470,7 @@ class TimeSeriesModelBase(VerticaModel):
         vDataFrame
             a new object.
         """
+        ar_ma = False
         if self._model_type in (
             "AR",
             "MA",
@@ -480,6 +481,7 @@ class TimeSeriesModelBase(VerticaModel):
                 ts = self.ts
             if isinstance(y, NoneType):
                 y = self.y
+            ar_ma = True
         if isinstance(start, (int, float)):
             start_predict = int(start + 1)
         else:
@@ -505,7 +507,7 @@ class TimeSeriesModelBase(VerticaModel):
                     j = j + start
             elif not (isinstance(start, NoneType)):
                 j = start
-            if (output_standard_errors or output_estimated_ts):
+            if (output_standard_errors or output_estimated_ts) and not (ar_ma):
                 if not (output_standard_errors):
                     stde_out = ""
                 else:
