@@ -482,10 +482,14 @@ class TimeSeriesModelBase(VerticaModel):
             if isinstance(y, NoneType):
                 y = self.y
             ar_ma = True
+        if isinstance(start, (int, float)):
+            start_predict = int(start + 1)
+        else:
+            start_predict = int(start)
         sql = "SELECT " + self.deploySQL(
             ts=ts,
             y=y,
-            start=start,
+            start=start_predict,
             npredictions=npredictions,
             output_standard_errors=(
                 output_standard_errors or output_index or output_estimated_ts
@@ -575,7 +579,7 @@ class TimeSeriesModelBase(VerticaModel):
             FROM 
                 (
                     SELECT
-                        ROW_NUMBER() OVER (ORDER BY {self.ts}) AS idx,
+                        ROW_NUMBER() OVER (ORDER BY {self.ts}) - 1 AS idx,
                         {self.y} AS y_true
                     FROM {test_relation}
                 ) AS true_values
