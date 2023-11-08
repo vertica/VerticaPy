@@ -560,7 +560,7 @@ Machine Learning
     .. grid-item::
 
         .. card:: Time-series
-          :img-top: _static/pic_time_series.gif
+          :img-top: _static/pic_time_series.png
           :link: chart_gallery.tsa
           :link-type: ref
           :text-align: center
