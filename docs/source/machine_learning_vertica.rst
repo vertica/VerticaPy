@@ -81,7 +81,7 @@ Vertica
     .. grid-item::
     
       .. card:: Integrations
-         :img-top: _static/pipeline.svg
+         :img-top: _static/vertica_integration.svg
          :link: api.machine_learning.vertica.integrations
          :link-type: ref
          :text-align: center
