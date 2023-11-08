@@ -1,0 +1,886 @@
+/* This file contains modifications to the Furo theme to customize the look of the web pages */
+
+/* Text Formatting to match OpenText style */
+h1{
+  font-family: "Inter" ;
+  letter-spacing: -.022em;
+  font-weight: 800 ;
+  font-size: 3.2em ;
+}
+
+
+h2{
+  font-family: "Inter" ;
+  font-weight: 350 ;
+  font-size: 2em ;
+  letter-spacing: -.021em;
+  color: #3f4d62;
+}
+
+
+/* Side nav bar */
+.current {
+  font-size: 0.7rem; 
+  font-weight: 400;
+  letter-spacing: -.017em;
+  font-family: "Inter" ;
+}
+
+.sidebar-tree .icon, .sidebar-tree .reference {
+  color: #3f4d62;
+}
+
+.sidebar-brand-text {
+  /* color: var() */
+  display: none;
+}
+
+.sidebar-scroll{
+  margin-top: 3.5em;
+}
+
+/* Main Tabs */
+.sidebar-tree .toctree-l1>.reference, .sidebar-tree .toctree-l1>label .icon {
+  font-size: 0.82rem;
+  font-family: "Inter" ;
+}
+
+
+/* Top search bar */
+.top_search{
+  margin-left: 40px;
+  padding-right: 10px;
+  /* margin-top: 20px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* text-align: center; DEL TE/STIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+}
+
+
+/* Top Banner BUttons */
+.top-button-container {
+  display: flex; /*inline-block TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* flex-wrap: wrap; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* justify-content: center; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* gap: 10px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+
+}
+
+.top-button {
+  /* color: #ffffff; */
+  padding: 0 20px 0 20px;
+  margin: 0 0 20px;
+  margin-top: 20px; /* gap: 10px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  text-decoration: none;
+  position: relative;
+  transition: color 0.5s ease-in-out;
+  /* font-family: 'Inter', sans-serif;  */
+  font-family: "Inter var","Helvetica Neue",Helvetica,Arial,sans-serif;  /* From Vertica Website */
+  font-weight: 400;
+  font-size: 1em; /* Badr said 16, but I increased */
+  
+  color: #101c2f; /* From Vertica Website */
+
+  flex:1; /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+
+}
+
+.top-button::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  bottom: -35px;
+  left: 0;
+  background-color: #1a6aff;
+  transition: all 0.5s ease-in-out;
+  transform: scaleX(0);
+  visibility: hidden;
+  border-radius: 10px 10px 0 0;
+}
+
+.top-button:hover {
+  color: #1a6aff;
+}
+
+.top-button:hover::before {
+  visibility: visible;
+  transform: scaleX(1);
+}
+
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'); */
+
+/* body {
+  font-family: "Inter";
+} */
+
+
+/* Top Buttons Dropdown Menu*/
+
+.top-button-dropdown {
+  display: none;
+  border: none;
+  border-bottom: 1px solid #000;
+  font-size: 16px;
+  padding: 5px;
+  width: 100%;
+  background: none;
+}
+
+.top-button-dropdown:focus {
+  outline: none;
+}
+
+/* Disabling Search below */
+.sidebar-search-container{
+  display: None;
+  width: 200px;
+}
+
+
+.sidebar-search-container_top{
+  display: flex;
+  justify-content: center;
+  size: fixed;
+  width: 200px;
+}
+
+
+.element.style {
+      width: 200px; /* Adjust the width as needed */
+    }
+
+
+/* Hiding the logo on right side */
+.sidebar-logo{
+  display: None
+}
+
+/* The top navigation bar */
+.announcement {
+  /* Make it fixed */
+  top: 0;
+  left: 0;
+  right:0;
+  position: fixed;
+  z-index: 1000;
+
+  /* color: rgb(231, 14, 14); */
+  height: calc(var(--header-height) * 1.8);
+  /* display: flex; */
+  align-items: center;
+  
+  overflow-x: auto;
+  /* & + .page{
+    min-height: 80px;
+  } */
+  box-shadow: 0px 8px 12px whitesmoke;
+}
+
+.announcement-content {
+  box-sizing: border-box;
+  min-width: 100%;
+  padding: 0.5rem;
+  /* text-decoration-color: black; */
+  /* text-align: left; */
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  color: #101c2f; /* From Vertica Website */
+  /* font-size: 1rem; /* From Vertica Website */
+  letter-spacing: -.011em; /* From Vertica Website */
+  font-weight: 300; /* From Vertica Website */
+  /* line-height: 1.5; */ /* From Vertica Website */
+  /* padding: 2rem 0.75rem; */ /* From Vertica Website */
+  /* align-items: center; */
+  justify-content: center;
+  /* flex-direction: column; TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+}
+
+
+/* For the top navigation bar. For the logo */
+.centered-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+/* Vertica logo on Banner */
+/* .banner-image {
+  width: 200px;
+  size: fixed;
+  margin-right: 110px;
+  min-width: 200px;
+} */
+
+
+/* Home button */
+.home_button_container{
+  padding: 10px;
+  border: 2px solid var(--color-announcement-text);
+  border-radius: 35px;
+  transition: background-color 0.5s;
+  margin-right: 20px;
+}
+
+.home_button_container:hover svg path {
+  fill: #1a6aff;
+
+  transition: fill 0.5s;
+
+
+}
+
+.home_button_container:hover {
+  transition: box-shadow 0.5s;
+  box-shadow: 0px 0px 20px #1a6aff;
+  border: 2px solid #1a6aff;
+}
+/* Content on right side on navigation bar i.e. GitHub */
+.right-content {
+  display: flex;
+  justify-content: left;
+  padding-left: 150px;
+
+
+}
+
+
+/* Github button */
+.github-button {
+  display: inline-flex;
+  /* padding-left: 50px; */
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  /* background-color: #1a6aff; */
+  width: 170px;
+  height: 50px;
+  /* display: block; */
+  background: linear-gradient(to right, #00008b 0%,  #00008b 50%, #1a6aff 50%, #1a6aff 100%);
+  background-size: 200% 100%;
+  background-position: right bottom;
+  transition: all .5s ease-out;
+
+  color: white;
+  border: none;
+  border-radius: 50px;
+
+}
+
+.button-text {
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 1em; 
+}
+
+.github-button:hover{
+  background-position: left bottom;
+}
+
+
+/* Chart Gallery GIF and other card info */
+
+/* Chart Gallery Badges */
+:root {
+  --sd-color-warning: pink; /* Change the warning color to red */
+}
+
+.sd-card-footer {
+  background-color: #1a6aff;
+  color: white;
+  border-radius: 10px;
+}
+
+
+.sd-card-title {
+  font-size: 1.4em;
+}
+
+
+/* End of Chart Gallery */
+
+
+
+/* body[data-theme="dark"] .banner-image {
+  fill: white; 
+} */
+
+
+
+/* The top box to select version */
+.select.form-control-sm:not([multiple]) {
+  background-position: right 1rem top .5rem
+}
+
+.form-group { /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* margin-top: 20px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  text-align: center;/*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+} /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+
+.form-group select {
+  width: 100px; /* Adjust the width as needed */
+}
+
+.form-control {
+  display: block;
+  /* width: 100%; */
+  height: calc(1em + 1.375rem + 2px);
+  padding: 0rem 0.9375rem;
+  font-size: 1rem;
+  size: fixed;
+  font-weight: 300;
+  line-height: 1;
+  color: #3f4d62;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #3f4d62;
+  border-radius: 0.5rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.form-control:focus {
+  color: #495057;
+  background-color: #fff;
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+#filter-select option {
+  font-weight: normal ;
+  min-height: 1.2em ;
+  padding: 0px 2px 1px ;
+  font-family: "Inter" ;
+}
+
+/* Bottom Privacy/Cookies */
+.bottom_buttons{
+  padding-right: 10px;
+  font-size: 0.8em;
+
+}
+
+/* Changing color of class/functions */
+.sig-prename {
+  color: #00008b;
+  font-weight: 400;
+}
+
+.sig-name {
+  color: #00008b;
+}
+
+
+.content {
+  padding: 3.5em 3em;
+}
+
+.main{
+  margin-top:80px;
+}
+
+
+/* TESTING TO REDUCE THE SIZE */
+body {
+  font-size: 80%;
+}
+
+
+
+p {
+  font-size: 85%; 
+}
+
+/* Add padding on top of article container */
+.page{
+  /* margin-top: calc(var(--header-height) * 1.8+500px); */
+}
+
+
+/* Add padding on top of article container */
+.article-container{
+  /* margin-top: calc(var(--header-height) * 1.8+20px); */
+}
+
+
+
+/* TOC on right */
+
+.toc-title-container{
+  margin-top: 70px;
+}
+
+
+
+
+/* Cards on API page */
+.custom-card {
+  height: 215px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on Index Page */
+.custom-card-2 {
+  height: 295px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on Machine Learning page */
+.custom-card-3 {
+  height: 215px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on Vertica page */
+.custom-card-4 {
+  height: 160px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on Connectors page */
+.custom-card-5 {
+  height: 265px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on chart gallery page */
+.custom-card-6 {
+  height: 380px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+/* Cards on User Guide pages */
+.custom-card-7 {
+  height: 110px; /* Adjust the desired height */
+  /* Add more styles as needed */
+}
+
+.custom-class-img-top{
+  height: 90px;
+}
+
+.custom-class-img-top-2{
+  height: 105px;
+}
+
+/* Connector Page */
+.custom-class-img-top-3{
+
+  padding: 5px;
+}
+
+.custom-class-img-top-4{
+  padding-top: 60px;
+  padding-inline: 5px;
+}
+
+.custom-class-img-top-5{
+  padding: 30px;
+  padding-bottom: 15px;
+}
+
+.custom-class-img-top-6 {
+  padding-top: 55px;
+  padding-inline: 22px;
+}
+
+/* Chart Gallery Page */
+.custom-class-img-top-7 {
+  height: 200px
+}
+/* END Connector Page Img Cards */
+
+/* To hide the logo when screen is too small */
+@media (max-width: 72em) {
+  .centered-content {
+    position: fixed;
+    left: 10px;
+  }
+}
+
+/* To get drop down */
+
+.top-dropdown {
+  position: fixed;
+  display: none;
+  right: 10px;
+  top: 15px;
+}
+
+.dropdown-btn {
+  padding: 0px 20px;
+  background-color: var(--color-announcement-background);
+  color: var(--color-announcement-text);
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 3.2em;
+  height: 50px;
+  font-weight: bold;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+
+.dropdown-item {
+  padding: 15px 20px;
+  text-decoration: none;
+  display: block;
+  color: #3f4d62;
+  font-size: x-large;
+}
+
+.dropdown-item:hover {
+  background-color: #ddd;
+}
+
+.top-dropdown:hover .dropdown-content {
+  display: block;
+}
+
+
+
+
+/* Summary Tables */
+article, article .align-default {
+  margin-left: 0;
+}
+
+
+/* Icons on pages */
+.page-icons {
+  margin-top: 10px; /* Adjust the margin size as needed */
+  margin-bottom: 10px; /* Adjust the margin size as needed */
+}
+
+
+/*second search for short window*/
+.search-top-dropdown {
+  position: fixed;
+  display: none;
+  right: 65px;
+}
+
+.search-top-dropdown:hover .search-dropdown-content {
+  display: block;
+}
+
+.search-dropdown-btn {
+  padding: 10px 20px;
+  background-color: var(--color-announcement-background);
+  color: black;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 2em;
+  height: 50px;
+  font-weight: bold;
+}
+
+.search-dropdown-content {
+  padding: 5px 5px;
+  display: none;
+  position: fixed;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1000;
+  right:50px;
+  top:70px;
+}
+
+.sidebar-search-container_top-2{
+  display: flex;
+  justify-content: center;
+  size: fixed;
+  height: 40px;
+  width: 400px;
+}
+
+
+/* Feedback button on right */
+
+.openbtn {
+
+  position: fixed;
+  right: -25px;
+  top: 400px;
+  transform: rotate(-90deg);
+  cursor: pointer;
+  background-color: #1a6aff;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 15px;
+  border: 0;
+  z-index: 1000;
+}
+
+
+.feedback_sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  background-color: var(--color-announcement-background);
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  box-shadow: 0px 8px 12px whitesmoke;
+}
+
+.feedback_sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.feedback_sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.feedback_sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+
+.openbtn:hover {
+  background-color: #00008b;
+}
+
+#main {
+  transition: margin-left .5s;
+  padding: 16px;
+}
+
+
+
+
+/* End of Feedback button details */
+
+/* From VerticaPy Website for Feedback Form */
+
+
+#feedback-form {
+  margin: 20px 25px 0 -25px;
+}
+
+#feedback-form > form {
+  border: 1px solid var(--border-gray);
+  font-size: 14px;
+  padding: 32px;
+  color:var(--color-content-foreground);
+}
+
+#feedback-form > form .gform_fields {
+  list-style: none;
+}
+
+#feedback-form > form .gfield {
+  margin-bottom: 10px;
+}
+
+#feedback-form > form .gfield:before,
+#feedback-form > form .gfield:after {
+  content: '';
+  display: table;
+}
+
+#feedback-form > form .gfield:after {
+  clear: both;
+}
+
+#feedback-form > form .gfield_label {
+  font-weight: 600;
+}
+
+#feedback-form > form .gfield_radio {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#feedback-form > form .gfield_radio [class*="gchoice"] {
+  float: left;
+  width: 30%;
+}
+
+#feedback-form > form .gfield_radio [class*="gchoice"] input {
+  float: left;
+  margin: 1px 0 0;
+}
+
+#feedback-form > form .gfield_radio [class*="gchoice"] input:checked ~ label {
+  color: var(--primary);
+}
+
+#feedback-form > form .gfield_radio [class*="gchoice"] label {
+  margin: 10px 0 0 5px;
+}
+
+#feedback-form > form textarea {
+  border-color: var(--border-gray);
+  max-width: 100%;
+  padding: 8px;
+}
+
+#feedback-form > form textarea::placeholder {
+  color: var(--dark-gray);
+  font-style: italic;
+}
+
+#feedback-form .gform_button {
+  background: #1a6aff;
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-weight: 600;
+  letter-spacing: .25px;
+  line-break: 1;
+  padding: 6px 18px 6px;
+  -webkit-font-smoothing: antialiased;
+  margin-left: 15px;
+}
+
+#feedback-form .gform_button[disabled] {
+  opacity: .7;
+}
+
+.feedback_title{
+  padding-bottom: 15px;
+  font-weight: 600;
+  font-size: large;
+}
+
+/* End of form */
+
+
+@media (max-width: 72em) {
+
+  .search-top-dropdown {
+      display: inline-block;
+  }
+}
+
+
+
+
+
+
+@media (max-width: 105em) {
+  .github-button {
+    width: 140px;
+  }
+
+  .right-content {
+    padding-left: 15px;
+  }
+  .sidebar-search-container_top{
+    width: 150px;
+  }
+}
+
+@media (max-width: 90em) {
+  .right-content {
+    display: none;
+  }
+
+  .sidebar-search-container_top{
+    width: 84px;
+  }
+
+}
+
+
+@media (max-width: 72em) {
+  .top-button-container {
+      display: none;
+  }
+  .top-dropdown {
+      display: inline-block;;
+  }
+  .form-control {
+    position: fixed;
+    right: 135px;
+    top:23px;
+  }
+
+  .dropdown-content{
+    right: 10px;
+  }
+  .dropdown-item{
+    width: 35em;
+  }
+  .sidebar-search-container_top{
+    display: none;
+  }
+
+  .home_button_container{
+    position: fixed;
+    right: 250px;
+  }
+  /* .dropdown-content {
+      display:block;
+      width: auto;
+      right: 0;
+      left: auto;
+  } */
+}
+
+@media (max-width: 50em) {
+  .form-group {
+    display: none;
+}
+  .home_button_container {
+    right:125px;
+  }
+}
+
+@media (max-width: 40em) {
+  .home_button_container{
+    display: none
+}
+}
+
+
+
+
+
+
+/* Loader GIF for pages */
+.loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+}
+
+.gif-loader {
+  max-width: 15%; /* Adjust the width as needed */
+  max-height: 15%; /* Adjust the height as needed */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
