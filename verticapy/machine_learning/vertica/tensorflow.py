@@ -19,7 +19,7 @@ from typing import Literal, Optional
 from verticapy._typing import SQLColumns, SQLRelation
 from verticapy._utils._gen import gen_name
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import quote_ident
+from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._vertica_version import check_minimum_version
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -27,9 +27,9 @@ from verticapy.core.vdataframe.base import vDataFrame
 from verticapy.machine_learning.vertica.base import VerticaModel
 
 
-class PMMLModel(VerticaModel):
+class TensorFlowModel(VerticaModel):
     """
-    Creates a PMML object.
+    Creates a TensorFlow object.
 
     .. versionadded:: 10.0.0
 
@@ -39,7 +39,7 @@ class PMMLModel(VerticaModel):
         Name of the model. The  model must be stored in
         the database. If it is not the case, you can use
         :py:mod:`verticapy.machine_learning.vertica.import_models`
-        to import your PMML model.
+        to import your TensorFlow model.
     """
 
     # Properties.
@@ -49,20 +49,24 @@ class PMMLModel(VerticaModel):
         return None
 
     @property
-    def _vertica_predict_sql(self) -> Literal["PREDICT_PMML"]:
-        return "PREDICT_PMML"
+    def _vertica_predict_sql(self) -> Literal["PREDICT_TENSORFLOW_SCALAR"]:
+        return "PREDICT_TENSORFLOW_SCALAR"
+
+    @property
+    def _vertica_predict_transform_sql(self) -> Literal["PREDICT_TENSORFLOW"]:
+        return "PREDICT_TENSORFLOW"
 
     @property
     def _model_category(self) -> Literal["INTEGRATION"]:
         return "INTEGRATION"
 
     @property
-    def _model_subcategory(self) -> Literal["PMML"]:
-        return "PMML"
+    def _model_subcategory(self) -> Literal["TENSORFLOW"]:
+        return "TENSORFLOW"
 
     @property
-    def _model_type(self) -> Literal["PMMLModel"]:
-        return "PMMLModel"
+    def _model_type(self) -> Literal["TensorFlowModel"]:
+        return "TensorFlowModel"
 
     # System & Special Methods.
 
@@ -74,17 +78,18 @@ class PMMLModel(VerticaModel):
     ) -> None:
         super().__init__(name, False)
         self.parameters = {}
-        self.X = self.get_attributes("data_fields")["name"]
-        if self.get_attributes("is_supervised"):
-            self.y = self.X[-1]
-            self.X = self.X[:-1]
+        attr = self.get_attributes()
+        if "input_desc" in attr:
+            self.X = self.get_attributes("input_desc")["op_name"]
+        if "output_desc" in attr:
+            self.y = self.get_attributes("output_desc")["op_name"][0]
 
     # Prediction / Transformation Methods.
 
     def predict(
         self,
         vdf: SQLRelation,
-        X: SQLColumns,
+        X: Optional[SQLColumns] = None,
         name: Optional[str] = None,
         inplace: bool = True,
     ) -> vDataFrame:
@@ -104,6 +109,12 @@ class PMMLModel(VerticaModel):
         name: str, optional
             Name of the added vDataColumn. If empty, a name
             is generated.
+
+            .. note::
+
+                This parameter is only used when the input
+                'X' is a complex data type, otherwise it is
+                ignored.
         inplace: bool, optional
             If set to True, the prediction is added to the
             vDataFrame.
@@ -113,15 +124,29 @@ class PMMLModel(VerticaModel):
         vDataFrame
             the input object.
         """
-        if isinstance(X, str):
-            X = [X]
+        X = format_type(X, dtype=list, na_out=self.X)
         X = quote_ident(X)
         if isinstance(vdf, str):
             vdf = vDataFrame(vdf)
             inplace = True
         if not name:
             name = gen_name([self._model_type, self.model_name])
-        if inplace:
-            return vdf.eval(name, self.deploySQL(X=X))
+        if len(X) == 1 and vdf[X[0]].category() == "complex":
+            if inplace:
+                return vdf.eval(name, self.deploySQL(X=X))
+            else:
+                return vdf.copy().eval(name, self.deploySQL(X=X))
         else:
-            return vdf.copy().eval(name, self.deploySQL(X=X))
+            columns = vdf.get_columns()
+            n = len(columns)
+            sql = f"""
+            SELECT
+                {self._vertica_predict_transform_sql}({', '.join(columns + X)}
+                                                      USING PARAMETERS 
+                                                      model_name = '{self.model_name}', 
+                                                      num_passthru_cols = '{n}')
+                                                      OVER(PARTITION BEST) FROM {vdf}"""
+            if inplace:
+                return vdf.__init__(sql)
+            else:
+                return vDataFrame(sql)

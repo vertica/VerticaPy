@@ -67,6 +67,7 @@ from verticapy.machine_learning.vertica.preprocessing import (
     StandardScaler,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.tensorflow import TensorFlowModel
 from verticapy.machine_learning.vertica.tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,

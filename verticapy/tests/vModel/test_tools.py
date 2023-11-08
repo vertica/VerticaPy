@@ -59,7 +59,7 @@ class TestTools:
         model.fit(titanic_vd, ["age", "fare"], "survived")
         assert model._is_already_stored()
         assert (
-            model._is_already_stored(return_model_type=True).lower()
+            model._is_already_stored(return_model_type=True)[1].lower()
             == "linear_regression"
         )
         model.drop()
