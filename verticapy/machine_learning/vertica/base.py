@@ -200,7 +200,8 @@ class VerticaModel(PlottingUtils):
             If set to True and an error occurs,
             raises the error.
         return_model_type: bool, optional
-            If set to True, returns the model type.
+            If set to True, returns a tuple with
+            the model category and type.
 
         Returns
         -------
@@ -232,7 +233,8 @@ class VerticaModel(PlottingUtils):
             If set to True and an error occurs,
             raises the error.
         return_model_type: bool, optional
-            If set to True, returns the model type.
+            If set to True, returns a tuple with
+            the model category and type.
 
         Returns
         -------
@@ -246,7 +248,8 @@ class VerticaModel(PlottingUtils):
         res = _executeSQL(
             query=f"""
                 SELECT 
-                    /*+LABEL('learn.tools._is_already_stored')*/ 
+                    /*+LABEL('learn.tools._is_already_stored')*/
+                    category,
                     model_type 
                 FROM MODELS 
                 WHERE LOWER(model_name) = LOWER('{model_name}') 
@@ -256,7 +259,7 @@ class VerticaModel(PlottingUtils):
             print_time_sql=False,
         )
         if res:
-            model_type = res[0]
+            model_type = res
             res = True
         else:
             res = False
@@ -319,6 +322,20 @@ class VerticaModel(PlottingUtils):
         Any
             model attribute.
         """
+        if hasattr(self, "_model_subcategory") and self._model_subcategory in (
+            "TENSORFLOW",
+            "PMML",
+        ):
+            if not attr_name:
+                return self.get_vertica_attributes()["attr_name"]
+            else:
+                res = self.get_vertica_attributes(attr_name)
+                if res.shape() == (1, 1):
+                    return res.to_list()[0][0]
+                elif res.shape()[0] == 1:
+                    return np.array([l[0] for l in res.to_list()])
+                else:
+                    return res
         if not attr_name:
             return self._attributes
         elif attr_name in self._attributes:
@@ -658,6 +675,13 @@ class VerticaModel(PlottingUtils):
             Absolute path of an output directory to store
             the exported models.
 
+            .. warning::
+
+                This function operates solely on the server
+                side and is not accessible locally.
+                The 'path' provided should match the location
+                where the file(s) will be exported on the server.
+
         Returns
         -------
         bool
@@ -675,6 +699,13 @@ class VerticaModel(PlottingUtils):
             Absolute path of an output directory to store
             the exported models.
 
+            .. warning::
+
+                This function operates solely on the server
+                side and is not accessible locally.
+                The 'path' provided should match the location
+                where the file(s) will be exported on the server.
+
         Returns
         -------
         bool
@@ -691,6 +722,13 @@ class VerticaModel(PlottingUtils):
         path: str
             Absolute path of an output directory to store
             the exported model.
+
+            .. warning::
+
+                This function operates solely on the server
+                side and is not accessible locally.
+                The 'path' provided should match the location
+                where the file(s) will be exported on the server.
 
         Returns
         -------

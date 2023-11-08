@@ -1169,7 +1169,7 @@ class TestBaseModelMethods:
 
         assert get_models.vpy.model.does_model_exists(
             name=model_name_with_schema, return_model_type=True
-        ) in [
+        )[1] in [
             "LINEAR_REGRESSION",
             "SVM_REGRESSOR",
             "POISSON_REGRESSION",

@@ -16,7 +16,7 @@ permissions and limitations under the License.
 """
 from typing import Literal, Optional
 
-from verticapy._typing import SQLRelation
+from verticapy._typing import NoneType, SQLRelation
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import schema_relation
 from verticapy._utils._sql._sys import _executeSQL
@@ -44,8 +44,10 @@ from verticapy.machine_learning.vertica.linear_model import (
     Ridge,
 )
 from verticapy.machine_learning.vertica.naive_bayes import NaiveBayes
+from verticapy.machine_learning.vertica.pmml import PMMLModel
 from verticapy.machine_learning.vertica.preprocessing import Scaler, OneHotEncoder
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
+from verticapy.machine_learning.vertica.tensorflow import TensorFlowModel
 from verticapy.machine_learning.vertica.tsa import ARIMA, AR, MA
 
 
@@ -73,6 +75,13 @@ def export_models(
     path: str
         Absolute path of an output directory to store
         the exported models.
+
+        .. warning::
+
+            This function operates solely on the server
+            side and is not accessible locally.
+            The 'path' provided should match the location
+            where the file(s) will be exported on the server.
     kind: str, optional
         The category of models to export, one of the
         following:
@@ -119,6 +128,15 @@ def import_models(
          - The parent directory of multiple model
          directories:
             ``parent-dir-path/*``
+
+        .. warning::
+
+            This function only operates on the server
+            side and is not accessible locally.
+            The 'path' should correspond to the location
+            of the file(s) on the server. Please make
+            sure you have successfully transferred your
+            file(s) to the server.
     schema: str, optional
         An existing schema where the machine learning
         models are imported. If omitted, models are
@@ -191,13 +209,19 @@ def load_model(
     model
         The model.
     """
-    model_type = VerticaModel.does_model_exists(
+    res = VerticaModel.does_model_exists(
         name=name, raise_error=False, return_model_type=True
     )
+    if isinstance(res, NoneType):
+        raise NameError(f"The model '{name}' doesn't exist.")
+    model_category, model_type = res
+    model_category = model_category.lower()
+    if model_category == "pmml":
+        return PMMLModel(name)
+    elif model_category == "tensorflow":
+        return TensorFlowModel(name)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
-    if not model_type:
-        raise NameError(f"The model '{name}' doesn't exist.")
     if model_type.lower() in (
         "kmeans",
         "kprototypes",
