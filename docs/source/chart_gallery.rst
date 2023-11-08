@@ -556,6 +556,25 @@ Machine Learning
           +++
           See Examples
 
+
+    .. grid-item::
+
+        .. card:: Time-series
+          :img-top: _static/pic_time_series.gif
+          :link: chart_gallery.tsa
+          :link-type: ref
+          :text-align: center
+          :class-card: custom-card-6
+          :class-img-top: custom-class-img-top-7
+          
+          
+          Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
+          Using: :bdg-secondary:`Python` 
+
+          :bdg-dark-line:`Prediction Plot`
+
+          +++
+          See Examples
 _____
 
 
