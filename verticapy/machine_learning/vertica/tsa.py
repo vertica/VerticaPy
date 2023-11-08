@@ -470,7 +470,6 @@ class TimeSeriesModelBase(VerticaModel):
         vDataFrame
             a new object.
         """
-        ar_ma = False
         if self._model_type in (
             "AR",
             "MA",
@@ -481,7 +480,6 @@ class TimeSeriesModelBase(VerticaModel):
                 ts = self.ts
             if isinstance(y, NoneType):
                 y = self.y
-            ar_ma = True
         if isinstance(start, (int, float)):
             start_predict = int(start + 1)
         else:
@@ -507,7 +505,7 @@ class TimeSeriesModelBase(VerticaModel):
                     j = j + start
             elif not (isinstance(start, NoneType)):
                 j = start
-            if (output_standard_errors or output_estimated_ts) and not (ar_ma):
+            if (output_standard_errors or output_estimated_ts):
                 if not (output_standard_errors):
                     stde_out = ""
                 else:
@@ -516,13 +514,9 @@ class TimeSeriesModelBase(VerticaModel):
             else:
                 output_standard_errors = ""
                 stde_out = ""
-            if ar_ma:
-                order_by = ""
-            else:
-                order_by = 'ORDER BY "std_err"'
             sql = f"""
                 SELECT 
-                    ROW_NUMBER() OVER ({order_by}) + {j} - 1 AS idx,
+                    ROW_NUMBER() OVER () + {j} - 1 AS idx,
                     prediction{output_standard_errors}
                 FROM ({sql}) VERTICAPY_SUBTABLE"""
         if output_estimated_ts:
