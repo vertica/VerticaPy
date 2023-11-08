@@ -1,0 +1,15 @@
+numpy
+pandas
+matplotlib
+sphinx
+ipython
+furo
+nbsphinx
+plotly
+sphinx_inline_tabs
+sphinx-plotly-directive
+sphinx_design
+geopandas
+graphviz
+pandoc
+black
