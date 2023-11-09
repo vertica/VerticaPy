@@ -1130,6 +1130,7 @@ class TestBaseModelMethods:
                 ],
                 "#_of_rows": [4, 1, 1, 1, 1, 1],
             }
+            expected = attr_map[attributes]
         elif model_class == "AR":
             attr_map = {
                 "attr_name": [
@@ -1159,6 +1160,8 @@ class TestBaseModelMethods:
                 "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             }
             expected = attr_map[attributes]
+        print(model_attributes[attributes])
+        print(expected)
 
         assert model_attributes[attributes] == expected
 
