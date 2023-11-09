@@ -27,6 +27,7 @@ import sklearn.dummy as skl_dummy
 from sklearn.preprocessing import LabelEncoder
 import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.arima.model import ARIMA
 from scipy.stats import f
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
@@ -267,17 +268,29 @@ def get_vpy_model_fixture(
                 # if kwargs.get("compute_mse")
                 # else True,
             )
-<<<<<<< HEAD
         elif model_class == "MA":
             model = getattr(vpy_tsa, model_class)(
                 f"{schema_name}.{model_name}",
                 overwrite_model=kwargs.get("overwrite_model")
                 if kwargs.get("overwrite_model")
                 else False,
-                q=kwargs.get("p") if kwargs.get("p") else 3,
-                method=kwargs.get("method") if kwargs.get("method") else "ols",
+                q=kwargs.get("q") if kwargs.get("q") else 1,
                 penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
                 C=kwargs.get("c") if kwargs.get("c") else 1.0,
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+            )
+        elif model_class == "ARMA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                order=kwargs.get("order") if kwargs.get("order") else (2, 1),
+                tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+                max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+                init=kwargs.get("init") if kwargs.get("init") else "zero",
                 missing=kwargs.get("missing")
                 if kwargs.get("missing")
                 else "linear_interpolation",
@@ -285,8 +298,23 @@ def get_vpy_model_fixture(
                 # if kwargs.get("compute_mse")
                 # else True,
             )
-=======
->>>>>>> master
+        elif model_class == "ARIMA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                order=kwargs.get("order") if kwargs.get("order") else (2, 1, 1),
+                tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+                max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+                init=kwargs.get("init") if kwargs.get("init") else "zero",
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+                # compute_mse=kwargs.get("compute_mse")
+                # if kwargs.get("compute_mse")
+                # else True,
+            )
         else:
             model = getattr(vpy_linear_model, model_class)(
                 f"{schema_name}.{model_name}",
@@ -409,6 +437,17 @@ def get_vpy_model_fixture(
             "ARIMA",
         ]:
             row_cnt = airline_vd_fun.describe()["count"][0]
+            if model_class == "AR":
+                p_val = kwargs.get("p", 3)
+            elif model_class == "MA":
+                p_val = kwargs.get("q", 1)
+            elif model_class == "ARMA":
+                p_val = kwargs.get("order", (2, 1))[0]
+            elif model_class == "ARIMA":
+                p_val = kwargs.get("order", (2, 1, 1))[0]
+            else:
+                p_val = 3
+
             if X is None:
                 X = "date"
             if y is None:
@@ -423,7 +462,7 @@ def get_vpy_model_fixture(
                 airline_vd_fun,
                 X,
                 y,
-                start=kwargs.get("p", 3) + 1,
+                start=p_val,
                 npredictions=kwargs.get("npredictions", row_cnt),
                 output_estimated_ts=True,
             )
@@ -579,9 +618,24 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 fit_intercept=py_fit_intercept if py_fit_intercept else True,
                 tol=py_tol if py_tol else 1e-06,
             )
-        elif model_class == "AR":
-            model = AutoReg(
-                airline_pdf_ts, lags=kwargs.get("p") if kwargs.get("p") else 3
+        elif model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            if model_class == "AR":
+                order = (3, 0, 0)
+                # model = AutoReg(
+                #     airline_pdf_ts, lags=kwargs.get("p") if kwargs.get("p") else 3
+                # ).fit()
+            elif model_class == "MA":
+                order = (0, 0, 1)
+            elif model_class == "ARMA":
+                order = (2, 0, 1)
+            elif model_class == "ARIMA":
+                order = (2, 1, 1)
+            else:
+                order = (3, 0, 0)
+
+            model = ARIMA(
+                airline_pdf_ts,
+                order=kwargs.get("order") if kwargs.get("order") else order,
             ).fit()
             print(model.summary())
         else:
@@ -589,16 +643,25 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 fit_intercept=py_fit_intercept if py_fit_intercept else True
             )
 
-        if model_class == "AR":
+        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            if model_class == "AR":
+                p_val = kwargs.get("p", 3)
+            elif model_class == "MA":
+                p_val = kwargs.get("order", (0, 0, 1))[2]
+            elif model_class == "ARMA":
+                p_val = kwargs.get("order", (2, 0, 1))[0]
+            elif model_class == "ARIMA":
+                p_val = kwargs.get("order", (2, 1, 1))[0]
+            else:
+                p_val = 3
+
             npred = (
-                kwargs.get("npredictions") + (kwargs.get("p", 3) - 1)
+                kwargs.get("npredictions") + p_val
                 if kwargs.get("npredictions")
                 else None
             )
-            pred = model.predict(
-                start=kwargs.get("p", 3), end=npred, dynamic=False
-            ).values
-            y = y[kwargs.get("p", 3) : npred + 1 if npred else npred].values
+            pred = model.predict(start=p_val, end=npred, dynamic=False).values
+            y = y[p_val : npred + 1 if npred else npred].values
         else:
             print(f"Python Training Parameters: {model.get_params()}")
             model.fit(X, y)
@@ -676,7 +739,7 @@ def calculate_regression_metrics(get_py_model):
             3
             if model_class in ["DummyTreeRegressor"]
             else 1
-            if model_class in ["AR"]
+            if model_class in ["AR", "MA", "ARMA", "ARIMA"]
             else (len(model.feature_names_in_))
         )
         # y_bar = y.mean()
