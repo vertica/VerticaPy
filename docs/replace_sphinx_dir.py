@@ -4,7 +4,7 @@ import os
 search_directory = "../"
 
 # Define the word to search for and the replacement
-search_word = "/project/data/VerticaPy/docs"
+search_word = "SPHINX_DIRECTORY"
 replacement_word = "/project/data/VerticaPy/docs"
 
 
@@ -21,10 +21,8 @@ def search_replace_in_file(file_path):
 # Recursively search for Python files and perform the search and replace
 for root, dirs, files in os.walk(search_directory):
     for file in files:
-        if (
-            file.endswith(".py")
-            or file.endswith(".rst")
-            and not file.endswith("replace_sphinx_dir.py")
+        if (file.endswith(".py") or file.endswith(".rst")) and not file.endswith(
+            "replace_sphinx_dir.py"
         ):
             file_path = os.path.join(root, file)
             search_replace_in_file(file_path)
