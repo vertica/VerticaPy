@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from abc import abstractmethod
 import copy
+import datetime
+from dateutil.relativedelta import relativedelta
 from typing import Literal, Optional, Union
 
 import numpy as np
@@ -403,6 +405,7 @@ class TimeSeriesModelBase(VerticaModel):
         output_standard_errors: bool = False,
         output_index: bool = False,
         output_estimated_ts: bool = False,
+        freq: Literal[None, "m", "months", "y", "year", "infer"] = "infer",
     ) -> vDataFrame:
         """
         Predicts using the input relation.
@@ -464,6 +467,23 @@ class TimeSeriesModelBase(VerticaModel):
             Boolean, whether to return the estimated abscissa of
             each prediction. The real one is hard to obtain due to
             interval computations.
+        freq: str, optional
+            How to compute the delta.
+
+              - m/month:
+                We assume that the data is organized on a monthly
+                basis.
+              - y/year:
+                We assume that the data is organized on a yearly
+                basis.
+              - infer:
+                When making inferences, the system will attempt to
+                identify the best option, which may involve more
+                computational resources.
+              - None:
+                The inference is based on the average of the difference
+                between 'ts' and its lag.
+
 
         Returns
         -------
@@ -482,10 +502,14 @@ class TimeSeriesModelBase(VerticaModel):
             if isinstance(y, NoneType):
                 y = self.y
             ar_ma = True
+        if isinstance(start, (int, float)):
+            start_predict = int(start + 1)
+        else:
+            start_predict = int(start)
         sql = "SELECT " + self.deploySQL(
             ts=ts,
             y=y,
-            start=start,
+            start=start_predict,
             npredictions=npredictions,
             output_standard_errors=(
                 output_standard_errors or output_index or output_estimated_ts
@@ -512,26 +536,62 @@ class TimeSeriesModelBase(VerticaModel):
             else:
                 output_standard_errors = ""
                 stde_out = ""
-            if ar_ma:
-                order_by = ""
-            else:
-                order_by = 'ORDER BY "std_err"'
             sql = f"""
                 SELECT 
-                    ROW_NUMBER() OVER ({order_by}) + {j} - 1 AS idx,
+                    ROW_NUMBER() OVER () + {j} - 1 AS idx,
                     prediction{output_standard_errors}
                 FROM ({sql}) VERTICAPY_SUBTABLE"""
         if output_estimated_ts:
+            if isinstance(freq, str):
+                freq = freq.lower()
+            if freq == "infer":
+                infer_sql = f"""
+                    SELECT 
+                        {self.ts} 
+                    FROM {self.input_relation} 
+                    WHERE {self.ts} IS NOT NULL
+                    ORDER BY 1 
+                    LIMIT 100"""
+                res = _executeSQL(
+                    infer_sql, title="Finding the right delta.", method="fetchall"
+                )
+                res = [l[0] for l in res]
+                n = len(res)
+                for i in range(1, n):
+                    if not (isinstance(res[i], datetime.date)):
+                        freq = None
+                        break
+                    dm = ((res[i] - res[i - 1]) / 28).days
+                    dy = ((res[i] - res[i - 1]) / 365).days
+                    if res[i - 1] + relativedelta(months=dm) == res[i] and freq != "y":
+                        freq = "m"
+                    elif res[i - 1] + relativedelta(years=dy) == res[i] and freq != "m":
+                        freq = "y"
+                    else:
+                        freq = None
+                        break
             min_value = f"(SELECT MIN({self.ts}) FROM {self.input_relation})"
+            if freq in ("m", "months", "y", "year"):
+                delta_ts = f"MONTHS_BETWEEN({self.ts}, LAG({self.ts}) OVER (ORDER BY {self.ts})) AS delta"
+            else:
+                delta_ts = (
+                    f"{self.ts} - LAG({self.ts}) OVER (ORDER BY {self.ts}) AS delta"
+                )
             delta = f"""
                 (SELECT 
-                    AVG(delta) 
+                    AVG(delta)
                  FROM (SELECT 
-                        {self.ts} - LAG({self.ts}) OVER (ORDER BY {self.ts}) AS delta 
+                        {delta_ts} 
                        FROM {self.input_relation}) VERTICAPY_SUBTABLE)"""
+            if freq in ("m", "months"):
+                estimation = f"TIMESTAMPADD(MONTH, (idx * {delta})::int, {min_value})::date AS {self.ts}"
+            elif freq in ("y", "year"):
+                estimation = f"TIMESTAMPADD(YEAR, (idx * {delta} / 12)::int, {min_value})::date AS {self.ts}"
+            else:
+                estimation = f"idx * {delta} + {min_value} AS {self.ts}"
             sql = f"""
                 SELECT
-                    idx * {delta} + {min_value} AS {self.ts},
+                    {estimation},
                     prediction{stde_out}
                 FROM ({sql}) VERTICAPY_SUBTABLE"""
         return vDataFrame(clean_query(sql))
@@ -575,7 +635,7 @@ class TimeSeriesModelBase(VerticaModel):
             FROM 
                 (
                     SELECT
-                        ROW_NUMBER() OVER (ORDER BY {self.ts}) AS idx,
+                        ROW_NUMBER() OVER (ORDER BY {self.ts}) - 1 AS idx,
                         {self.y} AS y_true
                     FROM {test_relation}
                 ) AS true_values
