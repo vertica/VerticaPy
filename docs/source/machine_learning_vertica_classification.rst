@@ -116,10 +116,10 @@ Logistic Regression
    LogisticRegression.set_params
    LogisticRegression.summarize
    LogisticRegression.to_memmodel
-   LinLogisticRegressionearSVC.to_pmml
+   LogisticRegression.to_pmml
    LogisticRegression.to_python
-   LineLogisticRegressionarSVC.to_sql
-   LineLogisticRegressionarSVC.to_tf
+   LogisticRegression.to_sql
+   LogisticRegression.to_tf
 
 
 
