@@ -128,7 +128,7 @@ class TSPlot(PlotlyBase):
         if self.layout["has_se"]:
             fig_base.add_trace(
                 go.Scatter(
-                    x=np.hstack((self.data["x_pred"], self.data["x_pred"][::-1])),
+                    x=np.hstack((self.data["se_x"], self.data["se_x"][::-1])),
                     y=np.hstack((self.data["se_low"], self.data["se_high"][::-1])),
                     fill="toself",
                     name="95% confidence interval",

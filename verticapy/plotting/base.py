@@ -1531,9 +1531,11 @@ class PlottingBase(PlottingBaseSQL):
         )
         self.data["y_pred"] = np.array([self.data["y"][j]] + list(self.data["y_pred"]))
         if has_se:
+            self.data["se_x"] = self.data["x_pred"]
             self.data["se_low"] = self.data["y_pred"] - 1.96 * self.data["se"]
             self.data["se_high"] = self.data["y_pred"] + 1.96 * self.data["se"]
         else:
+            self.data["se_x"] = None
             self.data["se_low"] = None
             self.data["se_high"] = None
         if str(method).lower() != "forecast" and j > 0:

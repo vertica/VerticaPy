@@ -129,6 +129,7 @@ class TSPlot(LinePlot):
         )
         # Std Error
         if self.layout["has_se"]:
+            x = self._to_datetime(self.data["se_x"])
             data_range = np.column_stack(
                 (x, self.data["se_low"], self.data["se_high"])
             ).tolist()
