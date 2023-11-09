@@ -27,7 +27,6 @@ import sklearn.dummy as skl_dummy
 from sklearn.preprocessing import LabelEncoder
 import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
-from statsmodels.tsa.ar_model import AutoReg
 from scipy.stats import f
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
@@ -268,6 +267,7 @@ def get_vpy_model_fixture(
                 # if kwargs.get("compute_mse")
                 # else True,
             )
+<<<<<<< HEAD
         elif model_class == "MA":
             model = getattr(vpy_tsa, model_class)(
                 f"{schema_name}.{model_name}",
@@ -285,6 +285,8 @@ def get_vpy_model_fixture(
                 # if kwargs.get("compute_mse")
                 # else True,
             )
+=======
+>>>>>>> master
         else:
             model = getattr(vpy_linear_model, model_class)(
                 f"{schema_name}.{model_name}",

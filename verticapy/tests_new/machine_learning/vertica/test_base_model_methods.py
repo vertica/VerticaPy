@@ -218,12 +218,6 @@ def model_params(model_class):
                 (3, "ols", "none", 1, "linear_interpolation", 144),
             ],
         ),
-        "MA": (
-            "q, method, penalty, c, missing, npredictions",
-            [
-                (3, "ols", "none", 1, "linear_interpolation", 144),
-            ],
-        ),
     }
 
     return model_params_map[model_class]
@@ -1165,6 +1159,37 @@ class TestBaseModelMethods:
                 "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             }
             expected = attr_map[attributes]
+        elif model_class == "AR":
+            attr_map = {
+                "attr_name": [
+                    "coefficients",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "parameter, value",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            }
+            expected = attr_map[attributes]
+        print(model_attributes[attributes])
+        print(expected)
 
         assert model_attributes[attributes] == expected
 
