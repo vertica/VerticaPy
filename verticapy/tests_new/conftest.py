@@ -39,6 +39,7 @@ from verticapy.datasets import (
     load_market,
     load_smart_meters,
     load_laliga,
+    load_airline_passengers,
 )
 from verticapy.core.vdataframe.base import vDataFrame
 
@@ -502,3 +503,23 @@ def laliga_vd(schema_loader):
     laliga = load_laliga(schema_loader, "laliga")
     yield laliga
     drop(name=f"{schema_loader}.laliga")
+
+
+@pytest.fixture(scope="module")
+def airline_vd(schema_loader):
+    """
+    Create a dummy vDataFrame for airline_passengers dataset
+    """
+    airline = load_airline_passengers(schema_loader, "airline")
+    yield airline
+    drop(name=f"{schema_loader}.airline")
+
+
+@pytest.fixture(scope="function")
+def airline_vd_fun(schema_loader):
+    """
+    Create a dummy vDataFrame for airline_passengers dataset
+    """
+    airline = load_airline_passengers(schema_loader, "airline")
+    yield airline
+    drop(name=f"{schema_loader}.airline")

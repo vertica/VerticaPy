@@ -212,6 +212,12 @@ def model_params(model_class):
                 (1e-6, "l2", 1, 100, "newton", True),
             ],
         ),
+        "AR": (
+            "p, method, penalty, c, missing, npredictions",
+            [
+                (3, "ols", "none", 1, "linear_interpolation", 144),
+            ],
+        ),
     }
 
     return model_params_map[model_class]
@@ -226,17 +232,36 @@ def regression_report_none(
     vpy_metric_name,
     py_metric_name,
     _rel_tolerance,
+    model_params,
 ):
     """
     test function - regression/report None
     """
+    _model_class_tuple = (
+        None
+        if model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]
+        else namedtuple(model_class, model_params[0])(*model_params[1][0])
+    )
     vpy_model_obj = get_vpy_model(model_class)
 
-    reg_rep = (
-        vpy_model_obj.model.report()
-        if fun_name == "report"
-        else vpy_model_obj.model.regression_report()
-    )
+    if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+        reg_rep = (
+            vpy_model_obj.model.report(
+                start=_model_class_tuple.p + 1,
+                npredictions=_model_class_tuple.npredictions,
+            )
+            if fun_name == "report"
+            else vpy_model_obj.model.regression_report(
+                start=_model_class_tuple.p + 1,
+                npredictions=_model_class_tuple.npredictions,
+            )
+        )
+    else:
+        reg_rep = (
+            vpy_model_obj.model.report()
+            if fun_name == "report"
+            else vpy_model_obj.model.regression_report()
+        )
     vpy_rep_map = dict(zip(reg_rep["index"], reg_rep["value"]))
 
     if vpy_metric_name[0] in vpy_rep_map or vpy_metric_name[1] in vpy_rep_map:
@@ -518,6 +543,20 @@ def model_score(
             fit_intercept=_model_class_tuple.fit_intercept,
         )
         vpy_score = vpy_model_obj.model.score(metric=vpy_metric_name[0])
+    elif model_class == "AR":
+        vpy_model_obj = get_vpy_model(
+            model_class,
+            p=_model_class_tuple.p,
+            method=_model_class_tuple.method,
+            penalty=_model_class_tuple.penalty,
+            C=_model_class_tuple.c,
+            missing=_model_class_tuple.missing,
+        )
+        vpy_score = vpy_model_obj.model.score(
+            metric=vpy_metric_name[0],
+            start=_model_class_tuple.p + 1,
+            npredictions=_model_class_tuple.npredictions,
+        )
     elif model_class == "LinearRegression":
         vpy_model_obj = get_vpy_model(
             model_class,
@@ -559,6 +598,15 @@ def model_score(
     ]:
         vpy_model_obj.pred_vdf.drop(
             columns=["survived_pred"]
+        )  # this is added if parameters runs in loop
+    elif model_class in [
+        "AR",
+        "MA",
+        "ARMA",
+        "ARIMA",
+    ]:
+        vpy_model_obj.pred_vdf.drop(
+            columns=["prediction"]
         )  # this is added if parameters runs in loop
     else:
         vpy_model_obj.pred_vdf.drop(
@@ -652,6 +700,15 @@ def model_score(
     elif model_class in ["PoissonRegressor"]:
         metrics_map = _metrics(model_class, fit_intercept=True)
         py_score = metrics_map[py_metric_name]
+    elif model_class in [
+        "AR",
+        "MA",
+        "ARMA",
+        "ARIMA",
+    ]:
+        py_model_obj = get_py_model(model_class, p=_model_class_tuple.p)
+        metrics_map = _metrics(model_class, model_obj=py_model_obj)
+        py_score = metrics_map[py_metric_name]
     else:
         metrics_map = _metrics(
             model_class, fit_intercept=_model_class_tuple.fit_intercept
@@ -678,6 +735,7 @@ def model_score(
         "LinearRegression",
         # "LinearSVR",
         "PoissonRegressor",
+        "AR",
     ],
 )
 # @pytest.mark.parametrize("model_class", ["XGBClassifier"])
@@ -715,6 +773,17 @@ class TestBaseModelMethods:
 
             assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            assert get_models.vpy.pred_vdf[
+                ["prediction"]
+            ].to_numpy().mean() == pytest.approx(
+                get_models.py.pred.mean(), rel=rel_tolerance_map[model_class]
+            )
         else:
             assert get_models.vpy.pred_vdf[
                 ["quality_pred"]
@@ -733,6 +802,13 @@ class TestBaseModelMethods:
             "XGBClassifier",
         ]:
             vpy_res = get_vpy_model(model_class, X=["age", "fare"]).model.contour()
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            pytest.skip(f"contour function is not available for {model_class} model")
         else:
             vpy_res = get_vpy_model(
                 model_class, X=["residual_sugar", "alcohol"]
@@ -764,11 +840,16 @@ class TestBaseModelMethods:
             pred_fun_name = "PREDICT_SVM_REGRESSOR"
         elif model_class == "PoissonRegressor":
             pred_fun_name = "PREDICT_POISSON_REG"
+        elif model_class == "AR":
+            pred_fun_name = "PREDICT_AUTOREGRESSOR"
         else:
             pred_fun_name = "PREDICT_LINEAR_REG"
 
         vpy_pred_sql = get_models.vpy.model.deploySQL()
-        pred_sql = f"""{pred_fun_name}("{get_models.py.X.columns[0]}", "{get_models.py.X.columns[1]}", "{get_models.py.X.columns[2]}" USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', match_by_pos = 'true')"""
+        if model_class == "AR":
+            pred_sql = f"""{pred_fun_name}( USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', add_mean = True, npredictions = 10 ) OVER ()"""
+        else:
+            pred_sql = f"""{pred_fun_name}("{get_models.py.X.columns[0]}", "{get_models.py.X.columns[1]}", "{get_models.py.X.columns[2]}" USING PARAMETERS model_name = '{get_models.vpy.schema_name}.{get_models.vpy.model_name}', match_by_pos = 'true')"""
 
         assert vpy_pred_sql == pred_sql
 
@@ -789,7 +870,6 @@ class TestBaseModelMethods:
         """
         test function - get_attributes
         """
-        print(get_models.vpy.model.get_attributes())
         if model_class in [
             "RandomForestRegressor",
             "DecisionTreeRegressor",
@@ -831,6 +911,19 @@ class TestBaseModelMethods:
                 "trees_",
                 "features_importance_",
                 "features_importance_trees_",
+            ]
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            vpy_model_attributes = [
+                "phi_",
+                "intercept_",
+                "features_importance_",
+                "mse_",
+                "n_",
             ]
         else:
             vpy_model_attributes = ["coef_", "intercept_", "features_importance_"]
@@ -895,6 +988,14 @@ class TestBaseModelMethods:
                 "solver": "newton",
                 "fit_intercept": True,
             }
+        elif model_class == "AR":
+            model_params_map = {
+                "p": 3,
+                "method": "ols",
+                "penalty": "none",
+                "C": 1.0,
+                "missing": "linear_interpolation",
+            }
         else:
             model_params_map = {
                 "tol": 1e-06,
@@ -951,11 +1052,7 @@ class TestBaseModelMethods:
         """
         test function - get_vertica_attributes
         """
-        # print(get_models.vpy.model.get_vertica_attributes()[attributes])
-
         model_attributes = get_models.vpy.model.get_vertica_attributes()
-
-        print(model_attributes)
 
         if model_class in [
             "RandomForestRegressor",
@@ -1034,6 +1131,37 @@ class TestBaseModelMethods:
                 "#_of_rows": [4, 1, 1, 1, 1, 1],
             }
             expected = attr_map[attributes]
+        elif model_class == "AR":
+            attr_map = {
+                "attr_name": [
+                    "coefficients",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "attr_fields": [
+                    "parameter, value",
+                    "lag_order",
+                    "lambda",
+                    "mean_squared_error",
+                    "rejected_row_count",
+                    "accepted_row_count",
+                    "timeseries_name",
+                    "timestamp_name",
+                    "missing_method",
+                    "call_string",
+                ],
+                "#_of_rows": [4, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            }
+            expected = attr_map[attributes]
+        print(model_attributes[attributes])
+        print(expected)
 
         assert model_attributes[attributes] == expected
 
@@ -1054,6 +1182,8 @@ class TestBaseModelMethods:
             params = {"intercept_mode": "unregularized", "max_iter": 500}
         elif model_class == "ElasticNet":
             params = {"l1_ratio": 0.01, "C": 0.12, "solver": "newton", "max_iter": 500}
+        elif model_class == "AR":
+            params = {"p": 10, "C": 0.12, "penalty": "l2", "missing": "drop"}
         else:
             params = {"solver": "cgd", "max_iter": 500}
 
@@ -1091,6 +1221,8 @@ class TestBaseModelMethods:
         ]:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["survived_pred"]].to_numpy()[10]
+        elif model_class in ["AR"]:
+            pytest.skip(f"to_python function is not available for {model_class} model")
         else:
             py_res = get_models.vpy.model.to_python()(get_models.py.X)[10]
             vpy_res = get_models.vpy.pred_vdf[["quality_pred"]].to_numpy()[10]
@@ -1125,6 +1257,7 @@ class TestBaseModelMethods:
             "XGBClassifier": "PREDICT_XGB_CLASSIFIER",
             "LinearSVR": "PREDICT_SVM_REGRESSOR",
             "PoissonRegressor": "PREDICT_POISSON_REG",
+            "AR": "PREDICT_AUTOREGRESSOR",
             **dict.fromkeys(
                 ["Ridge", "Lasso", "ElasticNet", "LinearRegression"],
                 "PREDICT_LINEAR_REG",
@@ -1138,6 +1271,8 @@ class TestBaseModelMethods:
             "XGBClassifier",
         ]:
             pred_sql = f"SELECT {pred_fun_map[model_class]}(* USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::int, {get_models.vpy.model.to_sql()}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"
+        elif model_class in ["AR"]:
+            pytest.skip(f"to_sql function is not available for {model_class} model")
         else:
             pred_sql = f"SELECT {pred_fun_map[model_class]}(3.0, 11.0, 93.0 USING PARAMETERS model_name = '{get_models.vpy.model.model_name}', match_by_pos=True)::float, {get_models.vpy.model.to_sql([3.0, 11.0, 93.0])}::float"
 
@@ -1173,6 +1308,7 @@ class TestBaseModelMethods:
             "LINEAR_REGRESSION",
             "SVM_REGRESSOR",
             "POISSON_REGRESSION",
+            "AUTOREGRESSOR",
             "RF_REGRESSOR",
             "RF_CLASSIFIER",
             "XGB_REGRESSOR",
@@ -1187,17 +1323,23 @@ class TestBaseModelMethods:
     @pytest.mark.parametrize(
         "match_index_attr, expected", [("valid_colum", 2), ("invalid_colum", None)]
     )
-    def test_get_match_index(self, get_models, match_index_attr, expected):
+    def test_get_match_index(self, get_models, match_index_attr, expected, model_class):
         """
         test function - get_match_index
         """
+        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            x = get_models.py.X.columns[0]
+            col_list = [x]
+            expected = 0 if match_index_attr == "valid_colum" else expected
+        else:
+            x = get_models.py.X.columns[2]
+            col_list = get_models.py.X.columns
+
         if match_index_attr == "valid_colum":
-            vpy_res = get_models.vpy.model.get_match_index(
-                x=get_models.py.X.columns[2], col_list=get_models.py.X.columns
-            )
+            vpy_res = get_models.vpy.model.get_match_index(x=x, col_list=col_list)
         else:
             vpy_res = get_models.vpy.model.get_match_index(
-                x=match_index_attr, col_list=get_models.py.X.columns
+                x=match_index_attr, col_list=col_list
             )
 
         assert vpy_res == expected
@@ -1290,6 +1432,23 @@ class TestBaseModelMethods:
                     "citric_acid",
                 ]
                 features_importance_map["importance"] = [64.86, 17.58, 17.57]
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            features_importance_map["index"] = [
+                '""passengers""[t-1]',
+                '""passengers""[t-2]',
+                '""passengers""[t-3]',
+            ]
+            features_importance_map["importance"] = [
+                0.62945595267205,
+                0.27631678771967194,
+                0.09422725960827791,
+            ]
+            features_importance_map["sign"] = [1.0, -1.0, 1.0]
         else:
             features_importance_map["index"] = [
                 "alcohol",
@@ -1325,6 +1484,7 @@ class TestBaseModelMethods:
                 features_importance_map["sign"] = [-1, 0, 0]
 
         f_imp = get_vpy_model(model_class, X=_X).model.features_importance(show=False)
+        # print(f_imp[key_name])
 
         assert features_importance_map[key_name] == pytest.approx(
             f_imp[key_name], rel=1e-0
@@ -1342,6 +1502,13 @@ class TestBaseModelMethods:
                 "XGBClassifier",
             ]:
                 vpy_res = get_vpy_model(model_class, X=["age", "fare"])[0].plot()
+            if model_class in [
+                "AR",
+                "MA",
+                "ARMA",
+                "ARIMA",
+            ]:
+                vpy_res = get_vpy_model(model_class, X="date")[0].plot()
             else:
                 vpy_res = get_vpy_model(model_class, X=["residual_sugar", "alcohol"])[
                     0
@@ -1353,12 +1520,22 @@ class TestBaseModelMethods:
 
         assert isinstance(vpy_res, (plt.Axes, plotly.graph_objs.Figure, Highchart))
 
-    def test_to_memmodel(self, get_models):
+    def test_to_memmodel(self, get_models, model_class):
         """
         test function - to_mmmodel
         """
-        mmodel = get_models.vpy.model.to_memmodel()
-        mm_res = mmodel.predict(get_models.py.X)
-        py_res = get_models.vpy.model.to_python()(get_models.py.X)
+        if model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            pytest.skip(
+                f"to_memmodel function is not available for {model_class} model"
+            )
+        else:
+            mmodel = get_models.vpy.model.to_memmodel()
+            mm_res = mmodel.predict(get_models.py.X)
+            py_res = get_models.vpy.model.to_python()(get_models.py.X)
 
         assert mm_res == pytest.approx(py_res, rel=REL_TOLERANCE)
