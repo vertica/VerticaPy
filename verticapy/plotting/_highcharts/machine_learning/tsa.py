@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from datetime import date, datetime
 from typing import Literal, Optional
 
 import numpy as np
@@ -79,6 +80,14 @@ class TSPlot(LinePlot):
             "lineWidth": 0,
             "fillOpacity": 0.3,
         }
+        for x in self.data["x"]:
+            if isinstance(x, (date, datetime)):
+                self.init_style["xAxis"] = {
+                    **self.init_style["xAxis"],
+                    "type": "datetime",
+                    "dateTimeLabelFormats": {},
+                }
+                break
 
     # Draw.
 
@@ -93,6 +102,7 @@ class TSPlot(LinePlot):
         chart, style_kwargs = self._get_chart(chart, style_kwargs=style_kwargs)
         chart.set_dict_options(self.init_style)
         chart.set_dict_options(style_kwargs)
+        # True Values
         x = self._to_datetime(self.data["x"])
         data = np.column_stack((x, self.data["y"])).tolist()
         chart.add_data_set(
@@ -100,14 +110,26 @@ class TSPlot(LinePlot):
             "line",
             self.layout["columns"],
         )
+        # One step ahead forecast
+        if not (self.layout["is_forecast"]):
+            x = self._to_datetime(self.data["x_pred_one"])
+            data = np.column_stack((x, self.data["y_pred_one"])).tolist()
+            chart.add_data_set(
+                data,
+                "line",
+                "one-sted-ahead-forecast",
+            )
+        # Forecast
         x = self._to_datetime(self.data["x_pred"])
         data = np.column_stack((x, self.data["y_pred"])).tolist()
         chart.add_data_set(
             data,
             "line",
-            "prediction",
+            "forecast",
         )
+        # Std Error
         if self.layout["has_se"]:
+            x = self._to_datetime(self.data["se_x"])
             data_range = np.column_stack(
                 (x, self.data["se_low"], self.data["se_high"])
             ).tolist()

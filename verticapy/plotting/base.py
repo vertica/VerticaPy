@@ -1498,6 +1498,7 @@ class PlottingBase(PlottingBaseSQL):
         prediction: "vDataFrame",
         start: Optional[int],
         dataset_provided: bool,
+        method: str,
     ) -> None:
         columns, order_by = vdf.format_colnames(columns, order_by)
         X = vdf[[order_by, columns]].sort(columns=[order_by]).to_numpy()
@@ -1530,15 +1531,27 @@ class PlottingBase(PlottingBaseSQL):
         )
         self.data["y_pred"] = np.array([self.data["y"][j]] + list(self.data["y_pred"]))
         if has_se:
+            self.data["se_x"] = self.data["x_pred"]
             self.data["se_low"] = self.data["y_pred"] - 1.96 * self.data["se"]
             self.data["se_high"] = self.data["y_pred"] + 1.96 * self.data["se"]
         else:
+            self.data["se_x"] = None
             self.data["se_low"] = None
             self.data["se_high"] = None
+        if str(method).lower() != "forecast" and j > 0:
+            is_forecast = False
+            m = len(self.data["x"])
+            self.data["x_pred_one"] = self.data["x_pred"][: m - j + 1]
+            self.data["y_pred_one"] = self.data["y_pred"][: m - j + 1]
+            self.data["x_pred"] = self.data["x_pred"][m - j :]
+            self.data["y_pred"] = self.data["y_pred"][m - j :]
+        else:
+            is_forecast = True
         self.layout = {
             "columns": self._clean_quotes(columns),
             "order_by": self._clean_quotes(order_by),
             "has_se": has_se,
+            "is_forecast": is_forecast,
         }
 
     def _compute_range(
