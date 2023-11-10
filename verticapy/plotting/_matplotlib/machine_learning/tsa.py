@@ -104,7 +104,7 @@ class TSPlot(MatplotlibBase):
         kwargs = self._update_dict(
             self.init_style, {**color_kwargs, **style_kwargs}, color_idx=idx - 1
         )
-        #kwargs = {**kwargs, **{"linestyle": "dashed"}}
+        # kwargs = {**kwargs, **{"linestyle": "dashed"}}
         ax.plot(*args, **kwargs, label="forecast")
         # Labels
         min_x = min(min(self.data["x"]), min(self.data["x_pred"]))
