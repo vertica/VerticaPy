@@ -87,7 +87,7 @@ class vDFTyping(vDFRead):
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
-        
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -288,21 +288,21 @@ class vDFTyping(vDFRead):
             import verticapy.datasets as vpd
             data = vpd.load_titanic()
 
-        Let's check the categorical vcolumns considering maximum 
+        Let's check the categorical vcolumns considering maximum
         cardinality as 10.
 
         .. ipython:: python
 
             data.catcol(max_cardinality = 10)
 
-        Let's again check the categorical vcolumns considering 
+        Let's again check the categorical vcolumns considering
         maximum cardinality as 6.
 
         .. ipython:: python
 
             data.catcol(max_cardinality = 6)
 
-        Notice that parch and sibsp are not considered because 
+        Notice that parch and sibsp are not considered because
         their cardinalities are greater than 6.
 
         .. seealso::
@@ -683,7 +683,7 @@ class vDCTyping(vDCRead):
 
             data["fare"].dtype()
 
-        Now, let's see how we can change the data type from 
+        Now, let's see how we can change the data type from
         string to array. Let's create a small dataset.
 
         .. code-block:: python
@@ -943,7 +943,7 @@ class vDCTyping(vDCRead):
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
-        
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -1145,7 +1145,7 @@ class vDCTyping(vDCRead):
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
 
         .. note::
-        
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
