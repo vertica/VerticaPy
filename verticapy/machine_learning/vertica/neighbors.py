@@ -361,7 +361,7 @@ class KNeighborsClassifier(MulticlassClassifier):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
-        
+
     There are multiple classes for the "quality" column. Let us
     filter the data for classes between 5 and 7:
 
