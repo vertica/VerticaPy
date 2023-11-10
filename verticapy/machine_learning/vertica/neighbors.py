@@ -361,6 +361,21 @@ class KNeighborsClassifier(MulticlassClassifier):
         resources for honing your data analysis and machine learning
         skills within the VerticaPy environment.
 
+
+    There are multiple classes for the "quality" column. Let us
+    filter the data for classes between 5 and 7:
+
+    .. code-block:: python
+
+        data = data[data["quality"]>=5]
+        data = data[data["quality"]<=7]
+
+    We can the balance the dataset to ensure equal representation:
+
+    code-block:: python
+
+        data = data.balance(column="quality", x = 1)
+
     You can easily divide your dataset into training and testing subsets
     using the :py:mod:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
@@ -368,7 +383,6 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. code-block:: python
 
-        data = vpd.load_winequality()
         train, test = data.train_test_split(test_size = 0.2)
 
     .. warning::
@@ -386,6 +400,9 @@ class KNeighborsClassifier(MulticlassClassifier):
         import verticapy as vp
         import verticapy.datasets as vpd
         data = vpd.load_winequality()
+        data = data[data["quality"]>=5]
+        data = data[data["quality"]<=7]
+        data = data.balance(column="quality", x = 1)
         train, test = data.train_test_split(test_size = 0.2)
 
     Model Initialization

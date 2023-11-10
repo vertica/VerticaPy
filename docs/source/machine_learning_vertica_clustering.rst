@@ -31,12 +31,14 @@ K-Means
    KMeans.deploySQL
    KMeans.does_model_exists
    KMeans.drop
+   KMeans.export_models
    KMeans.fit
    KMeans.get_attributes
    KMeans.get_match_index
    KMeans.get_params
    KMeans.get_plotting_lib
    KMeans.get_vertica_attributes
+   KMeans.import_models
    KMeans.plot
    KMeans.plot_voronoi
    KMeans.predict
@@ -44,8 +46,10 @@ K-Means
    KMeans.set_params
    KMeans.summarize
    KMeans.to_memmodel
+   KMeans.to_pmml
    KMeans.to_python
    KMeans.to_sql
+   KMeans.to_tf
 
 **Attributes:**
 
@@ -94,6 +98,7 @@ Bisecting K-Means
    BisectingKMeans.deploySQL
    BisectingKMeans.does_model_exists
    BisectingKMeans.drop
+   BisectingKMeans.export_models
    BisectingKMeans.features_importance
    BisectingKMeans.fit
    BisectingKMeans.get_attributes
@@ -101,6 +106,7 @@ Bisecting K-Means
    BisectingKMeans.get_params
    BisectingKMeans.get_plotting_lib
    BisectingKMeans.get_vertica_attributes
+   BisectingKMeans.import_models
    BisectingKMeans.plot
    BisectingKMeans.plot_tree
    BisectingKMeans.plot_voronoi
@@ -109,8 +115,10 @@ Bisecting K-Means
    BisectingKMeans.set_params
    BisectingKMeans.summarize  
    BisectingKMeans.to_memmodel
+   BisectingKMeans.to_pmml
    BisectingKMeans.to_python
    BisectingKMeans.to_sql
+   BisectingKMeans.to_tf
 
 **Attributes:**
 
@@ -142,19 +150,23 @@ DBSCAN (Beta)
    DBSCAN.deploySQL
    DBSCAN.does_model_exists
    DBSCAN.drop
+   DBSCAN.export_models
    DBSCAN.fit
    DBSCAN.get_attributes
    DBSCAN.get_match_index
    DBSCAN.get_params
    DBSCAN.get_plotting_lib
    DBSCAN.get_vertica_attributes
+   DBSCAN.import_models
    DBSCAN.plot
    DBSCAN.predict
    DBSCAN.register
    DBSCAN.set_params
    DBSCAN.summarize
+   DBSCAN.to_pmml
    DBSCAN.to_python
    DBSCAN.to_sql
+   DBSCAN.to_tf
 
 _____________
 
@@ -182,6 +194,7 @@ Isolation Forest
    IsolationForest.deploySQL
    IsolationForest.does_model_exists
    IsolationForest.drop
+   IsolationForest.export_models
    IsolationForest.features_importance
    IsolationForest.fit
    IsolationForest.get_attributes
@@ -189,14 +202,17 @@ Isolation Forest
    IsolationForest.get_params
    IsolationForest.get_plotting_lib
    IsolationForest.get_vertica_attributes
+   IsolationForest.import_models
    IsolationForest.plot
    IsolationForest.predict
    IsolationForest.register
    IsolationForest.set_params
    IsolationForest.summarize
    IsolationForest.to_memmodel
+   IsolationForest.to_pmml
    IsolationForest.to_python
    IsolationForest.to_sql
+   IsolationForest.to_tf
 
 **Attributes:**
 

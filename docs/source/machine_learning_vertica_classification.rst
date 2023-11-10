@@ -38,6 +38,7 @@ Linear SVC
    LinearSVC.deploySQL
    LinearSVC.does_model_exists
    LinearSVC.drop
+   LinearSVC.export_models
    LinearSVC.features_importance
    LinearSVC.fit
    LinearSVC.get_attributes
@@ -45,6 +46,7 @@ Linear SVC
    LinearSVC.get_params
    LinearSVC.get_plotting_lib
    LinearSVC.get_vertica_attributes
+   LinearSVC.import_models
    LinearSVC.lift_chart
    LinearSVC.plot
    LinearSVC.prc_curve
@@ -56,8 +58,12 @@ Linear SVC
    LinearSVC.set_params
    LinearSVC.summarize
    LinearSVC.to_memmodel
+   LinearSVC.to_pmml
    LinearSVC.to_python
    LinearSVC.to_sql
+   LinearSVC.to_tf
+
+
 
 **Attributes:**
 
@@ -90,6 +96,7 @@ Logistic Regression
    LogisticRegression.deploySQL
    LogisticRegression.does_model_exists
    LogisticRegression.drop
+   LogisticRegression.export_models
    LogisticRegression.features_importance
    LogisticRegression.fit
    LogisticRegression.get_attributes
@@ -97,6 +104,7 @@ Logistic Regression
    LogisticRegression.get_params
    LogisticRegression.get_plotting_lib
    LogisticRegression.get_vertica_attributes
+   LogisticRegression.import_models
    LogisticRegression.lift_chart
    LogisticRegression.plot
    LogisticRegression.prc_curve
@@ -108,8 +116,12 @@ Logistic Regression
    LogisticRegression.set_params
    LogisticRegression.summarize
    LogisticRegression.to_memmodel
+   LogisticRegression.to_pmml
    LogisticRegression.to_python
    LogisticRegression.to_sql
+   LogisticRegression.to_tf
+
+
 
 **Attributes:**
 
@@ -148,6 +160,7 @@ Dummy Tree
    DummyTreeClassifier.deploySQL
    DummyTreeClassifier.does_model_exists
    DummyTreeClassifier.drop
+   DummyTreeClassifier.export_models
    DummyTreeClassifier.features_importance
    DummyTreeClassifier.fit
    DummyTreeClassifier.get_attributes
@@ -157,6 +170,7 @@ Dummy Tree
    DummyTreeClassifier.get_score
    DummyTreeClassifier.get_tree
    DummyTreeClassifier.get_vertica_attributes
+   DummyTreeClassifier.import_models
    DummyTreeClassifier.lift_chart
    DummyTreeClassifier.plot
    DummyTreeClassifier.plot_tree
@@ -170,8 +184,10 @@ Dummy Tree
    DummyTreeClassifier.summarize
    DummyTreeClassifier.to_graphviz
    DummyTreeClassifier.to_memmodel
+   DummyTreeClassifier.to_pmml
    DummyTreeClassifier.to_python
    DummyTreeClassifier.to_sql
+   DummyTreeClassifier.to_tf
 
 **Attributes:**
 
@@ -206,6 +222,7 @@ Decision Tree
    DecisionTreeClassifier.deploySQL
    DecisionTreeClassifier.does_model_exists
    DecisionTreeClassifier.drop
+   DecisionTreeClassifier.export_models
    DecisionTreeClassifier.features_importance
    DecisionTreeClassifier.fit
    DecisionTreeClassifier.get_attributes
@@ -215,6 +232,7 @@ Decision Tree
    DecisionTreeClassifier.get_score
    DecisionTreeClassifier.get_tree
    DecisionTreeClassifier.get_vertica_attributes
+   DecisionTreeClassifier.import_models
    DecisionTreeClassifier.lift_chart
    DecisionTreeClassifier.plot
    DecisionTreeClassifier.plot_tree
@@ -227,8 +245,10 @@ Decision Tree
    DecisionTreeClassifier.set_params
    DecisionTreeClassifier.summarize
    DecisionTreeClassifier.to_memmodel
+   DecisionTreeClassifier.to_pmml
    DecisionTreeClassifier.to_python
    DecisionTreeClassifier.to_sql
+   DecisionTreeClassifier.to_tf
 
 **Attributes:**
 
@@ -262,6 +282,7 @@ Random Forest Classifier
    RandomForestClassifier.deploySQL
    RandomForestClassifier.does_model_exists
    RandomForestClassifier.drop
+   RandomForestClassifier.export_models
    RandomForestClassifier.features_importance
    RandomForestClassifier.fit
    RandomForestClassifier.get_attributes
@@ -271,6 +292,7 @@ Random Forest Classifier
    RandomForestClassifier.get_score
    RandomForestClassifier.get_tree
    RandomForestClassifier.get_vertica_attributes
+   RandomForestClassifier.import_models
    RandomForestClassifier.lift_chart
    RandomForestClassifier.plot
    RandomForestClassifier.plot_tree
@@ -284,8 +306,10 @@ Random Forest Classifier
    RandomForestClassifier.summarize
    RandomForestClassifier.to_graphviz
    RandomForestClassifier.to_memmodel
+   RandomForestClassifier.to_pmml
    RandomForestClassifier.to_python
    RandomForestClassifier.to_sql
+   RandomForestClassifier.to_tf
 
 **Attributes:**
 
@@ -319,6 +343,7 @@ XGBoost Classifier
    XGBClassifier.deploySQL
    XGBClassifier.does_model_exists
    XGBClassifier.drop
+   XGBClassifier.export_models
    XGBClassifier.features_importance
    XGBClassifier.fit
    XGBClassifier.get_attributes
@@ -328,6 +353,7 @@ XGBoost Classifier
    XGBClassifier.get_score
    XGBClassifier.get_tree
    XGBClassifier.get_vertica_attributes
+   XGBClassifier.import_models
    XGBClassifier.lift_chart
    XGBClassifier.plot
    XGBClassifier.plot_tree
@@ -341,8 +367,10 @@ XGBoost Classifier
    XGBClassifier.summarize
    XGBClassifier.to_graphviz
    XGBClassifier.to_memmodel
+   XGBClassifier.to_pmml
    XGBClassifier.to_python
    XGBClassifier.to_sql
+   XGBClassifier.to_tf
 
 **Attributes:**
 
@@ -381,12 +409,14 @@ Naive Bayes
    NaiveBayes.deploySQL
    NaiveBayes.does_model_exists
    NaiveBayes.drop
+   NaiveBayes.export_models
    NaiveBayes.fit
    NaiveBayes.get_attributes
    NaiveBayes.get_match_index
    NaiveBayes.get_params
    NaiveBayes.get_plotting_lib
    NaiveBayes.get_vertica_attributes
+   NaiveBayes.import_models
    NaiveBayes.lift_chart
    NaiveBayes.prc_curve
    NaiveBayes.predict
@@ -396,8 +426,10 @@ Naive Bayes
    NaiveBayes.score
    NaiveBayes.set_params
    NaiveBayes.summarize
+   NaiveBayes.to_pmml
    NaiveBayes.to_python
    NaiveBayes.to_sql
+   NaiveBayes.to_tf
 
 **Attributes:**
 
@@ -435,12 +467,14 @@ K-Nearest Neighbors Classifier (Beta)
    KNeighborsClassifier.deploySQL
    KNeighborsClassifier.does_model_exists
    KNeighborsClassifier.drop
+   KNeighborsClassifier.export_models
    KNeighborsClassifier.fit
    KNeighborsClassifier.get_attributes
    KNeighborsClassifier.get_match_index
    KNeighborsClassifier.get_params
    KNeighborsClassifier.get_plotting_lib
    KNeighborsClassifier.get_vertica_attributes
+   KNeighborsClassifier.import_models
    KNeighborsClassifier.lift_chart
    KNeighborsClassifier.prc_curve
    KNeighborsClassifier.predict
@@ -450,8 +484,10 @@ K-Nearest Neighbors Classifier (Beta)
    KNeighborsClassifier.score
    KNeighborsClassifier.set_params
    KNeighborsClassifier.summarize
+   KNeighborsClassifier.to_pmml
    KNeighborsClassifier.to_python
    KNeighborsClassifier.to_sql
+   KNeighborsClassifier.to_tf
 
 
 **Attributes:**
@@ -487,12 +523,14 @@ Nearest Centroid (Beta)
    NearestCentroid.deploySQL
    NearestCentroid.does_model_exists
    NearestCentroid.drop
+   NearestCentroid.export_models
    NearestCentroid.fit
    NearestCentroid.get_attributes
    NearestCentroid.get_match_index
    NearestCentroid.get_params
    NearestCentroid.get_plotting_lib
    NearestCentroid.get_vertica_attributes
+   NearestCentroid.import_models
    NearestCentroid.lift_chart
    NearestCentroid.prc_curve
    NearestCentroid.predict
@@ -502,8 +540,10 @@ Nearest Centroid (Beta)
    NearestCentroid.score
    NearestCentroid.set_params
    NearestCentroid.summarize
+   NearestCentroid.to_pmml
    NearestCentroid.to_python
    NearestCentroid.to_sql
+   NearestCentroid.to_tf
 
 
 **Attributes:**

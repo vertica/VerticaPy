@@ -539,9 +539,9 @@ Machine Learning
 
     .. grid-item::
 
-        .. card:: Validation
-          :img-top: _static/gif_validation.gif
-          :link: chart_gallery.validation
+        .. card:: Time-series
+          :img-top: _static/pic_time_series.png
+          :link: chart_gallery.tsa
           :link-type: ref
           :text-align: center
           :class-card: custom-card-6
@@ -551,11 +551,10 @@ Machine Learning
           Available in: :bdg-success-line:`Plotly`  :bdg-primary-line:`Matplotlib`  :bdg-danger-line:`Highcharts`
           Using: :bdg-secondary:`Python` 
 
-          :bdg-dark-line:`Validation Curve`
+          :bdg-dark-line:`Prediction Plot`
 
           +++
           See Examples
-
 _____
 
 
