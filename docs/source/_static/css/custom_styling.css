@@ -143,7 +143,9 @@ h2{
   width: 200px;
 }
 
-
+.sidebar-search{
+  color: var(--color-announcement-text)
+}
 .element.style {
       width: 200px; /* Adjust the width as needed */
     }
