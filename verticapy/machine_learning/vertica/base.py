@@ -2363,7 +2363,12 @@ class MulticlassClassifier(Supervised):
             "logloss",
             "log_loss",
         ):
-            y_score = self._get_y_score(allSQL=True)
+            if self._model_type == "KNeighborsClassifier":
+                y_score = self._get_y_score(
+                    pos_label=pos_label, cutoff=cutoff, allSQL=True
+                )
+            else:
+                y_score = self._get_y_score(allSQL=True)
         else:
             y_score = self._get_y_score(pos_label=pos_label, cutoff=cutoff)
         final_relation = self._get_final_relation(pos_label=pos_label)
