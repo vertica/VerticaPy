@@ -87,7 +87,28 @@ class TSPlot(PlotlyBase):
                 name=self.layout["columns"],
             )
         )
-        # Predictions
+        # One step ahead forecast
+        idx = 1
+        if not (self.layout["is_forecast"]):
+            data_args = dict(
+                data=(
+                    np.column_stack((self.data["x_pred_one"], self.data["y_pred_one"]))
+                ),
+                columns=["time", self.layout["columns"]],
+            )
+            df = pd.DataFrame(**data_args)
+            fig_base.add_trace(
+                go.Scatter(
+                    x=df["time"],
+                    y=df[self.layout["columns"]],
+                    line_shape="spline",
+                    line_color=marker_colors[1],
+                    mode="lines+markers" if markers else "lines",
+                    name="one-sted-ahead-forecast",
+                )
+            )
+            idx = idx + 1
+        # Forecast
         data_args = dict(
             data=(np.column_stack((self.data["x_pred"], self.data["y_pred"]))),
             columns=["time", self.layout["columns"]],
@@ -98,21 +119,21 @@ class TSPlot(PlotlyBase):
                 x=df["time"],
                 y=df[self.layout["columns"]],
                 line_shape="spline",
-                line_color=marker_colors[1],
+                line_color=marker_colors[idx],
                 mode="lines+markers" if markers else "lines",
-                name="prediction",
+                name="forecast",
             )
         )
         # STD Error
         if self.layout["has_se"]:
             fig_base.add_trace(
                 go.Scatter(
-                    x=np.hstack((self.data["x_pred"], self.data["x_pred"][::-1])),
+                    x=np.hstack((self.data["se_x"], self.data["se_x"][::-1])),
                     y=np.hstack((self.data["se_low"], self.data["se_high"][::-1])),
                     fill="toself",
                     name="95% confidence interval",
                     mode="lines+markers" if not markers else "markers",
-                    marker=dict(color=marker_colors[2]),
+                    marker=dict(color=marker_colors[idx + 1]),
                     opacity=0.5,
                 )
             )

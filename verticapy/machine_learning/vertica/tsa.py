@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from abc import abstractmethod
 import copy
+import datetime
+from dateutil.relativedelta import relativedelta
 from typing import Literal, Optional, Union
 
 import numpy as np
@@ -403,6 +405,9 @@ class TimeSeriesModelBase(VerticaModel):
         output_standard_errors: bool = False,
         output_index: bool = False,
         output_estimated_ts: bool = False,
+        freq: Literal[None, "m", "months", "y", "year", "infer"] = "infer",
+        filter_step: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
     ) -> vDataFrame:
         """
         Predicts using the input relation.
@@ -464,6 +469,47 @@ class TimeSeriesModelBase(VerticaModel):
             Boolean, whether to return the estimated abscissa of
             each prediction. The real one is hard to obtain due to
             interval computations.
+        freq: str, optional
+            How to compute the delta.
+
+              - m/month:
+                We assume that the data is organized on a monthly
+                basis.
+              - y/year:
+                We assume that the data is organized on a yearly
+                basis.
+              - infer:
+                When making inferences, the system will attempt to
+                identify the best option, which may involve more
+                computational resources.
+              - None:
+                The inference is based on the average of the difference
+                between 'ts' and its lag.
+        filter_step: int, optional
+            Integer parameter that determines the frequency of
+            predictions. You can adjust it according to your
+            specific requirements, such as setting it to 3 for
+            predictions every third step.
+
+            .. note::
+
+                It is only utilized when "output_estimated_ts" is set to
+                True.
+        method: str, optional
+            Forecasting method. One of the following:
+
+             - auto:
+                the model initially utilizes the true values at each step
+                for forecasting. However, when it reaches a point where it
+                can no longer rely on true values, it transitions to using
+                its own predictions for further forecasting. This method is
+                often referred to as "one step ahead" forecasting.
+             - forecast:
+                the model initiates forecasting from an initial value
+                and entirely disregards any subsequent true values. This
+                approach involves forecasting based solely on the model's
+                own predictions and does not consider actual observations
+                after the start point.
 
         Returns
         -------
@@ -482,10 +528,23 @@ class TimeSeriesModelBase(VerticaModel):
             if isinstance(y, NoneType):
                 y = self.y
             ar_ma = True
+        if isinstance(start, (int, float)):
+            start_predict = int(start + 1)
+        elif not (isinstance(start, NoneType)):
+            start_predict = int(start)
+        else:
+            start_predict = None
+        where = ""
+        if isinstance(filter_step, NoneType):
+            filter_step = 1
+        elif filter_step < 1:
+            raise ValueError("Parameter 'filter_step' must be greater or equal to 1.")
+        else:
+            where = f" WHERE MOD(idx, {filter_step}) = 0"
         sql = "SELECT " + self.deploySQL(
             ts=ts,
             y=y,
-            start=start,
+            start=start_predict,
             npredictions=npredictions,
             output_standard_errors=(
                 output_standard_errors or output_index or output_estimated_ts
@@ -494,7 +553,10 @@ class TimeSeriesModelBase(VerticaModel):
         )
         no_relation = True
         if not (isinstance(vdf, NoneType)):
-            sql += f" FROM {vdf}"
+            relation = vdf
+            if not (isinstance(start, NoneType)) and str(method).lower() == "forecast":
+                relation = f"(SELECT * FROM {vdf} ORDER BY {ts} LIMIT {start}) VERTICAPY_SUBTABLE"
+            sql += f" FROM {relation}"
             no_relation = False
         if output_index or output_estimated_ts:
             j = self.n_
@@ -512,28 +574,64 @@ class TimeSeriesModelBase(VerticaModel):
             else:
                 output_standard_errors = ""
                 stde_out = ""
-            if ar_ma:
-                order_by = ""
-            else:
-                order_by = 'ORDER BY "std_err"'
             sql = f"""
                 SELECT 
-                    ROW_NUMBER() OVER ({order_by}) + {j} - 1 AS idx,
+                    ROW_NUMBER() OVER () + {j} - 1 AS idx,
                     prediction{output_standard_errors}
                 FROM ({sql}) VERTICAPY_SUBTABLE"""
         if output_estimated_ts:
+            if isinstance(freq, str):
+                freq = freq.lower()
+            if freq == "infer":
+                infer_sql = f"""
+                    SELECT 
+                        {self.ts} 
+                    FROM {self.input_relation} 
+                    WHERE {self.ts} IS NOT NULL
+                    ORDER BY 1 
+                    LIMIT 100"""
+                res = _executeSQL(
+                    infer_sql, title="Finding the right delta.", method="fetchall"
+                )
+                res = [l[0] for l in res]
+                n = len(res)
+                for i in range(1, n):
+                    if not (isinstance(res[i], datetime.date)):
+                        freq = None
+                        break
+                    dm = ((res[i] - res[i - 1]) / 28).days
+                    dy = ((res[i] - res[i - 1]) / 365).days
+                    if res[i - 1] + relativedelta(months=dm) == res[i] and freq != "y":
+                        freq = "m"
+                    elif res[i - 1] + relativedelta(years=dy) == res[i] and freq != "m":
+                        freq = "y"
+                    else:
+                        freq = None
+                        break
             min_value = f"(SELECT MIN({self.ts}) FROM {self.input_relation})"
+            if freq in ("m", "months", "y", "year"):
+                delta_ts = f"MONTHS_BETWEEN({self.ts}, LAG({self.ts}) OVER (ORDER BY {self.ts})) AS delta"
+            else:
+                delta_ts = (
+                    f"{self.ts} - LAG({self.ts}) OVER (ORDER BY {self.ts}) AS delta"
+                )
             delta = f"""
                 (SELECT 
-                    AVG(delta) 
+                    AVG(delta)
                  FROM (SELECT 
-                        {self.ts} - LAG({self.ts}) OVER (ORDER BY {self.ts}) AS delta 
+                        {delta_ts} 
                        FROM {self.input_relation}) VERTICAPY_SUBTABLE)"""
+            if freq in ("m", "months"):
+                estimation = f"TIMESTAMPADD(MONTH, (idx * {delta})::int, {min_value})::date AS {self.ts}"
+            elif freq in ("y", "year"):
+                estimation = f"TIMESTAMPADD(YEAR, (idx * {delta} / 12)::int, {min_value})::date AS {self.ts}"
+            else:
+                estimation = f"idx * {delta} + {min_value} AS {self.ts}"
             sql = f"""
                 SELECT
-                    idx * {delta} + {min_value} AS {self.ts},
+                    {estimation},
                     prediction{stde_out}
-                FROM ({sql}) VERTICAPY_SUBTABLE"""
+                FROM ({sql}) VERTICAPY_SUBTABLE{where}"""
         return vDataFrame(clean_query(sql))
 
     # Model Evaluation Methods.
@@ -542,6 +640,7 @@ class TimeSeriesModelBase(VerticaModel):
         self,
         start: Optional[int] = None,
         npredictions: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
     ):
         """
         Returns the relation needed to evaluate the
@@ -567,6 +666,7 @@ class TimeSeriesModelBase(VerticaModel):
             start=start,
             npredictions=npredictions,
             output_index=True,
+            method=method,
         )
         sql = f"""
             (SELECT
@@ -575,7 +675,7 @@ class TimeSeriesModelBase(VerticaModel):
             FROM 
                 (
                     SELECT
-                        ROW_NUMBER() OVER (ORDER BY {self.ts}) AS idx,
+                        ROW_NUMBER() OVER (ORDER BY {self.ts}) - 1 AS idx,
                         {self.y} AS y_true
                     FROM {test_relation}
                 ) AS true_values
@@ -592,6 +692,7 @@ class TimeSeriesModelBase(VerticaModel):
         ] = None,
         start: Optional[int] = None,
         npredictions: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
     ) -> Union[float, TableSample]:
         """
         Computes a regression report using multiple metrics to
@@ -655,6 +756,21 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+             - auto:
+                the model initially utilizes the true values at each step
+                for forecasting. However, when it reaches a point where it
+                can no longer rely on true values, it transitions to using
+                its own predictions for further forecasting. This method is
+                often referred to as "one step ahead" forecasting.
+             - forecast:
+                the model initiates forecasting from an initial value
+                and entirely disregards any subsequent true values. This
+                approach involves forecasting based solely on the model's
+                own predictions and does not consider actual observations
+                after the start point.
 
         Returns
         -------
@@ -664,7 +780,9 @@ class TimeSeriesModelBase(VerticaModel):
         return mt.regression_report(
             "y_true",
             "y_pred",
-            self._evaluation_relation(start=start, npredictions=npredictions),
+            self._evaluation_relation(
+                start=start, npredictions=npredictions, method=method
+            ),
             metrics=metrics,
             k=1,
         )
@@ -679,6 +797,7 @@ class TimeSeriesModelBase(VerticaModel):
         ] = "r2",
         start: Optional[int] = None,
         npredictions: Optional[int] = None,
+        method: Literal["auto", "forecast"] = "auto",
     ) -> float:
         """
         Computes the model score.
@@ -732,6 +851,21 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+             - auto:
+                the model initially utilizes the true values at each step
+                for forecasting. However, when it reaches a point where it
+                can no longer rely on true values, it transitions to using
+                its own predictions for further forecasting. This method is
+                often referred to as "one step ahead" forecasting.
+             - forecast:
+                the model initiates forecasting from an initial value
+                and entirely disregards any subsequent true values. This
+                approach involves forecasting based solely on the model's
+                own predictions and does not consider actual observations
+                after the start point.
 
         Returns
         -------
@@ -753,7 +887,11 @@ class TimeSeriesModelBase(VerticaModel):
         arg = [
             "y_true",
             "y_pred",
-            self._evaluation_relation(start=start, npredictions=npredictions),
+            self._evaluation_relation(
+                start=start,
+                npredictions=npredictions,
+                method=method,
+            ),
         ]
         if metric in ("aic", "bic") or adj:
             arg += [1]
@@ -770,6 +908,7 @@ class TimeSeriesModelBase(VerticaModel):
         y: Optional[str] = None,
         start: Optional[int] = None,
         npredictions: int = 10,
+        method: Literal["auto", "forecast"] = "auto",
         chart: Optional[PlottingObject] = None,
         **style_kwargs,
     ) -> PlottingObject:
@@ -824,6 +963,21 @@ class TimeSeriesModelBase(VerticaModel):
         npredictions: int, optional
             Integer greater or equal to 1, the number of predicted
             timesteps.
+        method: str, optional
+            Forecasting method. One of the following:
+
+             - auto:
+                the model initially utilizes the true values at each step
+                for forecasting. However, when it reaches a point where it
+                can no longer rely on true values, it transitions to using
+                its own predictions for further forecasting. This method is
+                often referred to as "one step ahead" forecasting.
+             - forecast:
+                the model initiates forecasting from an initial value
+                and entirely disregards any subsequent true values. This
+                approach involves forecasting based solely on the model's
+                own predictions and does not consider actual observations
+                after the start point.
         chart: PlottingObject, optional
             The chart object to plot on.
         **style_kwargs
@@ -854,9 +1008,11 @@ class TimeSeriesModelBase(VerticaModel):
                 start=start,
                 npredictions=npredictions,
                 output_standard_errors=True,
+                method=method,
             ),
             start=start,
             dataset_provided=dataset_provided,
+            method=method,
         ).draw(**kwargs)
 
 

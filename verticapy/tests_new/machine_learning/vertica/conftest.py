@@ -16,14 +16,7 @@ permissions and limitations under the License.
 """
 from collections import namedtuple
 import math
-import verticapy.machine_learning.vertica as vpy_linear_model
-import verticapy.machine_learning.vertica.svm as vpy_svm
-import verticapy.machine_learning.vertica.tree as vpy_tree
-import verticapy.machine_learning.vertica.ensemble as vpy_ensemble
-from verticapy.connection import current_cursor
-from verticapy.tests_new.machine_learning.metrics.test_classification_metrics import (
-    python_metrics,
-)
+import pytest
 import numpy as np
 import sklearn.metrics as skl_metrics
 import sklearn.linear_model as skl_linear_model
@@ -31,16 +24,28 @@ import sklearn.svm as skl_svm
 import sklearn.ensemble as skl_ensemble
 import sklearn.tree as skl_tree
 import sklearn.dummy as skl_dummy
-import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
-import pytest
+import xgboost as xgb
+from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.arima.model import ARIMA
 from scipy.stats import f
+import verticapy.machine_learning.vertica as vpy_linear_model
+import verticapy.machine_learning.vertica.svm as vpy_svm
+import verticapy.machine_learning.vertica.tree as vpy_tree
+import verticapy.machine_learning.vertica.tsa as vpy_tsa
+import verticapy.machine_learning.vertica.ensemble as vpy_ensemble
+from verticapy.connection import current_cursor
+from verticapy.tests_new.machine_learning.metrics.test_classification_metrics import (
+    python_metrics,
+)
 
 le = LabelEncoder()
 
 
 @pytest.fixture(name="get_vpy_model", scope="function")
-def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
+def get_vpy_model_fixture(
+    winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, schema_loader
+):
     """
     getter function for vertica tree model
     """
@@ -246,6 +251,70 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
                 if kwargs.get("fit_intercept")
                 else True,
             )
+        elif model_class == "AR":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                p=kwargs.get("p") if kwargs.get("p") else 3,
+                method=kwargs.get("method") if kwargs.get("method") else "ols",
+                penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
+                C=kwargs.get("c") if kwargs.get("c") else 1.0,
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+                # compute_mse=kwargs.get("compute_mse")
+                # if kwargs.get("compute_mse")
+                # else True,
+            )
+        elif model_class == "MA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                q=kwargs.get("q") if kwargs.get("q") else 1,
+                penalty=kwargs.get("penalty") if kwargs.get("penalty") else "none",
+                C=kwargs.get("c") if kwargs.get("c") else 1.0,
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+            )
+        elif model_class == "ARMA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                order=kwargs.get("order") if kwargs.get("order") else (2, 1),
+                tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+                max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+                init=kwargs.get("init") if kwargs.get("init") else "zero",
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+                # compute_mse=kwargs.get("compute_mse")
+                # if kwargs.get("compute_mse")
+                # else True,
+            )
+        elif model_class == "ARIMA":
+            model = getattr(vpy_tsa, model_class)(
+                f"{schema_name}.{model_name}",
+                overwrite_model=kwargs.get("overwrite_model")
+                if kwargs.get("overwrite_model")
+                else False,
+                order=kwargs.get("order") if kwargs.get("order") else (2, 1, 1),
+                tol=kwargs.get("tol") if kwargs.get("tol") else 1e-06,
+                max_iter=kwargs.get("max_iter") if kwargs.get("max_iter") else 100,
+                init=kwargs.get("init") if kwargs.get("init") else "zero",
+                missing=kwargs.get("missing")
+                if kwargs.get("missing")
+                else "linear_interpolation",
+                # compute_mse=kwargs.get("compute_mse")
+                # if kwargs.get("compute_mse")
+                # else True,
+            )
         else:
             model = getattr(vpy_linear_model, model_class)(
                 f"{schema_name}.{model_name}",
@@ -361,6 +430,43 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
             current_cursor().execute(
                 f"DROP SEQUENCE IF EXISTS {schema_name}.sequence_auto_increment"
             )
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            row_cnt = airline_vd_fun.describe()["count"][0]
+            if model_class == "AR":
+                p_val = kwargs.get("p", 3)
+            elif model_class == "MA":
+                p_val = kwargs.get("q", 1)
+            elif model_class == "ARMA":
+                p_val = kwargs.get("order", (2, 1))[0]
+            elif model_class == "ARIMA":
+                p_val = kwargs.get("order", (2, 1, 1))[0]
+            else:
+                p_val = 3
+
+            if X is None:
+                X = "date"
+            if y is None:
+                y = "passengers"
+
+            model.fit(
+                f"{schema_name}.airline",
+                X,
+                f"{y}",
+            )
+            pred_vdf = model.predict(
+                airline_vd_fun,
+                X,
+                y,
+                start=p_val,
+                npredictions=kwargs.get("npredictions", row_cnt),
+                output_estimated_ts=True,
+            )
+            pred_prob_vdf = None
         else:
             if X is None:
                 X = ["citric_acid", "residual_sugar", "alcohol"]
@@ -386,7 +492,7 @@ def get_vpy_model_fixture(winequality_vpy_fun, titanic_vd_fun, schema_loader):
 
 
 @pytest.fixture(name="get_py_model", scope="function")
-def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
+def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
     """
     getter function for python model
     """
@@ -417,6 +523,17 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
 
             X = titanic_pdf[["age", "fare", "sex"]]
             y = titanic_pdf["survived"]
+        elif model_class in [
+            "AR",
+            "MA",
+            "ARMA",
+            "ARIMA",
+        ]:
+            airline_pdf = airline_vd_fun.to_pandas()
+            airline_pdf_ts = airline_pdf.set_index("date")
+
+            X = airline_pdf[["date"]]
+            y = airline_pdf["passengers"]
         else:
             winequality_pdf = winequality_vpy_fun.to_pandas()
             winequality_pdf["citric_acid"] = winequality_pdf["citric_acid"].astype(
@@ -501,16 +618,56 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun):
                 fit_intercept=py_fit_intercept if py_fit_intercept else True,
                 tol=py_tol if py_tol else 1e-06,
             )
+        elif model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            if model_class == "AR":
+                order = (3, 0, 0)
+                # model = AutoReg(
+                #     airline_pdf_ts, lags=kwargs.get("p") if kwargs.get("p") else 3
+                # ).fit()
+            elif model_class == "MA":
+                order = (0, 0, 1)
+            elif model_class == "ARMA":
+                order = (2, 0, 1)
+            elif model_class == "ARIMA":
+                order = (2, 1, 1)
+            else:
+                order = (3, 0, 0)
+
+            model = ARIMA(
+                airline_pdf_ts,
+                order=kwargs.get("order") if kwargs.get("order") else order,
+            ).fit()
+            print(model.summary())
         else:
             model = getattr(skl_linear_model, model_class)(
                 fit_intercept=py_fit_intercept if py_fit_intercept else True
             )
 
-        print(f"Python Training Parameters: {model.get_params()}")
-        model.fit(X, y)
+        if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            if model_class == "AR":
+                p_val = kwargs.get("p", 3)
+            elif model_class == "MA":
+                p_val = kwargs.get("order", (0, 0, 1))[2]
+            elif model_class == "ARMA":
+                p_val = kwargs.get("order", (2, 0, 1))[0]
+            elif model_class == "ARIMA":
+                p_val = kwargs.get("order", (2, 1, 1))[0]
+            else:
+                p_val = 3
 
-        # num_params = len(skl_model.coef_) + 1
-        pred = model.predict(X)
+            npred = (
+                kwargs.get("npredictions") + p_val
+                if kwargs.get("npredictions")
+                else None
+            )
+            pred = model.predict(start=p_val, end=npred, dynamic=False).values
+            y = y[p_val : npred + 1 if npred else npred].values
+        else:
+            print(f"Python Training Parameters: {model.get_params()}")
+            model.fit(X, y)
+
+            # num_params = len(skl_model.coef_) + 1
+            pred = model.predict(X)
 
         if model_class in [
             "RandomForestClassifier",
@@ -566,6 +723,9 @@ def calculate_regression_metrics(get_py_model):
                 )
             else:
                 num_params = len(model.get_params()) + 1
+        elif model_class in ["AR", "MA", "ARMA", "ARIMA"]:
+            _, y, _, pred, _, model = get_py_model(model_class)
+            num_params = len(list(model.params))
         else:
             _, y, _, pred, _, model = get_py_model(
                 model_class, py_fit_intercept=fit_intercept
@@ -576,7 +736,11 @@ def calculate_regression_metrics(get_py_model):
         no_of_records = len(y)
         avg = sum(y) / no_of_records
         num_features = (
-            3 if model_class in ["DummyTreeRegressor"] else len(model.feature_names_in_)
+            3
+            if model_class in ["DummyTreeRegressor"]
+            else 1
+            if model_class in ["AR", "MA", "ARMA", "ARIMA"]
+            else (len(model.feature_names_in_))
         )
         # y_bar = y.mean()
         # ss_tot = ((y - y_bar) ** 2).sum()
