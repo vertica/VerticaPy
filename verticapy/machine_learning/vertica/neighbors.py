@@ -367,7 +367,6 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     .. code-block:: python
 
-        data = vpd.load_winequality()
         data = data[data["quality"]>=5]
         data = data[data["quality"]<=7]
 
