@@ -14,6 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+from collections import namedtuple
 import pytest
 import sklearn.metrics as skl_metrics
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
@@ -39,6 +40,9 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
         # "LinearSVR",
         "PoissonRegressor",
         "AR",
+        # "MA",
+        "ARMA",
+        # "ARIMA",
     ],
 )
 class TestLinearModel:
@@ -49,7 +53,7 @@ class TestLinearModel:
     @pytest.mark.parametrize(
         "fit_attr, ts_fit_attr, py_ts_fit_attr",
         [
-            ("coef_", "phi_", "params"),
+            ("coef_", "phi_", "arparams"),
             ("intercept_", "intercept_", "params"),
             ("score", "mse_", "mse"),
         ],
@@ -62,6 +66,7 @@ class TestLinearModel:
         fit_attr,
         ts_fit_attr,
         py_ts_fit_attr,
+        model_params,
     ):
         """
         test function - fit
@@ -72,14 +77,39 @@ class TestLinearModel:
         )
 
         if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-            vpy_res = getattr(vpy_model_obj.model, ts_fit_attr)
+            _model_class_tuple = (
+                None
+                if model_class in ["DummyTreeRegressor", "DummyTreeClassifier"]
+                else namedtuple(model_class, model_params[0])(*model_params[1][0])
+            )
             if ts_fit_attr == "phi_":
-                py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[1:]
+                vpy_res = getattr(vpy_model_obj.model, ts_fit_attr)
+                py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))
             elif ts_fit_attr == "intercept_":
-                py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[0]
+                if model_class in ["AR"]:
+                    pytest.skip(
+                        f"statsmodels ARIMA has high intercept value then independent AutoReg{model_class} function"
+                    )
+                elif model_class in ["ARMA", "ARIMA"]:
+                    pytest.skip(
+                        f"Vertica {model_class} model does not have {ts_fit_attr} attributes"
+                    )
+                else:
+                    vpy_res = getattr(vpy_model_obj.model, ts_fit_attr)
+                    py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[0]
             else:
-                py_model_obj = get_py_model(model_class, npredictions=None)
+                # mse in summary table does not match with manual calculation for ARIMA.
+                # so, using manual calculation to match with python
+                vpy_model_obj = get_vpy_model(model_class)
+                vpy_res = vpy_model_obj.model.score(
+                    start=_model_class_tuple.order[2]
+                    if model_class == "MA"
+                    else _model_class_tuple.order[0],
+                    npredictions=len(vpy_model_obj.pred_vdf),
+                    metric="mse",
+                )
 
+                py_model_obj = get_py_model(model_class, npredictions=None)
                 py_res = getattr(skl_metrics, "mean_squared_error")(
                     py_model_obj.y, py_model_obj.pred
                 )
