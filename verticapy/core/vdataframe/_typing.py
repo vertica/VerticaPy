@@ -81,12 +81,13 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
+        
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -99,18 +100,18 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         Let's check the data types of various vcolumns.
 
         .. code-block:: python
 
-            titanic.dtypes()
+            data.dtypes()
 
         .. ipython:: python
             :suppress:
 
-            res = titanic.dtypes()
+            res = data.dtypes()
             html_file = open("figures/core_vDataFrame_typing_astype1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -122,19 +123,19 @@ class vDFTyping(vDFRead):
 
         .. code-block:: python
 
-            titanic.astype({"fare": "int", "cabin": "varchar(1)"})
+            data.astype({"fare": "int", "cabin": "varchar(1)"})
 
         Let's check the data type of various vcolumns again.
 
         .. code-block:: python
 
-            titanic.dtypes()
+            data.dtypes()
 
         .. ipython:: python
             :suppress:
 
-            titanic.astype({"fare": "int", "cabin": "varchar(1)"})
-            res = titanic.dtypes()
+            data.astype({"fare": "int", "cabin": "varchar(1)"})
+            res = data.dtypes()
             html_file = open("figures/core_vDataFrame_typing_astype2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -180,22 +181,22 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             data
 
         .. ipython:: python
             :suppress:
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             res = data
             html_file = open("figures/core_vDataFrame_typing_booltoint1.html", "w")
             html_file.write(res._repr_html_())
@@ -266,12 +267,13 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -284,21 +286,24 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
-        Let's check the categorical vcolumns considering maximum cardinality as 10.
-
-        .. ipython:: python
-
-            titanic.catcol(max_cardinality = 10)
-
-        Let's again check the categorical vcolumns considering maximum cardinality as 6.
+        Let's check the categorical vcolumns considering maximum 
+        cardinality as 10.
 
         .. ipython:: python
 
-            titanic.catcol(max_cardinality = 6)
+            data.catcol(max_cardinality = 10)
 
-        Notice that parch and sibsp are not considered because their cardinalities are greater than 6
+        Let's again check the categorical vcolumns considering 
+        maximum cardinality as 6.
+
+        .. ipython:: python
+
+            data.catcol(max_cardinality = 6)
+
+        Notice that parch and sibsp are not considered because 
+        their cardinalities are greater than 6.
 
         .. seealso::
 
@@ -347,31 +352,41 @@ class vDFTyping(vDFRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset:
 
         .. code-block:: python
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "dob": ['1993-01-01', '1988-01-01', '1992-01-01', '1989-01-01'],
-                                "doj": ['2022-01-01', '2023-01-01', '2022-01-01', '2023-01-01'],
-                                "emp_cat":[933, 945, 723, 799]
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "dob": ['1993-01-01', '1988-01-01', '1992-01-01', '1989-01-01'],
+                    "doj": ['2022-01-01', '2023-01-01', '2022-01-01', '2023-01-01'],
+                    "emp_cat":[933, 945, 723, 799],
+                }
+            )
             data
 
         .. ipython:: python
             :suppress:
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "dob": ['1993-01-01', '1988-01-01', '1992-01-01', '1989-01-01'],
-                                "doj": ['2022-01-01', '2023-01-01', '2022-01-01', '2023-01-01'],
-                                "emp_cat":[933, 945, 723, 799]
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "dob": ['1993-01-01', '1988-01-01', '1992-01-01', '1989-01-01'],
+                    "doj": ['2022-01-01', '2023-01-01', '2022-01-01', '2023-01-01'],
+                    "emp_cat":[933, 945, 723, 799],
+                }
+            )
             res = data
             html_file = open("figures/core_vDataFrame_typing_datecol.html", "w")
             html_file.write(res._repr_html_())
@@ -446,12 +461,13 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -464,18 +480,18 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         Let's check the data type of various vcolumns.
 
         .. code-block:: python
 
-            titanic.dtypes()
+            data.dtypes()
 
         .. ipython:: python
             :suppress:
 
-            res = titanic.dtypes()
+            res = data.dtypes()
             html_file = open("figures/core_vDataFrame_typing_dtypes.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -514,31 +530,41 @@ class vDFTyping(vDFRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset:
 
         .. code-block:: python
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "weight": [140.5, 175, 156.5, 178],
-                                "height": [168.5, 175, 178.5, 170],
-                                "emp_cat":[933, 945, 723, 799]
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "weight": [140.5, 175, 156.5, 178],
+                    "height": [168.5, 175, 178.5, 170],
+                    "emp_cat":[933, 945, 723, 799],
+                }
+            )
             data
 
         .. ipython:: python
             :suppress:
 
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1', '2', '3', '4'],
-                                "weight": [140.5, 175, 156.5, 178],
-                                "height": [168.5, 175, 178.5, 170],
-                                "emp_cat":[933, 945, 723, 799]
-                            }
-                        )
+                {
+                    "empid": ['1', '2', '3', '4'],
+                    "weight": [140.5, 175, 156.5, 178],
+                    "height": [168.5, 175, 178.5, 170],
+                    "emp_cat":[933, 945, 723, 799],
+                }
+            )
             res = data
             html_file = open("figures/core_vDataFrame_typing_numcol.html", "w")
             html_file.write(res._repr_html_())
@@ -613,12 +639,13 @@ class vDCTyping(vDCRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         .. note::
+
             VerticaPy offers a wide range of sample datasets that are
             ideal for training and testing purposes. You can explore
             the full list of available datasets in the :ref:`api.datasets`,
@@ -631,46 +658,52 @@ class vDCTyping(vDCRead):
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         Let's check the data type of fare vcolumn.
 
         .. ipython:: python
 
-            titanic["fare"].dtype()
+            data["fare"].dtype()
 
         Let's change the data type of fare to integer.
 
         .. code-block:: python
 
-            titanic["fare"].astype(int)
+            data["fare"].astype(int)
 
         .. ipython:: python
             :suppress:
 
-            titanic["fare"].astype(int)
+            data["fare"].astype(int)
 
         Let's check the data type of fare vcolumn again.
 
         .. ipython:: python
 
-            titanic["fare"].dtype()
+            data["fare"].dtype()
 
-        Now, let's see how we can change the data type from string to array.
-        Let's create a small dataset.
+        Now, let's see how we can change the data type from 
+        string to array. Let's create a small dataset.
 
         .. code-block:: python
 
-            from verticapy.utilities import TableSample
-            dataset = TableSample({"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}).to_vdf()
-            dataset["artists"].astype("array")
+            data = vp.vDataFrame(
+                {
+                    "artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]
+                }
+            )
+            data["artists"].astype("array")
 
         .. ipython:: python
             :suppress:
 
-            from verticapy.utilities import TableSample
-            dataset = TableSample({"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}).to_vdf()
-            res = dataset["artists"].astype("array")
+            data = vp.vDataFrame(
+                {
+                    "artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]
+                }
+            )
+            res = data["artists"].astype("array")
             html_file = open("figures/core_vDataFrame_typing_astypecol1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -682,12 +715,12 @@ class vDCTyping(vDCRead):
 
         .. code-block:: python
 
-            dataset["artists"].astype("json")
+            data["artists"].astype("json")
 
         .. ipython:: python
             :suppress:
 
-            res = dataset["artists"].astype("json")
+            res = data["artists"].astype("json")
             html_file = open("figures/core_vDataFrame_typing_astypecol2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -821,31 +854,52 @@ class vDCTyping(vDCRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         For this example, we will use the Titanic dataset.
 
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         Let's check the category of "fare" and "name" vcolumns.
 
         .. ipython:: python
 
-            titanic["fare"].category()
+            data["fare"].category()
 
         .. ipython:: python
 
-            titanic["name"].category()
+            data["name"].category()
         """
         return self._transf[-1][2]
 
@@ -867,31 +921,52 @@ class vDCTyping(vDCRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         For this example, we will use the Titanic dataset.
 
         .. code-block:: python
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+
+            data = vpd.load_titanic()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+        
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
 
             import verticapy.datasets as vpd
-            titanic = vpd.load_titanic()
+            data = vpd.load_titanic()
 
         Let's check the DB type of "fare" and "name" vcolumns.
 
         .. ipython:: python
 
-            titanic["fare"].ctype()
+            data["fare"].ctype()
 
         .. ipython:: python
 
-            titanic["name"].ctype()
+            data["name"].ctype()
         """
         return self._transf[-1][1].lower()
 
@@ -910,20 +985,38 @@ class vDCTyping(vDCRead):
         Examples
         ---------
 
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset.
 
         .. code-block:: python
 
-            from verticapy.utilities import TableSample
-            dataset = TableSample({"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}).to_vdf()
-            dataset["artists"].astype("array")
+            data = vp.vDataFrame(
+                {"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}
+            )
+            data["artists"].astype("array")
 
         .. ipython:: python
             :suppress:
 
-            from verticapy.utilities import TableSample
-            dataset = TableSample({"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}).to_vdf()
-            res = dataset["artists"].astype("array")
+            data = vp.vDataFrame(
+                {"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}
+            )
+            res = data["artists"].astype("array")
             html_file = open("figures/core_vDataFrame_typing_isarray.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -935,7 +1028,7 @@ class vDCTyping(vDCRead):
 
         .. ipython:: python
 
-            dataset["artists"].isarray()
+            data["artists"].isarray()
         """
         return self.ctype()[0:5].lower() == "array"
 
@@ -958,27 +1051,37 @@ class vDCTyping(vDCRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset:
 
         .. code-block:: python
 
             data = vp.vDataFrame(
-                            {
-                                "empid": [1, 2, 3, 4],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": [1, 2, 3, 4],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             data
 
         .. ipython:: python
             :suppress:
 
             data = vp.vDataFrame(
-                            {
-                                "empid": [1, 2, 3, 4],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": [1, 2, 3, 4],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             res = data
             html_file = open("figures/core_vDataFrame_typing_isbool.html", "w")
             html_file.write(res._repr_html_())
@@ -1020,15 +1123,36 @@ class vDCTyping(vDCRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         For this example, we will use the Amazon dataset.
 
         .. code-block:: python
 
             import verticapy.datasets as vpd
+
             amazon = vpd.load_amazon()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html
+
+        .. note::
+        
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1069,27 +1193,37 @@ class vDCTyping(vDCRead):
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset:
 
         .. code-block:: python
 
             data = vp.vDataFrame(
-                            {
-                                "empid": [1, 2, 3, 4],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": [1, 2, 3, 4],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             data
 
         .. ipython:: python
             :suppress:
 
             data = vp.vDataFrame(
-                            {
-                                "empid": [1, 2, 3, 4],
-                                "is_temp": [True, False, False, True],
-                            }
-                        )
+                {
+                    "empid": [1, 2, 3, 4],
+                    "is_temp": [True, False, False, True],
+                }
+            )
             res = data
             html_file = open("figures/core_vDataFrame_typing_isbool.html", "w")
             html_file.write(res._repr_html_())
@@ -1120,17 +1254,32 @@ class vDCTyping(vDCRead):
         Examples
         ---------
 
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let's create a small dataset.
 
         .. code-block:: python
 
-            import verticapy as vp
             data = vp.vDataFrame(
-                            {
-                                "empid": ['1'],
-                                "mgr": ['{"0.country.id": "214", "0.country.name": "Spain", "0.name": "Luis Enrique Martínez García"}'],
-                            }
-                        )
+                {
+                    "empid": ['1'],
+                    "mgr": ['{"0.country.id": "214", "0.country.name": "Spain", "0.name": "Luis Enrique Martínez García"}'],
+                }
+            )
             data["mgr"].astype("vmap")
 
         .. ipython:: python
