@@ -1257,6 +1257,44 @@ class ARIMA(TimeSeriesModelBase):
         auto-regressive component. However, its accuracy may be a topic of
         discussion if the time series contains other components as well.
 
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    _____
+
+    One important thing in time-series forecasting is that it has two
+    types of forecasting:
+
+    - One-step ahead forecasting
+    - Full forecasting
+
+    .. important::
+
+        The default method is one-step ahead forecasting.
+        To use full forecasting, use ``method = "forecast" ``.
+
+    One-step ahead
+    ---------------
+
+    In this type of forecasting, the algorithm utilizes the
+    true value of the previous timestamp (t-1) to predict the
+    immediate next timestamp (t). Subsequently, to forecast
+    additional steps into the future (t+1), it relies on the
+    actual value of the immediately preceding timestamp (t).
+
+    A notable drawback of this forecasting method is its
+    tendency to exhibit exaggerated accuracy, particularly
+    when predicting more than one step into the future.
+
     Metrics
     ^^^^^^^^
 
@@ -1297,6 +1335,16 @@ class ARIMA(TimeSeriesModelBase):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_report_pred_2.html
+
+    .. note::
+
+        No matter what value you give for npredictons, in the
+        report, the comparison will only be until the extent
+        of the availability of true value. For exaxmple, even if
+        we give ``n_predictions = 300``, the report result will
+        be the same as ``n_predictions = 104 `` starting from 40.
+        This is because there are only 104 values beyond 40 in the
+        dataset.
 
     .. important::
 
@@ -1452,17 +1500,132 @@ class ARIMA(TimeSeriesModelBase):
 
     Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
-    Model Register
-    ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+
+    Full forecasting
+    -----------------
+
+    In this forecasting approach, the algorithm relies solely
+    on a chosen true value for initiation. Subsequently, all
+    predictions are established based on a series of previously
+    predicted values.
+
+    This methodology aligns the accuracy of predictions more
+    closely with reality. In practical forecasting scenarios,
+    the goal is to predict all future steps, and this technique
+    ensures a progressive sequence of predictions.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the report using:
 
     .. code-block:: python
 
-        model.register("model_v1")
+        model.report(start = 40, method = "forecast")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    By selecting ``start = 40``, we will measure the accuracy from
+    40th time-stamp and continue the assessment until the last
+    available time-stamp.
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, method = "forecast")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_report.html
+
+    Notice that the accuracy using ``method = forecast`` is poorer
+    than the one-step ahead forecasting.
+
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30, method = "forecast")
+
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict(start = 100, npredictions = 40, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(start = 100, npredictions = 40, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_arima_f_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_prediction.html
+
+    If you want to forecast starting from a specific value within
+    the input dataset or another dataset, you can use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "date",
+            "passengers",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+            method = "forecast"
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_arima_f_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_prediction_3.html
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast", width = 650)
+        fig.write_html("figures/machine_learning_vertica_tsa_arima_f_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_plot_1.html
+
     """
 
     # Properties.
@@ -1697,7 +1860,7 @@ class ARMA(TimeSeriesModelBase):
     .. ipython:: python
         :okwarning:
 
-        model = ARMA(order = (12, 2))
+        model = ARMA(order = (12, 1, 2))
 
     .. hint::
 
@@ -1758,6 +1921,45 @@ class ARMA(TimeSeriesModelBase):
         tends to be precise when your time series primarily consists of an
         auto-regressive component. However, its accuracy may be a topic of
         discussion if the time series contains other components as well.
+
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    _____
+
+    One important thing in time-series forecasting is that it has two
+    types of forecasting:
+
+    - One-step ahead forecasting
+    - Full forecasting
+
+    .. important::
+
+        The default method is one-step ahead forecasting.
+        To use full forecasting, use ``method = "forecast" ``.
+
+    One-step ahead
+    ---------------
+
+    In this type of forecasting, the algorithm utilizes the
+    true value of the previous timestamp (t-1) to predict the
+    immediate next timestamp (t). Subsequently, to forecast
+    additional steps into the future (t+1), it relies on the
+    actual value of the immediately preceding timestamp (t).
+
+    A notable drawback of this forecasting method is its
+    tendency to exhibit exaggerated accuracy, particularly
+    when predicting more than one step into the future.
 
     Metrics
     ^^^^^^^^
@@ -1954,17 +2156,131 @@ class ARMA(TimeSeriesModelBase):
 
     Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
-    Model Register
-    ^^^^^^^^^^^^^^
 
-    In order to register the model for tracking and versioning:
+    Full forecasting
+    -----------------
+
+    In this forecasting approach, the algorithm relies solely
+    on a chosen true value for initiation. Subsequently, all
+    predictions are established based on a series of previously
+    predicted values.
+
+    This methodology aligns the accuracy of predictions more
+    closely with reality. In practical forecasting scenarios,
+    the goal is to predict all future steps, and this technique
+    ensures a progressive sequence of predictions.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the report using:
 
     .. code-block:: python
 
-        model.register("model_v1")
+        model.report(start = 40, method = "forecast")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    By selecting ``start = 40``, we will measure the accuracy from
+    40th time-stamp and continue the assessment until the last
+    available time-stamp.
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 40, method = "forecast")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_report.html
+
+    Notice that the accuracy using ``method = forecast`` is poorer
+    than the one-step ahead forecasting.
+
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 40, npredictions = 30, method = "forecast")
+
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict(start = 100, npredictions = 40, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(start = 100, npredictions = 40, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_arma_f_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_prediction.html
+
+    If you want to forecast starting from a specific value within
+    the input dataset or another dataset, you can use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "date",
+            "passengers",
+            start = 40,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+            method = "forecast"
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_arma_f_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_prediction_3.html
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast", width = 650)
+        fig.write_html("figures/machine_learning_vertica_tsa_arma_f_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_plot_1.html
+
     """
 
     # Properties.
@@ -2256,6 +2572,44 @@ class AR(TimeSeriesModelBase):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_features.html
 
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    _____
+
+    One important thing in time-series forecasting is that it has two
+    types of forecasting:
+
+    - One-step ahead forecasting
+    - Full forecasting
+
+    .. important::
+
+        The default method is one-step ahead forecasting.
+        To use full forecasting, use ``method = "forecast" ``.
+
+    One-step ahead
+    ---------------
+
+    In this type of forecasting, the algorithm utilizes the
+    true value of the previous timestamp (t-1) to predict the
+    immediate next timestamp (t). Subsequently, to forecast
+    additional steps into the future (t+1), it relies on the
+    actual value of the immediately preceding timestamp (t).
+
+    A notable drawback of this forecasting method is its
+    tendency to exhibit exaggerated accuracy, particularly
+    when predicting more than one step into the future.
+
     Metrics
     ^^^^^^^^
 
@@ -2445,17 +2799,129 @@ class AR(TimeSeriesModelBase):
 
     Please refer to  :ref:`chart_gallery.tsa` for more examples.
 
-    Model Register
-    ^^^^^^^^^^^^^^
+    Full forecasting
+    -----------------
 
-    In order to register the model for tracking and versioning:
+    In this forecasting approach, the algorithm relies solely
+    on a chosen true value for initiation. Subsequently, all
+    predictions are established based on a series of previously
+    predicted values.
+
+    This methodology aligns the accuracy of predictions more
+    closely with reality. In practical forecasting scenarios,
+    the goal is to predict all future steps, and this technique
+    ensures a progressive sequence of predictions.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the report using:
 
     .. code-block:: python
 
-        model.register("model_v1")
+        model.report(start = 4, method = "forecast")
 
-    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
-    for more details on model tracking and versioning.
+    By selecting ``start = 4``, we will measure the accuracy from
+    40th time-stamp and continue the assessment until the last
+    available time-stamp.
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 4, method = "forecast")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_report.html
+
+    Notice that the accuracy using ``method = forecast`` is poorer
+    than the one-step ahead forecasting.
+
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 4, npredictions = 6, method = "forecast")
+
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict(start = 100, npredictions = 10, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(start = 100, npredictions = 40, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction.html
+
+    If you want to forecast starting from a specific value within
+    the input dataset or another dataset, you can use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "date",
+            "passengers",
+            start = 4,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+            method = "forecast"
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "month", "GB", start = 4, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction_3.html
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot(data, "month", "GB", npredictions = 10, start = 5, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(data, "month", "GB", npredictions = 10, start = 5, method = "forecast", width = 650)
+        fig.write_html("figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html
     """
 
     # Properties.
@@ -2727,6 +3193,45 @@ class MA(TimeSeriesModelBase):
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
+    for more details on model tracking and versioning.
+
+    _____
+
+    One important thing in time-series forecasting is that it has two
+    types of forecasting:
+
+    - One-step ahead forecasting
+    - Full forecasting
+
+    .. important::
+
+        The default method is one-step ahead forecasting.
+        To use full forecasting, use ``method = "forecast" ``.
+
+    One-step ahead
+    ---------------
+
+    In this type of forecasting, the algorithm utilizes the
+    true value of the previous timestamp (t-1) to predict the
+    immediate next timestamp (t). Subsequently, to forecast
+    additional steps into the future (t+1), it relies on the
+    actual value of the immediately preceding timestamp (t).
+
+    A notable drawback of this forecasting method is its
+    tendency to exhibit exaggerated accuracy, particularly
+    when predicting more than one step into the future.
+
     Metrics
     ^^^^^^^^
 
@@ -2927,6 +3432,131 @@ class MA(TimeSeriesModelBase):
 
     Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html`
     for more details on model tracking and versioning.
+
+
+    Full forecasting
+    -----------------
+
+    In this forecasting approach, the algorithm relies solely
+    on a chosen true value for initiation. Subsequently, all
+    predictions are established based on a series of previously
+    predicted values.
+
+    This methodology aligns the accuracy of predictions more
+    closely with reality. In practical forecasting scenarios,
+    the goal is to predict all future steps, and this technique
+    ensures a progressive sequence of predictions.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the report using:
+
+    .. code-block:: python
+
+        model.report(start = 25, method = "forecast")
+
+    By selecting ``start = 25``, we will measure the accuracy from
+    40th time-stamp and continue the assessment until the last
+    available time-stamp.
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.report(start = 25, method = "forecast")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_report.html
+
+    Notice that the accuracy using ``method = forecast`` is poorer
+    than the one-step ahead forecasting.
+
+
+    You can utilize the
+    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    function to calculate various regression metrics, with the explained
+    variance being the default.
+
+    .. ipython:: python
+        :okwarning:
+
+        model.score(start = 25, npredictions = 30, method = "forecast")
+
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. code-block:: python
+
+        model.predict(start = 25, npredictions = 15, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(start = 25, npredictions = 15, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction.html
+
+    If you want to forecast starting from a specific value within
+    the input dataset or another dataset, you can use the following syntax.
+
+    .. code-block:: python
+
+        model.predict(
+            data,
+            "day",
+            "temp",
+            start = 25,
+            npredictions = 20,
+            output_estimated_ts = True,
+            output_standard_errors = True,
+            method = "forecast"
+        )
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        result = model.predict(data, "day", "temp", start = 25, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
+        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction_3.html
+
+    Plots
+    ^^^^^^
+
+    We can conveniently plot the predictions on a line plot
+    to observe the efficacy of our model:
+
+    .. code-block:: python
+
+        model.plot(data, "day", "temp", npredictions = 15, start = 25, method = "forecast")
+
+    .. ipython:: python
+        :suppress:
+        :okwarning:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = model.plot(data, "day", "temp", npredictions = 15, start = 25, method = "forecast", width = 650)
+        fig.write_html("figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html
     """
 
     # Properties.
