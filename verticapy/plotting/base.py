@@ -1517,7 +1517,7 @@ class PlottingBase(PlottingBaseSQL):
                 start = 1
                 j = -1
             else:
-                j = start - 1
+                j = start
                 start = 0
         has_se = False
         if X_pred.shape[1] > 1:

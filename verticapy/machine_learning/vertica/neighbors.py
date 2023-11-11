@@ -956,6 +956,12 @@ class KNeighborsClassifier(MulticlassClassifier):
                     WHEN proba_predict > {cutoff} THEN '{self.classes_[1]}'
                     ELSE '{self.classes_[0]}'
                  END)"""
+        elif allSQL:
+            return f"""
+                (CASE 
+                    WHEN predict_neighbors = '{pos_label}' THEN proba_predict
+                    ELSE NULL 
+                 END)"""
         else:
             return f"""
                 (CASE 
