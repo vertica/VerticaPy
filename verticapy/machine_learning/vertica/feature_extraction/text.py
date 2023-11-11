@@ -79,7 +79,7 @@ class Tfidf(VerticaModel):
         else:
             text = f"LOWER({column})"
 
-        self.idf_ = self.parameters["name"]
+        self.idf_ = self.model_name
 
         if self.parameters["overwrite_model"]:
             _executeSQL(f"DROP TABLE IF EXISTS {self.idf_}", print_time_sql=False)
@@ -147,7 +147,7 @@ class Tfidf(VerticaModel):
             Column name of the document id.
         column: str
             Column name which contains the text.
-        pivot: str, default=False
+        pivot: str
             If True it will Pivot the final table, to have
             1 row per document and a sparse matrix.
 
