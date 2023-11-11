@@ -478,6 +478,11 @@ class BinaryTreeRegressor(Tree):
         list must be a sublist  with the probabilities of
         each class.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -494,7 +499,8 @@ class BinaryTreeRegressor(Tree):
     Final values at leaf nodes are also required.
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor` model.:
+    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    model:
 
     .. ipython:: python
 
@@ -654,6 +660,11 @@ class BinaryTreeAnomaly(Tree):
     psy: int, optional
         Sampling  size used to  compute the final  score.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -670,7 +681,7 @@ class BinaryTreeAnomaly(Tree):
     Final values at leaf nodes are also required.
     Let's create a
     :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
-    model.:
+    model:
 
     .. ipython:: python
 
@@ -856,6 +867,11 @@ class BinaryTreeClassifier(Tree):
         each class.
     classes: ArrayLike, optional
         The classes for the binary tree model.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------
@@ -1056,6 +1072,11 @@ class NonBinaryTree(Tree):
         be generated with the vDataFrame.chaid method.
     classes: ArrayLike, optional
         The classes for the non-binary tree model.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------

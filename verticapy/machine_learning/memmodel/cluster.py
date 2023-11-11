@@ -244,7 +244,8 @@ class Clustering(InMemoryModel):
 
 class KMeans(Clustering):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel` implementation of KMeans.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of KMeans.
 
     Parameters
     ----------
@@ -259,6 +260,11 @@ class KMeans(Clustering):
         defined entirely by their attributes. For example,
         'cluster centroids' and 'p value' define a KMeans model.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -267,7 +273,6 @@ class KMeans(Clustering):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.cluster import KMeans
 
@@ -275,7 +280,6 @@ class KMeans(Clustering):
     In this example, we will use the following:
 
     .. ipython:: python
-            :suppress:
 
         clusters = [[0.5, 0.6], [1, 2], [100, 200]]
         p = 2
@@ -284,14 +288,12 @@ class KMeans(Clustering):
     :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans` model.
 
     .. ipython:: python
-            :suppress:
 
         model_km = KMeans(clusters, p)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
         data = [[2, 3]]
 
@@ -301,7 +303,6 @@ class KMeans(Clustering):
     method to do predictions
 
     .. ipython:: python
-            :suppress:
 
         model_km.predict(data)[0]
 
@@ -318,7 +319,6 @@ class KMeans(Clustering):
     method to compute the predicted probabilities for each cluster
 
     .. ipython:: python
-            :suppress:
 
         model_km.predict_proba(data)
 
@@ -326,7 +326,6 @@ class KMeans(Clustering):
     method to compute the distance from each cluster
 
     .. ipython:: python
-            :suppress:
 
         model_km.transform(data)
 
@@ -335,33 +334,33 @@ class KMeans(Clustering):
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
-            :suppress:
 
         model_km.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba_sql`
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.predict_proba_sql`
     method to get the SQL code needed to deploy the model that
-    computes predicted probabilities
+    computes predicted probabilities.
 
     .. ipython:: python
-            :suppress:
 
         model_km.predict_proba_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.transform_sql`
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans.transform_sql`
     method to get the SQL code needed to deploy the model that
-    computes distance from each cluster
+    computes distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_km.transform_sql(cnames)
 
@@ -398,6 +397,11 @@ class NearestCentroid(Clustering):
     p: int, optional
         The p corresponding to  one of the p-distances.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -406,58 +410,57 @@ class NearestCentroid(Clustering):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.cluster import NearestCentroid
 
     A NearestCentroid model is defined by its cluster centroids,
-    classes and the p value. In this example, we will use the following:
+    classes and the p value. In this example, we will use the
+    following:
 
     .. ipython:: python
-            :suppress:
 
         clusters = [[0.5, 0.6], [1, 2], [100, 200]]
         p = 2
         classes = ['class_a', 'class_b', 'class_c']
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.cluster.NearestCentroid` model.
+    :py:mod:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+    model.
 
     .. ipython:: python
-            :suppress:
 
         model_nc = NearestCentroid(clusters, classes, p)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
         data = [[2, 3]]
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict`
-    method to do predictions
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict`
+    method to do predictions.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.predict(data)[0]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba`
-    method to compute the predicted probabilities for each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba`
+    method to compute the predicted probabilities for
+    each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform`
-    method to compute the distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform`
+    method to compute the distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.transform(data)
 
@@ -466,38 +469,40 @@ class NearestCentroid(Clustering):
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.predict_proba_sql`
+    method to get the SQL code needed to deploy the model
+    that computes predicted probabilities.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.predict_proba_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform_sql`
-    method to get the SQL code needed to deploy the model that computes distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid.transform_sql`
+    method to get the SQL code needed to deploy the model
+    that computes distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_nc.transform_sql(cnames)
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -550,6 +555,11 @@ class BisectingKMeans(Clustering, Tree):
     p: int, optional
         The p corresponding to one of the p-distances.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -558,7 +568,6 @@ class BisectingKMeans(Clustering, Tree):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.cluster import BisectingKMeans
 
@@ -567,61 +576,63 @@ class BisectingKMeans(Clustering, Tree):
     we will use the following:
 
     .. ipython:: python
-            :suppress:
 
         clusters = [[0.5, 0.6], [1, 2], [100, 200], [10, 700], [-100, -200]]
         children_left = [1, 3, None, None, None]
         children_right = [2, 4, None, None, None]
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans` model.
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+    model.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm = BisectingKMeans(clusters, children_left, children_right)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
         data = [[2, 3]]
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict`
-    method to do predictions
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict`
+    method to do predictions.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.predict(data)[0]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba`
-    method to compute the predicted probabilities for each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba`
+    method to compute the predicted probabilities for
+    each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform`
-    method to compute the distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform`
+    method to compute the distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.transform(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.to_graphviz`
-    method to generate code for a `Graphviz <https://graphviz.org/>`_ tree
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.to_graphviz`
+    method to generate code for a `Graphviz <https://graphviz.org/>`_
+    tree.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.to_graphviz()
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.plot_tree`
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.plot_tree`
     method to draw the input tree.
 
     .. code-block:: python
@@ -636,46 +647,51 @@ class BisectingKMeans(Clustering, Tree):
 
     .. image:: /../figures/machine_learning_cluster_bisecting_kmeans.png
 
-    .. note:: :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.plot_tree`
-    requires the `Graphviz <https://graphviz.org/download/>`_ module
+    .. note::
+
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.plot_tree`
+        requires the `Graphviz <https://graphviz.org/download/>`_
+        module.
 
     **Deploy SQL Code**
 
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_sql`
+    method to get the SQL code needed to deploy the model
+    using its attributes.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.predict_proba_sql`
+    method to get the SQL code needed to deploy the model
+    that computes predicted probabilities.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.predict_proba_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform_sql`
-    method to get the SQL code needed to deploy the model that computes distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans.transform_sql`
+    method to get the SQL code needed to deploy the model
+    that computes distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_bkm.transform_sql(cnames)
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -964,8 +980,16 @@ class KPrototypes(Clustering):
         categorical  and  False numerical.  If empty,  all
         the variables are considered categorical.
 
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
-    algorithm allows you to use categorical variables directly without the need to encode them.
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        algorithm allows you to use categorical variables directly
+        without the need to encode them.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------
@@ -975,7 +999,6 @@ class KPrototypes(Clustering):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.cluster import KPrototypes
 
@@ -984,35 +1007,33 @@ class KPrototypes(Clustering):
     categorical variables. In this example, we will use the following:
 
     .. ipython:: python
-            :suppress:
 
         clusters = [[0.5, 'high'], [1, 'low'], [100, 'high']]
         p = 2
         gamma = 1.0
         is_categorical = [0, 1]
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
     model.
 
     .. ipython:: python
-            :suppress:
 
         model_kp = KPrototypes(clusters, p, gamma, is_categorical)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
         data = [[2, 'low']]
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict`
-    method to do predictions
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict`
+    method to do predictions.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.predict(data)[0]
 
@@ -1025,19 +1046,20 @@ class KPrototypes(Clustering):
         :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict`
         method returns the id of the predicted cluster.
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba`
-    method to compute the predicted probabilities for each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba`
+    method to compute the predicted probabilities
+    for each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.predict_proba(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform`
-    method to compute the distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform`
+    method to compute the distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.transform(data)
 
@@ -1046,38 +1068,40 @@ class KPrototypes(Clustering):
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ['col1', 'col2']
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_sql`
+    method to get the SQL code needed to deploy the
+    model using its attributes.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.predict_proba_sql`
+    method to get the SQL code needed to deploy the
+    model that computes predicted probabilities.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.predict_proba_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform_sql`
-    method to get the SQL code needed to deploy the model that computes distance from each cluster
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes.transform_sql`
+    method to get the SQL code needed to deploy the
+    model that computes distance from each cluster.
 
     .. ipython:: python
-            :suppress:
 
         model_kp.transform_sql(cnames)
 
     .. hint::
 
-        This object can be pickled and used in any in-memory
-        environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.

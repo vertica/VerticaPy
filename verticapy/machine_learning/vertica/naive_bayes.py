@@ -87,6 +87,31 @@ class NaiveBayes(MulticlassClassifier):
         - gaussian:
             Casts the variables to float.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    prior_: numpy.array
+        The model's classes probabilities.
+    attributes_: list of dict
+        List  of the model's attributes. Each feature  is
+        represented by a dictionary, which differs based
+        on the distribution.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.MulticlassClassifier.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.MulticlassClassifier.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 

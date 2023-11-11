@@ -37,6 +37,11 @@ class Scaler(InMemoryModel):
         Model's features first aggregation.
     den: ArrayLike
         Model's features second aggregation.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
     """
 
     # Properties.
@@ -118,6 +123,11 @@ class StandardScaler(Scaler):
         'standard deviation' of feature(S) define a StandardScaler
         model.
 
+    Attributes
+    ----------
+    Attributes are identical to
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+
     Examples
     --------
 
@@ -179,8 +189,8 @@ class StandardScaler(Scaler):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment, just
-        like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.
@@ -215,6 +225,11 @@ class MinMaxScaler(Scaler):
         entirely by their attributes. For example, 'minimum',
         and 'maximum' values of the input features define a
         MinMaxScaler model.
+
+    Attributes
+    ----------
+    Attributes are identical to
+    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -328,6 +343,11 @@ class OneHotEncoder(InMemoryModel):
         provide 'column naming' criteria and a 'drop_first' flag to
         denote whether to drop first dummy of each category.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -388,8 +408,8 @@ class OneHotEncoder(InMemoryModel):
 
     .. hint::
 
-        This object can be pickled and used in any in-memory environment, just
-        like `SKLEARN <https://scikit-learn.org/>`_ models.
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.

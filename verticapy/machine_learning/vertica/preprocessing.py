@@ -533,6 +533,24 @@ class CountVectorizer(VerticaModel):
     max_text_size: int, optional
         The maximum size of the column that concatenates
         all of the  text columns during fitting.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    vocabulary_: numpy.array
+        Model's final vocabulary.
+    stop_words_: numpy.array
+        Model's stop words. It corresponds to the words
+        ignored by the model.
+    n_errors_: int
+        Number of errors during the model's computation.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        method.
     """
 
     # Properties.
@@ -781,6 +799,43 @@ class Scaler(Preprocessing):
         .. math::
 
             Z_minmax = (x - min) / (max - min)
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    **For ``StandardScaler``:**
+
+    mean_: numpy.array
+        Model's features means.
+    std_: numpy.array
+        Model's features standard deviation.
+
+    **For ``MinMaxScaler``:**
+
+    min_: numpy.array
+        Model's features minimums.
+    max_: numpy.array
+        Model's features maximums.
+
+    **For ``RobustScaler``:**
+
+    median_: numpy.array
+        Model's features medians.
+    mad_: numpy.array
+        Model's features median absolute deviations.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
+        method.
 
     Examples
     --------
@@ -1166,6 +1221,29 @@ class OneHotEncoder(Preprocessing):
         The  string used in  naming the indicator  column
         for null values,  used only if ignore_null is set
         to false and column_naming is set to 'values'.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    categories_: numpy.array
+        ArrayLike of the categories of the different features.
+    column_naming_: str
+        Method used to name the model's outputs.
+    drop_first_: bool
+        If False, the first dummy of each category was dropped.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
+        method.
 
     Examples
     --------

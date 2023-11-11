@@ -96,6 +96,11 @@ class RandomForestRegressor(Ensemble):
     trees: list[BinaryTreeRegressor]
         list of BinaryTrees for regression.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -275,6 +280,11 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         List of BinaryTrees for classification.
     classes: ArrayLike, optional
         The model's classes.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------
@@ -520,6 +530,11 @@ class XGBRegressor(Ensemble):
     eta: float, optional
         Learning rate.
 
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
+
     Examples
     --------
 
@@ -722,6 +737,11 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         The model's classes.
     learning_rate: float, optional
         Learning rate.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------
@@ -960,6 +980,11 @@ class IsolationForest(Ensemble):
     ----------
     trees: list[BinaryTreeAnomaly]
         list of BinaryTrees for anomaly detection.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------

@@ -425,6 +425,39 @@ class PCA(Decomposition):
         - lapack:
             Lapack definition.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    principal_components_: numpy.array
+        Matrix of the principal components.
+    mean_: numpy.array
+        List of the averages of each input feature.
+    cos2_: numpy.array
+        Quality of representation of each observation in
+        the principal component space. A high cos2 value
+        indicates that the observation is well-represented
+        in the reduced-dimensional space defined by the
+        principal components, while a low value suggests
+        poor representation.
+    explained_variance_: numpy.array
+        Represents the proportion of the total variance in
+        the original dataset that is captured by a specific
+        principal component or a combination of principal
+        components.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -802,6 +835,39 @@ class MCA(PCA):
         If set to True, training a model with the same
         name as an existing model overwrites the
         existing model.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    principal_components_: numpy.array
+        Matrix of the principal components.
+    mean_: numpy.array
+        List of the averages of each input feature.
+    cos2_: numpy.array
+        Quality of representation of each observation in
+        the principal component space. A high cos2 value
+        indicates that the observation is well-represented
+        in the reduced-dimensional space defined by the
+        principal components, while a low value suggests
+        poor representation.
+    explained_variance_: numpy.array
+        Represents the proportion of the total variance in
+        the original dataset that is captured by a specific
+        principal component or a combination of principal
+        components.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1316,6 +1382,28 @@ class SVD(Decomposition):
 
         - lapack:
             Lapack definition.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    values_: numpy.array
+        Matrix of the right singular vectors.
+    values_: numpy.array
+        Array of the singular values for each input
+        feature.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        method.
 
     Examples
     ---------
