@@ -988,6 +988,7 @@ class TestBaseModelMethods:
                 "theta_",
                 "mu_",
                 "mean_",
+                "features_importance_",
                 "mse_",
                 "n_",
             ]
@@ -996,6 +997,7 @@ class TestBaseModelMethods:
                 "phi_",
                 "theta_",
                 "mean_",
+                "features_importance_",
                 "mse_",
                 "n_",
             ]
