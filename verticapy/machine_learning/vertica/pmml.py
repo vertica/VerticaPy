@@ -40,6 +40,18 @@ class PMMLModel(VerticaModel):
         the database. If it is not the case, you can use
         :py:mod:`verticapy.machine_learning.vertica.import_models`
         to import your PMML model.
+
+    Attributes
+    ----------
+    All attributes can be accessed using the
+    :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+    method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes``
+        method.
     """
 
     # Properties.

@@ -67,11 +67,12 @@ class TimeSeriesModelBase(VerticaModel):
             "mse_",
             "n_",
         ]
-        if self._model_type == "ARIMA":
+        if self._model_type in ("ARMA", "ARIMA"):
             return [
                 "phi_",
                 "theta_",
                 "mean_",
+                "features_importance_",
             ] + common_params
         elif self._model_type == "AR":
             return [
@@ -1080,6 +1081,53 @@ class ARIMA(TimeSeriesModelBase):
             values in a dataset are missing, the function
             errors.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    phi_: numpy.array
+        The coefficient of the AutoRegressive process.
+        It represents the strength and direction of the
+        relationship between a variable and its past
+        values.
+    theta_: numpy.array
+        The theta coefficient of the Moving Average
+        process. It signifies the impact and contribution
+        of the lagged error terms in determining the
+        current value within the time series model.
+    mean_: float
+        The mean of the time series values.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the AutoRegressive part coefficients, which
+        are normalized based on their range. Subsequently,
+        an activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    mse_: float
+        The mean squared error (MSE) of the model, based
+        on one-step forward forecasting, may not always
+        be relevant. Utilizing a full forecasting approach
+        is recommended to compute a more meaningful and
+        comprehensive metric.
+    n_: int
+        The number of rows used to fit the model.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -1745,6 +1793,53 @@ class ARMA(TimeSeriesModelBase):
             values in a dataset are missing, the function
             errors.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    phi_: numpy.array
+        The coefficient of the AutoRegressive process.
+        It represents the strength and direction of the
+        relationship between a variable and its past
+        values.
+    theta_: numpy.array
+        The theta coefficient of the Moving Average
+        process. It signifies the impact and contribution
+        of the lagged error terms in determining the
+        current value within the time series model.
+    mean_: float
+        The mean of the time series values.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the AutoRegressive part coefficients, which
+        are normalized based on their range. Subsequently,
+        an activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    mse_: float
+        The mean squared error (MSE) of the model, based
+        on one-step forward forecasting, may not always
+        be relevant. Utilizing a full forecasting approach
+        is recommended to compute a more meaningful and
+        comprehensive metric.
+    n_: int
+        The number of rows used to fit the model.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -2398,6 +2493,52 @@ class AR(TimeSeriesModelBase):
             values in a dataset are missing, the function
             errors.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    phi_: numpy.array
+        The coefficient of the AutoRegressive process.
+        It represents the strength and direction of the
+        relationship between a variable and its past
+        values.
+    intercept_: float
+        Represents the expected value of the time series
+        when the lagged values are zero. It signifies the
+        baseline or constant term in the model, capturing
+        the average level of the series in the absence of
+        any historical influence.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the AutoRegressive part coefficients, which
+        are normalized based on their range. Subsequently,
+        an activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    mse_: float
+        The mean squared error (MSE) of the model, based
+        on one-step forward forecasting, may not always
+        be relevant. Utilizing a full forecasting approach
+        is recommended to compute a more meaningful and
+        comprehensive metric.
+    n_: int
+        The number of rows used to fit the model.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -3021,6 +3162,44 @@ class MA(TimeSeriesModelBase):
             value. In cases where the first or last
             values in a dataset are missing, the function
             errors.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    theta_: numpy.array
+        The theta coefficient of the Moving Average
+        process. It signifies the impact and contribution
+        of the lagged error terms in determining the
+        current value within the time series model.
+    mu_: float
+        Represents the mean or average of the series. It
+        is a constant term that reflects the expected
+        value of the time series in the absence of any
+        temporal dependencies or influences from past
+        error terms.
+    mean_: float
+        The mean of the time series values.
+    mse_: float
+        The mean squared error (MSE) of the model, based
+        on one-step forward forecasting, may not always
+        be relevant. Utilizing a full forecasting approach
+        is recommended to compute a more meaningful and
+        comprehensive metric.
+    n_: int
+        The number of rows used to fit the model.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        method.
 
     Examples
     ---------

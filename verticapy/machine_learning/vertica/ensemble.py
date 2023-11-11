@@ -410,6 +410,52 @@ class RandomForestRegressor(Regressor, RandomForest):
         features,   an  integer  between  2  and  1000,
         inclusive.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of BinaryTreeRegressor
+        Tree models are instances of ``BinaryTreeRegressor``,
+        each possessing various attributes. For more
+        detailed information, refer to the documentation
+        for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    features_importance_trees_: dict of numpy.array
+        Each element of the array represents the feature
+        importance of tree i.
+        The importance of features is calculated
+        using the MDI (Mean Decreased Impurity).
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    n_estimators_: int
+        The number of model estimators.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -528,7 +574,6 @@ class RandomForestRegressor(Regressor, RandomForest):
         The model name is crucial for the model management system and
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
-
 
     Model Training
     ^^^^^^^^^^^^^^^
@@ -933,6 +978,64 @@ class XGBRegressor(Regressor, XGBoost):
         Float  in  the  range  (0,1]  that  specifies  the
         fraction of columns (features), chosen at  random,
         to use when evaluating each split.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of BinaryTreeRegressor
+        Tree models are instances of ``BinaryTreeRegressor``,
+        each possessing various attributes. For more
+        detailed information, refer to the documentation
+        for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the average gain of each tree. To determine
+        the final score, VerticaPy sums the scores of each
+        tree, normalizes them and applies an activation
+        function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    features_importance_trees_: dict of numpy.array
+        Each element of the array represents the feature
+        importance of tree i.
+        The importance of features is calculated
+        using the average gain of each tree.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    mean_: float
+        The mean of the response column.
+    eta_: float
+        The learning rate, is a crucial hyperparameter in
+        machine learning algorithms. It determines the step
+        size at each iteration during the model training
+        process. A well-chosen learning rate is essential
+        for achieving optimal convergence and preventing
+        overshooting or slow convergence in the training
+        phase. Adjusting the learning rate is often necessary
+        to strike a balance between model accuracy and
+        computational efficiency.
+    n_estimators_: int
+        The number of model estimators.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1489,6 +1592,54 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         The  number  of  bins  to  use  for  continuous
         features,   an  integer  between  2  and  1000,
         inclusive.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of BinaryTreeClassifier
+        Tree models are instances of ``BinaryTreeClassifier``,
+        each possessing various attributes. For more
+        detailed information, refer to the documentation
+        for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    features_importance_trees_: dict of numpy.array
+        Each element of the array represents the feature
+        importance of tree i.
+        The importance of features is calculated
+        using the MDI (Mean Decreased Impurity).
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    n_estimators_: int
+        The number of model estimators.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -2178,6 +2329,68 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         Float  in  the  range  (0,1]  that  specifies  the
         fraction of columns (features), chosen at  random,
         to use when evaluating each split.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of BinaryTreeClassifier
+        Tree models are instances of ``BinaryTreeClassifier``,
+        each possessing various attributes. For more
+        detailed information, refer to the documentation
+        for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the average gain of each tree. To determine
+        the final score, VerticaPy sums the scores of each
+        tree, normalizes them and applies an activation
+        function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    features_importance_trees_: dict of numpy.array
+        Each element of the array represents the feature
+        importance of tree i.
+        The importance of features is calculated
+        using the average gain of each tree.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    logodds_: numpy.array
+        The log-odds. It quantifies the logarithm of the
+        odds ratio, providing a measure of the likelihood
+        of an event occurring.
+    eta_: float
+        The learning rate, is a crucial hyperparameter in
+        machine learning algorithms. It determines the step
+        size at each iteration during the model training
+        process. A well-chosen learning rate is essential
+        for achieving optimal convergence and preventing
+        overshooting or slow convergence in the training
+        phase. Adjusting the learning rate is often necessary
+        to strike a balance between model accuracy and
+        computational efficiency.
+    n_estimators_: int
+        The number of model estimators.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -2890,6 +3103,33 @@ class IsolationForest(Clustering, Tree):
         Float  in  the  range (0,1] that  specifies  the
         fraction of columns (features), chosen at random,
         used when building each tree.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of BinaryTreeAnomaly
+        Tree models are instances of ``BinaryTreeAnomaly``,
+        each possessing various attributes. For more
+        detailed information, refer to the documentation
+        for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`.
+    psy_: int
+        Sampling size used to compute the final score.
+    n_estimators_: int
+        The number of model estimators.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------

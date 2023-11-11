@@ -1149,6 +1149,8 @@ class Tree:
         )
         importance = self._format_vector(self.X, importance)
         if isinstance(tree_id, int) and (0 <= tree_id < self.n_estimators_):
+            if not (hasattr(self, "features_importance_trees_")):
+                self.features_importance_trees_ = {}
             self.features_importance_trees_[tree_id] = importance
         elif isinstance(tree_id, NoneType):
             self.features_importance_ = importance
