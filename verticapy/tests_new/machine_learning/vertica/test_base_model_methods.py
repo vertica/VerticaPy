@@ -985,9 +985,10 @@ class TestBaseModelMethods:
             ]
         elif model_class == "ARMA":
             vpy_model_attributes = [
+                "phi_",
                 "theta_",
-                "mu_",
                 "mean_",
+                "features_importance_",
                 "mse_",
                 "n_",
             ]
@@ -996,6 +997,7 @@ class TestBaseModelMethods:
                 "phi_",
                 "theta_",
                 "mean_",
+                "features_importance_",
                 "mse_",
                 "n_",
             ]

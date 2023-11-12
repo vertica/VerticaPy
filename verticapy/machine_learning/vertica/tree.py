@@ -73,6 +73,40 @@ class DecisionTreeRegressor(RandomForestRegressor):
         The number of bins to use for continuous  features,
         an integer between 2 and 1000, inclusive.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of one BinaryTreeRegressor
+        One tree model which is instance of
+        ``BinaryTreeRegressor``. It possess various
+        attributes. For more detailed information,
+        refer to the documentation for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -485,6 +519,40 @@ class DummyTreeRegressor(RandomForestRegressor):
         If set to True, training a model with the same
         name as an existing model overwrites the
         existing model.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of one BinaryTreeRegressor
+        One tree model which is instance of
+        ``BinaryTreeRegressor``. It possess various
+        attributes. For more detailed information,
+        refer to the documentation for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -911,6 +979,42 @@ class DecisionTreeClassifier(RandomForestClassifier):
     nbins: int, optional
         The number of bins to use for continuous  features,
         an integer between 2 and 1000, inclusive.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of one BinaryTreeClassifier
+        One tree model which is instance of
+        ``BinaryTreeClassifier``. It possess various
+        attributes. For more detailed information,
+        refer to the documentation for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1473,6 +1577,42 @@ class DummyTreeClassifier(RandomForestClassifier):
         If set to True, training a model with the same
         name as an existing model overwrites the
         existing model.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    trees_: list of one BinaryTreeClassifier
+        One tree model which is instance of
+        ``BinaryTreeClassifier``. It possess various
+        attributes. For more detailed information,
+        refer to the documentation for
+        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+    features_importance_: numpy.array
+        The importance of features. It is calculated
+        using the MDI (Mean Decreased Impurity). To
+        determine the final score, VerticaPy sums the
+        scores of each tree, normalizes them and applies
+        an activation function to scale them.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        method.
 
     Examples
     ---------

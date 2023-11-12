@@ -236,6 +236,51 @@ class KMeans(Clustering):
         center  has moved more than a distance of  'tol'
         from the previous iteration.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    clusters_: numpy.array
+        Cluster centers.
+    p_: int
+        The p of the p-distances.
+    between_cluster_ss_: float
+        The between-cluster sum of squares (BSS) measures
+        the dispersion between different clusters and is
+        an important metric in evaluating the effectiveness
+        of a clustering algorithm.
+    total_ss_: float
+        The total sum of squares (TSS) is used to assess
+        the total dispersion of data points from the overall
+        mean, providing a basis for evaluating the clustering
+        algorithm's performance.
+    total_within_cluster_ss_: float
+        The within-cluster sum of squares (WSS) gauges the
+        dispersion of data points within individual clusters
+        in a clustering analysis. It reflects the compactness
+        of clusters and is instrumental in evaluating the
+        homogeneity of the clusters produced by the algorithm.
+    elbow_score_: float
+        The elbow score. It helps identify the optimal number
+        of clusters by observing the point where the rate of
+        WSS reduction slows down, resembling the bend or
+        'elbow' in the plot, indicative of an optimal clustering
+        solution. The bigger the better.
+    converged_: boolean
+        True if the model converged.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -751,6 +796,51 @@ class KPrototypes(KMeans):
         determines the relative importance of  numerical
         and categorical attributes.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    clusters_: numpy.array
+        Cluster centers.
+    p_: int
+        The p of the p-distances.
+    between_cluster_ss_: float
+        The between-cluster sum of squares (BSS) measures
+        the dispersion between different clusters and is
+        an important metric in evaluating the effectiveness
+        of a clustering algorithm.
+    total_ss_: float
+        The total sum of squares (TSS) is used to assess
+        the total dispersion of data points from the overall
+        mean, providing a basis for evaluating the clustering
+        algorithm's performance.
+    total_within_cluster_ss_: float
+        The within-cluster sum of squares (WSS) gauges the
+        dispersion of data points within individual clusters
+        in a clustering analysis. It reflects the compactness
+        of clusters and is instrumental in evaluating the
+        homogeneity of the clusters produced by the algorithm.
+    elbow_score_: float
+        The elbow score. It helps identify the optimal number
+        of clusters by observing the point where the rate of
+        WSS reduction slows down, resembling the bend or
+        'elbow' in the plot, indicative of an optimal clustering
+        solution. The bigger the better.
+    converged_: boolean
+        True if the model converged.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -1227,6 +1317,71 @@ class BisectingKMeans(KMeans, Tree):
         converged  after  no center has moved  more
         than a distance of  'tol' from the previous
         iteration.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+            "children_left_",
+            "children_right_",
+
+
+    tree_:
+
+
+    clusters_: numpy.array
+        Cluster centers.
+    p_: int
+        The p of the p-distances.
+    children_left_: numpy.array
+        A list  of node IDs, where  children_left[i] is
+        the node ID of the left child of node i.
+    children_right_: numpy.array
+        A list of node IDs, where  children_right[i] is
+        the node ID of the right child of node i.
+    cluster_score_: numpy.array
+        The array containing the sizes for each cluster
+        in a clustering analysis.
+    cluster_score_: numpy.array
+        The array containing the cluster scores for each
+        cluster in a clustering analysis.
+    between_cluster_ss_: float
+        The between-cluster sum of squares (BSS) measures
+        the dispersion between different clusters and is
+        an important metric in evaluating the effectiveness
+        of a clustering algorithm.
+    total_ss_: float
+        The total sum of squares (TSS) is used to assess
+        the total dispersion of data points from the overall
+        mean, providing a basis for evaluating the clustering
+        algorithm's performance.
+    total_within_cluster_ss_: float
+        The within-cluster sum of squares (WSS) gauges the
+        dispersion of data points within individual clusters
+        in a clustering analysis. It reflects the compactness
+        of clusters and is instrumental in evaluating the
+        homogeneity of the clusters produced by the algorithm.
+    elbow_score_: float
+        The elbow score. It helps identify the optimal number
+        of clusters by observing the point where the rate of
+        WSS reduction slows down, resembling the bend or
+        'elbow' in the plot, indicative of an optimal clustering
+        solution. The bigger the better.
+    cluster_i_ss_: numpy.array
+        The array containing the sum of squares (SS) for each
+        cluster in a clustering analysis.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.cluster.Clustering.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1840,6 +1995,23 @@ class DBSCAN(VerticaModel):
         The p of the p-distance (distance metric used
         during the model computation).
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    n_cluster_: int
+        Number of clusters.
+    p_: int
+        The p of the p-distances.
+    n_noise_: int
+        Number of outliers.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        method.
+
     Examples
     ---------
 
@@ -2324,6 +2496,23 @@ class NearestCentroid(MulticlassClassifier):
     p: int, optional
         The p corresponding to the one of the p-distances
         (distance metric used to compute the model).
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    clusters_: numpy.array
+        Cluster centers.
+    p_: int
+        The p of the p-distances.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        method.
 
     Examples
     ---------

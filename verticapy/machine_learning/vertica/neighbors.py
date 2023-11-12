@@ -71,13 +71,24 @@ class KNeighborsRegressor(Regressor):
     pure SQL to compute all the distances and final
     score.
 
-    \u26A0 Warning : This   algorithm   uses  a   CROSS  JOIN
-                     during   computation  and  is  therefore
-                     computationally  expensive at  O(n * n),
-                     where n is the total number of elements.
-                     Since  KNeighborsRegressor  uses  the p-
-                     distance,  it  is  highly  sensitive  to
-                     unnormalized data.
+    .. warning::
+
+        This   algorithm   uses  a   CROSS  JOIN
+        during   computation  and  is  therefore
+        computationally  expensive at  O(n * n),
+        where n is the total number of elements.
+        Since  KNeighborsRegressor  uses  the p-
+        distance,  it  is  highly  sensitive  to
+        unnormalized data.
+
+    .. important::
+
+        This algorithm is not Vertica Native and relies solely
+        on SQL for attribute computation. While this model does
+        not take advantage of the benefits provided by a model
+        management system, including versioning and tracking,
+        the SQL code it generates can still be used to create a
+        pipeline.
 
     Parameters
     ----------
@@ -87,6 +98,21 @@ class KNeighborsRegressor(Regressor):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    n_neighbors_: int
+        Number of neighbors.
+    p_: int
+        The p of the p-distances.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        method.
     """
 
     # Properties.
@@ -282,17 +308,15 @@ class KNeighborsClassifier(MulticlassClassifier):
     pure SQL to compute all the distances and final
     score.
 
-    .. warning :
+    .. warning::
 
         This   algorithm   uses  a   CROSS  JOIN
         during   computation  and  is  therefore
         computationally  expensive at  O(n * n),
         where n is the total number of elements.
-        Since  LocalOutlierFactor   uses  the p-
+        Since  KNeighborsClassifier uses  the p-
         distance,  it  is  highly  sensitive  to
         unnormalized data.
-        A  table  is created at the  end of
-        the learning phase.
 
     .. important::
 
@@ -311,6 +335,23 @@ class KNeighborsClassifier(MulticlassClassifier):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    n_neighbors_: int
+        Number of neighbors.
+    p_: int
+        The p of the p-distances.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        method.
 
     Examples
     ---------
@@ -1234,6 +1275,15 @@ class KernelDensity(Regressor, Tree):
         features.
     xlim: list, optional
         List of tuples used to compute the kernel window.
+
+    Attributes
+    ----------
+    Several attributes are computed during the fitting phase,
+    and in the case of kernel density estimation (KDE), a
+    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor``
+    is employed to approximate the k-nearest neighbors (KNN)
+    computation. This reliance on RandomForestRegressor
+    enhances the efficiency and accuracy of the KDE algorithm.
     """
 
     # Properties.
@@ -1654,6 +1704,26 @@ class LocalOutlierFactor(VerticaModel):
     p: int, optional
         The p of the p-distances (distance metric used
         during the model computation).
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    n_neighbors_: int
+        Number of neighbors.
+    p_: int
+        The p of the p-distances.
+    n_errors_: int
+        Number of errors during the model fitting phase.
+    cnt_: int
+        Number of elements accepted during the model
+        fitting phase.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        method.
 
     Examples
     ---------

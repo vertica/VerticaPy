@@ -27,7 +27,8 @@ from verticapy.machine_learning.memmodel.base import MulticlassClassifier
 
 class NaiveBayes(MulticlassClassifier):
     """
-    InMemoryModel implementation of the naive Bayes algorithm.
+    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    implementation of the naive Bayes algorithm.
 
     Parameters
     ----------
@@ -90,10 +91,17 @@ class NaiveBayes(MulticlassClassifier):
         classes: ArrayLike
             The model's classes.
 
-    .. note:: :py:mod:`verticapy.machine_learning.memmodel` are defined
+    .. note::
+
+        :py:mod:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'prior probabilities',
         'classes' and 'input feature attributes' specific to the type of
         distribution, defines a NaiveBayes model.
+
+    Attributes
+    ----------
+    Attributes are identical to the input parameters, followed by an
+    underscore ('_').
 
     Examples
     --------
@@ -103,7 +111,6 @@ class NaiveBayes(MulticlassClassifier):
     Import the required module.
 
     .. ipython:: python
-            :suppress:
 
         from verticapy.machine_learning.memmodel.naive_bayes import NaiveBayes
 
@@ -118,80 +125,84 @@ class NaiveBayes(MulticlassClassifier):
     Let's define attributes representing each input feature:
 
     .. ipython:: python
-            :suppress:
 
         attributes = [
-                            {
-                                "type": "gaussian",
-                                "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
-                                "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
-                                "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
-                            },
-                            {
-                                "type": "multinomial",
-                                "C": 0.771666666666667,
-                                "Q": 0.910714285714286,
-                                "S": 0.878216123499142,
-                            },
-                            {
-                                "type": "bernoulli",
-                                "C": 0.771666666666667,
-                                "Q": 0.910714285714286,
-                                "S": 0.878216123499142,
-                            },
-                            {
-                                "type": "categorical",
-                                "C": {
-                                    "female": 0.407843137254902,
-                                    "male": 0.592156862745098,
-                                },
-                                "Q": {
-                                    "female": 0.416666666666667,
-                                    "male": 0.583333333333333,
-                                },
-                                "S": {
-                                    "female": 0.406666666666667,
-                                    "male": 0.593333333333333,
-                                },
-                            },
-                        ]
+            {
+                "type": "gaussian",
+                "C": {"mu": 63.9878308300395, "sigma_sq": 7281.87598377196},
+                "Q": {"mu": 13.0217386792453, "sigma_sq": 211.626862330204},
+                "S": {"mu": 27.6928120412844, "sigma_sq": 1428.57067393938},
+            },
+            {
+                "type": "multinomial",
+                "C": 0.771666666666667,
+                "Q": 0.910714285714286,
+                "S": 0.878216123499142,
+            },
+            {
+                "type": "bernoulli",
+                "C": 0.771666666666667,
+                "Q": 0.910714285714286,
+                "S": 0.878216123499142,
+            },
+            {
+                "type": "categorical",
+                "C": {
+                    "female": 0.407843137254902,
+                    "male": 0.592156862745098,
+                },
+                "Q": {
+                    "female": 0.416666666666667,
+                    "male": 0.583333333333333,
+                },
+                "S": {
+                    "female": 0.406666666666667,
+                    "male": 0.593333333333333,
+                },
+            },
+        ]
 
     We also need to provide class names and their prior probabilities.
 
     .. ipython:: python
-            :suppress:
 
         prior = [0.8, 0.1, 0.1]
         classes = ["C", "Q", "S"]
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.naive_bayes` model.
+    Let's create a
+    :py:mod:`verticapy.machine_learning.memmodel.naive_bayes`
+    model.
 
     .. ipython:: python
-            :suppress:
 
         model_nb = NaiveBayes(attributes, prior, classes)
 
     Create a dataset.
 
     .. ipython:: python
-            :suppress:
 
-        data = [[40.0, 1, True, "male"], [60.0, 3, True, "male"], [15.0, 2, False, "female"]]
+        data = [
+            [40.0, 1, True, "male"],
+            [60.0, 3, True, "male"],
+            [15.0, 2, False, "female"],
+        ]
 
     **Making In-Memory Predictions**
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict` method to do predictions
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict`
+    method to do predictions.
 
     .. ipython:: python
-            :suppress:
 
         model_nb.predict(data)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
-    method to calculate the predicted probabilities for each class
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba`
+    method to calculate the predicted probabilities
+    for each class.
 
     .. ipython:: python
-            :suppress:
 
         model_nb.predict_proba(data)
 
@@ -200,27 +211,31 @@ class NaiveBayes(MulticlassClassifier):
     Let's use the following column names:
 
     .. ipython:: python
-            :suppress:
 
         cnames = ["age", "pclass", "survived", "sex"]
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
-    method to get the SQL code needed to deploy the model using its attributes
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_sql`
+    method to get the SQL code needed to deploy the
+    model using its attributes.
 
     .. ipython:: python
-            :suppress:
 
         model_nb.predict_sql(cnames)
 
-    Use :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
-    method to get the SQL code needed to deploy the model that computes predicted probabilities
+    Use
+    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes.NaiveBayes.predict_proba_sql`
+    method to get the SQL code needed to deploy the
+    model that computes predicted probabilities.
 
     .. ipython:: python
-            :suppress:
 
         model_nb.predict_proba_sql(cnames)
 
-    .. hint:: This object can be pickled and used in any in-memory environment, just like `SKLEARN <https://scikit-learn.org/>`_ models.
+    .. hint::
+
+        This object can be pickled and used in any in-memory environment,
+        just like `SKLEARN <https://scikit-learn.org/>`_ models.
     """
 
     # Properties.

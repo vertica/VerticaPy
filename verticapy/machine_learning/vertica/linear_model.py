@@ -311,6 +311,42 @@ class ElasticNet(LinearModel, Regressor):
         fit_intercept  to false does  not work well with
         the BFGS optimizer.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -743,6 +779,42 @@ class Lasso(LinearModel, Regressor):
         used in  training the model.  Note that setting
         fit_intercept to false does not work well with the
         BFGS optimizer.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1179,6 +1251,41 @@ class LinearRegression(LinearModel, Regressor):
         used in  training the model.  Note that setting
         fit_intercept to false does not work well with the
         BFGS optimizer.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`method
+        to compute it initially, and the computed values
+        will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -1650,6 +1757,42 @@ class PoissonRegressor(LinearModel, Regressor):
         fit_intercept  to false does  not work well with
         the BFGS optimizer.
 
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
+
     Examples
     ---------
 
@@ -2075,6 +2218,42 @@ class Ridge(LinearModel, Regressor):
         is used in training the model.
         Note  that setting fit_intercept to false  does
         not work well with the BFGS optimizer.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -2553,6 +2732,44 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         If set to false,  no intercept is used in
         training the model.  Note that setting fit_intercept
         to false does not work well with the BFGS optimizer.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------

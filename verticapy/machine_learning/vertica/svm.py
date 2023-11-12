@@ -34,7 +34,7 @@ Algorithms used for regression.
 """
 
 
-class LinearSVR(Regressor, LinearModel):
+class LinearSVR(LinearModel, Regressor):
     """
     Creates  a  LinearSVR  object  using the Vertica  SVM
     (Support Vector Machine)  algorithm.  This  algorithm
@@ -80,6 +80,42 @@ class LinearSVR(Regressor, LinearModel):
     max_iter: int, optional
         The  maximum  number of iterations  that  the
         algorithm performs.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------
@@ -524,7 +560,7 @@ Algorithms used for classification.
 """
 
 
-class LinearSVC(BinaryClassifier, LinearModelClassifier):
+class LinearSVC(LinearModelClassifier, BinaryClassifier):
     """
     Creates  a LinearSVC object  using the  Vertica
     Support Vector Machine  (SVM)  algorithm on the
@@ -580,6 +616,44 @@ class LinearSVC(BinaryClassifier, LinearModelClassifier):
     max_iter: int, optional
         The  maximum  number of iterations  that  the
         algorithm performs.
+
+    Attributes
+    ----------
+    Many attributes are created during the fitting phase.
+
+    coef_: numpy.array
+        The regression coefficients. The order of
+        coefficients is the same as the order of
+        columns used during the fitting phase.
+    intercept_: float
+        The expected value of the dependent variable
+        when all independent variables are zero,
+        serving as the baseline or constant term in
+        the model.
+    features_importance_: numpy.array
+        The importance of features is computed through
+        the model coefficients, which are normalized
+        based on their range. Subsequently, an
+        activation function calculates the final score.
+        It is necessary to use the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        method to compute it initially, and the computed
+        values will be subsequently utilized for subsequent
+        calls.
+    classes_: numpy.array
+        The classes labels.
+
+    .. note::
+
+        All attributes can be accessed using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        method.
+
+    .. note::
+
+        Several other attributes can be accessed by using the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        method.
 
     Examples
     ---------
