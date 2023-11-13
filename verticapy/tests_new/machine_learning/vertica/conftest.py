@@ -603,6 +603,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 # if kwargs.get("colsample_bynode")
                 # else 1.0,
                 random_state=1,
+                tree_method="exact",
             )
         elif model_class in ["DummyTreeRegressor"]:
             model = getattr(skl_dummy, "DummyRegressor")()

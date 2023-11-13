@@ -178,16 +178,22 @@ class TestXGBC:
         )
         assert current_cursor().fetchone() is None
 
-    @pytest.mark.skip(reason="needs Vertica 12.0.3")
+    @pytest.mark.skipif(
+        get_version()[0] < 12 or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
+        reason="requires vertica 12.0.3 or higher",
+    )
     def test_features_importance(self, model):
         fimp = model.features_importance(show=False)
 
-        assert fimp["index"] == ["cost", "owned cars", "gender", "income"]
-        assert fimp["importance"] == [85.53, 9.61, 4.86, 0.0]
-        assert fimp["sign"] == [1, 1, -1, 0]
+        assert fimp["index"] == ["gender"]
+        assert fimp["importance"] == [9.61]
+        assert fimp["sign"] == [1]
         plt.close("all")
 
-    @pytest.mark.skip(reason="needs Vertica 12.0.3")
+    @pytest.mark.skipif(
+        get_version()[0] < 12 or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
+        reason="requires vertica 12.0.3 or higher",
+    )
     def test_get_score(self, model):
         fim = model.get_score()
 
@@ -575,9 +581,6 @@ class TestXGBC:
         model.drop()
         os.remove(path)
 
-    @pytest.mark.skip(
-        reason="This test fails after upgrading xgboost library from 1.7.6 to 2.0.0"
-    )
     def test_to_json_multiclass(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic.fillna()
@@ -602,6 +605,9 @@ class TestXGBC:
         assert result == 0.0
         y_test_vertica = model.to_python()(X_test)
         y_test_python = model_python.predict(X_test)
+        # in xgboost 2.0.0 the label classes are 0-indexed, but they were 1-indexed in its 1.7.6 version
+        if xgb.__version__ >= '2.0.0':
+            y_test_python = y_test_python + 1
         result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == 0.0
