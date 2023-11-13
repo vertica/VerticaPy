@@ -25,7 +25,7 @@ MINIMUM_VERTICA_VERSION = {
     "ARIMA": [23, 4, 0],
     "AR": [11, 0, 0],
     "ARMA": [12, 0, 4],
-    "Balance": [8, 1, 1],
+    "balance": [8, 1, 1],
     "BernoulliNB": [8, 0, 0],
     "BisectingKMeans": [9, 3, 1],
     "CategoricalNB": [8, 0, 0],

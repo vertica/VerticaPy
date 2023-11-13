@@ -49,7 +49,7 @@ General Functions.
 
 @check_minimum_version
 @save_verticapy_logs
-def Balance(
+def balance(
     name: str,
     input_relation: str,
     y: str,
@@ -71,13 +71,13 @@ def Balance(
     method: str, optional
         Method used to do the balancing.
 
-        - hybrid :
+        - hybrid:
             Performs  over-sampling   and
             under-sampling  on  different
             classes so that each class is
             equally represented.
 
-        - over   :
+        - over:
             Over-samples on  all classes,
             except the most represented
             class, towards the  most
@@ -103,9 +103,9 @@ def Balance(
     Examples
     --------
 
-    The following examples provide a basic understanding of usage.
-    For more detailed examples, please refer to the
-    :ref:`user_guide.machine_learning` or the
+    The following examples provide a basic understanding
+    of usage. For more detailed examples, please refer to
+    the :ref:`user_guide.machine_learning` or the
     `Examples <https://www.vertica.com/python/examples/>`_
     section on the website.
 
@@ -158,11 +158,11 @@ def Balance(
     Function Application
     ^^^^^^^^^^^^^^^^^^^^^
 
-    First we import the ``Balance`` function:
+    First we import the ``balance`` function:
 
     .. ipython:: python
 
-        from verticapy.machine_learning.vertica import Balance
+        from verticapy.machine_learning.vertica import balance
 
     Then we can directly apply it to the dataset:
 
@@ -172,10 +172,11 @@ def Balance(
 
 
         vp.drop("balance_model")
-        result = Balance(name = "balance_model",
-                input_relation = data,
-                y = "survived",
-                method = "under"
+        result = balance(
+            name = "balance_model",
+            input_relation = data,
+            y = "survived",
+            method = "under",
         )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html", "w")
         html_file.write(result._repr_html_())
@@ -183,10 +184,11 @@ def Balance(
 
     .. code-block:: python
 
-        Balance(name = "balance_model",
-                input_relation = data,
-                y = "survived",
-                method = "under"
+        balance(
+            name = "balance_model",
+            input_relation = data,
+            y = "survived",
+            method = "under",
         )
 
     .. raw:: html
@@ -199,7 +201,7 @@ def Balance(
     _executeSQL(
         query=f"""
             SELECT 
-                /*+LABEL('learn.preprocessing.Balance')*/ 
+                /*+LABEL('learn.preprocessing.balance')*/ 
                 BALANCE('{name}', 
                         '{input_relation}', 
                         '{y}', 

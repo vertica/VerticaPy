@@ -2847,6 +2847,59 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         data = vpd.load_winequality()
         train, test = data.train_test_split(test_size = 0.2)
 
+    Balancing the Dataset
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    In VerticaPy, balancing a dataset to address class imbalances
+    is made straightforward through the
+    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    function within the ``preprocessing`` module. This function
+    enables users to rectify skewed class distributions efficiently.
+    By specifying the target variable and setting parameters like
+    the method for balancing, users can effortlessly achieve a more
+    equitable representation of classes in their dataset.
+    Whether opting for over-sampling, under-sampling, or a combination
+    of both, VerticaPy's
+    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    function streamlines the process, empowering users to enhance the
+    performance and fairness of their machine learning models trained
+    on imbalanced data.
+
+    To balance the dataset, use the following syntax.
+
+    .. code-block:: python
+
+        from verticapy.machine_learning.vertica.preprocessing import balance
+
+        balanced_train = balance(
+            name = "my_schema.train_balanced",
+            input_relation = train,
+            y = "good",
+            method = "hybrid",
+        )
+
+    .. note::
+
+        With this code, a table named `train_balanced` is created in the
+        `my_schema` schema. It can then be used to train the model. In the
+        rest of the example, we will work with the full dataset.
+
+    .. hint::
+
+        Balancing the dataset is a crucial step in improving the accuracy
+        of machine learning models, particularly when faced with imbalanced
+        class distributions. By addressing disparities in the number of
+        instances across different classes, the model becomes more adept at
+        learning patterns from all classes rather than being biased towards
+        the majority class. This, in turn, enhances the model's ability to
+        make accurate predictions for under-represented classes. The balanced
+        dataset ensures that the model is not dominated by the majority class
+        and, as a result, leads to more robust and unbiased model performance.
+        Therefore, by employing techniques such as over-sampling, under-sampling,
+        or a combination of both during dataset preparation, practitioners can
+        significantly contribute to achieving higher accuracy and better
+        generalization of their machine learning models.
+
     Model Initialization
     ^^^^^^^^^^^^^^^^^^^^^
 

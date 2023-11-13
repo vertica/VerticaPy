@@ -22,7 +22,7 @@ import pytest
 from verticapy import drop, set_option
 from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
-from verticapy.learn.preprocessing import Balance
+from verticapy.learn.preprocessing import balance
 
 set_option("print_info", False)
 
@@ -40,7 +40,7 @@ class TestBalance:
     def test_hybrid_method(self, titanic_vd):
         current_cursor().execute("DROP VIEW IF EXISTS public.hybrid_balanced")
 
-        bvd = Balance(
+        bvd = balance(
             name="public.hybrid_balanced",
             input_relation="public.titanic",
             y="survived",
@@ -58,7 +58,7 @@ class TestBalance:
     def test_under_method(self, titanic_vd):
         current_cursor().execute("DROP VIEW IF EXISTS public.under_balanced")
 
-        bvd = Balance(
+        bvd = balance(
             name="public.under_balanced",
             input_relation="public.titanic",
             y="survived",
@@ -78,7 +78,7 @@ class TestBalance:
     def test_over_method(self, titanic_vd):
         current_cursor().execute("DROP VIEW IF EXISTS public.over_balanced")
 
-        bvd = Balance(
+        bvd = balance(
             name="public.over_balanced",
             input_relation="public.titanic",
             y="survived",
