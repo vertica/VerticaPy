@@ -507,10 +507,6 @@ class TestClassificationTreeModel:
         """
         test function - test_predict_proba
         """
-        if model_class == "XGBClassifier":
-            # This test fails after upgrading xgboost library from 1.7.6 to 2.0.0"
-            return
-
         vpy_res = (
             get_vpy_model(model_class)
             .pred_prob_vdf[["survived_pred_1"]]
