@@ -27,6 +27,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.neighbors import KNeighborsRegressor
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -62,6 +71,7 @@ class TestKNeighborsRegressor:
         m_att = model.get_attributes("p")
         assert m_att == model.parameters["p"]
 
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = KNeighborsRegressor(
             "model_contour",

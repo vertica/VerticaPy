@@ -31,6 +31,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.tree import DummyTreeClassifier
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -104,6 +113,7 @@ class TestDummyTreeClassifier:
         assert list(conf_mat2[:, 1]) == [0, 3, 0]
         assert list(conf_mat2[:, 2]) == [0, 0, 3]
 
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = DummyTreeClassifier(
             "model_contour",

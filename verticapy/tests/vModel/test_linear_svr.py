@@ -27,6 +27,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.svm import LinearSVR
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -58,6 +67,7 @@ class TestLinearSVR:
     def test_repr(self, model):
         assert model.__repr__() == "<LinearSVR>"
 
+    @skip_plt
     def test_contour(self, winequality_vd):
         model_test = LinearSVR(
             "model_contour",
@@ -170,6 +180,7 @@ class TestLinearSVR:
             "acceptable_error_margin": 0.1,
         }
 
+    @skip_plt
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LinearSVR(

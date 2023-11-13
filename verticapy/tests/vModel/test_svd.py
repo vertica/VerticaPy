@@ -24,6 +24,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.decomposition import SVD
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -63,16 +72,19 @@ class TestSVD:
 
         assert result_sql == expected_sql
 
+    @skip_plt
     def test_plot(self, model):
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         result = model.plot(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 8
 
+    @skip_plt
     def test_plot_scree(self, model):
         result = model.plot_scree()
         assert len(result.get_default_bbox_extra_artists()) == 15
 
+    @skip_plt
     def test_plot_circle(self, model):
         result = model.plot_circle()
         assert len(result.get_default_bbox_extra_artists()) == 16

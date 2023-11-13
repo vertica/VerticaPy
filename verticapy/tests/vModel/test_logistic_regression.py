@@ -28,6 +28,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic
 from verticapy.learn.linear_model import LogisticRegression
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -94,6 +103,7 @@ class TestLogisticRegression:
         assert conf_mat2[0][1] == 602
         assert conf_mat2[1][1] == 391
 
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = LogisticRegression(
             "model_contour",
@@ -153,6 +163,7 @@ class TestLogisticRegression:
         assert lift_ch["lift"][900] == pytest.approx(1.0)
         plt.close("all")
 
+    @skip_plt
     def test_get_plot(self, winequality_vd):
         # 1D
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")

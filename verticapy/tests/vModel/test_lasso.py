@@ -31,6 +31,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import Lasso
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -62,6 +71,7 @@ class TestLasso:
     def test_repr(self, model):
         assert model.__repr__() == "<LinearRegression>"
 
+    @skip_plt
     def test_contour(self, winequality_vd):
         model_test = Lasso(
             "model_contour",
@@ -183,6 +193,7 @@ class TestLasso:
             "fit_intercept": True,
         }
 
+    @skip_plt
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = Lasso(

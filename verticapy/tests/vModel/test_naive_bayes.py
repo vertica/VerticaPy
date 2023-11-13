@@ -27,6 +27,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic, load_iris
 from verticapy.learn.naive_bayes import *
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -126,6 +135,7 @@ class TestNB:
         assert list(conf_mat1[:, 1]) == [0, 47, 3]
         assert list(conf_mat1[:, 2]) == [0, 3, 47]
 
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = NaiveBayes(
             "model_contour",
