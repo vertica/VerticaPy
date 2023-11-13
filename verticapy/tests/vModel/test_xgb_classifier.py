@@ -179,7 +179,8 @@ class TestXGBC:
         assert current_cursor().fetchone() is None
 
     @pytest.mark.skipif(
-        get_version()[0] < 12 or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
+        get_version()[0] < 12
+        or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
         reason="requires vertica 12.0.3 or higher",
     )
     def test_features_importance(self, model):
@@ -191,7 +192,8 @@ class TestXGBC:
         plt.close("all")
 
     @pytest.mark.skipif(
-        get_version()[0] < 12 or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
+        get_version()[0] < 12
+        or (get_version()[0] == 12 and get_version()[1] == 0 and get_version()[2] < 3),
         reason="requires vertica 12.0.3 or higher",
     )
     def test_get_score(self, model):
@@ -606,7 +608,7 @@ class TestXGBC:
         y_test_vertica = model.to_python()(X_test)
         y_test_python = model_python.predict(X_test)
         # in xgboost 2.0.0 the label classes are 0-indexed, but they were 1-indexed in its 1.7.6 version
-        if xgb.__version__ >= '2.0.0':
+        if xgb.__version__ >= "2.0.0":
             y_test_python = y_test_python + 1
         result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
