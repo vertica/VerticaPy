@@ -24,6 +24,7 @@ from verticapy.machine_learning.vertica.base import VerticaModel
 
 class Tfidf(VerticaModel):
     """
+    [Beta Version]
     Create tfidf representation of documents.
 
     Parameters

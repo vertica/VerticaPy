@@ -356,7 +356,7 @@ def chart_magic(
     .. ipython:: python
         :suppress:
 
-        %load_ext verticapy.hchart
+        %load_ext verticapy.chart
 
     Run the following to load some sample datasets. Once loaded, these datasets are
     stored in the 'public' schema. You can change the target schema with the

@@ -14,6 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
+warning_message = (
+    "Importing from 'verticapy.learn.ensemble' is deprecated, "
+    "and it will no longer be possible in the next release. "
+    "Please use 'verticapy.machine_learning.vertica' instead "
+    "to ensure compatibility with upcoming versions."
+)
+warnings.warn(warning_message, Warning)
+
 from verticapy.machine_learning.vertica.ensemble import (
     IsolationForest,
     RandomForestClassifier,
