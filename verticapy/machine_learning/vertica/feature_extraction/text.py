@@ -29,9 +29,19 @@ class Tfidf(VerticaModel):
     Create tfidf representation of documents.
 
     The formula that is used to compute the tf-idf for a term t of a document d
-    in a document set is tf-idf(t, d) = tf(t, d) * idf(t), and the idf is
-    computed as idf(t) = log [ n / df(t) ] + 1 (if ``smooth_idf=False``), where
-    n is the total number of documents in the document set and df(t) is the
+    in a document set is
+
+    .. math::
+
+        tf-idf(t, d) = tf(t, d) * idf(t),
+
+    and if ``smooth_idf = False``, the idf is computed as
+
+    .. math::
+
+        idf(t) = log [ n / df(t) ] + 1,
+
+    where n is the total number of documents in the document set and df(t) is the
     document frequency of t; the document frequency is the number of documents
     in the document set that contain the term t. The effect of adding "1" to
     the idf in the equation above is that terms with zero idf, i.e., terms
@@ -41,7 +51,10 @@ class Tfidf(VerticaModel):
     If ``smooth_idf=True`` (the default), the constant "1" is added to the
     numerator and denominator of the idf as if an extra document was seen
     containing every term in the collection exactly once, which prevents
-    zero divisions: idf(t) = log [ (1 + n) / (1 + df(t)) ] + 1.
+    zero divisions:
+
+    .. math::
+        idf(t) = log [ (1 + n) / (1 + df(t)) ] + 1.
 
     Parameters
     ----------
@@ -56,9 +69,16 @@ class Tfidf(VerticaModel):
         before processing.
     norm: {'l1','l2'} or None, default='l2'
         The tfidf values of each document will have unit norm, either:
-            'l2': Sum of squares of vector elements is 1.
-            'l1': Sum of absolute values of vector elements is 1.
-            None: No normalization.
+
+        - l2:
+            Sum of squares of vector elements is 1.
+
+        - l1:
+            Sum of absolute values of vector elements is 1.
+
+        - None:
+            No normalization.
+
     smooth_idf : bool, default=True
         Smooth idf weights by adding one to document frequencies, as if an
         extra document was seen containing every term in the collection
@@ -87,18 +107,20 @@ class Tfidf(VerticaModel):
         First we initialize the object and fit the model, to learn the idf weigths.
 
         .. code-block:: python
+
             model = Tfidf(name = "test_idf")
             model.fit(input_relation = data, index = "id", x = "values")
 
         We apply the transform function to obtain the idf representation.
 
         .. code-block:: python
+
             model.transform(vdf = data, index = "id", x = "values", pivot = True)
 
         .. ipython:: python
             :suppress:
 
-            model = Tfidf(name = "test_idf")
+            model = Tfidf(name = "test_idf", overwrite_model = True)
             model.fit(input_relation = data, index = "id", x = "values")
             model.transform(vdf = data, index = "id", x = "values", pivot = True)
 
