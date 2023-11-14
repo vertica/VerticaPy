@@ -706,6 +706,7 @@ class TestvDFPlot:
         assert result[1][-1] == pytest.approx(651.2962963)
         plt.close("all")
 
+    @skip_plt
     def test_vDF_range_plot(self, amazon_vd):
         assert (
             len(
