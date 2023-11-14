@@ -14,3 +14,15 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
+warning_message = (
+    "Importing from 'verticapy.learn.tsa' is deprecated, "
+    "and it will no longer be possible in the next release. "
+    "Please use 'verticapy.machine_learning.vertica' instead "
+    "to ensure compatibility with upcoming versions.\n"
+    "Note: SARIMAX and VAR have been removed. Please explore "
+    "and adopt one of the new in-database time series models "
+    "as a replacement."
+)
+warnings.warn(warning_message, Warning)

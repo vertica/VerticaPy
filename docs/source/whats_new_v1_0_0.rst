@@ -4,27 +4,69 @@
 Version 1.0.0
 ===============
 
-
-
 This release contains some major changes, including:
-
  
 - Micro Focus is now OpenText. All the documentation containing copyright information has been updated to represent the new ownership of Vertica and its associated products.
 
-
-- Requirements update: Python version 3.13 is now supported.
-- Minimum supported Python version is 3.8.
+- Requirements update: Python version 3.10-3.12 are now supported.
+- Minimum supported Python version is 3.9.
 
 .. note:: 
   
   An internal minimum function python decorator (@check_minimum_version) 
   warns users if any of  the Vertica modules do not meet the requirement for the function in use.
 
+Versioning Guidelines
+----------------------
+
+We highly recommend transitioning to the syntax of version 1.0.0, as the previous versions were in beta and subject to potential changes at any moment. Our current versioning process follows a systematic approach:
+
+ - **Major Version Increment:** This is reserved for substantial changes that involve a significant shift in syntax and may deprecate multiple elements. Users should be prepared for a notable adjustment in how they interact with the software.
+ - **Minor Version Increment:** Occurs when introducing new functionalities and making substantial improvements. Users can anticipate enhanced features and capabilities without major disruptions to their existing workflows.
+ - **Last Digit Increment:** Reserved for bug fixes and changes that do not influence the syntax or functionality of the previous version. These updates are aimed at enhancing stability and addressing issues without requiring users to adapt to a new syntax.
+
+By adhering to this versioning strategy, users can effectively navigate updates, ensuring a smooth transition while benefiting from the latest features, improvements, and bug fixes.
+
+Upcoming Changes: Deprecated Modules
+-------------------------------------
+
+Several modules have been deprecated as part of a code restructuring initiative. Please be aware that the following import will soon be unsupported:
+
+.. code-block:: python
+  
+  # Moved to verticapy.sql.geo
+  import verticapy.geo
+
+  # Moved to verticapy.machine_learning
+  # And also restructured
+  import verticapy.learn
+
+  # Moved to verticapy.sql.functions
+  # And also restructured
+  import verticapy.stats
+
+  # Moved to verticapy.sdk.vertica
+  import verticapy.udf
+
+  # Moved to verticapy.sql
+  # And also restructured
+  import verticapy.utilities
+
+  # Moved to verticapy.core
+  # And also restructured
+  import verticapy.vdataframe
+
+  # New syntax: %load_ext verticapy.chart
+  %load_ext verticapy.hchart
+
+As this is a major version release and to uphold best practices, we are expeditiously phasing out all old methodologies. It is imperative to ensure a swift adaptation to the new syntax. Warnings have been issued for several imports, and they will soon be removed.
+
+In parallel, we are actively developing a set of new tests. Consequently, the current 'tests' folder will soon be replaced by 'tests_new'. Your cooperation in transitioning to the updated syntax and directory structure is greatly appreciated.
   
 Bug fixes
------------
+----------
 
-- Adjusted-R squared now works with "K" parameter
+- Adjusted-R squared now works with "k" parameter
 - Corrected calculation of Prevalence Threshold
 - Fixed nested pie plots
 - Improved vDataFrame.balance() function
@@ -41,15 +83,17 @@ Bug fixes
 ____
 
 Machine Learning Support
---------------------------
+-------------------------
 
 - New Vertica algorithms supported:
+    - IsolationForest
     - KPrototypes
     - Poisson Regression
     - AutoRegressive (AR)
     - MovingAverages (MA)
     - AutoRegressive Moving Averages (ARMA)
     - AutoRegressive Integrated Moving Averages (ARIMA)
+    - Term Frequency * Inverse Document Frequency (TFIDF). It is still beta. 
 
 - New function for finding the feature importance for XGBoost models.
 - Classification metrics are now available for multiclass data/model using three methods: ``micro``, ``macro``, ``weighted``, ``score`` and ``none``.
@@ -59,7 +103,7 @@ Machine Learning Support
 - Model Tracking and Versioning now supported.
   Check out :ref:`notebooks/ml/model_tracking_versioning/index.ipynb` for more details.
 - Model Export and Import:
-  Now models can be exported to ``pmml``, ``tensorflow``, and ``binary``. 
+  Now models can be exported to ``pmml``, ``tensorflow``, and ``binary``. They can now be exported to another User Defined Location.
 
 _____
 
@@ -73,19 +117,16 @@ SQL
   import verticapy as vp
   vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
 
-
 The new format supports other methods for creating ``vDataFrame``s.
 
 .. code-block:: python
 
   vp.vDataFrame({"X":[1,2,3],"Y":['a','b','c']})
   
- 
-
 _______
 
 Plotting
------------
+---------
 
 - Plotly is now the default plotting library, introducing improved visualizations. The Plotly plots are more interactive and enhance the user experience.
 - Plotly Outliers plot now has the option to customize colors using the ``colors`` parameter.
@@ -112,21 +153,17 @@ Plotting
 - PLotly Histogram plot now allows multiple plots.
 - You can now easily switch between the plotting libraries using the following syntax:
 
-
   .. code-block:: python
 
     from verticapy import set_option
     set_option("plotting_lib","matplotlib")
     
-
-.. note:: The ``Hchart`` function is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
+.. note:: The ``hchart`` function is deprecated. The Highcharts plots can be plotted using the regular SQL plotting syntax by setting Highcharts as the default plotting library.
 
 - The parameters ``custom_height`` and ``custom_width`` have been added to all plots so that the sizes can be changed as needed.
 
-
 - Validators now ensure that only supported options are selected for the VerticaPy options.
 
- 
 - Users can now plot directly from SQL queries:
 
 .. code-block:: python
@@ -134,7 +171,6 @@ Plotting
   %load_ext verticapy.jupyter.extensions.chart_magic
   %chart -c sql_command -f input_file -k 'auto' -o output_file
   
-
   The chart command is similar to the hchart command, accepting four arguments:
 
   1. SQL command
@@ -148,10 +184,8 @@ Plotting
 
   %chart -k pie -c "SELECT pclass, AVG(age) AS av_avg FROM titanic GROUP BY 1;"
 
-
-
 Classification Metrics
--------------------------
+-----------------------
 
 Added support for many new classification and regression metrics.
 
@@ -173,11 +207,10 @@ The following metrics have been added to the classification report:
 
 _____
 
-Library Heirarchy
--------------------
+Library Hierarchy
+------------------
 
 Import structures have changed. The code has been completely restructured, which means that going forward all imports will be done differently. Currently, we still allow the previous structure of import, but it will gradually be deprecated.
-
 
 The new structure has the following parent folders:
 
@@ -192,14 +225,12 @@ The new structure has the following parent folders:
 
 .. note:: The folders with "_" subscript are internal
 
-
 For example, to use Vertica's `LinearRegression`, it should now be imported as follows:
 
 .. code-block:: python
 
   from verticapy.machine_learning.vertica import LinearRegression
   
-
 To import statistical tests:
 
 .. code-block:: python
@@ -209,7 +240,7 @@ To import statistical tests:
 ____
 
 Added Model Tracking tool (MLOps)
-------------------------------------
+----------------------------------
   
 It is a common practice for data scientists to train tens of temporary models before picking one of them as their candidate model for going into production.
 A model tracking tool can help each individual data scientist to easily track the models trained for an experiment (project) and compare their metrics for choosing the best one.
@@ -262,7 +293,7 @@ Example:
   
   
 Others
----------
+-------
 
 - Docstrings have been enriched to add examples and other details that will help in creating a more helpful doc.
 - A new dataset "Africa Education" has been added to the dataset library. It can be easily imported using:
@@ -282,7 +313,6 @@ Others
 
  
 - Verticapylab autoconnection. Slight modification to allow smooth integration of the upcoming VerticaPyLab.
-
   
 Internal
 =========
