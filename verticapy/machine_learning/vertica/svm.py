@@ -212,7 +212,7 @@ class LinearSVR(LinearModel, Regressor):
             intercept_scaling = 1.0,
             intercept_mode = "regularized",
             acceptable_error_margin = 0.1,
-            max_iter = 100
+            max_iter = 100,
         )
 
     .. hint::
@@ -238,7 +238,7 @@ class LinearSVR(LinearModel, Regressor):
             intercept_scaling = 1.0,
             intercept_mode = "regularized",
             acceptable_error_margin = 0.1,
-            max_iter = 100
+            max_iter = 100,
         )
 
     Model Training
@@ -256,7 +256,7 @@ class LinearSVR(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -362,7 +362,7 @@ class LinearSVR(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -380,7 +380,7 @@ class LinearSVR(LinearModel, Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -755,7 +755,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
             intercept_scaling = 1.0,
             intercept_mode = "regularized",
             class_weight = [1, 1],
-            max_iter = 100
+            max_iter = 100,
         )
 
     .. hint::

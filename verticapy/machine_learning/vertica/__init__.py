@@ -58,7 +58,7 @@ from verticapy.machine_learning.vertica.neighbors import (
 from verticapy.machine_learning.vertica.pipeline import Pipeline
 from verticapy.machine_learning.vertica.pmml import PMMLModel
 from verticapy.machine_learning.vertica.preprocessing import (
-    Balance,
+    balance,
     CountVectorizer,
     MinMaxScaler,
     Scaler,

@@ -402,8 +402,7 @@ Balance
 .. autosummary::
    :toctree: api/
 
-   preprocessing.Balance
-
+   preprocessing.balance
 
 Count Vectorizor (Beta)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
