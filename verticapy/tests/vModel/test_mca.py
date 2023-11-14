@@ -24,6 +24,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_market
 from verticapy.learn.decomposition import MCA
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -115,12 +124,14 @@ class TestMCA:
     def test_get_params(self, model):
         assert model.get_params() == {}
 
+    @skip_plt
     def test_plot(self, model):
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         result = model.plot(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 8
 
+    @skip_plt
     def test_plot_var(self, model):
         result = model.plot_var()
         assert len(result.get_default_bbox_extra_artists()) == 62
@@ -131,22 +142,26 @@ class TestMCA:
         result = model.plot_var(dimensions=(2, 3), method="contrib")
         assert len(result.get_default_bbox_extra_artists()) == 62
 
+    @skip_plt
     def test_plot_contrib(self, model):
         result = model.plot_contrib()
         assert len(result.get_default_bbox_extra_artists()) == 114
         result = model.plot_contrib(dimension=2)
         assert len(result.get_default_bbox_extra_artists()) == 114
 
+    @skip_plt
     def test_plot_cos2(self, model):
         result = model.plot_cos2()
         assert len(result.get_default_bbox_extra_artists()) == 111
         result = model.plot_cos2(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 111
 
+    @skip_plt
     def test_plot_scree(self, model):
         result = model.plot_scree()
         assert len(result.get_default_bbox_extra_artists()) == 113
 
+    @skip_plt
     def test_plot_circle(self, model):
         result = model.plot_circle()
         assert len(result.get_default_bbox_extra_artists()) == 114

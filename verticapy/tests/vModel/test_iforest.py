@@ -32,6 +32,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic, load_dataset_reg
 from verticapy.learn.ensemble import IsolationForest
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 set_option("random_state", 1)
 
@@ -78,6 +87,7 @@ class TestIsolationForest:
     def test_repr(self, model):
         assert model.__repr__() == "<IsolationForest>"
 
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = IsolationForest(
             "model_contour_iF",

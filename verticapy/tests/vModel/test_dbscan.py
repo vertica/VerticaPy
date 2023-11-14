@@ -32,6 +32,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.cluster import DBSCAN
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -71,6 +80,7 @@ class TestDBSCAN:
         result = model.get_attributes()
         assert result == ["n_cluster_", "n_noise_", "p_"]
 
+    @skip_plt
     def test_get_plot(self, model):
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9

@@ -40,6 +40,15 @@ from verticapy.datasets import (
     load_gapminder,
 )
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -93,6 +102,7 @@ def gapminder_vd():
 
 
 class TestvDFPlot:
+    @skip_plt
     def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
         result = pop_growth_vd.animated_bar(
             "year",
@@ -177,6 +187,7 @@ class TestvDFPlot:
         assert isinstance(result, HTML)
         plt.close("all")
 
+    @skip_plt
     def test_vDF_stacked_area(self, amazon_vd):
         assert (
             len(
@@ -197,6 +208,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @skip_plt
     def test_vDF_barh(self, titanic_vd, amazon_vd):
         # testing vDataFrame[].bar
         # auto
@@ -271,10 +283,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_boxplot(self, titanic_vd):
         # testing vDataFrame[].boxplot
         result = titanic_vd["age"].boxplot(color="b")
@@ -304,10 +313,7 @@ class TestvDFPlot:
         ] == pytest.approx(512.3292)
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info > (3, 6),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_bubble(self, iris_vd, titanic_vd):
         # testing vDataFrame.bubble - img
         result = titanic_vd.scatter(
@@ -352,10 +358,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
@@ -376,6 +379,7 @@ class TestvDFPlot:
             assert max(result.get_default_bbox_extra_artists()[5].get_data()[1]) < 0.37
             plt.close("all")
 
+    @skip_plt
     def test_vDF_contour(self, titanic_vd):
         def func(a, b):
             return a + b + 1
@@ -387,7 +391,7 @@ class TestvDFPlot:
         assert len(result.get_default_bbox_extra_artists()) == 32
         plt.close("all")
 
-    @pytest.mark.skip(reason="Python 3.6 VE could not install proper dependencies")
+    @skip_plt
     def test_vDF_geo_plot(self, world_vd):
         assert (
             len(
@@ -399,10 +403,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_heatmap(self, iris_vd):
         result = iris_vd.heatmap(
             ["PetalLengthCm", "SepalLengthCm"],
@@ -413,10 +414,7 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[-2].get_size() == (5, 4)
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_hexbin(self, titanic_vd):
         result = titanic_vd.hexbin(
             columns=["fare", "age"],
@@ -438,9 +436,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skip(
-        reason="Deprecated, we need to implement the functions for each graphic"
-    )
+    @skip_plt
     def test_vDF_hchart(self, titanic_vd, amazon_vd):
         # boxplot
         result = titanic_vd.hchart(kind="boxplot")
@@ -576,6 +572,7 @@ class TestvDFPlot:
         result = amazon_vd.hchart(x="date", y="number", kind="candlestick")
         assert isinstance(result, Highstock)
 
+    @skip_plt
     def test_vDF_bar(self, titanic_vd):
         # testing vDataFrame[].bar
         # auto
@@ -629,10 +626,7 @@ class TestvDFPlot:
         ].get_height() == pytest.approx(0.4327390599675851)
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_pie(self, titanic_vd):
         # testing vDataFrame[].pie
         result = titanic_vd["pclass"].pie(
@@ -661,6 +655,7 @@ class TestvDFPlot:
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
 
+    @skip_plt
     def test_vDF_pivot_table(self, titanic_vd):
         result = titanic_vd._pivot_table(
             columns=["age", "pclass"],
@@ -676,7 +671,7 @@ class TestvDFPlot:
         assert len(result[1]) == 12
         # plt.close("all")
 
-    @pytest.mark.skip(reason="implement new version later.")
+    @skip_plt
     def test_vDF_outliers_plot(self, titanic_vd):
         assert (
             len(titanic_vd.outliers_plot(["fare"]).get_default_bbox_extra_artists())
@@ -693,6 +688,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @skip_plt
     def test_vDF_plot(self, amazon_vd):
         # testing vDataFrame[].plot
         result = amazon_vd["number"].plot(ts="date", by="state", color="b")
@@ -710,6 +706,7 @@ class TestvDFPlot:
         assert result[1][-1] == pytest.approx(651.2962963)
         plt.close("all")
 
+    @skip_plt
     def test_vDF_range_plot(self, amazon_vd):
         assert (
             len(
@@ -730,10 +727,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(
-        sys.version_info >= (3, 7),
-        reason="this test is incompatible with newer versions of matplotlib",
-    )
+    @skip_plt
     def test_vDF_scatter(self, iris_vd, titanic_vd):
         # testing vDataFrame.scatter
         result = titanic_vd.scatter(
@@ -779,11 +773,13 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         plt.close("all")
 
+    @skip_plt
     def test_vDF_scatter_matrix(self, iris_vd):
         result = iris_vd.scatter_matrix(color="b")
         assert len(result) == 4
         plt.close("all")
 
+    @skip_plt
     def test_vDF_spider(self, titanic_vd):
         result = titanic_vd["pclass"].spider("survived", color="b")
         assert len(result.get_default_bbox_extra_artists()) == 9

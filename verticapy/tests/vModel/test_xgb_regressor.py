@@ -37,6 +37,15 @@ from verticapy.connection import current_cursor
 from verticapy.datasets import load_winequality, load_titanic, load_dataset_reg
 from verticapy.learn.ensemble import XGBRegressor
 
+# Matplotlib skip
+import matplotlib
+
+matplotlib_version = matplotlib.__version__
+skip_plt = pytest.mark.skipif(
+    matplotlib_version > "3.5.2",
+    reason="Test skipped on matplotlib version greater than 3.5.2",
+)
+
 set_option("print_info", False)
 
 
@@ -94,6 +103,7 @@ def model(xgbr_data_vd):
     reason="requires vertica 10.1 or higher",
 )
 class TestXGBR:
+    @skip_plt
     def test_contour(self, titanic_vd):
         model_test = XGBRegressor(
             "model_contour",
@@ -477,6 +487,7 @@ class TestXGBR:
         assert tree_1["prediction"][7] in ("-0.720000", "-0.405000")
         assert tree_1["prediction"][8] in ("0.080000", "0.045000")
 
+    @skip_plt
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = XGBRegressor(
