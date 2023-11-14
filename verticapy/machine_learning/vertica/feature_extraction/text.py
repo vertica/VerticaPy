@@ -83,16 +83,16 @@ class Tfidf(VerticaModel):
                               ]
                 }
             )
-        
+
         First we initialize the object and fit the model, to learn the idf weigths.
-        
+
         .. code-block:: python
             model = Tfidf(name = "test_idf")
             model.fit(input_relation = data, index = "id", x = "values")
 
         We apply the transform function to obtain the idf representation.
 
-        .. code-block:: python    
+        .. code-block:: python
             model.transform(vdf = data, index = "id", x = "values", pivot = True)
 
         .. ipython:: python
@@ -237,7 +237,7 @@ class Tfidf(VerticaModel):
             If True it will pivot the final table, to have
             1 row per document and a sparse matrix.
             When working with a big dictionary, pivot operation is
-            resource intensive. 
+            resource intensive.
             Might be better to set pivot=False, filter the output
             and then manually pivot.
 
