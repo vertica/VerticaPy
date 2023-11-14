@@ -44,6 +44,165 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
     tuple
         statistic, p_value
 
+    Examples
+    ---------
+
+    Let's try this test on two set of distribution to
+    obverse the contrast in test results:
+
+    - normally distributed dataset
+    - uniformly distributed dataset
+
+    Normally Distributed
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Import the necessary libraries:
+
+    .. code-block:: python
+
+        import verticapy as vp
+        import numpy as np
+        import random
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import numpy as np
+        import random
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Then we can define the basic parameters for the
+    normal distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        N = 100 # Number of rows
+        mean = 0
+        std_dev = 1
+
+        # Dataset
+        data = np.random.normal(mean, std_dev, N)
+
+    Now we can create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_jarque_bera_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_1.html
+
+    To find the test p-value, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import jarque_bera
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        jarque_bera(vdf, column = "col")
+
+    We can see that the p-value is high meaning that
+    we cannot reject the null hypothesis. This is supported
+    by the low Jarque-Bera Test Statistic value, providing
+    further evidence that the distribution is normal.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test distribution does not belong
+        to a normal distribution.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Uniform Distribution
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    .. ipython:: python
+        :suppress:
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col": data})
+
+    We can define the basic parameters for the
+    uniform distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        low = 0
+        high = 1
+
+        # Dataset
+        data = np.random.uniform(low, high, N)
+
+        # vDataFrame
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        jarque_bera(vdf, column = "col")
+
+
+    In this case, the p-value is quite low
+    meaning that it is highly probable that
+    the data is not normally distributed.
+    This is supported by the elevated Jarque-Bera
+    Test Statistic value, providing further evidence
+    that the distribution deviates from normality.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -72,6 +231,167 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
     -------
     tuple
         statistic, p_value
+
+    Examples
+    ---------
+
+    Let's try this test on two set of distribution to
+    obverse the contrast in test results:
+
+    - normally distributed dataset
+    - uniformly distributed dataset
+
+    Normally Distributed
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Import the necessary libraries:
+
+    .. code-block:: python
+
+        import verticapy as vp
+        import numpy as np
+        import random
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import numpy as np
+        import random
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Then we can define the basic parameters for the
+    normal distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        N = 100 # Number of rows
+        mean = 0
+        std_dev = 1
+
+        # Dataset
+        data = np.random.normal(mean, std_dev, N)
+
+    Now we can create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_kurtosistest_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_1.html
+
+    To find the test p-value, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import kurtosistest
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        kurtosistest(vdf, column = "col")
+
+    We can see that the p-value is high meaning that
+    we cannot reject the null hypothesis. This finding
+    is corroborated by the Kurtoises Test Statistic,
+    which is closer to 0, providing additional evidence
+    that the distribution is normal.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test distribution does not belong
+        to a normal distribution.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Uniform Distribution
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    .. ipython:: python
+        :suppress:
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col": data})
+
+    We can define the basic parameters for the
+    uniform distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        low = 0
+        high = 1
+
+        # Dataset
+        data = np.random.uniform(low, high, N)
+
+        # vDataFrame
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        kurtosistest(vdf, column = "col")
+
+
+    In this case, the p-value is quite low
+    meaning that it is highly probable that
+    the data is not normally distributed.
+    This finding is corroborated by the Kurtoises
+    Test Statistic, which is away from 0, providing
+    additional evidence that the distribution deviates from normality.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -169,7 +489,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = vdf["col"].hist()
+        fig = vdf["col"].hist(width = 600)
         fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_1.html")
 
     .. raw:: html
@@ -188,7 +508,9 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         normaltest(vdf, column = "col")
 
     We can see that the p-value is high meaning that
-    we cannot reject the null hypothesis.
+    we cannot reject the null hypothesis. The low
+    normal test statistic value further supports
+    the conclusion that the distribution is normal.
 
     .. note::
 
@@ -247,7 +569,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     .. ipython:: python
         :suppress:
 
-        fig = vdf["col"].hist()
+        fig = vdf["col"].hist(width = 600)
         fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_2.html")
 
     .. raw:: html
@@ -263,6 +585,9 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     In this case, the p-value is quite low
     meaning that it is highly probable that
     the data is not normally distributed.
+    The high normal test statistic value further
+    supports the conclusion that the distribution
+    is not normal.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -292,6 +617,180 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     -------
     tuple
         statistic, p_value
+
+    Examples
+    ---------
+
+    Let's try this test on two set of distribution to
+    obverse the contrast in test results:
+
+    - normally distributed dataset
+    - uniformly distributed dataset
+
+    Normally Distributed
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Import the necessary libraries:
+
+    .. code-block:: python
+
+        import verticapy as vp
+        import numpy as np
+        import random
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import numpy as np
+        import random
+        N = 100
+        mean = 0
+        std_dev = 1
+        data = np.random.normal(mean, std_dev, N)
+
+    Then we can define the basic parameters for the
+    normal distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        N = 100 # Number of rows
+        mean = 0
+        std_dev = 1
+
+        # Dataset
+        data = np.random.normal(mean, std_dev, N)
+
+    Now we can create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_skewtest_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_1.html
+
+    To find the test p-value, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import skewtest
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        skewtest(vdf, column = "col")
+
+    We can see that the p-value is high meaning that
+    we cannot reject the null hypothesis. The
+    skewtest test statistic value closer to 0
+    further corraborates that the distribution is
+    normal.
+
+    .. note::
+
+        A **positive skewness** value suggests that
+        the data distribution has a longer right
+        tail. In other words, the distribution is
+        skewed to the right, and the majority of
+        the data points are concentrated on the left side.
+
+        A **negative sekweness** value indicates that
+        the data distribution has a longer left tail.
+        The distribution is skewed to the left, and most
+        of the data points are concentrated on the right side.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test distribution does not belong
+        to a normal distribution.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Uniform Distribution
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    .. ipython:: python
+        :suppress:
+
+        low = 0
+        high = 1
+        data = np.random.uniform(low, high, N)
+        vdf = vp.vDataFrame({"col": data})
+
+    We can define the basic parameters for the
+    uniform distribution:
+
+    .. code-block:: python
+
+        # Distribution parameters
+        low = 0
+        high = 1
+
+        # Dataset
+        data = np.random.uniform(low, high, N)
+
+        # vDataFrame
+        vdf = vp.vDataFrame({"col": data})
+
+    We can visualize the distribution:
+
+    .. code-block::
+
+        vdf["col"].hist()
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["col"].hist(width = 600)
+        fig.write_html("figures/plotting_machine_learning_model_selection_norm_skewtest_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_2.html
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        skewtest(vdf, column = "col")
+
+
+    In this case, the p-value is quite low
+    meaning that it is highly probable that
+    the data is not normally distributed.
+    The skewtest test statistic value away from 0
+    further confirms that the distribution is
+    not normal.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
