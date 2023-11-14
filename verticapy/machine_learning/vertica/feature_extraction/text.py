@@ -226,7 +226,7 @@ class TfidfVectorizer(VerticaModel):
         norm: Literal["l1", "l2", None] = "l2",
         smooth_idf: bool = True,
     ) -> None:
-        self.create_table_ = not (isinstance(name, None))
+        self.create_table_ = not (isinstance(name, NoneType))
         super().__init__(name, overwrite_model)
         self.parameters = {
             "lowercase": lowercase,
@@ -327,7 +327,7 @@ class TfidfVectorizer(VerticaModel):
             GROUP BY word, count_docs
             ORDER BY word_doc_count desc"""
 
-        if self.create_table_:
+        if not (self.create_table_):
             self.idf_ = f"({q_idf}) VERTICAPY_SUBTABLE"
         else:
             _executeSQL(q_idf, print_time_sql=False)
@@ -382,7 +382,7 @@ class TfidfVectorizer(VerticaModel):
             t_norm = "1"
 
         if self.parameters["norm"] == "l2":
-            t_norm = "SQRT(POWER(SUM((tf * idf_log), 2)) OVER (PARTITION BY tf.row_id))"
+            t_norm = "SQRT(SUM(POWER((tf * idf_log), 2)) OVER (PARTITION BY tf.row_id))"
 
         if self.parameters["norm"] == "l1":
             t_norm = "SUM(ABS(tf * idf_log)) OVER (PARTITION BY tf.row_id)"
@@ -412,14 +412,14 @@ class TfidfVectorizer(VerticaModel):
                 tf AS ({q_tf})
                 SELECT 
                     tf.row_id,
-                    {self.idf_}.word,
-                    tf * idf_log / {t_norm} AS tf_idf
+                    idf_table.word,
+                    tf * idf_log / {t_norm} AS tfidf
                 FROM tf
-                INNER JOIN {self.idf_} 
-                ON tf.word = {self.idf_}.word
+                INNER JOIN (SELECT * FROM {self.idf_}) AS idf_table
+                ON tf.word = idf_table.word
                 ORDER BY tf.row_id"""
 
         result = vDataFrame(q_tfidf)
         if not pivot:
             return result
-        return result.pivot(index="row_id", columns="word", values="tf_idf", prefix="")
+        return result.pivot(index="row_id", columns="word", values="tfidf", prefix="")
