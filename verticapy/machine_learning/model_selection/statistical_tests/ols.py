@@ -280,13 +280,15 @@ def het_breuschpagan(
 
         print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
-    Notice the contrast of the two test results. In this
-    dataset, the noise was heteroscedestic so we got very low
-    p_value scores and higher statistics score. Thus confirming
-    that the noise was in fact heteroscedestic.
+    ..note::
 
-    For more information check out
-    `this link <https://www.statology.org/breusch-pagan-test/>`_.
+        Notice the contrast of the two test results. In this
+        dataset, the noise was heteroscedestic so we got very low
+        p_value scores and higher statistics score. Thus confirming
+        that the noise was in fact heteroscedestic.
+
+        For more information check out
+        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -380,7 +382,7 @@ def het_goldfeldquandt(
 
     .. ipython:: python
 
-        N = 50
+        N = 50 # Number of rows
         x_val = list(range(N))
         y_val = [x*2 for x in x_val] + np.random.normal(0, 0.4, N)
 
@@ -474,10 +476,10 @@ def het_goldfeldquandt(
 
         # y values
         x_val = list(range(N))
-        y_val = [x*2 for x in x_val]
+        y_val = [x * 2 for x in x_val]
 
         # Adding some heteroscedestic noise
-        y_val = [x+np.random.normal() for x in y_val]
+        y_val = [x + np.random.normal() for x in y_val]
 
     .. ipython:: python
 
@@ -518,13 +520,15 @@ def het_goldfeldquandt(
 
         print(statistic, pvalue)
 
-    Notice the contrast of the two test results. In this
-    dataset, the noise was heteroscedestic so we got very low
-    p_value scores and higher statistics score. Thus confirming
-    that the noise was in fact heteroscedestic.
+    ..note::
 
-    For more information check out
-    `this link <https://www.statology.org/breusch-pagan-test/>`_.
+        Notice the contrast of the two test results. In this
+        dataset, the noise was heteroscedestic so we got very low
+        p_value scores and higher statistics score. Thus confirming
+        that the noise was in fact heteroscedestic.
+
+        For more information check out
+        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
 
     def model_fit(
@@ -815,13 +819,15 @@ def het_white(
 
         print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
 
-    Notice the contrast of the two test results. In this
-    dataset, the noise was heteroscedestic so we got very low
-    p_value scores and higher statistics score. Thus confirming
-    that the noise was in fact heteroscedestic.
+    ..note::
 
-    For more information check out
-    `this link <https://www.statology.org/breusch-pagan-test/>`_.
+        Notice the contrast of the two test results. In this
+        dataset, the noise was heteroscedestic so we got very low
+        p_value scores and higher statistics score. Thus confirming
+        that the noise was in fact heteroscedestic.
+
+        For more information check out
+        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
