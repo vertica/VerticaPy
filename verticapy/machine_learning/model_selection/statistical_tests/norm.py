@@ -196,13 +196,14 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
 
         jarque_bera(vdf, column = "col")
 
+    .. note::
 
-    In this case, the p-value is quite low
-    meaning that it is highly probable that
-    the data is not normally distributed.
-    This is supported by the elevated Jarque-Bera
-    Test Statistic value, providing further evidence
-    that the distribution deviates from normality.
+        In this case, the p-value is quite low
+        meaning that it is highly probable that
+        the data is not normally distributed.
+        This is supported by the elevated Jarque-Bera
+        Test Statistic value, providing further evidence
+        that the distribution deviates from normality.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -385,13 +386,15 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 
         kurtosistest(vdf, column = "col")
 
+    .. note::
 
-    In this case, the p-value is quite low
-    meaning that it is highly probable that
-    the data is not normally distributed.
-    This finding is corroborated by the Kurtoises
-    Test Statistic, which is away from 0, providing
-    additional evidence that the distribution deviates from normality.
+        In this case, the p-value is quite low
+        meaning that it is highly probable that
+        the data is not normally distributed.
+        This finding is corroborated by the Kurtoises
+        Test Statistic, which is away from 0, providing
+        additional evidence that the distribution deviates
+        from normality.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -581,13 +584,14 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         normaltest(vdf, column = "col")
 
+    .. note::
 
-    In this case, the p-value is quite low
-    meaning that it is highly probable that
-    the data is not normally distributed.
-    The high normal test statistic value further
-    supports the conclusion that the distribution
-    is not normal.
+        In this case, the p-value is quite low
+        meaning that it is highly probable that
+        the data is not normally distributed.
+        The high normal test statistic value further
+        supports the conclusion that the distribution
+        is not normal.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -784,13 +788,14 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         skewtest(vdf, column = "col")
 
+    .. note::
 
-    In this case, the p-value is quite low
-    meaning that it is highly probable that
-    the data is not normally distributed.
-    The skewtest test statistic value away from 0
-    further confirms that the distribution is
-    not normal.
+        In this case, the p-value is quite low
+        meaning that it is highly probable that
+        the data is not normally distributed.
+        The skewtest test statistic value away from 0
+        further confirms that the distribution is
+        not normal.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
