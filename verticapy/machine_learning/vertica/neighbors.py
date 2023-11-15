@@ -144,8 +144,8 @@ class KNeighborsRegressor(Regressor):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(self, name: str = None, overwrite_model: bool = False, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -873,8 +873,8 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(self, name: str = None, overwrite_model: bool = False, n_neighbors: int = 5, p: int = 2) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:

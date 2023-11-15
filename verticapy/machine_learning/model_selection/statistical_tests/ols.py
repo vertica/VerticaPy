@@ -296,8 +296,7 @@ def het_breuschpagan(
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
     eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
     try:
@@ -551,8 +550,7 @@ def het_goldfeldquandt(
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except QueryError:
@@ -843,8 +841,7 @@ def het_white(
             POWER({eps}, 2) AS v_eps2 
         FROM {vdf}"""
     vdf_white = vDataFrame(query)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
         model.fit(vdf_white, variables_names, "v_eps2", return_report=True,)
         R2 = model.score(metric="r2")
@@ -1162,8 +1159,7 @@ def endogtest(
         vdf = vDataFrame(input_relation)
     X = format_type(X, dtype=list)
     eps, X = vdf.format_colnames(eps, X)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
         model.fit(vdf, X, eps, return_report=True,)
         R2 = model.score(metric="r2")
@@ -1349,8 +1345,7 @@ def variance_inflation_factor(
             if i != X_idx:
                 X_r += [X[i]]
         y_r = X[X_idx]
-        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-        model = LinearRegression(name)
+        model = LinearRegression()
         try:
             model.fit(vdf, X_r, y_r, return_report=True,)
             R2 = model.score(metric="r2")

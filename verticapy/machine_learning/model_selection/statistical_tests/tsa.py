@@ -695,9 +695,8 @@ def cochrane_orcutt(
     else:
         vdf = vDataFrame(input_relation)
     ts = vdf.format_colnames(ts)
-    name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
-    model_tmp = type(model)(name)
+    model_tmp = type(model)()
     model_tmp.set_params(param)
     X, y = model.X, model.y
     print_info = conf.get_option("print_info")
@@ -912,8 +911,7 @@ def het_arch(
         X_names += [f"lag_{i}"]
     query = f"SELECT {', '.join(X)} FROM {vdf}"
     vdf_lags = vDataFrame(query)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0], return_report=True,)
         R2 = model.score(metric="r2")
