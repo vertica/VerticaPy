@@ -188,6 +188,138 @@ def adfuller(
     -------
     TableSample
         result of the test.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Example 1: Trend
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        N = 100
+        vdf = vp.vDataFrame(
+            {
+                "year": list(range(N)),
+                "X": [x + np.random.normal(0, 5) for x in range(N)],
+            }
+        )
+
+    We can visually inspect the trend by drawing the
+    appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["X"].plot(ts="year", width = 550)
+        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_adfuller.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller.html
+
+    Though the increasing trend is obvious,
+    we can test its ``adfuller`` score by first importing
+    the function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import adfuller
+
+    And then simply applying it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        adfuller(vdf, column = "X", ts= "year")
+
+    In the above context, the high p-value is
+    evidence of lack of stationarity.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test data does not have
+        a trend with respect to time in the current case.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Example 1: Stationary
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    We can contrast the results with a dataset that
+    has barely any trend:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "year": list(range(N)),
+                "X": [np.random.normal(0, 5) for x in range(N)],
+            }
+        )
+
+    We can visually inspect the absence of trend
+    by drawing the appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["X"].plot(ts="year", width = 550)
+        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html
+
+    Now we can perform the test on this dataset:
+
+    .. ipython:: python
+
+        adfuller(vdf, column = "X", ts = "year")
+
+    Notice the low p-value which proves
+    that there is stationarity.
+
+    For more information check out
+    `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -358,7 +490,7 @@ def mkt(
 
     .. ipython:: python
 
-        from verticapy.stats import mkt
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
 
     And then simply applying it on the ``vDataFrame``:
 

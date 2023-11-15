@@ -87,7 +87,7 @@ def het_breuschpagan(
 
         import verticapy as vp
         import numpy as np
-        from verticapy.learn.linear_model import LinearRegression
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     Example 1: Homoscedasticity
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -158,7 +158,7 @@ def het_breuschpagan(
 
     .. ipython:: python
 
-        from verticapy.stats import het_breuschpagan
+        from verticapy.machine_learning.model_selection.statistical_tests import het_breuschpagan
 
     And simply apply it on the ``vDataFrame``:
 
@@ -384,7 +384,7 @@ def het_goldfeldquandt(
 
         N = 50 # Number of rows
         x_val = list(range(N))
-        y_val = [x*2 for x in x_val] + np.random.normal(0, 0.4, N)
+        y_val = [x * 2 for x in x_val] + np.random.normal(0, 0.4, N)
 
     We can use those values to create the ``vDataFrame``:
 
@@ -421,7 +421,7 @@ def het_goldfeldquandt(
 
     .. ipython:: python
 
-        from verticapy.stats import het_goldfeldquandt
+        from verticapy.machine_learning.model_selection.statistical_tests import het_goldfeldquandt
 
     And simply apply it on the ``vDataFrame``:
 
@@ -526,9 +526,6 @@ def het_goldfeldquandt(
         dataset, the noise was heteroscedestic so we got very low
         p_value scores and higher statistics score. Thus confirming
         that the noise was in fact heteroscedestic.
-
-        For more information check out
-        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
 
     def model_fit(
@@ -626,7 +623,7 @@ def het_white(
 
         import verticapy as vp
         import numpy as np
-        from verticapy.learn.linear_model import LinearRegression
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
 
     Example 1: Homoscedasticity
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -697,7 +694,7 @@ def het_white(
 
     .. ipython:: python
 
-        from verticapy.stats import het_white
+        from verticapy.machine_learning.model_selection.statistical_tests import het_white
 
     And simply apply it on the ``vDataFrame``:
 
@@ -825,9 +822,6 @@ def het_white(
         dataset, the noise was heteroscedestic so we got very low
         p_value scores and higher statistics score. Thus confirming
         that the noise was in fact heteroscedestic.
-
-        For more information check out
-        `this link <https://www.statology.org/breusch-pagan-test/>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -898,6 +892,269 @@ def endogtest(
     tuple
         Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - x (a predictor)
+    - y (the response)
+    - Random noise
+
+    .. note::
+
+        This metric requires ``eps``, which represents
+        the difference between the predicted value
+        and the true value. If you already have ``eps``
+        available, you can directly use it instead of
+        recomputing it, as demonstrated in the example
+        below.
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+    Example 1: Homoscedasticity
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Next, we can create some values with random
+    noise:
+
+    .. ipython:: python
+        :suppress:
+
+        x_vals = list(range(N))
+        y_vals = [2 * x + np.random.normal(3) for x in x_vals]
+
+    .. code-block:: python
+
+        x_vals = list(range(N))
+        y_vals = [2 * x + np.random.normal(3) for x in x_vals]
+
+    We can use those values to create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        N = 50
+        vdf = vp.vDataFrame(
+            {
+                "x": x_vals,
+                "y": y_vals,
+            }
+        )
+
+    We can initialize a regression model:
+
+    .. ipython:: python
+
+        model = LinearRegression()
+
+    Fit that model on the dataset:
+
+    .. ipython:: python
+
+        model.fit(input_relation = vdf, X = "x", y = "y")
+
+    We can create a column in the ``vDataFrame`` that
+    has the predictions:
+
+    .. code-block:: python
+
+        model.predict(vdf, X = "x", name = "y_pred")
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(vdf, X = "x", name = "y_pred")
+        html_file = open("figures/machine_learning_model_selection_statistical_tests_endogtest_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_endogtest_1.html
+
+    Then we can calculate the residuals i.e. ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["y"] - vdf["y_pred"]
+
+    We can plot the residuals to see the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["x", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["x", "eps"], width = 550)
+        fig.write_html("figures/plotting_machine_learning_model_selection_ols_endogtest.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_endogtest.html
+
+    Notice the randomness of the residuals with respect to x.
+    This shows that the noise is homoscedestic.
+
+    To test its score, we can import the test function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import endogtest
+
+    And simply apply it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        lm_statistic, lm_pvalue, f_statistic, f_pvalue = endogtest(vdf, eps = "eps", X = "x")
+
+    .. ipython:: python
+
+        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+
+    As the noise was not heteroscedestic, we got higher
+    p_value scores and lower statistics score.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test data does not have
+        a heteroscedestic noise in the current case.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    .. note::
+
+        F-statistics tests the overall significance
+        of a model, while LM statistics tests the
+        validity of linear restrictions on model
+        parameters. High values indicate heterescedestic
+        noise in this case.
+
+    Example 2: Heteroscedasticity
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We can contrast the above result with a dataset that
+    has **heteroscedestic noise** below:
+
+    .. ipython:: python
+        :suppress:
+
+        y_vals = [2 * x + np.random.normal(scale=10 * x * x + 1) for x in x_vals]
+
+    .. code-block:: python
+
+        # x values
+        x_vals = list(range(N))
+
+        # Adding some heteroscedestic noise
+        y_vals = [2 * x + np.random.normal(scale=10 * x * x + 1) for x in x_vals]
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "x": x_vals,
+                "y": y_vals,
+            }
+        )
+
+    We can intialize a regression model:
+
+    .. ipython:: python
+
+        model = LinearRegression()
+
+    Fit that model on the dataset:
+
+    .. ipython:: python
+
+        model.fit(input_relation = vdf, X = "x", y = "y")
+
+    We can create a column in the ``vDataFrame`` that
+    has the predictions:
+
+    .. code-block:: python
+
+        model.predict(vdf, X = "x", name = "y_pred")
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(vdf, X = "x", name = "y_pred")
+        html_file = open("figures/machine_learning_model_selection_statistical_tests_endogtest_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_endogtest_1.html
+
+    Then we can calculate the residual i.e. ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["y"] - vdf["y_pred"]
+
+    We can plot the residuals to see the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["x", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf.scatter(["x", "eps"], width = 550)
+        fig.write_html("figures/plotting_machine_learning_model_selection_ols_endogtest_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_endogtest_2.html
+
+    Notice the relationship of the residuals with
+    respect to x. This shows that the noise is
+    heteroscedestic.
+
+    Now we can perform the test on this dataset:
+
+    .. ipython:: python
+
+        lm_statistic, lm_pvalue, f_statistic, f_pvalue = endogtest(vdf, eps = "eps", X = "x")
+
+    .. ipython:: python
+
+        print(lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+
+    .. note::
+
+        Notice the contrast of the two test results. In this
+        dataset, the noise was heteroscedestic so we got very low
+        p_value scores and higher statistics score. Thus confirming
+        that the noise was in fact heteroscedestic.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -954,6 +1211,126 @@ def variance_inflation_factor(
     -------
     float / TableSample
         VIF.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - data with multiple columns
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+
+    Next, we can create some exogenous columns
+    with varying collinearity:
+
+    .. ipython:: python
+        :suppress:
+
+        N = 50
+        x_val_1 = list(range(N))
+        x_val_2 = [2 * x + np.random.normal(scale = 4) for x in x_val_1]
+        x_val_3 = np.random.normal(0, 4, N)
+
+    .. code-block:: python
+
+        N = 50
+        x_val_1 = list(range(N))
+        x_val_2 = [2 * x + np.random.normal(scale = 4) for x in x_val_1]
+        x_val_3 = np.random.normal(0, 4, N)
+
+    We can use those values to create the ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "x1": x_val_1,
+                "x2": x_val_2,
+                "x3": x_val_3,
+            }
+        )
+
+    Data Visualization
+    ^^^^^^^^^^^^^^^^^^^
+
+    We can plot the data to see any underlying collinearity:
+
+    Let us first draw ``x1`` with ``x2``:
+
+    .. code-block:: python
+
+        vdf.scatter(["x1", "x2"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["x1", "x2"], width = 550)
+        fig.write_html("figures/machine_learning_model_selection_statistical_tests_vif_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_1.html
+
+    We can see that ``x1`` and ``x2`` are very correlated.
+
+    Next let us observe ``x1`` and ``x3``:
+
+    .. code-block:: python
+
+        vdf.scatter(["x1", "x3"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["x1", "x3"], width = 550)
+        fig.write_html("figures/machine_learning_model_selection_statistical_tests_vif_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_2.html
+
+    We can see that the two are not correlated.
+
+    Now we can confirm our observations by carrying out the
+    VIC test. First, we can import the test:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import variance_inflation_factor
+
+    And then apply it on the exogenous columns:
+
+    .. code-block:: python
+
+        variance_inflation_factor(vdf, X = ["x1", "x2", "x3"])
+
+    .. ipython:: python
+        :suppress:
+
+        result = variance_inflation_factor(vdf, X =["x1", "x2", "x3"])
+        html_file = open("figures/machine_learning_model_selection_statistical_tests_vic_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vic_3.html
+
+    .. note::
+
+        We can clearly see that ``x1`` and ``x2`` are
+        correlated because of the high value of VIC.
+        But there is no correlation with ``x3`` as
+        the VIC value is close to 1.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -994,5 +1371,6 @@ def variance_inflation_factor(
         return TableSample({"X_idx": X, "VIF": VIF})
     else:
         raise IndexError(
-            f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
+            "Wrong type for Parameter X_idx.\n"
+            f"Expected integer, found {type(X_idx)}."
         )
