@@ -343,7 +343,7 @@ class TimeSeriesModelBase(VerticaModel):
                 "Features Importance can not be computed for Moving Averages."
             )
         else:
-            self.features_importance_ = self.phi_ / sum(abs(self.phi_))
+            self.features_importance_ = 100.0 * self.phi_ / sum(abs(self.phi_))
 
     def _get_features_importance(self) -> np.ndarray:
         """
