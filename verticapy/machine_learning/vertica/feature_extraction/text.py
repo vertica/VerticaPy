@@ -14,9 +14,11 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Literal
+from typing import Literal, Optional, Union
 
-from verticapy._typing import NoneType, SQLRelation
+import numpy as np
+
+from verticapy._typing import ArrayLike, NoneType, PythonNumber, SQLRelation
 from verticapy._utils._sql._sys import _executeSQL
 
 from verticapy.core.vdataframe.base import vDataFrame
@@ -70,7 +72,27 @@ class TfidfVectorizer(VerticaModel):
     lowercase: bool, optional
         Converts  all  the elements to lowercase
         before processing.
-    norm: {'l1','l2'} or None, default='l2'
+    vocabulary: list, optional
+        A list of string elements to be regarded as the primary
+        vocabulary.
+    max_df: PythonNumber, optional
+        While constructing the vocabulary, exclude terms with
+        a document frequency surpassing the specified threshold,
+        essentially treating them as corpus-specific stop words.
+        If the value is a float within the range [0.0, 1.0], it
+        denotes a proportion of documents; if an integer, it
+        signifies absolute counts. Note that this parameter is
+        disregarded if a custom vocabulary is provided.
+    min_df: PythonNumber, optional
+        When constructing the vocabulary, omit terms with a
+        document frequency below the specified threshold,
+        often referred to as the cut-off in literature. If
+        the value is a float within the range [0.0, 1.0], it
+        denotes a proportion of documents; if an integer, it
+        signifies absolute counts. It's important to note that
+        this parameter is disregarded if a custom vocabulary
+        is provided.
+    norm: str, optional
         The tfidf values of each document will have unit norm,
         either:
 
@@ -83,17 +105,46 @@ class TfidfVectorizer(VerticaModel):
         - None:
             No normalization.
 
-    smooth_idf : bool, default=True
+    smooth_idf: bool, optional
         Smooth idf weights by adding one to document frequencies,
         as if an extra document was seen containing every term in
         the collection exactly once. Prevents zero divisions.
+    compute_vocabulary: bool, optional
+        If set to true, the vocabulary is computed, making the
+        operation more resource-intensive.
 
     Attributes
     ----------
     Many attributes are created during the fitting phase.
 
-    idf_: str
-        name of the IDF table or SQL code needed to generate it.
+    vocabulary_: ArrayLike
+        The ultimate vocabulary. If empty, it implies that all
+        words are utilized, and the user opted not to compute a
+        specific vocabulary.
+    fixed_vocabulary_: bool
+        Boolean indicating whether a vocabulary was supplied by
+        the user.
+    idf_: vDataFrame
+        The IDF table which is computed based on the relation
+        used for the fitting process.
+    tf_: vDataFrame
+        The TF table which is computed based on the relation
+        used for the fitting process.
+    stop_words_: ArrayLike
+        Terms are excluded under the following conditions:
+
+         - They appear in an excessive number of documents
+           (controlled by ``max_df``).
+         - They appear in an insufficient number of documents
+           (controlled by ``min_df``).
+
+        This functionality is only applicable when no specific
+        vocabulary is provided and ``compute_vocabulary`` is
+        set to True.
+    n_document_: int
+        Total number of document. This functionality is only
+        applicable when no specific vocabulary is provided and
+        ``compute_vocabulary`` is set to True.
 
     .. note::
 
@@ -215,6 +266,11 @@ class TfidfVectorizer(VerticaModel):
     def _attributes(self) -> list[str]:
         return [
             "idf_",
+            "tf_",
+            "vocabulary_",
+            "fixed_vocabulary_",
+            "stop_words_",
+            "n_document_",
         ]
 
     # System & Special Methods.
@@ -224,21 +280,33 @@ class TfidfVectorizer(VerticaModel):
         name: str = None,
         overwrite_model: bool = False,
         lowercase: bool = True,
+        vocabulary: Optional[ArrayLike] = None,
+        max_df: Optional[PythonNumber] = None,
+        min_df: Optional[PythonNumber] = None,
         norm: Literal["l1", "l2", None] = "l2",
         smooth_idf: bool = True,
+        compute_vocabulary: bool = True,
     ) -> None:
         self.create_table_ = not (isinstance(name, NoneType))
         super().__init__(name, overwrite_model)
         self.parameters = {
             "lowercase": lowercase,
+            "vocabulary": vocabulary,
+            "max_df": max_df,
+            "min_df": min_df,
             "norm": norm,
             "smooth_idf": smooth_idf,
+            "compute_vocabulary": compute_vocabulary,
         }
 
-    # Model Fitting Method.
+    # Methods to simplify the code.
 
     @staticmethod
     def _wbd(vdf: SQLRelation, index: str, text: str):
+        """
+        Returns the SQL needed to compute the
+        final expressions
+        """
         query = f"""
             SELECT
                 {index} AS row_id,
@@ -257,6 +325,50 @@ class TfidfVectorizer(VerticaModel):
                 ) AS words 
             FROM {vdf}"""
         return query
+
+    def _t_norm(self):
+        """
+        return the SQL to generate the normalized term.
+        """
+        if self.parameters["norm"] == "l2":
+            return "SQRT(SUM(POWER((tf * idf_log), 2)) OVER (PARTITION BY tf.row_id))"
+
+        if self.parameters["norm"] == "l1":
+            return "SUM(ABS(tf * idf_log)) OVER (PARTITION BY tf.row_id)"
+
+        return "1"
+
+    def _get_filter_df(self):
+        """
+        Returns the SQL expression to be able to filter
+        the final vocabulary
+        """
+        min_df, max_df = self.parameters["min_df"], self.parameters["max_df"]
+        if isinstance(min_df, NoneType) and isinstance(max_df, NoneType):
+            where = ""
+        else:
+            if not (isinstance(min_df, NoneType)) and (isinstance(max_df, NoneType)):
+                where = f" WHERE df >= {min_df}"
+                if isinstance(min_df, float) and 0.0 <= min_df <= 1.0:
+                    where = f"{where} * total_freq"
+            elif not (isinstance(max_df, NoneType)) and (isinstance(min_df, NoneType)):
+                where = f" WHERE df <= {max_df}"
+                if isinstance(max_df, float) and 0.0 <= max_df <= 1.0:
+                    where = f"{where} * total_freq"
+            elif (
+                isinstance(min_df, float)
+                and 0.0 <= min_df <= 1.0
+                and isinstance(max_df, float)
+                and 0.0 <= max_df <= 1.0
+            ):
+                where = (
+                    f" WHERE df BETWEEN {min_df} * total_freq AND {max_df} * total_freq"
+                )
+            else:
+                where = f" WHERE df BETWEEN {min_df} AND {max_df}"
+        return where
+
+    # Model Fitting Method.
 
     def fit(self, input_relation: SQLRelation, index: str, x: str) -> None:
         """
@@ -288,14 +400,14 @@ class TfidfVectorizer(VerticaModel):
         else:
             idf_expr = "LN((count_docs) / (word_doc_count)) + 1"
 
-        self.idf_ = self.model_name
+        self.idf_sql_ = self.model_name
 
         if self.overwrite_model:
-            drop(self.idf_)
+            drop(self.idf_sql_)
 
         q_tdc = f"""
             SELECT
-                count({index}) count_docs 
+                COUNT({index}) count_docs 
             FROM {vdf}"""
 
         q_wbd = self._wbd(vdf=vdf, index=index, text=text)
@@ -310,14 +422,14 @@ class TfidfVectorizer(VerticaModel):
 
         create_table = ""
         if self.create_table_:
-            create_table = f"CREATE TABLE {self.idf_} AS"
+            create_table = f"CREATE TABLE {self.idf_sql_} AS"
 
         q_idf = f"""
             {create_table}
             WITH 
-            tdc AS ({q_tdc}),
-            words_by_doc AS ({q_wbd}),
-            exploded AS ({q_e})
+                tdc AS ({q_tdc}),
+                words_by_doc AS ({q_wbd}),
+                exploded AS ({q_e})
             SELECT
                 value AS word,
                 COUNT(DISTINCT row_id) AS word_doc_count,
@@ -329,9 +441,68 @@ class TfidfVectorizer(VerticaModel):
             ORDER BY word_doc_count desc"""
 
         if not (self.create_table_):
-            self.idf_ = f"({q_idf}) VERTICAPY_SUBTABLE"
+            self.idf_sql_ = f"({q_idf}) VERTICAPY_SUBTABLE"
         else:
             _executeSQL(q_idf, print_time_sql=False)
+        self.idf_ = vDataFrame(self.idf_sql_)
+
+        q_tf = f"""
+            WITH 
+                tdc AS ({q_tdc}),
+                words_by_doc AS ({q_wbd}),
+                exploded AS ({q_e})
+            SELECT
+                row_id,
+                value AS word,
+                COUNT(*) AS tf
+            FROM exploded
+            GROUP BY row_id, word, words"""
+
+        self.tf_ = vDataFrame(q_tf)
+
+        # Computing the final vocabulary
+
+        self.fixed_vocabulary_ = not (
+            isinstance(self.parameters["vocabulary"], NoneType)
+        )
+
+        if self.parameters["compute_vocabulary"] and isinstance(
+            self.parameters["vocabulary"], NoneType
+        ):
+            self.n_document_ = self.tf_["row_id"].nunique()
+            where = self._get_filter_df()
+            q_df = f"""
+            SELECT DISTINCT word FROM
+                (SELECT
+                    word, 
+                    COUNT(*) AS df,
+                    {self.n_document_} AS total_freq
+                FROM
+                    (SELECT
+                        row_id,
+                        word
+                    FROM ({q_tf}) VERTICAPY_SUBTABLE
+                    GROUP BY row_id, word) VERTICAPY_SUBTABLE
+                    GROUP BY word
+                    ) VERTICAPY_SUBTABLE
+                    {where}"""
+            result = _executeSQL(
+                q_df, title="Computing the final vocabulary", method="fetchall"
+            )
+            self.vocabulary_ = np.array([row[0] for row in result])
+        else:
+            self.vocabulary_ = self.parameters["vocabulary"]
+            self.stop_words_ = None
+            self.n_document_ = None
+
+        self.stop_words_ = None
+        if not (isinstance(self.vocabulary_, NoneType)) and not (
+            self.fixed_vocabulary_
+        ):
+            self.stop_words_ = self.idf_["word"].distinct()
+            for w in self.vocabulary_:
+                self.stop_words_.remove(w)
+            self.stop_words_ = np.array(self.stop_words_)
 
     # Prediction / Transformation Methods.
 
@@ -379,15 +550,6 @@ class TfidfVectorizer(VerticaModel):
         else:
             text = f"LOWER({x})"
 
-        if isinstance(self.parameters["norm"], NoneType):
-            t_norm = "1"
-
-        if self.parameters["norm"] == "l2":
-            t_norm = "SQRT(SUM(POWER((tf * idf_log), 2)) OVER (PARTITION BY tf.row_id))"
-
-        if self.parameters["norm"] == "l1":
-            t_norm = "SUM(ABS(tf * idf_log)) OVER (PARTITION BY tf.row_id)"
-
         q_wbd = self._wbd(vdf=vdf, index=index, text=text)
 
         q_e = """
@@ -398,27 +560,35 @@ class TfidfVectorizer(VerticaModel):
                         row_id) OVER (PARTITION BEST) 
             FROM words_by_doc"""
 
-        q_tf = """
+        q_tf = f"""
             SELECT
                 row_id,
-                value as word,
-                COUNT(*) as tf
+                value AS word,
+                COUNT(*) AS tf
             FROM exploded
             GROUP BY row_id, word, words"""
 
+        if not (self.fixed_vocabulary_):
+            where = ""
+        else:
+            words = ", ".join(
+                [f"""'{w.replace("'", "''")}'""" for w in self.vocabulary_]
+            )
+            where = f"WHERE idf_table.word IN ({words})"
         q_tfidf = f"""
             WITH
                 words_by_doc AS ({q_wbd}),
                 exploded AS ({q_e}),
                 tf AS ({q_tf})
-                SELECT 
-                    tf.row_id,
-                    idf_table.word,
-                    tf * idf_log / {t_norm} AS tfidf
-                FROM tf
-                INNER JOIN (SELECT * FROM {self.idf_}) AS idf_table
-                ON tf.word = idf_table.word
-                ORDER BY tf.row_id"""
+            SELECT 
+                tf.row_id,
+                idf_table.word,
+                tf * idf_log / {self._t_norm()} AS tfidf
+            FROM tf
+            INNER JOIN (SELECT * FROM {self.idf_sql_}) AS idf_table
+            ON tf.word = idf_table.word
+            {where}
+            ORDER BY tf.row_id"""
 
         result = vDataFrame(q_tfidf)
         if not pivot:
