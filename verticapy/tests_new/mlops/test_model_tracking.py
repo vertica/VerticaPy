@@ -146,7 +146,7 @@ from verticapy.learn.svm import LinearSVR
 
 @pytest.fixture(scope="module")
 def reg_model1(winequality_vpy):
-    model = LinearRegression("reg_m1", solver="BFGS", max_iter=1)
+    model = LinearRegression("reg_m1", solver="bfgs", max_iter=1)
     model.drop()
 
     model.fit(
@@ -160,7 +160,7 @@ def reg_model1(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def reg_model2(winequality_vpy):
-    model = LinearRegression("reg_m2", solver="BFGS", max_iter=3)
+    model = LinearRegression("reg_m2", solver="bfgs", max_iter=3)
     model.drop()
 
     model.fit(
@@ -278,7 +278,7 @@ from verticapy.learn.tree import DecisionTreeClassifier
 
 @pytest.fixture(scope="module")
 def bin_model1(winequality_vpy):
-    model = LogisticRegression("bin_m1", solver="Newton", max_iter=5, penalty=None)
+    model = LogisticRegression("bin_m1", solver="newton", max_iter=5, penalty=None)
     model.drop()
 
     model.fit(
@@ -292,7 +292,7 @@ def bin_model1(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def bin_model2(winequality_vpy):
-    model = LogisticRegression("bin_m2", solver="BFGS", max_iter=5, penalty=None)
+    model = LogisticRegression("bin_m2", solver="bfgs", max_iter=5, penalty=None)
     model.drop()
 
     model.fit(
