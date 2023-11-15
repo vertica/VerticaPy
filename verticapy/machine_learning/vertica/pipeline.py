@@ -173,6 +173,7 @@ class Pipeline:
         X: list,
         y: Optional[str] = None,
         test_relation: SQLRelation = "",
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.

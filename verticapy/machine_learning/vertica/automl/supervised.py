@@ -349,6 +349,7 @@ class AutoML(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         y: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -532,7 +533,7 @@ class AutoML(VerticaModel):
             model_preprocess = AutoDataPrep(
                 name=name, **self.parameters["preprocess_dict"]
             )
-            model_preprocess.fit(input_relation, X=X)
+            model_preprocess.fit(input_relation, X=X, return_report=True,)
             input_relation = model_preprocess.final_relation_
             X = copy.deepcopy(model_preprocess.X_out_)
             self.preprocess_ = model_preprocess
@@ -657,7 +658,7 @@ class AutoML(VerticaModel):
                 criterion_threshold=2,
             )
         else:
-            best_model.fit(input_relation, X, y)
+            best_model.fit(input_relation, X, y, return_report=True,)
         self.best_model_ = best_model
         self.model_grid_ = result
         self.parameters["reverse"] = not reverse

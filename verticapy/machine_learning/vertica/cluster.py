@@ -2231,6 +2231,7 @@ class DBSCAN(VerticaModel):
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
         index: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.

@@ -301,7 +301,7 @@ class vDCEncode(vDCFill):
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
-                model.fit(tmp_view_name, [self._alias], response)
+                model.fit(tmp_view_name, [self._alias], response, return_report=True,)
                 query = [
                     f"""
                     (SELECT 

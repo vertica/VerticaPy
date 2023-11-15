@@ -301,11 +301,11 @@ def het_breuschpagan(
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
     try:
-        model.fit(vdf_copy, X, "v_eps2")
+        model.fit(vdf_copy, X, "v_eps2", return_report=True,)
         R2 = model.score(metric="r2")
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(vdf_copy, X, "v_eps2")
+        model.fit(vdf_copy, X, "v_eps2", return_report=True,)
         R2 = model.score(metric="r2")
     finally:
         model.drop()
@@ -537,7 +537,7 @@ def het_goldfeldquandt(
         mse = []
         for vdf_tmp in input_relation:
             model.drop()
-            model.fit(vdf_tmp, X, y)
+            model.fit(vdf_tmp, X, y, return_report=True,)
             mse += [model.score(metric="mse")]
             model.drop()
         return mse
@@ -846,11 +846,11 @@ def het_white(
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     try:
-        model.fit(vdf_white, variables_names, "v_eps2")
+        model.fit(vdf_white, variables_names, "v_eps2", return_report=True,)
         R2 = model.score(metric="r2")
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(vdf_white, variables_names, "v_eps2")
+        model.fit(vdf_white, variables_names, "v_eps2", return_report=True,)
         R2 = model.score(metric="r2")
     finally:
         model.drop()
@@ -1165,11 +1165,11 @@ def endogtest(
     name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     model = LinearRegression(name)
     try:
-        model.fit(vdf, X, eps)
+        model.fit(vdf, X, eps, return_report=True,)
         R2 = model.score(metric="r2")
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(vdf, X, eps)
+        model.fit(vdf, X, eps, return_report=True,)
         R2 = model.score(metric="r2")
     finally:
         model.drop()
@@ -1352,11 +1352,11 @@ def variance_inflation_factor(
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
         model = LinearRegression(name)
         try:
-            model.fit(vdf, X_r, y_r)
+            model.fit(vdf, X_r, y_r, return_report=True,)
             R2 = model.score(metric="r2")
         except QueryError:
             model.set_params({"solver": "bfgs"})
-            model.fit(vdf, X_r, y_r)
+            model.fit(vdf, X_r, y_r, return_report=True,)
             R2 = model.score(metric="r2")
         finally:
             model.drop()
