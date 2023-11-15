@@ -130,7 +130,6 @@ from verticapy.sql.functions.string import (
 )
 
 from verticapy.machine_learning.model_selection.statistical_tests.ols import (
-    endogtest,
     het_breuschpagan,
     het_goldfeldquandt,
     het_white,

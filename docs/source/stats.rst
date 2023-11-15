@@ -21,18 +21,6 @@ Heteroscedascity
    ols.het_goldfeldquandt
    ols.het_white
 
-____
-
-Endogeneity
--------------
-
-.. currentmodule:: verticapy.machine_learning.model_selection.statistical_tests
-
-.. autosummary:: 
-   :toctree: api/
-
-   ols.endogtest
-
 
 ____
 
