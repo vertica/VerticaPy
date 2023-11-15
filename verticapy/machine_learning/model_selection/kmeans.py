@@ -139,7 +139,11 @@ def best_k(
                 max_iter=max_iter,
                 tol=tol,
             )
-        model.fit(input_relation, X, return_report=True,)
+        model.fit(
+            input_relation,
+            X,
+            return_report=True,
+        )
         score = model.elbow_score_
         if score > elbow_score_stop:
             return i
@@ -266,7 +270,11 @@ def elbow(
                 max_iter=max_iter,
                 tol=tol,
             )
-        model.fit(input_relation, X, return_report=True,)
+        model.fit(
+            input_relation,
+            X,
+            return_report=True,
+        )
         elbow_score += [float(model.elbow_score_)]
         between_cluster_ss += [float(model.between_cluster_ss_)]
         total_ss += [float(model.total_ss_)]
