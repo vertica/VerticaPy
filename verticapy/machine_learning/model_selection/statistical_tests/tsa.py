@@ -189,7 +189,6 @@ def adfuller(
     TableSample
         result of the test.
 
-
     Examples
     ---------
 
@@ -321,7 +320,6 @@ def adfuller(
 
     For more information check out
     `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
-
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()

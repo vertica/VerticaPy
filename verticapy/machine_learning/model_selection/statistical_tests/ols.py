@@ -384,7 +384,7 @@ def het_goldfeldquandt(
 
         N = 50 # Number of rows
         x_val = list(range(N))
-        y_val = [x*2 for x in x_val] + np.random.normal(0, 0.4, N)
+        y_val = [x * 2 for x in x_val] + np.random.normal(0, 0.4, N)
 
     We can use those values to create the ``vDataFrame``:
 
@@ -982,7 +982,6 @@ def endogtest(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_endogtest_1.html
 
-
     Then we can calculate the residuals i.e. ``eps``:
 
     .. ipython:: python
@@ -1115,7 +1114,6 @@ def endogtest(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_endogtest_1.html
 
-
     Then we can calculate the residual i.e. ``eps``:
 
     .. ipython:: python
@@ -1241,14 +1239,14 @@ def variance_inflation_factor(
         N = 50
         x_val_1 = list(range(N))
         x_val_2 = [2 * x + np.random.normal(scale = 4) for x in x_val_1]
-        x_val_3 = np.random.normal(0,4,N)
+        x_val_3 = np.random.normal(0, 4, N)
 
     .. code-block:: python
 
         N = 50
         x_val_1 = list(range(N))
         x_val_2 = [2 * x + np.random.normal(scale = 4) for x in x_val_1]
-        x_val_3 = np.random.normal(0,4,N)
+        x_val_3 = np.random.normal(0, 4, N)
 
     We can use those values to create the ``vDataFrame``:
 
@@ -1314,7 +1312,7 @@ def variance_inflation_factor(
 
     .. code-block:: python
 
-        variance_inflation_factor(vdf, X =["x1", "x2", "x3"])
+        variance_inflation_factor(vdf, X = ["x1", "x2", "x3"])
 
     .. ipython:: python
         :suppress:
@@ -1330,10 +1328,9 @@ def variance_inflation_factor(
     .. note::
 
         We can clearly see that ``x1`` and ``x2`` are
-        correalted because of the high value of VIC.
-        But but there is no correaltion with
-        ``x3`` as the VIC value is close to 1.
-
+        correlated because of the high value of VIC.
+        But there is no correlation with ``x3`` as
+        the VIC value is close to 1.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -1374,5 +1371,6 @@ def variance_inflation_factor(
         return TableSample({"X_idx": X, "VIF": VIF})
     else:
         raise IndexError(
-            f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
+            "Wrong type for Parameter X_idx.\n"
+            f"Expected integer, found {type(X_idx)}."
         )
