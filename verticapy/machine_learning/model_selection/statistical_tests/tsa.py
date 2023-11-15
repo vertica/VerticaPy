@@ -221,15 +221,18 @@ def adfuller(
                 {ts_str} AS ts 
             FROM {vdf}"""
     _executeSQL(query, print_time_sql=False)
-    model = LinearRegression(name, solver="Newton", max_iter=1000)
+    model = LinearRegression(name, solver="newton", max_iter=1000)
     predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
     try:
         model.fit(relation_name, predictors, "delta")
-        coef = model.get_vertica_attributes("details")
+    except QueryError:
+        model.set_params({"solver": "bfgs"})
+        model.fit(relation_name, predictors, "delta")
     finally:
         drop(relation_name, method="view")
+    coef = model.get_vertica_attributes("details")
     model.drop()
     if regresults:
         return coef

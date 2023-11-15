@@ -1988,7 +1988,7 @@ class vDFCorr(vDFEncode):
                 _executeSQL(query, print_time_sql=False)
                 vdf = create_new_vdf(tmp_view_name)
                 drop(tmp_lr0_name, method="model")
-                model = vml.LinearRegression(name=tmp_lr0_name, solver="Newton")
+                model = vml.LinearRegression(name=tmp_lr0_name, solver="newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -1996,7 +1996,7 @@ class vDFCorr(vDFEncode):
                 )
                 model.predict(vdf, name="prediction_0")
                 drop(tmp_lr1_name, method="model")
-                model = vml.LinearRegression(name=tmp_lr1_name, solver="Newton")
+                model = vml.LinearRegression(name=tmp_lr1_name, solver="newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],

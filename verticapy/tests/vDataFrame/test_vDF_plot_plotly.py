@@ -313,7 +313,7 @@ def champion_challenger_plot_result(load_plotly, titanic_vd):
 @pytest.fixture(scope="class")
 def stepwise_plot_result(load_plotly, titanic_vd):
     model = LogisticRegression(
-        name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
+        name="test_LR_titanic", tol=1e-4, max_iter=100, solver="newton"
     )
     stepwise_result = stepwise(
         model,
@@ -2645,7 +2645,7 @@ class TestMachineLearningStepwisePlot:
         custom_height = 650
         custom_width = 700
         model = LogisticRegression(
-            name="test_LR_titanic", tol=1e-4, max_iter=100, solver="Newton"
+            name="test_LR_titanic", tol=1e-4, max_iter=100, solver="newton"
         )
         # Act
         stepwise_result = stepwise(

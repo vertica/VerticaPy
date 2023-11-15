@@ -32,7 +32,7 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def reg_model1(winequality_vpy):
-    model = LinearRegression("reg_m1", solver="Newton", max_iter=2)
+    model = LinearRegression("reg_m1", solver="newton", max_iter=2)
     model.drop()
 
     model.fit(
@@ -46,7 +46,7 @@ def reg_model1(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def reg_model2(winequality_vpy):
-    model = LinearRegression("reg_m2", solver="Newton", max_iter=2)
+    model = LinearRegression("reg_m2", solver="newton", max_iter=2)
     model.drop()
 
     model.fit(
@@ -60,7 +60,7 @@ def reg_model2(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def reg_model3(winequality_vpy):
-    model = LinearRegression("reg_m3", solver="Newton", max_iter=2)
+    model = LinearRegression("reg_m3", solver="newton", max_iter=2)
     model.drop()
 
     model.fit(
@@ -74,7 +74,7 @@ def reg_model3(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def bin_model1(winequality_vpy):
-    model = LogisticRegression("bin_m1", solver="Newton", max_iter=2, penalty=None)
+    model = LogisticRegression("bin_m1", solver="newton", max_iter=2, penalty=None)
     model.drop()
 
     model.fit(
@@ -88,7 +88,7 @@ def bin_model1(winequality_vpy):
 
 @pytest.fixture(scope="module")
 def bin_model2(winequality_vpy):
-    model = LogisticRegression("bin_m2", solver="Newton", max_iter=2, penalty=None)
+    model = LogisticRegression("bin_m2", solver="newton", max_iter=2, penalty=None)
     model.drop()
 
     model.fit(
@@ -110,7 +110,7 @@ class TestModelVersioning:
     def test_register_models(self, reg_model1):
         reg_model1.register("regression_app1", raise_error=True)
 
-        new_model = LinearRegression("new_m", solver="Newton", max_iter=5)
+        new_model = LinearRegression("new_m", solver="newton", max_iter=5)
         with pytest.raises(RuntimeError, match="Failed to register the model"):
             new_model.register("new_app", raise_error=True)
 
