@@ -144,7 +144,13 @@ class KNeighborsRegressor(Regressor):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, overwrite_model: bool = False, n_neighbors: int = 5, p: int = 2) -> None:
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_neighbors: int = 5,
+        p: int = 2,
+    ) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -873,7 +879,13 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, overwrite_model: bool = False, n_neighbors: int = 5, p: int = 2) -> None:
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_neighbors: int = 5,
+        p: int = 2,
+    ) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
@@ -1519,7 +1531,12 @@ class KernelDensity(Regressor, Tree):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None, return_report: bool = False,) -> None:
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        return_report: bool = False,
+    ) -> None:
         """
         Trains the model.
 

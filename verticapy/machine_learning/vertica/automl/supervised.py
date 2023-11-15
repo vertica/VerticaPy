@@ -533,7 +533,11 @@ class AutoML(VerticaModel):
             model_preprocess = AutoDataPrep(
                 name=name, **self.parameters["preprocess_dict"]
             )
-            model_preprocess.fit(input_relation, X=X, return_report=True,)
+            model_preprocess.fit(
+                input_relation,
+                X=X,
+                return_report=True,
+            )
             input_relation = model_preprocess.final_relation_
             X = copy.deepcopy(model_preprocess.X_out_)
             self.preprocess_ = model_preprocess
@@ -658,7 +662,12 @@ class AutoML(VerticaModel):
                 criterion_threshold=2,
             )
         else:
-            best_model.fit(input_relation, X, y, return_report=True,)
+            best_model.fit(
+                input_relation,
+                X,
+                y,
+                return_report=True,
+            )
         self.best_model_ = best_model
         self.model_grid_ = result
         self.parameters["reverse"] = not reverse

@@ -3039,7 +3039,9 @@ class NearestCentroid(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None,  overwrite_model: bool = False, p: int = 2) -> None:
+    def __init__(
+        self, name: str = None, overwrite_model: bool = False, p: int = 2
+    ) -> None:
         super().__init__(name, overwrite_model)
         self.parameters = {"p": p}
 

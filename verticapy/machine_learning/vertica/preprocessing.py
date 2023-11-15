@@ -688,7 +688,12 @@ class CountVectorizer(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None, return_report: bool = False,) -> None:
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        return_report: bool = False,
+    ) -> None:
         """
         Trains the model.
 

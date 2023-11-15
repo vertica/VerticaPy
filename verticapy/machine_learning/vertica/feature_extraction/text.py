@@ -370,7 +370,13 @@ class TfidfVectorizer(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, index: str, x: str, return_report: bool = False,) -> None:
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        index: str,
+        x: str,
+        return_report: bool = False,
+    ) -> None:
         """
         Applies basic pre-processing. Creates table
         with fitted vocabulary and idf values.
