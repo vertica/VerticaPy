@@ -217,7 +217,6 @@ class KNeighborsRegressor(Regressor):
         versioning. It's highly recommended to provide a name if you
         plan to reuse the model later.
 
-
     Model Training
     ^^^^^^^^^^^^^^^
 
@@ -233,7 +232,7 @@ class KNeighborsRegressor(Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "quality",
             test,
@@ -315,7 +314,7 @@ class KNeighborsRegressor(Regressor):
                 "citric_acid",
                 "residual_sugar",
                 "chlorides",
-                "density"
+                "density",
             ],
             "prediction",
         )
@@ -350,7 +349,6 @@ class KNeighborsRegressor(Regressor):
         function, but in this case, it's essential that the column names of
         the ``vDataFrame`` match the predictors and response name in the
         model.
-
 
     Parameter Modification
     ^^^^^^^^^^^^^^^^^^^^^^^
