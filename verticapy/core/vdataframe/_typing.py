@@ -81,6 +81,7 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         .. raw:: html
@@ -100,6 +101,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the data types of various vcolumns.
@@ -267,6 +269,7 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         .. raw:: html
@@ -286,6 +289,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the categorical vcolumns considering maximum
@@ -461,6 +465,7 @@ class vDFTyping(vDFRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         .. raw:: html
@@ -480,6 +485,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the data type of various vcolumns.
@@ -639,6 +645,7 @@ class vDCTyping(vDCRead):
         .. code-block:: python
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         .. raw:: html
@@ -658,6 +665,7 @@ class vDCTyping(vDCRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the data type of fare vcolumn.
@@ -889,6 +897,7 @@ class vDCTyping(vDCRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the category of "fare" and "name" vcolumns.
@@ -956,6 +965,7 @@ class vDCTyping(vDCRead):
             :suppress:
 
             import verticapy.datasets as vpd
+
             data = vpd.load_titanic()
 
         Let's check the DB type of "fare" and "name" vcolumns.

@@ -325,7 +325,7 @@ class AutoDataPrep(VerticaModel):
                         and not ts
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
-                        vdf[x].get_dummies(drop_first=False)
+                        vdf[x].one_hot_encode(drop_first=False)
                         columns_to_drop += [x]
                     elif (
                         self.parameters["cat_method"] == "label" and not vdf[x].isnum()
