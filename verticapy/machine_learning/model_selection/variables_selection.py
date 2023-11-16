@@ -81,71 +81,167 @@ def randomized_features_search_cv(
         Response Column.
     metric: str, optional
         Metric used for the model evaluation.
-            auto: logloss for classification & rmse for
-                  regression.
+
+        - auto:
+            logloss for classification & rmse for
+            regression.
+
         For Classification:
-            accuracy    : Accuracy
-            auc         : Area Under the Curve (ROC)
-            ba          : Balanced Accuracy
-                          = (tpr + tnr) / 2
-            bm          : Informedness
-                          = tpr + tnr - 1
-            csi         : Critical Success Index
-                          = tp / (tp + fn + fp)
-            f1          : F1 Score
-            fdr         : False Discovery Rate = 1 - ppv
-            fm          : Fowlkes–Mallows index
-                          = sqrt(ppv * tpr)
-            fnr         : False Negative Rate
-                          = fn / (fn + tp)
-            for         : False Omission Rate = 1 - npv
-            fpr         : False Positive Rate
-                          = fp / (fp + tn)
-            logloss     : Log Loss
-            lr+         : Positive Likelihood Ratio
-                          = tpr / fpr
-            lr-         : Negative Likelihood Ratio
-                          = fnr / tnr
-            dor         : Diagnostic Odds Ratio
-            mcc         : Matthews Correlation Coefficient
-            mk          : Markedness
-                          = ppv + npv - 1
-            npv         : Negative Predictive Value
-                          = tn / (tn + fn)
-            prc_auc     : Area Under the Curve (PRC)
-            precision   : Precision
-                          = tp / (tp + fp)
-            pt          : Prevalence Threshold
-                          = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-            recall      : Recall
-                          = tp / (tp + fn)
-            specificity : Specificity
-                          = tn / (tn + fp)
+
+        - accuracy:
+            Accuracy
+
+        - auc:
+            Area Under the Curve (ROC)
+
+        - ba:
+            Balanced Accuracy
+
+            .. math::
+
+                ba = (tpr + tnr) / 2
+
+        - bm:
+            Informedness
+
+            .. math::
+
+                tpr + tnr - 1
+
+        - csi:
+            Critical Success Index
+
+            .. math::
+
+                csi = tp / (tp + fn + fp)
+
+        - f1:
+            F1 Score
+
+        - fdr:
+            False Discovery Rate
+
+            .. math::
+
+                1 - ppv
+
+        - fm:
+            Fowlkes-Mallows index
+
+            .. math::
+
+                fm = sqrt(ppv * tpr)
+
+        - fnr:
+            False Negative Rate
+
+            .. math::
+
+                fnr = fn / (fn + tp)
+
+        - for:
+            False Omission Rate = 1 - npv
+
+        - fpr:
+            .. math::
+
+                False Positive Rate = fp / (fp + tn)
+
+        - logloss:
+            Log Loss
+
+        - lr+:
+            Positive Likelihood Ratio
+
+            .. math::
+
+                lr+ = tpr / fpr
+
+        - lr-:
+            Negative Likelihood Ratio
+
+            .. math::
+
+                lr- = fnr / tnr
+
+        - dor:
+            Diagnostic Odds Ratio
+
+        - mcc:
+            Matthews Correlation Coefficient
+
+        - mk:
+            Markedness
+
+            .. math::
+
+                mk = ppv + npv - 1
+
+        - npv:
+            Negative Predictive Value
+
+            .. math::
+
+                npv = tn / (tn + fn)
+
+        - prc_auc:
+            Area Under the Curve (PRC)
+
+        - precision:
+            .. math::
+
+                Precision = tp / (tp + fp)
+
+        - pt:
+            Prevalence Threshold
+
+            .. math::
+
+                pt = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+        - recall:
+            .. math::
+
+                Recall = tp / (tp + fn)
+
+        - specificity:
+            .. math::
+
+                Specificity = tn / (tn + fp)
+
         For Regression:
-            max    : Max error
-            mae    : Mean absolute error
-            median : Median absolute error
-            mse    : Mean squared error
-            msle   : Mean squared log error
-            r2     : R-squared coefficient
-            r2a    : R2 adjusted
-            rmse   : Root-mean-squared error
-            var    : Explained variance
+
+        - max    : Max error
+        - mae    : Mean absolute error
+        - median : Median absolute error
+        - mse    : Mean squared error
+        - msle   : Mean squared log error
+        - r2     : R-squared coefficient
+        - r2a    : R2 adjusted
+        - rmse   : Root-mean-squared error
+        - var    : Explained variance
+
     cv: int, optional
         Number of folds.
     average: str, optional
         The method used to  compute the final score for
         multiclass-classification.
-            binary   : considers one of the classes  as
-                       positive  and  use  the   binary
-                       confusion  matrix to compute the
-                       score.
-            micro    : positive  and   negative  values
-                       globally.
-            macro    : average  of  the  score of  each
-                       class.
-            weighted : weighted average of the score of
-                       each class.
+
+        - binary:
+            considers one of the classes  as
+            positive  and  use  the   binary
+            confusion  matrix to compute the
+            score.
+        - micro:
+            positive  and   negative  values
+            globally.
+        - macro:
+            average  of  the  score of  each
+            class.
+        - weighted:
+            weighted average of the score of
+            each class.
+
     pos_label: PythonScalar, optional
         The main class to be  considered as positive
         (classification only).
@@ -168,6 +264,72 @@ def randomized_features_search_cv(
     -------
     TableSample
         result of the randomized features search.
+
+    Example
+    --------
+
+    Let us use a dataset which has a variety of
+    predictors and one value of interest.
+    The Titanic dataset is a good example.
+
+    .. ipython:: python
+
+        import verticapy.datasets as vpd
+        data = vpd.load_titanic()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+    .. note::
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Next, we can initialize a Logistic Regression
+    model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import LogisticRegression
+        model = LogisticRegression()
+
+    Now we can conveniently use the ``randomized_features_search_cv`` function
+    to do eith forward or backward randomized_features_search_cv feature selection.
+
+
+    .. ipython:: python
+
+        import verticapy as vp
+        @suppress
+        vp.set_option("plotting_lib", "plotly")
+
+        from verticapy.machine_learning.model_selection import randomized_features_search_cv
+        result = randomized_features_search_cv(model,
+            input_relation = data,
+            X = ["age", "fare", "parch", "pclass",],
+            y = "survived",
+            cv = 3,
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_randomized_features_search_cv_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_randomized_features_search_cv_table.html
+
+    .. note::
+
+        The models are arrange in **ascending order**
+        of ``avg_score``.
+
     """
     X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
@@ -432,7 +594,7 @@ def stepwise(
         data = vpd.load_titanic()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/datasets_loaders_load_titanic.html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
     .. note::
         VerticaPy offers a wide range of sample datasets that are
@@ -472,12 +634,12 @@ def stepwise(
     .. ipython:: python
         :suppress:
 
-        html_file = open("/project/data/VerticaPy/docs/figures/machine_learning_model_selection_stepwise_table.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_stepwise_table.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_model_selection_stepwise_table.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_stepwise_table.html
 
     We can also plot the feature selection process
     by:
@@ -490,10 +652,10 @@ def stepwise(
         :suppress:
 
         fig = result.step_wise_
-        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_model_selection_variable_selection_stepwise_stepwise_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_variable_selection_stepwise_stepwise_1.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_model_selection_variable_selection_stepwise_stepwise_1.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_variable_selection_stepwise_stepwise_1.html
 
     Plotting the feature importance is also pretty intuitive:
 
@@ -505,10 +667,10 @@ def stepwise(
         :suppress:
 
         fig = result.importance_
-        fig.write_html("/project/data/VerticaPy/docs/figures/machine_learning_model_selection_variable_selection_stepwise_features.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_variable_selection_stepwise_features.html")
 
     .. raw:: html
-        :file: /project/data/VerticaPy/docs/figures/machine_learning_model_selection_variable_selection_stepwise_features.html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_variable_selection_stepwise_features.html
 
     .. note::
 
