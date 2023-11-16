@@ -133,10 +133,11 @@ class TfidfVectorizer(VerticaModel):
     stop_words_: ArrayLike
         Terms are excluded under the following conditions:
 
-         - They appear in an excessive number of documents
-           (controlled by ``max_df``).
-         - They appear in an insufficient number of documents
-           (controlled by ``min_df``).
+        - They appear in an excessive number of documents
+        (controlled by ``max_df``).
+
+        - They appear in an insufficient number of documents
+        (controlled by ``min_df``).
 
         This functionality is only applicable when no specific
         vocabulary is provided and ``compute_vocabulary`` is
@@ -171,23 +172,36 @@ class TfidfVectorizer(VerticaModel):
         used as intended without interfering with functions from other
         libraries.
 
-    For this example, let's generate a dataset:
+    For this example, let's generate some text.
 
     .. ipython:: python
 
+        documents = [
+            "Natural language processing is a field of study in artificial intelligence.",
+            "TF-IDF stands for Term Frequency-Inverse Document Frequency.",
+            "Machine learning algorithms can be applied to text data for classification.",
+            "The 20 Newsgroups dataset is a collection of text documents used for text classification.",
+            "Clustering is a technique used to group similar documents together.",
+            "Python is a popular programming language for natural language processing tasks.",
+            "TF-IDF is a technique widely used in information retrieval.",
+            "An algorithm is a set of instructions designed to perform a specific task.",
+            "Data preprocessing is an important step in preparing data for machine learning.",
+        ]
+
+    Next, we can insert this text into a ``vDataFrame``:
+
+    .. ipython:: python
+
+
         data = vp.vDataFrame(
             {
-                "id": [1, 2, 3],
-                "values": [
-                    "this is a test",
-                    "this is another test",
-                    "this is different",
-                ]
+                "id": (list(range(1,len(documents)+1))),
+                "values": documents
             }
         )
 
-    First we initialize the object and fit the model, to learn the
-    idf weigths.
+    Then we can initialize the object and fit the model,
+    to learn the idf weigths.
 
     .. code-block:: python
 
@@ -208,7 +222,6 @@ class TfidfVectorizer(VerticaModel):
             vdf = data,
             index = "id",
             x = "values",
-            pivot = True,
         )
 
     .. ipython:: python
@@ -218,15 +231,74 @@ class TfidfVectorizer(VerticaModel):
 
         model = TfidfVectorizer(name = "test_idf", overwrite_model = True)
         model.fit(input_relation = data, index = "id", x = "values")
-        model.transform(vdf = data, index = "id", x = "values", pivot = True)
-
-        result = model.transform(vdf = data, index = "id", x = "values", pivot = True)
+        result = model.transform(vdf = data, index = "id", x = "values")
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_feature_extraction_text_tfidf.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_feature_extraction_text_tfidf.html
+
+    Notice how we can get the *idf* weight/score of each word
+    in each row. We can also get the results in
+    a more convient form by switching the
+    ``pivot`` parameter to True. But for large datasets
+    this is not ideal.
+
+    Advanced Analysis
+    ^^^^^^^^^^^^^^^^^^
+
+    In the above result, we can observe some
+    less informative words such as "is" and "a",
+    which may not provide meaningful insights.
+
+    To address this issue, we can make use of
+    the ``max_df`` parameter to exclude words
+    that occur too frequently and might be
+    irrelevant. Similarly, we can leverage the
+    ``min_df`` parameter to eliminate words with
+    low frequency that may not contribute significantly.
+
+    Let's apply these parameters to remove
+    common words like "is" and "a."
+
+
+    .. code-block:: python
+
+        model = TfidfVectorizer(max_df = 4, min_df = 1,)
+        model.fit(
+            input_relation = data,
+            index = "id",
+            x = "values",
+        )
+        model.transform(
+            vdf = data,
+            index = "id",
+            x = "values",
+        )
+
+
+    .. ipython:: python
+        :suppress:
+
+        model = TfidfVectorizer(max_df = 4, min_df = 1,)
+        model.fit(input_relation = data, index = "id", x = "values")
+        result = model.transform(vdf = data, index = "id", x = "values")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_feature_extraction_text_tfidf_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_feature_extraction_text_tfidf_2.html
+
+    Notice how we have removed the unnecessary words.
+
+    We can also see which words were omitted
+    using the ``stop_words_`` attribute:
+
+    .. ipython:: python
+
+        model.stop_words_
 
     .. seealso::
         | :py:mod:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
@@ -574,7 +646,7 @@ class TfidfVectorizer(VerticaModel):
             FROM exploded
             GROUP BY row_id, word, words"""
 
-        if not (self.fixed_vocabulary_):
+        if isinstance(self.vocabulary_, NoneType):
             where = ""
         else:
             words = ", ".join(
