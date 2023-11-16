@@ -1521,6 +1521,148 @@ def seasonal_decompose(
     vDataFrame
         object containing
         ts, column, TS seasonal part, TS trend, TS noise.
+
+    Example
+    --------
+
+    Let us use a dataset that has seasonailty.
+    The Airline passengers dataset is a good example.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_airline_passengers()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_airline_passengers.html
+
+    .. note::
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        vdf = vpd.load_airline_passengers()
+
+    Data Visualization
+    ^^^^^^^^^^^^^^^^^^^
+
+    Let us first have a look how the data
+    looks like:
+
+
+    .. code-block::
+
+        vdf.plot(ts = "date", columns = ["passengers"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.plot(ts = "date", columns = ["passengers"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html
+
+    We can visually observe:
+
+    - Overall increasing trend
+    - A seasonal component
+    - Some noise
+
+    Now we can use the ``seasonal_decompose`` to
+    separate these three.
+
+    Decomposition
+    ^^^^^^^^^^^^^^
+
+    We can directly the function on the dataset:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import seasonal_decompose
+        decomposition = seasonal_decompose(vdf,
+                                        "passengers",
+                                        "date",
+                                        polynomial_order = 2,
+                                        mult = True)
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_decomposition.html", "w")
+        html_file.write(decomposition._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_decomposition.html
+
+    We can see that there are now three new
+    columns capturing the three elements
+    of data.
+
+    Let's visualize them.
+
+    **Seasonality**
+
+
+    .. code-block::
+
+        decomposition.plot(ts = "date", columns = ["passengers_seasonal"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition.plot(ts = "date", columns = ["passengers_seasonal"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_seasonal.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_seasonal.html
+
+
+    **Trend**
+
+    .. code-block::
+
+        decomposition.plot(ts = "date", columns = ["passengers_trend"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition.plot(ts = "date", columns = ["passengers_trend"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_trend.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_trend.html
+
+    **Noise**
+
+    .. code-block::
+
+        decomposition.plot(ts = "date", columns = ["passengers_epsilon"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition.plot(ts = "date", columns = ["passengers_epsilon"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html
+
+
     """
     assert period > 0 or polynomial_order > 0, ValueError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
