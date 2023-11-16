@@ -54,9 +54,6 @@ class TSPlot(PlotlyBase):
     def draw(
         self,
         fig: Optional[Figure] = None,
-        step: bool = False,
-        markers: bool = True,
-        line_shape: Optional[str] = None,
         **style_kwargs,
     ) -> Figure:
         """
@@ -65,11 +62,10 @@ class TSPlot(PlotlyBase):
         fig_base = self._get_fig(fig)
         marker_colors = self.get_colors()
         if "colors" in style_kwargs:
-            marker_colors = (
-                style_kwargs["colors"] + marker_colors
-                if isinstance(style_kwargs["colors"], list)
-                else [style_kwargs["colors"]] + marker_colors
-            )
+            if isinstance(style_kwargs["colors"], list):
+                marker_colors = style_kwargs["colors"] + marker_colors
+            else:
+                marker_colors = [style_kwargs["colors"]] + marker_colors
             del style_kwargs["colors"]
         # True Values
         data_args = dict(
@@ -83,12 +79,11 @@ class TSPlot(PlotlyBase):
                 y=df[self.layout["columns"]],
                 line_shape="spline",
                 line_color=marker_colors[0],
-                mode="lines+markers" if markers else "lines",
+                mode="lines",
                 name=self.layout["columns"],
             )
         )
         # One step ahead forecast
-        idx = 1
         if not (self.layout["is_forecast"]):
             data_args = dict(
                 data=(
@@ -103,11 +98,10 @@ class TSPlot(PlotlyBase):
                     y=df[self.layout["columns"]],
                     line_shape="spline",
                     line_color=marker_colors[1],
-                    mode="lines+markers" if markers else "lines",
+                    mode="lines",
                     name="one-sted-ahead-forecast",
                 )
             )
-            idx = idx + 1
         # Forecast
         data_args = dict(
             data=(np.column_stack((self.data["x_pred"], self.data["y_pred"]))),
@@ -119,8 +113,8 @@ class TSPlot(PlotlyBase):
                 x=df["time"],
                 y=df[self.layout["columns"]],
                 line_shape="spline",
-                line_color=marker_colors[idx],
-                mode="lines+markers" if markers else "lines",
+                line_color=marker_colors[2],
+                mode="lines",
                 name="forecast",
             )
         )
@@ -132,8 +126,8 @@ class TSPlot(PlotlyBase):
                     y=np.hstack((self.data["se_low"], self.data["se_high"][::-1])),
                     fill="toself",
                     name="95% confidence interval",
-                    mode="lines+markers" if not markers else "markers",
-                    marker=dict(color=marker_colors[idx + 1]),
+                    mode="lines",
+                    marker=dict(color=marker_colors[3]),
                     opacity=0.5,
                 )
             )
