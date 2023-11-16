@@ -146,7 +146,7 @@ def create_table(
 
         from verticapy import vDataFrame, drop
 
-        html_file = open("figures/sql_create_create_table.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_create_create_table.html", "w")
         html_file.write(vDataFrame(input_relation = '"public"."employees"')._repr_html_())
         html_file.close()
 

@@ -237,7 +237,7 @@ def adfuller(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["X"].plot(ts="year", width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_adfuller.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller.html
@@ -307,7 +307,7 @@ def adfuller(
         :suppress:
 
         fig = vdf["X"].plot(ts="year", width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html
@@ -493,7 +493,7 @@ def mkt(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["X"].plot(ts="year")
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html
@@ -567,7 +567,7 @@ def mkt(
         :suppress:
 
         fig = vdf["X"].plot(ts="year")
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt_2.html
@@ -767,7 +767,7 @@ def cochrane_orcutt(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "y1"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html
@@ -955,7 +955,7 @@ def durbin_watson(
         :suppress:
 
         result = model.predict(vdf, X = "day", name = "y_pred")
-        html_file = open("figures/machine_learning_model_selection_statistical_tests_durbin_watson_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_1.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -979,7 +979,7 @@ def durbin_watson(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "eps"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html
@@ -1147,7 +1147,7 @@ def ljungbox(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "x1"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_ljungbox_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_1.html
@@ -1166,7 +1166,7 @@ def ljungbox(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "x2"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_ljungbox_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_2.html
@@ -1319,7 +1319,7 @@ def het_arch(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "eps"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html
@@ -1383,7 +1383,7 @@ def het_arch(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["day", "eps"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html

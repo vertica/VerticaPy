@@ -213,7 +213,7 @@ def sql_magic(
         :suppress:
 
         t = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic.html", "w")
         html_file.write(t._repr_html_())
         html_file.close()
 
@@ -237,7 +237,7 @@ def sql_magic(
         :suppress:
 
         result = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -270,7 +270,7 @@ def sql_magic(
         :suppress:
 
         test_table = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_3.html", "w")
         html_file.write(test_table._repr_html_())
         html_file.close()
 
@@ -302,7 +302,7 @@ def sql_magic(
         :suppress:
 
         test_comment = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_4.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_4.html", "w")
         html_file.write(test_comment._repr_html_())
         html_file.close()
 
@@ -343,7 +343,7 @@ def sql_magic(
         :suppress:
 
         titanic_clean = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_5.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_5.html", "w")
         html_file.write(titanic_clean._repr_html_())
         html_file.close()
 
@@ -390,7 +390,7 @@ def sql_magic(
         import verticapy.sql.functions as vpf
         class_fare = titanic_clean.groupby("pclass",
                                    [vpf.avg(titanic_clean["fare"])._as("avg_fare")])
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_6.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_6.html", "w")
         html_file.write(class_fare._repr_html_())
         html_file.close()
 
@@ -424,7 +424,7 @@ def sql_magic(
         :suppress:
 
         titanic_class = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_7.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html", "w")
         html_file.write(titanic_class._repr_html_())
         html_file.close()
 
@@ -461,7 +461,7 @@ def sql_magic(
         :suppress:
 
         tb_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_8.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_8.html", "w")
         html_file.write(tb_test._repr_html_())
         html_file.close()
 
@@ -490,7 +490,7 @@ def sql_magic(
         :suppress:
 
         pandas_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_9.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_9.html", "w")
         html_file.write(pandas_test._repr_html_())
         html_file.close()
 
@@ -556,7 +556,7 @@ def sql_magic(
         :suppress:
 
         loop_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_10.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_10.html", "w")
         html_file.write(loop_test._repr_html_())
         html_file.close()
 
@@ -585,7 +585,7 @@ def sql_magic(
         :suppress:
 
         limit_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_11.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_11.html", "w")
         html_file.write(limit_test._repr_html_())
         html_file.close()
 
@@ -620,7 +620,7 @@ def sql_magic(
         :suppress:
 
         export_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_12.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_12.html", "w")
         html_file.write(export_test._repr_html_())
         html_file.close()
 
@@ -658,7 +658,7 @@ def sql_magic(
         :suppress:
 
         json_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_13.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_13.html", "w")
         html_file.write(json_test._repr_html_())
         html_file.close()
 
@@ -699,7 +699,7 @@ def sql_magic(
         :suppress:
 
         sql_test = _
-        html_file = open("figures/jupyter_extensions_sql_magic_sql_magic_14.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_14.html", "w")
         html_file.write(sql_test._repr_html_())
         html_file.close()
 

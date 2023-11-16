@@ -90,7 +90,7 @@ def gen_dataset(features_ranges: dict, nrows: int = 1000) -> vDataFrame:
         from verticapy.datasets import gen_dataset
         import datetime
         import verticapy as vp
-        html_file = open("figures/datasets_generators_gen_dataset.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_generators_gen_dataset.html", "w")
         html_file.write(gen_dataset(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
                                     "age": {"type": int, "range": [20, 40]},
                                     "distance": {"type": float, "range": [1000, 4000]},
@@ -237,7 +237,7 @@ def gen_meshgrid(features_ranges: dict) -> vDataFrame:
         from verticapy.datasets import gen_meshgrid
         import datetime
         import verticapy as vp
-        html_file = open("figures/datasets_generators_gen_meshgrid.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_generators_gen_meshgrid.html", "w")
         html_file.write(gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
                                 "age": {"type": int, "range": [20, 40], "nbins": 3,},
                                 "distance": {"type": float, "range": [1000, 4000], "nbins": 3,},

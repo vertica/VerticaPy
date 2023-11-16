@@ -686,7 +686,7 @@ class RandomForestRegressor(Regressor, RandomForest):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_rfreg_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_rfreg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1271,7 +1271,7 @@ class XGBRegressor(Regressor, XGBoost):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_xgbreg_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_xgbreg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1947,7 +1947,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_rf_classifier_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1999,7 +1999,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_rf_classifier_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2072,7 +2072,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_rf_classifier_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_roc.html
@@ -2755,7 +2755,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_xgb_classifier_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2807,7 +2807,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_xgb_classifier_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2880,7 +2880,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_xgb_classifier_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_roc.html
@@ -3365,7 +3365,7 @@ class IsolationForest(Clustering, Tree):
         :suppress:
 
         result = model.predict(data, ["density", "sulphates"])
-        html_file = open("figures/machine_learning_vertica_isolation_for_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3390,7 +3390,7 @@ class IsolationForest(Clustering, Tree):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot()
-        fig.write_html("figures/machine_learning_vertica_isolation_for_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_plot.html
@@ -3450,7 +3450,7 @@ class IsolationForest(Clustering, Tree):
         :suppress:
 
         fig = model.contour()
-        fig.write_html("figures/machine_learning_vertica_isolation_for_contour.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_contour.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_isolation_for_contour.html

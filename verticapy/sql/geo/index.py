@@ -98,7 +98,7 @@ def create_index(
         #raw directive was throwing error because of unicode symbol
         #in the country column
         world["country"].drop()
-        html_file = open("figures/sql_geo_index_create_index.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_create_index.html", "w")
         html_file.write(world._repr_html_())
         html_file.close()
 
@@ -113,7 +113,7 @@ def create_index(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_index_create_index_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_create_index_2.html", "w")
         html_file.write(create_index(world, "id", "geometry", "world_polygons", True)._repr_html_())
         html_file.close()
 
@@ -173,7 +173,7 @@ def describe_index(
 
         from verticapy.geo import *
 
-        html_file = open("figures/sql_geo_index_describe_index_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_1.html", "w")
         html_file.write(describe_index()._repr_html_())
         html_file.close()
 
@@ -188,7 +188,7 @@ def describe_index(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_index_describe_index_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_2.html", "w")
         html_file.write(describe_index("world_polygons")._repr_html_())
         html_file.close()
 
@@ -204,7 +204,7 @@ def describe_index(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_index_describe_index_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_3.html", "w")
         html_file.write(describe_index("world_polygons", list_polygons=True)._repr_html_())
         html_file.close()
 
@@ -266,7 +266,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
         from verticapy.geo import *
 
-        html_file = open("figures/sql_geo_index_rename_index_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html", "w")
         html_file.write(describe_index()._repr_html_())
         html_file.close()
 
@@ -287,7 +287,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_index_rename_index_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_2.html", "w")
         html_file.write(describe_index()._repr_html_())
         html_file.close()
 

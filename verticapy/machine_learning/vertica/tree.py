@@ -337,7 +337,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dtreereg_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreereg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -775,7 +775,7 @@ class DummyTreeRegressor(RandomForestRegressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dummytreereg_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreereg_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1322,7 +1322,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dtreeclass_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1374,7 +1374,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dtreeclass_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1447,7 +1447,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_dtreeclass_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dtreeclass_roc.html
@@ -1967,7 +1967,7 @@ class DummyTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dummytreecl_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2019,7 +2019,7 @@ class DummyTreeClassifier(RandomForestClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_dummytreecl_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2092,7 +2092,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_dummytreecl_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_dummytreecl_roc.html

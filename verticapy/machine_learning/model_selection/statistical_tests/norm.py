@@ -105,7 +105,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_jarque_bera_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_1.html
@@ -185,7 +185,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
         :suppress:
 
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html
@@ -294,7 +294,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_kurtosistest_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_1.html
@@ -375,7 +375,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
         :suppress:
 
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html
@@ -493,7 +493,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_1.html
@@ -573,7 +573,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         :suppress:
 
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_normaltest_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_2.html
@@ -683,7 +683,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_skewtest_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_1.html
@@ -777,7 +777,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         :suppress:
 
         fig = vdf["col"].hist(width = 600)
-        fig.write_html("figures/plotting_machine_learning_model_selection_norm_skewtest_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_2.html

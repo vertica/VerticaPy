@@ -398,7 +398,7 @@ def chart_magic(
         :suppress:
 
         pie_chart = _
-        pie_chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic.html")
+        pie_chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html
@@ -429,7 +429,7 @@ def chart_magic(
         :suppress:
 
         line_chart = _
-        line_chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic_2.html")
+        line_chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html
@@ -454,7 +454,7 @@ def chart_magic(
         :suppress:
 
         heatmap = _
-        heatmap.write_html("figures/jupyter_extensions_chart_magic_chart_magic_3.html")
+        heatmap.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html
@@ -483,7 +483,7 @@ def chart_magic(
         :suppress:
 
         bar = _
-        bar.write_html("figures/jupyter_extensions_chart_magic_chart_magic_4.html")
+        bar.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html
@@ -514,7 +514,7 @@ def chart_magic(
         :suppress:
 
         scatter = _
-        scatter.write_html("figures/jupyter_extensions_chart_magic_chart_magic_5.html")
+        scatter.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html
@@ -537,7 +537,7 @@ def chart_magic(
         :suppress:
 
         boxplot = _
-        boxplot.write_html("figures/jupyter_extensions_chart_magic_chart_magic_6.html")
+        boxplot.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_6.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_6.html
@@ -561,7 +561,7 @@ def chart_magic(
         :suppress:
 
         export = _
-        export.write_html("figures/jupyter_extensions_chart_magic_chart_magic_7.html")
+        export.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_7.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_7.html
@@ -592,7 +592,7 @@ def chart_magic(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/jupyter_extensions_chart_magic_chart_magic_8.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_8.html", "w")
         html_file.write(class_fare._repr_html_())
         html_file.close()
 
@@ -618,7 +618,7 @@ def chart_magic(
         :suppress:
 
         chart = _
-        chart.write_html("figures/jupyter_extensions_chart_magic_chart_magic_9.html")
+        chart.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_9.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_9.html
@@ -648,7 +648,7 @@ def chart_magic(
         :suppress:
 
         sql_file = _
-        sql_file.write_html("figures/jupyter_extensions_chart_magic_chart_magic_10.html")
+        sql_file.write_html("SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_10.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_10.html

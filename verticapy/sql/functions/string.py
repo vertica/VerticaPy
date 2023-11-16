@@ -56,7 +56,7 @@ def length(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
         df["length_x"] = vpf.length(df["x"])
-        html_file = open("figures/sql_functions_string_length.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_length.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -101,7 +101,7 @@ def lower(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
         df["lower_x"] = vpf.lower(df["x"])
-        html_file = open("figures/sql_functions_string_lower.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_lower.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -153,7 +153,7 @@ def substr(
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
         df["substr_x"] = vpf.substr(df["x"], 1, 1)
-        html_file = open("figures/sql_functions_string_substr.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_substr.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -200,7 +200,7 @@ def upper(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
         df["upper_x"] = vpf.upper(df["x"])
-        html_file = open("figures/sql_functions_string_upper.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_upper.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -254,7 +254,7 @@ def edit_distance(
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
         df["edit_distance_x"] = vpf.edit_distance(df["x"], 'heyllow')
-        html_file = open("figures/sql_functions_string_edit_distance.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_edit_distance.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -304,7 +304,7 @@ def soundex(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
         df["soundex_x"] = vpf.soundex(df["x"])
-        html_file = open("figures/sql_functions_string_soundex.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_soundex.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -357,7 +357,7 @@ def soundex_matches(
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
         df["soundex_matches_x"] = vpf.soundex_matches(df["x"], 'heyllow')
-        html_file = open("figures/sql_functions_string_soundex_matches.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_soundex_matches.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -412,7 +412,7 @@ def jaro_distance(
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
         df["jaro_distance_x"] = vpf.jaro_distance(df["x"], 'heyllow')
-        html_file = open("figures/sql_functions_string_jaro_distance.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_jaro_distance.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -464,7 +464,7 @@ def jaro_winkler_distance(
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
         df["jaro_winkler_distance_x"] = vpf.jaro_winkler_distance(df["x"], 'heyllow')
-        html_file = open("figures/sql_functions_string_jaro_winkler_distance.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_string_jaro_winkler_distance.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
