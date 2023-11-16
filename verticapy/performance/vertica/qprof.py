@@ -37,7 +37,7 @@ class QueryProfiler:
     def __init__(
         self,
         request: Optional[str] = None,
-        resource_pool: Optional[int] = None,
+        resource_pool: Optional[str] = None,
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
     ) -> None:
@@ -59,7 +59,32 @@ class QueryProfiler:
                 "must be defined."
             )
         if not (isinstance(request, NoneType)):
-            raise NotImplementedError
+            if not (isinstance(resource_pool, NoneType)):
+                _executeSQL(
+                    f"SET SESSION RESOURCE POOL {resource_pool} ;",
+                    title="Executing the query.",
+                    method="cursor",
+                )
+            _executeSQL(
+                request,
+                title="Executing the query.",
+                method="cursor",
+            )
+            query = """
+                SELECT
+                    transaction_id,
+                    statement_id
+                FROM QUERY_REQUESTS 
+                WHERE session_id = (SELECT current_session())
+                  AND is_executing='f'
+                ORDER BY start_timestamp DESC LIMIT 1;"""
+            transaction_id, statement_id = _executeSQL(
+                query,
+                title="Getting transaction_id, statement_id.",
+                method="fetchrow",
+            )
+            self.request = request
+
         if not (isinstance(transaction_id, int)):
             raise ValueError(
                 "Wrong type for Parameter transaction_id.\n"
@@ -74,24 +99,25 @@ class QueryProfiler:
             )
         else:
             self.statement_id = statement_id
-        query = f"""
-            SELECT 
-                request 
-            FROM v_internal.dc_requests_issued 
-            WHERE transaction_id = {transaction_id}
-              AND   statement_id = {statement_id};"""
-        try:
-            self.request = _executeSQL(
-                query,
-                title="Getting the corresponding query",
-                method="fetchfirstelem",
-            )
-        except TypeError:
-            raise QueryError(
-                f"No transaction with transaction_id={transaction_id} "
-                f"and statement_id={statement_id} was found in the "
-                "v_internal.dc_requests_issued table."
-            )
+        if not(hasattr(self, "request")):
+            query = f"""
+                SELECT 
+                    request 
+                FROM v_internal.dc_requests_issued 
+                WHERE transaction_id = {transaction_id}
+                  AND   statement_id = {statement_id};"""
+            try:
+                self.request = _executeSQL(
+                    query,
+                    title="Getting the corresponding query",
+                    method="fetchfirstelem",
+                )
+            except TypeError:
+                raise QueryError(
+                    f"No transaction with transaction_id={transaction_id} "
+                    f"and statement_id={statement_id} was found in the "
+                    "v_internal.dc_requests_issued table."
+                )
 
     # Tools
 
