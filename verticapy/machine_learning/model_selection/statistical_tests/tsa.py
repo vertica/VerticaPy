@@ -189,7 +189,6 @@ def adfuller(
     TableSample
         result of the test.
 
-
     Examples
     ---------
 
@@ -209,13 +208,16 @@ def adfuller(
         import verticapy as vp
 
     Example 1: Trend
-    ^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^
 
     Now we can create the dummy dataset:
 
     .. ipython:: python
+        
+        # Initialization
+        N = 100 # Number of Rows.
 
-        N = 100
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "year": list(range(N)),
@@ -316,12 +318,13 @@ def adfuller(
 
         adfuller(vdf, column = "X", ts = "year")
 
-    Notice the low p-value which proves
-    that there is stationarity.
+    .. note::
 
-    For more information check out
-    `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
+        Notice the low p-value which proves
+        that there is stationarity.
 
+        For more information check out
+        `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -566,11 +569,13 @@ def mkt(
 
         mkt(vdf, column = "X", ts = "year")
 
-    Notice the extreme p-value which is
-    significant to disprove the null hypothesis.
+    .. note::
 
-    For more information check out
-    `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
+        Notice the extreme p-value which is
+        significant to disprove the null hypothesis.
+
+        For more information check out
+        `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -700,7 +705,7 @@ def cochrane_orcutt(
             ANOVA table.
 
         - r2_:
-            R2
+            R2 score.
 
     Examples
     ---------
@@ -726,24 +731,14 @@ def cochrane_orcutt(
 
     Now we can create the dummy dataset:
 
-    .. code-block:: python
-
-        N = 30
-        days = list(range(N))
-        y_val = [2 * x + np.random.normal(scale = 4 * x) for x in days]
-        vdf = vp.vDataFrame(
-            {
-                "day": days,
-                "y1": y_val,
-            }
-        )
-
     .. ipython:: python
-        :suppress:
-
-        N = 30
+       
+        # Initialization
+        N = 30 # Number of Rows.
         days = list(range(N))
         y_val = [2 * x + np.random.normal(scale = 4 * x) for x in days]
+
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "day": days,
@@ -769,7 +764,7 @@ def cochrane_orcutt(
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html
 
     Model Fitting
-    ^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^
 
     Next, we can fit a Linear Model. To do that
     we need to first import the model and intialize:
@@ -777,6 +772,7 @@ def cochrane_orcutt(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
+        
         model = LinearRegression()
 
     Next we can fit the model:
@@ -791,6 +787,7 @@ def cochrane_orcutt(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import cochrane_orcutt
+
         new_model = cochrane_orcutt(model = model, input_relation = vdf, ts = "day")
 
     Now we can compare the coefficients of both the models to see the difference.
@@ -803,8 +800,8 @@ def cochrane_orcutt(
 
         new_model.coef_
 
-    We can see that the new model has slighlty different coefficients
-    to cater for the autocorrelated noise.
+    We can see that the new model has slighlty different 
+    coefficients to cater for the autocorrelated noise.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -901,24 +898,14 @@ def durbin_watson(
 
     Now we can create the dummy dataset:
 
-    .. code-block:: python
-
-        N = 50
+    .. ipython:: python
+        
+        # Initialization
+        N = 50 # Number of Rows
         days = list(range(N))
         y_val = [2 * x + np.random.normal(scale = 4 * x * x) for x in days]
-        vdf = vp.vDataFrame(
-            {
-                "day": days,
-                "y1": y_val,
-            }
-        )
-
-    .. ipython:: python
-        :suppress:
-
-        N = 30
-        days = list(range(N))
-        y_val = [2 * x + np.random.normal(scale = 4 * x) for x in days]
+        
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "day": days,
@@ -935,6 +922,7 @@ def durbin_watson(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
+        
         model = LinearRegression()
 
     Next we can fit the model:
@@ -961,7 +949,6 @@ def durbin_watson(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_1.html
 
-
     Then we can calculate the residuals i.e. ``eps``:
 
     .. ipython:: python
@@ -984,7 +971,6 @@ def durbin_watson(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html
 
-
     Test
     ^^^^^
 
@@ -993,6 +979,7 @@ def durbin_watson(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import durbin_watson
+        
         durbin_watson(input_relation = vdf, ts = "day", eps = "eps")
 
     We can see that the Durbin-Watson statistic
@@ -1106,27 +1093,15 @@ def ljungbox(
 
     Now we can create the dummy dataset:
 
-    .. code-block:: python
-
-        N = 50
-        day = list(range(N))
-        x_val_1 = [2 * x + np.random.normal(scale = 4) for x in day]
-        x_val_2 = np.random.normal(0,4,N)
-        vdf = vp.vDataFrame(
-            {
-                "day": day,
-                "x1": x_val_1,
-                "x2": x_val_2,
-            }
-        )
-
     .. ipython:: python
-        :suppress:
-
-        N = 50
+        
+        # Initialization
+        N = 50 # Number of Rows.
         day = list(range(N))
         x_val_1 = [2 * x + np.random.normal(scale = 4) for x in day]
-        x_val_2 = np.random.normal(0,4,N)
+        x_val_2 = np.random.normal(0, 4, N)
+
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "day": day,
@@ -1199,6 +1174,7 @@ def ljungbox(
 
     The test confirms that there is indeed a
     relationship.
+
     Now, we can test the other independent column as well:
 
     .. ipython:: python
@@ -1298,17 +1274,19 @@ def het_arch(
         import verticapy as vp
         import numpy as np
 
-
     Example 1: Random
-    ^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^
 
     Now we can create the dummy dataset:
 
     .. code-block:: python
-
-        N= 50
-        days =list(range(N))
+        
+        # Initialization
+        N = 50 # Number of Rows.
+        days = list(range(N))
         vals = [np.random.normal(5) for x in days]
+
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "day": days,
@@ -1346,7 +1324,6 @@ def het_arch(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html
 
-
     Test
     ^^^^^
 
@@ -1355,6 +1332,7 @@ def het_arch(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_arch
+        
         het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
 
     We can see that there is no relationship
@@ -1363,9 +1341,8 @@ def het_arch(
     Now let us contrast it with another example where
     the lags are related:
 
-
     Example 1: Correlated
-    ^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^
 
     We can create an alternate dataset that exhibits
     some correlation with a specific lag. Below, we
@@ -1375,33 +1352,18 @@ def het_arch(
     to the one that is two steps before it, but not to
     the one immediately before it
 
-    .. code-block:: python
-
-        N= 50
-        days =list(range(N))
-        x1 = [2 * -x for x in list(range(40, 40 + 5 * N, 5))]
-        x2 = [-2 * -x * x * x / 2 for x in list(range(4, 4 + 2 * N, 2))]
-        vals = []
-        for elem_1, elem_2 in zip(x1, x2):
-            vals.extend([elem_1, elem_2])
-        vdf = vp.vDataFrame(
-            {
-                "day": days,
-                "eps": vals,
-            }
-        )
-
-
     .. ipython:: python
-        :suppress:
-
-        N= 50
-        days =list(range(N))
+        
+        # Initialization
+        N = 50 # Number of Rows
+        days = list(range(N))
         x1 = [2 * -x for x in list(range(40, 40 + 5 * N, 5))]
         x2 = [-2 * -x * x * x / 2 for x in list(range(4, 4 + 2 * N, 2))]
         vals = []
         for elem_1, elem_2 in zip(x1, x2):
             vals.extend([elem_1, elem_2])
+
+        # vDataFrame
         vdf = vp.vDataFrame(
             {
                 "day": days,
@@ -1439,6 +1401,7 @@ def het_arch(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_arch
+        
         het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
 
     We can see that the lags of multiple of 2
