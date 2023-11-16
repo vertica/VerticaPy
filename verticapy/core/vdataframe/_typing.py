@@ -114,7 +114,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             res = data.dtypes()
-            html_file = open("figures/core_vDataFrame_typing_astype1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_astype1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -138,7 +138,7 @@ class vDFTyping(vDFRead):
 
             data.astype({"fare": "int", "cabin": "varchar(1)"})
             res = data.dtypes()
-            html_file = open("figures/core_vDataFrame_typing_astype2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_astype2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -200,7 +200,7 @@ class vDFTyping(vDFRead):
                 }
             )
             res = data
-            html_file = open("figures/core_vDataFrame_typing_booltoint1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_booltoint1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -217,7 +217,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             res = data.bool_to_int()
-            html_file = open("figures/core_vDataFrame_typing_booltoint2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_booltoint2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -392,7 +392,7 @@ class vDFTyping(vDFRead):
                 }
             )
             res = data
-            html_file = open("figures/core_vDataFrame_typing_datecol.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_datecol.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -498,7 +498,7 @@ class vDFTyping(vDFRead):
             :suppress:
 
             res = data.dtypes()
-            html_file = open("figures/core_vDataFrame_typing_dtypes.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_dtypes.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -572,7 +572,7 @@ class vDFTyping(vDFRead):
                 }
             )
             res = data
-            html_file = open("figures/core_vDataFrame_typing_numcol.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_numcol.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -712,7 +712,7 @@ class vDCTyping(vDCRead):
                 }
             )
             res = data["artists"].astype("array")
-            html_file = open("figures/core_vDataFrame_typing_astypecol1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_astypecol1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -729,7 +729,7 @@ class vDCTyping(vDCRead):
             :suppress:
 
             res = data["artists"].astype("json")
-            html_file = open("figures/core_vDataFrame_typing_astypecol2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_astypecol2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1027,7 +1027,7 @@ class vDCTyping(vDCRead):
                 {"artists": ["Inna, Alexandra, Reea", "Rihanna, Beyonce"]}
             )
             res = data["artists"].astype("array")
-            html_file = open("figures/core_vDataFrame_typing_isarray.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isarray.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1093,7 +1093,7 @@ class vDCTyping(vDCRead):
                 }
             )
             res = data
-            html_file = open("figures/core_vDataFrame_typing_isbool.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isbool.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1235,7 +1235,7 @@ class vDCTyping(vDCRead):
                 }
             )
             res = data
-            html_file = open("figures/core_vDataFrame_typing_isbool.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isbool.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1303,7 +1303,7 @@ class vDCTyping(vDCRead):
                             }
                         )
             res = data["mgr"].astype("vmap")
-            html_file = open("figures/core_vDataFrame_typing_isvmap.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_typing_isvmap.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 

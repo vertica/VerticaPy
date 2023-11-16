@@ -648,7 +648,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_neighbors_knc_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -696,7 +696,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_neighbors_knc_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -783,7 +783,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.roc_curve(pos_label = "5")
-        fig.write_html("figures/machine_learning_vertica_neighbors_knc_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_roc.html
@@ -1920,7 +1920,7 @@ class LocalOutlierFactor(VerticaModel):
         :suppress:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_lof_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1949,7 +1949,7 @@ class LocalOutlierFactor(VerticaModel):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(width = 600)
-        fig.write_html("figures/machine_learning_vertica_lof_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_lof_plot.html

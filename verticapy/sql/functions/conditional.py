@@ -70,7 +70,7 @@ def case_when(*args) -> StringSQL:
         df["x_pos"] = vpf.case_when(df["x"] > 0, 1,
                                    df["x"] == 0, 0,
                                    -1)
-        html_file = open("figures/sql_functions_conditional_case_when.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_conditional_case_when.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -152,7 +152,7 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
                         'banana', 'fruit',
                         'apple', 'fruit',
                         'vegetable')
-        html_file = open("figures/sql_functions_conditional_decode.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_conditional_decode.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 

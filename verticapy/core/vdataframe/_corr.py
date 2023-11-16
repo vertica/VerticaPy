@@ -861,7 +861,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
             fig = data.corr(method = "pearson")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_corr_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_matrix.html
@@ -876,7 +876,7 @@ class vDFCorr(vDFEncode):
             :suppress:
 
             fig = data.corr(method = "pearson", focus = "score1")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_corr_vector.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_vector.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_corr_vector.html
@@ -1230,7 +1230,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
             fig = data.cov()
-            fig.write_html("figures/core_vDataFrame_vDFCorr_cov_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_matrix.html
@@ -1245,7 +1245,7 @@ class vDFCorr(vDFEncode):
             :suppress:
 
             fig = data.cov(method = "pearson", focus = "score1")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_cov_vector.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_vector.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_cov_vector.html
@@ -1393,7 +1393,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
             fig = data.regr(method = "beta")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_beta_matrix.html
@@ -1418,7 +1418,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
             fig = data.regr(method = "alpha")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_alpha_matrix.html
@@ -1443,7 +1443,7 @@ class vDFCorr(vDFEncode):
                 "score4": np.random.normal(14, 3, N),
             })
             fig = data.regr(method = "r2")
-            fig.write_html("figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_regr_r2_matrix.html
@@ -1713,7 +1713,7 @@ class vDFCorr(vDFEncode):
                 width = 600,
                 height = 400,
             )
-            fig.write_html("figures/core_vDataFrame_vDFCorr_acf_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_acf_plot.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_acf_plot.html
@@ -1935,7 +1935,7 @@ class vDFCorr(vDFEncode):
                 width = 600,
                 height = 450,
             )
-            fig.write_html("figures/core_vDataFrame_vDFCorr_pacf_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_pacf_plot.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_pacf_plot.html
@@ -2123,7 +2123,7 @@ class vDFCorr(vDFEncode):
             vp.set_option("plotting_lib", "plotly")
             data = load_titanic()
             fig = data.iv_woe(y = "survived", nbins = 20)
-            fig.write_html("figures/core_vDataFrame_vDFCorr_iv_woe_plot.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html")
 
         .. raw:: html
           :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_plot.html
@@ -2230,7 +2230,7 @@ class vDCCorr(vDCEncode):
 
             from verticapy.datasets import load_titanic
             data = load_titanic()
-            html_file = open("figures/core_vDataFrame_vDFCorr_iv_woe_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFCorr_iv_woe_table.html", "w")
             html_file.write(data["age"].iv_woe(y = "survived", nbins = 20)._repr_html_())
             html_file.close()
 

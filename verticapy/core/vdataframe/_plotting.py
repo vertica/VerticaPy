@@ -143,7 +143,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.boxplot(["score1"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_boxplot_single.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_single.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_single.html
@@ -159,7 +159,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.boxplot(columns = ["score1", "score2", "score3"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_boxplot_multi.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_multi.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_boxplot_multi.html
@@ -312,7 +312,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.bar(["grade"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_bar_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_1d.html
@@ -328,7 +328,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.bar(columns = ["grade", "gender"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_bar_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_bar_2d.html
@@ -519,7 +519,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.barh(["grade"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_barh_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_1d.html
@@ -535,7 +535,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.barh(columns = ["grade", "gender"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_barh_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_barh_2d.html
@@ -686,7 +686,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pie(["grade"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_pie_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_1d.html
@@ -702,7 +702,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pie(columns = ["grade", "gender"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_pie_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pie_2d.html
@@ -841,7 +841,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.hist(["score1"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_hist_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_1d.html
@@ -857,7 +857,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.hist(columns = ["score1", "score2"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_hist_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_hist_2d.html
@@ -989,7 +989,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.density(["score1"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_density_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_1d.html
@@ -1005,7 +1005,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.density(columns = ["score1", "score2"], width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_density_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_density_2d.html
@@ -1186,7 +1186,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.plot(columns = ["Asia"], ts = "date", kind = "spline", width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_plot_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_1d.html
@@ -1202,7 +1202,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.plot(columns = ["Asia", "Africa", "Europe", "America", "Oceania"], ts = "date", width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_plot_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_plot_2d.html
@@ -1332,7 +1332,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.range_plot(columns = ["population1"], ts = "date", width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_range_plot_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_1d.html
@@ -1348,7 +1348,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.range_plot(columns = ["population1", "population2"], ts = "date", width = 600)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_range_plot_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_range_plot_2d.html
@@ -1593,7 +1593,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.pivot_table(columns = ["category1", "category2"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_pivot_table_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pivot_table_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_pivot_table_1d.html
@@ -1720,7 +1720,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.contour(columns = ["x", "y"], func = f)
-                fig.write_html("figures/core_vdataframe_plotting_vdf_contour_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_contour_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_contour_1d.html
@@ -1857,7 +1857,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.heatmap(columns = ["x", "y"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_heatmap_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_heatmap_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_heatmap_1d.html
@@ -2150,7 +2150,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.scatter(columns = ["x", "y"], by = "category")
-                fig.write_html("figures/core_vdataframe_plotting_vdf_scatter_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_2d.html
@@ -2166,7 +2166,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.scatter(columns = ["x", "y", "z"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_scatter_3d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_3d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_scatter_3d.html
@@ -2437,7 +2437,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.outliers_plot(columns = ["x"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_outliers_plot_1d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_1d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_1d.html
@@ -2453,7 +2453,7 @@ class vDFPlot(vDFMachineLearning):
 
                 vp.set_option("plotting_lib", "plotly")
                 fig = data.outliers_plot(columns = ["x", "y"])
-                fig.write_html("figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html")
+                fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html")
 
             .. raw:: html
                 :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdf_outliers_plot_2d.html
@@ -2688,7 +2688,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].boxplot(width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_boxplot_single.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_boxplot_single.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_boxplot_single.html
@@ -2833,7 +2833,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].bar()
-            fig.write_html("figures/core_vdataframe_plotting_vdc_bar_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_bar_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_bar_1d.html
@@ -2976,7 +2976,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].barh()
-            fig.write_html("figures/core_vdataframe_plotting_vdc_barh_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_barh_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_barh_1d.html
@@ -3112,7 +3112,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["grade"].pie(width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_pie_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_pie_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_pie_1d.html
@@ -3242,7 +3242,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].spider(width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_spider_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_spider_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_spider_1d.html
@@ -3397,7 +3397,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].hist(width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_hist_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_hist_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_hist_1d.html
@@ -3545,7 +3545,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["score1"].density(width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_density_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_density_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_density_1d.html
@@ -3716,7 +3716,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["population"].candlestick(ts = "date", width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_cadnlestick_1d.html
@@ -3847,7 +3847,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["Asia"].plot(ts = "date", kind = "spline", width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_plot_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_plot_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_plot_1d.html
@@ -3969,7 +3969,7 @@ class vDCPlot(vDCScaler):
 
             vp.set_option("plotting_lib", "plotly")
             fig = data["population1"].range_plot(ts = "date", width = 600)
-            fig.write_html("figures/core_vdataframe_plotting_vdc_range_plot_1d.html")
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_range_plot_1d.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vdataframe_plotting_vdc_range_plot_1d.html

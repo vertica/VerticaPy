@@ -572,7 +572,7 @@ class ElasticNet(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_elasticnet_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_elasticnet_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1037,7 +1037,7 @@ class Lasso(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_lasso_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lasso_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1533,7 +1533,7 @@ class LinearRegression(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lr_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2016,7 +2016,7 @@ class PoissonRegressor(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_poisson_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_poisson_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2500,7 +2500,7 @@ class Ridge(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_ridge_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_ridge_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3071,7 +3071,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_logr_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3123,7 +3123,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_logr_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3196,7 +3196,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_linear_model_logr_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_logr_roc.html

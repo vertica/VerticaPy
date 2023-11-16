@@ -137,7 +137,7 @@ def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_market
-        html_file = open("figures/datasets_loaders_load_market.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_market.html", "w")
         html_file.write(load_market()._repr_html_())
         html_file.close()
 
@@ -195,7 +195,7 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_iris
-        html_file = open("figures/datasets_loaders_load_iris.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html", "w")
         html_file.write(load_iris()._repr_html_())
         html_file.close()
 
@@ -262,7 +262,7 @@ def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_titanic
-        html_file = open("figures/datasets_loaders_load_titanic.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html", "w")
         html_file.write(load_titanic()._repr_html_())
         html_file.close()
 
@@ -335,7 +335,7 @@ def load_winequality(schema: str = "public", name: str = "winequality") -> vData
         :suppress:
 
         from verticapy.datasets import load_winequality
-        html_file = open("figures/datasets_loaders_load_winequality.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html", "w")
         html_file.write(load_winequality()._repr_html_())
         html_file.close()
 
@@ -410,7 +410,7 @@ def load_airline_passengers(
         :suppress:
 
         from verticapy.datasets import load_airline_passengers
-        html_file = open("figures/datasets_loaders_load_airline_passengers.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_airline_passengers.html", "w")
         html_file.write(load_airline_passengers()._repr_html_())
         html_file.close()
 
@@ -463,7 +463,7 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_amazon
-        html_file = open("figures/datasets_loaders_load_amazon.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_amazon.html", "w")
         html_file.write(load_amazon()._repr_html_())
         html_file.close()
 
@@ -516,7 +516,7 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
         :suppress:
 
         from verticapy.datasets import load_commodities
-        html_file = open("figures/datasets_loaders_load_commodities.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_commodities.html", "w")
         html_file.write(load_commodities()._repr_html_())
         html_file.close()
 
@@ -577,7 +577,7 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
         :suppress:
 
         from verticapy.datasets import load_gapminder
-        html_file = open("figures/datasets_loaders_load_gapminder.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_gapminder.html", "w")
         html_file.write(load_gapminder()._repr_html_())
         html_file.close()
 
@@ -637,7 +637,7 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
         :suppress:
 
         from verticapy.datasets import load_pop_growth
-        html_file = open("figures/datasets_loaders_load_pop_growth.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_pop_growth.html", "w")
         html_file.write(load_pop_growth()._repr_html_())
         html_file.close()
 
@@ -698,7 +698,7 @@ def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDa
         :suppress:
 
         from verticapy.datasets import load_smart_meters
-        html_file = open("figures/datasets_loaders_load_smart_meters.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_smart_meters.html", "w")
         html_file.write(load_smart_meters()._repr_html_())
         html_file.close()
 
@@ -756,7 +756,7 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_cities
-        html_file = open("figures/datasets_loaders_load_cities.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html", "w")
         html_file.write(load_cities()._repr_html_())
         html_file.close()
 
@@ -814,7 +814,7 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_world
-        html_file = open("figures/datasets_loaders_load_world.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_world.html", "w")
         html_file.write(load_world()._repr_html_())
         html_file.close()
 
@@ -881,7 +881,7 @@ def load_africa_education(
         :suppress:
 
         from verticapy.datasets import load_africa_education
-        html_file = open("figures/datasets_loaders_load_africa_education.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_africa_education.html", "w")
         html_file.write(load_africa_education()._repr_html_())
         html_file.close()
 
@@ -1069,7 +1069,7 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
         :suppress:
 
         from verticapy.datasets import load_laliga
-        html_file = open("figures/datasets_loaders_load_laliga.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/datasets_loaders_load_laliga.html", "w")
         html_file.write(load_laliga()._repr_html_())
         html_file.close()
 

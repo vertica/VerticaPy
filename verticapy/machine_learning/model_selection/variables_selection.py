@@ -211,15 +211,24 @@ def randomized_features_search_cv(
 
         For Regression:
 
-        - max    : Max error
-        - mae    : Mean absolute error
-        - median : Median absolute error
-        - mse    : Mean squared error
-        - msle   : Mean squared log error
-        - r2     : R-squared coefficient
-        - r2a    : R2 adjusted
-        - rmse   : Root-mean-squared error
-        - var    : Explained variance
+        - max: 
+            Max error
+        - mae: 
+            Mean absolute error
+        - median: 
+            Median absolute error
+        - mse: 
+            Mean squared error
+        - msle: 
+            Mean squared log error
+        - r2: 
+            R-squared coefficient
+        - r2a: 
+            R2 adjusted
+        - rmse: 
+            Root-mean-squared error
+        - var: 
+            Explained variance
 
     cv: int, optional
         Number of folds.
@@ -275,6 +284,7 @@ def randomized_features_search_cv(
     .. ipython:: python
 
         import verticapy.datasets as vpd
+        
         data = vpd.load_titanic()
 
     .. raw:: html
@@ -295,20 +305,19 @@ def randomized_features_search_cv(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica import LogisticRegression
+        
         model = LogisticRegression()
 
-    Now we can conveniently use the ``randomized_features_search_cv`` function
-    to do eith forward or backward randomized_features_search_cv feature selection.
+    Now we can conveniently use the ``randomized_features_search_cv``
+    function to do either forward or backward randomized features 
+    search feature selection.
 
-
-    .. ipython:: python
-
-        import verticapy as vp
-        @suppress
-        vp.set_option("plotting_lib", "plotly")
+    .. code-block:: python
 
         from verticapy.machine_learning.model_selection import randomized_features_search_cv
-        result = randomized_features_search_cv(model,
+        
+        result = randomized_features_search_cv(
+            model,
             input_relation = data,
             X = ["age", "fare", "parch", "pclass",],
             y = "survived",
@@ -318,6 +327,17 @@ def randomized_features_search_cv(
     .. ipython:: python
         :suppress:
 
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import randomized_features_search_cv
+
+        vp.set_option("plotting_lib", "plotly")
+        result = randomized_features_search_cv(
+            model,
+            input_relation = data,
+            X = ["age", "fare", "parch", "pclass",],
+            y = "survived",
+            cv = 3,
+        )
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_randomized_features_search_cv_table.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -327,9 +347,8 @@ def randomized_features_search_cv(
 
     .. note::
 
-        The models are arrange in **ascending order**
+        The models are arranged in **ascending order**
         of ``avg_score``.
-
     """
     X = format_type(X, dtype=list)
     if estimator._model_subcategory == "REGRESSOR" and metric == "auto":
@@ -611,29 +630,38 @@ def stepwise(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica import LogisticRegression
+        
         model = LogisticRegression()
 
     Now we can conveniently use the ``stepwise`` function
     to do eith forward or backward stepwise feature selection.
 
-
-    .. ipython:: python
-
-        import verticapy as vp
-        @suppress
-        vp.set_option("plotting_lib", "plotly")
+    .. code-block:: python
 
         from verticapy.machine_learning.model_selection import stepwise
+
+        result = stepwise(
+            model,
+            input_relation = data,
+            X = ["age", "fare", "parch", "pclass",],
+            y = "survived",
+            direction = "backward"
+        )
+        result
+
+    .. ipython:: python
+        :suppress:
+        
+        import verticapy as vp
+        from verticapy.machine_learning.model_selection import stepwise
+
+        vp.set_option("plotting_lib", "plotly")
         result = stepwise(model,
             input_relation = data,
             X = ["age", "fare", "parch", "pclass",],
             y = "survived",
             direction = "backward"
         )
-
-    .. ipython:: python
-        :suppress:
-
         html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_stepwise_table.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
@@ -674,7 +702,7 @@ def stepwise(
 
     .. note::
 
-        For a compelete guide on stepwise plots
+        For a complete guide on stepwise plots,
         please look at :ref:`chart_gallery.stepwise`.
     """
     X = format_type(X, dtype=list)

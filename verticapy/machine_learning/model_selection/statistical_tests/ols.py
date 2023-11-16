@@ -146,7 +146,7 @@ def het_breuschpagan(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["x", "eps"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_breuschpagan.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan.html
@@ -261,7 +261,7 @@ def het_breuschpagan(
         :suppress:
 
         fig = vdf.scatter(["x", "eps"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_breuschpagan_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_breuschpagan_2.html
@@ -418,7 +418,7 @@ def het_goldfeldquandt(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["x", "y"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt.html
@@ -510,7 +510,7 @@ def het_goldfeldquandt(
         :suppress:
 
         fig = vdf.scatter(["x", "y"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_goldfeldquandt_2.html
@@ -695,7 +695,7 @@ def het_white(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["x", "eps"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_white.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_white.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_white.html
@@ -810,7 +810,7 @@ def het_white(
         :suppress:
 
         fig = vdf.scatter(["x", "eps"], width = 550)
-        fig.write_html("figures/plotting_machine_learning_model_selection_ols_het_white_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_white_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_ols_het_white_2.html
@@ -982,7 +982,7 @@ def variance_inflation_factor(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["x1", "x2"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_vif_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_1.html
@@ -1000,7 +1000,7 @@ def variance_inflation_factor(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf.scatter(["x1", "x3"], width = 550)
-        fig.write_html("figures/machine_learning_model_selection_statistical_tests_vif_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vif_2.html
@@ -1024,7 +1024,7 @@ def variance_inflation_factor(
         :suppress:
 
         result = variance_inflation_factor(vdf, X =["x1", "x2", "x3"])
-        html_file = open("figures/machine_learning_model_selection_statistical_tests_vic_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_vic_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 

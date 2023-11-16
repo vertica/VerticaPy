@@ -53,7 +53,7 @@ def date(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["date_x"] = vpf.date(df["x"])
-        html_file = open("figures/sql_functions_date_date.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_date.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -99,7 +99,7 @@ def day(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         df["day_x"] = vpf.day(df["x"])
-        html_file = open("figures/sql_functions_date_day.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_day.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -146,7 +146,7 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         df["dayofweek_x"] = vpf.dayofweek(df["x"])
-        html_file = open("figures/sql_functions_date_dayofweek.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_dayofweek.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -193,7 +193,7 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         df["dayofyear_x"] = vpf.dayofyear(df["x"])
-        html_file = open("figures/sql_functions_date_dayofyear.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_dayofyear.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -249,7 +249,7 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993', '12-03-1993']})
         df["x"].astype("timestamp")
         df["months"] = vpf.extract(df["x"], "MONTHS")
-        html_file = open("figures/sql_functions_date_extract.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_extract.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -289,7 +289,7 @@ def getdate() -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["date"] = vpf.getdate()
-        html_file = open("figures/sql_functions_date_getdate.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_getdate.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -328,7 +328,7 @@ def getutcdate() -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["date"] = vpf.getutcdate()
-        html_file = open("figures/sql_functions_date_getutcdate.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_getutcdate.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -374,7 +374,7 @@ def hour(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
         df["x"].astype("timestamp")
         df["hour_x"] = vpf.hour(df["x"])
-        html_file = open("figures/sql_functions_date_hour.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_hour.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -418,7 +418,7 @@ def interval(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ['1 day', '2 hours']})
         df["interval_x"] = vpf.interval(df["x"])
-        html_file = open("figures/sql_functions_date_interval.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_interval.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -465,7 +465,7 @@ def minute(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']})
         df["x"].astype("timestamp")
         df["minute_x"] = vpf.minute(df["x"])
-        html_file = open("figures/sql_functions_date_minute.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_minute.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -512,7 +512,7 @@ def microsecond(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["microsecond_x"] = vpf.microsecond(df["x"])
-        html_file = open("figures/sql_functions_date_microsecond.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_microsecond.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -559,7 +559,7 @@ def month(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["month_x"] = vpf.month(df["x"])
-        html_file = open("figures/sql_functions_date_month.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_month.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -632,7 +632,7 @@ def overlaps(
         df["end0"].astype("timestamp")
         df["end1"].astype("timestamp")
         df["overlaps"] = vpf.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
-        html_file = open("figures/sql_functions_date_overlaps.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_overlaps.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -685,7 +685,7 @@ def quarter(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["quarter_x"] = vpf.quarter(df["x"])
-        html_file = open("figures/sql_functions_date_quarter.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_quarter.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -773,7 +773,7 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
         df = vDataFrame({"x": ['11/03/1993', '09/05/1959']})
         df["x"].astype("date")
         df["round_x"] = vpf.round_date(df["x"], 'MM')
-        html_file = open("figures/sql_functions_date_round_date.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_round_date.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -820,7 +820,7 @@ def second(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["second_x"] = vpf.second(df["x"])
-        html_file = open("figures/sql_functions_date_second.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_second.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -865,7 +865,7 @@ def timestamp(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["timestamp_x"] = vpf.timestamp(df["x"])
-        html_file = open("figures/sql_functions_date_timestamp.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_timestamp.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -914,7 +914,7 @@ def week(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["week_x"] = vpf.week(df["x"])
-        html_file = open("figures/sql_functions_date_week.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_week.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -961,7 +961,7 @@ def year(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
         df["x"].astype("timestamp")
         df["year_x"] = vpf.year(df["x"])
-        html_file = open("figures/sql_functions_date_year.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_date_year.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 

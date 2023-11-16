@@ -77,7 +77,7 @@ def apply(func: SQLExpression, *args, **kwargs) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["avg_x"] = vpf.apply("avg", df["x"])._over()
-        html_file = open("figures/sql_functions_math_apply.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_apply.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -219,7 +219,7 @@ def abs(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, -1, -2, -3]})
         df["abs_x"] = vpf.abs(df["x"])
-        html_file = open("figures/sql_functions_math_abs.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_abs.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -263,7 +263,7 @@ def acos(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         df["acos_x"] = vpf.acos(df["x"])
-        html_file = open("figures/sql_functions_math_acos.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_acos.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -307,7 +307,7 @@ def asin(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         df["asin_x"] = vpf.asin(df["x"])
-        html_file = open("figures/sql_functions_math_asin.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_asin.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -351,7 +351,7 @@ def atan(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, -1, 0.7, 0.5]})
         df["atan_x"] = vpf.atan(df["x"])
-        html_file = open("figures/sql_functions_math_atan.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_atan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -399,7 +399,7 @@ def atan2(quotient: SQLExpression, divisor: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, -1, 0.7, 0.5], "y": [2, 5, 1, 3]})
         df["atan2_x"] = vpf.atan2(df["x"], df["y"])
-        html_file = open("figures/sql_functions_math_atan2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_atan2.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -443,7 +443,7 @@ def cbrt(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, -2, 3, -4]})
         df["cbrt_x"] = vpf.cbrt(df["x"])
-        html_file = open("figures/sql_functions_math_cbrt.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_cbrt.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -487,7 +487,7 @@ def ceil(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["ceil_x"] = vpf.ceil(df["x"])
-        html_file = open("figures/sql_functions_math_ceil.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_ceil.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -535,7 +535,7 @@ def comb(n: int, k: int) -> StringSQL:
         df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
         df["comb_x"] = vpf.comb(33, df["x"])
-        html_file = open("figures/sql_functions_math_comb.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_comb.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -578,7 +578,7 @@ def cos(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["cos_x"] = vpf.cos(df["x"])
-        html_file = open("figures/sql_functions_math_cos.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_cos.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -622,7 +622,7 @@ def cosh(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["cosh_x"] = vpf.cosh(df["x"])
-        html_file = open("figures/sql_functions_math_cosh.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_cosh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -666,7 +666,7 @@ def cot(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["cot_x"] = vpf.cot(df["x"])
-        html_file = open("figures/sql_functions_math_cot.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_cot.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -710,7 +710,7 @@ def degrees(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["degrees_x"] = vpf.degrees(df["x"])
-        html_file = open("figures/sql_functions_math_degrees.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_degrees.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -777,7 +777,7 @@ def distance(
                         "lat1": [33.892166],
                         "lon1": [9.561555]})
         df["distance"] = vpf.distance(df["lat0"], df["lon0"], df["lat1"], df["lon1"])
-        html_file = open("figures/sql_functions_math_distance.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_distance.html", "w")
         html_file.write(df[["name0", "name1", "distance"]]._repr_html_())
         html_file.close()
 
@@ -820,7 +820,7 @@ def exp(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [11.4, -2.5, 3.5, -4.2]})
         df["exp_x"] = vpf.exp(df["x"])
-        html_file = open("figures/sql_functions_math_exp.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_exp.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -864,7 +864,7 @@ def factorial(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["factorial_x"] = vpf.factorial(df["x"])
-        html_file = open("figures/sql_functions_math_factorial.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_factorial.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -908,7 +908,7 @@ def floor(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         df["floor_x"] = vpf.floor(df["x"])
-        html_file = open("figures/sql_functions_math_floor.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_floor.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -952,7 +952,7 @@ def gamma(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         df["gamma_x"] = vpf.gamma(df["x"])
-        html_file = open("figures/sql_functions_math_gamma.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_gamma.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -997,7 +997,7 @@ def hash(*args) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
         df["hash_x"] = vpf.hash(df["x"])
-        html_file = open("figures/sql_functions_math_hash.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_hash.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1046,7 +1046,7 @@ def isfinite(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
         df["isfinite_x"] = vpf.isfinite(df["x"])
-        html_file = open("figures/sql_functions_math_isfinite.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_isfinite.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1092,7 +1092,7 @@ def isinf(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['0', 'inf', '0.7', '15']})
         df["x"].astype("float")
         df["isinf_x"] = vpf.isinf(df["x"])
-        html_file = open("figures/sql_functions_math_isinf.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_isinf.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1138,7 +1138,7 @@ def isnan(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": ['0', 'inf', 'nan', '15']})
         df["x"].astype("float")
         df["isnan_x"] = vpf.isnan(df["x"])
-        html_file = open("figures/sql_functions_math_isnan.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_isnan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1182,7 +1182,7 @@ def lgamma(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         df["lgamma_x"] = vpf.lgamma(df["x"])
-        html_file = open("figures/sql_functions_math_lgamma.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_lgamma.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1226,7 +1226,7 @@ def ln(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1.32, 2.9, 3.45, 4.33]})
         df["ln_x"] = vpf.ln(df["x"])
-        html_file = open("figures/sql_functions_math_ln.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_ln.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1274,7 +1274,7 @@ def log(expr: SQLExpression, base: int = 10) -> StringSQL:
         df = vDataFrame({"x": [2, 10, 16, 33]})
         df["x"].astype("float")
         df["log_x"] = vpf.log(df["x"], 10)
-        html_file = open("figures/sql_functions_math_log.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_log.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1318,7 +1318,7 @@ def radians(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [30, 60, 180, 360]})
         df["radians_x"] = vpf.radians(df["x"])
-        html_file = open("figures/sql_functions_math_radians.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_radians.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1366,7 +1366,7 @@ def round(expr: SQLExpression, places: int = 0) -> StringSQL:
         df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
         df["round_x"] = vpf.round(df["x"], 1)
-        html_file = open("figures/sql_functions_math_round.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_round.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1410,7 +1410,7 @@ def sign(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [5, 10, -5, -14]})
         df["sign_x"] = vpf.sign(df["x"])
-        html_file = open("figures/sql_functions_math_sign.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_sign.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1454,7 +1454,7 @@ def sin(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["sin_x"] = vpf.sin(df["x"])
-        html_file = open("figures/sql_functions_math_sin.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_sin.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1498,7 +1498,7 @@ def sinh(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["sinh_x"] = vpf.sinh(df["x"])
-        html_file = open("figures/sql_functions_math_sinh.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_sinh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1542,7 +1542,7 @@ def sqrt(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["sqrt_x"] = vpf.sqrt(df["x"])
-        html_file = open("figures/sql_functions_math_sqrt.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_sqrt.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1586,7 +1586,7 @@ def tan(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["tan_x"] = vpf.tan(df["x"])
-        html_file = open("figures/sql_functions_math_tan.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_tan.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1630,7 +1630,7 @@ def tanh(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [3.1415, 6, 4.5, 7]})
         df["tanh_x"] = vpf.tanh(df["x"])
-        html_file = open("figures/sql_functions_math_tanh.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_tanh.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -1678,7 +1678,7 @@ def trunc(expr: SQLExpression, places: int = 0) -> StringSQL:
         df = vDataFrame({"x": [2.95, 4.50, 4.63, 8.99]})
         df["x"].astype("float")
         df["trunc_x"] = vpf.trunc(df["x"], 1)
-        html_file = open("figures/sql_functions_math_trunc.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_math_trunc.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 

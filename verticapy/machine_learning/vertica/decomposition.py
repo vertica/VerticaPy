@@ -629,7 +629,7 @@ class PCA(Decomposition):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot()
-        fig.write_html("figures/machine_learning_vertica_pca_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot.html
@@ -649,7 +649,7 @@ class PCA(Decomposition):
         vp.set_option("plotting_lib", "highcharts")
         fig = model.plot_scree()
         html_text = fig.htmlcontent.replace("container", "ml_vertica_PCA_scree")
-        with open("figures/machine_learning_vertica_pca_plot_scree.html", "w") as file:
+        with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_pca_plot_scree.html", "w") as file:
             file.write(html_text)
 
     .. raw:: html
@@ -1027,7 +1027,7 @@ class MCA(PCA):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot()
-        fig.write_html("figures/machine_learning_vertica_mca_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot.html
@@ -1047,7 +1047,7 @@ class MCA(PCA):
         vp.set_option("plotting_lib", "highcharts")
         fig = model.plot_scree()
         html_text = fig.htmlcontent.replace("container", "ml_vertica_MCA_scree")
-        with open("figures/machine_learning_vertica_mca_plot_scree.html", "w") as file:
+        with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_scree.html", "w") as file:
             file.write(html_text)
 
     .. raw:: html
@@ -1067,7 +1067,7 @@ class MCA(PCA):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot_circle()
-        fig.write_html("figures/machine_learning_vertica_mca_plot_circle.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_mca_plot_circle.html
@@ -1576,7 +1576,7 @@ class SVD(Decomposition):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot()
-        fig.write_html("figures/machine_learning_vertica_svd_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot.html
@@ -1596,7 +1596,7 @@ class SVD(Decomposition):
         vp.set_option("plotting_lib", "highcharts")
         fig = model.plot_scree()
         html_text = fig.htmlcontent.replace("container", "ml_vertica_SVD_scree")
-        with open("figures/machine_learning_vertica_svd_plot_scree.html", "w") as file:
+        with open("SPHINX_DIRECTORY/figures/machine_learning_vertica_svd_plot_scree.html", "w") as file:
             file.write(html_text)
 
     .. raw:: html

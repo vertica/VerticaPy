@@ -137,7 +137,7 @@ class vDFEncode(vDFFill):
                 "adults"
             )
             res = data[["age", "age_category"]]
-            html_file = open("figures/core_vDataFrame_encoding_casewhen.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_casewhen.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -249,7 +249,7 @@ class vDFEncode(vDFFill):
 
             data = data.select(["pclass", "sex", "survived", "embarked"])
             res = data
-            html_file = open("figures/core_vDataFrame_encoding_ohe1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -266,7 +266,7 @@ class vDFEncode(vDFFill):
             :suppress:
 
             res = data.one_hot_encode()
-            html_file = open("figures/core_vDataFrame_encoding_ohe2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -285,7 +285,7 @@ class vDFEncode(vDFFill):
 
             data = data.select(["pclass", "sex","survived", "embarked"])
             res = data.one_hot_encode(columns = ['pclass', 'embarked'])
-            html_file = open("figures/core_vDataFrame_encoding_ohe3.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe3.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -311,7 +311,7 @@ class vDFEncode(vDFFill):
                 max_cardinality = 3,
                 drop_first = False,
             )
-            html_file = open("figures/core_vDataFrame_encoding_ohe4.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe4.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -436,7 +436,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"]
-            html_file = open("figures/core_vDataFrame_encoding_cut1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -454,7 +454,7 @@ class vDCEncode(vDCFill):
 
             vp.set_option("plotting_lib", "plotly")
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_cut2.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut2.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut2.html
@@ -471,7 +471,7 @@ class vDCEncode(vDCFill):
 
             data["age"].cut([0, 15, 80])
             res = data["age"]
-            html_file = open("figures/core_vDataFrame_encoding_cut3.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut3.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -488,7 +488,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_cut4.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut4.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut4.html
@@ -513,7 +513,7 @@ class vDCEncode(vDCFill):
                 include_lowest = False
             )
             res = data["fare"]
-            html_file = open("figures/core_vDataFrame_encoding_cut5.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut5.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -530,7 +530,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["fare"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_cut6.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut6.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut6.html
@@ -558,7 +558,7 @@ class vDCEncode(vDCFill):
                 labels = ["small", "big"]
             )
             res = data["parch"]
-            html_file = open("figures/core_vDataFrame_encoding_cut7.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut7.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -575,7 +575,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["parch"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_cut8.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut8.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut8.html
@@ -703,7 +703,7 @@ class vDCEncode(vDCFill):
 
             data["sex"].decode("female", 1, "male", 0, 2)
             res = data["sex"]
-            html_file = open("figures/core_vDataFrame_encoding_decode.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_decode.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -841,7 +841,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"]
-            html_file = open("figures/core_vDataFrame_encoding_discretize1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -859,7 +859,7 @@ class vDCEncode(vDCFill):
 
             vp.set_option("plotting_lib", "plotly")
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_discretize2.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize2.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize2.html
@@ -876,7 +876,7 @@ class vDCEncode(vDCFill):
 
             data["age"].discretize(method = "same_width", h = 10)
             res = data["age"]
-            html_file = open("figures/core_vDataFrame_encoding_discretize3.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize3.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -893,7 +893,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_discretize4.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize4.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize4.html
@@ -912,7 +912,7 @@ class vDCEncode(vDCFill):
             data = vpd.load_titanic()
             data["age"].discretize(method = "same_freq", nbins = 5)
             res = data["age"]
-            html_file = open("figures/core_vDataFrame_encoding_discretize5.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize5.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -929,7 +929,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_discretize6.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize6.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize6.html
@@ -964,7 +964,7 @@ class vDCEncode(vDCFill):
                 RFmodel_params = {"n_estimators": 20},
             )
             res = data["age"].topk()
-            html_file = open("figures/core_vDataFrame_encoding_discretize7.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize7.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -981,7 +981,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["age"].bar()
-            res.write_html("figures/core_vDataFrame_encoding_discretize8.html")
+            res.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize8.html")
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize8.html
@@ -1253,7 +1253,7 @@ class vDCEncode(vDCFill):
 
             data = data.select(["pclass", "sex", "survived", "embarked"])
             res = data
-            html_file = open("figures/core_vDataFrame_encoding_ohe1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1270,7 +1270,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data["embarked"].one_hot_encode()
-            html_file = open("figures/core_vDataFrame_encoding_ohe5.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe5.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1290,7 +1290,7 @@ class vDCEncode(vDCFill):
 
             data = data.select(["pclass", "sex", "survived", "embarked"])
             res = data["embarked"].one_hot_encode(use_numbers_as_suffix = True)
-            html_file = open("figures/core_vDataFrame_encoding_ohe6.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe6.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1439,7 +1439,7 @@ class vDCEncode(vDCFill):
 
             data["embarked"].label_encode()
             res = data["embarked"]
-            html_file = open("figures/core_vDataFrame_encoding_label_encode.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_label_encode.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1550,7 +1550,7 @@ class vDCEncode(vDCFill):
             :suppress:
 
             res = data.groupby(["embarked"], ["AVG(survived) AS survived"])
-            html_file = open("figures/core_vDataFrame_encoding_mean_encode1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_mean_encode1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -1570,7 +1570,7 @@ class vDCEncode(vDCFill):
 
             data["embarked"].mean_encode(response = "survived")
             res = data["embarked"]
-            html_file = open("figures/core_vDataFrame_encoding_mean_encode2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_mean_encode2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
