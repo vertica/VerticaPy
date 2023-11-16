@@ -14,9 +14,12 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from verticapy.core.vdataframe.base import vDataFrame
+from typing import Optional
 
+import verticapy._config.config as conf
 from verticapy._utils._sql._format import quote_ident
+
+from verticapy.core.vdataframe.base import vDataFrame
 
 from verticapy.sql.create import create_table
 from verticapy.sql.drop import drop
@@ -28,11 +31,14 @@ Sample Datasets to do testing.
 
 
 def load_dataset_cl(
-    table_name: str = "dataset_cl", schema: str = "public"
+    schema: Optional[str] = None,
+    table_name: str = "dataset_cl",
 ) -> vDataFrame:
     """
     Sample Dataset to do classification.
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
 
     # Classification Dataset
 
@@ -69,11 +75,14 @@ def load_dataset_cl(
 
 
 def load_dataset_reg(
-    table_name: str = "dataset_reg", schema: str = "public"
+    schema: Optional[str] = None,
+    table_name: str = "dataset_reg",
 ) -> vDataFrame:
     """
     Sample Dataset to do regression.
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
 
     # Regression Dataset
 
@@ -110,11 +119,14 @@ def load_dataset_reg(
 
 
 def load_dataset_num(
-    table_name: str = "dataset_num", schema: str = "public"
+    schema: Optional[str] = None,
+    table_name: str = "dataset_num",
 ) -> vDataFrame:
     """
     Sample Dataset with numerical values.
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
 
     # Numerical Dataset
 

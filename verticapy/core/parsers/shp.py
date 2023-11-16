@@ -27,7 +27,7 @@ from verticapy.core.vdataframe.base import vDataFrame
 @save_verticapy_logs
 def read_shp(
     path: str,
-    schema: str = "public",
+    schema: Optional[str] = None,
     table_name: Optional[str] = None,
 ) -> vDataFrame:
     """
@@ -48,6 +48,8 @@ def read_shp(
     vDataFrame
         The vDataFrame of the relation.
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "shp":

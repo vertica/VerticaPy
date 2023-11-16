@@ -28,6 +28,123 @@ from verticapy._utils._sql._cast import to_dtype_category
 from verticapy._typing import NoneType, SQLColumns, SQLExpression
 from verticapy.errors import ParsingError
 
+if conf.get_import_success("IPython"):
+    from IPython.display import display, Markdown
+
+SQL_KEYWORDS = {
+    "ADD CONSTRAINT": {"l": (" ",), "r": (" ",)},
+    "ADD": {"l": (" ",), "r": (" ",)},
+    "ALL": {"l": (" ",), "r": (" ",)},
+    "ALTER COLUMN": {"l": (" ",), "r": (" ",)},
+    "ALTER TABLE": {"l": (" ",), "r": (" ",)},
+    "AND": {"l": (" ",), "r": (" ",)},
+    "ANY": {"l": (" ",), "r": (" ",)},
+    "AS": {"l": (" ",), "r": (" ",)},
+    "ASC": {"l": (" ",), "r": (" ", ")")},
+    "BACKUP DATABASE": {"l": (" ",), "r": (" ",)},
+    "BETWEEN": {"l": (" ",), "r": (" ",)},
+    "CASE": {"l": (" ",), "r": (" ",)},
+    "CHECK": {"l": (" ",), "r": (" ",)},
+    "COLUMN": {"l": (" ",), "r": (" ",)},
+    "CONSTRAINT": {"l": (" ",), "r": (" ",)},
+    "CREATE DATABASE": {"l": (" ",), "r": (" ",)},
+    "CREATE INDEX": {"l": (" ",), "r": (" ",)},
+    "CREATE OR REPLACE VIEW": {"l": (" ",), "r": (" ",)},
+    "CREATE TABLE": {"l": (" ",), "r": (" ",)},
+    "CREATE PROCEDURE": {"l": (" ",), "r": (" ",)},
+    "CREATE UNIQUE INDEX": {"l": (" ",), "r": (" ",)},
+    "CREATE VIEW": {"l": (" ",), "r": (" ",)},
+    "DEFAULT": {"l": (" ",), "r": (" ",)},
+    "DELETE": {"l": (" ",), "r": (" ",)},
+    "DESC": {"l": (" ",), "r": (" ", ")")},
+    "DISTINCT": {"l": (" ",), "r": (" ",)},
+    "DROP COLUMN": {"l": (" ",), "r": (" ",)},
+    "DROP CONSTRAINT": {"l": (" ",), "r": (" ",)},
+    "DROP DATABASE": {"l": (" ",), "r": (" ",)},
+    "DROP DEFAULT": {"l": (" ",), "r": (" ",)},
+    "DROP INDEX": {"l": (" ",), "r": (" ",)},
+    "DROP TABLE": {"l": (" ",), "r": (" ",)},
+    "DROP VIEW": {"l": (" ",), "r": (" ",)},
+    "EXEC": {"l": (" ",), "r": (" ",)},
+    "EXISTS": {"l": (" ",), "r": (" ",)},
+    "FOREIGN KEY": {"l": (" ",), "r": (" ",)},
+    "FROM": {"l": (" ",), "r": (" ",)},
+    "GROUP BY": {"l": (" ",), "r": (" ",)},
+    "HAVING": {"l": (" ",), "r": (" ",)},
+    "IN": {"l": (" ",), "r": (" ",)},
+    "INDEX": {"l": (" ",), "r": (" ",)},
+    "INSERT INTO": {"l": (" ",), "r": (" ",)},
+    "IS NULL": {"l": (" ",), "r": (" ",)},
+    "IS NOT NULL": {"l": (" ",), "r": (" ",)},
+    "FULL OUTER JOIN": {"l": (" ",), "r": (" ",)},
+    "INNER JOIN": {"l": (" ",), "r": (" ",)},
+    "LEFT JOIN": {"l": (" ",), "r": (" ",)},
+    "JOIN": {"l": (" ",), "r": (" ",)},
+    "LIKE": {"l": (" ",), "r": (" ",)},
+    "LIMIT": {"l": (" ",), "r": (" ",)},
+    "NOT NULL": {"l": (" ",), "r": (" ",)},
+    "NOT": {"l": (" ",), "r": (" ",)},
+    "OR": {"l": (" ",), "r": (" ",)},
+    "ORDER BY": {"l": (" ",), "r": (" ",)},
+    "OUTER JOIN": {"l": (" ",), "r": (" ",)},
+    "PRIMARY KEY": {"l": (" ",), "r": (" ",)},
+    "PROCEDURE": {"l": (" ",), "r": (" ",)},
+    "RIGHT JOIN": {"l": (" ",), "r": (" ",)},
+    "ROWNUM": {"l": (" ",), "r": (" ",)},
+    "SELECT": {"l": ("", " "), "r": (" ",)},
+    "SET": {"l": (" ",), "r": (" ",)},
+    "TABLE": {"l": (" ",), "r": (" ",)},
+    "TOP": {"l": (" ",), "r": (" ",)},
+    "TRUNCATE TABLE": {"l": (" ",), "r": (" ",)},
+    "UNION ALL": {"l": (" ",), "r": (" ",)},
+    "UNION": {"l": (" ",), "r": (" ",)},
+    "UNIQUE": {"l": (" ",), "r": (" ",)},
+    "UPDATE": {"l": (" ",), "r": (" ",)},
+    "VALUES": {"l": (" ",), "r": (" ",)},
+    "VIEW": {"l": (" ",), "r": (" ",)},
+    "WHEN": {"l": (" ",), "r": (" ",)},
+    "WHERE": {"l": (" ",), "r": (" ",)},
+}
+
+
+"""
+Main function
+"""
+
+
+def format_query(query: SQLExpression, print_sql: bool = True) -> SQLExpression:
+    """
+    Query Formatter.
+    """
+    display_success = print_sql and conf.get_import_success("IPython")
+    cltag = '<b style="color: red">'
+    crtag = "</b>"
+    res = clean_query(query)
+    if display_success:
+        html_res = res
+    for key in SQL_KEYWORDS:
+        for l in SQL_KEYWORDS[key]["l"]:
+            for r in SQL_KEYWORDS[key]["r"]:
+                w = l + key + r
+                res = re.sub(re.escape(w), w.upper(), res, flags=re.IGNORECASE)
+                if display_success:
+                    html_res = re.sub(
+                        re.escape(w),
+                        l + cltag + key.upper() + crtag + r,
+                        html_res,
+                        flags=re.IGNORECASE,
+                    )
+    if display_success:
+        display(Markdown(html_res))
+    elif print_sql:
+        print(res)
+    return res
+
+
+"""
+Utils
+"""
+
 
 def clean_query(query: SQLExpression) -> SQLExpression:
     """
@@ -140,6 +257,16 @@ def format_magic(
         return val
 
 
+def format_schema_table(schema: str, table_name: str) -> str:
+    """
+    Returns the formatted relation. If the schema is not
+    defined, the 'public' schema is used.
+    """
+    if not schema:
+        schema = conf.get_option("temp_schema")
+    return f"{quote_ident(schema)}.{quote_ident(table_name)}"
+
+
 def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None) -> Any:
     """
     Format the input objects by using the input type. This
@@ -171,7 +298,7 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
         return res
 
 
-def indentSQL(query: str) -> str:
+def indent_vpy_sql(query: str) -> str:
     """
     Indents the input SQL query.
     """
@@ -350,7 +477,7 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
         if (quote_nb == 0 and dot_nb == 0) or (
             quote_nb == 2 and rel_transf.startswith('"') and rel_transf.endswith('"')
         ):
-            schema, relation = "public", relation
+            schema, relation = conf.get_option("temp_schema"), relation
         elif quote_nb == 0 and dot_nb == 1:
             schema, relation = relation.split(".")
         elif quote_nb == 2 and rel_transf.startswith('"'):
@@ -377,13 +504,3 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
         return (quote_ident(schema), quote_ident(relation))
     else:
         return (schema, relation)
-
-
-def format_schema_table(schema: str, table_name: str) -> str:
-    """
-    Returns the formatted relation. If the schema is not
-    defined, the 'public' schema is used.
-    """
-    if not schema:
-        schema = "public"
-    return f"{quote_ident(schema)}.{quote_ident(table_name)}"

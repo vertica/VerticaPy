@@ -18,6 +18,7 @@ import os
 import vertica_python
 from typing import Optional
 
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_type, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -34,7 +35,7 @@ General Functions.
 
 
 def load_dataset(
-    schema: str,
+    schema: Optional[str],
     name: str,
     dtype: dict,
     copy_cols: Optional[list] = None,
@@ -44,13 +45,14 @@ def load_dataset(
     General Function to ingest a dataset.
     """
     copy_cols = format_type(copy_cols, dtype=list)
+    if not (schema):
+        schema = conf.get_option("temp_schema")
 
     try:
         vdf = vDataFrame(name, schema=schema)
 
     except:
         name = quote_ident(name)
-        schema = "v_temp_schema" if not schema else quote_ident(schema)
         create_table(table_name=name, dtype=dtype, schema=schema)
 
         try:
@@ -100,7 +102,7 @@ Datasets for basic Data Exploration.
 
 
 @save_verticapy_logs
-def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
+def load_market(schema: Optional[str] = None, name: str = "market") -> vDataFrame:
     """
     Ingests  the  market  dataset into  the  Vertica
     database.
@@ -112,8 +114,8 @@ def load_market(schema: str = "public", name: str = "market") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema of the new relation. If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -158,7 +160,7 @@ Datasets for Classification.
 
 
 @save_verticapy_logs
-def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
+def load_iris(schema: Optional[str] = None, name: str = "iris") -> vDataFrame:
     """
     Ingests   the  iris  dataset   into  the  Vertica
     database.
@@ -170,8 +172,8 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If  empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -225,7 +227,7 @@ def load_iris(schema: str = "public", name: str = "iris") -> vDataFrame:
 
 
 @save_verticapy_logs
-def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
+def load_titanic(schema: Optional[str] = None, name: str = "titanic") -> vDataFrame:
     """
     Ingests the titanic dataset into the Vertica
     database.
@@ -237,8 +239,8 @@ def load_titanic(schema: str = "public", name: str = "titanic") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema of  the new relation. If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -298,7 +300,9 @@ Datasets for Regression.
 
 
 @save_verticapy_logs
-def load_winequality(schema: str = "public", name: str = "winequality") -> vDataFrame:
+def load_winequality(
+    schema: Optional[str] = None, name: str = "winequality"
+) -> vDataFrame:
     """
     Ingests  the winequality dataset into the Vertica
     database.
@@ -310,8 +314,8 @@ def load_winequality(schema: str = "public", name: str = "winequality") -> vData
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -372,7 +376,7 @@ Datasets for Time Series.
 
 @save_verticapy_logs
 def load_airline_passengers(
-    schema: str = "public", name: str = "airline_passengers"
+    schema: Optional[str] = None, name: str = "airline_passengers"
 ) -> vDataFrame:
     """
     Ingests  the airline passengers dataset into  the
@@ -385,8 +389,8 @@ def load_airline_passengers(
     Parameters
     ----------
     schema: str, optional
-        Schema of the new relation. If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -426,7 +430,7 @@ def load_airline_passengers(
 
 
 @save_verticapy_logs
-def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
+def load_amazon(schema: Optional[str] = None, name: str = "amazon") -> vDataFrame:
     """
     Ingests  the  amazon  dataset  into  the  Vertica
     database.
@@ -438,8 +442,8 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If  empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -479,7 +483,9 @@ def load_amazon(schema: str = "public", name: str = "amazon") -> vDataFrame:
 
 
 @save_verticapy_logs
-def load_commodities(schema: str = "public", name: str = "commodities") -> vDataFrame:
+def load_commodities(
+    schema: Optional[str] = None, name: str = "commodities"
+) -> vDataFrame:
     """
     Ingests the commodities  dataset into the Vertica
     database.
@@ -491,8 +497,8 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If  empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -540,7 +546,7 @@ def load_commodities(schema: str = "public", name: str = "commodities") -> vData
 
 
 @save_verticapy_logs
-def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFrame:
+def load_gapminder(schema: Optional[str] = None, name: str = "gapminder") -> vDataFrame:
     """
     Ingests  the gapminder  dataset into the  Vertica
     database.
@@ -552,8 +558,8 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If  empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -600,7 +606,9 @@ def load_gapminder(schema: str = "public", name: str = "gapminder") -> vDataFram
 
 
 @save_verticapy_logs
-def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFrame:
+def load_pop_growth(
+    schema: Optional[str] = None, name: str = "pop_growth"
+) -> vDataFrame:
     """
     Ingests  the  population growth dataset into  the
     Vertica database.
@@ -612,8 +620,8 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
     Parameters
     ----------
     schema: str, optional
-        Schema of the new relation. If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -661,7 +669,9 @@ def load_pop_growth(schema: str = "public", name: str = "pop_growth") -> vDataFr
 
 
 @save_verticapy_logs
-def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDataFrame:
+def load_smart_meters(
+    schema: Optional[str] = None, name: str = "smart_meters"
+) -> vDataFrame:
     """
     Ingests the smart meters dataset into the Vertica
     database.
@@ -673,8 +683,8 @@ def load_smart_meters(schema: str = "public", name: str = "smart_meters") -> vDa
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation. If  empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -719,7 +729,7 @@ Datasets for Geospatial.
 
 
 @save_verticapy_logs
-def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
+def load_cities(schema: Optional[str] = None, name: str = "cities") -> vDataFrame:
     """
     Ingests  the  Cities  dataset  into the  Vertica
     database.
@@ -731,8 +741,8 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -777,7 +787,7 @@ def load_cities(schema: str = "public", name: str = "cities") -> vDataFrame:
 
 
 @save_verticapy_logs
-def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
+def load_world(schema: Optional[str] = None, name: str = "world") -> vDataFrame:
     """
     Ingests  the  World  dataset  into  the  Vertica
     database.
@@ -789,8 +799,8 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -843,7 +853,7 @@ def load_world(schema: str = "public", name: str = "world") -> vDataFrame:
 
 @save_verticapy_logs
 def load_africa_education(
-    schema: str = "public", name: str = "africa_education"
+    schema: Optional[str] = None, name: str = "africa_education"
 ) -> vDataFrame:
     """
     Ingests  the  Africe Education  dataset  into  the  Vertica
@@ -856,8 +866,8 @@ def load_africa_education(
     Parameters
     ----------
     schema: str, optional
-        Schema  of  the  new  relation.  If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 
@@ -1031,7 +1041,7 @@ Datasets for Complex Data Analysis.
 
 
 @save_verticapy_logs
-def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
+def load_laliga(schema: Optional[str] = None, name: str = "laliga") -> vDataFrame:
     """
     Ingests the  LaLiga dataset into the Vertica
     database.
@@ -1044,8 +1054,8 @@ def load_laliga(schema: str = "public", name: str = "laliga") -> vDataFrame:
     Parameters
     ----------
     schema: str, optional
-        Schema of the new relation. If empty, a
-        temporary local table is created.
+        Schema of the new relation. If empty,
+        the temporary schema is used.
     name: str, optional
         Name of the new relation.
 

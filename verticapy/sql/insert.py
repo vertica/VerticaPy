@@ -84,17 +84,21 @@ def insert_into(
         insert_into(
             table_name = "iris",
             schema = "public",
-            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
+            data = [
+                [3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                [4.3, 4.7, 9.6, 1.8, "Iris-virginica"],
+            ],
         )
 
         # copy set to False: multiple inserts
         insert_into(
             table_name = "iris",
             schema = "public",
-            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
-            copy=False,
+            data = [
+                [3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                [4.3, 4.7, 9.6, 1.8, "Iris-virginica"],
+            ],
+            copy = False,
         )
 
         # genSQL set to True: SQL for inserting data is generated, but not executed
@@ -102,9 +106,11 @@ def insert_into(
         insert_into(
             table_name = "iris",
             schema = "public",
-            data = [[3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                    [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]],
-            genSQL=True,
+            data = [
+                [3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
+                [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]
+            ],
+            genSQL = True,
         )
 
     .. seealso::
