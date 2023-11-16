@@ -1974,12 +1974,6 @@ class vDFCorr(vDFEncode):
             tmp_view_name = gen_tmp_name(
                 schema=conf.get_option("temp_schema"), name="linear_reg_view"
             )
-            tmp_lr0_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="linear_reg0"
-            )
-            tmp_lr1_name = gen_tmp_name(
-                schema=conf.get_option("temp_schema"), name="linear_reg1"
-            )
             try:
                 drop(tmp_view_name, method="view")
                 query = f"""
@@ -1987,8 +1981,7 @@ class vDFCorr(vDFEncode):
                         AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {relation}"""
                 _executeSQL(query, print_time_sql=False)
                 vdf = create_new_vdf(tmp_view_name)
-                drop(tmp_lr0_name, method="model")
-                model = vml.LinearRegression(name=tmp_lr0_name, solver="newton")
+                model = vml.LinearRegression(solver="newton")
                 model.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
@@ -1996,15 +1989,14 @@ class vDFCorr(vDFEncode):
                     return_report=True,
                 )
                 model.predict(vdf, name="prediction_0")
-                drop(tmp_lr1_name, method="model")
-                model = vml.LinearRegression(name=tmp_lr1_name, solver="newton")
-                model.fit(
+                model2 = vml.LinearRegression(solver="newton")
+                model2.fit(
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=f"lag_{p}_{gen_name([column])}",
                     return_report=True,
                 )
-                model.predict(vdf, name="prediction_p")
+                model2.predict(vdf, name="prediction_p")
                 vdf.eval(expr=f"{column} - prediction_0", name="eps_0")
                 vdf.eval(
                     expr=f"lag_{p}_{gen_name([column])} - prediction_p",
@@ -2013,8 +2005,8 @@ class vDFCorr(vDFEncode):
                 result = vdf.corr(["eps_0", "eps_p"], method=method)
             finally:
                 drop(tmp_view_name, method="view")
-                drop(tmp_lr0_name, method="model")
-                drop(tmp_lr1_name, method="model")
+                model.drop()
+                model2.drop()
             return result
         else:
             if isinstance(p, (float, int)):

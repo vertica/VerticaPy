@@ -1000,7 +1000,6 @@ class vDCEncode(vDCFill):
             if not schema:
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
-            tmp_model_name = gen_tmp_name(schema=schema, name="model")
             assert nbins >= 2, ValueError(
                 "Parameter 'nbins' must be greater or equals to 2 in case "
                 "of discretization using the method 'smart'."
@@ -1012,11 +1011,10 @@ class vDCEncode(vDCFill):
             response = self._parent.format_colnames(response)
             drop(tmp_view_name, method="view")
             self._parent.to_db(tmp_view_name)
-            drop(tmp_model_name, method="model")
             if self._parent[response].category() == "float":
-                model = vml.RandomForestRegressor(tmp_model_name)
+                model = vml.RandomForestRegressor()
             else:
-                model = vml.RandomForestClassifier(tmp_model_name)
+                model = vml.RandomForestClassifier()
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()
@@ -1031,7 +1029,7 @@ class vDCEncode(vDCFill):
                     f"""
                     (SELECT 
                         READ_TREE(USING PARAMETERS 
-                            model_name = '{tmp_model_name}', 
+                            model_name = '{model.model_name}', 
                             tree_id = {i}, 
                             format = 'tabular'))"""
                     for i in range(parameters["n_estimators"])
@@ -1057,7 +1055,7 @@ class vDCEncode(vDCFill):
                 result = [x[0] for x in result]
             finally:
                 drop(tmp_view_name, method="view")
-                drop(tmp_model_name, method="model")
+                model.drop()
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             assert k >= 2, ValueError(

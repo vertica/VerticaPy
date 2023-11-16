@@ -332,7 +332,6 @@ def adfuller(
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
     ts, column, by = vdf.format_colnames(ts, column, by)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     relation_name = gen_tmp_name(
         schema=conf.get_option("temp_schema"), name="linear_reg_view"
     )
@@ -358,7 +357,7 @@ def adfuller(
                 {ts_str} AS ts 
             FROM {vdf}"""
     _executeSQL(query, print_time_sql=False)
-    model = LinearRegression(name, solver="newton", max_iter=1000)
+    model = LinearRegression(solver="newton", max_iter=1000)
     predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
@@ -1476,6 +1475,25 @@ def seasonal_decompose(
 ) -> vDataFrame:
     """
     Performs a seasonal time series decomposition.
+    Seasonal decomposition plots are graphical representations
+    of the decomposition of time series data into its various
+    components: trend, seasonality, and residual (error).
+    Seasonal decomposition is a technique used to break down a
+    time series into these underlying components to better
+    understand its patterns and behavior.
+
+    Seasonal decomposition plots are useful for several purposes:
+
+     - Trend Analysis:
+        Understanding the long-term direction or behavior of the
+        time series.
+     - Seasonal Patterns:
+        Identifying repeating patterns or cycles within the data.
+     - Anomaly Detection:
+        Spotting unusual behavior or outliers in the residuals.
+     - Modeling:
+        Informing the choice of appropriate models for forecasting
+        or analysis.
 
     Parameters
     ----------
@@ -1558,16 +1576,15 @@ def seasonal_decompose(
     Let us first have a look how the data
     looks like:
 
-
     .. code-block::
 
-        vdf.plot(ts = "date", columns = ["passengers"])
+        vdf["passengers"].plot(ts = "date")
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = vdf.plot(ts = "date", columns = ["passengers"], width = 550)
+        fig = vdf["passengers"].plot(ts = "date", width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html")
 
     .. raw:: html
@@ -1590,11 +1607,14 @@ def seasonal_decompose(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import seasonal_decompose
-        decomposition = seasonal_decompose(vdf,
-                                        "passengers",
-                                        "date",
-                                        polynomial_order = 2,
-                                        mult = True)
+
+        decomposition = seasonal_decompose(
+            vdf,
+            "passengers",
+            "date",
+            polynomial_order = 2,
+            mult = True,
+        )
 
     .. ipython:: python
         :suppress:
@@ -1617,13 +1637,13 @@ def seasonal_decompose(
 
     .. code-block::
 
-        decomposition.plot(ts = "date", columns = ["passengers_seasonal"])
+        decomposition["passengers_seasonal"].plot(ts = "date")
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = decomposition.plot(ts = "date", columns = ["passengers_seasonal"], width = 550)
+        fig = decomposition["passengers_seasonal"].plot(ts = "date", width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_seasonal.html")
 
     .. raw:: html
@@ -1634,13 +1654,13 @@ def seasonal_decompose(
 
     .. code-block::
 
-        decomposition.plot(ts = "date", columns = ["passengers_trend"])
+        decomposition["passengers_trend"].plot(ts = "date")
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = decomposition.plot(ts = "date", columns = ["passengers_trend"], width = 550)
+        fig = decomposition["passengers_trend"].plot(ts = "date", width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_trend.html")
 
     .. raw:: html
@@ -1650,19 +1670,25 @@ def seasonal_decompose(
 
     .. code-block::
 
-        decomposition.plot(ts = "date", columns = ["passengers_epsilon"])
+        decomposition["passengers_epsilon"].plot(ts = "date")
 
     .. ipython:: python
         :suppress:
 
         vp.set_option("plotting_lib", "plotly")
-        fig = decomposition.plot(ts = "date", columns = ["passengers_epsilon"], width = 550)
+        fig = decomposition["passengers_epsilon"].plot(ts = "date", width = 550)
         fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html
 
+    .. note::
 
+        Thanks to seasonal decomposition, we can effortlessly extract
+        the residual, predict its values, and obtain crucial information
+        necessary for computing the time series. Subsequently, by
+        leveraging all the individual components, we are able to
+        effectively recompose the time series.
     """
     assert period > 0 or polynomial_order > 0, ValueError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
@@ -1704,9 +1730,7 @@ def seasonal_decompose(
                 f"t_{i}"
             ] = f"POWER(ROW_NUMBER() OVER ({by_str}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
-        model.drop()
+        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
         model.fit(
             vdf_poly,
             X,
@@ -1752,9 +1776,7 @@ def seasonal_decompose(
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
-        model.drop()
+        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
         model.fit(
             vdf_seasonality,
             X,

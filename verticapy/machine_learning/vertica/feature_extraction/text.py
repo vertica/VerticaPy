@@ -63,7 +63,7 @@ class TfidfVectorizer(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the
