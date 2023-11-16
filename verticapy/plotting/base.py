@@ -966,7 +966,7 @@ class PlottingBase(PlottingBaseSQL):
                 order_by = "ORDER BY 1 ASC"
                 distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
                 distinct = ["'" + str(c).replace("'", "''") + "'" for c in distinct]
-                if len(distinct) < max_cardinality[idx]:
+                if 0 < len(distinct) < max_cardinality[idx]:
                     cast = to_varchar(vdf[column].category(), column)
                     where += [f"({cast} IN ({', '.join(distinct)}))"]
                 else:
