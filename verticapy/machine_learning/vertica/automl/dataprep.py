@@ -210,6 +210,7 @@ class AutoDataPrep(VerticaModel):
         X: Optional[SQLColumns] = None,
         ts: Optional[str] = None,
         by: Optional[SQLColumns] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -391,7 +392,11 @@ class AutoDataPrep(VerticaModel):
         if self.parameters["apply_pca"] and not ts:
             model_pca = PCA(self.model_name + "_pca")
             model_pca.drop()
-            model_pca.fit(vdf, self.X_out_)
+            model_pca.fit(
+                vdf,
+                self.X_out_,
+                return_report=True,
+            )
             vdf = model_pca.transform()
             self.X_out_ = vdf.get_columns(
                 exclude_columns=by + [ts] + X_diff if ts else by + X_diff

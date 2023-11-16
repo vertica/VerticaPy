@@ -1993,6 +1993,7 @@ class vDFCorr(vDFEncode):
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=column,
+                    return_report=True,
                 )
                 model.predict(vdf, name="prediction_0")
                 drop(tmp_lr1_name, method="model")
@@ -2001,6 +2002,7 @@ class vDFCorr(vDFEncode):
                     input_relation=tmp_view_name,
                     X=[f"lag_{i}_{gen_name([column])}" for i in range(1, p)],
                     y=f"lag_{p}_{gen_name([column])}",
+                    return_report=True,
                 )
                 model.predict(vdf, name="prediction_p")
                 vdf.eval(expr=f"{column} - prediction_0", name="eps_0")

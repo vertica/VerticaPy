@@ -144,8 +144,14 @@ class KNeighborsRegressor(Regressor):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_neighbors: int = 5,
+        p: int = 2,
+    ) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -873,8 +879,14 @@ class KNeighborsClassifier(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, n_neighbors: int = 5, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(
+        self,
+        name: str = None,
+        overwrite_model: bool = False,
+        n_neighbors: int = 5,
+        p: int = 2,
+    ) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"n_neighbors": n_neighbors, "p": p}
 
     def drop(self) -> bool:
@@ -1519,7 +1531,12 @@ class KernelDensity(Regressor, Tree):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        return_report: bool = False,
+    ) -> None:
         """
         Trains the model.
 
@@ -2042,6 +2059,7 @@ class LocalOutlierFactor(VerticaModel):
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
         index: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.

@@ -358,10 +358,20 @@ def adfuller(
     if with_trend:
         predictors += ["ts"]
     try:
-        model.fit(relation_name, predictors, "delta")
+        model.fit(
+            relation_name,
+            predictors,
+            "delta",
+            return_report=True,
+        )
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(relation_name, predictors, "delta")
+        model.fit(
+            relation_name,
+            predictors,
+            "delta",
+            return_report=True,
+        )
     finally:
         drop(relation_name, method="view")
     coef = model.get_vertica_attributes("details")
@@ -695,9 +705,8 @@ def cochrane_orcutt(
     else:
         vdf = vDataFrame(input_relation)
     ts = vdf.format_colnames(ts)
-    name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
-    model_tmp = type(model)(name)
+    model_tmp = type(model)()
     model_tmp.set_params(param)
     X, y = model.X, model.y
     print_info = conf.get_option("print_info")
@@ -727,7 +736,12 @@ def cochrane_orcutt(
             new_val = f"COALESCE({new_val}, {predictor} * {(1 - pho ** 2) ** (0.5)})"
         vdf[predictor] = new_val
     model_tmp.drop()
-    model_tmp.fit(vdf, X, y)
+    model_tmp.fit(
+        vdf,
+        X,
+        y,
+        return_report=True,
+    )
     model_tmp.pho_ = pho
     model_tmp.anova_table_ = model.regression_report(metrics="anova")
     model_tmp.r2_ = model.score(metric="r2")
@@ -912,14 +926,23 @@ def het_arch(
         X_names += [f"lag_{i}"]
     query = f"SELECT {', '.join(X)} FROM {vdf}"
     vdf_lags = vDataFrame(query)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
-        model.fit(vdf_lags, X_names[1:], X_names[0])
+        model.fit(
+            vdf_lags,
+            X_names[1:],
+            X_names[0],
+            return_report=True,
+        )
         R2 = model.score(metric="r2")
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(vdf_lags, X_names[1:], X_names[0])
+        model.fit(
+            vdf_lags,
+            X_names[1:],
+            X_names[0],
+            return_report=True,
+        )
         R2 = model.score(metric="r2")
     finally:
         model.drop()
@@ -1040,7 +1063,12 @@ def seasonal_decompose(
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
-        model.fit(vdf_poly, X, column)
+        model.fit(
+            vdf_poly,
+            X,
+            column,
+            return_report=True,
+        )
         coefficients = [str(model.intercept_)] + [
             f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by_str}ORDER BY {ts}), {i})"
             if i != 1
@@ -1083,7 +1111,12 @@ def seasonal_decompose(
         name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
         model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
-        model.fit(vdf_seasonality, X, seasonal_name)
+        model.fit(
+            vdf_seasonality,
+            X,
+            seasonal_name,
+            return_report=True,
+        )
         vdf[
             seasonal_name
         ] = f"""

@@ -2231,6 +2231,7 @@ class DBSCAN(VerticaModel):
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
         index: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -3038,8 +3039,10 @@ class NearestCentroid(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(
+        self, name: str = None, overwrite_model: bool = False, p: int = 2
+    ) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"p": p}
 
     def drop(self) -> bool:

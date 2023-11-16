@@ -445,7 +445,12 @@ def stepwise(
     model_id, res, current_step = 0, [], 0
     if direction == "backward":
         estimator.drop()
-        estimator.fit(input_relation, X, y)
+        estimator.fit(
+            input_relation,
+            X,
+            y,
+            return_report=True,
+        )
         current_score = estimator.score(metric=criterion)
         res += [(copy.deepcopy(X), current_score, None, None, 0, None)]
         X_current = copy.deepcopy(X)
@@ -461,7 +466,12 @@ def stepwise(
             X_test.remove(X[idx])
             if len(X_test) != 0:
                 estimator.drop()
-                estimator.fit(input_relation, X_test, y)
+                estimator.fit(
+                    input_relation,
+                    X_test,
+                    y,
+                    return_report=True,
+                )
                 test_score = estimator.score(metric=criterion)
             else:
                 test_score = fun(y, str(avg), input_relation, 0)
@@ -494,7 +504,12 @@ def stepwise(
                 break
             X_test = copy.deepcopy(X_current) + [X[idx]]
             estimator.drop()
-            estimator.fit(input_relation, X_test, y)
+            estimator.fit(
+                input_relation,
+                X_test,
+                y,
+                return_report=True,
+            )
             test_score = estimator.score(metric=criterion)
             score_diff = current_score - test_score
             if current_score - test_score > criterion_threshold:

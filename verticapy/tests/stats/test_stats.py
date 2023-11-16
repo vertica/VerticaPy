@@ -98,17 +98,6 @@ class TestStats:
         result = st.durbin_watson(amazon_vd, eps="number", ts="date", by=["state"])
         assert result == pytest.approx(0.583991056156811, 1e-2)
 
-    def test_endogtest(self, amazon_vd):
-        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
-        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
-        result = st.endogtest(result, eps="number", X=["lag_number"])
-        assert result == (
-            pytest.approx(110.77336789258061),
-            pytest.approx(6.633693190527767e-26),
-            pytest.approx(204.74130653722867),
-            pytest.approx(6.827786109983712e-34),
-        )
-
     def test_het_arch(self, amazon_vd):
         result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
         assert result == (

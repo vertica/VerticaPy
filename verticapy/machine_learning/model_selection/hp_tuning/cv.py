@@ -719,7 +719,12 @@ def bayesian_search_cv(
         hyper_param_estimator = vml.RandomForestRegressor(
             name=estimator.model_name, **RFmodel_params
         )
-        hyper_param_estimator.fit(relation, all_params, "score")
+        hyper_param_estimator.fit(
+            relation,
+            all_params,
+            "score",
+            return_report=True,
+        )
         if random_grid:
             vdf = gen_dataset(model_grid, nrows=nrows)
         else:
