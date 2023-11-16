@@ -53,7 +53,7 @@ def get_data_types(
     expr: Optional[str] = None,
     column: Optional[str] = None,
     table_name: Optional[str] = None,
-    schema: str = "public",
+    schema: Optional[str] = None,
     usecols: Optional[list] = None,
 ) -> Union[tuple, list[tuple]]:
     """
@@ -102,6 +102,8 @@ def get_data_types(
         get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2",
                         column="pclass")
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
     usecols = format_type(usecols, dtype=list)
     if not expr and not table_name:
         raise ValueError(

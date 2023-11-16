@@ -83,9 +83,11 @@ def drop(
         :suppress:
 
         from verticapy.sql import create_table
-        create_table(table_name = "table_example",
-                    schema = "public",
-                    dtype = {"name": "VARCHAR(60)"})
+        create_table(
+            table_name = "table_example",
+            schema = "public",
+            dtype = {"name": "VARCHAR(60)"},
+        )
 
     Drop the table:
 

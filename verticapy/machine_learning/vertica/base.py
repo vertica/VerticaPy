@@ -649,7 +649,7 @@ class VerticaModel(PlottingUtils):
         Imports machine learning models.
         """
         if isinstance(schema, NoneType):
-            schema = "public"
+            schema = conf.get_option("temp_schema")
         schema = schema.replace("'", "''")
         params = f" USING PARAMETERS new_schema='{schema}'"
         if not (isinstance(kind, NoneType)):

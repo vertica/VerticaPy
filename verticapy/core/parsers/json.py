@@ -265,7 +265,7 @@ def read_json(
     elif temporary_local_table:
         schema = "v_temp_schema"
     else:
-        schema = "public"
+        schema = conf.get_option("temp_schema")
     assert not temporary_table or not temporary_local_table, ValueError(
         "Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True."
     )
