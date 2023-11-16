@@ -20,6 +20,7 @@ from typing import Optional, Union
 
 from vertica_python.errors import QueryError
 
+import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import format_type, format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
