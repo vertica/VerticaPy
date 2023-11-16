@@ -211,23 +211,23 @@ def randomized_features_search_cv(
 
         For Regression:
 
-        - max: 
+        - max:
             Max error
-        - mae: 
+        - mae:
             Mean absolute error
-        - median: 
+        - median:
             Median absolute error
-        - mse: 
+        - mse:
             Mean squared error
-        - msle: 
+        - msle:
             Mean squared log error
-        - r2: 
+        - r2:
             R-squared coefficient
-        - r2a: 
+        - r2a:
             R2 adjusted
-        - rmse: 
+        - rmse:
             Root-mean-squared error
-        - var: 
+        - var:
             Explained variance
 
     cv: int, optional
@@ -284,7 +284,7 @@ def randomized_features_search_cv(
     .. ipython:: python
 
         import verticapy.datasets as vpd
-        
+
         data = vpd.load_titanic()
 
     .. raw:: html
@@ -305,17 +305,17 @@ def randomized_features_search_cv(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica import LogisticRegression
-        
+
         model = LogisticRegression()
 
     Now we can conveniently use the ``randomized_features_search_cv``
-    function to do either forward or backward randomized features 
+    function to do either forward or backward randomized features
     search feature selection.
 
     .. code-block:: python
 
         from verticapy.machine_learning.model_selection import randomized_features_search_cv
-        
+
         result = randomized_features_search_cv(
             model,
             input_relation = data,
@@ -630,7 +630,7 @@ def stepwise(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica import LogisticRegression
-        
+
         model = LogisticRegression()
 
     Now we can conveniently use the ``stepwise`` function
@@ -651,7 +651,7 @@ def stepwise(
 
     .. ipython:: python
         :suppress:
-        
+
         import verticapy as vp
         from verticapy.machine_learning.model_selection import stepwise
 
