@@ -213,7 +213,7 @@ def adfuller(
     Now we can create the dummy dataset:
 
     .. ipython:: python
-        
+
         # Initialization
         N = 100 # Number of Rows.
 
@@ -732,7 +732,7 @@ def cochrane_orcutt(
     Now we can create the dummy dataset:
 
     .. ipython:: python
-       
+
         # Initialization
         N = 30 # Number of Rows.
         days = list(range(N))
@@ -772,7 +772,7 @@ def cochrane_orcutt(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
-        
+
         model = LinearRegression()
 
     Next we can fit the model:
@@ -800,7 +800,7 @@ def cochrane_orcutt(
 
         new_model.coef_
 
-    We can see that the new model has slighlty different 
+    We can see that the new model has slighlty different
     coefficients to cater for the autocorrelated noise.
     """
     if isinstance(input_relation, vDataFrame):
@@ -899,12 +899,12 @@ def durbin_watson(
     Now we can create the dummy dataset:
 
     .. ipython:: python
-        
+
         # Initialization
         N = 50 # Number of Rows
         days = list(range(N))
         y_val = [2 * x + np.random.normal(scale = 4 * x * x) for x in days]
-        
+
         # vDataFrame
         vdf = vp.vDataFrame(
             {
@@ -922,7 +922,7 @@ def durbin_watson(
     .. ipython:: python
 
         from verticapy.machine_learning.vertica.linear_model import LinearRegression
-        
+
         model = LinearRegression()
 
     Next we can fit the model:
@@ -979,7 +979,7 @@ def durbin_watson(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import durbin_watson
-        
+
         durbin_watson(input_relation = vdf, ts = "day", eps = "eps")
 
     We can see that the Durbin-Watson statistic
@@ -1094,7 +1094,7 @@ def ljungbox(
     Now we can create the dummy dataset:
 
     .. ipython:: python
-        
+
         # Initialization
         N = 50 # Number of Rows.
         day = list(range(N))
@@ -1279,27 +1279,14 @@ def het_arch(
 
     Now we can create the dummy dataset:
 
-    .. code-block:: python
-        
+    .. ipython:: python
+
         # Initialization
         N = 50 # Number of Rows.
         days = list(range(N))
         vals = [np.random.normal(5) for x in days]
 
         # vDataFrame
-        vdf = vp.vDataFrame(
-            {
-                "day": days,
-                "eps": vals,
-            }
-        )
-
-    .. ipython:: python
-        :suppress:
-
-        N= 50
-        days =list(range(N))
-        vals = [np.random.normal(5) for x in days]
         vdf = vp.vDataFrame(
             {
                 "day": days,
@@ -1332,7 +1319,7 @@ def het_arch(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_arch
-        
+
         het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
 
     We can see that there is no relationship
@@ -1353,7 +1340,7 @@ def het_arch(
     the one immediately before it
 
     .. ipython:: python
-        
+
         # Initialization
         N = 50 # Number of Rows
         days = list(range(N))
@@ -1401,7 +1388,7 @@ def het_arch(
     .. ipython:: python
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_arch
-        
+
         het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
 
     We can see that the lags of multiple of 2
