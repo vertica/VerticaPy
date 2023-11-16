@@ -53,14 +53,101 @@ class vDFEncode(vDFFill):
         args: object
             Any number of Expressions.
             The expression is generated in the following format:
-            even: CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
-            odd : CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ...
-                           ELSE args[n] END
+
+            - even:
+                CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... END
+            - odd :
+                CASE ... WHEN args[2 * i] THEN args[2 * i + 1] ... ELSE args[n] END
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's create a new feature "age_category".
+
+        .. code-block:: python
+
+            data.case_when(
+                "age_category",
+                data["age"] < 12, "children",
+                data["age"] < 18, "teenagers",
+                data["age"] > 60, "seniors",
+                data["age"] < 25, "young adults",
+                "adults"
+            )
+            data[["age", "age_category"]]
+
+        .. ipython:: python
+            :suppress:
+
+            data.case_when(
+                "age_category",
+                data["age"] < 12, "children",
+                data["age"] < 18, "teenagers",
+                data["age"] > 60, "seniors",
+                data["age"] < 25, "young adults",
+                "adults"
+            )
+            res = data[["age", "age_category"]]
+            html_file = open("figures/core_vDataFrame_encoding_casewhen.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_casewhen.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.eval`
         """
         return self.eval(name=name, expr=case_when(*args))
 
@@ -102,6 +189,141 @@ class vDFEncode(vDFFill):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's select few categorical features
+
+        .. code-block:: python
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            data
+
+        .. ipython:: python
+            :suppress:
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            res = data
+            html_file = open("figures/core_vDataFrame_encoding_ohe1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html
+
+        Let's apply encoding on all the vcolumns of the datasets
+
+        .. code-block:: python
+
+            data.one_hot_encode()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.one_hot_encode()
+            html_file = open("figures/core_vDataFrame_encoding_ohe2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe2.html
+
+        Let's apply encoding on two specific vcolumns viz. "pclass" and "embarked"
+
+        .. code-block:: python
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            data.one_hot_encode(columns = ["pclass", "embarked"])
+
+        .. ipython:: python
+            :suppress:
+
+            data = data.select(["pclass", "sex","survived", "embarked"])
+            res = data.one_hot_encode(columns = ['pclass', 'embarked'])
+            html_file = open("figures/core_vDataFrame_encoding_ohe3.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe3.html
+
+        Let's apply encoding on all features having cardinality less than 3
+
+        .. code-block:: python
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            data.one_hot_encode(
+                max_cardinality = 3,
+                drop_first = False,
+            )
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            res = data.one_hot_encode(
+                max_cardinality = 3,
+                drop_first = False,
+            )
+            html_file = open("figures/core_vDataFrame_encoding_ohe4.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe4.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
+            | :py:meth:`verticapy.vDataFrame.discretize`
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -110,7 +332,7 @@ class vDFEncode(vDFFill):
         cols_hand = True if (columns) else False
         for column in columns:
             if self[column].nunique(True) < max_cardinality:
-                self[column].get_dummies(
+                self[column].one_hot_encode(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
             elif cols_hand and conf.get_option("print_info"):
@@ -118,7 +340,7 @@ class vDFEncode(vDFFill):
                     f"The vDataColumn '{column}' was ignored because of "
                     "its high cardinality.\nIncrease the parameter "
                     "'max_cardinality' to solve this issue or use "
-                    "directly the vDataColumn get_dummies method."
+                    "directly the vDataColumn one_hot_encode method."
                 )
                 warnings.warn(warning_message, Warning)
         return self
@@ -156,6 +378,214 @@ class vDCEncode(vDCFill):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's look at "age" vcolumn
+
+        .. code-block:: python
+
+            data["age"]
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"]
+            html_file = open("figures/core_vDataFrame_encoding_cut1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut1.html
+
+        Let's look at the distribution of age.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_cut2.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut2.html
+
+        Let's discretize "age" using the :py:meth:`verticapy.vDataFrame.cut` method.
+
+        .. code-block:: python
+
+            data["age"].cut([0, 15, 80])
+            data["age"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["age"].cut([0, 15, 80])
+            res = data["age"]
+            html_file = open("figures/core_vDataFrame_encoding_cut3.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut3.html
+
+        Let's look at the distribution of age again.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_cut4.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut4.html
+
+        Let's discretize "fare" using the :py:meth:`verticapy.vDataFrame.cut` method.
+
+        .. code-block:: python
+
+            data["fare"].cut(
+                [0, 15, 800],
+                right = False,
+                include_lowest = False
+            )
+            data["fare"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["fare"].cut(
+                [0, 15, 800],
+                right = False,
+                include_lowest = False
+            )
+            res = data["fare"]
+            html_file = open("figures/core_vDataFrame_encoding_cut5.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut5.html
+
+        Let's look at the distribution of fare.
+
+        .. code-block:: python
+
+            data["fare"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["fare"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_cut6.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut6.html
+
+        Let's discretize "parch" using the :py:meth:`verticapy.vDataFrame.cut` method.
+
+        .. code-block:: python
+
+            data["parch"].cut(
+                [0, 5, 10],
+                right = False,
+                include_lowest = False,
+                labels = ["small", "big"]
+            )
+            data["parch"]
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data["parch"].cut(
+                [0, 5, 10],
+                right = False,
+                include_lowest = False,
+                labels = ["small", "big"]
+            )
+            res = data["parch"]
+            html_file = open("figures/core_vDataFrame_encoding_cut7.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut7.html
+
+        Let's look at the distribution of parch.
+
+        .. code-block:: python
+
+            data["parch"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["parch"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_cut8.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_cut8.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
+            | :py:meth:`verticapy.vDataFrame.one_hot_encode`
         """
         labels = format_type(labels, dtype=list)
         assert self.isnum() or self.isdate(), TypeError(
@@ -199,16 +629,93 @@ class vDCEncode(vDCFill):
         args: object
             Any number of expressions.
             The expression is generated in the following format:
-            even: CASE ... WHEN vDataColumn = args[2 * i]
-                           THEN args[2 * i + 1] ... END
-            odd : CASE ... WHEN vDataColumn = args[2 * i]
-                           THEN args[2 * i + 1] ...
-                           ELSE args[n] END
+
+            - even:
+                CASE ... WHEN vDataColumn = args[2 * i]
+                THEN args[2 * i + 1] ... END
+
+            - odd :
+                CASE ... WHEN vDataColumn = args[2 * i]
+                THEN args[2 * i + 1] ... ELSE args[n] END
 
         Returns
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's encode "sex" vcolumn and represent "female" category as 1 and
+        "male" category as 0.
+
+        .. code-block:: python
+
+            data["sex"].decode("female", 1, "male", 0, 2)
+            data["sex"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["sex"].decode("female", 1, "male", 0, 2)
+            res = data["sex"]
+            html_file = open("figures/core_vDataFrame_encoding_decode.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_decode.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.case_when`
+            | :py:meth:`verticapy.vDataFrame.eval`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
         """
         return self.apply(func=decode(StringSQL("{}"), *args))
 
@@ -230,19 +737,23 @@ class vDCEncode(vDCFill):
         Parameters
         ----------
         method: str, optional
-            The method used to discretize the vDataColumn.
-                auto       : Uses method 'same_width' for numerical
-                             vDataColumns, casts the other types to
-                             varchar.
-                same_freq  : Computes bins  with the same number of
-                             elements.
-                same_width : Computes regular width bins.
-                smart      : Uses  the Random  Forest on a  response
-                             column  to   find   the  most  relevant
-                             interval to use for the discretization.
-                topk       : Keeps the topk most frequent categories
-                             and  merge the  other  into one  unique
-                             category.
+            The method used to discretize the vDataColumn:
+
+            - auto:
+                Uses method 'same_width' for numerical
+                vDataColumns, casts the other types to varchar.
+            - same_freq:
+                Computes bins  with the same number of elements.
+            - same_width:
+                Computes regular width bins.
+            - smart:
+                Uses  the Random  Forest on a  response
+                column  to   find   the  most  relevant
+                interval to use for the discretization.
+            - topk:
+                Keeps the topk most frequent categories
+                and  merge the  other  into one  unique
+                category.
         h: PythonNumber, optional
             The  interval  size  used  to  convert  the vDataColumn.
             If this parameter is equal to 0, an optimised interval is
@@ -272,6 +783,215 @@ class vDCEncode(vDCFill):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's look at "age" vcolumn
+
+        .. code-block:: python
+
+            data["age"]
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"]
+            html_file = open("figures/core_vDataFrame_encoding_discretize1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize1.html
+
+        Let's look at the distribution of age.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_discretize2.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize2.html
+
+        Let's discretize "age" using the same bar width.
+
+        .. code-block:: python
+
+            data["age"].discretize(method = "same_width", h = 10)
+            data["age"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["age"].discretize(method = "same_width", h = 10)
+            res = data["age"]
+            html_file = open("figures/core_vDataFrame_encoding_discretize3.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize3.html
+
+        Let's look at the distribution of age again.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_discretize4.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize4.html
+
+        Let's discretize "age" using the same frequency per bin.
+
+        .. code-block:: python
+
+            data = vpd.load_titanic() # Reloading the dataset
+            data["age"].discretize(method = "same_freq", nbins = 5)
+            data["age"]
+
+        .. ipython:: python
+            :suppress:
+
+            data = vpd.load_titanic()
+            data["age"].discretize(method = "same_freq", nbins = 5)
+            res = data["age"]
+            html_file = open("figures/core_vDataFrame_encoding_discretize5.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize5.html
+
+        Let's look at the distribution of age again.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_discretize6.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize6.html
+
+        Let's discretize "age" using a response column distribution.
+
+        .. note::
+
+            While discretizing using a response column distribution,
+            a Random Forest Model will be created.
+
+        .. code-block:: python
+
+            data = vpd.load_titanic()
+            data["age"].discretize(
+                method = "smart",
+                response = "survived",
+                nbins = 6,
+                RFmodel_params = {"n_estimators": 20},
+            )
+            data["age"].topk()
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data = vpd.load_titanic()
+            data["age"].discretize(
+                method = "smart",
+                response = "survived",
+                nbins = 6,
+                RFmodel_params = {"n_estimators": 20},
+            )
+            res = data["age"].topk()
+            html_file = open("figures/core_vDataFrame_encoding_discretize7.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize7.html
+
+        Let's look at the distribution of age again.
+
+        .. code-block:: python
+
+            data["age"].bar()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"].bar()
+            res.write_html("figures/core_vDataFrame_encoding_discretize8.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_discretize8.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
+            | :py:meth:`verticapy.vDataFrame.one_hot_encode`
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         vml = get_vertica_mllib()
@@ -473,6 +1193,116 @@ class vDCEncode(vDCFill):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's select few categorical features
+
+        .. code-block:: python
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            data
+
+        .. ipython:: python
+            :suppress:
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            res = data
+            html_file = open("figures/core_vDataFrame_encoding_ohe1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe1.html
+
+        Let's apply encoding on "embarked" vcolumn.
+
+        .. code-block:: python
+
+            data["embarked"].one_hot_encode()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["embarked"].one_hot_encode()
+            html_file = open("figures/core_vDataFrame_encoding_ohe5.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe5.html
+
+        Let's use numbers as suffix instead of category names.
+
+        .. code-block:: python
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            data["embarked"].one_hot_encode(use_numbers_as_suffix = True)
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data = data.select(["pclass", "sex", "survived", "embarked"])
+            res = data["embarked"].one_hot_encode(use_numbers_as_suffix = True)
+            html_file = open("figures/core_vDataFrame_encoding_ohe6.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_ohe6.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
+            | :py:meth:`verticapy.vDataFrame.discretize`
         """
         distinct_elements = self.distinct()
         if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
@@ -549,6 +1379,79 @@ class vDCEncode(vDCFill):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's encode "embarked" vcolumn
+
+        .. code-block:: python
+
+            data["embarked"].label_encode()
+            data["embarked"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["embarked"].label_encode()
+            res = data["embarked"]
+            html_file = open("figures/core_vDataFrame_encoding_label_encode.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_label_encode.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.mean_encode`
+            | :py:meth:`verticapy.vDataFrame.discretize`
+            | :py:meth:`verticapy.vDataFrame.one_hot_encode`
         """
         if self.category() in ["date", "float"]:
             warning_message = (
@@ -589,6 +1492,97 @@ class vDCEncode(vDCFill):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's look at the avg of survived partitioned by embarked
+
+        .. code-block:: python
+
+            data.groupby(["embarked"], ["AVG(survived) AS survived"])
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.groupby(["embarked"], ["AVG(survived) AS survived"])
+            html_file = open("figures/core_vDataFrame_encoding_mean_encode1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_mean_encode1.html
+
+        Let's apply mean encoding which will replace each category of
+        "embarked" vcolumn by the average of the response
+
+        .. code-block:: python
+
+            data["embarked"].mean_encode(response = "survived")
+            data["embarked"]
+
+        .. ipython:: python
+            :suppress:
+
+            data["embarked"].mean_encode(response = "survived")
+            res = data["embarked"]
+            html_file = open("figures/core_vDataFrame_encoding_mean_encode2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_encoding_mean_encode2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.decode`
+            | :py:meth:`verticapy.vDataFrame.label_encode`
+            | :py:meth:`verticapy.vDataFrame.discretize`
+            | :py:meth:`verticapy.vDataFrame.one_hot_encode`
         """
         response = self._parent.format_colnames(response)
         assert self._parent[response].isnum(), TypeError(
