@@ -176,7 +176,6 @@ class AutoDataPrep(VerticaModel):
         save: bool = True,
     ) -> None:
         super().__init__(name, overwrite_model)
-
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,
