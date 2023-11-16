@@ -99,7 +99,7 @@ class QueryProfiler:
             )
         else:
             self.statement_id = statement_id
-        if not(hasattr(self, "request")):
+        if not (hasattr(self, "request")):
             query = f"""
                 SELECT 
                     request 
