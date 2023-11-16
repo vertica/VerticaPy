@@ -113,6 +113,269 @@ class KNeighborsRegressor(Regressor):
         All attributes can be accessed using the
         :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
         method.
+
+    Examples
+    ---------
+
+    The following examples provide a basic understanding of usage.
+    For more detailed examples, please refer to the
+    :ref:`user_guide.machine_learning` or the
+    `Examples <https://www.vertica.com/python/examples/>`_
+    section on the website.
+
+    Load data for machine learning
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    We import ``verticapy``:
+
+    .. code-block:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to ``verticapy``, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    For this example, we will use the winequality dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_winequality()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    You can easily divide your dataset into training and testing subsets
+    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    crucial step when preparing your data for machine learning, as it
+    allows you to evaluate the performance of your models accurately.
+
+    .. code-block:: python
+
+        train, test = data.train_test_split(test_size = 0.2)
+
+    .. warning::
+
+        In this case, VerticaPy utilizes seeded randomization to guarantee
+        the reproducibility of your data split. However, please be aware
+        that this approach may lead to reduced performance. For a more
+        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        method to save your results into ``tables`` or ``temporary tables``.
+        This will help enhance the overall performance of the process.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy as vp
+        import verticapy.datasets as vpd
+        data = vpd.load_winequality()
+        train, test = data.train_test_split(test_size = 0.2)
+
+    Model Initialization
+    ^^^^^^^^^^^^^^^^^^^^^
+
+    First we import the ``KNeighborsRegressor`` model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica import KNeighborsRegressor
+
+    Then we can create the model:
+
+    .. ipython:: python
+
+        model = KNeighborsRegressor()
+
+    .. hint::
+
+        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        model name, as the name is automatically assigned. If you need to
+        re-use the model, you can fetch the model name from the model's
+        attributes.
+
+    .. important::
+
+        The model name is crucial for the model management system and
+        versioning. It's highly recommended to provide a name if you
+        plan to reuse the model later.
+
+    Model Training
+    ^^^^^^^^^^^^^^^
+
+    We can now fit the model:
+
+    .. ipython:: python
+
+        model.fit(
+            train,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "quality",
+            test,
+        )
+
+    .. important::
+
+        To train a model, you can directly use the ``vDataFrame`` or the
+        name of the relation stored in the database. The test set is optional
+        and is only used to compute the test metrics. In ``verticapy``, we
+        don't work using ``X`` matrices and ``y`` vectors. Instead, we work
+        directly with lists of predictors and the response name.
+
+
+    Metrics
+    ^^^^^^^^
+
+    We can get the entire report using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report()
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        result = model.report()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_report.html
+
+    .. important::
+
+        Most metrics are computed using a single SQL query, but some
+        of them might require multiple SQL queries. Selecting only the
+        necessary metrics in the report can help optimize performance.
+        E.g. ``model.report(metrics = ["mse", "r2"])``.
+
+    For ``KNeighborsRegressor``, we can easily get the ANOVA table using:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.report(metrics = "anova")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_report_anova.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        result = model.report(metrics = "anova")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_report_anova.html
+
+    You can also use the ``KNeighborsRegressor.score`` function to compute the R-squared
+    value:
+
+    .. ipython:: python
+
+        model.score()
+
+    Prediction
+    ^^^^^^^^^^^
+
+    Prediction is straight-forward:
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density",
+            ],
+            "prediction",
+        )
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_prediction.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. code-block:: python
+
+        model.predict(
+            test,
+            [
+                "fixed_acidity",
+                "volatile_acidity",
+                "citric_acid",
+                "residual_sugar",
+                "chlorides",
+                "density"
+            ],
+            "prediction",
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_knnreg_prediction.html
+
+    .. note::
+
+        Predictions can be made automatically using the test set, in which
+        case you don't need to specify the predictors. Alternatively, you
+        can pass only the ``vDataFrame`` to the
+        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        function, but in this case, it's essential that the column names of
+        the ``vDataFrame`` match the predictors and response name in the
+        model.
+
+    Parameter Modification
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    In order to see the parameters:
+
+    .. ipython:: python
+
+        model.get_params()
+
+    And to manually change some of the parameters:
+
+    .. ipython:: python
+
+        model.set_params({'n_neighbors': 3})
+
+    Model Register
+    ^^^^^^^^^^^^^^
+
+    In order to register the model for tracking and versioning:
+
+    .. code-block:: python
+
+        model.register("model_v1")
+
+    Please refer to :ref:`notebooks/ml/model_tracking_versioning/index.html` for
+    more details on model tracking and versioning.
     """
 
     # Properties.
@@ -418,7 +681,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
     We can the balance the dataset to ensure equal representation:
 
-    code-block:: python
+    .. code-block:: python
 
         data = data.balance(column="quality", x = 1)
 
@@ -648,7 +911,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_neighbors_knc_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -696,7 +959,7 @@ class KNeighborsClassifier(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_neighbors_knc_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -783,7 +1046,7 @@ class KNeighborsClassifier(MulticlassClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.roc_curve(pos_label = "5")
-        fig.write_html("figures/machine_learning_vertica_neighbors_knc_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_neighbors_knc_roc.html
