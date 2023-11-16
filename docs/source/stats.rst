@@ -78,6 +78,7 @@ Time Series - Correlations
 
    tsa.cochrane_orcutt
    tsa.ljungbox
+   tsa.durbin_watson
 
 _____
 
