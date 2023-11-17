@@ -22,6 +22,7 @@ from verticapy.core.vdataframe import vDataFrame
 
 from verticapy._typing import NoneType
 from verticapy._utils._sql._collect import save_verticapy_logs
+from verticapy._utils._sql._format import format_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
@@ -158,10 +159,18 @@ class QueryProfiler:
         return vertica_version()
 
     # Step 1
-    def get_request(self, print_request: bool = True) -> str:
-        if print_request:
-            print(self.request)
-        return self.request
+    def get_request(
+        self,
+        indent_sql: bool = True,
+        print_sql: bool = True,
+        return_html: bool = False,
+    ) -> str:
+        res = format_query(
+            query=self.request, indent_sql=indent_sql, print_sql=print_sql
+        )
+        if return_html:
+            return res[1]
+        return res[0]
 
     # Step 3
     def get_qsteps(
