@@ -36,4 +36,5 @@ rel_tolerance_map = {
     "MA": 1e-01,
     "ARMA": 1e-01,
     "ARIMA": 1e-01,
+    "TENSORFLOW": 1e-06,
 }

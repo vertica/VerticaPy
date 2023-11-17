@@ -16,6 +16,8 @@ permissions and limitations under the License.
 """
 from collections import namedtuple
 import math
+import os
+import sys
 import pytest
 import numpy as np
 import sklearn.metrics as skl_metrics
@@ -29,6 +31,8 @@ import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from scipy.stats import f
+import tensorflow as tf
+from tensorflow.keras.utils import to_categorical
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
 import verticapy.machine_learning.vertica.tree as vpy_tree
@@ -44,7 +48,7 @@ le = LabelEncoder()
 
 @pytest.fixture(name="get_vpy_model", scope="function")
 def get_vpy_model_fixture(
-    winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, schema_loader
+        winequality_vpy_fun, titanic_vd_fun, airline_vd_fun, schema_loader
 ):
     """
     getter function for vertica tree model
@@ -513,7 +517,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 titanic_pdf[
                     (titanic_pdf.name == "Kelly, Mr. James")
                     | (titanic_pdf.name == "Connolly, Miss. Kate")
-                ].index,
+                    ].index,
                 inplace=True,
             )
 
@@ -534,6 +538,39 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
 
             X = airline_pdf[["date"]]
             y = airline_pdf["passengers"]
+        elif model_class.upper() in ['TENSORFLOW', 'TF']:
+            num_test_images = 10
+            tftype = tf.float32
+            nptype = np.float32
+
+            (train_eval_data, train_eval_labels), (test_data, test_labels) = tf.keras.datasets.mnist.load_data()
+
+            train_eval_labels = np.asarray(train_eval_labels, dtype=nptype)
+            train_eval_labels = tf.keras.utils.to_categorical(train_eval_labels)
+
+            test_labels = np.asarray(test_labels, dtype=nptype)
+            y = tf.keras.utils.to_categorical(test_labels)
+
+            #  Split the training data into two parts, training and evaluation
+            data_split = np.split(train_eval_data, [55000])
+            labels_split = np.split(train_eval_labels, [55000])
+
+            train_data = data_split[0]
+            train_labels = labels_split[0]
+
+            eval_data = data_split[1]
+            eval_labels = labels_split[1]
+
+            print('Size of train_data: ', train_data.shape[0])
+            print('Size of eval_data: ', eval_data.shape[0])
+            print('Size of test_data: ', test_data.shape[0])
+
+            train_data = train_data.reshape((55000, 28, 28, 1))
+            eval_data = eval_data.reshape((5000, 28, 28, 1))
+            X = test_data.reshape((10000, 28, 28, 1))
+
+            # X = test_data[:num_test_images]
+            # y = test_labels[:num_test_images]
         else:
             winequality_pdf = winequality_vpy_fun.to_pandas()
             winequality_pdf["citric_acid"] = winequality_pdf["citric_acid"].astype(
@@ -639,6 +676,15 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 order=kwargs.get("order") if kwargs.get("order") else order,
             ).fit()
             print(model.summary())
+        elif model_class.upper() in ['TENSORFLOW', 'TF']:
+            inputs = tf.keras.Input(shape=(28, 28, 1), name="image")
+            x = tf.keras.layers.Conv2D(32, 5, activation="relu")(inputs)
+            x = tf.keras.layers.MaxPooling2D(2)(x)
+            x = tf.keras.layers.Conv2D(64, 5, activation="relu")(x)
+            x = tf.keras.layers.MaxPooling2D(2)(x)
+            x = tf.keras.layers.Flatten()(x)
+            x = tf.keras.layers.Dense(10, activation='softmax', name='OUTPUT')(x)
+            model = tf.keras.Model(inputs, x)
         else:
             model = getattr(skl_linear_model, model_class)(
                 fit_intercept=py_fit_intercept if py_fit_intercept else True
@@ -662,7 +708,24 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
                 else None
             )
             pred = model.predict(start=p_val, end=npred, dynamic=False).values
-            y = y[p_val : npred + 1 if npred else npred].values
+            y = y[p_val: npred + 1 if npred else npred].values
+        elif model_class.upper() in ['TENSORFLOW', 'TF']:
+            batch_size = 100
+            epochs = 5
+
+            model.compile(loss='categorical_crossentropy',
+                          optimizer='sgd',
+                          metrics=['accuracy'])
+
+            model.fit(train_data, train_labels,
+                      batch_size=batch_size,
+                      epochs=epochs,
+                      verbose=1
+                      )
+            model.summary()
+            loss, acc = model.evaluate(eval_data, eval_labels)
+            print('Loss: ', loss, '  Accuracy: ', acc)
+            pred = model.predict(test_data)
         else:
             print(f"Python Training Parameters: {model.get_params()}")
             model.fit(X, y)
@@ -756,25 +819,25 @@ def calculate_regression_metrics(get_py_model):
         regression_metrics_map["dfr"] = num_features
         regression_metrics_map["dfe"] = no_of_records - num_features - 1
         regression_metrics_map["msr"] = (
-            regression_metrics_map["ssr"] / regression_metrics_map["dfr"]
+                regression_metrics_map["ssr"] / regression_metrics_map["dfr"]
         )
         regression_metrics_map["_mse"] = (
-            regression_metrics_map["sse"] / regression_metrics_map["dfe"]
+                regression_metrics_map["sse"] / regression_metrics_map["dfe"]
         )
         regression_metrics_map["f"] = (
-            regression_metrics_map["msr"] / regression_metrics_map["_mse"]
+                regression_metrics_map["msr"] / regression_metrics_map["_mse"]
         )
         regression_metrics_map["p_value"] = f.sf(
             regression_metrics_map["f"], num_features, no_of_records
         )
         regression_metrics_map["mean_squared_log_error"] = (
-            sum(
-                pow(
-                    (np.log10(pred + 1) - np.log10(y + 1)),
-                    2,
+                sum(
+                    pow(
+                        (np.log10(pred + 1) - np.log10(y + 1)),
+                        2,
+                    )
                 )
-            )
-            / no_of_records
+                / no_of_records
         )
         regression_metrics_map["r2"] = regression_metrics_map[
             "r2_score"
@@ -783,10 +846,10 @@ def calculate_regression_metrics(get_py_model):
         #     ss_res / ss_tot
         # )
         regression_metrics_map["rsquared_adj"] = 1 - (
-            1 - regression_metrics_map["r2"]
+                1 - regression_metrics_map["r2"]
         ) * (no_of_records - 1) / (no_of_records - num_features - 1)
         regression_metrics_map["aic"] = (
-            no_of_records * math.log(regression_metrics_map["mse"]) + 2 * num_params
+                no_of_records * math.log(regression_metrics_map["mse"]) + 2 * num_params
         )
         regression_metrics_map["bic"] = no_of_records * math.log(
             regression_metrics_map["mse"]
@@ -846,7 +909,7 @@ def calculate_classification_metrics(get_py_model):
             "accuracy"
         ] = skl_metrics.accuracy_score(y, pred)
         classification_metrics_map["log_loss"] = -(
-            (y * np.log10(pred + 1e-90)) + (1 - y) * np.log10(1 - pred + 1e-90)
+                (y * np.log10(pred + 1e-90)) + (1 - y) * np.log10(1 - pred + 1e-90)
         ).mean()
         classification_metrics_map["precision_score"] = classification_metrics_map[
             "precision"
