@@ -176,7 +176,6 @@ class AutoDataPrep(VerticaModel):
         save: bool = True,
     ) -> None:
         super().__init__(name, overwrite_model)
-
         self.parameters = {
             "cat_method": cat_method,
             "num_method": num_method,
@@ -210,6 +209,7 @@ class AutoDataPrep(VerticaModel):
         X: Optional[SQLColumns] = None,
         ts: Optional[str] = None,
         by: Optional[SQLColumns] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -325,7 +325,7 @@ class AutoDataPrep(VerticaModel):
                         and not ts
                         and self.parameters["num_method"] in ("same_width", "same_freq")
                     ):
-                        vdf[x].get_dummies(drop_first=False)
+                        vdf[x].one_hot_encode(drop_first=False)
                         columns_to_drop += [x]
                     elif (
                         self.parameters["cat_method"] == "label" and not vdf[x].isnum()
@@ -391,7 +391,11 @@ class AutoDataPrep(VerticaModel):
         if self.parameters["apply_pca"] and not ts:
             model_pca = PCA(self.model_name + "_pca")
             model_pca.drop()
-            model_pca.fit(vdf, self.X_out_)
+            model_pca.fit(
+                vdf,
+                self.X_out_,
+                return_report=True,
+            )
             vdf = model_pca.transform()
             self.X_out_ = vdf.get_columns(
                 exclude_columns=by + [ts] + X_diff if ts else by + X_diff

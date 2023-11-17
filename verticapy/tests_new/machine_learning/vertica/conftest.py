@@ -109,7 +109,7 @@ def get_vpy_model_fixture(
             if model_class in ["Lasso", "ElasticNet"]:
                 solver = "cgd"
             else:
-                solver = "Newton"
+                solver = "newton"
 
         if model_class in ["RandomForestRegressor", "RandomForestClassifier"]:
             model = getattr(vpy_tree, model_class)(

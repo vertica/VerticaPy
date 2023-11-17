@@ -890,7 +890,7 @@ class TestvDFDescriptiveStat:
             tol=1e-4,
             C=1.0,
             max_iter=100,
-            solver="CGD",
+            solver="cgd",
             penalty="ENet",
             l1_ratio=0.5,
         )

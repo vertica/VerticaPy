@@ -26,7 +26,7 @@ from verticapy._utils._map import verticapy_agg_name
 from verticapy._utils._object import create_new_vdc
 from verticapy._utils._sql._cast import to_varchar
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_type, indentSQL, quote_ident
+from verticapy._utils._sql._format import format_type, indent_vpy_sql, quote_ident
 from verticapy._utils._sql._random import _current_random
 from verticapy._utils._sql._sys import _executeSQL
 
@@ -363,7 +363,7 @@ class vDFSystem(vDFTyping):
             The formatted current vDataFrame relation.
         """
         if reindent:
-            return indentSQL(self._genSQL(split=split))
+            return indent_vpy_sql(self._genSQL(split=split))
         else:
             return self._genSQL(split=split)
 

@@ -67,14 +67,11 @@ class TSPlot(MatplotlibBase):
         ax, fig, style_kwargs = self._get_ax_fig(
             ax, size=(8, 6), set_axis_below=True, grid="y", style_kwargs=style_kwargs
         )
-        idx = 2
-        if not (self.layout["is_forecast"]):
-            idx = 3
         # Standard Error
         if self.layout["has_se"]:
             args = [self.data["se_x"], self.data["se_low"], self.data["se_high"]]
             kwargs = self._update_dict(
-                self.init_style, {**color_kwargs, **style_kwargs}, color_idx=idx
+                self.init_style, {**color_kwargs, **style_kwargs}, color_idx=3
             )
             ax.fill_between(
                 *args,
@@ -102,7 +99,7 @@ class TSPlot(MatplotlibBase):
         # Forecast
         args = [self.data["x_pred"], self.data["y_pred"]]
         kwargs = self._update_dict(
-            self.init_style, {**color_kwargs, **style_kwargs}, color_idx=idx - 1
+            self.init_style, {**color_kwargs, **style_kwargs}, color_idx=2
         )
         # kwargs = {**kwargs, **{"linestyle": "dashed"}}
         ax.plot(*args, **kwargs, label="forecast")

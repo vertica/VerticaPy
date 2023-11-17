@@ -175,7 +175,7 @@ class vDFAgg(vDFEval):
                 func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_aggregate_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aggregate_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -819,7 +819,7 @@ class vDFAgg(vDFEval):
                 columns = ["x", "y", "z"],
                 method = "numerical",
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_describe_num_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_num_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -850,7 +850,7 @@ class vDFAgg(vDFEval):
                 columns = ["x", "y", "z", "c"],
                 method = "categorical",
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_describe_cat_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_cat_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -881,7 +881,7 @@ class vDFAgg(vDFEval):
                 columns = ["x", "y", "z", "c"],
                 method = "all",
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_describe_all_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_describe_all_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1329,7 +1329,7 @@ class vDFAgg(vDFEval):
                 columns = ["x"],
                 expr = ["AVG(y) AS avg_y", "MIN(z) AS min_z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_groupby_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1379,7 +1379,7 @@ class vDFAgg(vDFEval):
                 ],
                 rollup = True,
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_groupby_table_2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_groupby_table_2.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1565,7 +1565,7 @@ class vDFAgg(vDFEval):
             result = data.aad(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_aad_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_aad_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1647,7 +1647,7 @@ class vDFAgg(vDFEval):
             result = data.all(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_all_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_all_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1724,7 +1724,7 @@ class vDFAgg(vDFEval):
             result = data.any(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_any_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_any_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1801,7 +1801,7 @@ class vDFAgg(vDFEval):
             result = data.avg(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_avg_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_avg_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1881,7 +1881,7 @@ class vDFAgg(vDFEval):
             result = data.count(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_count_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -1969,7 +1969,7 @@ class vDFAgg(vDFEval):
             result = data.kurtosis(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_kurtosis_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_kurtosis_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2066,7 +2066,7 @@ class vDFAgg(vDFEval):
             result = data.mad(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_mad_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_mad_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2143,7 +2143,7 @@ class vDFAgg(vDFEval):
             result = data.max(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_max_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_max_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2233,7 +2233,7 @@ class vDFAgg(vDFEval):
                 columns = ["x", "y", "z"],
                 approx = True,
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_median_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_median_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2316,7 +2316,7 @@ class vDFAgg(vDFEval):
             result = data.min(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_min_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_min_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2412,7 +2412,7 @@ class vDFAgg(vDFEval):
             result = data.product(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_product_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_product_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2525,7 +2525,7 @@ class vDFAgg(vDFEval):
                 columns = ["x", "y", "z"],
                 approx = True,
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_quantile_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_quantile_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2629,7 +2629,7 @@ class vDFAgg(vDFEval):
             result = data.sem(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_sem_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sem_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2717,7 +2717,7 @@ class vDFAgg(vDFEval):
             result = data.skewness(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_skewness_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_skewness_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2799,7 +2799,7 @@ class vDFAgg(vDFEval):
             result = data.std(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_std_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_std_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2878,7 +2878,7 @@ class vDFAgg(vDFEval):
             result = data.sum(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_sum_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_sum_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -2957,7 +2957,7 @@ class vDFAgg(vDFEval):
             result = data.var(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_var_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_var_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3052,7 +3052,7 @@ class vDFAgg(vDFEval):
             result = data.count_percent(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_count_percent_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_count_percent_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3159,7 +3159,7 @@ class vDFAgg(vDFEval):
             result = data.nunique(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_nunique_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_nunique_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3254,7 +3254,7 @@ class vDFAgg(vDFEval):
             result = data.duplicated(
                 columns = ["x", "y", "z"],
             )
-            html_file = open("figures/core_vDataFrame_vDFAgg_duplicated_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_duplicated_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3426,7 +3426,7 @@ class vDCAgg(vDCEval):
             result = data["x"].aggregate(
                 func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
             )
-            html_file = open("figures/core_vDataFrame_vDCAgg_aggregate_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_aggregate_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3528,7 +3528,7 @@ class vDCAgg(vDCEval):
                 "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
             })
             result = data["x"].describe(method = "numerical")
-            html_file = open("figures/core_vDataFrame_vDCAgg_describe_num_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_num_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3553,7 +3553,7 @@ class vDCAgg(vDCEval):
                 "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
             })
             result = data["x"].describe(method = "categorical")
-            html_file = open("figures/core_vDataFrame_vDCAgg_describe_cat_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_cat_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -3584,7 +3584,7 @@ class vDCAgg(vDCEval):
                 method = "cat_stats",
                 numcol = "x"
             )
-            html_file = open("figures/core_vDataFrame_vDCAgg_describe_stats_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_stats_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -4644,7 +4644,7 @@ class vDCAgg(vDCEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
             result = data["x"].value_counts(k = 6)
-            html_file = open("figures/core_vDataFrame_vDFAgg_value_counts_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_value_counts_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
@@ -4714,7 +4714,7 @@ class vDCAgg(vDCEval):
                 "z": [10, 12, 2, 1, 9, 8, 1, 3],
             })
             result = data["x"].topk()
-            html_file = open("figures/core_vDataFrame_vDFAgg_topk_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_topk_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 

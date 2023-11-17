@@ -35,7 +35,7 @@ class AutoClustering(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the same name
@@ -122,7 +122,7 @@ class AutoClustering(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: Optional[str] = None,
         overwrite_model: bool = False,
         n_cluster: Optional[int] = None,
         init: Union[Literal["kmeanspp", "random"], ArrayLike] = "kmeanspp",
@@ -139,8 +139,7 @@ class AutoClustering(VerticaModel):
         },
         print_info: bool = True,
     ) -> None:
-        self.model_name = name
-        self.overwrite_model = overwrite_model
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "n_cluster": n_cluster,
             "init": init,
@@ -155,7 +154,12 @@ class AutoClustering(VerticaModel):
 
     # Model Fitting Method.
 
-    def fit(self, input_relation: SQLRelation, X: Optional[SQLColumns] = None) -> None:
+    def fit(
+        self,
+        input_relation: SQLRelation,
+        X: Optional[SQLColumns] = None,
+        return_report: bool = False,
+    ) -> None:
         """
         Trains the model.
 

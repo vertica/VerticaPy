@@ -65,7 +65,7 @@ def regexp_count(
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\. ')
-        html_file = open("figures/sql_functions_regexp_regexp_count.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_count.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
 
@@ -114,7 +114,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\. ')
-        html_file = open("figures/sql_functions_regexp_regexp_ilike.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_ilike.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
 
@@ -181,7 +181,7 @@ def regexp_instr(
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["title_start"] = vpf.regexp_instr(titanic["name"], '([A-Za-z])+\. ', return_position = 0)
-        html_file = open("figures/sql_functions_regexp_regexp_instr.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_instr.html", "w")
         html_file.write(titanic[["name", "title_start"]]._repr_html_())
         html_file.close()
 
@@ -232,7 +232,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\. ')
-        html_file = open("figures/sql_functions_regexp_regexp_like.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_like.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
 
@@ -298,7 +298,7 @@ def regexp_replace(
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["new_title"] = vpf.regexp_replace(titanic["name"], '([A-Za-z])+\. ', '[title here] ')
-        html_file = open("figures/sql_functions_regexp_regexp_replace.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_replace.html", "w")
         html_file.write(titanic[["name", "new_title"]]._repr_html_())
         html_file.close()
 
@@ -360,7 +360,7 @@ def regexp_substr(
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
         titanic["title"] = vpf.regexp_substr(titanic["name"], '([A-Za-z])+\. ')
-        html_file = open("figures/sql_functions_regexp_regexp_substr.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_substr.html", "w")
         html_file.write(titanic[["name", "title"]]._repr_html_())
         html_file.close()
 

@@ -17,6 +17,7 @@ permissions and limitations under the License.
 import warnings
 from typing import Optional
 
+import verticapy._config.config as conf
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import (
     clean_query,
@@ -155,7 +156,7 @@ def read_file(
         if not schema and temporary_local_table:
             schema = "v_temp_schema"
         elif not schema:
-            schema = "public"
+            schema = conf.get_option("temp_schema")
         input_relation = quote_ident(schema) + "." + quote_ident(table_name)
         file_format = file_format.upper()
         if file_format.lower() in ("json", "avro"):
@@ -174,7 +175,7 @@ def read_file(
     elif temporary_local_table:
         schema = "v_temp_schema"
     else:
-        schema = "public"
+        schema = conf.get_option("temp_schema")
     basename = ".".join(path.split("/")[-1].split(".")[0:-1])
     if gen_tmp_table_name and temporary_local_table and not table_name:
         table_name = gen_tmp_name(name=basename)
@@ -202,7 +203,7 @@ def read_file(
         create_statement = f"CREATE LOCAL TEMPORARY TABLE {quote_ident(table_name)}"
     else:
         if not schema:
-            schema = "public"
+            schema = conf.get_option("temp_schema")
         if temporary_table:
             create_statement = f"CREATE TEMPORARY TABLE {relation}"
         else:

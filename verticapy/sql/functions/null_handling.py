@@ -57,7 +57,7 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0.8, -1, None, -2, None]})
         df["coalesce_x"] = vpf.coalesce(df["x"], 777)
-        html_file = open("figures/sql_functions_null_handling_coalesce.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_null_handling_coalesce.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -106,7 +106,7 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, 0, 0.7, 15]})
         df["nullifzero_x"] = vpf.nullifzero(df["x"])
-        html_file = open("figures/sql_functions_null_handling_nullifzero.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_null_handling_nullifzero.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -150,7 +150,7 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [0, None, 0.7, None]})
         df["zeroifnull_x"] = vpf.zeroifnull(df["x"])
-        html_file = open("figures/sql_functions_null_handling_zeroifnull.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_null_handling_zeroifnull.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 

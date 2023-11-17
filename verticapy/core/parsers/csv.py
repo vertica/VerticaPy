@@ -316,7 +316,7 @@ def read_csv(
     elif temporary_local_table:
         schema = "v_temp_schema"
     else:
-        schema = "public"
+        schema = conf.get_option("temp_schema")
     if header_names and dtype:
         warning_message = (
             "Parameters 'header_names' and 'dtype' are both defined. "

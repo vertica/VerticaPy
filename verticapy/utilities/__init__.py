@@ -14,6 +14,16 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
+warning_message = (
+    "Importing from 'verticapy.utilities' is deprecated, "
+    "and it will no longer be possible in the next release. "
+    "Please use 'verticapy' instead to ensure compatibility "
+    "with upcoming versions."
+)
+warnings.warn(warning_message, Warning)
+
 from verticapy._config.config import set_option
 from verticapy._utils._sql._collect import save_to_query_profile
 from verticapy._utils._sql._vertica_version import vertica_version

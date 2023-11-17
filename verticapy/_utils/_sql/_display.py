@@ -18,7 +18,7 @@ import shutil
 from typing import Optional
 
 import verticapy._config.config as conf
-from verticapy._utils._sql._format import clean_query, indentSQL
+from verticapy._utils._sql._format import clean_query, indent_vpy_sql
 
 if conf.get_import_success("IPython"):
     from IPython.display import HTML, display
@@ -30,7 +30,7 @@ def print_query(query: str, title: Optional[str] = None) -> None:
     """
     screen_columns = shutil.get_terminal_size().columns
     query_print = clean_query(query)
-    query_print = indentSQL(query)
+    query_print = indent_vpy_sql(query)
     if conf.get_import_success("IPython"):
         display(HTML(f"<h4>{title}</h4>"))
         query_print = query_print.replace("\n", " <br>").replace("  ", " &emsp; ")

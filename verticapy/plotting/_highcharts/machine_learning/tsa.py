@@ -41,6 +41,9 @@ class TSPlot(LinePlot):
     # Styling Methods.
 
     def _init_style(self) -> None:
+        colors = [c for c in self.get_colors()]
+        if self.layout["is_forecast"]:
+            del colors[1]
         self.init_style = {
             "title": {"text": ""},
             "xAxis": {
@@ -73,7 +76,7 @@ class TSPlot(LinePlot):
                     },
                 }
             },
-            "colors": self.get_colors(),
+            "colors": colors,
         }
         self.init_style_area_range = {
             "zIndex": 0,

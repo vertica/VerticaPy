@@ -73,7 +73,7 @@ class AutoML(VerticaModel):
 
     Parameters
     ----------
-    name: str
+    name: str, optional
         Name of the model.
     overwrite_model: bool, optional
         If set to True, training a model with the same
@@ -254,7 +254,7 @@ class AutoML(VerticaModel):
     @save_verticapy_logs
     def __init__(
         self,
-        name: str,
+        name: Optional[str] = None,
         overwrite_model: bool = False,
         estimator: Union[list, str] = "fast",
         estimator_type: Literal["auto", "regressor", "binary", "multi"] = "auto",
@@ -276,8 +276,7 @@ class AutoML(VerticaModel):
     ) -> None:
         if optimized_grid not in [0, 1, 2]:
             raise ValueError("Optimized Grid must be an integer between 0 and 2.")
-        self.model_name = name
-        self.overwrite_model = overwrite_model
+        super().__init__(name, overwrite_model)
         self.parameters = {
             "estimator": estimator,
             "estimator_type": estimator_type,
@@ -349,6 +348,7 @@ class AutoML(VerticaModel):
         input_relation: SQLRelation,
         X: Optional[SQLColumns] = None,
         y: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -527,12 +527,15 @@ class AutoML(VerticaModel):
             }
         )
         if self.parameters["preprocess_data"]:
-            schema, name = schema_relation(self.model_name)
-            name = gen_tmp_name(schema=schema, name="autodataprep")
             model_preprocess = AutoDataPrep(
-                name=name, **self.parameters["preprocess_dict"]
+                **self.parameters["preprocess_dict"],
+                overwrite_model=True,
             )
-            model_preprocess.fit(input_relation, X=X)
+            model_preprocess.fit(
+                input_relation,
+                X=X,
+                return_report=True,
+            )
             input_relation = model_preprocess.final_relation_
             X = copy.deepcopy(model_preprocess.X_out_)
             self.preprocess_ = model_preprocess
@@ -657,7 +660,12 @@ class AutoML(VerticaModel):
                 criterion_threshold=2,
             )
         else:
-            best_model.fit(input_relation, X, y)
+            best_model.fit(
+                input_relation,
+                X,
+                y,
+                return_report=True,
+            )
         self.best_model_ = best_model
         self.model_grid_ = result
         self.parameters["reverse"] = not reverse

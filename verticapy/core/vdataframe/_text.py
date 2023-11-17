@@ -167,7 +167,7 @@ class vDFText(vDFRolling):
                         "subject_2",
                     ]
                 )
-            html_file = open("figures/core_vDataFrame_text_regex1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_regex1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -198,7 +198,7 @@ class vDFText(vDFRolling):
             )
             data["nb_subjects"].add(1)
             res = data.select(["subjects", "nb_subjects"])
-            html_file = open("figures/core_vDataFrame_text_regex2.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_regex2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -290,7 +290,7 @@ class vDCText(vDCCorr):
                     "subjects as has_english",
                 ]
             )
-            html_file = open("figures/core_vDataFrame_text_str_contains.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_contains.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -370,7 +370,7 @@ class vDCText(vDCCorr):
                     "subjects as english_count",
                 ]
             )
-            html_file = open("figures/core_vDataFrame_text_str_count.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_count.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -438,7 +438,7 @@ class vDCText(vDCCorr):
             :suppress:
 
             res = data["name"].str_extract(pat = "([A-Za-z])+\.")
-            html_file = open("figures/core_vDataFrame_text_str_extract.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_extract.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -515,7 +515,7 @@ class vDCText(vDCCorr):
                 to_replace  = "([A-Za-z])+\.",
                 value = "[Name_Prefix]"
             )
-            html_file = open("figures/core_vDataFrame_text_str_replace.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_replace.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
@@ -585,7 +585,7 @@ class vDCText(vDCCorr):
             :suppress:
 
             res = data["name"].str_slice(start = 0, step =3)
-            html_file = open("figures/core_vDataFrame_text_str_slice.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_slice.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 

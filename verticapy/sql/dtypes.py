@@ -20,6 +20,7 @@ from typing import Optional, Union
 
 from vertica_python.errors import QueryError
 
+import verticapy._config.config as conf
 from verticapy._utils._gen import gen_tmp_name
 from verticapy._utils._sql._format import format_type, format_schema_table, quote_ident
 from verticapy._utils._sql._sys import _executeSQL
@@ -53,7 +54,7 @@ def get_data_types(
     expr: Optional[str] = None,
     column: Optional[str] = None,
     table_name: Optional[str] = None,
-    schema: str = "public",
+    schema: Optional[str] = None,
     usecols: Optional[list] = None,
 ) -> Union[tuple, list[tuple]]:
     """
@@ -102,6 +103,8 @@ def get_data_types(
         get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2",
                         column="pclass")
     """
+    if not (schema):
+        schema = conf.get_option("temp_schema")
     usecols = format_type(usecols, dtype=list)
     if not expr and not table_name:
         raise ValueError(

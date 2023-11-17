@@ -85,7 +85,7 @@ def coordinate_converter(
         cities["lon"] = "ST_Y(geometry)"
         #limit display rows because hit unicode decoding error
         set_option("max_rows", 20)
-        html_file = open("figures/sql_geo_functions_coordinate_converter_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_1.html", "w")
         html_file.write(cities._repr_html_())
         html_file.close()
 
@@ -102,7 +102,7 @@ def coordinate_converter(
         :suppress:
 
         convert_xy = coordinate_converter(cities, "lon", "lat")
-        html_file = open("figures/sql_geo_functions_coordinate_converter_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_2.html", "w")
         html_file.write(convert_xy._repr_html_())
         html_file.close()
 
@@ -118,7 +118,7 @@ def coordinate_converter(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_functions_coordinate_converter_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_3.html", "w")
         html_file.write(coordinate_converter(convert_xy, "lon", "lat", reverse=True)._repr_html_())
         html_file.close()
 
@@ -208,10 +208,10 @@ def intersect(
         cities["id"] = "ROW_NUMBER() OVER (ORDER BY city)"
         cities["lat"] = "ST_X(geometry)"
         cities["lon"] = "ST_Y(geometry)"
-        html_file = open("figures/sql_geo_functions_intersect_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_1.html", "w")
         html_file.write(world._repr_html_())
         html_file.close()
-        html_file = open("figures/sql_geo_functions_intersect_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html", "w")
         html_file.write(cities._repr_html_())
         html_file.close()
 
@@ -229,7 +229,7 @@ def intersect(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_functions_intersect_4.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html", "w")
         html_file.write(create_index(world, "id", "geometry", "world_polygons", True)._repr_html_())
         html_file.close()
 
@@ -244,7 +244,7 @@ def intersect(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_functions_intersect_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html", "w")
         html_file.write(intersect(cities, "world_polygons", "id", "geometry")._repr_html_())
         html_file.close()
 
@@ -259,7 +259,7 @@ def intersect(
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/sql_geo_functions_intersect_4.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html", "w")
         html_file.write(intersect(cities, "world_polygons", "id", x="lat", y="lon")._repr_html_())
         html_file.close()
 
@@ -349,7 +349,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         :suppress:
 
         split_p = split_polygon_n(p)
-        html_file = open("figures/sql_geo_functions_split_polygon_n.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_split_polygon_n.html", "w")
         html_file.write(split_p._repr_html_())
         html_file.close()
 

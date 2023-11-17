@@ -14,4 +14,14 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
+warning_message = (
+    "Importing from 'verticapy.vdataframe' is deprecated, "
+    "and it will no longer be possible in the next release. "
+    "Please use 'verticapy.core' instead "
+    "to ensure compatibility with upcoming versions."
+)
+warnings.warn(warning_message, Warning)
+
 from verticapy.core.vdataframe.base import vDataColumn, vDataFrame

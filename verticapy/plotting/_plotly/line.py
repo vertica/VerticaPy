@@ -161,7 +161,6 @@ class MultiLinePlot(LinePlot):
         if self.layout["kind"] == "area_percent":
             row_sums = self.data["Y"].sum(axis=1)
             self.data["Y"] = (((self.data["Y"]).T / row_sums) * 100).T
-        print(self.data)
         marker_colors = self.get_colors()
         if "colors" in style_kwargs:
             marker_colors = (

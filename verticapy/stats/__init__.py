@@ -14,6 +14,19 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
+import warnings
+
+warning_message = (
+    "Importing from 'verticapy.stats' is deprecated, "
+    "and it will no longer be possible in the next release. "
+    "Please use 'verticapy.sql.functions' instead "
+    "to ensure compatibility with upcoming versions.\n"
+    "Note: Statistical tests have been relocated to "
+    "'verticapy.machine_learning.model_selection.' "
+    "Please update your imports accordingly."
+)
+warnings.warn(warning_message, Warning)
+
 from verticapy.sql.functions.analytic import (
     avg,
     bool_and,
@@ -117,7 +130,6 @@ from verticapy.sql.functions.string import (
 )
 
 from verticapy.machine_learning.model_selection.statistical_tests.ols import (
-    endogtest,
     het_breuschpagan,
     het_goldfeldquandt,
     het_white,

@@ -436,7 +436,7 @@ class KMeans(Clustering):
         :suppress:
 
         result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
-        html_file = open("figures/machine_learning_vertica_kmeans_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -468,7 +468,7 @@ class KMeans(Clustering):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(width = 600)
-        fig.write_html("figures/machine_learning_vertica_kmeans_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot.html
@@ -487,7 +487,7 @@ class KMeans(Clustering):
         :suppress:
 
         fig = model.plot_voronoi(width = 600)
-        fig.write_html("figures/machine_learning_vertica_kmeans_plot_voronoi.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_plot_voronoi.html
@@ -506,7 +506,7 @@ class KMeans(Clustering):
         :suppress:
 
         fig = model.contour(width = 600)
-        fig.write_html("figures/machine_learning_vertica_kmeans_contour.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_contour.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_kmeans_contour.html
@@ -1000,7 +1000,7 @@ class KPrototypes(KMeans):
         :suppress:
 
         result = model.predict(data, ["density", "sulphates"], name = "Cluster IDs")
-        html_file = open("figures/machine_learning_vertica_kprototypes_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_kprototypes_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1554,7 +1554,7 @@ class BisectingKMeans(KMeans, Tree):
         :suppress:
 
         result = model.predict(data, ["density", "sulphates"])
-        html_file = open("figures/machine_learning_vertica_bisect_km_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1582,7 +1582,7 @@ class BisectingKMeans(KMeans, Tree):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(width = 600)
-        fig.write_html("figures/machine_learning_vertica_bisect_km_plot.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_plot.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_plot.html
@@ -1635,7 +1635,7 @@ class BisectingKMeans(KMeans, Tree):
         :suppress:
 
         fig = model.contour(width = 600)
-        fig.write_html("figures/machine_learning_vertica_bisect_km_contour.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_contour.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_bisect_km_contour.html
@@ -2125,7 +2125,7 @@ class DBSCAN(VerticaModel):
         :suppress:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_dbscan_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_dbscan_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2231,6 +2231,7 @@ class DBSCAN(VerticaModel):
         X: Optional[SQLColumns] = None,
         key_columns: Optional[SQLColumns] = None,
         index: Optional[str] = None,
+        return_report: bool = False,
     ) -> None:
         """
         Trains the model.
@@ -2770,7 +2771,7 @@ class NearestCentroid(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_cluster_nearest_centroid_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2818,7 +2819,7 @@ class NearestCentroid(MulticlassClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_cluster_nearest_centroid_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2905,7 +2906,7 @@ class NearestCentroid(MulticlassClassifier):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.roc_curve(pos_label = "Iris-setosa")
-        fig.write_html("figures/machine_learning_vertica_cluster_nearest_centroid_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_cluster_nearest_centroid_roc.html
@@ -3038,8 +3039,10 @@ class NearestCentroid(MulticlassClassifier):
     # System & Special Methods.
 
     @save_verticapy_logs
-    def __init__(self, name: str = None, p: int = 2) -> None:
-        super().__init__(name)
+    def __init__(
+        self, name: str = None, overwrite_model: bool = False, p: int = 2
+    ) -> None:
+        super().__init__(name, overwrite_model)
         self.parameters = {"p": p}
 
     def drop(self) -> bool:

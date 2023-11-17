@@ -229,7 +229,13 @@ def cross_validate(
             test_size=float(1 / cv), order_by=[X[0]], random_state=random_state
         )
         start_time = time.time()
-        estimator.fit(train, X, y, test)
+        estimator.fit(
+            train,
+            X,
+            y,
+            test,
+            return_report=True,
+        )
         total_time += [time.time() - start_time]
         fun = estimator.report
         kwargs = {"metrics": final_metrics}

@@ -719,7 +719,12 @@ def bayesian_search_cv(
         hyper_param_estimator = vml.RandomForestRegressor(
             name=estimator.model_name, **RFmodel_params
         )
-        hyper_param_estimator.fit(relation, all_params, "score")
+        hyper_param_estimator.fit(
+            relation,
+            all_params,
+            "score",
+            return_report=True,
+        )
         if random_grid:
             vdf = gen_dataset(model_grid, nrows=nrows)
         else:
@@ -914,13 +919,9 @@ def enet_search_cv(
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = vml.LogisticRegression(
-            gen_tmp_name(schema=conf.get_option("temp_schema"), name="logit")
-        )
+        estimator = vml.LogisticRegression()
     else:
-        estimator = vml.ElasticNet(
-            gen_tmp_name(schema=conf.get_option("temp_schema"), name="enet")
-        )
+        estimator = vml.ElasticNet()
     result = bayesian_search_cv(
         estimator,
         input_relation,

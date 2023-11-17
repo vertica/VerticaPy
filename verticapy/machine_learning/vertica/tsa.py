@@ -343,7 +343,7 @@ class TimeSeriesModelBase(VerticaModel):
                 "Features Importance can not be computed for Moving Averages."
             )
         else:
-            self.features_importance_ = self.phi_ / sum(abs(self.phi_))
+            self.features_importance_ = 100.0 * self.phi_ / sum(abs(self.phi_))
 
     def _get_features_importance(self) -> np.ndarray:
         """
@@ -1441,7 +1441,7 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_tsa_arima_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1478,7 +1478,7 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(output_estimated_ts = True, output_standard_errors = True)
-        html_file = open("figures/machine_learning_vertica_tsa_arima_prediction_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_prediction_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1512,7 +1512,7 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True)
-        html_file = open("figures/machine_learning_vertica_tsa_arima_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1535,7 +1535,7 @@ class ARIMA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "date", "passengers", npredictions = 20, start = 140, width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_arima_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_plot_1.html
@@ -1618,7 +1618,7 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(start = 100, npredictions = 40, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_arima_f_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1646,7 +1646,7 @@ class ARIMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_arima_f_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1669,7 +1669,7 @@ class ARIMA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast", width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_arima_f_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arima_f_plot_1.html
@@ -2144,7 +2144,7 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_tsa_arma_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2181,7 +2181,7 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(output_estimated_ts = True, output_standard_errors = True)
-        html_file = open("figures/machine_learning_vertica_tsa_arma_prediction_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_prediction_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2215,7 +2215,7 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True)
-        html_file = open("figures/machine_learning_vertica_tsa_arma_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2238,7 +2238,7 @@ class ARMA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "date", "passengers", npredictions = 20, start=135, width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_arma_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_plot_1.html
@@ -2320,7 +2320,7 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(start = 100, npredictions = 40, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_arma_f_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2348,7 +2348,7 @@ class ARMA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "date", "passengers", start = 40, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_arma_f_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2371,7 +2371,7 @@ class ARMA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "date", "passengers", npredictions = 40, start = 120, method = "forecast", width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_arma_f_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_arma_f_plot_1.html
@@ -2582,7 +2582,7 @@ class AR(TimeSeriesModelBase):
     .. ipython:: python
         :suppress:
 
-        html_file = open("figures/machine_learning_vertica_tsa_ar_data.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_data.html", "w")
         html_file.write(data._repr_html_())
         html_file.close()
 
@@ -2836,7 +2836,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_tsa_ar_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2871,7 +2871,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(output_estimated_ts = True)
-        html_file = open("figures/machine_learning_vertica_tsa_ar_prediction_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_prediction_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2904,7 +2904,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "month", "GB", start = 7, npredictions = 10, output_estimated_ts = True)
-        html_file = open("figures/machine_learning_vertica_tsa_ar_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -2927,7 +2927,7 @@ class AR(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "month", "GB", npredictions = 10, start = 7, width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_ar_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_plot_1.html
@@ -3008,7 +3008,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(start = 100, npredictions = 40, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3036,7 +3036,7 @@ class AR(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "month", "GB", start = 4, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3059,7 +3059,7 @@ class AR(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "month", "GB", npredictions = 10, start = 5, method = "forecast", width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html
@@ -3261,7 +3261,7 @@ class MA(TimeSeriesModelBase):
                 "temp": noisy_temp,
             }
         )
-        html_file = open("figures/machine_learning_vertica_tsa_ma_data.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_data.html", "w")
         html_file.write(data._repr_html_())
         html_file.close()
 
@@ -3496,7 +3496,7 @@ class MA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict()
-        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3531,7 +3531,7 @@ class MA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(output_estimated_ts = True)
-        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction_2.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3564,7 +3564,7 @@ class MA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "day", "temp", start = 25, npredictions = 10, output_estimated_ts = True)
-        html_file = open("figures/machine_learning_vertica_tsa_ma_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3587,7 +3587,7 @@ class MA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "day", "temp", npredictions = 15, start = 25, width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_ma_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ma_plot_1.html
@@ -3681,7 +3681,7 @@ class MA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(start = 25, npredictions = 15, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3709,7 +3709,7 @@ class MA(TimeSeriesModelBase):
         :okwarning:
 
         result = model.predict(data, "day", "temp", start = 25, npredictions = 20, output_estimated_ts = True, output_standard_errors = True, method = "forecast")
-        html_file = open("figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_prediction_3.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -3732,7 +3732,7 @@ class MA(TimeSeriesModelBase):
 
         vp.set_option("plotting_lib", "plotly")
         fig = model.plot(data, "day", "temp", npredictions = 15, start = 25, method = "forecast", width = 650)
-        fig.write_html("figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_tsa_ar_f_plot_1.html

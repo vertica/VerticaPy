@@ -52,7 +52,7 @@ def avg(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_avg.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_avg.html", "w")
         html_file.write(df.select([str(vpf.avg(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -99,7 +99,7 @@ def bool_and(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [True, False, True, True]})
-        html_file = open("figures/sql_functions_analytic_bool_and.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_and.html", "w")
         html_file.write(df.select([str(vpf.bool_and(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -144,7 +144,7 @@ def bool_or(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [True, False, True, True]})
-        html_file = open("figures/sql_functions_analytic_bool_or.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_or.html", "w")
         html_file.write(df.select([str(vpf.bool_or(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -189,7 +189,7 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [True, False, True, True]})
-        html_file = open("figures/sql_functions_analytic_bool_xor.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_xor.html", "w")
         html_file.write(df.select([str(vpf.bool_xor(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -238,7 +238,7 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]})
         df["cchange_event"] = vpf.conditional_change_event(df["y"] > 0)._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_conditional_change_event.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_change_event.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -286,7 +286,7 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
         df = vDataFrame({"x": [1, 2, 3, 4, 5, 6],
                           "y": [11.4, -2.5, 3.5, -4.2, 2, 3]})
         df["ctrue_event"] = vpf.conditional_true_event(df["y"] > 0)._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_conditional_true_event.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_true_event.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -329,7 +329,7 @@ def count(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, None, 12]})
-        html_file = open("figures/sql_functions_analytic_count.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_count.html", "w")
         html_file.write(df.select([str(vpf.count(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -378,7 +378,7 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
         df = vDataFrame({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]})
         df["lag"] = vpf.lag(df["y"], 1)._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_lag.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_lag.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -428,7 +428,7 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
         df = vDataFrame({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]})
         df["lead"] = vpf.lead(df["y"], 1)._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_lead.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_lead.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -471,7 +471,7 @@ def max(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_max.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_max.html", "w")
         html_file.write(df.select([str(vpf.max(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -514,7 +514,7 @@ def median(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_median.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_median.html", "w")
         html_file.write(df.select([str(vpf.median(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -557,7 +557,7 @@ def min(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_min.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_min.html", "w")
         html_file.write(df.select([str(vpf.min(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -606,7 +606,7 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
         df = vDataFrame({"x": [1, 2, 3, 4],
                           "y": [11.4, -2.5, 3.5, -4.2]})
         df["nth_value"] = vpf.nth_value(df["y"], 3)._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_nth_value.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_nth_value.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -652,7 +652,7 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_quantile.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_quantile.html", "w")
         html_file.write(df.select([str(vpf.quantile(df["x"], 0.25))])._repr_html_())
         html_file.close()
 
@@ -696,7 +696,7 @@ def rank() -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, -10, 1000, 7, 7]})
         df["rank"] = vpf.rank()._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_rank.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_rank.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -735,7 +735,7 @@ def row_number() -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, -10, 1000, 7, 7]})
         df["row_number"] = vpf.row_number()._over(order_by = [df["x"]])
-        html_file = open("figures/sql_functions_analytic_row_number.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_row_number.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -777,7 +777,7 @@ def std(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_std.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_std.html", "w")
         html_file.write(df.select([str(vpf.std(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -823,7 +823,7 @@ def sum(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_sum.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_sum.html", "w")
         html_file.write(df.select([str(vpf.sum(df["x"]))])._repr_html_())
         html_file.close()
 
@@ -866,7 +866,7 @@ def var(expr: SQLExpression) -> StringSQL:
         from verticapy import vDataFrame
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        html_file = open("figures/sql_functions_analytic_var.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_analytic_var.html", "w")
         html_file.write(df.select([str(vpf.var(df["x"]))])._repr_html_())
         html_file.close()
 

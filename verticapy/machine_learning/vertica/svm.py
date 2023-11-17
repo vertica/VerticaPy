@@ -366,7 +366,7 @@ class LinearSVR(LinearModel, Regressor):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_lsvr_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lsvr_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -900,7 +900,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_lscv_prediction.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lscv_prediction.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -952,7 +952,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
             ],
             "prediction",
         )
-        html_file = open("figures/machine_learning_vertica_linear_model_lscv_proba.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lscv_proba.html", "w")
         html_file.write(result._repr_html_())
         html_file.close()
 
@@ -1025,7 +1025,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         :suppress:
 
         fig = model.roc_curve()
-        fig.write_html("figures/machine_learning_vertica_linear_model_lscv_roc.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lscv_roc.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_linear_model_lscv_roc.html

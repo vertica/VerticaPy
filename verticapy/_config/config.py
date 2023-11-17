@@ -202,7 +202,7 @@ def set_option(key: str, value: Any = None) -> None:
         from verticapy import set_option
 
         titanic = load_titanic()
-        html_file = open("figures/_config_config_set_option_1.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_1.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -231,7 +231,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("count_on", True)
-        html_file = open("figures/_config_config_set_option_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_2.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -249,7 +249,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("footer_on", False)
-        html_file = open("figures/_config_config_set_option_3.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_3.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -269,7 +269,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("max_columns", 3)
-        html_file = open("figures/_config_config_set_option_4.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_4.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -289,7 +289,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("max_rows", 5)
-        html_file = open("figures/_config_config_set_option_5.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_5.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -309,7 +309,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("mode", "light")
-        html_file = open("figures/_config_config_set_option_6.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_6.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -327,7 +327,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("mode", "full")
-        html_file = open("figures/_config_config_set_option_7.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_7.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -345,7 +345,7 @@ def set_option(key: str, value: Any = None) -> None:
         :suppress:
 
         set_option("percent_bar", True)
-        html_file = open("figures/_config_config_set_option_8.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/_config_config_set_option_8.html", "w")
         html_file.write(titanic._repr_html_())
         html_file.close()
 
@@ -464,7 +464,7 @@ register_option(Option("tqdm", True, "", bool_validator))
 register_option(
     Option(
         "plotting_lib",
-        "matplotlib",
+        "plotly",
         "",
         in_validator(["highcharts", "matplotlib", "plotly"]),
     )

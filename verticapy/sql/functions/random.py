@@ -45,7 +45,7 @@ def random() -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["split"] = vpf.random()
-        html_file = open("figures/sql_functions_random_random.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_random_random.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -88,7 +88,7 @@ def randomint(n: int) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["split"] = vpf.randomint(10)
-        html_file = open("figures/sql_functions_random_randomint.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_random_randomint.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 
@@ -132,7 +132,7 @@ def seeded_random(random_state: int) -> StringSQL:
         import verticapy.sql.functions as vpf
         df = vDataFrame({"x": [1, 2, 3, 4]})
         df["split"] = vpf.seeded_random(10)
-        html_file = open("figures/sql_functions_random_seeded_random.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_functions_random_seeded_random.html", "w")
         html_file.write(df._repr_html_())
         html_file.close()
 

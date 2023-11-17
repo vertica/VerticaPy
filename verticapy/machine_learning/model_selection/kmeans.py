@@ -117,13 +117,10 @@ def best_k(
         loop = L
     i = None
     for i in loop:
-        model_name = gen_tmp_name(schema=schema, name="kmeans")
         if use_kprototype:
             if init == "kmeanspp":
                 init = "random"
             model = KPrototypes(
-                name=model_name,
-                overwrite_model=True,
                 n_cluster=i,
                 init=init,
                 max_iter=max_iter,
@@ -132,14 +129,16 @@ def best_k(
             )
         else:
             model = KMeans(
-                name=model_name,
-                overwrite_model=True,
                 n_cluster=i,
                 init=init,
                 max_iter=max_iter,
                 tol=tol,
             )
-        model.fit(input_relation, X)
+        model.fit(
+            input_relation,
+            X,
+            return_report=True,
+        )
         score = model.elbow_score_
         if score > elbow_score_stop:
             return i
@@ -234,7 +233,6 @@ def elbow(
     between_cluster_ss = []
     total_ss = []
     total_within_cluster_ss = []
-    model_name = gen_tmp_name(schema=schema, name="kmeans")
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
@@ -249,8 +247,6 @@ def elbow(
             if init == "kmeanspp":
                 init = "random"
             model = KPrototypes(
-                name=model_name,
-                overwrite_model=True,
                 n_cluster=i,
                 init=init,
                 max_iter=max_iter,
@@ -259,14 +255,16 @@ def elbow(
             )
         else:
             model = KMeans(
-                name=model_name,
-                overwrite_model=True,
                 n_cluster=i,
                 init=init,
                 max_iter=max_iter,
                 tol=tol,
             )
-        model.fit(input_relation, X)
+        model.fit(
+            input_relation,
+            X,
+            return_report=True,
+        )
         elbow_score += [float(model.elbow_score_)]
         between_cluster_ss += [float(model.between_cluster_ss_)]
         total_ss += [float(model.total_ss_)]

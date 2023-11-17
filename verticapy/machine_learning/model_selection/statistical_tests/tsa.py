@@ -188,6 +188,143 @@ def adfuller(
     -------
     TableSample
         result of the test.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    Example 1: Trend
+    ^^^^^^^^^^^^^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        # Initialization
+        N = 100 # Number of Rows.
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "year": list(range(N)),
+                "X": [x + np.random.normal(0, 5) for x in range(N)],
+            }
+        )
+
+    We can visually inspect the trend by drawing the
+    appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["X"].plot(ts="year", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller.html
+
+    Though the increasing trend is obvious,
+    we can test its ``adfuller`` score by first importing
+    the function:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import adfuller
+
+    And then simply applying it on the ``vDataFrame``:
+
+    .. ipython:: python
+
+        adfuller(vdf, column = "X", ts= "year")
+
+    In the above context, the high p-value is
+    evidence of lack of stationarity.
+
+    .. note::
+
+        A ``p_value`` in statistics represents the
+        probability of obtaining results as extreme
+        as, or more extreme than, the observed data,
+        assuming the null hypothesis is true.
+        A *smaller* p-value typically suggests
+        stronger evidence against the null hypothesis
+        i.e. the test data does not have
+        a trend with respect to time in the current case.
+
+        However, *small* is a relative term. And
+        the choice for the threshold value which
+        determines a "small" should be made before
+        analyzing the data.
+
+        Generally a ``p-value`` less than 0.05
+        is considered the threshold to reject the
+        null hypothesis. But it is not always
+        the case -
+        `read more <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10232224/#:~:text=If%20the%20p%2Dvalue%20is,necessarily%20have%20to%20be%200.05.>`_
+
+    Example 1: Stationary
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    We can contrast the results with a dataset that
+    has barely any trend:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "year": list(range(N)),
+                "X": [np.random.normal(0, 5) for x in range(N)],
+            }
+        )
+
+    We can visually inspect the absence of trend
+    by drawing the appropriate graph:
+
+    .. code-block::
+
+        vdf["X"].plot(ts="year")
+
+    .. ipython:: python
+        :suppress:
+
+        fig = vdf["X"].plot(ts="year", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_adfuller_2.html
+
+    Now we can perform the test on this dataset:
+
+    .. ipython:: python
+
+        adfuller(vdf, column = "X", ts = "year")
+
+    .. note::
+
+        Notice the low p-value which proves
+        that there is stationarity.
+
+        For more information check out
+        `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -195,7 +332,6 @@ def adfuller(
         vdf = vDataFrame(input_relation)
     by = format_type(by, dtype=list)
     ts, column, by = vdf.format_colnames(ts, column, by)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
     relation_name = gen_tmp_name(
         schema=conf.get_option("temp_schema"), name="linear_reg_view"
     )
@@ -221,15 +357,28 @@ def adfuller(
                 {ts_str} AS ts 
             FROM {vdf}"""
     _executeSQL(query, print_time_sql=False)
-    model = LinearRegression(name, solver="Newton", max_iter=1000)
+    model = LinearRegression(solver="newton", max_iter=1000)
     predictors = ["lag1"] + [f"delta{i}" for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
     try:
-        model.fit(relation_name, predictors, "delta")
-        coef = model.get_vertica_attributes("details")
+        model.fit(
+            relation_name,
+            predictors,
+            "delta",
+            return_report=True,
+        )
+    except QueryError:
+        model.set_params({"solver": "bfgs"})
+        model.fit(
+            relation_name,
+            predictors,
+            "delta",
+            return_report=True,
+        )
     finally:
         drop(relation_name, method="view")
+    coef = model.get_vertica_attributes("details")
     model.drop()
     if regresults:
         return coef
@@ -344,18 +493,18 @@ def mkt(
 
         vp.set_option("plotting_lib", "plotly")
         fig = vdf["X"].plot(ts="year")
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt.html
 
-    Thouse the increasing trend is obvious,
+    Though the increasing trend is obvious,
     we can test its ``mkt`` score by first importing
     the function:
 
     .. ipython:: python
 
-        from verticapy.stats import mkt
+        from verticapy.machine_learning.model_selection.statistical_tests import mkt
 
     And then simply applying it on the ``vDataFrame``:
 
@@ -418,7 +567,7 @@ def mkt(
         :suppress:
 
         fig = vdf["X"].plot(ts="year")
-        fig.write_html("figures/plotting_machine_learning_model_selection_tsa_mkt_2.html")
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt_2.html")
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_tsa_mkt_2.html
@@ -429,11 +578,13 @@ def mkt(
 
         mkt(vdf, column = "X", ts = "year")
 
-    Notice the extreme p-value which is
-    significant to disprove the null hypothesis.
+    .. note::
 
-    For more information check out
-    `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
+        Notice the extreme p-value which is
+        significant to disprove the null hypothesis.
+
+        For more information check out
+        `this link <https://vsp.pnnl.gov/help/vsample/design_trend_mann_kendall.htm>`_.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -549,20 +700,125 @@ def cochrane_orcutt(
     model_tmp
         A Linear Model with the different information
         stored as attributes:
-         - intercept_   : Model's intercept.
-         - coef_        : Model's coefficients.
-         - pho_         : Cochrane-Orcutt pho.
-         - anova_table_ : ANOVA table.
-         - r2_          : R2
+
+        - intercept_:
+            Model's intercept.
+
+        - coef_:
+            Model's coefficients.
+
+        - pho_:
+            Cochrane-Orcutt pho.
+
+        - anova_table_:
+            ANOVA table.
+
+        - r2_:
+            R2 score.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest that has noise related to time
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+
+    Example 1: Trend
+    ^^^^^^^^^^^^^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        # Initialization
+        N = 30 # Number of Rows.
+        days = list(range(N))
+        y_val = [2 * x + np.random.normal(scale = 4 * x) for x in days]
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "day": days,
+                "y1": y_val,
+            }
+        )
+
+    We can visually inspect the trend by drawing the
+    appropriate graph:
+
+    .. code-block::
+
+        vdf.scatter(["day", "y1"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "y1"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_statistical_tests_cochrane_orcutt.html
+
+    Model Fitting
+    ^^^^^^^^^^^^^^
+
+    Next, we can fit a Linear Model. To do that
+    we need to first import the model and intialize:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+        model = LinearRegression()
+
+    Next we can fit the model:
+
+    .. ipython:: python
+
+        model.fit(vdf, X = "day", y = "y1")
+
+    Now we can apply the Cochrane-Orcutt estimation
+    to get the new modified model:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import cochrane_orcutt
+
+        new_model = cochrane_orcutt(model = model, input_relation = vdf, ts = "day")
+
+    Now we can compare the coefficients of both the models to see the difference.
+
+    .. ipython:: python
+
+        model.coef_
+
+    .. ipython:: python
+
+        new_model.coef_
+
+    We can see that the new model has slighlty different
+    coefficients to cater for the autocorrelated noise.
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
     else:
         vdf = vDataFrame(input_relation)
     ts = vdf.format_colnames(ts)
-    name = gen_tmp_name(schema=schema_relation(model.model_name)[0], name="linear")
     param = model.get_params()
-    model_tmp = type(model)(name)
+    model_tmp = type(model)()
     model_tmp.set_params(param)
     X, y = model.X, model.y
     print_info = conf.get_option("print_info")
@@ -592,7 +848,12 @@ def cochrane_orcutt(
             new_val = f"COALESCE({new_val}, {predictor} * {(1 - pho ** 2) ** (0.5)})"
         vdf[predictor] = new_val
     model_tmp.drop()
-    model_tmp.fit(vdf, X, y)
+    model_tmp.fit(
+        vdf,
+        X,
+        y,
+        return_report=True,
+    )
     model_tmp.pho_ = pho
     model_tmp.anova_table_ = model.regression_report(metrics="anova")
     model_tmp.r2_ = model.score(metric="r2")
@@ -625,6 +886,134 @@ def durbin_watson(
     -------
     float
         Durbin Watson statistic.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest that has noise related to time
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+
+    Data
+    ^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        # Initialization
+        N = 50 # Number of Rows
+        days = list(range(N))
+        y_val = [2 * x + np.random.normal(scale = 4 * x * x) for x in days]
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "day": days,
+                "y1": y_val,
+            }
+        )
+
+    Model Fitting
+    ^^^^^^^^^^^^^^^^
+
+    Next, we can fit a Linear Model. To do that
+    we need to first import the model and intialize:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.vertica.linear_model import LinearRegression
+
+        model = LinearRegression()
+
+    Next we can fit the model:
+
+    .. ipython:: python
+
+        model.fit(vdf, X = "day", y = "y1")
+
+    We can create a column in the ``vDataFrame`` that
+    has the predictions:
+
+    .. code-block:: python
+
+        model.predict(vdf, X = "day", name = "y_pred")
+
+    .. ipython:: python
+        :suppress:
+
+        result = model.predict(vdf, X = "day", name = "y_pred")
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_1.html
+
+    Then we can calculate the residuals i.e. ``eps``:
+
+    .. ipython:: python
+
+        vdf["eps"] = vdf["y1"] - vdf["y_pred"]
+
+    We can plot the residuals to see the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["day", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "eps"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_durbin_watson_2.html
+
+    Test
+    ^^^^^
+
+    Now we can apply the Durbin Watson Test:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import durbin_watson
+
+        durbin_watson(input_relation = vdf, ts = "day", eps = "eps")
+
+    We can see that the Durbin-Watson statistic
+    is not equal to 2. This shows the presence
+    of autocorrelation.
+
+    .. note::
+
+        The Durbin-Watson statistic values can be
+        interpretted as such:
+
+        **Approximately 2**: No significant
+        autocorrelation.
+
+        **Less than 2**: Positive autocorrelation
+        (residuals are correlated positively with their
+        lagged values).
+
+        **Greater than 2**: Negative autocorrelation
+        (residuals are correlated negatively with
+        their lagged values).
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -691,6 +1080,125 @@ def ljungbox(
     -------
     TableSample
         result of the test.
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - Time-stamp data
+    - Some columns related to time
+    - Some columns independent of time
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+
+    Data
+    ^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        # Initialization
+        N = 50 # Number of Rows.
+        day = list(range(N))
+        x_val_1 = [2 * x + np.random.normal(scale = 4) for x in day]
+        x_val_2 = np.random.normal(0, 4, N)
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "day": day,
+                "x1": x_val_1,
+                "x2": x_val_2,
+            }
+        )
+
+    Note that in the above dataset we have create
+    two columns ``x1`` and ``x2``.
+
+    - ``x1``:
+        It is related to ``day``
+
+    - ``x2``:
+        It is independent of ``day``
+
+    Data Visualization
+    ^^^^^^^^^^^^^^^^^^^
+
+    We can visualize ther relationship with the
+    help of a scatter plot:
+
+    .. code-block:: python
+
+        vdf.scatter(["day", "x1"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "x1"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_1.html
+
+    We can see that the variable ``x1``
+    seems to be correalted with time.
+    Now let us check the other variable
+    ``x2``.
+
+    .. code-block:: python
+
+        vdf.scatter(["day", "x2"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "x2"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_ljungbox_2.html
+
+    Above we observe that there is no
+    apparent correlation with time.
+
+    Test
+    ^^^^^
+
+    Now we can apply the Ljung-Box test Test:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import ljungbox
+        ljungbox(vdf, "x1", ts = "day")
+
+
+    The test confirms that there is indeed a
+    relationship.
+
+    Now, we can test the other independent column as well:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import ljungbox
+        ljungbox(vdf, "x2", ts = "day")
+
+    We can confirm that ``x2`` is indeed independent
+    of time. The results are consistent with
+    our earlier visual observation.
+
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -759,6 +1267,148 @@ def het_arch(
     tuple
         Lagrange Multiplier statistic, LM pvalue,
         F statistic, F pvalue
+
+    Examples
+    ---------
+
+    Initialization
+    ^^^^^^^^^^^^^^^
+
+    Let's try this test on a dummy dataset that has the
+    following elements:
+
+    - A value of interest that has noise
+    - Time-stamp data
+
+    Before we begin we can import the necessary libraries:
+
+    .. ipython:: python
+
+        import verticapy as vp
+        import numpy as np
+
+    Example 1: Random
+    ^^^^^^^^^^^^^^^^^^
+
+    Now we can create the dummy dataset:
+
+    .. ipython:: python
+
+        # Initialization
+        N = 50 # Number of Rows.
+        days = list(range(N))
+        vals = [np.random.normal(5) for x in days]
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "day": days,
+                "eps": vals,
+            }
+        )
+
+    Let us plot the distribution of noise
+    with respect to time:
+
+    .. code-block:: python
+
+        vdf.scatter(["day", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "eps"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html
+
+    Test
+    ^^^^^
+
+    Now we can apply the Durbin Watson Test:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import het_arch
+
+        het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
+
+    We can see that there is no relationship
+    with any lag except that which is by chance.
+
+    Now let us contrast it with another example where
+    the lags are related:
+
+    Example 1: Correlated
+    ^^^^^^^^^^^^^^^^^^^^^^
+
+    We can create an alternate dataset that exhibits
+    some correlation with a specific lag. Below, we
+    intertwine two separate values, one after the other,
+    thereby creating a new value. This new value has the
+    characteristic that every other value is related
+    to the one that is two steps before it, but not to
+    the one immediately before it
+
+    .. ipython:: python
+
+        # Initialization
+        N = 50 # Number of Rows
+        days = list(range(N))
+        x1 = [2 * -x for x in list(range(40, 40 + 5 * N, 5))]
+        x2 = [-2 * -x * x * x / 2 for x in list(range(4, 4 + 2 * N, 2))]
+        vals = []
+        for elem_1, elem_2 in zip(x1, x2):
+            vals.extend([elem_1, elem_2])
+
+        # vDataFrame
+        vdf = vp.vDataFrame(
+            {
+                "day": days,
+                "eps": vals,
+            }
+        )
+
+    Let us plot the distribution of noise
+    with respect to time to observe the trend:
+
+    .. code-block:: python
+
+        vdf.scatter(["day", "eps"])
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf.scatter(["day", "eps"], width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_het_arch_2.html
+
+    Notice that it is a bit hard to see the
+    relationship of certain lags. That is why
+    we need the Engle's Test for Autoregressive
+    Conditional Heteroscedasticity.
+
+    Test
+    ^^^^^
+
+    Now we can apply the Durbin Watson Test:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import het_arch
+
+        het_arch(input_relation = vdf, ts = "day", eps = "eps", p = 5)
+
+    We can see that the lags of multiple of 2
+    have a very low value of ``p``.
+    This confirms the presence of correaltion with
+    certain lags.
+
     """
     if isinstance(input_relation, vDataFrame):
         vdf = input_relation.copy()
@@ -777,14 +1427,23 @@ def het_arch(
         X_names += [f"lag_{i}"]
     query = f"SELECT {', '.join(X)} FROM {vdf}"
     vdf_lags = vDataFrame(query)
-    name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-    model = LinearRegression(name)
+    model = LinearRegression()
     try:
-        model.fit(vdf_lags, X_names[1:], X_names[0])
+        model.fit(
+            vdf_lags,
+            X_names[1:],
+            X_names[0],
+            return_report=True,
+        )
         R2 = model.score(metric="r2")
     except QueryError:
         model.set_params({"solver": "bfgs"})
-        model.fit(vdf_lags, X_names[1:], X_names[0])
+        model.fit(
+            vdf_lags,
+            X_names[1:],
+            X_names[0],
+            return_report=True,
+        )
         R2 = model.score(metric="r2")
     finally:
         model.drop()
@@ -816,6 +1475,25 @@ def seasonal_decompose(
 ) -> vDataFrame:
     """
     Performs a seasonal time series decomposition.
+    Seasonal decomposition plots are graphical representations
+    of the decomposition of time series data into its various
+    components: trend, seasonality, and residual (error).
+    Seasonal decomposition is a technique used to break down a
+    time series into these underlying components to better
+    understand its patterns and behavior.
+
+    Seasonal decomposition plots are useful for several purposes:
+
+     - Trend Analysis:
+        Understanding the long-term direction or behavior of the
+        time series.
+     - Seasonal Patterns:
+        Identifying repeating patterns or cycles within the data.
+     - Anomaly Detection:
+        Spotting unusual behavior or outliers in the residuals.
+     - Modeling:
+        Informing the choice of appropriate models for forecasting
+        or analysis.
 
     Parameters
     ----------
@@ -861,6 +1539,156 @@ def seasonal_decompose(
     vDataFrame
         object containing
         ts, column, TS seasonal part, TS trend, TS noise.
+
+    Example
+    --------
+
+    Let us use a dataset that has seasonailty.
+    The Airline passengers dataset is a good example.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_airline_passengers()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_airline_passengers.html
+
+    .. note::
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    .. ipython:: python
+        :suppress:
+
+        import verticapy.datasets as vpd
+        vdf = vpd.load_airline_passengers()
+
+    Data Visualization
+    ^^^^^^^^^^^^^^^^^^^
+
+    Let us first have a look how the data
+    looks like:
+
+    .. code-block::
+
+        vdf["passengers"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = vdf["passengers"].plot(ts = "date", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_1.html
+
+    We can visually observe:
+
+    - Overall increasing trend
+    - A seasonal component
+    - Some noise
+
+    Now we can use the ``seasonal_decompose`` to
+    separate these three.
+
+    Decomposition
+    ^^^^^^^^^^^^^^
+
+    We can directly the function on the dataset:
+
+    .. ipython:: python
+
+        from verticapy.machine_learning.model_selection.statistical_tests import seasonal_decompose
+
+        decomposition = seasonal_decompose(
+            vdf,
+            "passengers",
+            "date",
+            polynomial_order = 2,
+            mult = True,
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_decomposition.html", "w")
+        html_file.write(decomposition._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_decomposition.html
+
+    We can see that there are now three new
+    columns capturing the three elements
+    of data.
+
+    Let's visualize them.
+
+    **Seasonality**
+
+
+    .. code-block::
+
+        decomposition["passengers_seasonal"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition["passengers_seasonal"].plot(ts = "date", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_seasonal.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_seasonal.html
+
+
+    **Trend**
+
+    .. code-block::
+
+        decomposition["passengers_trend"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition["passengers_trend"].plot(ts = "date", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_trend.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_trend.html
+
+    **Noise**
+
+    .. code-block::
+
+        decomposition["passengers_epsilon"].plot(ts = "date")
+
+    .. ipython:: python
+        :suppress:
+
+        vp.set_option("plotting_lib", "plotly")
+        fig = decomposition["passengers_epsilon"].plot(ts = "date", width = 550)
+        fig.write_html("SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/machine_learning_model_selection_statistical_tests_seasonal_decompose_plot_eps.html
+
+    .. note::
+
+        Thanks to seasonal decomposition, we can effortlessly extract
+        the residual, predict its values, and obtain crucial information
+        necessary for computing the time series. Subsequently, by
+        leveraging all the individual components, we are able to
+        effectively recompose the time series.
     """
     assert period > 0 or polynomial_order > 0, ValueError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
@@ -902,10 +1730,13 @@ def seasonal_decompose(
                 f"t_{i}"
             ] = f"POWER(ROW_NUMBER() OVER ({by_str}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
-        model.drop()
-        model.fit(vdf_poly, X, column)
+        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
+        model.fit(
+            vdf_poly,
+            X,
+            column,
+            return_report=True,
+        )
         coefficients = [str(model.intercept_)] + [
             f"{model.coef_[i-1]} * POWER(ROW_NUMBER() OVER({by_str}ORDER BY {ts}), {i})"
             if i != 1
@@ -945,10 +1776,13 @@ def seasonal_decompose(
             "t_sin"
         ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by_str}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
-        name = gen_tmp_name(schema=conf.get_option("temp_schema"), name="linear_reg")
-        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
-        model.drop()
-        model.fit(vdf_seasonality, X, seasonal_name)
+        model = LinearRegression(solver="bfgs", max_iter=100, tol=1e-6)
+        model.fit(
+            vdf_seasonality,
+            X,
+            seasonal_name,
+            return_report=True,
+        )
         vdf[
             seasonal_name
         ] = f"""
