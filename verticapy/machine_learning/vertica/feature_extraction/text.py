@@ -196,7 +196,7 @@ class TfidfVectorizer(VerticaModel):
         data = vp.vDataFrame(
             {
                 "id": (list(range(1,len(documents)+1))),
-                "values": documents
+                "values": documents,
             }
         )
 
@@ -276,7 +276,6 @@ class TfidfVectorizer(VerticaModel):
             index = "id",
             x = "values",
         )
-
 
     .. ipython:: python
         :suppress:
