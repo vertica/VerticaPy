@@ -15,35 +15,39 @@
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
+from tensorflow.python.framework.convert_to_constants import (
+    convert_variables_to_constants_v2,
+)
 import numpy as np
 import json, os, sys
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # suppress some TF noise
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress some TF noise
+
 
 # https://www.tensorflow.org/api_docs/python/tf/dtypes
 def get_str_from_dtype(dtype, is_input, idx):
     dtype_to_string = {
-        tf.float16  : 'TF_HALF',
-        tf.float32  : 'TF_FLOAT',
-        tf.half     : 'TF_HALF',
-        tf.float64  : 'TF_DOUBLE',
-        tf.double   : 'TF_DOUBLE',
-        tf.int8     : 'TF_INT8',
-        tf.int16    : 'TF_INT16',
-        tf.int32    : 'TF_INT32',
-        tf.int64    : 'TF_INT64'
+        tf.float16: "TF_HALF",
+        tf.float32: "TF_FLOAT",
+        tf.half: "TF_HALF",
+        tf.float64: "TF_DOUBLE",
+        tf.double: "TF_DOUBLE",
+        tf.int8: "TF_INT8",
+        tf.int16: "TF_INT16",
+        tf.int32: "TF_INT32",
+        tf.int64: "TF_INT64",
     }
 
     if dtype in dtype_to_string:
         dtype_str = dtype_to_string[dtype]
     else:
         print(
-            'Only floats, doubles, and signed ints are currently supported as model inputs/outputs in Vertica, please modify your model.')
+            "Only floats, doubles, and signed ints are currently supported as model inputs/outputs in Vertica, please modify your model."
+        )
         sys.exit()
 
-    in_or_out = 'Input' if is_input else 'Output'
-    print(in_or_out, str(idx), 'is of type:', dtype_str)
+    in_or_out = "Input" if is_input else "Output"
+    print(in_or_out, str(idx), "is of type:", dtype_str)
 
     return dtype_str
 
@@ -54,11 +58,11 @@ def freeze_model(model, save_dir, column_type):
     frozen_graph_file = "frozen_graph" + ".pb"  # name of the .pb file
     tf_model_desc_file = "tf_model_desc.json"
 
-    if column_type == "0": # standard (primitive) column types
+    if column_type == "0":  # standard (primitive) column types
         # Convert Keras model to ConcreteFunction
         full_model = tf.function(lambda x: model(x))
 
-        print('Model Input:', model.input)
+        print("Model Input:", model.input)
 
         if isinstance(model.input, list):
             no_of_inputs = len(model.input)
@@ -67,7 +71,12 @@ def freeze_model(model, save_dir, column_type):
 
         tensor_input = []
         for i in range(no_of_inputs):
-            tensor_input.append(tf.TensorSpec(shape=[None] + model.input[i].shape.as_list(), dtype=model.input[i].dtype))
+            tensor_input.append(
+                tf.TensorSpec(
+                    shape=[None] + model.input[i].shape.as_list(),
+                    dtype=model.input[i].dtype,
+                )
+            )
 
         full_model = full_model.get_concrete_function((tensor_input))
 
@@ -103,10 +112,17 @@ def freeze_model(model, save_dir, column_type):
             dtype = get_str_from_dtype(inp.dtype, True, input_idx)
             inputs.append(
                 {
-                    'op_name': inp.op.name,
-                    'tensor_map': [
-                        {'idx': inp.value_index, 'dim': input_dims, 'col_start': col_start, 'data_type': dtype}]
-                })
+                    "op_name": inp.op.name,
+                    "tensor_map": [
+                        {
+                            "idx": inp.value_index,
+                            "dim": input_dims,
+                            "col_start": col_start,
+                            "data_type": dtype,
+                        }
+                    ],
+                }
+            )
             col_start += flat_dim(input_dims)
 
         outputs = []
@@ -118,32 +134,44 @@ def freeze_model(model, save_dir, column_type):
             dtype = get_str_from_dtype(output.dtype, False, output_idx)
             outputs.append(
                 {
-                    'op_name': output.op.name,
-                    'tensor_map': [
-                        {'idx': output.value_index, 'dim': output_dims, 'col_start': col_start, 'data_type': dtype}]
-                })
+                    "op_name": output.op.name,
+                    "tensor_map": [
+                        {
+                            "idx": output.value_index,
+                            "dim": output_dims,
+                            "col_start": col_start,
+                            "data_type": dtype,
+                        }
+                    ],
+                }
+            )
             col_start += flat_dim(output_dims)
 
         model_info = {
-            'frozen_graph': frozen_graph_file,
-            'input_desc': inputs,
-            'output_desc': outputs
+            "frozen_graph": frozen_graph_file,
+            "input_desc": inputs,
+            "output_desc": outputs,
         }
 
         save_desc_file(model_info, frozen_out_path, tf_model_desc_file)
 
-    elif column_type == "1": # new row-type column type, aka array complex data type
+    elif column_type == "1":  # new row-type column type, aka array complex data type
         input_tensors = []
-        if hasattr(model, 'signatures'):
-            input_tensors = model.signatures['serving_default'].inputs
+        if hasattr(model, "signatures"):
+            input_tensors = model.signatures["serving_default"].inputs
         else:
-            input_tensors = model.inputs # if a model hasn't been saved it may not have any signatures
-        input_tensors = list(filter(lambda t: t.shape.rank > 0, input_tensors))  # remove resource-type tensors
+            input_tensors = (
+                model.inputs
+            )  # if a model hasn't been saved it may not have any signatures
+        input_tensors = list(
+            filter(lambda t: t.shape.rank > 0, input_tensors)
+        )  # remove resource-type tensors
 
         # Convert the TF model to a concrete function
         var_func = tf.function(lambda x: model(x))
         var_func = var_func.get_concrete_function(
-            [tf.TensorSpec(t.shape.as_list(), t.dtype.name) for t in input_tensors])
+            [tf.TensorSpec(t.shape.as_list(), t.dtype.name) for t in input_tensors]
+        )
 
         # Generate the frozen graph file
         const_func = convert_variables_to_constants_v2(var_func)
@@ -152,34 +180,43 @@ def freeze_model(model, save_dir, column_type):
 
         # Generate the model json file
         model_info = {
-            'column_type': 'complex',
-            'frozen_graph': frozen_graph_file,
-            'input_tensors': gen_tensor_list(const_func.inputs),
-            'output_tensors': gen_tensor_list(const_func.outputs)
+            "column_type": "complex",
+            "frozen_graph": frozen_graph_file,
+            "input_tensors": gen_tensor_list(const_func.inputs),
+            "output_tensors": gen_tensor_list(const_func.outputs),
         }
 
         save_desc_file(model_info, frozen_out_path, tf_model_desc_file)
 
     else:
-        print('Unrecognized column type flag')
+        print("Unrecognized column type flag")
         sys.exit()
 
-def freeze_model_from_file(saved_model_path, save_dir = 'frozen_tfmodel', column_type = '0'):
+
+def freeze_model_from_file(
+    saved_model_path, save_dir="frozen_tfmodel", column_type="0"
+):
     frozen_out_path = os.path.join(saved_model_path, save_dir)
     model = tf.keras.models.load_model(saved_model_path)
     freeze_model(model, frozen_out_path, column_type)
 
+
 def save_graph(frozen_func, frozen_out_path, frozen_graph_file):
-    print('Saving frozen model to: ' + os.path.join(frozen_out_path, frozen_graph_file))
-    tf.io.write_graph(graph_or_graph_def=frozen_func.graph,
-                        logdir=frozen_out_path,
-                        name=frozen_graph_file,
-                        as_text=False)
+    print("Saving frozen model to: " + os.path.join(frozen_out_path, frozen_graph_file))
+    tf.io.write_graph(
+        graph_or_graph_def=frozen_func.graph,
+        logdir=frozen_out_path,
+        name=frozen_graph_file,
+        as_text=False,
+    )
 
 
 def save_desc_file(model_info, frozen_out_path, tf_model_desc_file):
-    print('Saving model description file to: ' + os.path.join(frozen_out_path, tf_model_desc_file))
-    with open(os.path.join(frozen_out_path, tf_model_desc_file), 'w') as json_file:
+    print(
+        "Saving model description file to: "
+        + os.path.join(frozen_out_path, tf_model_desc_file)
+    )
+    with open(os.path.join(frozen_out_path, tf_model_desc_file), "w") as json_file:
         json.dump(model_info, json_file, indent=4, sort_keys=False)
 
 
@@ -193,23 +230,31 @@ def flat_dim(dims):
 def gen_tensor_list(tensors):
     res = []
     for t in tensors:
-        res.append({
-            'name': t.name,
-            'data_type': 'double' if t.dtype.name == 'float64' else t.dtype.name,
-            'dims': [-1 if e is None else e for e in t.shape.as_list()]
-        })
+        res.append(
+            {
+                "name": t.name,
+                "data_type": "double" if t.dtype.name == "float64" else t.dtype.name,
+                "dims": [-1 if e is None else e for e in t.shape.as_list()],
+            }
+        )
     return res
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or len(sys.argv) > 4 or sys.argv[1] in ['-h', '--help']:
-        print('There are three arguments to the script:')
-        print('1. Path to your saved model directory')
-        print('2. (Optional) name of the folder to save the frozen model (default: frozen_tfmodel)')
-        print('3. (Optional) Input/output Vertica column type in prediction (0 (default): primitive; 1: complex)')
-        print('   Use primitive if you want one value stored in each row/column cell.')
-        print('   Use complex if you want to store the data in Vertica arrays.')
-        print('Example call: ./freeze_tf_model.py path/to/saved/model my_frozen_model 0')
+    if len(sys.argv) < 2 or len(sys.argv) > 4 or sys.argv[1] in ["-h", "--help"]:
+        print("There are three arguments to the script:")
+        print("1. Path to your saved model directory")
+        print(
+            "2. (Optional) name of the folder to save the frozen model (default: frozen_tfmodel)"
+        )
+        print(
+            "3. (Optional) Input/output Vertica column type in prediction (0 (default): primitive; 1: complex)"
+        )
+        print("   Use primitive if you want one value stored in each row/column cell.")
+        print("   Use complex if you want to store the data in Vertica arrays.")
+        print(
+            "Example call: ./freeze_tf_model.py path/to/saved/model my_frozen_model 0"
+        )
         sys.exit()
 
     saved_model_path = sys.argv[1]
@@ -221,4 +266,4 @@ if __name__ == "__main__":
     elif len(sys.argv) == 4:
         freeze_model_from_file(str(sys.argv[1]), str(sys.argv[2]), str(sys.argv[3]))
     else:
-        print('Invalid number of arguments.') # unreachable, just here for completeness
+        print("Invalid number of arguments.")  # unreachable, just here for completeness
