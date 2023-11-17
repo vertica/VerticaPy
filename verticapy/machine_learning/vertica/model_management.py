@@ -342,7 +342,10 @@ def load_model(
     model.input_relation = input_relation if (input_relation) else info[1]
     if model._model_category == "SUPERVISED":
         model.y = info[2]
-        model.X = eval("[" + info[3] + "]")
+        if '"' in info[3]:
+            model.X = eval("[" + info[3] + "]")
+        else:
+            model.X = info[3].split(",")
         model.test_relation = test_relation if (test_relation) else model.input_relation
     elif model._model_category == "TIMESERIES":
         model.y = info[2]

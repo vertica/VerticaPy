@@ -596,13 +596,16 @@ class VerticaModel(PlottingUtils):
             the SQL code needed to deploy the model.
         """
         if hasattr(self, "_vertica_predict_sql"):
+            match_by_pos = "'true'"
+            if self._model_type in ("PMMLModel",):
+                match_by_pos = "true"
             X = format_type(X, dtype=list, na_out=self.X)
             X = quote_ident(X)
             sql = f"""
                 {self._vertica_predict_sql}({', '.join(X)} 
                                             USING PARAMETERS 
                                             model_name = '{self.model_name}',
-                                            match_by_pos = 'true')"""
+                                            match_by_pos = {match_by_pos})"""
             return clean_query(sql)
         else:
             raise AttributeError(
