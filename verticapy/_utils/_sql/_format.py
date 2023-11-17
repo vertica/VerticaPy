@@ -31,6 +31,10 @@ from verticapy.errors import ParsingError
 if conf.get_import_success("IPython"):
     from IPython.display import display, Markdown
 
+"""
+SQL KEYWORDS
+"""
+
 SQL_KEYWORDS = {
     "ADD CONSTRAINT": {"l": (" ",), "r": (" ",)},
     "ADD": {"l": (" ",), "r": (" ",)},
@@ -106,39 +110,212 @@ SQL_KEYWORDS = {
     "WHERE": {"l": (" ",), "r": (" ",)},
 }
 
+"""
+SQL SPECIAL KEYWORDS
+"""
+SQL_SPECIAL_KEYWORDS = {
+    "PROFILE": {"l": ("", " "), "r": (" ",)},
+    "SHOW": {"l": ("", " "), "r": (" ",)},
+}
+
+"""
+SQL AGGREGATE FUNCTIONS
+"""
+
+SQL_AGGREGATE = {
+    "APPROXIMATE_COUNT_DISTINCT_OF_SYNOPSIS": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_COUNT_DISTINCT_SYNOPSIS": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_COUNT_DISTINCT_SYNOPSIS_MERGE": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_COUNT_DISTINCT": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_MEDIAN": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_PERCENTILE": {"l": (" ", ","), "r": (" ", "(")},
+    "APPROXIMATE_QUANTILES": {"l": (" ", ","), "r": (" ", "(")},
+    "ARGMAX_AGG": {"l": (" ", ","), "r": (" ", "(")},
+    "ARGMIN_AGG": {"l": (" ", ","), "r": (" ", "(")},
+    "AVG": {"l": (" ", ","), "r": (" ", "(")},
+    "BIT_AND": {"l": (" ", ","), "r": (" ", "(")},
+    "BIT_OR": {"l": (" ", ","), "r": (" ", "(")},
+    "BIT_XOR": {"l": (" ", ","), "r": (" ", "(")},
+    "BOOL_AND": {"l": (" ", ","), "r": (" ", "(")},
+    "BOOL_OR": {"l": (" ", ","), "r": (" ", "(")},
+    "BOOL_XOR": {"l": (" ", ","), "r": (" ", "(")},
+    "CORR": {"l": (" ", ","), "r": (" ", "(")},
+    "COUNT": {"l": (" ", ","), "r": (" ", "(")},
+    "COVAR_POP": {"l": (" ", ","), "r": (" ", "(")},
+    "COVAR_SAMP": {"l": (" ", ","), "r": (" ", "(")},
+    "GROUP_ID": {"l": (" ", ","), "r": (" ", "(")},
+    "GROUPING_ID": {"l": (" ", ","), "r": (" ", "(")},
+    "GROUPING": {"l": (" ", ","), "r": (" ", "(")},
+    "LISTAGG": {"l": (" ", ","), "r": (" ", "(")},
+    "MAX": {"l": (" ", ","), "r": (" ", "(")},
+    "MIN": {"l": (" ", ","), "r": (" ", "(")},
+    "OVER": {"l": (" ", ")"), "r": (" ", "(")},
+    "PARTITION BY": {"l": (" ", "("), "r": (" ",)},
+    "REGR_AVGX": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_AVGY": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_COUNT": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_INTERCEPT": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_R2": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_SLOPE": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_SXX": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_SXY": {"l": (" ", ","), "r": (" ", "(")},
+    "REGR_SYY": {"l": (" ", ","), "r": (" ", "(")},
+    "STDDEV_POP": {"l": (" ", ","), "r": (" ", "(")},
+    "STDDEV_SAMP": {"l": (" ", ","), "r": (" ", "(")},
+    "STDDEV": {"l": (" ", ","), "r": (" ", "(")},
+    "SUM_FLOAT": {"l": (" ", ","), "r": (" ", "(")},
+    "SUM": {"l": (" ", ","), "r": (" ", "(")},
+    "TS_FIRST_VALUE": {"l": (" ", ","), "r": (" ", "(")},
+    "TS_LAST_VALUE": {"l": (" ", ","), "r": (" ", "(")},
+    "VAR_POP": {"l": (" ", ","), "r": (" ", "(")},
+    "VAR_SAMP": {"l": (" ", ","), "r": (" ", "(")},
+    "VARIANCE": {"l": (" ", ","), "r": (" ", "(")},
+}
+
+"""
+OPERATORS
+"""
+OPERATORS = {
+    "*": {
+        "l": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+        "r": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+    },
+    "-": {
+        "l": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+        "r": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+    },
+    "+": {
+        "l": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+        "r": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+    },
+    "^": {
+        "l": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+        "r": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+    },
+    "/": {
+        "l": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+        "r": (" ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "(", ")"),
+    },
+    "||": {
+        "l": (" ", "'"),
+        "r": (" ", "'"),
+    },
+}
+
+"""
+TAGS
+"""
+KEYWORDS_TAG_L = '<b style="color: #C695C6">'
+KEYWORDS_TAG_R = "</b>"
+SKEYWORDS_TAG_L = '<b style="color: #FF0000">'
+SKEYWORDS_TAG_R = "</b>"
+AGGREGATE_TAG_L = '<i style="color: #6699CB;">'
+AGGREGATE_TAG_R = "</i>"
+OPERATOR_TAG_L = '<b style="color: #EA5E65; font-weight: normal;">'
+OPERATOR_TAG_R = "</b>"
+DIGIT_TAG_L = '<strong style="color: #F7AC57;">'
+DIGIT_TAG_R = "</strong>"
+STRING_TAG_L = '<b style="color: #89B285; font-weight: normal;">'
+STRING_TAG_R = "</b>"
+COL_TAG_L = '<b style="color: #5CADAD; font-weight: normal;">'
+COL_TAG_R = "</b>"
+COMMENT_TAG_L = '<b style="color: #9DA3AF; font-weight: normal;">'
+COMMENT_TAG_R = "</b>"
 
 """
 Main function
 """
 
 
-def format_query(query: SQLExpression, print_sql: bool = True) -> SQLExpression:
+def _format_keys(
+    d: dict, sql: str, mkd: str, tag_l: str, tag_r: str
+) -> tuple[str, str]:
+    """
+    Function to simplify the code.
+    """
+    for key in d:
+        for l in d[key]["l"]:
+            for r in d[key]["r"]:
+                w = l + key + r
+                sql = re.sub(re.escape(w), w.upper(), sql, flags=re.IGNORECASE)
+                if not (isinstance(mkd, NoneType)):
+                    mkd = re.sub(
+                        re.escape(w),
+                        l + tag_l + key.upper() + tag_r + r,
+                        mkd,
+                        flags=re.IGNORECASE,
+                    )
+    return sql, mkd
+
+
+def format_query(
+    query: SQLExpression, indent_sql: bool = True, print_sql: bool = True
+) -> SQLExpression:
     """
     Query Formatter.
     """
     display_success = print_sql and conf.get_import_success("IPython")
-    cltag = '<b style="color: red">'
-    crtag = "</b>"
     res = clean_query(query)
     if display_success:
         html_res = res
-    for key in SQL_KEYWORDS:
-        for l in SQL_KEYWORDS[key]["l"]:
-            for r in SQL_KEYWORDS[key]["r"]:
-                w = l + key + r
-                res = re.sub(re.escape(w), w.upper(), res, flags=re.IGNORECASE)
-                if display_success:
-                    html_res = re.sub(
-                        re.escape(w),
-                        l + cltag + key.upper() + crtag + r,
-                        html_res,
-                        flags=re.IGNORECASE,
-                    )
+    else:
+        html_res = None
+    # STRINGS
     if display_success:
+        html_res = re.sub(
+            r"(\"(.)+\")",
+            COL_TAG_L + r" \1 " + COL_TAG_R,
+            html_res,
+        )
+        html_res = re.sub(
+            r"(\'(.)+\')",
+            STRING_TAG_L + r" \1 " + STRING_TAG_R,
+            html_res,
+        )
+        html_res = re.sub(
+            r"(--.+(\n|\Z))", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
+        )
+        html_res = re.sub(
+            r"(/\*(.+?)\*/)", COMMENT_TAG_L + r" \1 " + COMMENT_TAG_R, html_res
+        )
+    # SQL KEY WORDS
+    res, html_res = _format_keys(
+        SQL_KEYWORDS, res, html_res, KEYWORDS_TAG_L, KEYWORDS_TAG_R
+    )
+    # SQL SPECIAL KEY WORDS
+    res, html_res = _format_keys(
+        SQL_SPECIAL_KEYWORDS, res, html_res, SKEYWORDS_TAG_L, SKEYWORDS_TAG_R
+    )
+    # SQL AGGREGATE FUNCTIONS
+    res, html_res = _format_keys(
+        SQL_AGGREGATE, res, html_res, AGGREGATE_TAG_L, AGGREGATE_TAG_R
+    )
+    # OPERATORS
+    res, html_res = _format_keys(
+        OPERATORS, res, html_res, OPERATOR_TAG_L, OPERATOR_TAG_R
+    )
+    # DIGITS
+    if display_success:
+        html_res = re.sub(
+            r"(\s|\+|\-|\\|\*|\/)(\d+)(\s|\+|\-|\\|\*|\/|$)",
+            r"\1" + DIGIT_TAG_L + r" \2 " + DIGIT_TAG_R + r"\3",
+            html_res,
+        )
+
+    if indent_sql:
+        res = indent_vpy_sql(res)
+    if display_success:
+        html_res = html_res.replace("*", "&ast;")
+        if indent_sql:
+            html_res = (
+                indent_vpy_sql(html_res.strip())
+                .replace("\n", "<br>")
+                .replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;")
+            )
         display(Markdown(html_res))
     elif print_sql:
         print(res)
-    return res
+    return res, html_res
 
 
 """
