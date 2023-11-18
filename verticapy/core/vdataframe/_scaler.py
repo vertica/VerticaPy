@@ -316,15 +316,15 @@ class vDCScaler(vDCText):
 
         .. code-block:: python
 
-            data["age"].normalize(method = "minmax")
-            data["fare"].normalize(method = "minmax")
+            data["age"].scale(method = "minmax")
+            data["fare"].scale(method = "minmax")
             data[["age", "fare"]]
 
         .. ipython:: python
             :suppress:
 
-            data["age"].normalize(method = "minmax")
-            data["fare"].normalize(method = "minmax")
+            data["age"].scale(method = "minmax")
+            data["fare"].scale(method = "minmax")
             res = data[["age", "fare"]]
             html_file = open("figures/core_vDataFrame_scaler_scale2.html", "w")
             html_file.write(res._repr_html_())
