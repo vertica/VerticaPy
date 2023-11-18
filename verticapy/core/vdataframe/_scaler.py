@@ -46,19 +46,30 @@ class vDFScaler(vDFText):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the  vDataColumns names.  If empty, all numerical
-            vDataColumns are used.
+            List of the vDataColumns names. If empty, all
+            numerical vDataColumns are used.
         method: str, optional
             Method used to scale the data.
-                zscore        : Normalization  using the Z-Score  (avg
-                                and std).
-                                (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score
-                                (median and mad).
-                                (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min
-                                and max).
-                                (x - min) / (max - min)
+             - zscore:
+                Normalization using the Z-Score.
+
+                .. math::
+
+                    Z_score(x) = (x - x_avg) / x_std
+
+             - robust_zscore:
+                Normalization using the Robust Z-Score.
+
+                .. math::
+
+                    Z_rscore(x) = (x - x_med) / (1.4826 * x_mad)
+
+             - minmax:
+                Normalization using the MinMax.
+
+                .. math::
+
+                    Z_minmax(x) = (x - x_min) / (x_max - x_min)
 
         Returns
         -------
@@ -116,7 +127,7 @@ class vDFScaler(vDFText):
 
         .. code-block:: python
 
-            data.select(["age", "fare"])
+            data[["age", "fare"]]
 
         .. ipython:: python
             :suppress:
@@ -130,24 +141,29 @@ class vDFScaler(vDFText):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale1.html
 
         .. note::
-            You can observe that "age" and "fare" features lie in different
-            numerical intervals so it's probably a good idea to normalize them.
+            You can observe that "age" and "fare" features lie in
+            different numerical intervals so it's probably a good
+            idea to normalize them.
 
-        Let's use the :py:meth:`verticapy.vDataFrame.normalize` method to normalize the data.
+        Let's use the :py:meth:`verticapy.vDataFrame.scale` method to
+        normalize the data.
 
         .. code-block:: python
 
-            data.normalize(method = "minmax",
-                columns = ["age", "fare"])
-
-            data.select(["age", "fare"])
+            data.scale(
+                method = "minmax",
+                columns = ["age", "fare"],
+            )
+            data[["age", "fare"]]
 
         .. ipython:: python
             :suppress:
 
-            data.normalize(method = "minmax",
-                columns = ["age", "fare"])
-            res = data.select(["age", "fare"])
+            data.scale(
+                method = "minmax",
+                columns = ["age", "fare"],
+            )
+            res = data[["age", "fare"]]
             html_file = open("figures/core_vDataFrame_scaler_scale2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -156,7 +172,9 @@ class vDFScaler(vDFText):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale2.html
 
         .. note::
-            You can observe that both "age" and "fare" features now scale in [0,1] interval.
+
+            You can observe that both "age" and "fare" features now scale
+            in [0,1] interval.
         """
         columns = format_type(columns, dtype=list)
         no_cols = len(columns) == 0
@@ -192,15 +210,26 @@ class vDCScaler(vDCText):
         ----------
         method: str, optional
             Method used to scale the data.
-                zscore        : Normalization  using the Z-Score  (avg
-                                and std).
-                                (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score
-                                (median and mad).
-                                (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min
-                                and max).
-                                (x - min) / (max - min)
+             - zscore:
+                Normalization using the Z-Score.
+
+                .. math::
+
+                    Z_score(x) = (x - x_avg) / x_std
+
+             - robust_zscore:
+                Normalization using the Robust Z-Score.
+
+                .. math::
+
+                    Z_rscore(x) = (x - x_med) / (1.4826 * x_mad)
+
+             - minmax:
+                Normalization using the MinMax.
+
+                .. math::
+
+                    Z_minmax(x) = (x - x_min) / (x_max - x_min)
         by: SQLColumns, optional
             vDataColumns used in the partition.
         return_trans: bool, optimal
@@ -264,7 +293,7 @@ class vDCScaler(vDCText):
 
         .. code-block:: python
 
-            data.select(["age", "fare"])
+            data[["age", "fare"]]
 
         .. ipython:: python
             :suppress:
@@ -278,25 +307,25 @@ class vDCScaler(vDCText):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale1.html
 
         .. note::
-            You can observe that "age" and "fare" features lie in different
-            numerical intervals so it's probably a good idea to normalize them.
+            You can observe that "age" and "fare" features lie
+            in different numerical intervals so it's probably a
+            good idea to normalize them.
 
-        Let's use the :py:meth:`verticapy.vDataFrame.normalize` method to normalize the data.
+        Let's use the :py:meth:`verticapy.vDataColumn.scale` method to
+        normalize the data.
 
         .. code-block:: python
 
             data["age"].normalize(method = "minmax")
-
             data["fare"].normalize(method = "minmax")
-
-            data.select(["age", "fare"])
+            data[["age", "fare"]]
 
         .. ipython:: python
             :suppress:
 
             data["age"].normalize(method = "minmax")
             data["fare"].normalize(method = "minmax")
-            res = data.select(["age", "fare"])
+            res = data[["age", "fare"]]
             html_file = open("figures/core_vDataFrame_scaler_scale2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -305,7 +334,8 @@ class vDCScaler(vDCText):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale2.html
 
         .. note::
-            You can observe that both "age" and "fare" features now scale in [0,1] interval.
+            You can observe that both "age" and "fare" features now scale
+            in [0,1] interval.
         """
         method = method.lower()
         by = format_type(by, dtype=list)
