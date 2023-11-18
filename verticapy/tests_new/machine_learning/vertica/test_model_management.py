@@ -21,8 +21,10 @@ import subprocess
 import numpy as np
 import pytest
 from verticapy.machine_learning.vertica import export_models, import_models, load_model
+from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import (
+    freeze_tf2_model,
+)
 from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map
-from verticapy.tests_new.machine_learning.vertica import freeze_tf2_model
 import verticapy as vp
 
 
@@ -280,6 +282,9 @@ class TestModelManagementTF:
     test class for Tensorflow import/export
     """
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+    )
     def test_tf_export(self, get_py_model, schema_loader, category, model_class):
         """
         test function - test_tf_import
@@ -296,6 +301,9 @@ class TestModelManagementTF:
         _export(tf_model_obj, category)
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+    )
     def test_tf_import(self, get_py_model, schema_loader, category, model_class):
         """
         test function - test_tf_import
@@ -305,6 +313,9 @@ class TestModelManagementTF:
         _import(None, py_model_obj, category, schema_loader)
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
 
+    @pytest.mark.skipif(
+        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+    )
     def test_tf_load_model(self, get_py_model, schema_loader, model_class, category):
         """
         test function - tf_load_model
