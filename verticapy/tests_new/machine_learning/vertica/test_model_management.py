@@ -21,9 +21,7 @@ import subprocess
 import numpy as np
 import pytest
 from verticapy.machine_learning.vertica import export_models, import_models, load_model
-from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import (
-    freeze_tf2_model,
-)
+from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import freeze_model
 from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map
 import verticapy as vp
 
@@ -82,9 +80,7 @@ def _import(vpy_model_obj, py_model_obj, category, schema_name):
     """
     if category in ["tf", "tensorflow"]:
         print(f"Saving frozen model to /tmp/{schema_name}/tf_frozen_model")
-        freeze_tf2_model.freeze_model(
-            py_model_obj.model, f"/tmp/{schema_name}/tf_frozen_model", "0"
-        )
+        freeze_model(py_model_obj.model, f"/tmp/{schema_name}/tf_frozen_model", "0")
         print("freeze_tf2_model code execution completed......................")
 
         import_models(
