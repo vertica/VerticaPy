@@ -46,24 +46,135 @@ class vDFScaler(vDFText):
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the  vDataColumns names.  If empty, all numerical
-            vDataColumns are used.
+            List of the vDataColumns names. If empty, all
+            numerical vDataColumns are used.
         method: str, optional
             Method used to scale the data.
-                zscore        : Normalization  using the Z-Score  (avg
-                                and std).
-                                (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score
-                                (median and mad).
-                                (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min
-                                and max).
-                                (x - min) / (max - min)
+             - zscore:
+                Normalization using the Z-Score.
+
+                .. math::
+
+                    Z_score(x) = (x - x_avg) / x_std
+
+             - robust_zscore:
+                Normalization using the Robust Z-Score.
+
+                .. math::
+
+                    Z_rscore(x) = (x - x_med) / (1.4826 * x_mad)
+
+             - minmax:
+                Normalization using the MinMax.
+
+                .. math::
+
+                    Z_minmax(x) = (x - x_min) / (x_max - x_min)
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's look at the "fare" and "age" of the passengers.
+
+        .. code-block:: python
+
+            data[["age", "fare"]]
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.select(["age", "fare"])
+            html_file = open("figures/core_vDataFrame_scaler_scale1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale1.html
+
+        .. note::
+            You can observe that "age" and "fare" features lie in
+            different numerical intervals so it's probably a good
+            idea to normalize them.
+
+        Let's use the :py:meth:`verticapy.vDataFrame.scale` method to
+        normalize the data.
+
+        .. code-block:: python
+
+            data.scale(
+                method = "minmax",
+                columns = ["age", "fare"],
+            )
+            data[["age", "fare"]]
+
+        .. ipython:: python
+            :suppress:
+
+            data.scale(
+                method = "minmax",
+                columns = ["age", "fare"],
+            )
+            res = data[["age", "fare"]]
+            html_file = open("figures/core_vDataFrame_scaler_scale2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale2.html
+
+        .. note::
+
+            You can observe that both "age" and "fare" features now scale
+            in [0,1] interval.
         """
         columns = format_type(columns, dtype=list)
         no_cols = len(columns) == 0
@@ -99,15 +210,26 @@ class vDCScaler(vDCText):
         ----------
         method: str, optional
             Method used to scale the data.
-                zscore        : Normalization  using the Z-Score  (avg
-                                and std).
-                                (x - avg) / std
-                robust_zscore : Normalization using the Robust Z-Score
-                                (median and mad).
-                                (x - median) / (1.4826 * mad)
-                minmax        : Normalization  using  the  MinMax (min
-                                and max).
-                                (x - min) / (max - min)
+             - zscore:
+                Normalization using the Z-Score.
+
+                .. math::
+
+                    Z_score(x) = (x - x_avg) / x_std
+
+             - robust_zscore:
+                Normalization using the Robust Z-Score.
+
+                .. math::
+
+                    Z_rscore(x) = (x - x_med) / (1.4826 * x_mad)
+
+             - minmax:
+                Normalization using the MinMax.
+
+                .. math::
+
+                    Z_minmax(x) = (x - x_min) / (x_max - x_min)
         by: SQLColumns, optional
             vDataColumns used in the partition.
         return_trans: bool, optimal
@@ -119,6 +241,101 @@ class vDCScaler(vDCText):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's look at the "fare" and "age" of the passengers.
+
+        .. code-block:: python
+
+            data[["age", "fare"]]
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.select(["age", "fare"])
+            html_file = open("figures/core_vDataFrame_scaler_scale1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale1.html
+
+        .. note::
+            You can observe that "age" and "fare" features lie
+            in different numerical intervals so it's probably a
+            good idea to normalize them.
+
+        Let's use the :py:meth:`verticapy.vDataColumn.scale` method to
+        normalize the data.
+
+        .. code-block:: python
+
+            data["age"].scale(method = "minmax")
+            data["fare"].scale(method = "minmax")
+            data[["age", "fare"]]
+
+        .. ipython:: python
+            :suppress:
+
+            data["age"].scale(method = "minmax")
+            data["fare"].scale(method = "minmax")
+            res = data[["age", "fare"]]
+            html_file = open("figures/core_vDataFrame_scaler_scale2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_scaler_scale2.html
+
+        .. note::
+            You can observe that both "age" and "fare" features now scale
+            in [0,1] interval.
         """
         method = method.lower()
         by = format_type(by, dtype=list)
