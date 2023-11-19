@@ -14,9 +14,9 @@
 ###########################################################################################
 
 import tensorflow as tf
-from tensorflow.python.framework.convert_to_constants import (
+from tensorflow.python.framework.convert_to_constants import (  # pylint: disable=no-name-in-module
     convert_variables_to_constants_v2,
-)  # pylint: disable=no-name-in-module
+)
 import numpy as np
 import json, os, sys
 
