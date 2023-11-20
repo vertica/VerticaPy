@@ -258,9 +258,18 @@ html_theme_options = {
         },
     ],
     "announcement": f"""<div class='centered-content'>
+                            
+                        </div>
+
+
+
+                    <div class="main-header-container">
+
+                        <div class="very-top-container">
+
                             <a href="http://localhost:1993/python">
                             
-                                <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57/3 29.89/3" height="30px" width="290px" fill="var(--color-announcement-text)">
+                                <svg id="Logo_Layer_2" data-name="Logo_Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.57 29.89" height="70%" width="70%" fill="var(--color-announcement-text)">
                                 <g id="Logo_Layer_1-2" data-name="Logo_Layer 1">
                                     <g>
                                     <g>
@@ -290,85 +299,91 @@ html_theme_options = {
                                 </g>
                                 </svg>
                             </a>
-                        </div>
-                    <div class="home_button_container">
-                            <a href="http://localhost:1993/python/documentation/1.0.x/html/index.html">
-                                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g clip-path="url(#clip0)">
-                                    <path d="M23.8039 11.137L12.3039 2.291C12.1249 2.153 11.8749 2.153 11.6959 2.291L0.195882 11.137C-0.181119 11.427 0.0238815 12.031 0.499882 12.031H2.52488C2.79988 12.031 3.02388 12.254 3.02388 12.53V22.504C3.02388 22.779 3.24688 23.003 3.52288 23.003H8.47888C8.75388 23.003 8.97788 22.78 8.97788 22.504V15.221C8.97788 14.001 9.96688 13.013 11.1859 13.013H12.7849C14.0049 13.013 14.9929 14.002 14.9929 15.221V22.504C14.9929 22.779 15.2159 23.003 15.4919 23.003H20.4479C20.7229 23.003 20.9469 22.78 20.9469 22.504V12.53C20.9469 12.255 21.1699 12.031 21.4459 12.031H23.4999C23.9769 12.031 24.1819 11.428 23.8039 11.137Z" fill="var(--color-announcement-text)"></path>
-                                    </g>
-                                    <defs>
-                                    <clipPath id="clip0">
-                                    <rect width="24" height="24" fill="white"></rect>
-                                    </clipPath>
-                                    </defs>
-                                </svg>
-                            </a>
-                    </div>
 
-
-                    <div class="top-button-container">
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/getting_started.html" id="sitenav-solutions">Getting Started</a>
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/user_guide.html" id="sitenav-solutions">User Guide</a>
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/api.html" id="sitenav-solutions">API Reference</a>
-                        <a class="top-button" href="{parent_directory}/examples" id="sitenav-solutions">Examples</a>
-                    </div>
-                    <div class="top-dropdown">
-                    <button class="dropdown-btn">&#9776;</button>
-                    <div class="dropdown-content">
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/getting_started.html" id="sitenav-solutions">Getting Started</a>
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/user_guide.html" id="sitenav-solutions">User Guide</a>
-                        <a class="top-button" href="{parent_directory}/documentation/{release}/html/api.html" id="sitenav-solutions">API Reference</a>
-                        <a class="top-button" href="{parent_directory}/examples" id="sitenav-solutions">Examples</a>
-                    </div>
-                    </div>
-
-
-
-
-                    <div class="search-top-dropdown">
-                        <button class="search-dropdown-btn">
-                            <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#000000" stroke-width="10">
-                            <!-- Handle -->
-                            <line x1="60" y1="60" x2="85" y2="85"></line>
-                            <!-- Glass -->
-                            <circle cx="35" cy="35" r="30"></circle>
+                            <div class="top-dropdown">
+                                <button class="dropdown-btn">&#9776;</button>
+                                <div class="dropdown-content">
+                                    <a class="top-button" href="{parent_directory}/documentation/{release}/html/getting_started.html" id="sitenav-solutions">Getting Started</a>
+                                    <a class="top-button" href="{parent_directory}/documentation/{release}/html/user_guide.html" id="sitenav-solutions">User Guide</a>
+                                    <a class="top-button" href="{parent_directory}/documentation/{release}/html/api.html" id="sitenav-solutions">API Reference</a>
+                                    <a class="top-button" href="{parent_directory}/examples" id="sitenav-solutions">Examples</a>
+                                </div>
+                            </div>
+                            <div class="search-top-dropdown">
+                                <button class="search-dropdown-btn">
+                                    <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#000000" stroke-width="10">
+                                    <!-- Handle -->
+                                    <line x1="60" y1="60" x2="85" y2="85"></line>
+                                    <!-- Glass -->
+                                    <circle cx="35" cy="35" r="30"></circle>
+                                    </svg>
+                                </button>
+                                <div class="search-dropdown-content">
+                                    <form class="sidebar-search-container_top-2" method="get" action="search.html" role="search">
+                                    <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+                                    <input type="hidden" name="check_keywords" value="yes">
+                                    <input type="hidden" name="area" value="default">
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="right-top-container">
+                                <div class='top_search'>
+                                    <form class='sidebar-search-container sidebar-search-container_top' method='get' action='search.html' role='search'>
+                                        <input class='sidebar-search' placeholder='Search' name='q' aria-label='Search'>
+                                        <input type='hidden' name='check_keywords' value='yes'>
+                                        <input type='hidden' name='area' value='default'>
+                                    </form>
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control" id="filter-select" name="filter-select" onchange="switchVersion(this.value)">
+                                        <option value="1.0.x" selected="">1.0.x</option>
+                                        <option value="0.12.x">0.12.x</option>
+                                        <option value="0.11.x">0.11.x</option>
+                                    </select>
+                                </div>
+                                <div class="color-theme-container">
+                                    <button class="theme-toggle">
+                                        <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                                        <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+                                        <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+                                        <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+                                    </button>
+                                </div>
+                            </div>
                             
-                        </svg>
-                        </button>
-                        <div class="search-dropdown-content">
-                            <form class="sidebar-search-container_top-2" method="get" action="search.html" role="search">
-                            <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
-                            <input type="hidden" name="check_keywords" value="yes">
-                            <input type="hidden" name="area" value="default">
-                            </form>
                         </div>
-                    </div>
+                        <div class="top-bottom-container">
 
+                            <div class="home_button_container">
+                                    <a href="http://localhost:1993/python/documentation/1.0.x/html/index.html">
+                                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clip-path="url(#clip0)">
+                                            <path d="M23.8039 11.137L12.3039 2.291C12.1249 2.153 11.8749 2.153 11.6959 2.291L0.195882 11.137C-0.181119 11.427 0.0238815 12.031 0.499882 12.031H2.52488C2.79988 12.031 3.02388 12.254 3.02388 12.53V22.504C3.02388 22.779 3.24688 23.003 3.52288 23.003H8.47888C8.75388 23.003 8.97788 22.78 8.97788 22.504V15.221C8.97788 14.001 9.96688 13.013 11.1859 13.013H12.7849C14.0049 13.013 14.9929 14.002 14.9929 15.221V22.504C14.9929 22.779 15.2159 23.003 15.4919 23.003H20.4479C20.7229 23.003 20.9469 22.78 20.9469 22.504V12.53C20.9469 12.255 21.1699 12.031 21.4459 12.031H23.4999C23.9769 12.031 24.1819 11.428 23.8039 11.137Z" fill="var(--color-announcement-text)"></path>
+                                            </g>
+                                            <defs>
+                                            <clipPath id="clip0">
+                                            <rect width="24" height="24" fill="white"></rect>
+                                            </clipPath>
+                                            </defs>
+                                        </svg>
+                                    </a>
+                            </div>
 
-                    <div class='top_search'>
-                        <form class='sidebar-search-container sidebar-search-container_top' method='get' action='search.html' role='search'>
-                            <input class='sidebar-search' placeholder='Search' name='q' aria-label='Search'>
-                            <input type='hidden' name='check_keywords' value='yes'>
-                            <input type='hidden' name='area' value='default'>
-                        </form>
-                    </div>
+                            <div class="top-button-container">
+                                <a class="top-button" href="{parent_directory}/documentation/{release}/html/getting_started.html" id="sitenav-solutions">Getting Started</a>
+                                <a class="top-button" href="{parent_directory}/documentation/{release}/html/user_guide.html" id="sitenav-solutions">User Guide</a>
+                                <a class="top-button" href="{parent_directory}/documentation/{release}/html/api.html" id="sitenav-solutions">API Reference</a>
+                                <a class="top-button" href="{parent_directory}/examples" id="sitenav-solutions">Examples</a>
+                            </div>
 
-                    <div class="form-group">
-                        <select class="form-control" id="filter-select" name="filter-select" onchange="switchVersion(this.value)">
-                            <option value="1.0.x" selected="">1.0.x</option>
-                            <option value="0.12.x">0.12.x</option>
-                            <option value="0.11.x">0.11.x</option>
-                        </select>
-                    </div>
+                            <div class="right-content">
+                                <button class="github-button" onclick="window.open('https://github.com/vertica/VerticaPy', '_blank')">
+                                    <span class="button-text">View on GitHub</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" width="30px" height="30px" fill="white">
 
-                    <div class="right-content">
-                        <button class="github-button" onclick="window.open('https://github.com/vertica/VerticaPy', '_blank')">
-                            <span class="button-text">Try VerticaPy</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512" width="30px" height="30px" fill="white">
-
-                                <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
-                        </button>
+                                        <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+                                </button>
+                            </div>
                     </div>
                 </div>""",
     "light_css_variables": {

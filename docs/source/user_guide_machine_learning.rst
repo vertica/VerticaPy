@@ -6,53 +6,72 @@ Machine Learning
 =================
 
 
-.. grid:: 3
+.. grid:: 2
 
     .. grid-item::
     
       .. card:: Introduction
           :link: notebooks/ml/introduction/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Understanding Machine Learning
+          5 mins
+          ^^^^^^^
+          Embark on your machine learning journey 
+          with foundational concepts and principles, 
+          setting the stage for effective model building 
+          and analysis.
 
     .. grid-item::
 
       .. card:: Regression
           :link: notebooks/ml/regression/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-
-          Prediction on a numerical response
+          5 mins
+          ^^^^^^^
+          Predict numeric outcomes with regression techniques, 
+          uncovering relationships between variables for accurate 
+          forecasting.
 
     .. grid-item::
 
         .. card:: Classification
           :link: notebooks/ml/classification/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Prediction on a categorical response
+          5 mins
+          ^^^^^^^
+          Categorize data into distinct classes, 
+          enabling the identification of patterns 
+          and making informed decisions.
 
     .. grid-item::
 
         .. card:: Clustering
           :link: notebooks/ml/clustering/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Segmentation
+          5 mins
+          ^^^^^^^
+          Group similar data points together using clustering 
+          algorithms, revealing inherent patterns within your 
+          dataset.
 
     .. grid-item::
 
         .. card:: Time Series
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Dealing with time series
+          5 mins
+          ^^^^^^^
+          Uncover insights from time-ordered data, exploring 
+          trends and making predictions based on temporal patterns.
 
 
     .. grid-item::
@@ -60,9 +79,12 @@ Machine Learning
         .. card:: Model Management
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Model Tracking and Versioning
+          13 mins
+          ^^^^^^^
+          Effectively manage and deploy machine learning models, 
+          ensuring seamless integration into your analytical workflow.
 
 .. toctree::
   :hidden:

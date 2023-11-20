@@ -8,35 +8,56 @@ Introduction
 
 
 
-.. grid:: 3
+.. grid:: 1
 
     .. grid-item::
     
       .. card:: Setting up the environment
           :link: notebooks/introduction/installation/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
+          :shadow: lg
 
-          Prepare your environment
+          4 mins
+          ^^^^^^^
+
+          Configure your workspace effortlessly with 
+          our step-by-step guide on setting up the optimal 
+          environment for seamless analytical exploration. 
+          Ensure a smooth start to your data journey.
 
     .. grid-item::
 
       .. card:: The virtual DataFrame
           :link: notebooks/introduction/vdf/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
+          :shadow: lg
 
+          12 mins
+          ^^^^^^^^
 
-          Learn about the core object
+          Unlock the potential of the Virtual DataFrame (``vDataFrame``). 
+          Explore our core object, discovering its role in storing and 
+          manipulating data. Delve into its efficiency to optimize your 
+          data manipulation processes and elevate your analytical 
+          capabilities.
 
     .. grid-item::
 
         .. card:: Best Practices
           :link: notebooks/introduction/best-practices/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
+          :shadow: lg
 
-          Master the library
+          20 mins
+          ^^^^^^^^
+
+          Navigate through essential best practices and tips to 
+          maximize the efficiency of your analytical workflow. 
+          From data management to visualization, elevate your 
+          skills and ensure optimal results.
 
 
 

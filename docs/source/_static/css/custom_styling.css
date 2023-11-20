@@ -36,7 +36,7 @@ h2{
 }
 
 .sidebar-scroll{
-  margin-top: 3.5em;
+  /* margin-top: 3.5em; */
 }
 
 /* Main Tabs */
@@ -66,9 +66,9 @@ h2{
 
 .top-button {
   /* color: #ffffff; */
-  padding: 0 20px 0 20px;
-  margin: 0 0 20px;
-  margin-top: 20px; /* gap: 10px; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  padding: 10px 40px 0px 20px;
+  /* margin: 0 0 20px; */
+  /* margin-top: 0px; */
   text-decoration: none;
   position: relative;
   transition: color 0.5s ease-in-out;
@@ -79,7 +79,7 @@ h2{
   
   color: #101c2f; /* From Vertica Website */
 
-  flex:1; /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
+  /* flex:1; DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 
 }
 
@@ -87,14 +87,14 @@ h2{
   content: "";
   position: absolute;
   width: 100%;
-  height: 10px;
-  bottom: -35px;
+  height: 3px;
+  bottom: -5px;
   left: 0;
   background-color: #1a6aff;
   transition: all 0.5s ease-in-out;
   transform: scaleX(0);
   visibility: hidden;
-  border-radius: 10px 10px 0 0;
+  border-radius: 5px 10px 0 0;
 }
 
 .top-button:hover {
@@ -139,8 +139,8 @@ h2{
 .sidebar-search-container_top{
   display: flex;
   justify-content: center;
-  size: fixed;
-  width: 200px;
+  /* size: fixed; */
+  width: 300px;
 }
 
 .sidebar-search{
@@ -148,7 +148,7 @@ h2{
 }
 .element.style {
       width: 200px; /* Adjust the width as needed */
-    }
+}
 
 
 /* Hiding the logo on right side */
@@ -162,11 +162,10 @@ h2{
   top: 0;
   left: 0;
   right:0;
-  position: fixed;
   z-index: 1000;
 
   /* color: rgb(231, 14, 14); */
-  height: calc(var(--header-height) * 1.8);
+  height: calc(var(--header-height) * 2.4);
   /* display: flex; */
   align-items: center;
   
@@ -194,16 +193,55 @@ h2{
   /* padding: 2rem 0.75rem; */ /* From Vertica Website */
   /* align-items: center; */
   justify-content: center;
+  
   /* flex-direction: column; TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 }
 
+
+/* Container at the top for all buttons and search etc */
+.main-header-container{
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+}
+
+/* Container for search and github button */
+.very-top-container{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  box-shadow: 0px 2px 0px 0px whitesmoke;
+  padding-bottom: 15px;
+}
+
+/* cotnainer for color theme toggle at the top*/
+.color-theme-container{
+  justify-content: center;
+  padding: 10px 15px 0px 20px;
+}
+
+/* Hiding the toggle in page */
+.theme-toggle-container{
+  visibility: hidden;
+}
+/* Container with search and version */
+.right-top-container{
+  display: flex
+
+}
+
+/* Container with main nav buttons + home button */
+.top-bottom-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* For the top navigation bar. For the logo */
 .centered-content {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-grow: 1;
+  justify-content: flex-start;
 }
 /* Vertica logo on Banner */
 /* .banner-image {
@@ -216,8 +254,8 @@ h2{
 
 /* Home button */
 .home_button_container{
-  padding: 10px;
-  border: 2px solid var(--color-announcement-text);
+  padding-top: 5px;
+  /* border: 2px solid var(--color-announcement-text); */
   border-radius: 35px;
   transition: background-color 0.5s;
   margin-right: 20px;
@@ -233,14 +271,15 @@ h2{
 
 .home_button_container:hover {
   transition: box-shadow 0.5s;
-  box-shadow: 0px 0px 20px #1a6aff;
-  border: 2px solid #1a6aff;
+  /* box-shadow: 0px 0px 7px #1a6aff;
+  border: 1px solid #1a6aff; */
 }
 /* Content on right side on navigation bar i.e. GitHub */
 .right-content {
-  display: flex;
+  /* display: flex;
   justify-content: left;
-  padding-left: 150px;
+  padding-left: 150px; */
+  padding-top: 10px;
 
 
 }
@@ -255,7 +294,7 @@ h2{
   padding: 10px;
   /* background-color: #1a6aff; */
   width: 170px;
-  height: 50px;
+  height: 30px;
   /* display: block; */
   background: linear-gradient(to right, #00008b 0%,  #00008b 50%, #1a6aff 50%, #1a6aff 100%);
   background-size: 200% 100%;
@@ -291,6 +330,13 @@ h2{
   color: white;
   border-radius: 10px;
 }
+
+.nono {
+  background-color: pink;
+  color: white;
+  border-radius: 10px;
+}
+
 
 
 .sd-card-title {
@@ -371,11 +417,11 @@ h2{
 
 
 .content {
-  padding: 3.5em 3em;
+  /* padding: 3.5em 3em; */
 }
 
 .main{
-  margin-top:80px;
+  /* margin-top:80px; */
 }
 
 
@@ -454,6 +500,26 @@ p {
   /* Add more styles as needed */
 }
 
+.custom-card-7:hover {
+  /* Increase the box shadow on hover */
+  box-shadow: 0px 12px 20px whitesmoke;
+}
+
+/* Cards on User Guide MAIN page */
+.custom-card-8 {
+  height: 200px; /* Adjust the desired height */
+  /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* Cards on User Guide / Intoduction page */
+.custom-card-9 {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+
 .custom-class-img-top{
   height: 90px;
 }
@@ -492,8 +558,8 @@ p {
 /* To hide the logo when screen is too small */
 @media (max-width: 72em) {
   .centered-content {
-    position: fixed;
-    left: 10px;
+    /* position: fixed; */
+    /* left: 10px; */
   }
 }
 
@@ -664,8 +730,8 @@ article, article .align-default {
 }
 
 #main {
-  transition: margin-left .5s;
-  padding: 16px;
+  /* transition: margin-left .5s; */
+  /* padding: 16px; */
 }
 
 
@@ -773,7 +839,7 @@ article, article .align-default {
 @media (max-width: 72em) {
 
   .search-top-dropdown {
-      display: inline-block;
+      /* display: inline-block; */
   }
 }
 
@@ -782,13 +848,13 @@ article, article .align-default {
 
 
 
-@media (max-width: 105em) {
+@media (max-width: 50em) {
   .github-button {
     width: 140px;
   }
-
+  
   .right-content {
-    padding-left: 15px;
+    /* padding-left: 15px; */
   }
   .sidebar-search-container_top{
     width: 150px;
@@ -797,11 +863,11 @@ article, article .align-default {
 
 @media (max-width: 90em) {
   .right-content {
-    display: none;
+    /* display: none; */
   }
 
   .sidebar-search-container_top{
-    width: 84px;
+    /* width: 84px; */
   }
 
 }
@@ -809,30 +875,30 @@ article, article .align-default {
 
 @media (max-width: 72em) {
   .top-button-container {
-      display: none;
+      /* display: none; */
   }
   .top-dropdown {
-      display: inline-block;;
+      /* display: inline-block;; */
   }
   .form-control {
-    position: fixed;
+    /* position: fixed;
     right: 135px;
-    top:23px;
+    top:23px; */
   }
 
   .dropdown-content{
-    right: 10px;
+    /* right: 10px; */
   }
   .dropdown-item{
-    width: 35em;
+    /* width: 35em; */
   }
   .sidebar-search-container_top{
-    display: none;
+    /* display: none; */
   }
 
   .home_button_container{
-    position: fixed;
-    right: 250px;
+    /* position: fixed;
+    right: 250px; */
   }
   /* .dropdown-content {
       display:block;
@@ -844,16 +910,16 @@ article, article .align-default {
 
 @media (max-width: 50em) {
   .form-group {
-    display: none;
+    /* display: none; */
 }
   .home_button_container {
-    right:125px;
+    /* right:125px; */
   }
 }
 
 @media (max-width: 40em) {
   .home_button_container{
-    display: none
+    /* display: none */
 }
 }
 

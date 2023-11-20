@@ -8,52 +8,71 @@ Full Stack
 
 
 
-.. grid:: 3
+.. grid:: 2
 
     .. grid-item::
     
       .. card:: DBLink Integration
           :link: dblink_integration/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Query in any external database
+          10 mins
+          ^^^^^^^^
+          Query any external database seamlessly 
+          with DBLink integration, expanding your 
+          data access capabilities.
 
     .. grid-item::
 
       .. card:: Complex DT & VMAPs
           :link: notebooks/full_stack/complex_data_vmap/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Working with Complex Structures
+          20 mins
+          ^^^^^^^^
+          Effortlessly work with complex data 
+          structures using VMaps, unlocking advanced 
+          functionalities for handling intricate data.
 
     .. grid-item::
 
         .. card:: XGBoost.to_json
           :link: notebooks/full_stack/to_json/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Export XGB models to JSON
+          10 mins
+          ^^^^^^^^
+          Export XGBoost models to JSON format for 
+          enhanced model interpretability and interoperability.
 
     .. grid-item::
 
         .. card:: User-Defined Functions
           :link: notebooks/full_stack/udf/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Import your own customized functions
+          5 mins
+          ^^^^^^^^
+          Tailor your analytical workflows with 
+          custom user-defined functions, adding 
+          flexibility and customization.
 
     .. grid-item::
 
         .. card:: Linear Regression
           :link: notebooks/full_stack/linear_regression/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Creating a linear regression model
+          15 mins
+          ^^^^^^^^
+          Master linear regression techniques for 
+          predictive modeling and gain valuable 
+          insights into your data.
 
 
     .. grid-item::
@@ -61,9 +80,13 @@ Full Stack
         .. card:: Magic Methods
           :link: notebooks/full_stack/vdataframe_magic/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Understanding the 'Magic' methods of the vDataFrame
+          10 mins
+          ^^^^^^^^
+          Uncover the 'Magic' methods of the vDataFrame, 
+          revealing powerful functionalities and enhancing 
+          your data manipulation skills.
 
 
     .. grid-item::
@@ -71,27 +94,39 @@ Full Stack
         .. card:: Train/Test
           :link: notebooks/full_stack/train_test_split/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Splitting data into training and testing sets
+          5 mins
+          ^^^^^^^^
+          Effectively split your dataset into training 
+          and testing sets, a crucial step in model 
+          development and evaluation.
 
     .. grid-item::
 
         .. card:: Time Series Interpolation
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Slices, interpolation and joins
+          5 mins
+          ^^^^^^^^
+          Navigate through slices, interpolation, and 
+          joins for effective time-series analysis, 
+          ensuring accurate and meaningful results.
 
     .. grid-item::
 
         .. card:: GeoPandas Integration
           :link: notebooks/full_stack/geopandas/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
-          Drawing maps with Geo DataFrame
+          7 mins
+          ^^^^^^^^
+          Draw maps with ease using Geo DataFrame 
+          integration, expanding your analytics to 
+          spatial data domains.
 
 .. toctree::
   :hidden:
