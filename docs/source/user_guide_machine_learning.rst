@@ -6,7 +6,7 @@ Machine Learning
 =================
 
 
-.. grid:: 3
+.. grid:: 2
 
     .. grid-item::
     

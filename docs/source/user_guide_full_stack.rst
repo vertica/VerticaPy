@@ -8,14 +8,14 @@ Full Stack
 
 
 
-.. grid:: 3
+.. grid:: 2
 
     .. grid-item::
     
       .. card:: DBLink Integration
           :link: dblink_integration/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           10 mins
           ^^^^^^^^
@@ -28,7 +28,7 @@ Full Stack
       .. card:: Complex DT & VMAPs
           :link: notebooks/full_stack/complex_data_vmap/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           20 mins
           ^^^^^^^^
@@ -41,7 +41,7 @@ Full Stack
         .. card:: XGBoost.to_json
           :link: notebooks/full_stack/to_json/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           10 mins
           ^^^^^^^^
@@ -53,7 +53,7 @@ Full Stack
         .. card:: User-Defined Functions
           :link: notebooks/full_stack/udf/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           5 mins
           ^^^^^^^^
@@ -66,7 +66,7 @@ Full Stack
         .. card:: Linear Regression
           :link: notebooks/full_stack/linear_regression/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           15 mins
           ^^^^^^^^
@@ -80,7 +80,7 @@ Full Stack
         .. card:: Magic Methods
           :link: notebooks/full_stack/vdataframe_magic/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           10 mins
           ^^^^^^^^
@@ -94,7 +94,7 @@ Full Stack
         .. card:: Train/Test
           :link: notebooks/full_stack/train_test_split/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           5 mins
           ^^^^^^^^
@@ -107,7 +107,7 @@ Full Stack
         .. card:: Time Series Interpolation
           :link: notebooks/ml/time_series/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           5 mins
           ^^^^^^^^
@@ -120,7 +120,7 @@ Full Stack
         .. card:: GeoPandas Integration
           :link: notebooks/full_stack/geopandas/index.html
           :text-align: center
-          :class-card: custom-card-7
+          :class-card: custom-card-9
 
           7 mins
           ^^^^^^^^
