@@ -20,7 +20,7 @@ from verticapy.errors import QueryError
 
 from verticapy.core.vdataframe import vDataFrame
 
-from verticapy._typing import NoneType
+from verticapy._typing import NoneType, PlottingObject
 from verticapy._utils._sql._collect import save_verticapy_logs
 from verticapy._utils._sql._format import format_query
 from verticapy._utils._sql._sys import _executeSQL
@@ -63,7 +63,7 @@ class QueryProfiler:
             if not (isinstance(resource_pool, NoneType)):
                 _executeSQL(
                     f"SET SESSION RESOURCE POOL {resource_pool} ;",
-                    title="Executing the query.",
+                    title="Setting the resource pool.",
                     method="cursor",
                 )
             _executeSQL(
@@ -122,7 +122,7 @@ class QueryProfiler:
 
     # Tools
 
-    def _get_interval_str(self, unit: Literal["s", "m", "h"]):
+    def _get_interval_str(self, unit: Literal["s", "m", "h"]) -> str:
         unit = str(unit).lower()
         if unit.startswith("s"):
             div = "00:00:01"
@@ -130,6 +130,18 @@ class QueryProfiler:
             div = "00:01:00"
         elif unit.startswith("h"):
             div = "01:00:00"
+        else:
+            ValueError("Incorrect parameter 'unit'.")
+        return div
+
+    def _get_interval(self, unit: Literal["s", "m", "h"]) -> int:
+        unit = str(unit).lower()
+        if unit.startswith("s"):
+            div = 1000000
+        elif unit.startswith("m"):
+            div = 60000000
+        elif unit.startswith("h"):
+            div = 3600000000
         else:
             ValueError("Incorrect parameter 'unit'.")
         return div
@@ -153,18 +165,77 @@ class QueryProfiler:
         else:
             ValueError("Incorrect parameter 'chart_type'.")
 
-    # Step 0
+    # Main Method
+
+    def step(self, idx: int, *args, **kwargs) -> Any:
+        steps_id = {
+            0: self.get_version,
+            1: self.get_request,
+            2: self.get_qduration,
+            3: self.get_qsteps,
+            4: NotImplemented,
+            5: NotImplemented,
+            6: self.get_qplan,
+            7: NotImplemented,
+            8: NotImplemented,
+            9: NotImplemented,
+            10: NotImplemented,
+            11: NotImplemented,
+            12: self.get_cpu_time,
+            13: NotImplemented,
+            14: self.get_qexecution,
+            15: NotImplemented,
+            16: NotImplemented,
+            17: NotImplemented,
+            18: NotImplemented,
+            19: NotImplemented,
+            20: NotImplemented,
+            21: NotImplemented,
+        }
+        return steps_id[idx](*args, **kwargs)
+
+    # Steps
+
+    # Step 0: Vertica Version
     @staticmethod
     def get_version() -> tuple[int, int, int, int]:
+        """
+        Returns the current Vertica version.
+
+        Returns
+        -------
+        tuple
+            List containing the version information.
+            MAJOR, MINOR, PATCH, POST
+        """
         return vertica_version()
 
-    # Step 1
+    # Step 1: Query text
     def get_request(
         self,
         indent_sql: bool = True,
         print_sql: bool = True,
         return_html: bool = False,
     ) -> str:
+        """
+        Returns the query linked to the object with the
+        specified transaction ID and statement ID.
+
+        Parameters
+        ----------
+        indent_sql: bool, optional
+            If set to true, indents the SQL code.
+        print_sql: bool, optional
+            If set to true, prints the SQL code.
+        return_html: bool, optional
+            If set to true, returns the query HTML
+            code.
+
+        Returns
+        -------
+        str
+            SQL query.
+        """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
         )
@@ -172,17 +243,96 @@ class QueryProfiler:
             return res[1]
         return res[0]
 
-    # Step 3
+    # Step 2: Query duration
+    def get_qduration(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+    ) -> float:
+        """
+        Returns the Query duration.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Time Unit.
+
+             - s:
+                second
+
+             - m:
+                minute
+
+             - h:
+                hour
+
+        Returns
+        -------
+        float
+            Query duration.
+        """
+        query = f"""
+            SELECT
+                query_duration_us 
+            FROM 
+                v_monitor.query_profiles 
+            WHERE 
+                transaction_id={self.transaction_id} AND 
+                statement_id={self.statement_id};"""
+        qd = _executeSQL(
+            query,
+            title="Getting the corresponding query",
+            method="fetchfirstelem",
+        )
+        return float(qd / self._get_interval(unit))
+
+    # Step 3: Query execution steps
     def get_qsteps(
         self,
-        show: bool = True,
+        unit: Literal["s", "m", "h"] = "s",
         chart_type: Literal[
             "bar",
             "barh",
             "pie",
-        ] = "barh",
-        unit: Literal["s", "m", "h"] = "s",
-    ):
+        ] = "pie",
+        show: bool = True,
+    ) -> PlottingObject:
+        """
+        Returns the Query Execution Steps chart.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Unit used to draw the chart.
+
+             - s:
+                second
+
+             - m:
+                minute
+
+             - h:
+                hour
+        chart_type: str, optional
+            Chart Type.
+
+             - bar:
+                Bar Chart.
+
+             - barh:
+                Horizontal Bar Chart.
+
+             - pie:
+                Pie Chart.
+
+        show: bool, optional
+            If set to True, the Plotting object
+            is returned.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
         div = self._get_interval_str(unit)
         query = f"""
             SELECT
@@ -200,15 +350,116 @@ class QueryProfiler:
             return fun(method="max", of="elapsed")
         return vdf
 
+    # Step 6: Query plan profile
+    def get_qplan(
+        self,
+        unit: Literal["s", "m", "h"] = "s",
+        chart_type: Literal[
+            "bar",
+            "barh",
+            "pie",
+        ] = "pie",
+        show: bool = True,
+    ) -> PlottingObject:
+        """
+        Returns the Query Plan chart.
+
+        Parameters
+        ----------
+        unit: str, optional
+            Unit used to draw the chart.
+
+             - s:
+                second
+
+             - m:
+                minute
+
+             - h:
+                hour
+        chart_type: str, optional
+            Chart Type.
+
+             - bar:
+                Bar Chart.
+
+             - barh:
+                Horizontal Bar Chart.
+
+             - pie:
+                Pie Chart.
+
+        show: bool, optional
+            If set to True, the Plotting object
+            is returned.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        div = self._get_interval_str(unit)
+        where = ""
+        if show:
+            where = "AND running_time IS NOT NULL"
+        query = f"""
+            SELECT
+                statement_id AS stmtid,
+                path_id,
+                path_line_index,
+                running_time / '{div}'::interval AS running_time,
+                (memory_allocated_bytes // (1024 * 1024))::numeric(18, 2) AS mem_mb,
+                (read_from_disk_bytes // (1024 * 1024))::numeric(18, 2) AS read_mb,
+                (received_bytes // (1024 * 1024))::numeric(18, 2) AS in_mb,
+                (sent_bytes // (1024 * 1024))::numeric(18, 2) AS out_mb,
+                left(path_line, 80) AS path_line,
+                (CASE 
+                    WHEN running_time IS NOT NULL 
+                    THEN REGEXP_SUBSTR(path_line, '([A-Z ])+') 
+                 END) AS path_type
+            FROM v_monitor.query_plan_profiles
+            WHERE transaction_id = {self.transaction_id}{where}
+            ORDER BY
+                statement_id,
+                path_id,
+                path_line_index;"""
+        vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
+        if show:
+            fun = self._get_chart_method(vdf["path_type"], chart_type)
+            return fun(method="sum", of="running_time")
+        return vdf
+
     # Step 12
     def get_cpu_time(
         self,
-        show: bool = True,
         chart_type: Literal[
             "bar",
             "barh",
         ] = "barh",
-    ):
+        show: bool = True,
+    ) -> PlottingObject:
+        """
+        Returns the CPU Time by node and path_id chart.
+
+        Parameters
+        ----------
+        chart_type: str, optional
+            Chart Type.
+
+             - bar:
+                Bar Chart.
+
+             - barh:
+                Horizontal Bar Chart.
+        show: bool, optional
+            If set to True, the Plotting object
+            is returned.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
         query = f"""
             SELECT 
                 node_name, 
@@ -227,3 +478,123 @@ class QueryProfiler:
                 columns=["node_name", "path_id"], method="SUM(counter_value) AS cet"
             )
         return vdf
+
+    # Step 14A: Query execution report
+    def get_qexecution_report(self) -> vDataFrame:
+        """
+        Returns the Query execution chart.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+        """
+        query = f"""
+            SELECT
+                node_name,
+                operator_name,
+                path_id,
+                ROUND(SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                    counter_value ELSE NULL END) / 1000, 3.0) AS exec_time_ms,
+                SUM(CASE counter_name WHEN 'estimated rows produced' THEN
+                    counter_value ELSE NULL END) AS est_rows,
+                SUM(CASE counter_name WHEN 'rows processed' THEN
+                    counter_value ELSE NULL END) AS proc_rows,
+                SUM(CASE counter_name WHEN 'rows produced' THEN
+                    counter_value ELSE NULL END) AS prod_rows,
+                SUM(CASE counter_name WHEN 'rle rows produced' THEN
+                    counter_value ELSE NULL END) AS rle_prod_rows,
+                SUM(CASE counter_name WHEN 'consumer stall (us)' THEN
+                    counter_value ELSE NULL END) AS cstall_us,
+                SUM(CASE counter_name WHEN 'producer stall (us)' THEN
+                    counter_value ELSE NULL END) AS pstall_us,
+                ROUND(SUM(CASE counter_name WHEN 'memory reserved (bytes)' THEN
+                    counter_value ELSE NULL END)/1000000, 1.0) AS mem_res_mb,
+                ROUND(SUM(CASE counter_name WHEN 'memory allocated (bytes)' THEN 
+                    counter_value ELSE NULL END) / 1000000, 1.0) AS mem_all_mb
+            FROM
+                v_monitor.execution_engine_profiles
+            WHERE
+                transaction_id={self.transaction_id} AND
+                statement_id={self.statement_id} AND
+                counter_value / 1000000 > 0
+            GROUP BY
+                1, 2, 3
+            ORDER BY
+                CASE WHEN SUM(CASE counter_name WHEN 'execution time (us)' THEN
+                    counter_value ELSE NULL END) IS NULL THEN 1 ELSE 0 END ASC,
+                5 DESC;"""
+        return vDataFrame(query)
+
+    # Step 14B: Query execution chart
+    def get_qexecution(
+        self,
+        node_name: str,
+        metric: Literal[
+            "exec_time_ms",
+            "est_rows",
+            "proc_rows",
+            "prod_rows",
+            "rle_prod_rows",
+            "cstall_us",
+            "pstall_us",
+            "mem_res_mb",
+            "mem_all_mb",
+        ],
+        path_id: Optional[int] = None,
+        chart_type: Literal[
+            "bar",
+            "barh",
+            "pie",
+        ] = "barh",
+        show: bool = True,
+    ) -> PlottingObject:
+        """
+        Returns the Query execution chart.
+
+        Parameters
+        ----------
+        node_name: str
+            Node name.
+        metric: str
+            Metric to use. One of the following:
+                - exec_time_ms
+                - est_rows
+                - proc_rows
+                - prod_rows
+                - rle_prod_rows
+                - cstall_us
+                - pstall_us
+                - mem_res_mb
+                - mem_all_mb
+        path_id: str
+            Path ID.
+        chart_type: str, optional
+            Chart Type.
+
+             - bar:
+                Bar Chart.
+
+             - barh:
+                Horizontal Bar Chart.
+
+             - pie:
+                Pie Chart.
+
+        show: bool, optional
+            If set to True, the Plotting object
+            is returned.
+
+        Returns
+        -------
+        obj
+            Plotting Object.
+        """
+        cond = f"node_name = '{node_name}'"
+        if not (isinstance(path_id, NoneType)):
+            cond += f" AND path_id = {path_id}"
+        vdf = self.get_qexecution_report().search(cond)
+        if show:
+            fun = self._get_chart_method(vdf["operator_name"], chart_type)
+            return fun(method="sum", of=metric)
+        return vdf[["operator_name", metric]]

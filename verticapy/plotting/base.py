@@ -24,6 +24,8 @@ import numpy as np
 
 import matplotlib.colors as plt_colors
 
+from vertica_python.errors import QueryError
+
 import verticapy._config.config as conf
 from verticapy._typing import (
     ArrayLike,
@@ -472,7 +474,10 @@ class PlottingBase(PlottingBaseSQL):
             )
         # depending on the cardinality, the type, the vDataColumn
         # can be treated as categorical or not
-        cardinality = vdc.nunique(True)
+        try:
+            cardinality = vdc.nunique(True)
+        except QueryError:
+            cardinality = vdc.nunique(False)
         count = vdc._parent.shape()[0]
         is_numeric = vdc.isnum() and not vdc.isbool()
         is_date = vdc.isdate()
