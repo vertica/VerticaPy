@@ -25,7 +25,10 @@ from verticapy.tests_new.machine_learning.vertica import rel_tolerance_map
 import verticapy as vp
 
 if sys.version_info < (3, 12):
-    from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import freeze_model
+    from verticapy.machine_learning.vertica.tensorflow.freeze_tf2_model import (
+        freeze_model,
+    )
+
 
 def remove_model_dir(folder_path=""):
     """
@@ -274,7 +277,6 @@ class TestModelManagement:
         "TENSORFLOW",
     ],
 )
-
 @pytest.mark.skipif(sys.version_info > (3, 11), reason="requires python3.11 or lower")
 class TestModelManagementTF:
     """
