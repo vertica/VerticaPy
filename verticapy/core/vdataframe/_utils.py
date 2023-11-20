@@ -89,7 +89,7 @@ class vDFUtils(PlottingUtils):
         -------
         SQLExpression
             Formatted columns' names.
-            
+
         Examples
         ---------
 
@@ -141,7 +141,7 @@ class vDFUtils(PlottingUtils):
 
         .. ipython:: python
 
-            data.format_colnames(columns = ['home.dest', 'age'])            
+            data.format_colnames(columns = ['home.dest', 'age'])
         """
         if len(args) > 0:
             result = []
@@ -243,7 +243,7 @@ class vDFUtils(PlottingUtils):
         bool
             True if the  column is used by the vDataFrame; false
             otherwise.
-            
+
         Examples
         ---------
 
@@ -296,7 +296,7 @@ class vDFUtils(PlottingUtils):
         .. ipython:: python
 
             data.is_colname_in("pclass")
-            
+
         Let's check if a column named "class" available in our vdataframe
 
         .. ipython:: python
