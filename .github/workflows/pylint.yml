@@ -24,6 +24,7 @@ jobs:
         pip install .
         pip install -r requirements-dev.txt
         pip install -r requirements-testing.txt
+        pip install tensorflow
     - name: Analysing the code with pylint
       run: |
         pylint --fail-under=10 --disable=typecheck,W,C,R --extension-pkg-allow-list=scipy.special $(git ls-files '*.py')
