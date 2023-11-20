@@ -92,13 +92,67 @@ class vDFAnimatedPlot(vDFPlot):
             If set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        **style_kwargs
+        \**style_kwargs
             Any optional parameter to pass to the plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.animated`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+
+        Let's import the dataset:
+
+        .. ipython:: python
+
+            pop_growth = vpd.load_pop_growth()
+
+        .. code-block:: python
+
+          pop_growth.animated_bar(
+            ts = "year",
+            columns = ["city", "population"],
+            by = "continent",
+            start_date = 1970,
+            end_date = 1980,
+          )
+
+        .. ipython:: python
+          :suppress:
+
+          fig = pop_growth.animated_bar(
+            ts = "year",
+            columns = ["city", "population"],
+            by = "continent",
+            start_date = 1970,
+            end_date = 1980,
+          )
+
+          with open("SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_bar.html", "w") as file:
+            file.write(fig.__html__())
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_bar.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.animated_pie`
+            | :py:mod:`verticapy.vDataColumn.bar`
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -189,13 +243,67 @@ class vDFAnimatedPlot(vDFPlot):
             If set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        **style_kwargs
+        \**style_kwargs
             Any optional parameter to pass to the plotting functions.
 
         Returns
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.animated`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+
+        Let's import the dataset:
+
+        .. ipython:: python
+
+            pop_growth = vpd.load_pop_growth()
+
+        .. code-block:: python
+
+          pop_growth.animated_pie(
+            ts = "year",
+            columns = ["city", "population"],
+            by = "continent",
+            start_date = 1970,
+            end_date = 1980,
+          )
+
+        .. ipython:: python
+          :suppress:
+
+          fig = pop_growth.animated_pie(
+            ts = "year",
+            columns = ["city", "population"],
+            by = "continent",
+            start_date = 1970,
+            end_date = 1980,
+          )
+
+          with open("SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_pie.html", "w") as file:
+            file.write(fig.__html__())
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_pie.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.animated_bar`
+            | :py:mod:`verticapy.vDataColumn.pie`
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -284,7 +392,7 @@ class vDFAnimatedPlot(vDFPlot):
             If set  to  True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        **style_kwargs
+        \**style_kwargs
             Any  optional  parameter to pass to the  plotting
             functions.
 
@@ -292,6 +400,50 @@ class vDFAnimatedPlot(vDFPlot):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.animated`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+
+        Let's import the dataset:
+
+        .. ipython:: python
+
+            commodities = vpd.load_commodities()
+
+        Now we can finally create the plot:
+
+        .. code-block:: python
+
+          commodities.animated_plot(ts = "date")
+
+        .. ipython:: python
+          :suppress:
+
+          fig = commodities.animated_plot(ts = "date")
+
+          with open("SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_plot.html", "w") as file:
+            file.write(fig.__html__())
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_plot.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.animated_pie`
+            | :py:mod:`verticapy.vDataFrame.plot`
         """
         columns = format_type(columns, dtype=list)
         columns, ts, by = self.format_colnames(columns, ts, by)
@@ -402,7 +554,7 @@ class vDFAnimatedPlot(vDFPlot):
             If  set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        **style_kwargs
+        \**style_kwargs
             Any  optional parameter  to  pass to the plotting
             functions.
 
@@ -410,6 +562,60 @@ class vDFAnimatedPlot(vDFPlot):
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        .. note::
+
+            The below example is a very basic one. For
+            other more detailed examples and customization
+            options, please see :ref:`chart_gallery.animated`_
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+            import verticapy.datasets as vpd
+
+        Let's import the dataset:
+
+        .. ipython:: python
+
+            gapminder = vpd.load_gapminder()
+
+        .. code-block:: python
+
+          gapminder.animated_scatter(
+            ts = "year",
+            columns = ["lifeExp", "gdpPercap"],
+            by = "country",
+            start_date = 1952,
+            end_date = 2000,
+          )
+
+        .. ipython:: python
+          :suppress:
+
+          fig = gapminder.animated_scatter(
+            ts = "year",
+            columns = ["lifeExp", "gdpPercap"],
+            by = "country",
+            start_date = 1952,
+            end_date = 2000,
+          )
+
+          with open("SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_scatter.html", "w") as file:
+            file.write(fig.__html__())
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/code_vdataframe_plotting_animated_scatter.html
+
+        .. seealso::
+
+            | :py:mod:`verticapy.vDataFrame.animated_pie`
+            | :py:mod:`verticapy.vDataFrame.scatter`
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
