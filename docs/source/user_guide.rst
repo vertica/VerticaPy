@@ -7,83 +7,117 @@ User Guide
 
 
 
-.. grid:: 4 4 4 4
+.. grid:: 2
 
     .. grid-item::
     
       .. card:: Introduction
-          :img-top: _static/connect.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
+          :shadow: lg
+          :class-footer: user_guide_footer
 
-          Best practices and tips 
+          36 mins
+          ^^^^^^^^
+          Dive into the basics, understand the core features 
+          (such as ``vDataFrame``, ``vDataColumn`` etc), and set 
+          the stage for a seamless analytical journey.
+
+
+          :bdg-primary:`vDataFrame` :bdg-primary:`vDataColumn`
+          
 
     .. grid-item::
 
       .. card:: Data Ingestion
-          :img-top: _static/parsers.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
 
-
-          Ingesting CSV and JSON
+          20 mins
+          ^^^^^^^^
+          Effortlessly bring your data into Vertica. 
+          Whether it's from databases, spreadsheets, or 
+          external sources, streamline the ingestion process 
+          for quick and easy access to your datasets.
+          
+          :bdg-primary:`ETL`
 
     .. grid-item::
 
         .. card:: Data Exploration
-          :img-top: _static/vdataframe.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
 
-          Aggregation, searches, and charts
+          34 mins
+          ^^^^^^^^
+          Uncover insights and patterns within your data. 
+          Navigate through interactive visualizations, charts, 
+          and graphs to gain a comprehensive understanding of 
+          the information at your fingertips.
+
+          :bdg-primary:`Graphs`
 
     .. grid-item::
 
         .. card:: Data Preparation
-          :img-top: _static/machine_learning.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
 
-          Preprocessing
+          52 mins
+          ^^^^^^^^
+          Transform raw data into meaningful insights. 
+          Our tools empower you to clean, reshape, and 
+          enrich your datasets, ensuring they are primed 
+          for advanced analytics and reporting.
+
+          :bdg-primary:`Pre-processing`
 
     .. grid-item::
     
       .. card:: Machine Learning
-          :img-top: _static/udf.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
 
-          Data modeling and evaluation
+          20 mins
+          ^^^^^^^^
+          Harness the power of machine learning to 
+          make predictive analyses. From model training 
+          to evaluation, our platform guides you through 
+          the process, making complex algorithms accessible 
+          for everyone.
+
+          :bdg-primary:`Machine Learning` :bdg-primary:`AI`
 
     .. grid-item::
     
       .. card:: Full Stack
-          :img-top: _static/udf.svg
           :link: user_guide.introduction
           :link-type: ref
           :text-align: center
-          :class-card: custom-card
-          :class-img-top: custom-class-img-top
+          :class-card: custom-card-8
 
-          Advanced Lessons in Data Science
+          30 mins
+          ^^^^^^^^
+          Experience the full spectrum of Vertica. 
+          Seamlessly integrate data processing, 
+          analysis, and visualization to create an end-to-end 
+          solution tailored to your analytical needs.
+        
+          :bdg-primary:`User Defined Functions` :bdg-primary:`GeoPandas`
 
 
 .. toctree::
+  :hidden:
   :maxdepth: 1
   
   user_guide_introduction
