@@ -17,4 +17,3 @@ ipython
 scikit-learn
 xgboost
 statsmodels
-tensorflow
