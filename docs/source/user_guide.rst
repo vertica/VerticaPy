@@ -32,7 +32,7 @@ User Guide
     .. grid-item::
 
       .. card:: Data Ingestion
-          :link: user_guide.introduction
+          :link: /notebooks/data_ingestion/index.html
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
@@ -49,7 +49,7 @@ User Guide
     .. grid-item::
 
         .. card:: Data Exploration
-          :link: user_guide.introduction
+          :link: user_guide.data_exploration
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
@@ -66,7 +66,7 @@ User Guide
     .. grid-item::
 
         .. card:: Data Preparation
-          :link: user_guide.introduction
+          :link: user_guide.data_preparation
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
@@ -83,12 +83,12 @@ User Guide
     .. grid-item::
     
       .. card:: Machine Learning
-          :link: user_guide.introduction
+          :link: user_guide.machine_learning
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
 
-          20 mins
+          38 mins
           ^^^^^^^^
           Harness the power of machine learning to 
           make predictive analyses. From model training 
@@ -101,12 +101,12 @@ User Guide
     .. grid-item::
     
       .. card:: Full Stack
-          :link: user_guide.introduction
+          :link: user_guide.full_stack
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
 
-          30 mins
+          87 mins
           ^^^^^^^^
           Experience the full spectrum of Vertica. 
           Seamlessly integrate data processing, 

@@ -17,7 +17,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Query in any external database
+          10 mins
+          ^^^^^^^^
+          Query any external database seamlessly 
+          with DBLink integration, expanding your 
+          data access capabilities.
 
     .. grid-item::
 
@@ -26,7 +30,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Working with Complex Structures
+          20 mins
+          ^^^^^^^^
+          Effortlessly work with complex data 
+          structures using VMaps, unlocking advanced 
+          functionalities for handling intricate data.
 
     .. grid-item::
 
@@ -35,7 +43,10 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Export XGB models to JSON
+          10 mins
+          ^^^^^^^^
+          Export XGBoost models to JSON format for 
+          enhanced model interpretability and interoperability.
 
     .. grid-item::
 
@@ -44,7 +55,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Import your own customized functions
+          5 mins
+          ^^^^^^^^
+          Tailor your analytical workflows with 
+          custom user-defined functions, adding 
+          flexibility and customization.
 
     .. grid-item::
 
@@ -53,7 +68,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Creating a linear regression model
+          15 mins
+          ^^^^^^^^
+          Master linear regression techniques for 
+          predictive modeling and gain valuable 
+          insights into your data.
 
 
     .. grid-item::
@@ -63,7 +82,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Understanding the 'Magic' methods of the vDataFrame
+          10 mins
+          ^^^^^^^^
+          Uncover the 'Magic' methods of the vDataFrame, 
+          revealing powerful functionalities and enhancing 
+          your data manipulation skills.
 
 
     .. grid-item::
@@ -73,7 +96,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Splitting data into training and testing sets
+          5 mins
+          ^^^^^^^^
+          Effectively split your dataset into training 
+          and testing sets, a crucial step in model 
+          development and evaluation.
 
     .. grid-item::
 
@@ -82,7 +109,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Slices, interpolation and joins
+          5 mins
+          ^^^^^^^^
+          Navigate through slices, interpolation, and 
+          joins for effective time-series analysis, 
+          ensuring accurate and meaningful results.
 
     .. grid-item::
 
@@ -91,7 +122,11 @@ Full Stack
           :text-align: center
           :class-card: custom-card-7
 
-          Drawing maps with Geo DataFrame
+          7 mins
+          ^^^^^^^^
+          Draw maps with ease using Geo DataFrame 
+          integration, expanding your analytics to 
+          spatial data domains.
 
 .. toctree::
   :hidden:
