@@ -482,6 +482,11 @@ def indent_vpy_sql(query: str) -> str:
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
         .replace("FROM", "\n   FROM\n")
+        .replace("ORDER BY", "\n   ORDER BY")
+        .replace("GROUP BY", "\n   GROUP BY")
+        .replace("LIMIT", "\n   LIMIT")
+        .replace("OFFSET", "\n   OFFSET")
+        .replace("WHERE", "\n   WHERE")
         .replace(",", ",\n    ")
     )
     query = query.replace("VERTICAPY_SUBTABLE", "\nVERTICAPY_SUBTABLE")

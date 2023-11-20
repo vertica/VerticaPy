@@ -14,7 +14,7 @@ OR CONDITIONS OF ANY KIND, either express or implied.
 See the  License for the specific  language governing
 permissions and limitations under the License.
 """
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from verticapy.errors import QueryError
 
@@ -22,7 +22,7 @@ from verticapy.core.vdataframe import vDataFrame
 
 from verticapy._typing import NoneType, PlottingObject
 from verticapy._utils._sql._collect import save_verticapy_logs
-from verticapy._utils._sql._format import format_query
+from verticapy._utils._sql._format import clean_query, format_query
 from verticapy._utils._sql._sys import _executeSQL
 from verticapy._utils._sql._vertica_version import vertica_version
 
@@ -41,6 +41,7 @@ class QueryProfiler:
         resource_pool: Optional[str] = None,
         transaction_id: Optional[int] = None,
         statement_id: Optional[int] = None,
+        add_profile: bool = True,
     ) -> None:
         if not (isinstance(request, NoneType)) and (
             not (isinstance(transaction_id, NoneType))
@@ -66,6 +67,10 @@ class QueryProfiler:
                     title="Setting the resource pool.",
                     method="cursor",
                 )
+            if add_profile:
+                fword = clean_query(request).strip().split()[0].lower()
+                if fword != "profile":
+                    request = "profile " + request
             _executeSQL(
                 request,
                 title="Executing the query.",
@@ -174,8 +179,8 @@ class QueryProfiler:
             2: self.get_qduration,
             3: self.get_qsteps,
             4: NotImplemented,
-            5: NotImplemented,
-            6: self.get_qplan,
+            5: self.get_qplan,
+            6: self.get_qplan_profile,
             7: NotImplemented,
             8: NotImplemented,
             9: NotImplemented,
@@ -189,8 +194,8 @@ class QueryProfiler:
             17: NotImplemented,
             18: NotImplemented,
             19: NotImplemented,
-            20: NotImplemented,
-            21: NotImplemented,
+            20: self.get_rp_status,
+            21: self.get_cluster_config,
         }
         return steps_id[idx](*args, **kwargs)
 
@@ -295,7 +300,7 @@ class QueryProfiler:
             "pie",
         ] = "pie",
         show: bool = True,
-    ) -> PlottingObject:
+    ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Execution Steps chart.
 
@@ -350,8 +355,58 @@ class QueryProfiler:
             return fun(method="max", of="elapsed")
         return vdf
 
-    # Step 6: Query plan profile
+    # Step 5: Query plan
     def get_qplan(
+        self,
+        return_report: bool = False,
+        print_plan: bool = True,
+    ) -> Union[str, vDataFrame]:
+        """
+        Returns the Query Plan chart.
+
+        Parameters
+        ----------
+        return_report: bool, optional
+            If set to True, the query plan
+            report is returned.
+        print_plan: bool, optional
+            If set to True, the query plan
+            is printed.
+
+        Returns
+        -------
+        str
+            Query Plan.
+        """
+        query = f"""
+            SELECT
+                statement_id AS stmtid,
+                path_id,
+                path_line_index,
+                path_line
+            FROM 
+                v_internal.dc_explain_plans
+            WHERE 
+                transaction_id={self.transaction_id}
+            ORDER BY 
+                statement_id,
+                path_id,
+                path_line_index;"""
+        if not (return_report):
+            path = _executeSQL(
+                query,
+                title="Getting the corresponding query",
+                method="fetchall",
+            )
+            res = "\n".join([l[3] for l in path])
+            if print_plan:
+                print(res)
+            return res
+        vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
+        return vdf
+
+    # Step 6: Query plan profile
+    def get_qplan_profile(
         self,
         unit: Literal["s", "m", "h"] = "s",
         chart_type: Literal[
@@ -360,7 +415,7 @@ class QueryProfiler:
             "pie",
         ] = "pie",
         show: bool = True,
-    ) -> PlottingObject:
+    ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query Plan chart.
 
@@ -412,11 +467,7 @@ class QueryProfiler:
                 (read_from_disk_bytes // (1024 * 1024))::numeric(18, 2) AS read_mb,
                 (received_bytes // (1024 * 1024))::numeric(18, 2) AS in_mb,
                 (sent_bytes // (1024 * 1024))::numeric(18, 2) AS out_mb,
-                left(path_line, 80) AS path_line,
-                (CASE 
-                    WHEN running_time IS NOT NULL 
-                    THEN REGEXP_SUBSTR(path_line, '([A-Z ])+') 
-                 END) AS path_type
+                left(path_line, 80) AS path_line
             FROM v_monitor.query_plan_profiles
             WHERE transaction_id = {self.transaction_id}{where}
             ORDER BY
@@ -425,7 +476,7 @@ class QueryProfiler:
                 path_line_index;"""
         vdf = vDataFrame(query).sort(["stmtid", "path_id", "path_line_index"])
         if show:
-            fun = self._get_chart_method(vdf["path_type"], chart_type)
+            fun = self._get_chart_method(vdf["path_line"], chart_type)
             return fun(method="sum", of="running_time")
         return vdf
 
@@ -435,9 +486,10 @@ class QueryProfiler:
         chart_type: Literal[
             "bar",
             "barh",
-        ] = "barh",
+        ] = "bar",
+        reverse: bool = False,
         show: bool = True,
-    ) -> PlottingObject:
+    ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the CPU Time by node and path_id chart.
 
@@ -451,6 +503,9 @@ class QueryProfiler:
 
              - barh:
                 Horizontal Bar Chart.
+        reverse: bool, optional
+            If set to True, the Plotting object
+            is returned.
         show: bool, optional
             If set to True, the Plotting object
             is returned.
@@ -472,17 +527,18 @@ class QueryProfiler:
                 transaction_id={self.transaction_id} AND 
                 statement_id={self.statement_id}"""
         vdf = vDataFrame(query)
+        columns = ["path_id", "node_name"]
+        if reverse:
+            columns.reverse()
         if show:
             fun = self._get_chart_method(vdf, chart_type)
-            return fun(
-                columns=["node_name", "path_id"], method="SUM(counter_value) AS cet"
-            )
+            return fun(columns=columns, method="SUM(counter_value) AS cet")
         return vdf
 
     # Step 14A: Query execution report
     def get_qexecution_report(self) -> vDataFrame:
         """
-        Returns the Query execution chart.
+        Returns the Query execution report.
 
         Returns
         -------
@@ -548,7 +604,7 @@ class QueryProfiler:
             "pie",
         ] = "barh",
         show: bool = True,
-    ) -> PlottingObject:
+    ) -> Union[PlottingObject, vDataFrame]:
         """
         Returns the Query execution chart.
 
@@ -598,3 +654,29 @@ class QueryProfiler:
             fun = self._get_chart_method(vdf["operator_name"], chart_type)
             return fun(method="sum", of=metric)
         return vdf[["operator_name", metric]]
+
+    # Step 20: Getting Cluster configuration
+    def get_rp_status(self) -> vDataFrame:
+        """
+        Returns the RP status.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+        """
+        query = """SELECT * FROM v_monitor.resource_pool_status;"""
+        return vDataFrame(query)
+
+    # Step 21: Getting Cluster configuration
+    def get_cluster_config(self) -> vDataFrame:
+        """
+        Returns the Cluster configuration.
+
+        Returns
+        -------
+        vDataFrame
+            report.
+        """
+        query = """SELECT * FROM v_monitor.host_resources;"""
+        return vDataFrame(query)
