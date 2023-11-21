@@ -62,7 +62,6 @@ def titanic_vd():
 
 
 class TestvDFFeatureEngineering:
-
     def test_vDF_sessionize(self, smart_meters_vd):
         smart_meters_copy = smart_meters_vd.copy()
 

@@ -49,7 +49,6 @@ def amazon_vd():
 
 
 class TestvDFDescriptiveStat:
-
     def test_vDF_nlargest(self, market_vd):
         result = market_vd["Price"].nlargest(n=2)
 

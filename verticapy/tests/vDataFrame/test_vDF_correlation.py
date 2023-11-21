@@ -43,7 +43,6 @@ def amazon_vd():
 
 
 class TestvDFCorrelation:
-
     def test_vDF_chaid(self, titanic_vd):
         result = titanic_vd.chaid("survived", ["age", "fare", "sex"])
         tree = result.tree_
