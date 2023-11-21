@@ -80,6 +80,147 @@ class vDFEval(vDFInOut):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's create a new feature named "family_size".
+
+        .. code-block:: python
+
+            data.eval(
+                name = "family_size",
+                expr = "parch + sibsp + 1",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.eval(
+                name = "family_size",
+                expr = "parch + sibsp + 1",
+            )
+            html_file = open("figures/core_vDataFrame_eval1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval1.html
+
+        .. note::
+            You can observe that a new feature "family_size" is added
+            to the vDataFrame.
+
+        .. note::
+
+            You can also create a feature in a Pandas-like way by assigning
+            a result to a vDataColumn. For example, similar to the above,
+            the ``eval`` operation can be expressed as:
+
+            .. code-block:: python
+
+                data["family_size"] = data["parch"] + data["sibsp"] + 1
+
+            Or:
+
+            .. code-block:: python
+
+                data["family_size"] = "parch + sibsp + 1"
+
+        Let's use custom SQL code evaluation to create a new feature
+        named "has_life_boat".
+
+        .. code-block:: python
+
+            data.eval(
+                name = "has_life_boat",
+                expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.eval(
+                name = "has_life_boat",
+                expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END",
+            )
+            html_file = open("figures/core_vDataFrame_eval2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval2.html
+
+        .. note::
+
+            You can also create a feature in a Pandas-like way by assigning
+            a result to a vDataColumn. For example, similar to the above,
+            the ``eval`` operation can be expressed as:
+
+            .. code-block:: python
+
+                data["has_life_boat"] = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END"
+
+            Or:
+
+            .. code-block:: python
+
+                from verticapy.sql.functions import case_when
+
+                data["has_life_boat"] = case_when(data["boat"] == None, 0, 1)
+
+        .. note::
+
+            You can observe that a new feature "has_life_boat" is added
+            to the vDataFrame.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic`
         """
         if isinstance(expr, StringSQL):
             expr = str(expr)
