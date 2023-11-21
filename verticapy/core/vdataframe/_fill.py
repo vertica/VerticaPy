@@ -66,12 +66,19 @@ class vDFFill(vDFPivot):
             the input value.
         method: dict, optional
             Method used to impute the missing values.
-                auto    : Mean for the numerical and Mode for the
-                          categorical vDataColumns.
-                mean    : Average.
-                median  : Median.
-                mode    : Mode (most occurent element).
-                0ifnull : 0 when the vDataColumn is null, 1 otherwise.
+
+            - auto:
+                Mean for the numerical and Mode for the
+                categorical vDataColumns.
+            - mean:
+                Average.
+            - median:
+                Median.
+            - mode:
+                Mode (most occurent element).
+            - 0ifnull:
+                0 when the vDataColumn is null, 1 otherwise.
+
             More Methods are available in the vDataFrame[].fillna method.
         numeric_only: bool, optional
             If parameters 'val' and 'method' are empty and 'numeric_only'
@@ -83,6 +90,106 @@ class vDFFill(vDFPivot):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+            data = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see the count of each column to check
+        if any column has missing values.
+
+        .. code-block:: python
+
+            data.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html
+
+        From the above table, we can see that the
+        count of boats is less than 1234. This suggests
+        that it is missing some values.
+
+        Now we can use the ``fillna`` method
+        to fill those values. Let's use a custom
+        function to fill these values.
+
+
+        .. code-block:: python
+
+            data.fillna(
+                val = {"boat": "No boat"},
+                method = {
+                    "age": "mean",
+                    "embarked": "mode",
+                    "fare": "median"
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.fillna(
+                val = {"boat": "No boat"},
+                method = {
+                    "age": "mean",
+                    "embarked": "mode",
+                    "fare": "median"
+                }
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_final.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_final.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.interpolate`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
@@ -134,9 +241,14 @@ class vDFFill(vDFPivot):
             format:
             {"column1": "interpolation1" ..., "columnk": "interpolationk"}
             Interpolation methods must be one of the following:
-                bfill  : Interpolates with the final value of the time slice.
-                ffill  : Interpolates with the first value of the time slice.
-                linear : Linear interpolation.
+
+            - bfill:
+                Interpolates with the final value of the time slice.
+            - ffill:
+                Interpolates with the first value of the time slice.
+            - linear:
+                Linear interpolation.
+
         by: SQLColumns, optional
             vDataColumns used in the partition.
 
@@ -144,6 +256,99 @@ class vDFFill(vDFPivot):
         -------
         vDataFrame
             object result of the interpolation.
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            import verticapy as vp
+            vdf = vp.vDataFrame({
+                "time": ["1993-11-03 00:00:00",
+                        "1993-11-03 00:00:01",
+                        "1993-11-03 00:00:02",
+                        "1993-11-03 00:00:04",
+                        "1993-11-03 00:00:05",],
+                "val": [0., 1., 2., 4.,5.]})
+
+        Let us confirm that the correct data type is
+        associated with time:
+
+        .. ipython:: python
+
+            vdf["time"].astype("datetime")
+
+        .. ipython:: python
+            :suppress:
+
+            res=vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_interpolate_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_interpolate_data.html
+
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see that there is no data for the 3rd second.
+        To fill this, we can use the ``interpolate`` function
+        quite conveniently:
+
+        .. code-block:: python
+
+            vdf.interpolate(
+                ts = "time",
+                rule = "1 second",
+                method = {"val": "linear"},
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.interpolate(
+                ts = "time",
+                rule = "1 second",
+                method = {"val": "linear"},
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_interpolate_ouput.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_interpolate_ouput.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.fillna`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         method = format_type(method, dtype=dict)
         by = format_type(by, dtype=list)
@@ -207,6 +412,77 @@ class vDCFill(vDCMath):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            import verticapy as vp
+            vdf = vp.vDataFrame({"vals": [-20, -10, 0, -20, 10, 20, 120]})
+
+        .. ipython:: python
+            :suppress:
+
+            res=vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_clip_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_clip_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see that there are some extreme values in the data.
+        We may need to clip those values at extremes. For this we can
+        use the ``clip`` function.
+
+        .. code-block:: python
+
+            vdf["vals"].clip(lower=0,upper=100)
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf["vals"].clip(lower=0,upper=100)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_clip_ouput.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_clip_ouput.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.fillna`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         assert (not isinstance(lower, NoneType)) or (
             not isinstance(upper, NoneType)
@@ -240,13 +516,18 @@ class vDCFill(vDCMath):
         ----------
         method: str, optional
             Method used to fill the vDataColumn outliers.
-                mean      : Replaces  the  upper and lower outliers  by
-                            their respective average.
-                null      : Replaces  the  outliers  by the NULL  value.
-                winsorize : If 'use_threshold' is set to False, clips the
-                            vDataColumn using quantile(alpha) as lower
-                            bound and quantile(1-alpha) as upper bound;
-                            otherwise uses the lower and upper ZScores.
+
+            - mean:
+                Replaces  the  upper and lower outliers  by
+                their respective average.
+            - null:
+                Replaces  the  outliers  by the NULL  value.
+            - winsorize:
+                If 'use_threshold' is set to False, clips the
+                vDataColumn using quantile(alpha) as lower
+                bound and quantile(1-alpha) as upper bound;
+                otherwise uses the lower and upper ZScores.
+
         threshold: PythonNumber, optional
             Uses the Gaussian distribution  to define the outliers. After
             normalizing the data (Z-Score),  if the absolute value of the
@@ -262,6 +543,83 @@ class vDCFill(vDCMath):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            import verticapy as vp
+            vdf = vp.vDataFrame({"vals": [20, 10, 0, -20, 10, 20, 1200]})
+
+        .. ipython:: python
+            :suppress:
+
+            res=vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fill_outliers_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fill_outliers_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see that there are some extreme values in the data.
+        We may need to remove those values. For this we can
+        use the ``fill_outliers`` function.
+
+        .. code-block:: python
+
+            vdf["vals"].fill_outliers(method = "null", threshold = 1)
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf["vals"].fill_outliers(method = "null", threshold = 1)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fill_outliers_ouput.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fill_outliers_ouput.html
+
+        .. note::
+
+            We can use eith the ``alpha`` parameter or
+            the z-score ``threhsold`` parameter. By default
+            it uses the ``threhsold``.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.fillna`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -379,6 +737,92 @@ class vDCFill(vDCMath):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+            data = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see the count of each column to check
+        if any column has missing values.
+
+        .. code-block:: python
+
+            data.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vdc__fillna_count.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vdc__fillna_count.html
+
+        From the above table, we can see that the
+        count of boats is less than 1234. This suggests
+        that it is missing some values.
+
+        Now we can use the ``fillna`` method
+        to fill those values. Let's use a custom
+        function to fill these values.
+
+
+        .. code-block:: python
+
+            data["age"].fillna(method = "avg", by = ["pclass", "sex"])
+
+        .. ipython:: python
+            :suppress:
+
+            res = data["age"].fillna(method = "avg", by = ["pclass", "sex"])
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vdc_fillna_final.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vdc_fillna_final.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.interpolate`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         method = method.lower()
         by, order_by = format_type(by, order_by, dtype=list)
