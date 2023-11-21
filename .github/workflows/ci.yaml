@@ -36,8 +36,14 @@ jobs:
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "\l"
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
-        run: pip install tox
+        run: |
+          echo "Install tox"
+          pip install tox
+          if ${{ matrix.python-version }} != "3.12"; then
+            echo "Install tensorflow"
+            pip install tensorflow
+          fi
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
-          tox -e py -- ${{ matrix.python-version }}
+          tox -e py
