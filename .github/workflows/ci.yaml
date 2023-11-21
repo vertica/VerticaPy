@@ -39,15 +39,17 @@ jobs:
         run: |
           echo "Install tox"
           pip install tox
-          echo "*** python-version ***"
-          echo ${{ matrix.python-version }}
-          if ${{ matrix.python-version != '3.12' }}; then
-            echo "Install tensorflow"
-            pip install tensorflow
-          else
-            echo "Not install tensorflow"
-          fi
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
-          tox -e py
+          echo "*** Calling tox based on python-version ***"
+          echo ${{ matrix.python-version }}
+          if ${{ matrix.python-version == '3.9' }}; then
+            tox -e py39
+          elif ${{ matrix.python-version == '3.10' }}; then
+            tox -e py310
+          elif ${{ matrix.python-version == '3.11' }}; then
+            tox -e py311
+          elif ${{ matrix.python-version == '3.12' }}; then
+            tox -e py312
+          fi
