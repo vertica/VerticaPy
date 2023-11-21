@@ -164,7 +164,7 @@ class QueryProfiler:
     .. code-block:: python
 
         qprof = QueryProfiler(
-            transaction_id=45035996273800581, 
+            transaction_id=45035996273800581,
             statement_id=48,
         )
 
@@ -185,7 +185,7 @@ class QueryProfiler:
 
         titanic["age","fare"].mean()
 
-    We can use the ``current_relation`` attribute to extract 
+    We can use the ``current_relation`` attribute to extract
     the generated SQL and this can be directly input to the
     Query Profiler:
 
