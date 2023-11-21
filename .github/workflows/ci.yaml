@@ -24,7 +24,7 @@ jobs:
         timeout-minutes: 15
         run: |
           docker pull vertica/vertica-ce:latest
-          docker run -d -p 5433:5433 -p 5444:5444 \
+          docker run -d -v /tmp:/tmp -p 5433:5433 -p 5444:5444 \
             --name vertica_docker \
             vertica/vertica-ce
           echo "Vertica startup ..."
@@ -37,12 +37,12 @@ jobs:
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
         run: pip install tox
-      - name: Create a new OS user
+      - name: Monitor environment
         run: |
           echo "*** vertica_docker ***"
-          docker exec -u dbadmin vertica_docker ls -l / |grep tmp
+          docker exec -u dbadmin vertica_docker ls -l /tmp
           echo "*** host ***"
-          ls -l / |grep tmp
+          ls -l /tmp
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
