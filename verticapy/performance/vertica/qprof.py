@@ -109,7 +109,6 @@ class QueryProfiler:
 
     There are multiple ways how we can use the Query Profiler.
 
-
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
     - Directly from SQL query
@@ -124,15 +123,16 @@ class QueryProfiler:
     .. code-block:: python
 
         from verticapy.datasets import load_amazon
+
         amazon = load_amazon()
 
-    Then run the commpand:
+    Then run the command:
 
     .. code-block:: python
 
         query = amazon.groupby(
             columns = ["date"],
-            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"]
+            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"],
         )
 
     For every command that is run, a query is logged in
