@@ -41,7 +41,7 @@ jobs:
           pip install tox
           echo "*** python-version ***"
           echo ${{ matrix.python-version }}
-          if ${{ matrix.python-version }} != '3.12'; then
+          if ${{ matrix.python-version != '3.12' }}; then
             echo "Install tensorflow"
             pip install tensorflow
           else
