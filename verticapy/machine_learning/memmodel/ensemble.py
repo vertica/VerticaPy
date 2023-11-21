@@ -75,7 +75,7 @@ class Ensemble(InMemoryModel):
         tree_id: int, optional
             Unique  tree identifier,   an  integer  in  the
             range [0, n_estimators - 1].
-        \*args, \**kwargs: Any, optional
+        \*args, \*\*kwargs: Any, optional
             Arguments to pass to the 'to_graphviz'  method.
 
         Returns

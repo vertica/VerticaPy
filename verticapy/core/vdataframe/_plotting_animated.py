@@ -92,7 +92,7 @@ class vDFAnimatedPlot(vDFPlot):
             If set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        \**style_kwargs
+        \*\*style_kwargs
             Any optional parameter to pass to the plotting functions.
 
         Returns
@@ -243,7 +243,7 @@ class vDFAnimatedPlot(vDFPlot):
             If set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        \**style_kwargs
+        \*\*style_kwargs
             Any optional parameter to pass to the plotting functions.
 
         Returns
@@ -392,7 +392,7 @@ class vDFAnimatedPlot(vDFPlot):
             If set  to  True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        \**style_kwargs
+        \*\*style_kwargs
             Any  optional  parameter to pass to the  plotting
             functions.
 
@@ -554,7 +554,7 @@ class vDFAnimatedPlot(vDFPlot):
             If  set to True, the animation is repeated.
         chart: PlottingObject, optional
             The chart object used to plot.
-        \**style_kwargs
+        \*\*style_kwargs
             Any  optional parameter  to  pass to the plotting
             functions.
 
