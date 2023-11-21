@@ -39,8 +39,10 @@ jobs:
         run: pip install tox
       - name: Create a new OS user
         run: |
-          docker exec -u dbadmin vertica_docker cat /etc/passwd
-          cat /etc/passwd
+          echo "*** vertica_docker ***"
+          docker exec -u dbadmin vertica_docker ls -l / |grep tmp
+          echo "*** host ***"
+          ls -l / |grep tmp
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
