@@ -277,7 +277,9 @@ class TestModelManagement:
         "TENSORFLOW",
     ],
 )
-@pytest.mark.skipif(sys.version_info > (3, 11, 11), reason="requires python3.11 or lower")
+@pytest.mark.skipif(
+    sys.version_info > (3, 11, 11), reason="requires python3.11 or lower"
+)
 class TestModelManagementTF:
     """
     test class for Tensorflow import/export
