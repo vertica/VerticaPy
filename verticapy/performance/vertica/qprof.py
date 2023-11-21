@@ -31,13 +31,15 @@ class QueryProfiler:
     """
     Base class to profile queries.
 
-    The QueryProfiler is a valuable tool for anyone seeking
+    The ``QueryProfiler`` is a valuable tool for anyone seeking
     to comprehend the reasons behind a query's lack of
     performance. It incorporates a set of functions inspired
     by the original QPROF project, while introducing an enhanced
     feature set. This includes the capability to generate graphics
     and dashboards, facilitating a comprehensive exploration of
-    the data. Moreover, it offers greater convenience by allowing
+    the data.
+
+    Moreover, it offers greater convenience by allowing
     interaction with an object that encompasses various methods
     and expanded possibilities. To initiate the process, all that's
     required is a transaction_id and a statement_id, or simply a
@@ -96,7 +98,8 @@ class QueryProfiler:
     Examples
     --------
 
-    **Initalization**
+    Initalization
+    ^^^^^^^^^^^^^^
 
     First, let's import the QueryProfiler object.
 
@@ -104,10 +107,95 @@ class QueryProfiler:
 
         from verticapy.performance.vertica import QueryProfiler
 
-    To initialize the Query Profiler, you have the option to use
-    a query.
+    There are multiple ways how we can use the Query Profiler.
+
+
+    - From ``transaction_id`` and ``statement_id``
+    - From SQL generated from verticapy functions
+    - Directly from SQL query
+
+    **Transaction ID and Statement ID**
+
+    In this example, we run a groupby command on the
+    amazon dataset.
+
+    First, let us import the dataset:
+
+    .. code-block:: python
+
+        from verticapy.datasets import load_amazon
+        amazon = load_amazon()
+
+    Then run the commpand:
+
+    .. code-block:: python
+
+        query = amazon.groupby(
+            columns = ["date"],
+            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"]
+        )
+
+    For every command that is run, a query is logged in
+    the ``query_requests`` table. We can use this table to
+    fetch the ``transaction_id`` and ``statement_id``.
+    In order to access this table we can use SQL Magic.
+
+    .. code-block:: python
+
+        %load_ext verticapy.sql
+
+    .. code-block:: python
+
+        %%sql
+        SELECT *
+        FROM query_requests
+        WHERE request LIKE '%avg_number%';
+
+    .. hint::
+
+        Above we use the ``WHERE`` command in order to filter
+        only those results that match our query above.
+        You can use these filters to sift through the list
+        of queries.
+
+    Once we have the ``transaction_id`` and ``statement_id``
+    we can directly use it:
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(transaction_id=45035996273800581, statement_id=48)
+
+    **SQL generated from VerticaPy functions**
+
+    In this example, we can use the Titanic dataset:
+
+    .. code-block:: python
+
+        from verticapy.datasets import load_titanic
+        titanic= load_titanic()
+
+    Let us run a simple command to get the average
+    values of the two columns:
+
+    .. code-block:: python
+
+        titanic["age","fare"].mean()
+
+    We can use the ``to_sql`` attribute to extract the
+    generated SQL and this can be directly input to the
+    Query Profiler:
+
+    .. code-block:: python
+
+        qprof = QueryProfiler(titanic["age","fare"].mean().to_sql())
+
+    **Directly From SQL Query**
+
+    The last and most straight forward method is by
+    directly inputting the SQL to the Query Profiler:
 
     .. ipython:: python
+        :okwarning:
 
         qprof = QueryProfiler(
             "select transaction_id, statement_id, request, request_duration"
@@ -120,8 +208,8 @@ class QueryProfiler:
 
     .. ipython:: python
 
-        tid = self.transaction_id
-        sid = self.statement_id
+        tid = qprof.transaction_id
+        sid = qprof.statement_id
         print(f"tid={tid};sid={sid}")
 
     To avoid recomputing a query, you can also directly use a
@@ -131,7 +219,8 @@ class QueryProfiler:
 
         qprof = QueryProfiler(transaction_id=tid, statement_id=sid)
 
-    **Executing a QPROF step**
+    Executing a QPROF step
+    ^^^^^^^^^^^^^^^^^^^^^^^
 
     Numerous QPROF steps are accessible by directly using the corresponding
     methods. For instance, step 0 corresponds to the Vertica version, which
@@ -147,15 +236,220 @@ class QueryProfiler:
         section. For additional information, you can also utilize the
         ``help`` function.
 
-    "It is possible to access the same step by using the ``step`` method.
+    It is possible to access the same step by using the ``step`` method.
 
     .. ipython:: python
 
         qprof.step(idx=0)
 
-    **Report**
+    .. note::
 
-    Coming soon...
+        By changing the ``idx`` value above, you
+        can check out all the steps of the Query Profiler.
+
+    **SQL Query**
+
+    SQL query can be conveniently reproduced
+    in a color formatted version:
+
+    .. code-block:: python
+
+        qprof.get_request()
+
+    Query Performance Details
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+    **Query Execution Time**
+
+    To get the execution time of the entire query:
+
+    .. ipython:: python
+
+        qprof.get_qduration(unit="s")
+
+    .. note::
+
+        You can change the unit to "m" to get the
+        result in minutes.
+
+    **Query Execution Time Plots**
+
+    To get the time breakdown of all the
+    steps in a graphical output, we can call
+    the ``get_qsteps`` attribute.
+
+    .. code-block:: python
+
+        qprof.get_qsteps(chart_type="pie")
+
+    .. ipython:: python
+
+        import verticapy as vp
+        vp.set_option("plotting_lib", "plotly")
+        fig = qprof.get_qsteps(chart_type="pie")
+        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
+
+
+    .. note::
+
+        The same plot can also be plotted using
+        a bar plot by switching the ``chart_type``
+        to "bar".
+
+    **Query Plan**
+
+    To get the entire query plan:
+
+    .. ipython:: python
+
+        qprof.get_qplan()
+
+    **Query Plan Profile**
+
+    To visualize the time consumption of
+    query profile plan:
+
+    .. code-block:: python
+
+        qprof.get_qplan_profile(chart_type="pie")
+
+
+    .. ipython:: python
+
+        fig = qprof.get_qplan_profile(chart_type="pie")
+        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html
+
+    .. note::
+
+        The same plot can also be plotted using
+        a bar plot by switching the ``chart_type``
+        to "bar".
+
+    **CPU Time by Node and Path ID**
+
+    Another very important metric could be the CPU time
+    spent by each node. This can be visualized by:
+
+    .. code-block:: python
+
+        qprof.get_cpu_time(chart_type="bar")
+
+    .. ipython:: python
+
+        fig = qprof.get_qplan_profile(chart_type="pie")
+        fig.write_html("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html")
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html
+
+    In order to get the results in a tabular form,
+    just switch the ``show`` option to ``False''.
+
+    .. code-block:: python
+
+        qprof.get_cpu_time(show=False)
+
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_cpu_time(show=False)
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html
+
+    Complete Report
+    ^^^^^^^^^^^^^^^^
+
+    To obtain a comprehensive performance report,
+    including specific details such as which node
+    executed each operation and the corresponding
+    timing information, utilize the following syntax:
+
+    .. code-block:: python
+
+        qprof.get_qexecution_report()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_qexecution_report()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_full_report.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_full_report.html
+
+    Node/Clsuter Information
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    **Nodes**
+
+    To get node-wise performance infomation,
+    ``get_qexecution`` can be used:
+
+    .. code-block:: python
+
+        qprof.get_qexecution(
+            node_name="v_vdash_node0003",
+            metric="exec_time_ms",
+            chart_type="pie"
+        )
+
+    .. note::
+
+        The node name is different for different
+        configurations. You can search for the node
+        names in the full report.
+
+    **Cluster**
+
+    To get cluster configuration details, we can
+    use:
+
+    .. code-block:: python
+
+        qprof.get_cluster_config()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_cluster_config()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html
+
+    The Cluster Report can also be conveniently
+    extracted:
+
+    .. code-block:: python
+
+        qprof.get_rp_status()
+
+    .. ipython:: python
+        :suppress:
+
+        result = qprof.get_rp_status()
+        html_file = open("SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table_2.html
 
     .. important::
 
