@@ -132,14 +132,18 @@ class vDFEval(vDFInOut):
 
         .. code-block:: python
 
-            data.eval(name = "family_size",
-                expr = "parch + sibsp + 1")
+            data.eval(
+                name = "family_size",
+                expr = "parch + sibsp + 1",
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = data.eval(name = "family_size",
-                    expr = "parch + sibsp + 1")
+            res = data.eval(
+                name = "family_size",
+                expr = "parch + sibsp + 1",
+            )
             html_file = open("figures/core_vDataFrame_eval1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -151,25 +155,63 @@ class vDFEval(vDFInOut):
             You can observe that a new feature "family_size" is added
             to the vDataFrame.
 
+        .. note::
+
+            You can also create a feature in a Pandas-like way by assigning
+            a result to a vDataColumn. For example, similar to the above,
+            the ``eval`` operation can be expressed as:
+
+            .. code-block:: python
+
+                data["family_size"] = data["parch"] + data["sibsp"] + 1
+
+            Or:
+
+            .. code-block:: python
+
+                data["family_size"] = "parch + sibsp + 1"
+
         Let's use custom SQL code evaluation to create a new feature
         named "has_life_boat".
 
         .. code-block:: python
 
-            data.eval(name = "has_life_boat",
-                expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END")
+            data.eval(
+                name = "has_life_boat",
+                expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END",
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = data.eval(name = "has_life_boat",
-                    expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END")
+            res = data.eval(
+                name = "has_life_boat",
+                expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END",
+            )
             html_file = open("figures/core_vDataFrame_eval2.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval2.html
+
+        .. note::
+
+            You can also create a feature in a Pandas-like way by assigning
+            a result to a vDataColumn. For example, similar to the above,
+            the ``eval`` operation can be expressed as:
+
+            .. code-block:: python
+
+                data["has_life_boat"] = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END"
+
+            Or:
+
+            .. code-block:: python
+
+                from verticapy.sql.functions import case_when
+
+                data["has_life_boat"] = case_when(data["boat"] == None, 0, 1)
 
         .. note::
 
