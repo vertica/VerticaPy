@@ -31,7 +31,6 @@ import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from scipy.stats import f
-import tensorflow as tf
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
 import verticapy.machine_learning.vertica.tree as vpy_tree
@@ -41,6 +40,9 @@ from verticapy.connection import current_cursor
 from verticapy.tests_new.machine_learning.metrics.test_classification_metrics import (
     python_metrics,
 )
+
+if sys.version_info < (3, 12):
+    import tensorflow as tf
 
 le = LabelEncoder()
 
