@@ -66,12 +66,19 @@ class vDFFill(vDFPivot):
             the input value.
         method: dict, optional
             Method used to impute the missing values.
-                auto    : Mean for the numerical and Mode for the
-                          categorical vDataColumns.
-                mean    : Average.
-                median  : Median.
-                mode    : Mode (most occurent element).
-                0ifnull : 0 when the vDataColumn is null, 1 otherwise.
+
+            - auto:
+                Mean for the numerical and Mode for the
+                categorical vDataColumns.
+            - mean:
+                Average.
+            - median:
+                Median.
+            - mode:
+                Mode (most occurent element).
+            - 0ifnull:
+                0 when the vDataColumn is null, 1 otherwise.
+
             More Methods are available in the vDataFrame[].fillna method.
         numeric_only: bool, optional
             If parameters 'val' and 'method' are empty and 'numeric_only'
@@ -83,6 +90,106 @@ class vDFFill(vDFPivot):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+            data = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see the count of each column to check
+        if any column has missing values.
+
+        .. code-block:: python
+
+            data.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html
+
+        From the above table, we can see that the
+        count of boats is less than 1234. This suggests
+        that it is missing some values.
+
+        Now we can use the ``fillna`` method
+        to fill those values. Let's use a custom
+        function to fill these values.
+
+
+        .. code-block:: python
+
+            data.fillna(
+                val = {"boat": "No boat"},
+                method = {
+                    "age": "mean",
+                    "embarked": "mode",
+                    "fare": "median"
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.fillna(
+                val = {"boat": "No boat"},
+                method = {
+                    "age": "mean",
+                    "embarked": "mode",
+                    "fare": "median"
+                }
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_final.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_final.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.interpolate`
+            | :py:meth:`verticapy.vDataColumn.fill_outliers`
         """
         val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")

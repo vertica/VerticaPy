@@ -80,6 +80,77 @@ class vDFEval(vDFInOut):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a small dummy dataset.
+
+        .. ipython:: python
+
+            import verticapy as vp
+            vdf = vp.vDataFrame({"val": [3,4,5,10,12,23]})
+
+        .. ipython:: python
+            :suppress:
+
+            res = vp.vDataFrame({"val": [3,4,5,10,12,23]})
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_eval_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Now we can easily apply the ``eval`` function. In
+        this example we will create a ``CASE`` condition which
+        returns ``1`` when the value was above 9, and otherwise
+        it returns ``0``.
+
+        .. code-block:: python
+
+            vdf.eval(name = "result", expr = 'CASE WHEN "val" > 9 THEN 1 ELSE 0 END')
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.eval(name = "result", expr = 'CASE WHEN "val" > 9 THEN 1 ELSE 0 END')
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_eval_result.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval_result.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.agg`
         """
         if isinstance(expr, StringSQL):
             expr = str(expr)
