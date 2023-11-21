@@ -98,8 +98,8 @@ class QueryProfiler:
     Examples
     --------
 
-    Initalization
-    ^^^^^^^^^^^^^^
+    Initialization
+    ^^^^^^^^^^^^^^^
 
     First, let's import the QueryProfiler object.
 
@@ -108,7 +108,6 @@ class QueryProfiler:
         from verticapy.performance.vertica import QueryProfiler
 
     There are multiple ways how we can use the Query Profiler.
-
 
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
@@ -124,6 +123,7 @@ class QueryProfiler:
     .. code-block:: python
 
         from verticapy.datasets import load_amazon
+
         amazon = load_amazon()
 
     Then run the command:
@@ -132,7 +132,7 @@ class QueryProfiler:
 
         query = amazon.groupby(
             columns = ["date"],
-            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"]
+            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"],
         )
 
     For every command that is run, a query is logged in
@@ -163,7 +163,10 @@ class QueryProfiler:
 
     .. code-block:: python
 
-        qprof = QueryProfiler(transaction_id=45035996273800581, statement_id=48)
+        qprof = QueryProfiler(
+            transaction_id=45035996273800581, 
+            statement_id=48,
+        )
 
     **SQL generated from VerticaPy functions**
 
@@ -172,6 +175,7 @@ class QueryProfiler:
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
+
         titanic= load_titanic()
 
     Let us run a simple command to get the average
@@ -181,13 +185,14 @@ class QueryProfiler:
 
         titanic["age","fare"].mean()
 
-    We can use the ``to_sql`` attribute to extract the
-    generated SQL and this can be directly input to the
+    We can use the ``current_relation`` attribute to extract 
+    the generated SQL and this can be directly input to the
     Query Profiler:
 
     .. code-block:: python
 
-        qprof = QueryProfiler(titanic["age","fare"].mean().to_sql())
+        qprof = QueryProfiler(
+            "SELECT * FROM " + titanic["age","fare"].fillna().current_relation())
 
     **Directly From SQL Query**
 
@@ -259,7 +264,6 @@ class QueryProfiler:
     Query Performance Details
     ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
     **Query Execution Time**
 
     To get the execution time of the entire query:
@@ -293,7 +297,6 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
 
-
     .. note::
 
         The same plot can also be plotted using
@@ -316,7 +319,6 @@ class QueryProfiler:
     .. code-block:: python
 
         qprof.get_qplan_profile(chart_type="pie")
-
 
     .. ipython:: python
 
@@ -356,7 +358,6 @@ class QueryProfiler:
 
         qprof.get_cpu_time(show=False)
 
-
     .. ipython:: python
         :suppress:
 
@@ -368,8 +369,8 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cpu_time_table.html
 
-    Complete Report
-    ^^^^^^^^^^^^^^^^
+    Query Execution Report
+    ^^^^^^^^^^^^^^^^^^^^^^^
 
     To obtain a comprehensive performance report,
     including specific details such as which node
@@ -391,7 +392,7 @@ class QueryProfiler:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_full_report.html
 
-    Node/Clsuter Information
+    Node/Cluster Information
     ^^^^^^^^^^^^^^^^^^^^^^^^^
 
     **Nodes**
@@ -404,7 +405,7 @@ class QueryProfiler:
         qprof.get_qexecution(
             node_name="v_vdash_node0003",
             metric="exec_time_ms",
-            chart_type="pie"
+            chart_type="pie",
         )
 
     .. note::
@@ -674,7 +675,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         return vertica_version()
 
@@ -733,7 +734,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -797,7 +798,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -896,7 +897,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         query = f"""
@@ -966,7 +967,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1074,7 +1075,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         where = ""
@@ -1169,7 +1170,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT 
@@ -1222,7 +1223,6 @@ class QueryProfiler:
 
         To get the complete execution report use:
 
-
         .. code-block:: python
 
             qprof.get_qexecution_report()
@@ -1233,7 +1233,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1363,7 +1363,7 @@ class QueryProfiler:
             qprof.get_qexecution(
                 node_name="v_vdash_node0003",
                 metric="exec_time_ms",
-                chart_type="pie"
+                chart_type="pie",
             )
 
         .. note::
@@ -1375,7 +1375,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         cond = f"node_name = '{node_name}'"
         if not (isinstance(path_id, NoneType)):
@@ -1415,7 +1415,6 @@ class QueryProfiler:
                 " order by request_duration desc limit 10;"
             )
 
-
         The Cluster Report can also be conveniently
         extracted:
 
@@ -1429,7 +1428,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         return vDataFrame(query)
@@ -1463,7 +1462,6 @@ class QueryProfiler:
                 " order by request_duration desc limit 10;"
             )
 
-
         To get cluster configuration details, we can
         conveniently call the function:
 
@@ -1477,7 +1475,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`
+            :mod:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         return vDataFrame(query)
