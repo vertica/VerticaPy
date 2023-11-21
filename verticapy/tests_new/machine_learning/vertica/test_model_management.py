@@ -52,7 +52,7 @@ def remove_model_dir(folder_path=""):
             f"Model export output directory {folder_path} already exists. Hence, removing this folder."
         )
         rm_proc = subprocess.Popen(
-            f"rm -rf {folder_path}",
+            f"sudo rm -rf {folder_path}",
             stdout=sys.stdout,
             stderr=sys.stderr,
             shell=True,
