@@ -37,6 +37,10 @@ jobs:
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
         run: pip install tox
+      - name: Create a new OS user
+        run: |
+          docker exec -u dbadmin vertica_docker cat /etc/passwd
+          cat /etc/passwd
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
