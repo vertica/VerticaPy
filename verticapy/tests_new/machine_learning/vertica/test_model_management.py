@@ -277,14 +277,14 @@ class TestModelManagement:
         "TENSORFLOW",
     ],
 )
-@pytest.mark.skipif(sys.version_info > (3, 11), reason="requires python3.11 or lower")
+@pytest.mark.skipif(sys.version_info > (3, 11, 11), reason="requires python3.11 or lower")
 class TestModelManagementTF:
     """
     test class for Tensorflow import/export
     """
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+        sys.version_info > (3, 11, 11), reason="keras is not supported for Python 3.12"
     )
     def test_tf_export(self, get_py_model, schema_loader, category, model_class):
         """
@@ -303,7 +303,7 @@ class TestModelManagementTF:
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+        sys.version_info > (3, 11, 11), reason="keras is not supported for Python 3.12"
     )
     def test_tf_import(self, get_py_model, schema_loader, category, model_class):
         """
@@ -315,7 +315,7 @@ class TestModelManagementTF:
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
 
     @pytest.mark.skipif(
-        sys.version_info > (3, 11), reason="keras is not supported for Python 3.12"
+        sys.version_info > (3, 11, 11), reason="keras is not supported for Python 3.12"
     )
     def test_tf_load_model(self, get_py_model, schema_loader, model_class, category):
         """
