@@ -145,7 +145,7 @@ class vDFEval(vDFInOut):
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_eval1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval1.html
 
         .. note::
             You can observe that a new feature "family_size" is added
@@ -169,7 +169,7 @@ class vDFEval(vDFInOut):
             html_file.close()
 
         .. raw:: html
-            :file: ../../../figures/core_vDataFrame_eval2.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_eval2.html
 
         .. note::
 
