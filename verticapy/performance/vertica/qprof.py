@@ -126,7 +126,7 @@ class QueryProfiler:
         from verticapy.datasets import load_amazon
         amazon = load_amazon()
 
-    Then run the commpand:
+    Then run the command:
 
     .. code-block:: python
 
