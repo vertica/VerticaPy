@@ -109,6 +109,7 @@ class QueryProfiler:
 
     There are multiple ways how we can use the Query Profiler.
 
+
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
     - Directly from SQL query
@@ -123,16 +124,15 @@ class QueryProfiler:
     .. code-block:: python
 
         from verticapy.datasets import load_amazon
-
         amazon = load_amazon()
 
-    Then run the command:
+    Then run the commpand:
 
     .. code-block:: python
 
         query = amazon.groupby(
             columns = ["date"],
-            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"],
+            expr = ["MONTH(date) AS month, AVG(number) AS avg_number"]
         )
 
     For every command that is run, a query is logged in
@@ -638,6 +638,43 @@ class QueryProfiler:
         tuple
             List containing the version information.
             MAJOR, MINOR, PATCH, POST
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. ipython:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. ipython:: python
+            :okwarning:
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the Verica version by:
+
+        .. ipython:: python
+
+            qprof.get_version()
+
+        .. note::
+
+            When using this function in a Jupyter environment
+            you should be able to see the SQL query nicely formatted
+            as well as color coded for ease of readability.
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         return vertica_version()
 
@@ -666,6 +703,37 @@ class QueryProfiler:
         -------
         str
             SQL query.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the SQL query by:
+
+        .. ipython:: python
+            :okwarning:
+
+            qprof.get_request()
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -687,19 +755,49 @@ class QueryProfiler:
         unit: str, optional
             Time Unit.
 
-             - s:
+            - s:
                 second
 
-             - m:
+            - m:
                 minute
 
-             - h:
+            - h:
                 hour
 
         Returns
         -------
         float
             Query duration.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the execution time by:
+
+        .. ipython:: python
+
+            qprof.get_qduration(unit = "s")
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = f"""
             SELECT
@@ -735,24 +833,25 @@ class QueryProfiler:
         unit: str, optional
             Unit used to draw the chart.
 
-             - s:
+            - s:
                 second
 
-             - m:
+            - m:
                 minute
 
-             - h:
+            - h:
                 hour
+
         chart_type: str, optional
             Chart Type.
 
-             - bar:
+            - bar:
                 Bar Chart.
 
-             - barh:
+            - barh:
                 Horizontal Bar Chart.
 
-             - pie:
+            - pie:
                 Pie Chart.
 
         show: bool, optional
@@ -763,6 +862,41 @@ class QueryProfiler:
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can get the time breakdown of all the
+        steps in a graphical output, we can call
+        the ``get_qsteps`` attribute.
+
+        .. code-block:: python
+
+            qprof.get_qsteps(chart_type="pie")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_pie_plot.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         div = self._get_interval_str(unit)
         query = f"""
@@ -803,6 +937,36 @@ class QueryProfiler:
         -------
         str
             Query Plan.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can easily call the function to get the entire query plan:
+
+            .. ipython:: python
+
+                qprof.get_qplan()
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = f"""
             SELECT
@@ -850,24 +1014,24 @@ class QueryProfiler:
         unit: str, optional
             Unit used to draw the chart.
 
-             - s:
+            - s:
                 second
 
-             - m:
+            - m:
                 minute
 
-             - h:
+            - h:
                 hour
         chart_type: str, optional
             Chart Type.
 
-             - bar:
+            - bar:
                 Bar Chart.
 
-             - barh:
+            - barh:
                 Horizontal Bar Chart.
 
-             - pie:
+            - pie:
                 Pie Chart.
 
         show: bool, optional
@@ -878,6 +1042,39 @@ class QueryProfiler:
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        We can visualize the query plan profile:
+
+        .. code-block:: python
+
+            qprof.get_qplan_profile(chart_type="pie")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_qplan_profile.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         div = self._get_interval_str(unit)
         where = ""
@@ -924,10 +1121,10 @@ class QueryProfiler:
         chart_type: str, optional
             Chart Type.
 
-             - bar:
+            - bar:
                 Bar Chart.
 
-             - barh:
+            - barh:
                 Horizontal Bar Chart.
         reverse: bool, optional
             If set to True, the Plotting object
@@ -940,6 +1137,39 @@ class QueryProfiler:
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To visualize the CPU time spent by each node:
+
+        .. code-block:: python
+
+            qprof.get_cpu_time(chart_type="bar")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = f"""
             SELECT 
@@ -970,6 +1200,40 @@ class QueryProfiler:
         -------
         vDataFrame
             report.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get the complete execution report use:
+
+
+        .. code-block:: python
+
+            qprof.get_qexecution_report()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_full_report.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = f"""
             SELECT
@@ -1054,13 +1318,13 @@ class QueryProfiler:
         chart_type: str, optional
             Chart Type.
 
-             - bar:
+            - bar:
                 Bar Chart.
 
-             - barh:
+            - barh:
                 Horizontal Bar Chart.
 
-             - pie:
+            - pie:
                 Pie Chart.
 
         show: bool, optional
@@ -1071,6 +1335,47 @@ class QueryProfiler:
         -------
         obj
             Plotting Object.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+        To get node-wise performance infomation,
+        ``get_qexecution`` can be used:
+
+        .. code-block:: python
+
+            qprof.get_qexecution(
+                node_name="v_vdash_node0003",
+                metric="exec_time_ms",
+                chart_type="pie"
+            )
+
+        .. note::
+
+            The node name is different for different
+            configurations. You can search for the node
+            names in the full report.
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         cond = f"node_name = '{node_name}'"
         if not (isinstance(path_id, NoneType)):
@@ -1090,6 +1395,41 @@ class QueryProfiler:
         -------
         vDataFrame
             report.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+
+        The Cluster Report can also be conveniently
+        extracted:
+
+        .. code-block:: python
+
+            qprof.get_rp_status()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table_2.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         return vDataFrame(query)
@@ -1103,6 +1443,41 @@ class QueryProfiler:
         -------
         vDataFrame
             report.
+
+        Examples
+        ---------
+
+        First, let's import the QueryProfiler object.
+
+        .. code-block:: python
+
+            from verticapy.performance.vertica import QueryProfiler
+
+        Then we can create a query:
+
+        .. code-block:: python
+
+            qprof = QueryProfiler(
+                "select transaction_id, statement_id, request, request_duration"
+                " from query_requests where start_timestamp > now() - interval'1 hour'"
+                " order by request_duration desc limit 10;"
+            )
+
+
+        To get cluster configuration details, we can
+        conveniently call the function:
+
+        .. code-block:: python
+
+            qprof.get_cluster_config()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cluster_table.html
+
+        .. note::
+
+            For more details, please look at
+            :mod:`verticapy.performance.vertica.QueryProfiler`
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         return vDataFrame(query)
