@@ -298,13 +298,13 @@ class vDFUtils(PlottingUtils):
 
         .. ipython:: python
 
-            data.get_match_index("PclaSs", self.get_columns())
+            data.get_match_index("PclaSs", data.get_columns())
 
         Let's examine an exact match in more detail.
 
         .. ipython:: python
 
-            data.get_match_index("PclaSs", self.get_columns(), False) # Returns None
+            data.get_match_index("PclaSs", data.get_columns(), False) # Returns None
 
         .. note::
 
