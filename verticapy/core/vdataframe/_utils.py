@@ -32,6 +32,10 @@ class vDFUtils(PlottingUtils):
 
     @staticmethod
     def _levenshtein(s: str, t: str) -> int:
+        """
+        Returns Levenshtein distance between
+        two strings.
+        """
         rows = len(s) + 1
         cols = len(t) + 1
         dist = [[0 for x in range(cols)] for x in range(rows)]
@@ -137,11 +141,17 @@ class vDFUtils(PlottingUtils):
 
             data = vpd.load_titanic()
 
-        Let's format few vcolumns:
+        Let's format few vDataColumns:
 
         .. ipython:: python
 
             data.format_colnames(columns = ['home.dest', 'age'])
+
+        .. note::
+
+            This function is crucial for cleaning variables at the
+            beginning of the function. Understanding it can be beneficial
+            for developing new vDataFrame methods.
         """
         if len(args) > 0:
             result = []
@@ -221,6 +231,86 @@ class vDFUtils(PlottingUtils):
     ) -> Optional[int]:
         """
         Returns the matching index.
+
+        Parameters
+        ----------
+        x: str
+            Input column.
+        col_list: list
+            List of columns.
+        str_check: bool
+            If set to True, the column name must
+            exactly match one of the list.
+
+        Returns
+        -------
+        int
+            index.
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's take a closer look at a match.
+
+        .. ipython:: python
+
+            data.get_match_index("PclaSs", data.get_columns())
+
+        Let's examine an exact match in more detail.
+
+        .. ipython:: python
+
+            data.get_match_index("PclaSs", data.get_columns(), False) # Returns None
+
+        .. note::
+
+            This function is employed to render the vDataFrame
+            case-insensitive, enabling access to the correct
+            element.
         """
         for idx, col in enumerate(col_list):
             if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
@@ -291,17 +381,25 @@ class vDFUtils(PlottingUtils):
 
             data = vpd.load_titanic()
 
-        Let's check if a column named "pclass" available in our vdataframe
+        Let's check if a column named "pclass" available in
+        our vDataFrame.
 
         .. ipython:: python
 
             data.is_colname_in("pclass")
 
-        Let's check if a column named "class" available in our vdataframe
+        Let's check if a column named "class" available in
+        our vDataFrame.
 
         .. ipython:: python
 
             data.is_colname_in("class")
+
+        .. note::
+
+            This function is crucial for cleaning variables at the
+            beginning of the function. Understanding it can be beneficial
+            for developing new vDataFrame methods.
         """
         columns = self.get_columns()
         column = quote_ident(column).lower()
