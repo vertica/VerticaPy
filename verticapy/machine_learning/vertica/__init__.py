@@ -56,7 +56,7 @@ from verticapy.machine_learning.vertica.neighbors import (
     LocalOutlierFactor,
 )
 from verticapy.machine_learning.vertica.pipeline import Pipeline
-from verticapy.machine_learning.vertica.pmml import PMMLModel
+from verticapy.machine_learning.vertica.pmml.base import PMMLModel
 from verticapy.machine_learning.vertica.preprocessing import (
     balance,
     CountVectorizer,
@@ -67,7 +67,7 @@ from verticapy.machine_learning.vertica.preprocessing import (
     StandardScaler,
 )
 from verticapy.machine_learning.vertica.svm import LinearSVC, LinearSVR
-from verticapy.machine_learning.vertica.tensorflow import TensorFlowModel
+from verticapy.machine_learning.vertica.tensorflow.base import TensorFlowModel
 from verticapy.machine_learning.vertica.tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.9, "3.10", 3.11, 3.12]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
         timeout-minutes: 15
         run: |
           docker pull vertica/vertica-ce:latest
-          docker run -d -p 5433:5433 -p 5444:5444 \
+          docker run -d -v /tmp:/tmp -p 5433:5433 -p 5444:5444 \
             --name vertica_docker \
             vertica/vertica-ce
           echo "Vertica startup ..."
@@ -36,8 +36,20 @@ jobs:
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "\l"
           docker exec -u dbadmin vertica_docker /opt/vertica/bin/vsql -c "select version();"
       - name: Install dependencies
-        run: pip install tox
+        run: |
+          echo "Install tox"
+          pip install tox
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
-          tox -e py
+          echo "*** Calling tox based on python-version ***"
+          echo ${{ matrix.python-version }}
+          if ${{ matrix.python-version == '3.9' }}; then
+            tox -e py39
+          elif ${{ matrix.python-version == '3.10' }}; then
+            tox -e py310
+          elif ${{ matrix.python-version == '3.11' }}; then
+            tox -e py311
+          elif ${{ matrix.python-version == '3.12' }}; then
+            tox -e py312
+          fi
