@@ -31,6 +31,7 @@ import xgboost as xgb
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.arima.model import ARIMA
 from scipy.stats import f
+import verticapy as vp
 import verticapy.machine_learning.vertica as vpy_linear_model
 import verticapy.machine_learning.vertica.svm as vpy_svm
 import verticapy.machine_learning.vertica.tree as vpy_tree
@@ -45,6 +46,11 @@ if sys.version_info < (3, 12):
     import tensorflow as tf
 
 le = LabelEncoder()
+
+
+@pytest.fixture(autouse=True)
+def set_plotting_lib():
+    vp.set_option("plotting_lib", "matplotlib")
 
 
 @pytest.fixture(name="get_vpy_model", scope="function")
