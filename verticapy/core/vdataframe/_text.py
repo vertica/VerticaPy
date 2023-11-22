@@ -436,6 +436,7 @@ class vDCText(vDCCorr):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             res = data["name"].str_extract(pat = "([A-Za-z])+\\.")
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_text_str_extract.html", "w")
@@ -510,6 +511,7 @@ class vDCText(vDCCorr):
 
         .. ipython:: python
             :suppress:
+            :okwarning:
 
             res = data["name"].str_replace(
                 to_replace  = "([A-Za-z])+\\.",
