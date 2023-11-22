@@ -55,21 +55,21 @@ class vDFScaler(vDFText):
 
                 .. math::
 
-                    Z_score(x) = (x - x_{avg}) / x_{std}
+                    Z_{score}(x) = (x - x_{avg}) / x_{std}
 
              - robust_zscore:
                 Normalization using the Robust Z-Score.
 
                 .. math::
 
-                    Z_rscore(x) = (x - x_{med}) / (1.4826 * x_{mad})
+                    Z_{rscore}(x) = (x - x_{med}) / (1.4826 * x_{mad})
 
              - minmax:
                 Normalization using the MinMax.
 
                 .. math::
 
-                    Z_minmax(x) = (x - x_{min}) / (x_{max} - x_{min})
+                    Z_{minmax}(x) = (x - x_{min}) / (x_{max} - x_{min})
 
         Returns
         -------
