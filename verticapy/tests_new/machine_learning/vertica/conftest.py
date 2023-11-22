@@ -42,9 +42,11 @@ from verticapy.tests_new.machine_learning.metrics.test_classification_metrics im
 
 le = LabelEncoder()
 
+
 @pytest.fixture(autouse=True)
 def set_plotting_lib():
     vp.set_option("plotting_lib", "matplotlib")
+
 
 @pytest.fixture(name="get_vpy_model", scope="function")
 def get_vpy_model_fixture(

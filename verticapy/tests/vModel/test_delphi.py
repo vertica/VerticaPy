@@ -31,6 +31,7 @@ set_option("print_info", False)
 set_option("random_state", 0)
 set_option("plotting_lib", "matplotlib")
 
+
 @pytest.fixture(scope="module")
 def amazon_vd():
     amazon = load_amazon()
