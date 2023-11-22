@@ -429,7 +429,7 @@ class Tree(InMemoryModel):
         ----------
         pic_path: str, optional
             Absolute  path to  save the image of the  tree.
-        \*args, \*\*kwargs: Any, optional
+        *args, **kwargs: Any, optional
             Arguments to pass to  the 'to_graphviz' method.
 
         Returns

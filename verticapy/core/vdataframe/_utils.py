@@ -69,7 +69,7 @@ class vDFUtils(PlottingUtils):
 
         Parameters
         ----------
-        \*args: str / list / dict, optional
+        *args: str / list / dict, optional
             List of columns' names to format. This allows you
             to use multiple objects as input and to format all
             of them.

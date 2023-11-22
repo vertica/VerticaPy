@@ -319,11 +319,11 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     --------
     .. code-block:: python
 
+        import verticapy as vp
         from verticapy.sql.geo import split_polygon_n
-        from verticapy import TableSample
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
-        poly = TableSample({"triangle": [p]}).to_vdf()
+        poly = vp.vDataFrame({"triangle": [p]})
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white",
                                   edgecolor="black")
@@ -331,11 +331,11 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     .. ipython:: python
         :suppress:
 
+        import verticapy as vp
         from verticapy.sql.geo import split_polygon_n
-        from verticapy import TableSample
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
-        poly = TableSample({"triangle": [p]}).to_vdf()
+        poly = vp.vDataFrame({"triangle": [p]})
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white", edgecolor="black")
         @savefig sql_geo_functions_split_polygon_n.png
