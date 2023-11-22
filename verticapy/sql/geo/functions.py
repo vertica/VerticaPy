@@ -291,7 +291,7 @@ def intersect(
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
-    Splits a polygon into  (nbins\ :sup:`2`) smaller
+    Splits a polygon into  (nbins :sup:`2`) smaller
     polygons of approximately equal total area.
     This  process  is inexact,  and  the  split
     polygons  have approximated edges;  greater
