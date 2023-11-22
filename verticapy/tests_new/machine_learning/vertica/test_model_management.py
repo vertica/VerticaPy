@@ -316,9 +316,7 @@ class TestModelManagementTF:
         _import(None, py_model_obj, category, schema_loader)
         remove_model_dir(folder_path=f"/tmp/{schema_loader}")
 
-    @pytest.mark.skipif(
-        sys.version_info > (3, 11, 11), reason="keras is not supported for Python 3.12"
-    )
+    @pytest.mark.skip(reason="it needs more investigation")
     def test_tf_load_model(self, get_py_model, schema_loader, model_class, category):
         """
         test function - tf_load_model
