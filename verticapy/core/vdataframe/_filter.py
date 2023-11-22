@@ -171,11 +171,12 @@ class vDFFilter(vDFAgg):
             Column used to compute the different categories.
         method: str, optional
             The method with which to sample the data.
-                
-             - over: 
+
+             - over:
                 Oversampling.
              - under:
                 Undersampling.
+
         x: float, optional
             The desired ratio between the majority class and minority
             classes.
@@ -646,7 +647,7 @@ class vDFFilter(vDFAgg):
             vdf = vp.vDataFrame(
                 {
                     "col1": [1, 2, 3],
-                    "col2": [3, 3, 1], 
+                    "col2": [3, 3, 1],
                     "col":['a', 'b', 'v']
                 }
             )
@@ -1070,8 +1071,8 @@ class vDFFilter(vDFAgg):
 
             .. warning::
 
-                Ensure to use the `&&` operator and correctly place parentheses. 
-                The `and` operator is specific to Python, and its behavior cannot 
+                Ensure to use the ``&&`` operator and correctly place parentheses.
+                The ``and`` operator is specific to Python, and its behavior cannot
                 be changed.
 
         .. seealso::
@@ -1539,13 +1540,14 @@ class vDFFilter(vDFAgg):
             downsamples to approximatively 33% of the relation.
         method: str, optional
             The Sample method.
-            
+
              - random:
                 Random Sampling.
-             - systematic: 
+             - systematic:
                 Systematic Sampling.
              - stratified:
                 Stratified Sampling.
+
         by: SQLColumns, optional
             vDataColumns used in the partition.
 
@@ -1879,7 +1881,7 @@ class vDCFilter(vDCAgg):
         .. warning::
 
             Dropping a vDataColumn  can make the vDataFrame
-            "heavier" if it is  used to compute other 
+            "heavier" if it is  used to compute other
             vDataColumns.
 
         Parameters
@@ -1920,7 +1922,7 @@ class vDCFilter(vDCAgg):
             vdf = vp.vDataFrame(
                 {
                     "col1": [1, 2, 3],
-                    "col2": [3, 3, 1], 
+                    "col2": [3, 3, 1],
                     "col":['a', 'b', 'v'],
                 },
             )

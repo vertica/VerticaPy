@@ -715,23 +715,23 @@ class vDCFill(vDCMath):
             Value used to impute the vDataColumn.
         method: dict, optional
             Method used to impute the missing values.
-            
-            - auto: 
+
+            - auto:
                 Mean  for  the  numerical  and  Mode  for  the
                 categorical vDataColumns.
-            - bfill: 
+            - bfill:
                 Back Propagation of the next element (Constant
                 Interpolation).
-            - ffill: 
+            - ffill:
                 Propagation  of  the  first element  (Constant
                 Interpolation).
-            - mean: 
+            - mean:
                 Average.
-            - median: 
+            - median:
                 Median.
-            - mode: 
+            - mode:
                 Mode (most occurent element).
-            - 0ifnull: 
+            - 0ifnull:
                 0 when the vDataColumn is null, 1 otherwise.
         expr: str, optional
             SQL string.
