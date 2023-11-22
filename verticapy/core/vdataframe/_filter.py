@@ -64,6 +64,87 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
+                        "1993-11-03 00:00:01",
+                        "1993-11-03 00:00:02",
+                        "1993-11-04 00:00:01",
+                        "1993-11-04 00:00:02",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_at_time_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_at_time_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In the above data, we have values for two dates.
+        We can use the ``at_time`` filter to get the required
+        time-stamp values:
+
+        .. code-block:: python
+
+            vdf.at_time(ts = "time", time = "00:00:01")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.at_time(ts = "time", time = "00:00:01")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_at_time_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_at_time_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.between`
         """
         self.filter(f"{self.format_colnames(ts)}::time = '{time}'")
         return self
@@ -79,17 +160,23 @@ class vDFFilter(vDFAgg):
         """
         Balances the dataset using the input method.
 
-        \u26A0 Warning : If the data is not sorted, the generated
-                         SQL code may differ between attempts.
+        .. warning :
+
+            If the data is not sorted, the generated
+            SQL code may differ between attempts.
 
         Parameters
         ----------
         column: str
             Column used to compute the different categories.
         method: str, optional
-            The method with which to sample the data:
-                over   : oversampling
-                under  : undersampling
+            The method with which to sample the data.
+
+             - over:
+                Oversampling.
+             - under:
+                Undersampling.
+
         x: float, optional
             The desired ratio between the majority class and minority
             classes.
@@ -100,6 +187,121 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             balanced vDataFrame
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will create a toy imbalanced
+        dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "category" : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    "val": [12, 12, 14, 15, 10, 9, 10, 12, 12, 14, 16],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In the above data, we can see that there are many more
+        0s than 1s in the category column. We can conveniently
+        plot the historgram to visualize the skewness:
+
+        .. code-block:: python
+
+            vdf["category"].hist()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = vdf["category"].hist(width = 300)
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_hist_before.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_hist_before.html
+
+        Now we can use the ``balance`` function to
+        fix this:
+
+        .. ipython:: python
+
+            balanced_vdf = vdf.balance(column="category", x= 0.5)
+
+        .. ipython:: python
+            :suppress:
+
+            res = balanced_vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_data_2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_data_2.html
+
+        .. note::
+
+            By giving ``x`` value of 0.5, we have ensured
+            that the ratio between the two classes is not
+            more skewed than this.
+
+        Let's visualize the distribution after the balancing.
+
+        .. code-block:: python
+
+            balanced_vdf["category"].hist()
+
+        .. ipython:: python
+            :suppress:
+
+            vp.set_option("plotting_lib", "plotly")
+            fig = balanced_vdf["category"].hist(width = 300)
+            fig.write_html("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_hist_after.html")
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_balance_hist_after.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.between`
         """
         if not 0 <= x <= 1:
             raise ValueError("Parameter 'x' must be between 0 and 1")
@@ -165,6 +367,86 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
+                        "1993-11-02",
+                        "1993-11-03",
+                        "1993-11-04",
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4.,5.],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``between`` we can easily filter through
+        time-series values:
+
+        .. code-block:: python
+
+            vdf.between(column= "time", start= "1993-11-02", end = "1993-11-04")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.between(column= "time", start= "1993-11-02", end = "1993-11-04")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         if not isinstance(start, NoneType) and not isinstance(end, NoneType):
             condition = f"BETWEEN '{start}' AND '{end}'"
@@ -210,6 +492,93 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
+                        "1993-11-03 00:00:01",
+                        "1993-11-03 00:00:02",
+                        "1993-11-03 00:00:03",
+                        "1993-11-03 00:00:04",
+                        "1993-11-04 00:00:01",
+                        "1993-11-04 00:00:02",
+                    ],
+                    "val": [0., 1., 2., 4., 5., 3., 2.],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_time_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_time_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``between_time`` we can easily filter through
+        time-series values:
+
+        .. code-block:: python
+
+            vdf.between_time(ts= "time", start_time= "00:00:01", end_time = "00:00:03")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.between_time(ts= "time", start_time= "00:00:01", end_time = "00:00:03")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_time_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_between_time_res.html
+
+        Notice that the function ignores the dates, and outputs
+        all the times in that range. This is because it is
+        only using the time information from ``ts`` column
+        and ignoring the date information.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.between`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         if not isinstance(start_time, NoneType) and not (
             isinstance(end_time, NoneType)
@@ -234,9 +603,12 @@ class vDFFilter(vDFAgg):
         Drops  the input vDataColumns  from the vDataFrame.  Dropping
         vDataColumns means they are not selected in the final SQL code
         generation.
-        Be careful when using this method. It can make the vDataFrame
-        structure  heavier if other  vDataColumns are  computed
-        using the dropped vDataColumns.
+
+        .. warning::
+
+            Be careful when using this method. It can make the vDataFrame
+            structure  heavier if other  vDataColumns are  computed
+            using the dropped vDataColumns.
 
         Parameters
         ----------
@@ -247,6 +619,82 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy dataset with
+        three columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [3, 3, 1],
+                    "col":['a', 'b', 'v']
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``drop`` we can take out any column that we
+        do not need:
+
+        .. ipython:: python
+
+            vdf.drop("col1")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.drop_duplicates`
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -260,12 +708,14 @@ class vDFFilter(vDFAgg):
         Filters the duplicates using a partition by the input
         vDataColumns.
 
-        \u26A0 Warning : Dropping  duplicates  will make the  vDataFrame
-                         structure heavier. It is recommended that you
-                         check the   current   structure   using   the
-                         'current_relation'  method and save it using
-                         the 'to_db' method, using the parameters
-                         'inplace = True' and 'relation_type = table'.
+        .. warning :
+
+            Dropping  duplicates  will make the  vDataFrame
+            structure heavier. It is recommended that you
+            check the   current   structure   using   the
+            ``current_relation``  method and save it using
+            the ``to_db`` method, using the parameters
+            ``inplace = True`` and ``relation_type = table``.
 
         Parameters
         ----------
@@ -277,6 +727,84 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy dataset with
+        three columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3, 1],
+                    "col2": [3, 3, 1, 3],
+                    "col":['a', 'b', 'v', 'a'],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_duplicates_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_duplicates_data.html
+
+        In the above dataset, notice that the **first**
+        and **last** entries are identical i.e. duplicates.
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``drop_duplicates`` we can take out any duplicates:
+
+        .. code-block:: python
+
+            vdf.drop_duplicates()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.drop_duplicates()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_duplicates_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_drop_duplicates_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.drop`
         """
         columns = format_type(columns, dtype=list)
         count = self.duplicated(columns=columns, count=True)
@@ -315,6 +843,111 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        In the above dataset, notice that the **first**
+        and **last** entries are identical i.e. duplicates.
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see the count of each column to check
+        if any column has missing values.
+
+        .. code-block:: python
+
+            vdf.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count.html
+
+        From the above table, we can see that there are
+        multiple columns with missing/NA values.
+
+        Using ``dropna``, we can select which columns
+        do we want the dataset to filter by:
+
+        .. ipython:: python
+
+            vdf.dropna(columns = ["fare", "embarked", "age"])
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_dropna_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_dropna_res.html
+
+        Now again, if we look at the count, we will
+        notice that the total count has decreased.
+
+        .. code-block:: python
+
+            vdf.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count_2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_count_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.drop`
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
@@ -348,7 +981,7 @@ class vDFFilter(vDFAgg):
             List of expressions. For example, to keep only the
             records where the vDataColumn 'column' is greater
             than 5 and less than 10, you can write:
-            ['"column" > 5', '"column" < 10'].
+            ``['"column" > 5', '"column" < 10']``.
         force_filter: bool, optional
             Default Value: True
             When set to True, the vDataFrame will be modified
@@ -364,6 +997,88 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``filter``, we can create custom filters:
+
+        .. code-block:: python
+
+            vdf.filter("sex = 'female' AND pclass = 1")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_filter_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_filter_res.html
+
+        .. note::
+
+            Similarly, the same can be done in a Pandas-like way:
+
+            .. code-block:: python
+
+                vdf.filter((vdf["sex"] == "female") && (vdf["pclass"] == 1))
+
+            Or:
+
+            .. code-block:: python
+
+                vdf = vdf[(vdf["sex"] == "female") && (vdf["pclass"] == 1)]
+
+            .. warning::
+
+                Ensure to use the ``&&`` operator and correctly place parentheses.
+                The ``and`` operator is specific to Python, and its behavior cannot
+                be changed.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.drop`
         """
         force_filter = True
         if "force_filter" in kwargs:
@@ -466,6 +1181,92 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
+                        "1993-11-02",
+                        "1993-11-03",
+                        "1993-11-04",
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
+
+        We can ensure that the data type is ``datetime``.
+
+        .. ipython:: python
+
+           vdf["time"].astype("datetime")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_first_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_first_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``first`` we can easily filter through
+        to get the first set of values:
+
+        .. code-block:: python
+
+            vdf.first(ts="time", offset="1 days")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.first(ts="time", offset="1 days")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_first_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_first_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         ts = self.format_colnames(ts)
         first_date = _executeSQL(
@@ -495,13 +1296,86 @@ class vDFFilter(vDFAgg):
             dictionary must represent a vDataColumn. For example,
             to check  if Badr Ouali and Fouad Teban  are in  the
             vDataFrame. You can write the following dict:
-            {"name": ["Teban", "Ouali"],
-             "surname": ["Fouad", "Badr"]}
+            ``{"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}``
 
         Returns
         -------
         vDataFrame
             The vDataFrame of the search.
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "val": [3, 4, 5, 10, 12, 23],
+                    "cat": ['A', 'B', 'A', 'C', 'A', 'C'],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_isin_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_isin_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``isin`` we can easily filter through
+        to get the desired results:
+
+        .. code-block:: python
+
+            vdf.isin({"cat": ['A'], "val": [12]})
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.isin({"cat": ['A'], "val": [12]})
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_isin_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_isin_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         val = self.format_colnames(val)
         n = len(val[list(val.keys())[0]])
@@ -537,6 +1411,92 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy time-series data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
+                        "1993-11-02",
+                        "1993-11-03",
+                        "1993-11-04",
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
+
+        We can ensure that the data type is ``datetime``.
+
+        .. ipython:: python
+
+           vdf["time"].astype("datetime")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_last_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_last_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``last`` we can easily filter through
+        to get the last set of values:
+
+        .. code-block:: python
+
+            vdf.last(ts="time", offset="1 days")
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.last(ts="time", offset="1 days")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_last_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_last_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.first`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         ts = self.format_colnames(ts)
         last_date = _executeSQL(
@@ -564,23 +1524,30 @@ class vDFFilter(vDFAgg):
         """
         Downsamples the input vDataFrame.
 
-        \u26A0 Warning : The result might be inconsistent between
-                         attempts at SQL code generation if the
-                         data is not ordered.
+        .. warning::
+
+            The result might be inconsistent between
+            attempts at SQL code generation if the
+            data is not ordered.
 
         Parameters
-         ----------
-         n: PythonNumber, optional
+        ----------
+        n: PythonNumber, optional
             Approximate  number of elements to consider in  the
             sample.
-         x: float, optional
+        x: float, optional
             The sample size. For example, if set to 0.33, it
             downsamples to approximatively 33% of the relation.
         method: str, optional
             The Sample method.
-                random     : random sampling.
-                systematic : systematic sampling.
-                stratified : stratified sampling.
+
+             - random:
+                Random Sampling.
+             - systematic:
+                Systematic Sampling.
+             - stratified:
+                Stratified Sampling.
+
         by: SQLColumns, optional
             vDataColumns used in the partition.
 
@@ -588,6 +1555,124 @@ class vDFFilter(vDFAgg):
         -------
         vDataFrame
             sample vDataFrame
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can check the size of the dataset by:
+
+        .. ipython:: python
+
+            len(data)
+
+        For some reason, if we did not need the entire dataset,
+        then we can conveniently sample it using the ``sample``
+        function:
+
+        .. ipython:: python
+
+            subsample = vdf.sample(x = 0.33)
+
+        .. ipython:: python
+            :suppress:
+
+            res = subsample
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_sample_res_1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_sample_res_1.html
+
+        We can check the size of the dataset to confirm
+        the size is smaller than the original dataset:
+
+        .. ipython:: python
+
+            len(subsample)
+
+        In the above example, we used the ``x`` parameter
+        which corresponds to ratio. We can also use the
+        ``n`` parameter which corresponds to the number
+        of records to be sampled.
+
+        .. ipython:: python
+
+            subsample = vdf.sample(n = 100)
+
+        To confirm, if we obtained the right size, we can check it:
+
+        .. ipython:: python
+
+            len(subsample)
+
+        In order to tackle data with skewed distributions,
+        we can use the ``stratified`` option for the
+        ``method``.
+
+        Let us ensure that the classes "pclass" and "sex"
+        are proportionally represented:
+
+        .. ipython:: python
+
+            subsample = vdf.sample(
+                x = 0.33,
+                method = "stratified",
+                by = ["pclass", "sex"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = subsample
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_sample_res_2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_sample_res_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.isin`
         """
         if x == 1:
             return self.copy()
@@ -658,7 +1743,7 @@ class vDFFilter(vDFAgg):
     ) -> "vDataFrame":
         """
         Searches for elements that match the input
-        conditions.
+        conditions. This method will return a new vDataFrame.
 
         Parameters
         ----------
@@ -677,13 +1762,100 @@ class vDFFilter(vDFAgg):
             using  asc order or a dictionary of all sorting
             methods.  For  example,  to  sort  by  "column1"
             ASC and "column2" DESC, write:
-            {"column1": "asc",
-             "column2": "desc"}
+            ``{"column1": "asc", "column2": "desc"}``
 
         Returns
         -------
         vDataFrame
             vDataFrame of the search
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can create a custom search that is looking for
+        the family size and survival of the passengers having
+        adults of more than 50 year old. We can arrange the
+        data in descending order to see who paid the most:
+
+        .. ipython:: python
+
+            vdf.search(
+                conditions = ["age > 50"],
+                usecols = ["fare", "survived"],
+                expr = ["parch + sibsp + 1 AS family_size"],
+                order_by = {"fare": "desc"},
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.search(
+                conditions = ["age > 50"],
+                usecols = ["fare", "survived"],
+                expr = ["parch + sibsp + 1 AS family_size"],
+                order_by = {"fare": "desc"},
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_search_res_1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_search_res_1.html
+
+        .. note::
+
+            Similarly, the same can be done in a Pandas-like way:
+
+            .. code-block:: python
+
+                vdf.search(
+                    conditions = vdf["age"] > 50,
+                    usecols = ["fare", "survived"],
+                    expr = ["parch + sibsp + 1 AS family_size"],
+                    order_by = {"fare": "desc"},
+                )
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.isin`
         """
         order_by, usecols, expr = format_type(order_by, usecols, expr, dtype=list)
         if isinstance(conditions, Iterable) and not isinstance(conditions, str):
@@ -706,8 +1878,11 @@ class vDCFilter(vDCAgg):
         vDataColumn means it is not selected in the final
         generated SQL code.
 
-        Note:  Dropping a vDataColumn  can make the vDataFrame
-        "heavier" if it is  used to compute other vDataColumns.
+        .. warning::
+
+            Dropping a vDataColumn  can make the vDataFrame
+            "heavier" if it is  used to compute other
+            vDataColumns.
 
         Parameters
         ----------
@@ -719,6 +1894,82 @@ class vDCFilter(vDCAgg):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy dataset with
+        three columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [3, 3, 1],
+                    "col":['a', 'b', 'v'],
+                },
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``drop`` we can take out any column that we
+        do not need:
+
+        .. ipython:: python
+
+            vdf["col1"].drop()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.drop`
+            | :py:meth:`verticapy.vDataFrame.drop_duplicates`
         """
         try:
             parent = self._parent
@@ -772,6 +2023,80 @@ class vDCFilter(vDCAgg):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly knowvDC_dropn function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy data that has one outlier:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"vals": [20, 10, 0, -20, 10, 20, 1200]})
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_outliers_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_outliers_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``drop_outliers`` we can take out all the outliers in that
+        column:
+
+        .. ipython:: python
+
+            vdf["vals"].drop_outliers(threshold = 1.0)
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_outliers_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_outliers_res.html
+
+        .. note::
+
+            By providing a custom threshold value, can have
+            more control on the treatment of outliers.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.drop`
+            | :py:meth:`verticapy.vDataFrame.drop_duplicates`
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -798,6 +2123,113 @@ class vDCFilter(vDCAgg):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        In the above dataset, notice that the **first**
+        and **last** entries are identical i.e. duplicates.
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can see the count of each column to check
+        if any column has missing values.
+
+        .. code-block:: python
+
+            vdf.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vDC_fillna_count.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vDC_fillna_count.html
+
+        From the above table, we can see that there are
+        a lot of missing values in "boat" column.
+
+        Using ``dropna``, we can filter the entire dataset
+        to drop the rows where "boats" does not have a value:
+
+        .. code-block:: python
+
+            vdf["boat"].dropna()
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["boat"].dropna()
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_dropna_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_dropna_res.html
+
+        Now again, if we look at the count, we will
+        notice that the total count has decreased
+        based on the "boats" column.
+
+        .. code-block:: python
+
+            vdf.count()
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf.count()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vDC_fillna_count_2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_vDC_fillna_count_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.dropna`
+            | :py:meth:`verticapy.vDataFrame.drop`
         """
         self._parent.filter(f"{self} IS NOT NULL")
         return self._parent
@@ -817,12 +2249,86 @@ class vDCFilter(vDCAgg):
         val: PythonScalar / list
             List of the different  records. For example, to check if
             Badr and Fouad are in the vDataColumn, you can write the
-            following list: ["Fouad", "Badr"]
+            following list: ``["Fouad", "Badr"]``
 
         Returns
         -------
         vDataFrame
             The vDataFrame of the search.
+
+        Examples
+        ---------
+
+        We import ``verticapy``:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to ``verticapy``, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use a dummy dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "val": [3, 4, 5, 10, 12, 23],
+                    "cat": ['A', 'B', 'A', 'C', 'A', 'C'],
+                },
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_isin_data.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_isin_data.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Using ``isin`` we can easily filter through
+        to get the desired results:
+
+        .. code-block:: python
+
+            vdf["cat"].isin('A')
+
+        .. ipython:: python
+            :suppress:
+
+            res = vdf["cat"].isin('A')
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_isin_res.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_isin_res.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.balance`
+            | :py:meth:`verticapy.vDataFrame.at_time`
         """
         if isinstance(val, str) or not isinstance(val, Iterable):
             val = [val]
