@@ -214,9 +214,9 @@ class MinMaxScaler(Scaler):
     Parameters
     ----------
 
-    min\_: ArrayLike
+    min_: ArrayLike
         Model's features minimums.
-    max\_: ArrayLike
+    max_: ArrayLike
         Model's features maximums.
 
     .. note::
