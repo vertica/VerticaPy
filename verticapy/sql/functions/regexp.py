@@ -60,6 +60,7 @@ def regexp_count(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
@@ -109,6 +110,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
@@ -176,6 +178,7 @@ def regexp_instr(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
@@ -227,6 +230,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
@@ -293,6 +297,7 @@ def regexp_replace(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
@@ -355,6 +360,7 @@ def regexp_substr(
 
     .. ipython:: python
         :suppress:
+        :okwarning:
 
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
