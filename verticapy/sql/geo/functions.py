@@ -66,7 +66,7 @@ def coordinate_converter(
     --------
     .. code-block:: python
 
-        from verticapy.geo import coordinate_converter
+        from verticapy.sql.geo import coordinate_converter
         from verticapy.datasets import load_cities
 
         cities = load_cities()
@@ -77,7 +77,7 @@ def coordinate_converter(
     .. ipython:: python
         :suppress:
 
-        from verticapy.geo import *
+        from verticapy.sql.geo import coordinate_converter
         from verticapy.datasets import load_cities
         from verticapy import set_option
         cities = load_cities()
@@ -183,7 +183,7 @@ def intersect(
     --------
     .. code-block:: python
 
-        from verticapy.geo import intersect, create_index
+        from verticapy.sql.geo import intersect, create_index
         from verticapy.datasets import load_world, load_cities
 
         world = load_world()
@@ -199,7 +199,7 @@ def intersect(
     .. ipython:: python
         :suppress:
 
-        from verticapy.geo import *
+        from verticapy.sql.geo import intersect, create_index
         from verticapy.datasets import load_world, load_cities
         from verticapy import set_option
         world = load_world()
@@ -291,7 +291,7 @@ def intersect(
 @save_verticapy_logs
 def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     """
-    Splits a polygon into  (nbins\ :sup:`2`) smaller
+    Splits a polygon into  (nbins :sup:`2`) smaller
     polygons of approximately equal total area.
     This  process  is inexact,  and  the  split
     polygons  have approximated edges;  greater
@@ -319,11 +319,11 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     --------
     .. code-block:: python
 
-        from verticapy.geo import split_polygon_n, geo_plot, apply
-        from verticapy import TableSample
+        import verticapy as vp
+        from verticapy.sql.geo import split_polygon_n
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
-        poly = TableSample({"triangle": [p]}).to_vdf()
+        poly = vp.vDataFrame({"triangle": [p]})
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white",
                                   edgecolor="black")
@@ -331,11 +331,11 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     .. ipython:: python
         :suppress:
 
-        from verticapy.geo import *
-        from verticapy import TableSample
+        import verticapy as vp
+        from verticapy.sql.geo import split_polygon_n
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
-        poly = TableSample({"triangle": [p]}).to_vdf()
+        poly = vp.vDataFrame({"triangle": [p]})
         poly["triangle"].apply("ST_GeomFromText({})")
         poly["triangle"].geo_plot(color="white", edgecolor="black")
         @savefig sql_geo_functions_split_polygon_n.png
