@@ -88,13 +88,18 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-03 00:00:00",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
                         "1993-11-03 00:00:01",
                         "1993-11-03 00:00:02",
                         "1993-11-04 00:00:01",
-                        "1993-11-04 00:00:02",],
-                "val": [0., 1., 2., 4.,5.]})
+                        "1993-11-04 00:00:02",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -165,9 +170,12 @@ class vDFFilter(vDFAgg):
         column: str
             Column used to compute the different categories.
         method: str, optional
-            The method with which to sample the data:
-                over   : oversampling
-                under  : undersampling
+            The method with which to sample the data.
+                
+             - over: 
+                Oversampling.
+             - under:
+                Undersampling.
         x: float, optional
             The desired ratio between the majority class and minority
             classes.
@@ -203,10 +211,12 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "category" : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-                "val": [12, 12, 14, 15, 10, 9, 10, 12, 12, 14, 16]}
-                )
+            vdf = vp.vDataFrame(
+                {
+                    "category" : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    "val": [12, 12, 14, 15, 10, 9, 10, 12, 12, 14, 16],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -380,13 +390,18 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-01",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
                         "1993-11-02",
                         "1993-11-03",
                         "1993-11-04",
-                        "1993-11-05",],
-                "val": [0., 1., 2., 4.,5.]})
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4.,5.],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -500,15 +515,20 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-03 00:00:00",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
                         "1993-11-03 00:00:01",
                         "1993-11-03 00:00:02",
                         "1993-11-03 00:00:03",
                         "1993-11-03 00:00:04",
                         "1993-11-04 00:00:01",
-                        "1993-11-04 00:00:02",],
-                "val": [0., 1., 2., 4., 5., 3., 2.]})
+                        "1993-11-04 00:00:02",
+                    ],
+                    "val": [0., 1., 2., 4., 5., 3., 2.],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -582,9 +602,12 @@ class vDFFilter(vDFAgg):
         Drops  the input vDataColumns  from the vDataFrame.  Dropping
         vDataColumns means they are not selected in the final SQL code
         generation.
-        Be careful when using this method. It can make the vDataFrame
-        structure  heavier if other  vDataColumns are  computed
-        using the dropped vDataColumns.
+
+        .. warning::
+
+            Be careful when using this method. It can make the vDataFrame
+            structure  heavier if other  vDataColumns are  computed
+            using the dropped vDataColumns.
 
         Parameters
         ----------
@@ -620,7 +643,13 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"col1": [1, 2, 3],"col2": [3, 3, 1], "col":['a', 'b', 'v']})
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [3, 3, 1], 
+                    "col":['a', 'b', 'v']
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -683,9 +712,9 @@ class vDFFilter(vDFAgg):
             Dropping  duplicates  will make the  vDataFrame
             structure heavier. It is recommended that you
             check the   current   structure   using   the
-            'current_relation'  method and save it using
-            the 'to_db' method, using the parameters
-            'inplace = True' and 'relation_type = table'.
+            ``current_relation``  method and save it using
+            the ``to_db`` method, using the parameters
+            ``inplace = True`` and ``relation_type = table``.
 
         Parameters
         ----------
@@ -722,10 +751,13 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "col1": [1, 2, 3, 1],
-                "col2": [3, 3, 1, 3],
-                "col":['a', 'b', 'v', 'a']})
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3, 1],
+                    "col2": [3, 3, 1, 3],
+                    "col":['a', 'b', 'v', 'a'],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -835,6 +867,7 @@ class vDFFilter(vDFAgg):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             vdf = load_titanic()
 
         .. raw:: html
@@ -947,7 +980,7 @@ class vDFFilter(vDFAgg):
             List of expressions. For example, to keep only the
             records where the vDataColumn 'column' is greater
             than 5 and less than 10, you can write:
-            ['"column" > 5', '"column" < 10'].
+            ``['"column" > 5', '"column" < 10']``.
         force_filter: bool, optional
             Default Value: True
             When set to True, the vDataFrame will be modified
@@ -988,6 +1021,7 @@ class vDFFilter(vDFAgg):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             vdf = load_titanic()
 
         .. raw:: html
@@ -1019,6 +1053,26 @@ class vDFFilter(vDFAgg):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_filter_res.html
+
+        .. note::
+
+            Similarly, the same can be done in a Pandas-like way:
+
+            .. code-block:: python
+
+                vdf.filter((vdf["sex"] == "female") && (vdf["pclass"] == 1))
+
+            Or:
+
+            .. code-block:: python
+
+                vdf = vdf[(vdf["sex"] == "female") && (vdf["pclass"] == 1)]
+
+            .. warning::
+
+                Ensure to use the `&&` operator and correctly place parentheses. 
+                The `and` operator is specific to Python, and its behavior cannot 
+                be changed.
 
         .. seealso::
 
@@ -1150,13 +1204,18 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-01",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
                         "1993-11-02",
                         "1993-11-03",
                         "1993-11-04",
-                        "1993-11-05",],
-                "val": [0., 1., 2., 4.,5.]})
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
 
         We can ensure that the data type is ``datetime``.
 
@@ -1266,9 +1325,12 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "val": [3, 4, 5, 10, 12, 23],
-                "cat": ['A', 'B', 'A', 'C', 'A', 'C']})
+            vdf = vp.vDataFrame(
+                {
+                    "val": [3, 4, 5, 10, 12, 23],
+                    "cat": ['A', 'B', 'A', 'C', 'A', 'C'],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -1372,13 +1434,18 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-01",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-01",
                         "1993-11-02",
                         "1993-11-03",
                         "1993-11-04",
-                        "1993-11-05",],
-                "val": [0., 1., 2., 4.,5.]})
+                        "1993-11-05",
+                    ],
+                    "val": [0., 1., 2., 4., 5.],
+                }
+            )
 
         We can ensure that the data type is ``datetime``.
 
@@ -1472,9 +1539,13 @@ class vDFFilter(vDFAgg):
             downsamples to approximatively 33% of the relation.
         method: str, optional
             The Sample method.
-                random     : random sampling.
-                systematic : systematic sampling.
-                stratified : stratified sampling.
+            
+             - random:
+                Random Sampling.
+             - systematic: 
+                Systematic Sampling.
+             - stratified:
+                Stratified Sampling.
         by: SQLColumns, optional
             vDataColumns used in the partition.
 
@@ -1507,6 +1578,7 @@ class vDFFilter(vDFAgg):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             vdf = load_titanic()
 
         .. raw:: html
@@ -1561,7 +1633,7 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            subsample=vdf.sample(n = 100)
+            subsample = vdf.sample(n = 100)
 
         To confirm, if we obtained the right size, we can check it:
 
@@ -1581,7 +1653,8 @@ class vDFFilter(vDFAgg):
             subsample = vdf.sample(
                 x = 0.33,
                 method = "stratified",
-                by = ["pclass", "sex"])
+                by = ["pclass", "sex"],
+            )
 
         .. ipython:: python
             :suppress:
@@ -1593,7 +1666,6 @@ class vDFFilter(vDFAgg):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_sample_res_2.html
-
 
         .. seealso::
 
@@ -1719,6 +1791,7 @@ class vDFFilter(vDFAgg):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             vdf = load_titanic()
 
         .. raw:: html
@@ -1741,16 +1814,22 @@ class vDFFilter(vDFAgg):
 
         .. ipython:: python
 
-            result = vdf.search(
+            vdf.search(
                 conditions = ["age > 50"],
                 usecols = ["fare", "survived"],
                 expr = ["parch + sibsp + 1 AS family_size"],
-                order_by = {"fare": "desc"})
+                order_by = {"fare": "desc"},
+            )
 
         .. ipython:: python
             :suppress:
 
-            res = result
+            res = vdf.search(
+                conditions = ["age > 50"],
+                usecols = ["fare", "survived"],
+                expr = ["parch + sibsp + 1 AS family_size"],
+                order_by = {"fare": "desc"},
+            )
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_filter_search_res_1.html", "w")
             html_file.write(res._repr_html_())
             html_file.close()
@@ -1758,6 +1837,18 @@ class vDFFilter(vDFAgg):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_search_res_1.html
 
+        .. note::
+
+            Similarly, the same can be done in a Pandas-like way:
+
+            .. code-block:: python
+
+                vdf.search(
+                    conditions = vdf["age"] > 50,
+                    usecols = ["fare", "survived"],
+                    expr = ["parch + sibsp + 1 AS family_size"],
+                    order_by = {"fare": "desc"},
+                )
 
         .. seealso::
 
@@ -1785,8 +1876,11 @@ class vDCFilter(vDCAgg):
         vDataColumn means it is not selected in the final
         generated SQL code.
 
-        Note:  Dropping a vDataColumn  can make the vDataFrame
-        "heavier" if it is  used to compute other vDataColumns.
+        .. warning::
+
+            Dropping a vDataColumn  can make the vDataFrame
+            "heavier" if it is  used to compute other 
+            vDataColumns.
 
         Parameters
         ----------
@@ -1823,7 +1917,13 @@ class vDCFilter(vDCAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"col1": [1, 2, 3],"col2": [3, 3, 1], "col":['a', 'b', 'v']})
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [3, 3, 1], 
+                    "col":['a', 'b', 'v'],
+                },
+            )
 
         .. ipython:: python
             :suppress:
@@ -1973,7 +2073,7 @@ class vDCFilter(vDCAgg):
 
         .. ipython:: python
 
-            vdf["vals"].drop_outliers(threshold = 1)
+            vdf["vals"].drop_outliers(threshold = 1.0)
 
         .. ipython:: python
             :suppress:
@@ -1986,8 +2086,10 @@ class vDCFilter(vDCAgg):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_filter_vDC_drop_outliers_res.html
 
-        By providing a custom threshold value, can have
-        more control on the treatment of outliers.
+        .. note::
+
+            By providing a custom threshold value, can have
+            more control on the treatment of outliers.
 
         .. seealso::
 
@@ -2044,10 +2146,11 @@ class vDCFilter(vDCAgg):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             vdf = load_titanic()
 
         .. raw:: html
-            :file: :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         In the above dataset, notice that the **first**
         and **last** entries are identical i.e. duplicates.
@@ -2144,7 +2247,7 @@ class vDCFilter(vDCAgg):
         val: PythonScalar / list
             List of the different  records. For example, to check if
             Badr and Fouad are in the vDataColumn, you can write the
-            following list: ["Fouad", "Badr"]
+            following list: ``["Fouad", "Badr"]``
 
         Returns
         -------
@@ -2174,9 +2277,12 @@ class vDCFilter(vDCAgg):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "val": [3, 4, 5, 10, 12, 23],
-                "cat": ['A', 'B', 'A', 'C', 'A', 'C']})
+            vdf = vp.vDataFrame(
+                {
+                    "val": [3, 4, 5, 10, 12, 23],
+                    "cat": ['A', 'B', 'A', 'C', 'A', 'C'],
+                },
+            )
 
         .. ipython:: python
             :suppress:

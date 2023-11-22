@@ -115,6 +115,7 @@ class vDFFill(vDFPivot):
         .. ipython:: python
 
             from verticapy.datasets import load_titanic
+
             data = load_titanic()
 
         .. raw:: html
@@ -156,7 +157,6 @@ class vDFFill(vDFPivot):
         to fill those values. Let's use a custom
         function to fill these values.
 
-
         .. code-block:: python
 
             data.fillna(
@@ -164,7 +164,7 @@ class vDFFill(vDFPivot):
                 method = {
                     "age": "mean",
                     "embarked": "mode",
-                    "fare": "median"
+                    "fare": "median",
                 }
             )
 
@@ -176,7 +176,7 @@ class vDFFill(vDFPivot):
                 method = {
                     "age": "mean",
                     "embarked": "mode",
-                    "fare": "median"
+                    "fare": "median",
                 }
             )
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_fill_fillna_final.html", "w")
@@ -280,13 +280,18 @@ class vDFFill(vDFPivot):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({
-                "time": ["1993-11-03 00:00:00",
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
                         "1993-11-03 00:00:01",
                         "1993-11-03 00:00:02",
                         "1993-11-03 00:00:04",
-                        "1993-11-03 00:00:05",],
-                "val": [0., 1., 2., 4.,5.]})
+                        "1993-11-03 00:00:05",
+                    ],
+                    "val": [0., 1., 2., 4.,5.],
+                }
+            )
 
         Let us confirm that the correct data type is
         associated with time:
@@ -305,7 +310,6 @@ class vDFFill(vDFPivot):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_fill_interpolate_data.html
-
 
         .. note::
 
@@ -525,7 +529,6 @@ class vDCFill(vDCMath):
                 vDataColumn using quantile(alpha) as lower
                 bound and quantile(1-alpha) as upper bound;
                 otherwise uses the lower and upper ZScores.
-
         threshold: PythonNumber, optional
             Uses the Gaussian distribution  to define the outliers. After
             normalizing the data (Z-Score),  if the absolute value of the
@@ -609,9 +612,9 @@ class vDCFill(vDCMath):
 
         .. note::
 
-            We can use eith the ``alpha`` parameter or
-            the z-score ``threhsold`` parameter. By default
-            it uses the ``threhsold``.
+            We can use either the ``alpha`` parameter or
+            the z-score ``threshold`` parameter. By default
+            it uses the ``threshold``.
 
         .. seealso::
 
@@ -712,16 +715,24 @@ class vDCFill(vDCMath):
             Value used to impute the vDataColumn.
         method: dict, optional
             Method used to impute the missing values.
-                auto    : Mean  for  the  numerical  and  Mode  for  the
-                          categorical vDataColumns.
-                bfill   : Back Propagation of the next element (Constant
-                          Interpolation).
-                ffill   : Propagation  of  the  first element  (Constant
-                          Interpolation).
-                mean    : Average.
-                median  : median.
-                mode    : mode (most occurent element).
-                0ifnull : 0 when the vDataColumn is null, 1 otherwise.
+            
+            - auto: 
+                Mean  for  the  numerical  and  Mode  for  the
+                categorical vDataColumns.
+            - bfill: 
+                Back Propagation of the next element (Constant
+                Interpolation).
+            - ffill: 
+                Propagation  of  the  first element  (Constant
+                Interpolation).
+            - mean: 
+                Average.
+            - median: 
+                Median.
+            - mode: 
+                Mode (most occurent element).
+            - 0ifnull: 
+                0 when the vDataColumn is null, 1 otherwise.
         expr: str, optional
             SQL string.
         by: SQLColumns, optional
@@ -799,7 +810,6 @@ class vDCFill(vDCMath):
         Now we can use the ``fillna`` method
         to fill those values. Let's use a custom
         function to fill these values.
-
 
         .. code-block:: python
 
