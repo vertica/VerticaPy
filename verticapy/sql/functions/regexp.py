@@ -55,7 +55,7 @@ def regexp_count(
 
         titanic = load_titanic()
         # Apply the regexp_count function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\\.')
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -65,7 +65,7 @@ def regexp_count(
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\\.')
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_count.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
@@ -105,7 +105,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
         titanic = load_titanic()
         # Apply the regexp_ilike function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\\.')
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -115,7 +115,7 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\\.')
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_ilike.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
@@ -172,7 +172,7 @@ def regexp_instr(
         titanic = load_titanic()
         # Apply the regexp_instr function, creating a new "title_start" column
         titanic["title_start"] = vpf.regexp_instr(titanic["name"],
-                                                 '([A-Za-z])+\. ',
+                                                 '([A-Za-z])+\\.',
                                                  return_position = 0)
         display(titanic[["name", "title_start"]])
 
@@ -183,7 +183,7 @@ def regexp_instr(
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["title_start"] = vpf.regexp_instr(titanic["name"], '([A-Za-z])+\. ', return_position = 0)
+        titanic["title_start"] = vpf.regexp_instr(titanic["name"], '([A-Za-z])+\\.', return_position = 0)
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_instr.html", "w")
         html_file.write(titanic[["name", "title_start"]]._repr_html_())
         html_file.close()
@@ -225,7 +225,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
         titanic = load_titanic()
         # Apply the regexp_like function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\\.')
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -235,7 +235,7 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\. ')
+        titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\\.')
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_like.html", "w")
         html_file.write(titanic[["name", "has_title"]]._repr_html_())
         html_file.close()
@@ -291,7 +291,7 @@ def regexp_replace(
         titanic = load_titanic()
         # Apply the regexp_replace function, creating a new "new_title" column
         titanic["new_title"] = vpf.regexp_replace(titanic["name"],
-                                                 '([A-Za-z])+\. ',
+                                                 '([A-Za-z])+\\.',
                                                  '[title here] ')
         display(titanic[["name", "new_title"]])
 
@@ -302,7 +302,7 @@ def regexp_replace(
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["new_title"] = vpf.regexp_replace(titanic["name"], '([A-Za-z])+\. ', '[title here] ')
+        titanic["new_title"] = vpf.regexp_replace(titanic["name"], '([A-Za-z])+\\.', '[title here] ')
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_replace.html", "w")
         html_file.write(titanic[["name", "new_title"]]._repr_html_())
         html_file.close()
@@ -355,7 +355,7 @@ def regexp_substr(
         titanic = load_titanic()
         # Apply the regexp_substr function, creating a new "title" column
         titanic["title"] = vpf.regexp_substr(titanic["name"],
-                                            '([A-Za-z])+\. ')
+                                            '([A-Za-z])+\\.')
         display(titanic[["name", "title"]])
 
     .. ipython:: python
@@ -365,7 +365,7 @@ def regexp_substr(
         from verticapy.datasets import load_titanic
         import verticapy.sql.functions as vpf
         titanic = load_titanic()
-        titanic["title"] = vpf.regexp_substr(titanic["name"], '([A-Za-z])+\. ')
+        titanic["title"] = vpf.regexp_substr(titanic["name"], '([A-Za-z])+\\.')
         html_file = open("SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_substr.html", "w")
         html_file.write(titanic[["name", "title"]]._repr_html_())
         html_file.close()
