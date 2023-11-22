@@ -77,7 +77,7 @@ def coordinate_converter(
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import coordinate_converter
         from verticapy.datasets import load_cities
         from verticapy import set_option
         cities = load_cities()
@@ -199,7 +199,7 @@ def intersect(
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import intersect, create_index
         from verticapy.datasets import load_world, load_cities
         from verticapy import set_option
         world = load_world()
@@ -331,7 +331,7 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import split_polygon_n, geo_plot, apply
         from verticapy import TableSample
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'

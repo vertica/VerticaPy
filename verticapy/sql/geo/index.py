@@ -90,7 +90,7 @@ def create_index(
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import create_index
         from verticapy.datasets import load_world
 
         world = load_world()
@@ -171,7 +171,7 @@ def describe_index(
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import describe_index
 
         html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_1.html", "w")
         html_file.write(describe_index()._repr_html_())
@@ -264,7 +264,7 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import *
+        from verticapy.sql.geo import rename_index, describe_index
 
         html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html", "w")
         html_file.write(describe_index()._repr_html_())
