@@ -280,7 +280,6 @@ class vDFFill(vDFPivot):
 
         .. ipython:: python
 
-            import verticapy as vp
             vdf = vp.vDataFrame({
                 "time": ["1993-11-03 00:00:00",
                         "1993-11-03 00:00:01",
@@ -436,7 +435,6 @@ class vDCFill(vDCMath):
 
         .. ipython:: python
 
-            import verticapy as vp
             vdf = vp.vDataFrame({"vals": [-20, -10, 0, -20, 10, 20, 120]})
 
         .. ipython:: python
@@ -563,11 +561,10 @@ class vDCFill(vDCMath):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        For this example, we will use a dummy time-series data:
+        For this example, we will use a dummy data that has one outlier:
 
         .. ipython:: python
 
-            import verticapy as vp
             vdf = vp.vDataFrame({"vals": [20, 10, 0, -20, 10, 20, 1200]})
 
         .. ipython:: python
