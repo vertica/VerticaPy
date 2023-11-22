@@ -811,21 +811,21 @@ class Scaler(Preprocessing):
     ----------
     Many attributes are created during the fitting phase.
 
-    **For ``StandardScaler``:**
+    **For StandardScaler:**
 
     mean_: numpy.array
         Model's features means.
     std_: numpy.array
         Model's features standard deviation.
 
-    **For ``MinMaxScaler``:**
+    **For MinMaxScaler:**
 
     min_: numpy.array
         Model's features minimums.
     max_: numpy.array
         Model's features maximums.
 
-    **For ``RobustScaler``:**
+    **For RobustScaler:**
 
     median_: numpy.array
         Model's features medians.
