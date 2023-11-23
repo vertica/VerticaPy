@@ -195,10 +195,11 @@ def chart_magic(
     Draws responsive charts using the Matplotlib,
     Plotly, or Highcharts library.
 
-    Different cutomization parameters are available for Plotly, Highcharts,
-    and Matplotlib.
-    For a comprehensive list of customization features, please
-    consult the documentation for the respective plotting libraries:
+    Different cutomization parameters are available for
+    Plotly, Highcharts, and Matplotlib.
+    For a comprehensive list of customization features,
+    please consult the documentation for the respective
+    plotting libraries:
     `plotly <https://plotly.com/python-api-reference/>`_,
     `matplotlib <https://matplotlib.org/stable/api/matplotlib_configuration_api.html>`_
     and `highcharts <https://api.highcharts.com/highcharts/>`_.
@@ -214,91 +215,68 @@ def chart_magic(
     -k / --kind  : str, optional
         Chart Type, one  of  the following:
 
-        **area**         :
-                            Area Chart
+         - area:
+            Area Chart.
+         - area_range:
+            Area Range Chart.
+         - area_ts:
+            Area Chart with Time Series Design.
+         - bar:
+            Bar Chart.
+         - biserial:
+            Biserial Point Matrix (Correlation
+            between binary variables and numerical)
+         - boxplot:
+            Box Plot.
+         - bubble:
+            Bubble Plot.
+         - candlestick:
+            Candlestick and Volumes (Time Series
+            Special Plot).
+         - cramer:
+            Cramer's V Matrix (Correlation between
+            categories).
+         - donut:
+            Donut Chart.
+         - donut3d:
+            3D Donut Chart.
+         - heatmap:
+            Heatmap.
+         - hist:
+            Histogram.
+         - kendall:
+            Kendall Correlation Matrix.
 
-        **area_range**   :
-                            Area Range Chart
+            .. Warning::
 
-        **area_ts**      :
-                            Area Chart with Time Series Design
-
-        **bar**          :
-                            Bar Chart
-
-        **biserial**     :
-                            Biserial Point Matrix (Correlation
-                            between binary variables and numerical)
-
-        **boxplot**      :
-                            Box Plot
-
-        **bubble**       :
-                            Bubble Plot
-
-        **candlestick**  :
-                            Candlestick and Volumes (Time Series
-                            Special Plot)
-
-        **cramer**       :
-                            Cramer's V Matrix (Correlation between
-                            categories)
-
-        **donut**        :
-                            Donut Chart
-
-        **donut3d**      :
-                            3D Donut Chart
-
-        **heatmap**      :
-                            Heatmap
-
-        **hist**         :
-                            Histogram
-
-        **kendall**      :
-                            Kendall Correlation Matrix
-
-        .. Warning::
-            This method  uses a CROSS JOIN  during  computation and is
-            therefore computationally expensive at  O(n * n),  where n
-            is the  total  count of  the :py:class:`vDataFrame`.
-
-        **line**         :
-                            Line Plot
-
-        **negative_bar** :
-                            Multi-Bar Chart for binary classes
-
-        **pearson**      :
-                            Pearson Correlation Matrix
-
-        **pie**          :
-                            Pie Chart
-
-        **pie_half**     :
-                            Half Pie Chart
-
-        **pie3d**        :
-                            3D Pie Chart
-
-        **scatter**      :
-                            Scatter Plot
-
-        **spider**       :
-                            Spider Chart
-
-        **spline**       :
-                            Spline Plot
-
-        **stacked_bar**  :
-                            Stacker Bar Chart
-
-        **stacked_hist** :
-                            Stacked Histogram
-
-        **spearman**     :
-                            Spearman Correlation Matrix
+                This method  uses a CROSS JOIN  during
+                computation and is therefore computationally
+                expensive at  O(n * n),  where n is the  total
+                count of  the :py:class:`vDataFrame`.
+         - line:
+            Line Plot.
+         - negative_bar:
+            Multi-Bar Chart for binary classes.
+         - pearson:
+            Pearson Correlation Matrix.
+         - pie:
+            Pie Chart.
+         - pie_half:
+            Half Pie Chart.
+         - pie3d:
+            3D Pie Chart.
+         - scatter:
+            Scatter Plot.
+         - spider:
+            Spider Chart.
+         - spline:
+            Spline Plot.
+         - stacked_bar:
+            Stacker Bar Chart.
+         - stacked_hist:
+            Stacked Histogram.
+         - spearman:
+            Spearman Correlation Matrix.
 
     -o / --output : str, optional
         Output File. You can use this option
@@ -319,10 +297,13 @@ def chart_magic(
     * Using variables
     * Using SQL files
 
-    .. hint:: To see more examples, please refer to the ref:chart_gallery.guide.
+    .. hint::
+
+        To see more examples, please refer to the
+        ref:chart_gallery.guide.
 
     Setting up the environment
-    ==========================
+    ===========================
 
     If you don't already have one, create a new connection:
 
@@ -360,9 +341,10 @@ def chart_magic(
 
         %load_ext verticapy.chart
 
-    Run the following to load some sample datasets. Once loaded, these datasets are
-    stored in the 'public' schema. You can change the target schema with the
-    'schema' parameter:
+    Run the following to load some sample datasets.
+    Once loaded, these datasets are stored in the
+    'public' schema. You can change the target schema
+    with the 'schema' parameter:
 
     .. ipython:: python
 
@@ -372,19 +354,21 @@ def chart_magic(
         amazon = load_amazon()
         iris = load_iris()
 
-    Use the :py:func:`set_option` function to set your desired plotting library:
+    Use the :py:func:`set_option` function to set your
+    desired plotting library:
 
     .. ipython:: python
 
         vp.set_option("plotting_lib","plotly")
 
     Drawing graphics
-    ================
+    =================
 
-    The following examples draw various responsive charts from SQL queries.
+    The following examples draw various responsive
+    charts from SQL queries.
 
     Pie Chart
-    ^^^^^^^^^
+    ^^^^^^^^^^
 
     .. code-block:: python
 
@@ -406,7 +390,7 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic.html
 
     Line Plot
-    ^^^^^^^^^
+    ^^^^^^^^^^
 
     .. code-block:: python
 
@@ -437,7 +421,7 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_2.html
 
     Correlation Matrix
-    ^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^
 
     .. code-block:: python
 
@@ -462,7 +446,7 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_3.html
 
     Bar Chart
-    ^^^^^^^^^
+    ^^^^^^^^^^
 
     .. code-block:: python
 
@@ -491,7 +475,7 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_4.html
 
     Scatter Plot
-    ^^^^^^^^^^^^
+    ^^^^^^^^^^^^^
 
     .. code-block:: python
 
@@ -522,7 +506,7 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_5.html
 
     Boxplot
-    ^^^^^^^
+    ^^^^^^^^
 
     .. code-block:: python
 
@@ -546,6 +530,7 @@ def chart_magic(
 
     Exporting to HTML
     =================
+
     Export a chart to HTML:
 
     .. code-block:: python
@@ -570,7 +555,10 @@ def chart_magic(
 
     The following lines open the HTML file:
 
-    .. note:: The HTML graphic can be embedded in an external environment, such as a website.
+    .. note::
+
+        The HTML graphic can be embedded in an
+        external environment, such as a website.
 
     .. code-block:: python
 
@@ -580,7 +568,9 @@ def chart_magic(
 
     Using Variables
     ===============
-    You can use variables in charts with the ':' operator:
+
+    You can use variables in charts with the ':'
+    operator:
 
     .. ipython:: python
 
@@ -588,7 +578,7 @@ def chart_magic(
 
         class_fare = titanic.groupby(
             "pclass",
-            [vpf.avg(titanic["fare"])._as("avg_fare")]
+            [vpf.avg(titanic["fare"])._as("avg_fare")],
         )
 
     .. ipython:: python
@@ -603,7 +593,11 @@ def chart_magic(
 
     You can then use the variable in the query:
 
-    .. note:: In this example, we use a vDataFrame, but it's also possible to use a pandas.DataFrame, a numpy.array, and many other in-memory objects.
+    .. note::
+
+        In this example, we use a :py:class:`vDataFrame`, but it's
+        also possible to use a ``pandas.DataFrame``, a
+        ``numpy.array``, and many other in-memory objects.
 
     .. code-block:: python
 
@@ -626,7 +620,8 @@ def chart_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_chart_magic_chart_magic_9.html
 
     Using SQL files
-    ===============
+    ================
+
     Create charts from a SQL file:
 
     .. ipython:: python
@@ -635,7 +630,8 @@ def chart_magic(
         file.write("SELECT PetalLengthCm, PetalWidthCm, Species FROM iris;")
         file.close()
 
-    Using the ``-f`` option, we can easily read the above SQL file:
+    Using the ``-f`` option, we can easily read the
+    above SQL file:
 
     .. code-block:: python
 

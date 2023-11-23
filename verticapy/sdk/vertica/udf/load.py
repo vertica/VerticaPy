@@ -39,60 +39,59 @@ def import_lib_udf(
     Parameters
     ----------
     udf_list: list
-        List of tuples that includes the different functions.
+        List of tuples that includes the different
+        functions.
 
-        **function**     :
-                            [function]  Python   Function.
-
-        **arg_types**    :
-                            [dict/list] List or dictionary
-                            of  the function input  types.
-
-                            Example: {"input1": int,
-                            "input2": float}  or
-                            [int, float]
-
-        **return_type**  :
-                            [type/dict] Function output type.
-                            In the case of many  outputs, it
-                            must be a dictionary including
-                            all the outputs types and names.
-
-                            Example: {"result1": int,
-                            "result2": float}
-
-        **parameters**   :
-                            [dict] Dictionary of the function
-                            input optional parameters.
-
-                            Example: {"param1": int,
-                            "param2": str}
-
-        **new_name**     :
-                            [str] New   function   name  when
-                            installed in Vertica.
+         - function: function
+            Python   Function.
+         - arg_types: dict | list
+            List or dictionary
+            of  the function input  types.
+            Example: ``{"input1": int, "input2": float}``
+            or ``[int, float]``
+         - return_type: type | dict
+            Function output type.
+            In the case of many  outputs, it
+            must be a dictionary including
+            all the outputs types and names.
+            Example: ``{"result1": int, "result2": float}``
+         - parameters: dict
+            Dictionary of the function
+            input optional parameters.
+            Example: ``{"param1": int, "param2": str}``
+         - new_name: str
+            New   function   name  when
+            installed in Vertica.
 
     library_name: str
         Library Name.
-    include_dependencies: str / list, optional
-        Library files  dependencies. The function copies and
-        pastes the  different files in the  UDF  definition.
+    include_dependencies: str | list, optional
+        Library files dependencies. The function
+        copies and pastes the different files in
+        the UDF definition.
 
     Returns
     -------
     bool
-        True  if  the  installation  was  a  success,  False
-        otherwise.
+        True  if  the  installation  was  a
+        success,  False otherwise.
 
     Example
     -------
-    Import the math module. This example will use the `math.exp` and `math.isclose` functions:
+    Import the math module. This example will use the
+    `math.exp` and `math.isclose` functions:
 
     .. code-block:: python
 
         import math
 
-    .. important:: Python is type-agnostic, but Vertica requires specific data types. It's important to specify input, output, and parameter types when generating User-Defined Extensions (UDx). These functions will be automatically installed, allowing you to call them directly using SQL.
+    .. important::
+
+        Python is type-agnostic, but Vertica requires specific
+        data types. It's important to specify input, output,
+        and parameter types when generating User-Defined
+        Extensions (UDx). These functions will be automatically
+        installed, allowing you to call them directly using SQL.
 
     .. code-block:: python
 
@@ -106,7 +105,11 @@ def import_lib_udf(
                 library_name = "python_math"
             )
 
-    .. important::  In this example, we utilized a standard Python function. If you wish to use a non-standard function, you'll need to install it on each node individually.
+    .. important::
+
+        In this example, we utilized a standard Python function.
+        If you wish to use a non-standard function, you'll need
+        to install it on each node individually.
     """
     directory = os.path.expanduser("~")
     session_name = f"{current_session()}_{username()}"

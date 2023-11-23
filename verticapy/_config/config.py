@@ -198,16 +198,23 @@ def set_option(key: str, value: Any = None) -> None:
         from verticapy import set_option
 
     Customize vDataFrame Display Settings
-    =====================================
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Turn on the "count_on" option, which displays the total number of elements in the dataset:
+    Turn on the ``count_on`` option, which displays the
+    total number of elements in the dataset:
 
     .. code-block:: python
 
         set_option("count_on", True)
         display(titanic)
 
-    .. warning:: Exercise caution when enabling this option, as it may result in decreased performance. VerticaPy will perform calculations to determine the number of elements in a displayed vDataFrame, which can have an impact on overall system performance.
+    .. warning::
+
+        Exercise caution when enabling this option,
+        as it may result in decreased performance.
+        VerticaPy will perform calculations to determine
+        the number of elements in a displayed vDataFrame,
+        which can have an impact on overall system performance.
 
     .. ipython:: python
         :suppress:
@@ -240,7 +247,10 @@ def set_option(key: str, value: Any = None) -> None:
 
     Sets the maximum number of columns displayed:
 
-    .. note:: By setting this parameter, we retrieve fewer elements from the database, resulting in faster visualization.
+    .. note::
+
+        By setting this parameter, we retrieve fewer elements
+        from the database, resulting in faster visualization.
 
     .. code-block:: python
 
@@ -265,7 +275,12 @@ def set_option(key: str, value: Any = None) -> None:
         set_option("max_rows", 5)
         display(titanic)
 
-    .. warning:: Exercise caution when using high values for "max_rows" and "max_columns" options, as it may lead to an excessive amount of data being loaded into memory. This can potentially slow down your notebook's performance.
+    .. warning::
+
+        Exercise caution when using high values for ``max_rows``
+        and ``max_columns`` options, as it may lead to an excessive
+        amount of data being loaded into memory. This can potentially
+        slow down your notebook's performance.
 
     .. ipython:: python
         :suppress:
@@ -285,7 +300,11 @@ def set_option(key: str, value: Any = None) -> None:
         set_option("mode", "light")
         display(titanic)
 
-    .. hint:: The light mode option streamlines the display of vDataFrame, creating a more minimalistic appearance that can enhance the fluidity of your notebook.
+    .. hint::
+
+        The light mode option streamlines the display of vDataFrame,
+        creating a more minimalistic appearance that can enhance the
+        fluidity of your notebook.
 
     .. ipython:: python
         :suppress:
@@ -335,11 +354,14 @@ def set_option(key: str, value: Any = None) -> None:
         :file: SPHINX_DIRECTORY/figures/_config_config_set_option_8.html
 
     SQL Generation and Execution Times
-    ==================================
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     Displays the queries and their execution times:
 
-    .. note:: Vertica sometimes caches the SQL query, resulting in no displayed SQL.
+    .. note::
+
+        Vertica sometimes caches the SQL query, resulting
+        in no displayed SQL.
 
     .. code-block:: python
 
@@ -363,9 +385,10 @@ def set_option(key: str, value: Any = None) -> None:
         set_option("time_on", False)
 
     Seed Randomness
-    ===============
+    ^^^^^^^^^^^^^^^^
 
-    Sets the seed for the random number generator and seeds the random state:
+    Sets the seed for the random number generator and
+    seeds the random state:
 
     .. ipython:: python
 
@@ -373,44 +396,64 @@ def set_option(key: str, value: Any = None) -> None:
         titanic.sample(0.1).shape()
 
     Change general API colors
-    =========================
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     Change the graphic colors:
 
-    .. important:: The API will exclusively use these colors for drawing graphics.
+    .. important::
+
+        The API will exclusively use these colors for
+        drawing graphics.
 
     .. ipython:: python
 
         set_option("colors", ["blue", "red"])
-
-        @savefig _config_config_set_option_hist.png
         titanic.hist(["pclass", "survived"])
+
+    .. ipython:: python
+        :suppress:
+
+        fig = titanic.hist(["pclass", "survived"])
+        fig.write_html("SPHINX_DIRECTORY/figures/_config_config_set_option_hist.html")
+
+    .. raw:: html
+      :file: SPHINX_DIRECTORY/figures/_config_config_set_option_hist.html
 
     .. warning::
 
-        This can be unstable if not enough colors are provided. It is advised to
-        use the plotting library color options to switch colors.
+        This can be unstable if not enough colors are provided.
+        It is advised to use the plotting library color options
+        to switch colors.
 
     .. ipython:: python
         :suppress:
 
         set_option("colors", None)
 
-
     Utilities
-    =========
+    ^^^^^^^^^^
 
     Change the temporary schema:
 
-    .. important:: The temporary schema is utilized to create elements that should be dropped at the end of function execution. In the case of error, the element might still exist and will need to be manually dropped.
+    .. important::
+
+        The temporary schema is utilized to create elements that
+        should be dropped at the end of function execution. In
+        the case of error, the element might still exist and will
+        need to be manually dropped.
 
     .. ipython:: python
 
         set_option("temp_schema", "public")
 
-    .. hint:: The 'cache' option enables you to cache the aggregations, speeding up the process. However, it should only be used on static tables; otherwise, the statistics might become biased.
+    .. hint::
 
-    For a full list of the available options, see the list for the 'key' parameter at the top of the page.
+        The ``cache`` option enables you to cache the aggregations,
+        speeding up the process. However, it should only be used on
+        static tables; otherwise, the statistics might become biased.
+
+    For a full list of the available options, see the list for the
+    ``key`` parameter at the top of the page.
     """
     if key in _all_options:
         op = _all_options[key]

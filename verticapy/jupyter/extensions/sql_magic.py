@@ -135,7 +135,9 @@ def sql_magic(
 
     Setting up the environment
     ==========================
-    If you don't already have a connection, create one:
+
+    If you don't already have a connection,
+    create one:
 
     .. code-block:: python
 
@@ -170,8 +172,8 @@ def sql_magic(
 
     Load a sample dataset. These sample datasets
     are loaded into the public schema by default.
-    You can specify a target schema with the 'name'
-    and 'schema' parameters:
+    You can specify a target schema with the ``name``
+    and ``schema`` parameters:
 
     .. code-block:: python
 
@@ -182,7 +184,8 @@ def sql_magic(
 
     SQL Magic
     =========
-    Use '%%sql' to run a query on the dataset:
+
+    Use ``%%sql`` to run a query on the dataset:
 
     .. code-block:: python
 
@@ -222,7 +225,7 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic.html
 
-    You can also run queries with '%sql' and the '-c' option:
+    You can also run queries with ``%sql`` and the ``-c`` option:
 
     .. code-block:: python
 
@@ -248,7 +251,10 @@ def sql_magic(
 
     You can use a single cell for multiple queries:
 
-    .. warning:: Don't forget to include a semicolon at the end of each query.
+    .. warning::
+
+        Don't forget to include a semicolon at the end
+        of each query.
 
     .. code-block:: python
 
@@ -279,9 +285,14 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_3.html
 
-    To add comments to a query, use one of the following comment syntaxes:
+    To add comments to a query, use one of the
+    following comment syntaxes:
 
-    .. warning:: Vertica uses '/' and '/' for both comments and query hints. Whenever possible, use '--' to avoid conflicts.
+    .. warning::
+
+        Vertica uses '/' and '/' for both comments and
+        query hints. Whenever possible, use '--' to avoid
+        conflicts.
 
     .. code-block:: python
 
@@ -312,11 +323,12 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_4.html
 
     Get the vDataFrame of a query
-    =============================
+    ==============================
 
-    Results of a SQL Magic query are stored in a vDataFrame, which is assigned
-    to a temporary variable called '_'. You can assign this temporary varaible
-    to a new variable to save your results.
+    Results of a SQL Magic query are stored in a
+    :py:class:`vDataFrame`, which is assigned to a temporary
+    variable called '_'. You can assign this temporary
+    variable to a new variable to save your results.
 
     .. code-block:: python
 
@@ -362,18 +374,19 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_5.html
 
-    Temporary results are stored in a vDataFrame, allowing you to call
-    vDataFrame methods:
+    Temporary results are stored in a vDataFrame,
+    allowing you to call :py:class:`vDataFrame` methods:
 
     .. ipython:: python
 
         titanic_clean["age"].max()
 
     Using variables inside a query
-    ==============================
+    ===============================
 
-    You can use variables in a SQL query with the ':' operator. This
-    variable can be a vDataFrame, a TableSample, a pandas.DataFrame,
+    You can use variables in a SQL query with the ':'
+    operator. This variable can be a :py:class:`vDataFrame`,
+    a :py:class:`TableSample`, a ``pandas.DataFrame``,
     or any standard Python type.
 
     .. code-block:: python
@@ -382,7 +395,7 @@ def sql_magic(
 
         class_fare = titanic_clean.groupby(
             "pclass",
-            [vpf.avg(titanic_clean["fare"])._as("avg_fare")]
+            [vpf.avg(titanic_clean["fare"])._as("avg_fare")],
         )
         class_fare
 
@@ -433,11 +446,14 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_7.html
 
-    You can do the same with a TableSample:
+    You can do the same with a :py:class:`TableSample`:
 
     .. code-block:: python
 
-        tb = {"name": ["Badr", "Arash"], "specialty": ["Python", "C++"]}
+        tb = {
+            "name": ["Badr", "Arash"],
+            "specialty": ["Python", "C++"],
+        }
         tb = vp.TableSample(tb)
 
     .. code-block:: python
@@ -450,7 +466,10 @@ def sql_magic(
     .. ipython:: python
         :suppress:
 
-        tb = {"name": ["Badr", "Arash"], "specialty": ["Python", "C++"]}
+        tb = {
+            "name": ["Badr", "Arash"],
+            "specialty": ["Python", "C++"],
+        }
         tb = vp.TableSample(tb)
 
     .. ipython:: python
@@ -470,7 +489,7 @@ def sql_magic(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_8.html
 
-    And with a pandas.DataFrame:
+    And with a ``pandas.DataFrame``:
 
     .. ipython:: python
 
@@ -501,7 +520,12 @@ def sql_magic(
 
     You can also use a sample loop with a variable:
 
-    .. note:: VerticaPy will store the object in a temporary local table before executing the overall query, which facilitates integration with in-memory objects.
+    .. note::
+
+        VerticaPy will store the object in a temporary
+        local table before executing the overall query,
+        which facilitates integration with in-memory
+        objects.
 
     .. code-block:: python
 
@@ -566,9 +590,10 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_10.html
 
     Change the maximum number of rows/columns to display
-    ====================================================
+    =====================================================
 
-    Use the '-nrows' and '-ncols' option to limit the number of rows and columns displayed:
+    Use the ``-nrows`` and ``-ncols`` option to limit the
+    number of rows and columns displayed:
 
     .. code-block:: python
 
@@ -595,7 +620,7 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_11.html
 
     Export results to a JSON or CSV file
-    ====================================
+    =====================================
 
     To export the results of a query to a CSV file:
 
@@ -674,9 +699,10 @@ def sql_magic(
         file.close()
 
     Execute SQL files
-    =================
+    ==================
 
-    To execute commands from a SQL file, use the following syntax:
+    To execute commands from a SQL file, use the
+    following syntax:
 
     .. ipython:: python
 
@@ -684,7 +710,8 @@ def sql_magic(
         file.write("SELECT version();")
         file.close()
 
-    Using the ``-f`` option, we can easily read SQL files:
+    Using the ``-f`` option, we can easily
+    read SQL files:
 
     .. code-block:: python
 
@@ -709,10 +736,11 @@ def sql_magic(
         :file: SPHINX_DIRECTORY/figures/jupyter_extensions_sql_magic_sql_magic_14.html
 
     Connect to an external database
-    ===============================
+    ================================
 
-    Since v0.12.0, it is possible to connect to external Databases using the connection
-    symbol. Detailled examples are available in
+    Since v0.12.0, it is possible to connect to external
+    Databases using the connection symbol. Detailled
+    examples are available in
     `this notebook <https://www.vertica.com/python/workshop/full_stack/dblink_integration/>`_.
     """
 

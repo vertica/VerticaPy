@@ -44,7 +44,12 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
     -------
     Set up a connection with a database using the alias "pgdb"
 
-    .. note:: When configuring an external connection, you'll need to assign a unique symbol to identify it. This symbol will subsequently allow you to extract data from the target database using the associated identifier.
+    .. note::
+
+        When configuring an external connection, you'll need to
+        assign a unique symbol to identify it. This symbol will
+        subsequently allow you to extract data from the target
+        database using the associated identifier.
 
     .. code-block:: python
 
@@ -53,7 +58,8 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
         vp.set_external_connection(
             cid = "pgdb",
             rowset = 500,
-            symbol = "&")
+            symbol = "&",
+        )
     """
     gb_conn = get_global_connection()
     gb_conn.set_external_connections(symbol, cid, rowset)

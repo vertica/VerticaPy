@@ -76,7 +76,8 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
 
     Example
     -------
-    Read the DSN information from the ODBCINI environment variable:
+    Read the DSN information from the ODBCINI environment
+    variable:
 
     .. code-block:: python
 
@@ -100,8 +101,10 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
 
     .. code-block:: python
 
-        dsn = read_dsn("vp_test_config",
-               "/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/tests/verticaPy_test.conf")
+        dsn = read_dsn(
+            "vp_test_config",
+            "/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/tests/verticaPy_test.conf",
+        )
         dsn
 
     | ``{``
