@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -675,7 +675,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         return vertica_version()
 
@@ -734,7 +734,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         res = format_query(
             query=self.request, indent_sql=indent_sql, print_sql=print_sql
@@ -798,7 +798,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -897,7 +897,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         query = f"""
@@ -967,7 +967,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1075,7 +1075,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         div = self._get_interval_str(unit)
         where = ""
@@ -1170,7 +1170,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT 
@@ -1233,7 +1233,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = f"""
             SELECT
@@ -1375,7 +1375,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         cond = f"node_name = '{node_name}'"
         if not (isinstance(path_id, NoneType)):
@@ -1428,7 +1428,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.resource_pool_status;"""
         return vDataFrame(query)
@@ -1475,7 +1475,7 @@ class QueryProfiler:
         .. note::
 
             For more details, please look at
-            :mod:`verticapy.performance.vertica.QueryProfiler`.
+            :py:class:`verticapy.performance.vertica.QueryProfiler`.
         """
         query = """SELECT * FROM v_monitor.host_resources;"""
         return vDataFrame(query)

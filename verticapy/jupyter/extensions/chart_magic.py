@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -262,7 +262,7 @@ def chart_magic(
         .. Warning::
             This method  uses a CROSS JOIN  during  computation and is
             therefore computationally expensive at  O(n * n),  where n
-            is the  total  count of  the ``vDataFrame``.
+            is the  total  count of  the :py:class:`vDataFrame`.
 
         **line**         :
                             Line Plot
@@ -331,13 +331,15 @@ def chart_magic(
         import verticapy as vp
 
         # Save a new connection
-        vp.new_connection({
-            "host": "10.211.55.14",
-            "port": "5433",
-            "database": "testdb",
-            "password": "XxX",
-            "user": "dbadmin"},
-            name = "VerticaDSN"
+        vp.new_connection(
+            {
+                "host": "10.211.55.14",
+                "port": "5433",
+                "database": "testdb",
+                "password": "XxX",
+                "user": "dbadmin",
+            },
+            name = "VerticaDSN",
         )
 
     Otherwise, to use an existing connection:
@@ -370,7 +372,7 @@ def chart_magic(
         amazon = load_amazon()
         iris = load_iris()
 
-    Use the :py:module:`set_option`_ function to set your desired plotting library:
+    Use the :py:func:`set_option` function to set your desired plotting library:
 
     .. ipython:: python
 

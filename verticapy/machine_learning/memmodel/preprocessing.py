@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -28,7 +28,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class Scaler(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of scalers.
 
     Parameters
@@ -106,7 +106,7 @@ class Scaler(InMemoryModel):
 
 class StandardScaler(Scaler):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of standard scaler.
 
     Parameters
@@ -118,7 +118,7 @@ class StandardScaler(Scaler):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        :py:meth:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'mean', and
         'standard deviation' of feature(S) define a StandardScaler
         model.
@@ -126,7 +126,7 @@ class StandardScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -148,7 +148,7 @@ class StandardScaler(Scaler):
         std = [0.5, 0.2]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.StandardScaler`
     model.
 
     .. ipython:: python
@@ -208,7 +208,7 @@ class StandardScaler(Scaler):
 
 class MinMaxScaler(Scaler):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of MinMax scaler.
 
     Parameters
@@ -221,7 +221,7 @@ class MinMaxScaler(Scaler):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        :py:meth:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'minimum',
         and 'maximum' values of the input features define a
         MinMaxScaler model.
@@ -229,7 +229,7 @@ class MinMaxScaler(Scaler):
     Attributes
     ----------
     Attributes are identical to
-    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.Scaler`.
 
     Examples
     --------
@@ -251,7 +251,7 @@ class MinMaxScaler(Scaler):
         max = [0.5, 0.2]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.MinMaxScaler`
     model.
 
     .. ipython:: python
@@ -311,7 +311,7 @@ class MinMaxScaler(Scaler):
 
 class OneHotEncoder(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of one-hot encoder.
 
     Parameters
@@ -337,7 +337,7 @@ class OneHotEncoder(InMemoryModel):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        :py:meth:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'categories' to
         encode defines a OneHotEncoder model. You can optionally
         provide 'column naming' criteria and a 'drop_first' flag to
@@ -363,7 +363,7 @@ class OneHotEncoder(InMemoryModel):
     criteria and drop_first flag.
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
+    :py:meth:`verticapy.machine_learning.memmodel.preprocessing.OneHotEncoder`
     model.
 
     .. ipython:: python

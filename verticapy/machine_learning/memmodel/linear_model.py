@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -25,7 +25,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class LinearModel(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of linear algorithms.
 
     Parameters
@@ -37,7 +37,7 @@ class LinearModel(InMemoryModel):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined entirely
+        :py:meth:`verticapy.machine_learning.memmodel` are defined entirely
         by their attributes. For example, ``coefficients`` and ``intercept``
         define a linear regression model.
 
@@ -65,7 +65,7 @@ class LinearModel(InMemoryModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.linear_model`.
+    Let's create a :py:meth:`verticapy.machine_learning.memmodel.linear_model`.
 
     .. ipython:: python
 
@@ -80,7 +80,7 @@ class LinearModel(InMemoryModel):
     **Making In-Memory Predictions**
 
     Use
-    :py:mod:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict`
+    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict`
     method to do predictions.
 
     .. ipython:: python
@@ -96,7 +96,7 @@ class LinearModel(InMemoryModel):
         cnames = ['col1', 'col2']
 
     Use
-    :py:mod:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql`
+    :py:meth:`verticapy.machine_learning.memmodel.linear_model.LinearModel.predict_sql`
     method to get the SQL code needed to deploy the model
     using its attributes.
 
@@ -234,7 +234,7 @@ class LinearModel(InMemoryModel):
 
 class LinearModelClassifier(LinearModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     Implementation of linear algorithms for classification.
 
     Parameters
@@ -268,7 +268,7 @@ class LinearModelClassifier(LinearModel):
         coefficients = [0.5, 1.2]
         intercept = 2.0
 
-    Let's create a :py:mod:`verticapy.machine_learning.memmodel.linear_model`.
+    Let's create a :py:meth:`verticapy.machine_learning.memmodel.linear_model`.
 
     .. ipython:: python
 

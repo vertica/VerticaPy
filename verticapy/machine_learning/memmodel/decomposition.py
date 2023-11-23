@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -26,7 +26,7 @@ from verticapy.machine_learning.memmodel.base import InMemoryModel
 
 class PCA(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the PCA algorithm.
 
     Parameters
@@ -38,7 +38,7 @@ class PCA(InMemoryModel):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined entirely
+        :py:meth:`verticapy.machine_learning.memmodel` are defined entirely
         by their attributes. For example, ``principal components`` and
         ``mean`` define a PCA model.
 
@@ -67,7 +67,7 @@ class PCA(InMemoryModel):
         mean = [0.1, 0.3]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.decomposition.PCA`
+    :py:meth:`verticapy.machine_learning.memmodel.decomposition.PCA`
     model.
 
     .. ipython:: python
@@ -286,7 +286,7 @@ class PCA(InMemoryModel):
 
 class SVD(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the SVD Algorithm.
 
     Parameters
@@ -299,7 +299,7 @@ class SVD(InMemoryModel):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        :py:meth:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, ``vectors``
         and 'values' define a SVD model.
 
@@ -328,7 +328,7 @@ class SVD(InMemoryModel):
         values = [0.1, 0.3]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.decomposition.SVD`
+    :py:meth:`verticapy.machine_learning.memmodel.decomposition.SVD`
     model.
 
     .. ipython:: python

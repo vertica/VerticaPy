@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -27,7 +27,7 @@ from verticapy.machine_learning.memmodel.base import MulticlassClassifier
 
 class NaiveBayes(MulticlassClassifier):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the naive Bayes algorithm.
 
     Parameters
@@ -93,7 +93,7 @@ class NaiveBayes(MulticlassClassifier):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are defined
+        :py:meth:`verticapy.machine_learning.memmodel` are defined
         entirely by their attributes. For example, 'prior probabilities',
         'classes' and 'input feature attributes' specific to the type of
         distribution, defines a NaiveBayes model.
@@ -170,7 +170,7 @@ class NaiveBayes(MulticlassClassifier):
         classes = ["C", "Q", "S"]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.naive_bayes`
+    :py:meth:`verticapy.machine_learning.memmodel.naive_bayes`
     model.
 
     .. ipython:: python

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -79,42 +79,71 @@ class vDFAgg(vDFEval):
         Parameters
         ----------
         func: SQLExpression
-            | List of the different aggregations:
+            List of the different aggregations:
 
-            |    **aad**: average absolute deviation
-            |    **approx_median**: approximate median
-            |    **approx_q%**: approximate q quantile
-                                (ex: approx_50% for the
-                                approximate median)
-            |    **approx_unique**: approximative cardinality
-            |    **count**: number of non-missing elements
-            |    **cvar**: conditional value at risk
-            |    **dtype**: virtual column type
-            |    **iqr**: interquartile range
-            |    **kurtosis**: kurtosis
-            |    **jb**: Jarque-Bera index
-            |    **mad**: median absolute deviation
-            |    **max**: maximum
-            |    **mean**: average
-            |    **median**: median
-            |    **min**: minimum
-            |    **mode**: most occurent element
-            |    **percent**: percent of non-missing elements
-            |    **q%**: q quantile (ex: 50% for the median)
-                         Use the ``approx_q%`` (approximate quantile)
-                         aggregation to get better performance.
-            |    **prod**: product
-            |    **range**: difference between the max and the min
-            |    **sem**: standard error of the mean
-            |    **skewness**: skewness
-            |    **sum**: sum
-            |    **std**: standard deviation
-            |    **topk**: kth most occurent element (ex: top1 for the mode)
-            |    **topk_percent**: kth most occurent element density
-            |    **unique**: cardinality (count distinct)
-            |    **var**: variance
-            | Other aggregations will work if supported by your database
-              version.
+             - aad:
+                average absolute deviation.
+             - approx_median:
+                approximate median.
+             - approx_q%:
+                approximate q quantile (ex: approx_50%
+                for the approximate median).
+             - approx_unique:
+                approximative cardinality.
+             - count:
+                number of non-missing elements.
+             - cvar:
+                conditional value at risk.
+             - dtype:
+                virtual column type.
+             - iqr:
+                interquartile range.
+             - kurtosis:
+                kurtosis.
+             - jb:
+                Jarque-Bera index.
+             - mad:
+                median absolute deviation.
+             - max:
+                maximum.
+             - mean:
+                average.
+             - median:
+                median.
+             - min:
+                minimum.
+             - mode:
+                most occurent element.
+             - percent:
+                percent of non-missing elements.
+             - q%:
+                q quantile (ex: 50% for the median)
+                Use the ``approx_q%`` (approximate quantile)
+                aggregation to get better performance.
+             - prod:
+                product.
+             - range:
+                difference between the max and the min.
+             - sem:
+                standard error of the mean.
+             - skewness:
+                skewness.
+             - sum:
+                sum.
+             - std:
+                standard deviation.
+             - topk:
+                kth most occurent element (ex: top1 for the mode)
+             - topk_percent:
+                kth most occurent element density.
+             - unique:
+                cardinality (count distinct).
+             - var:
+                variance.
+
+            Other aggregations will work if supported by your database
+            version.
+
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the
             aggregations, all or only numerical vDataColumns are used.
@@ -144,11 +173,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         With the ``aggregate`` method, you have the flexibility to select specific
         aggregates and the columns you wish to include in the query. This
@@ -166,11 +197,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.aggregate(
                 func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
                 columns = ["x", "y", "z"],
@@ -195,11 +228,11 @@ class vDFAgg(vDFEval):
             ones, and the results are combined at the end.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` :
+            | :py:meth:`verticapy.vDataColumn.aggregate` :
               Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataColumn.describe` :
+            | :py:meth:`verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
-            | :py:mod:`verticapy.vDataFrame.describe` :
+            | :py:meth:`verticapy.vDataFrame.describe` :
               Summarizes the information for specific columns.
         """
         columns, func = format_type(columns, func, dtype=list)
@@ -727,33 +760,41 @@ class vDFAgg(vDFEval):
         .. note::
 
             This function can offer faster performance compared to the
-            :py:mod:`verticapy.vDataFrame.aggregate` method, as it
+            :py:meth:`verticapy.vDataFrame.aggregate` method, as it
             leverages specialized and optimized backend functions.
 
         Parameters
         ----------
         method: str, optional
-            | The describe method.
+            The describe method.
 
-            |   **all**: Aggregates all statistics for all vDataColumns.
-                         The exact method depends on the vDataColumn type
-                         (numerical  dtype:  numerical; timestamp  dtype:
-                         range; categorical dtype: length)
-            |   **auto**: Sets the method  to  ``numerical`` if  at least
-                          one vDataColumn of the vDataFrame is numerical,
-                          ``categorical`` otherwise.
-            |   **categorical**: Uses only categorical aggregations.
-            |   **length**: Aggregates the vDataFrame using numerical
-                            aggregation on the length of all selected
-                            vDataColumns.
-            |   **numerical**: Uses only numerical descriptive statistics,
-                               which are  computed faster than the `aggregate`
-                               method.
-            |   **range**: Aggregates  the  vDataFrame   using  multiple
-                           statistical aggregations - min, max, range...
-            |   **statistics**: Aggregates  the  vDataFrame  using   multiple
-                                statistical aggregations - kurtosis, skewness,
-                                min, max...
+             - all:
+                Aggregates all statistics for all vDataColumns.
+                The exact method depends on the vDataColumn type
+                (numerical  dtype:  numerical; timestamp  dtype:
+                range; categorical dtype: length)
+             - auto:
+                Sets the method  to  ``numerical`` if  at least
+                one vDataColumn of the vDataFrame is numerical,
+                ``categorical`` otherwise.
+             - categorical:
+                Uses only categorical aggregations.
+             - length:
+                Aggregates the vDataFrame using numerical
+                aggregation on the length of all selected
+                vDataColumns.
+             - numerical:
+                Uses only numerical descriptive statistics,
+                which are  computed faster than the `aggregate`
+                method.
+             - range:
+                Aggregates  the  vDataFrame   using  multiple
+                statistical aggregations - min, max, range...
+             - statistics:
+                Aggregates  the  vDataFrame  using   multiple
+                statistical aggregations - kurtosis, skewness,
+                min, max...
+
         columns: SQLColumns, optional
             List of the vDataColumns names.  If empty, the  vDataColumns are
             selected depending on the parameter ``method``.
@@ -785,12 +826,14 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
 
         The ``describe`` method provides you with a variety of statistical
         methods.
@@ -809,12 +852,14 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data.describe(
                 columns = ["x", "y", "z"],
                 method = "numerical",
@@ -840,12 +885,14 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data.describe(
                 columns = ["x", "y", "z", "c"],
                 method = "categorical",
@@ -871,12 +918,14 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data.describe(
                 columns = ["x", "y", "z", "c"],
                 method = "all",
@@ -895,9 +944,9 @@ class vDFAgg(vDFEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:mod:`verticapy.vDataColumn.describe` :
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | :py:meth:`verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
         """
         if method == "auto":
@@ -1301,11 +1350,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         You can perform grouping using a direct SQL statement.
 
@@ -1320,11 +1371,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C'],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.groupby(
                 columns = ["x"],
                 expr = ["AVG(y) AS avg_y", "MIN(z) AS min_z"],
@@ -1391,8 +1444,8 @@ class vDFAgg(vDFEval):
         .. hint:: For additional aggregation options, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         columns, expr = format_type(columns, expr, dtype=list)
         assert not isinstance(rollup, list) or len(rollup) == len(columns), ValueError(
@@ -1538,11 +1591,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the average absolute deviation for
         specific columns.
@@ -1557,11 +1612,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.aad(
                 columns = ["x", "y", "z"],
             )
@@ -1577,9 +1634,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aad` :
+            | :py:meth:`verticapy.vDataColumn.aad` :
               Average Absolute Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.std` :
+            | :py:meth:`verticapy.vDataFrame.std` :
               Standard Deviation for particular columns.
         """
         return self.aggregate(func=["aad"], columns=columns, **agg_kwargs)
@@ -1621,11 +1678,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [True, False, False],
-                "y": [False, False, False],
-                "z": [True, True, True],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [True, False, False],
+                    "y": [False, False, False],
+                    "z": [True, True, True],
+                }
+            )
 
         Now, let's use the ``all`` aggregator for specific columns.
 
@@ -1639,11 +1698,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [True, False, False],
-                "y": [False, False, False],
-                "z": [True, True, True],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [True, False, False],
+                    "y": [False, False, False],
+                    "z": [True, True, True],
+                }
+            )
             result = data.all(
                 columns = ["x", "y", "z"],
             )
@@ -1659,7 +1720,7 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.any` : Boolean OR Aggregation.
+            | :py:meth:`verticapy.vDataFrame.any` : Boolean OR Aggregation.
         """
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwargs)
 
@@ -1698,11 +1759,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [True, False, False],
-                "y": [False, False, False],
-                "z": [True, True, True],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [True, False, False],
+                    "y": [False, False, False],
+                    "z": [True, True, True],
+                }
+            )
 
         Now, let's use the ``any`` aggregator for specific columns.
 
@@ -1716,11 +1779,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [True, False, False],
-                "y": [False, False, False],
-                "z": [True, True, True],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [True, False, False],
+                    "y": [False, False, False],
+                    "z": [True, True, True],
+                }
+            )
             result = data.any(
                 columns = ["x", "y", "z"],
             )
@@ -1736,7 +1801,7 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.all` : Boolean AND Aggregation.
+            | :py:meth:`verticapy.vDataFrame.all` : Boolean AND Aggregation.
         """
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwargs)
 
@@ -1775,11 +1840,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the averages for specific columns.
 
@@ -1793,11 +1860,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.avg(
                 columns = ["x", "y", "z"],
             )
@@ -1813,9 +1882,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.avg` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.avg` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(func=["avg"], columns=columns, **agg_kwargs)
 
@@ -1855,11 +1924,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let`s calculate the count for specific columns.
 
@@ -1873,11 +1944,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.count(
                 columns = ["x", "y", "z"],
             )
@@ -1893,8 +1966,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.count` : Count for a specific column.
-            | :py:mod:`verticapy.vDataFrame.count_percent` : Count Percent for particular columns.
+            | :py:meth:`verticapy.vDataColumn.count` : Count for a specific column.
+            | :py:meth:`verticapy.vDataFrame.count_percent` : Count Percent for particular columns.
         """
         return self.aggregate(func=["count"], columns=columns, **agg_kwargs)
 
@@ -1943,11 +2016,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the kurtosis for specific columns.
 
@@ -1961,11 +2036,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.kurtosis(
                 columns = ["x", "y", "z"],
             )
@@ -1981,9 +2058,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwargs)
 
@@ -2039,11 +2116,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the median absolute deviation for
         specific columns.
@@ -2058,11 +2137,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.mad(
                 columns = ["x", "y", "z"],
             )
@@ -2078,8 +2159,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.std` : Mean Absolute Deviation for particular columns.
-            | :py:mod:`verticapy.vDataColumn.mad` : Standard Deviation for a specific column.
+            | :py:meth:`verticapy.vDataFrame.std` : Mean Absolute Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.mad` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["mad"], columns=columns, **agg_kwargs)
 
@@ -2117,11 +2198,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the maximum for specific columns.
 
@@ -2135,11 +2218,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.max(
                 columns = ["x", "y", "z"],
             )
@@ -2155,8 +2240,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
-            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific column.
+            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific column.
         """
         return self.aggregate(func=["max"], columns=columns, **agg_kwargs)
 
@@ -2205,11 +2290,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the median for specific columns.
 
@@ -2224,11 +2311,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.median(
                 columns = ["x", "y", "z"],
                 approx = True,
@@ -2245,9 +2334,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:mod:`verticapy.vDataFrame.min` : Maximum for particular columns.
-            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataFrame.min` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
         """
         return self.quantile(
             0.5,
@@ -2290,11 +2379,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the minimum for specific columns.
 
@@ -2308,11 +2399,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.min(
                 columns = ["x", "y", "z"],
             )
@@ -2328,8 +2421,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.min` : Minimum for a specific column.
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.min` : Minimum for a specific column.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["min"], columns=columns, **agg_kwargs)
 
@@ -2386,11 +2479,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the product for specific columns.
 
@@ -2404,11 +2499,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.product(
                 columns = ["x", "y", "z"],
             )
@@ -2424,8 +2521,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
-            | :py:mod:`verticapy.vDataFrame.quantile` : Quantile Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataFrame.quantile` : Quantile Aggregates for particular columns.
         """
         return self.aggregate(func=["prod"], columns=columns, **agg_kwargs)
 
@@ -2494,11 +2591,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate some approximate quantiles for
         specific columns.
@@ -2515,11 +2614,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.quantile(
                 q = [0.1, 0.2, 0.5, 0.9],
                 columns = ["x", "y", "z"],
@@ -2537,8 +2638,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         if isinstance(q, (int, float)):
             q = [q]
@@ -2602,11 +2703,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the standard error of the mean
         for specific columns.
@@ -2621,11 +2724,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.sem(
                 columns = ["x", "y", "z"],
             )
@@ -2641,8 +2746,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.sem` : Standard Error of Mean for a specific column.
-            | :py:mod:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.sem` : Standard Error of Mean for a specific column.
+            | :py:meth:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(func=["sem"], columns=columns, **agg_kwargs)
 
@@ -2691,11 +2796,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the skewness for specific columns.
 
@@ -2709,11 +2816,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.skewness(
                 columns = ["x", "y", "z"],
             )
@@ -2729,9 +2838,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwargs)
 
@@ -2773,11 +2882,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the standard deviation for specific columns.
 
@@ -2791,11 +2902,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.std(
                 columns = ["x", "y", "z"],
             )
@@ -2811,9 +2924,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
         """
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwargs)
 
@@ -2852,11 +2965,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the sum for specific columns.
 
@@ -2870,11 +2985,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.sum(
                 columns = ["x", "y", "z"],
             )
@@ -2890,8 +3007,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.sum` : Sum for a specific column.
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.sum` : Sum for a specific column.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
         """
         return self.aggregate(func=["sum"], columns=columns, **agg_kwargs)
 
@@ -2931,11 +3048,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the variance for specific columns.
 
@@ -2949,11 +3068,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.var(
                 columns = ["x", "y", "z"],
             )
@@ -2969,9 +3090,9 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataColumn.skewness` : Skewness for a specific column.
+            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(func=["variance"], columns=columns, **agg_kwargs)
 
@@ -3026,11 +3147,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the count percentage for specific columns.
 
@@ -3044,11 +3167,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [None, None, 4, 9, None, 15, None, 22],
-                "y": [1, 2, 1, 2, None, 1, 2, 1],
-                "z": [10, None, 2, 1, 9, 8, None, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [None, None, 4, 9, None, 15, None, 22],
+                    "y": [1, 2, 1, 2, None, 1, 2, 1],
+                    "z": [10, None, 2, 1, 9, 8, None, 3],
+                }
+            )
             result = data.count_percent(
                 columns = ["x", "y", "z"],
             )
@@ -3064,8 +3189,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.count` : Count for a specific column.
-            | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
+            | :py:meth:`verticapy.vDataColumn.count` : Count for a specific column.
+            | :py:meth:`verticapy.vDataFrame.count` : Count for particular columns.
         """
         result = self.aggregate(
             func=["count", "percent"],
@@ -3133,11 +3258,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the cardinality for specific columns.
 
@@ -3151,11 +3278,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data.nunique(
                 columns = ["x", "y", "z"],
             )
@@ -3171,8 +3300,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
-            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinaility for a specific column.
+            | :py:meth:`verticapy.vDataFrame.duplicated` : Duplicate Values for particular columns.
+            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinaility for a specific column.
         """
         func = ["approx_unique"] if approx else ["unique"]
         return self.aggregate(func=func, columns=columns, **agg_kwargs)
@@ -3228,11 +3357,13 @@ class vDFAgg(vDFEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 15, 1, 15, 20, 1],
-                "y": [1, 2, 1, 1, 1, 1, 2, 1],
-                "z": [10, 12, 9, 10, 9, 8, 1, 10],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 15, 1, 15, 20, 1],
+                    "y": [1, 2, 1, 1, 1, 1, 2, 1],
+                    "z": [10, 12, 9, 10, 9, 8, 1, 10],
+                }
+            )
 
         Now, let's find duplicated rows.
 
@@ -3246,11 +3377,13 @@ class vDFAgg(vDFEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 15, 1, 15, 20, 1],
-                "y": [1, 2, 1, 1, 1, 1, 2, 1],
-                "z": [10, 12, 9, 10, 9, 8, 1, 10],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 15, 1, 15, 20, 1],
+                    "y": [1, 2, 1, 1, 1, 1, 2, 1],
+                    "z": [10, 12, 9, 10, 9, 8, 1, 10],
+                }
+            )
             result = data.duplicated(
                 columns = ["x", "y", "z"],
             )
@@ -3266,8 +3399,8 @@ class vDFAgg(vDFEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:mod:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
+            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:meth:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -3332,42 +3465,70 @@ class vDCAgg(vDCEval):
         Parameters
         ----------
         func: SQLExpression
-            | List of the different aggregations:
+            List of the different aggregations:
 
-            |    **aad**: average absolute deviation
-            |    **approx_median**: approximate median
-            |    **approx_q%**: approximate q quantile
-                                (ex: approx_50% for the
-                                approximate median)
-            |    **approx_unique**: approximative cardinality
-            |    **count**: number of non-missing elements
-            |    **cvar**: conditional value at risk
-            |    **dtype**: virtual column type
-            |    **iqr**: interquartile range
-            |    **kurtosis**: kurtosis
-            |    **jb**: Jarque-Bera index
-            |    **mad**: median absolute deviation
-            |    **max**: maximum
-            |    **mean**: average
-            |    **median**: median
-            |    **min**: minimum
-            |    **mode**: most occurent element
-            |    **percent**: percent of non-missing elements
-            |    **q%**: q quantile (ex: 50% for the median)
-                         Use the ``approx_q%`` (approximate quantile)
-                         aggregation to get better performance.
-            |    **prod**: product
-            |    **range**: difference between the max and the min
-            |    **sem**: standard error of the mean
-            |    **skewness**: skewness
-            |    **sum**: sum
-            |    **std**: standard deviation
-            |    **topk**: kth most occurent element (ex: top1 for the mode)
-            |    **topk_percent**: kth most occurent element density
-            |    **unique**: cardinality (count distinct)
-            |    **var**: variance
-            | Other aggregations will work if supported by your database
-              version.
+             - aad:
+                average absolute deviation.
+             - approx_median:
+                approximate median.
+             - approx_q%:
+                approximate q quantile (ex: approx_50%
+                for the approximate median).
+             - approx_unique:
+                approximative cardinality.
+             - count:
+                number of non-missing elements.
+             - cvar:
+                conditional value at risk.
+             - dtype:
+                virtual column type.
+             - iqr:
+                interquartile range.
+             - kurtosis:
+                kurtosis.
+             - jb:
+                Jarque-Bera index.
+             - mad:
+                median absolute deviation.
+             - max:
+                maximum.
+             - mean:
+                average.
+             - median:
+                median.
+             - min:
+                minimum.
+             - mode:
+                most occurent element.
+             - percent:
+                percent of non-missing elements.
+             - q%:
+                q quantile (ex: 50% for the median)
+                Use the ``approx_q%`` (approximate quantile)
+                aggregation to get better performance.
+             - prod:
+                product.
+             - range:
+                difference between the max and the min.
+             - sem:
+                standard error of the mean.
+             - skewness:
+                skewness.
+             - sum:
+                sum.
+             - std:
+                standard deviation.
+             - topk:
+                kth most occurent element (ex: top1 for the mode).
+             - topk_percent:
+                kth most occurent element density.
+             - unique:
+                cardinality (count distinct).
+             - var:
+                variance.
+
+            Other aggregations will work if supported by your database
+            version.
         columns: SQLColumns, optional
             List of  the vDataColumn's names. If empty,  depending on the
             aggregations, all or only numerical vDataColumns are used.
@@ -3397,11 +3558,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         With the ``aggregate`` method, you have the flexibility to select specific
         aggregates you wish to include in the query. This allows for more precise
@@ -3418,11 +3581,13 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data["x"].aggregate(
                 func = ["min", "approx_10%", "approx_50%", "approx_90%", "max"],
             )
@@ -3436,10 +3601,10 @@ class vDCAgg(vDCEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:mod:`verticapy.vDataColumn.describe` :
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | :py:meth:`verticapy.vDataColumn.describe` :
               Summarizes the information within the column.
-            | :py:mod:`verticapy.vDataFrame.describe` :
+            | :py:meth:`verticapy.vDataFrame.describe` :
               Summarizes the information for specific columns.
         """
         return self._parent.aggregate(func=func, columns=[self._alias]).transpose()
@@ -3467,19 +3632,24 @@ class vDCAgg(vDCEval):
         Parameters
         ----------
         method: str, optional
-            | The describe method.
+            The describe method.
 
-            |   **auto**: Sets  the  method to  ``numerical`` if
-                          the   vDataColumn    is    numerical,
-                          ``categorical`` otherwise.
-            |   **categorical**: Uses  only categorical  aggregations
-                                 during the computation.
-            |   **cat_stats**: Computes  statistics  of a numerical
-                               column for each vDataColumn category.
-                               In this case,  the parameter ``numcol``
-                               must be defined.
-            |   **numerical**: Uses  popular numerical aggregations
-                               during the computation.
+             - auto:
+                Sets  the  method to  ``numerical`` if
+                the   vDataColumn    is    numerical,
+                ``categorical`` otherwise.
+             - categorical:
+                Uses  only categorical  aggregations
+                during the computation.
+             - cat_stats:
+                Computes  statistics  of a numerical
+                column for each vDataColumn category.
+                In this case,  the parameter ``numcol``
+                must be defined.
+             - numerical:
+                Uses  popular numerical aggregations
+                during the computation.
+
         max_cardinality: int, optional
             Cardinality  threshold  to  use  to  determine  if the
             vDataColumn is considered as categorical.
@@ -3500,12 +3670,14 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
 
         The ``describe`` method provides you with a variety of statistical
         methods.
@@ -3521,12 +3693,14 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data["x"].describe(method = "numerical")
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_num_table.html", "w")
             html_file.write(result._repr_html_())
@@ -3546,12 +3720,14 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data["x"].describe(method = "categorical")
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_cat_table.html", "w")
             html_file.write(result._repr_html_())
@@ -3574,15 +3750,17 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-                "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                    "c": ['A', 'A', 'A', 'A', 'B', 'B', 'C', 'D'],
+                }
+            )
             result = data["c"].describe(
                 method = "cat_stats",
-                numcol = "x"
+                numcol = "x",
             )
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDCAgg_describe_stats_table.html", "w")
             html_file.write(result._repr_html_())
@@ -3594,9 +3772,9 @@ class vDCAgg(vDCEval):
         .. note:: All the calculations are pushed to the database.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
-            | :py:mod:`verticapy.vDataFrame.describe` :
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregations for specific columns.
+            | :py:meth:`verticapy.vDataFrame.describe` :
               Summarizes information within the columns.
         """
         assert (method != "cat_stats") or (numcol), ValueError(
@@ -3777,11 +3955,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].aad()
 
         .. note:: All the calculations are pushed to the database.
@@ -3789,9 +3969,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aad` :
+            | :py:meth:`verticapy.vDataColumn.aad` :
               Standard Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aad` :
+            | :py:meth:`verticapy.vDataFrame.aad` :
               Average Absolute Deviation for particular columns.
         """
         return self.aggregate(["aad"]).values[self._alias][0]
@@ -3819,11 +3999,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].avg()
 
         .. note:: All the calculations are pushed to the database.
@@ -3831,9 +4013,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.avg` : Aggregations for particular columns.
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | :py:meth:`verticapy.vDataFrame.avg` : Aggregations for particular columns.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["avg"]).values[self._alias][0]
 
@@ -3861,11 +4043,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].count()
 
         .. note:: All the calculations are pushed to the database.
@@ -3873,8 +4057,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.count` : Count for particular columns.
-            | :py:mod:`verticapy.vDataFrame.count_percent` :
+            | :py:meth:`verticapy.vDataFrame.count` : Count for particular columns.
+            | :py:meth:`verticapy.vDataFrame.count_percent` :
             Percentage count for particular columns.
         """
         return self.aggregate(["count"]).values[self._alias][0]
@@ -3913,11 +4097,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].kurtosis()
 
         .. note:: All the calculations are pushed to the database.
@@ -3925,8 +4111,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.kurtosis` : Kurtosis for particular columns.
+            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | :py:meth:`verticapy.vDataFrame.kurtosis` : Kurtosis for particular columns.
         """
         return self.aggregate(["kurtosis"]).values[self._alias][0]
 
@@ -3971,11 +4157,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].mad()
 
         .. note:: All the calculations are pushed to the database.
@@ -3983,8 +4171,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.std` : Standard Deviation for a specific column.
+            | :py:meth:`verticapy.vDataFrame.mad` : Mean Absolute Deviation for particular columns.
         """
         return self.aggregate(["mad"]).values[self._alias][0]
 
@@ -4011,11 +4199,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].max()
 
         .. note:: All the calculations are pushed to the database.
@@ -4023,8 +4213,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.max` : Maximum for particular columns.
-            | :py:mod:`verticapy.vDataColumn.min` : Minimum for a specific column.
+            | :py:meth:`verticapy.vDataFrame.max` : Maximum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.min` : Minimum for a specific column.
         """
         return self.aggregate(["max"]).values[self._alias][0]
 
@@ -4068,11 +4258,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].median(approx = True)
 
         .. note:: All the calculations are pushed to the database.
@@ -4080,8 +4272,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
-            | :py:mod:`verticapy.vDataFrame.median` : Median for particular columns.
+            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | :py:meth:`verticapy.vDataFrame.median` : Median for particular columns.
         """
         return self.quantile(0.5, approx=approx)
 
@@ -4108,11 +4300,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].min()
 
         .. note:: All the calculations are pushed to the database.
@@ -4120,8 +4314,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific column.
-            | :py:mod:`verticapy.vDataFrame.min` : Minimum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific column.
+            | :py:meth:`verticapy.vDataFrame.min` : Minimum for particular columns.
         """
         return self.aggregate(["min"]).values[self._alias][0]
 
@@ -4166,11 +4360,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].product()
 
         .. note:: All the calculations are pushed to the database.
@@ -4178,8 +4374,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataColumn.quantile` : Quantile Aggregates for a specific column.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataColumn.quantile` : Quantile Aggregates for a specific column.
         """
         return self.aggregate(func=["prod"]).values[self._alias][0]
 
@@ -4236,11 +4432,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].quantile(q = 0.5, approx = True)
 
         Let's compute the approximate last decile of a column.
@@ -4254,8 +4452,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         prefix = "approx_" if approx else ""
         return self.aggregate(func=[f"{prefix}{q * 100}%"]).values[self._alias][0]
@@ -4301,11 +4499,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].sem()
 
         .. note:: All the calculations are pushed to the database.
@@ -4313,8 +4513,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.mad` : Mean Absolute Deviation for a specific column.
-            | :py:mod:`verticapy.vDataFrame.sem` : Standard Error of Mean for particular columns.
+            | :py:meth:`verticapy.vDataColumn.mad` : Mean Absolute Deviation for a specific column.
+            | :py:meth:`verticapy.vDataFrame.sem` : Standard Error of Mean for particular columns.
         """
         return self.aggregate(["sem"]).values[self._alias][0]
 
@@ -4351,11 +4551,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].skewness()
 
         .. note:: All the calculations are pushed to the database.
@@ -4363,9 +4565,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["skewness"]).values[self._alias][0]
 
@@ -4395,11 +4597,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].std()
 
         .. note:: All the calculations are pushed to the database.
@@ -4407,9 +4611,9 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
-            | :py:mod:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
-            | :py:mod:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
+            | :py:meth:`verticapy.vDataColumn.kurtosis` : Kurtosis for a specific column.
+            | :py:meth:`verticapy.vDataFrame.skewness` : Skewness for particular columns.
+            | :py:meth:`verticapy.vDataFrame.std` : Standard Deviation for particular columns.
         """
         return self.aggregate(["stddev"]).values[self._alias][0]
 
@@ -4436,11 +4640,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].sum()
 
         .. note:: All the calculations are pushed to the database.
@@ -4448,8 +4654,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataFrame.sum` : Sum for particular columns.
-            | :py:mod:`verticapy.vDataColumn.max` : Maximum for a specific colum.
+            | :py:meth:`verticapy.vDataFrame.sum` : Sum for particular columns.
+            | :py:meth:`verticapy.vDataColumn.max` : Maximum for a specific colum.
         """
         return self.aggregate(["sum"]).values[self._alias][0]
 
@@ -4477,11 +4683,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["x"].sum()
 
         .. note:: All the calculations are pushed to the database.
@@ -4489,8 +4697,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         return self.aggregate(["variance"]).values[self._alias][0]
 
@@ -4539,11 +4747,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["y"].mode()
 
         Let's now return the second most frequent element:
@@ -4557,8 +4767,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.mean` : Mean for a specific column.
-            | :py:mod:`verticapy.vDataFrame.median` : Median for particular columns.
+            | :py:meth:`verticapy.vDataColumn.mean` : Mean for a specific column.
+            | :py:meth:`verticapy.vDataFrame.median` : Median for particular columns.
         """
         if n == 1:
             pre_comp = self._parent._get_catalog_value(self._alias, "top")
@@ -4621,11 +4831,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the values and counts for a specific
         column.
@@ -4638,11 +4850,13 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data["x"].value_counts(k = 6)
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_value_counts_table.html", "w")
             html_file.write(result._repr_html_())
@@ -4656,8 +4870,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:mod:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
+            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:meth:`verticapy.vDataFrame.duplicated` : Duplicated values for particular columns.
         """
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -4691,11 +4905,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
 
         Now, let's calculate the top k values for a specific
         column.
@@ -4708,11 +4924,13 @@ class vDCAgg(vDCEval):
             :suppress:
 
             import verticapy as vp
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             result = data["x"].topk()
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFAgg_topk_table.html", "w")
             html_file.write(result._repr_html_())
@@ -4726,8 +4944,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
-            | :py:mod:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
+            | :py:meth:`verticapy.vDataColumn.nunique` : Cardinality for a specific column.
+            | :py:meth:`verticapy.vDataFrame.nunique` : Cardinality for particular columns.
         """
         limit, where, topk_cat = "", "", ""
         if k >= 1:
@@ -4783,11 +5001,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["y"].distinct()
 
         .. note:: All the calculations are pushed to the database.
@@ -4795,8 +5015,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the ``aggregate`` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         alias_sql_repr = to_varchar(self.category(), self._alias)
         if "agg" not in kwargs:
@@ -4875,11 +5095,13 @@ class vDCAgg(vDCEval):
 
             import verticapy as vp
 
-            data = vp.vDataFrame({
-                "x": [1, 2, 4, 9, 10, 15, 20, 22],
-                "y": [1, 2, 1, 2, 1, 1, 2, 1],
-                "z": [10, 12, 2, 1, 9, 8, 1, 3],
-            })
+            data = vp.vDataFrame(
+                {
+                    "x": [1, 2, 4, 9, 10, 15, 20, 22],
+                    "y": [1, 2, 1, 2, 1, 1, 2, 1],
+                    "z": [10, 12, 2, 1, 9, 8, 1, 3],
+                }
+            )
             data["y"].nunique()
 
         .. note:: All the calculations are pushed to the database.
@@ -4887,8 +5109,8 @@ class vDCAgg(vDCEval):
         .. hint:: For more precise control, please refer to the `aggregate` method.
 
         .. seealso::
-            | :py:mod:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
-            | :py:mod:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
+            | :py:meth:`verticapy.vDataColumn.aggregate` : Aggregations for a specific column.
+            | :py:meth:`verticapy.vDataFrame.aggregate` : Aggregates for particular columns.
         """
         if approx:
             return self.aggregate(func=["approx_unique"]).values[self._alias][0]

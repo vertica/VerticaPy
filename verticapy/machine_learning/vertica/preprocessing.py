@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -112,7 +112,7 @@ def balance(
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -120,7 +120,7 @@ def balance(
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -195,8 +195,7 @@ def balance(
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_preprocessing_balance.html
 
     .. seealso::
-        | :py:mod:`verticapy.vDataFrame.sample` :
-          Sampling the dataset.
+        | :py:meth:`verticapy.vDataFrame.sample` : Sampling the dataset.
     """
     _executeSQL(
         query=f"""
@@ -551,7 +550,7 @@ class CountVectorizer(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
         method.
     """
 
@@ -835,13 +834,13 @@ class Scaler(Preprocessing):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
         method.
 
     Examples
@@ -856,7 +855,7 @@ class Scaler(Preprocessing):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -864,7 +863,7 @@ class Scaler(Preprocessing):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -906,7 +905,7 @@ class Scaler(Preprocessing):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -929,7 +928,7 @@ class Scaler(Preprocessing):
 
     .. important::
 
-        To fit a model, you can directly use the ``vDataFrame``
+        To fit a model, you can directly use the :py:class:`vDataFrame`
         or the name of the relation stored in the database.
 
     Model Parameters
@@ -959,8 +958,8 @@ class Scaler(Preprocessing):
         model.transform(data)
 
     Please refer to
-    :py:mod:`verticapy.machine_learning.Scaler.transform`
-    for more details on transforming a ``vDataFrame``.
+    :py:meth:`verticapy.machine_learning.Scaler.transform`
+    for more details on transforming a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -1024,17 +1023,17 @@ class Scaler(Preprocessing):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler.to_python`
         method is used to scale the data. For specific details on how
         to use this method for different model types, refer to the
         relevant documentation for each model.
 
     .. seealso::
-        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
+        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.StandardScaler` :
             Scalar with method set as ``zscore``.
-        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
+        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.RobustScaler` :
             Scalar with method set as ``robust_zscore``.
-        | :py:mod:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
+        | :py:meth:`verticapy.machine_learning.vertica.preprocessing.MinMaxScaler` :
             Scalar with method set as ``minmax``.
 
     """
@@ -1122,7 +1121,7 @@ class StandardScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1141,7 +1140,7 @@ class RobustScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1160,7 +1159,7 @@ class MinMaxScaler(Scaler):
     .. note::
 
         This is a child class. See
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Scaler`
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Scaler`
         for more details and examples.
     """
 
@@ -1243,13 +1242,13 @@ class OneHotEncoder(Preprocessing):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.Preprocessing.get_vertica_attributes``
         method.
 
     Examples
@@ -1264,7 +1263,7 @@ class OneHotEncoder(Preprocessing):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -1272,7 +1271,7 @@ class OneHotEncoder(Preprocessing):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -1328,7 +1327,7 @@ class OneHotEncoder(Preprocessing):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1351,7 +1350,7 @@ class OneHotEncoder(Preprocessing):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame``
+        To train a model, you can directly use the :py:class:`vDataFrame`
         or the name of the relation stored in the database.
 
     Classes
@@ -1377,8 +1376,8 @@ class OneHotEncoder(Preprocessing):
         model.transform(data)[:20]
 
     Please refer to
-    :py:mod:`verticapy.machine_learning.OneHotEncoder.transform`
-    for more details on transforming a ``vDataFrame``.
+    :py:meth:`verticapy.machine_learning.OneHotEncoder.transform`
+    for more details on transforming a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -1443,7 +1442,7 @@ class OneHotEncoder(Preprocessing):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.preprocessing.OneHotEncoder.to_python`
         method is used to transform the data and compute the different
         categories. For specific details on how to use this method for
         different model types, refer to the relevant documentation for

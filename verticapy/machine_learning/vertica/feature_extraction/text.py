@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -150,13 +150,13 @@ class TfidfVectorizer(VerticaModel):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
         method.
 
     Examples
     --------
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -164,7 +164,7 @@ class TfidfVectorizer(VerticaModel):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -188,7 +188,7 @@ class TfidfVectorizer(VerticaModel):
             "Data preprocessing is an important step in preparing data for machine learning.",
         ]
 
-    Next, we can insert this text into a ``vDataFrame``:
+    Next, we can insert this text into a :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -300,7 +300,7 @@ class TfidfVectorizer(VerticaModel):
         model.stop_words_
 
     .. seealso::
-        | :py:mod:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
+        | :py:meth:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
     """
 
     # Properties.

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -86,96 +86,78 @@ def set_option(key: str, value: Any = None) -> None:
     key: str
         Option to set, one of the following:
 
-        **cache**: bool
+         - cache: bool
             If set to True, vDataFrames save the
             computed aggregations in-memory.
-
-        **colors**: list
+         - colors: list
             List of colors used to draw the graphics.
-
-        **color_style**: str
+         - color_style: str
             Style used to color the graphics, one of the
             following:
             "rgb", "sunset", "retro", "shimbg", "swamp",
             "med", "orchid", "magenta", "orange",
             "vintage", "vivid", "berries", "refreshing",
             "summer", "tropical", "india", "default".
-
-        **count_on**: bool
+         - count_on: bool
             If set to True, the total number of rows in
             vDataFrames and TableSamples is computed and
-            displayed in the footer (if footer_on is True).
-
-        **footer_on**: bool
+            displayed in the footer (if ``footer_on is True``).
+         - footer_on: bool
             If set to True, vDataFrames and TableSamples
             show a footer that includes information about
             the displayed rows and columns.
-
-        **interactive**: bool
+         - interactive: bool
             If set to True, VerticaPy outputs are displayed
             in interactive tables.
-
-        **label_separator**: str
+         - label_separator: str
             Separator used to separate the query label from
-            the ``label_suffix``. The default value is '__'.
-
-        **label_suffix**: str
+            the ``label_suffix``. The default value is ``__``.
+         - label_suffix: str
             Label suffix to add to VerticaPy's query labels.
             It can be useful to track some specific activities.
             For example: Looking which user runs some specific
-            VerticaPy functions. The default value is None.
-
-        **max_columns**: int
+            VerticaPy functions. The default value is ``None``.
+         - max_columns: int
             Maximum number of columns to display. If the
-            specified value is invalid, max_columns is
+            specified value is invalid, ``max_columns`` is
             not changed.
-
-        **max_rows**: int
+         - max_rows: int
             Maximum number of rows to display. If the
-            specified value is invalid, max_row is not
-            changed.
-
-        **mode**: str
+            specified value is invalid, ``max_row`` is
+            not changed.
+         - mode: str
             Display mode for VerticaPy outputs, either:
 
-            **full**  :
-                        VerticaPy regular display mode.
+            **full**:
+                VerticaPy regular display mode.
 
-            **light** :
-                        Minimalist display mode.
-
-        **percent_bar**: bool
+            **light**:
+                Minimalist display mode.
+         - percent_bar: bool
             If set to True, the percent of non-missing
             values is displayed.
-
-        **print_info**: bool
+         - print_info: bool
             If set to True, information is printed each
             time the vDataFrame is modified.
-
-        **random_state**: int
+         - random_state: int
             Integer used to seed random number generation
             in VerticaPy.
-
-        **save_query_profile**: bool
+         - save_query_profile: bool
             If set to True, all function calls are stored in
             the query profile table. This makes it possible
             to differentiate the VerticaPy logs from the
             Vertica logs. If set to False, this functionality
             is deactivated.
-
-        **sql_on**: bool
+         - sql_on: bool
             If set to True, displays all SQL queries.
-
-        **temp_schema**: str
+         - temp_schema: str
             Specifies the temporary schema that certain
             methods/functions use to create intermediate
             objects, if needed.
-
-        **time_on**: bool
+         - time_on: bool
             If set to True, displays the elasped time for
             all SQL queries.
-
-        **tqdm**: bool
+         - tqdm: bool
             If set to True, a loading bar is displayed when
             using iterative functions.
 

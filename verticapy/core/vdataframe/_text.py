@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -93,6 +93,7 @@ class vDFText(vDFRolling):
                     Returns the substring that matches
                     a  regular   expression  within  a
                     vDataColumn.
+
         position: int, optional
             The number of characters from the start of the string
             where the function should start searching for matches.
@@ -207,7 +208,7 @@ class vDFText(vDFRolling):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.eval`
+            | :py:meth:`verticapy.vDataFrame.eval` : Evaluates an expression.
 
         """
         column = self.format_colnames(column)
@@ -299,10 +300,10 @@ class vDCText(vDCCorr):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.str_count`
-            | :py:mod:`verticapy.vDataFrame.str_extract`
-            | :py:mod:`verticapy.vDataFrame.str_replace`
-            | :py:mod:`verticapy.vDataFrame.str_slice`
+            | :py:meth:`verticapy.vDataFrame.str_count` : Counts occurrences matching the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_extract` : Extracts the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_replace` : Replaces the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_slice` : Slices the Regular Expression.
         """
         pat = pat.replace("'", "''")
         return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}') > 0")
@@ -379,10 +380,10 @@ class vDCText(vDCCorr):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.str_contains`
-            | :py:mod:`verticapy.vDataFrame.str_extract`
-            | :py:mod:`verticapy.vDataFrame.str_replace`
-            | :py:mod:`verticapy.vDataFrame.str_slice`
+            | :py:meth:`verticapy.vDataFrame.str_contains` : Validates the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_extract` : Extracts the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_replace` : Replaces the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_slice` : Slices the Regular Expression.
         """
         pat = pat.replace("'", "''")
         return self.apply(func=f"REGEXP_COUNT({{}}, '{pat}')")
@@ -448,10 +449,10 @@ class vDCText(vDCCorr):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.str_contains`
-            | :py:mod:`verticapy.vDataFrame.str_count`
-            | :py:mod:`verticapy.vDataFrame.str_replace`
-            | :py:mod:`verticapy.vDataFrame.str_slice`
+            | :py:meth:`verticapy.vDataFrame.str_contains` : Validates the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_count` : Counts occurrences matching the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_replace` : Replaces the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_slice` : Slices the Regular Expression.
         """
         pat = pat.replace("'", "''")
         return self.apply(func=f"REGEXP_SUBSTR({{}}, '{pat}')")
@@ -526,10 +527,10 @@ class vDCText(vDCCorr):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.str_contains`
-            | :py:mod:`verticapy.vDataFrame.str_count`
-            | :py:mod:`verticapy.vDataFrame.str_extract`
-            | :py:mod:`verticapy.vDataFrame.str_slice`
+            | :py:meth:`verticapy.vDataFrame.str_contains` : Validates the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_count` : Counts occurrences matching the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_extract` : Extracts the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_slice` : Slices the Regular Expression.
         """
         to_replace = to_replace.replace("'", "''")
         value = value.replace("'", "''")
@@ -596,9 +597,9 @@ class vDCText(vDCCorr):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.str_contains`
-            | :py:mod:`verticapy.vDataFrame.str_count`
-            | :py:mod:`verticapy.vDataFrame.str_replace`
-            | :py:mod:`verticapy.vDataFrame.str_extract`
+            | :py:meth:`verticapy.vDataFrame.str_contains` : Validates the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_count` : Counts occurrences matching the regular expression.
+            | :py:meth:`verticapy.vDataFrame.str_replace` : Replaces the Regular Expression.
+            | :py:meth:`verticapy.vDataFrame.str_extract` : Extracts the Regular Expression.
         """
         return self.apply(func=f"SUBSTR({{}}, {start}, {step})")

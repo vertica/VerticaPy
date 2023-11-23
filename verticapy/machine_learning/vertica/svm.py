@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -100,7 +100,7 @@ class LinearSVR(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -108,13 +108,13 @@ class LinearSVR(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -129,7 +129,7 @@ class LinearSVR(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -137,7 +137,7 @@ class LinearSVR(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -167,7 +167,7 @@ class LinearSVR(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -181,7 +181,7 @@ class LinearSVR(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -217,7 +217,7 @@ class LinearSVR(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -264,9 +264,9 @@ class LinearSVR(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -392,10 +392,10 @@ class LinearSVR(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -494,7 +494,7 @@ class LinearSVR(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -636,7 +636,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -646,13 +646,13 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -667,7 +667,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -675,7 +675,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -705,7 +705,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -719,7 +719,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -760,7 +760,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -796,9 +796,9 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -926,10 +926,10 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -1140,7 +1140,7 @@ class LinearSVC(LinearModelClassifier, BinaryClassifier):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant

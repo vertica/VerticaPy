@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -99,7 +99,7 @@ def het_breuschpagan(
 
         y_vals = [0, 2, 4, 6, 8, 10] + np.random.normal(0, 0.4, 6)
 
-    We can use those values to create the ``vDataFrame``:
+    We can use those values to create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -122,7 +122,7 @@ def het_breuschpagan(
 
         model.fit(input_relation = vdf, X = "x", y = "y")
 
-    We can create a column in the ``vDataFrame`` that
+    We can create a column in the :py:class:`vDataFrame` that
     has the predictions:
 
     .. ipython:: python
@@ -160,7 +160,7 @@ def het_breuschpagan(
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_breuschpagan
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -238,7 +238,7 @@ def het_breuschpagan(
 
         model.fit(input_relation = vdf, X = "x", y = "y")
 
-    We can create a column in the ``vDataFrame`` that
+    We can create a column in the :py:class:`vDataFrame` that
     has the predictions:
 
     .. ipython:: python
@@ -395,7 +395,7 @@ def het_goldfeldquandt(
         x_val = list(range(N))
         y_val = [x * 2 for x in x_val] + np.random.normal(0, 0.4, N)
 
-    We can use those values to create the ``vDataFrame``:
+    We can use those values to create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -432,7 +432,7 @@ def het_goldfeldquandt(
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_goldfeldquandt
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -648,7 +648,7 @@ def het_white(
 
         y_vals = [0, 2, 4, 6, 8, 10] + np.random.normal(0, 0.4, 6)
 
-    We can use those values to create the ``vDataFrame``:
+    We can use those values to create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -671,7 +671,7 @@ def het_white(
 
         model.fit(input_relation = vdf, X = "x", y = "y")
 
-    We can create a column in the ``vDataFrame`` that
+    We can create a column in the :py:class:`vDataFrame` that
     has the predictions:
 
     .. ipython:: python
@@ -709,7 +709,7 @@ def het_white(
 
         from verticapy.machine_learning.model_selection.statistical_tests import het_white
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -787,7 +787,7 @@ def het_white(
 
         model.fit(input_relation = vdf, X = "x", y = "y")
 
-    We can create a column in the ``vDataFrame`` that
+    We can create a column in the :py:class:`vDataFrame` that
     has the predictions:
 
     .. ipython:: python
@@ -954,7 +954,7 @@ def variance_inflation_factor(
         x_val_2 = [2 * x + np.random.normal(scale = 4) for x in x_val_1]
         x_val_3 = np.random.normal(0, 4, N)
 
-    We can use those values to create the ``vDataFrame``:
+    We can use those values to create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -250,7 +250,7 @@ def adfuller(
 
         from verticapy.machine_learning.model_selection.statistical_tests import adfuller
 
-    And then simply applying it on the ``vDataFrame``:
+    And then simply applying it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -506,7 +506,7 @@ def mkt(
 
         from verticapy.machine_learning.model_selection.statistical_tests import mkt
 
-    And then simply applying it on the ``vDataFrame``:
+    And then simply applying it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -944,7 +944,7 @@ def durbin_watson(
 
         model.fit(vdf, X = "day", y = "y1")
 
-    We can create a column in the ``vDataFrame`` that
+    We can create a column in the :py:class:`vDataFrame` that
     has the predictions:
 
     .. code-block:: python

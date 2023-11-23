@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -18,7 +18,7 @@ import warnings
 
 warning_message = (
     "Importing from 'verticapy.stats' is deprecated, "
-    "and it will no longer be possible in the next release. "
+    "and it will no longer be possible in the next minor release. "
     "Please use 'verticapy.sql.functions' instead "
     "to ensure compatibility with upcoming versions.\n"
     "Note: Statistical tests have been relocated to "

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -38,14 +38,17 @@ def change_auto_connection(name: str) -> None:
 
         from verticapy.connection import new_connection, change_auto_connection
 
-        new_connection({
-            "host": "10.211.55.14",
-            "port": "5433",
-            "database": "testdb",
-            "password": "XxX",
-            "user": "dbadmin"},
+        new_connection(
+            {
+                "host": "10.211.55.14",
+                "port": "5433",
+                "database": "testdb",
+                "password": "XxX",
+                "user": "dbadmin",
+            },
             name = "my_auto_connection",
-            auto = False)
+            auto = False,
+        )
 
     Change the auto connection to "my_auto_connection":
 

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -108,14 +108,14 @@ def insert_into(
             schema = "public",
             data = [
                 [3.3, 4.5, 5.6, 7.8, "Iris-setosa"],
-                [4.3, 4.7, 9.6, 1.8, "Iris-virginica"]
+                [4.3, 4.7, 9.6, 1.8, "Iris-virginica"],
             ],
             genSQL = True,
         )
 
     .. seealso::
-        | :py:module:`read_json`_
-        | :py:module:`read_csv`_
+        | :py:func:`read_json` : Ingests a JSON file using flex tables.
+        | :py:func:`read_csv` : Ingests a CSV file using flex tables.
     """
     column_names = format_type(column_names, dtype=list)
     if not schema:

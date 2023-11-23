@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -449,13 +449,13 @@ class PCA(Decomposition):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
         method.
 
     Examples
@@ -470,7 +470,7 @@ class PCA(Decomposition):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -478,7 +478,7 @@ class PCA(Decomposition):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -548,7 +548,7 @@ class PCA(Decomposition):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -571,7 +571,7 @@ class PCA(Decomposition):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database.
 
     Scores
@@ -585,7 +585,7 @@ class PCA(Decomposition):
         model.score()
 
     For more details on the function, check out
-    :py:mod:`verticapy.machine_learning.PCA.score`
+    :py:meth:`verticapy.machine_learning.PCA.score`
 
     You can also fetch the explained variance by:
 
@@ -603,8 +603,8 @@ class PCA(Decomposition):
 
         model.transform(data)
 
-    Please refer to :py:mod:`verticapy.machine_learning.PCA.transform`
-    for more details on transforming a ``vDataFrame``.
+    Please refer to :py:meth:`verticapy.machine_learning.PCA.transform`
+    for more details on transforming a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -721,7 +721,7 @@ class PCA(Decomposition):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.PCA.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.PCA.to_python`
         method is used to retrieve the Principal Component values.
         For specific details on how to
         use this method for different model types, refer to the relevant
@@ -860,13 +860,13 @@ class MCA(PCA):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
         method.
 
     Examples
@@ -881,7 +881,7 @@ class MCA(PCA):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -889,7 +889,7 @@ class MCA(PCA):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -969,7 +969,7 @@ class MCA(PCA):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database.
 
     Scores
@@ -983,7 +983,7 @@ class MCA(PCA):
         model.score()
 
     For more details on the function, check out
-    :py:mod:`verticapy.machine_learning.MCA.score`
+    :py:meth:`verticapy.machine_learning.MCA.score`
 
     You can also fetch the explained variance by:
 
@@ -1001,8 +1001,8 @@ class MCA(PCA):
 
         model.transform(tcdt)
 
-    Please refer to :py:mod:`verticapy.machine_learning.MCA.transform`
-    for more details on transforming a ``vDataFrame``.
+    Please refer to :py:meth:`verticapy.machine_learning.MCA.transform`
+    for more details on transforming a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -1118,7 +1118,7 @@ class MCA(PCA):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.MCA.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.MCA.to_python`
         method is used to retrieve the Principal Component values.
         For specific details on how to
         use this method for different model types, refer to the relevant
@@ -1396,13 +1396,13 @@ class SVD(Decomposition):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.Decomposition.get_vertica_attributes``
         method.
 
     Examples
@@ -1417,7 +1417,7 @@ class SVD(Decomposition):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -1425,7 +1425,7 @@ class SVD(Decomposition):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -1495,7 +1495,7 @@ class SVD(Decomposition):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1518,7 +1518,7 @@ class SVD(Decomposition):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database.
 
     Scores
@@ -1532,7 +1532,7 @@ class SVD(Decomposition):
         model.score()
 
     For more details on the function, check out
-    :py:mod:`verticapy.machine_learning.SVD.score`
+    :py:meth:`verticapy.machine_learning.SVD.score`
 
     You can also fetch the explained variance by:
 
@@ -1550,8 +1550,8 @@ class SVD(Decomposition):
 
         model.transform(data)
 
-    Please refer to :py:mod:`verticapy.machine_learning.SVD.transform`
-    for more details on transforming a ``vDataFrame``.
+    Please refer to :py:meth:`verticapy.machine_learning.SVD.transform`
+    for more details on transforming a :py:class:`vDataFrame`.
 
     Similarly, you can perform the inverse tranform to get
     the original features using:
@@ -1668,7 +1668,7 @@ class SVD(Decomposition):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.decomposition.SVD.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.decomposition.SVD.to_python`
         method is used to retrieve the Principal Component values.
         For specific details on how to
         use this method for different model types, refer to the relevant

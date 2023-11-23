@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -28,17 +28,17 @@ from verticapy.machine_learning.memmodel.tree import Tree
 
 class Clustering(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of clustering algorithms.
 
     .. note::
 
         This is base class for all in-memory implementations of
         clustering algorithms viz.
-        :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans`,
-        :py:mod:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
-        , :py:mod:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
-        and :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`,
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+        , :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+        and :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
 
     Parameters
     ----------
@@ -244,7 +244,7 @@ class Clustering(InMemoryModel):
 
 class KMeans(Clustering):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of KMeans.
 
     Parameters
@@ -256,7 +256,7 @@ class KMeans(Clustering):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel` are
+        :py:meth:`verticapy.machine_learning.memmodel` are
         defined entirely by their attributes. For example,
         'cluster centroids' and 'p value' define a KMeans model.
 
@@ -285,7 +285,7 @@ class KMeans(Clustering):
         p = 2
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans` model.
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans` model.
 
     .. ipython:: python
 
@@ -308,7 +308,7 @@ class KMeans(Clustering):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel.cluster.KMeans`
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.KMeans`
         assigns a cluster id to identify each cluster.
         In this example, cluster with centroid [0.5, 0.6] will have id = 0,
         with centroid [1,2] will have id = 1 and so on.
@@ -385,7 +385,7 @@ class KMeans(Clustering):
 
 class NearestCentroid(Clustering):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation  of NearestCentroid algorithm.
 
     Parameters
@@ -424,7 +424,7 @@ class NearestCentroid(Clustering):
         classes = ['class_a', 'class_b', 'class_c']
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.NearestCentroid`
     model.
 
     .. ipython:: python
@@ -530,7 +530,7 @@ class NearestCentroid(Clustering):
 
 class BisectingKMeans(Clustering, Tree):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of BisectingKMeans.
 
     Parameters
@@ -582,7 +582,7 @@ class BisectingKMeans(Clustering, Tree):
         children_right = [2, 4, None, None, None]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.BisectingKMeans`
     model.
 
     .. ipython:: python
@@ -961,7 +961,7 @@ class BisectingKMeans(Clustering, Tree):
 
 class KPrototypes(Clustering):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of KPrototypes.
 
     Parameters
@@ -982,7 +982,7 @@ class KPrototypes(Clustering):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
         algorithm allows you to use categorical variables directly
         without the need to encode them.
 
@@ -1014,7 +1014,7 @@ class KPrototypes(Clustering):
         is_categorical = [0, 1]
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+    :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
     model.
 
     .. ipython:: python
@@ -1039,7 +1039,7 @@ class KPrototypes(Clustering):
 
     .. note::
 
-        :py:mod:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
+        :py:meth:`verticapy.machine_learning.memmodel.cluster.KPrototypes`
         assigns a cluster id to identify each cluster.
         In this example, cluster with centroid [0.5, 'high'] will have
         id = 0, with centroid [1,'low'] will have id = 1 and so on.
