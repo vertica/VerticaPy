@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -142,13 +142,15 @@ def sql_magic(
         import verticapy as vp
 
         # Save a new connection
-        vp.new_connection({
-            "host": "10.211.55.14",
-            "port": "5433",
-            "database": "testdb",
-            "password": "XxX",
-            "user": "dbadmin"},
-            name = "VerticaDSN"
+        vp.new_connection(
+            {
+                "host": "10.211.55.14",
+                "port": "5433",
+                "database": "testdb",
+                "password": "XxX",
+                "user": "dbadmin",
+            },
+            name = "VerticaDSN",
         )
 
     If you already have a connection in a connection

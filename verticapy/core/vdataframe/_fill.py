@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -94,7 +94,7 @@ class vDFFill(vDFPivot):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -102,7 +102,7 @@ class vDFFill(vDFPivot):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -188,8 +188,8 @@ class vDFFill(vDFPivot):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.interpolate`
-            | :py:meth:`verticapy.vDataColumn.fill_outliers`
+            | :py:meth:`verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
+            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         val, method = format_type(val, method, dtype=dict)
         print_info = conf.get_option("print_info")
@@ -260,7 +260,7 @@ class vDFFill(vDFPivot):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -268,7 +268,7 @@ class vDFFill(vDFPivot):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -350,8 +350,8 @@ class vDFFill(vDFPivot):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna`
-            | :py:meth:`verticapy.vDataColumn.fill_outliers`
+            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         method = format_type(method, dtype=dict)
         by = format_type(by, dtype=list)
@@ -419,7 +419,7 @@ class vDCFill(vDCMath):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -427,7 +427,7 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -483,8 +483,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna`
-            | :py:meth:`verticapy.vDataColumn.fill_outliers`
+            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         assert (not isinstance(lower, NoneType)) or (
             not isinstance(upper, NoneType)
@@ -548,7 +548,7 @@ class vDCFill(vDCMath):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -556,7 +556,7 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -618,8 +618,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.fillna`
-            | :py:meth:`verticapy.vDataColumn.fill_outliers`
+            | :py:meth:`verticapy.vDataFrame.fillna` : Fill the missing values using the input method.
+            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -749,7 +749,7 @@ class vDCFill(vDCMath):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -757,7 +757,7 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -828,8 +828,8 @@ class vDCFill(vDCMath):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.interpolate`
-            | :py:meth:`verticapy.vDataColumn.fill_outliers`
+            | :py:meth:`verticapy.vDataFrame.interpolate` : Fill missing values by interpolating.
+            | :py:meth:`verticapy.vDataColumn.fill_outliers` : Fill the outliers using the input method.
         """
         method = method.lower()
         by, order_by = format_type(by, order_by, dtype=list)

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -151,8 +151,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.animated_pie`
-            | :py:mod:`verticapy.vDataColumn.bar`
+            | :py:meth:`verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | :py:meth:`verticapy.vDataColumn.bar` : Bar Chart.
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -302,8 +302,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.animated_bar`
-            | :py:mod:`verticapy.vDataColumn.pie`
+            | :py:meth:`verticapy.vDataFrame.animated_bar` : Animated Bar Chart.
+            | :py:meth:`verticapy.vDataColumn.pie` : Pie Chart.
         """
         columns = format_type(columns, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)
@@ -442,8 +442,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.animated_pie`
-            | :py:mod:`verticapy.vDataFrame.plot`
+            | :py:meth:`verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | :py:meth:`verticapy.vDataFrame.plot` : Line Plot.
         """
         columns = format_type(columns, dtype=list)
         columns, ts, by = self.format_colnames(columns, ts, by)
@@ -614,8 +614,8 @@ class vDFAnimatedPlot(vDFPlot):
 
         .. seealso::
 
-            | :py:mod:`verticapy.vDataFrame.animated_pie`
-            | :py:mod:`verticapy.vDataFrame.scatter`
+            | :py:meth:`verticapy.vDataFrame.animated_pie` : Animated Pie Chart.
+            | :py:meth:`verticapy.vDataFrame.scatter` : Scatter Plot.
         """
         columns, bbox = format_type(columns, bbox, dtype=list)
         date_style_dict = format_type(date_style_dict, dtype=dict)

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -36,7 +36,7 @@ if TYPE_CHECKING and conf.get_import_success("graphviz"):
 
 class Ensemble(InMemoryModel):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of ensemble algorithms.
     """
 
@@ -88,7 +88,7 @@ class Ensemble(InMemoryModel):
 
 class RandomForestRegressor(Ensemble):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the random forest regressor algorithm.
 
     Parameters
@@ -108,7 +108,7 @@ class RandomForestRegressor(Ensemble):
 
     A Random Forest Regressor model is an ensemble of multiple binary
     tree regressor models. In this example, we will create three
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models:
 
     .. ipython:: python
@@ -138,7 +138,7 @@ class RandomForestRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestRegressor`
     model.
 
     .. ipython:: python
@@ -271,7 +271,7 @@ class RandomForestRegressor(Ensemble):
 
 class RandomForestClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the random forest classifier algorithm.
 
     Parameters
@@ -293,7 +293,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
     A Random Forest Classifier model is an ensemble of multiple binary
     tree classifier models. In this example, we will create three
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -326,7 +326,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.RandomForestClassifier`
     model.
 
     .. ipython:: python
@@ -518,7 +518,7 @@ class RandomForestClassifier(Ensemble, MulticlassClassifier):
 
 class XGBRegressor(Ensemble):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the XGBoost regressor algorithm.
 
     Parameters
@@ -542,7 +542,7 @@ class XGBRegressor(Ensemble):
 
     A  model is an ensemble of multiple binary tree regressors.
     In this example, we will create three
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     models.
 
     .. ipython:: python
@@ -572,7 +572,7 @@ class XGBRegressor(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBRegressor`
     model.
 
     .. ipython:: python
@@ -723,7 +723,7 @@ class XGBRegressor(Ensemble):
 
 class XGBClassifier(Ensemble, MulticlassClassifier):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the XGBoost classifier algorithm.
 
     Parameters
@@ -750,7 +750,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
     A XGBoost Classifier model is an ensemble of multiple binary
     tree classifier models. In this example, we will create three
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     models:
 
     .. ipython:: python
@@ -783,7 +783,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.XGBClassifier`
     model.
 
     .. ipython:: python
@@ -973,7 +973,7 @@ class XGBClassifier(Ensemble, MulticlassClassifier):
 
 class IsolationForest(Ensemble):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of the isolation forest algorithm.
 
     Parameters
@@ -993,7 +993,7 @@ class IsolationForest(Ensemble):
 
     An Isolation Forest model is an ensemble of multiple binary tree
     anomaly models. In this example, we will create three
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     models:
 
     .. ipython:: python
@@ -1026,7 +1026,7 @@ class IsolationForest(Ensemble):
         )
 
     Now we will use above models to create
-    :py:mod:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
+    :py:meth:`verticapy.machine_learning.memmodel.ensemble.IsolationForest`
     model.
 
     .. ipython:: python

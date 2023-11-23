@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -97,7 +97,7 @@ class vDFUtils(PlottingUtils):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -105,7 +105,7 @@ class vDFUtils(PlottingUtils):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -250,7 +250,7 @@ class vDFUtils(PlottingUtils):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -258,7 +258,7 @@ class vDFUtils(PlottingUtils):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming
@@ -337,7 +337,7 @@ class vDFUtils(PlottingUtils):
         Examples
         ---------
 
-        We import ``verticapy``:
+        We import :py:mod:`verticapy`:
 
         .. ipython:: python
 
@@ -345,7 +345,7 @@ class vDFUtils(PlottingUtils):
 
         .. hint::
 
-            By assigning an alias to ``verticapy``, we mitigate the risk
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
             like "average" and "median", which can potentially lead to naming

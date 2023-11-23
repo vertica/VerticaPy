@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -419,7 +419,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         each possessing various attributes. For more
         detailed information, refer to the documentation
         for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -427,7 +427,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -437,7 +437,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         The importance of features is calculated
         using the MDI (Mean Decreased Impurity).
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -447,13 +447,13 @@ class RandomForestRegressor(Regressor, RandomForest):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -474,7 +474,7 @@ class RandomForestRegressor(Regressor, RandomForest):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -482,7 +482,7 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -512,7 +512,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -526,7 +526,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -564,7 +564,7 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -599,9 +599,9 @@ class RandomForestRegressor(Regressor, RandomForest):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -659,7 +659,7 @@ class RandomForestRegressor(Regressor, RandomForest):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
@@ -712,10 +712,10 @@ class RandomForestRegressor(Regressor, RandomForest):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -818,7 +818,7 @@ class RandomForestRegressor(Regressor, RandomForest):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.RandomForestRegressor.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.RandomForestRegressor.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -988,7 +988,7 @@ class XGBRegressor(Regressor, XGBoost):
         each possessing various attributes. For more
         detailed information, refer to the documentation
         for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the average gain of each tree. To determine
@@ -996,7 +996,7 @@ class XGBRegressor(Regressor, XGBoost):
         tree, normalizes them and applies an activation
         function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1006,7 +1006,7 @@ class XGBRegressor(Regressor, XGBoost):
         The importance of features is calculated
         using the average gain of each tree.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1028,13 +1028,13 @@ class XGBRegressor(Regressor, XGBoost):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -1055,7 +1055,7 @@ class XGBRegressor(Regressor, XGBoost):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1063,7 +1063,7 @@ class XGBRegressor(Regressor, XGBoost):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -1093,7 +1093,7 @@ class XGBRegressor(Regressor, XGBoost):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1107,7 +1107,7 @@ class XGBRegressor(Regressor, XGBoost):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1149,7 +1149,7 @@ class XGBRegressor(Regressor, XGBoost):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1184,9 +1184,9 @@ class XGBRegressor(Regressor, XGBoost):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1244,7 +1244,7 @@ class XGBRegressor(Regressor, XGBoost):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.XGBRegressor.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.XGBRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
@@ -1297,10 +1297,10 @@ class XGBRegressor(Regressor, XGBoost):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.XGBRegressor.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.XGBRegressor.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -1413,7 +1413,7 @@ class XGBRegressor(Regressor, XGBoost):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.XGBRegressor.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.XGBRegressor.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -1602,7 +1602,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         each possessing various attributes. For more
         detailed information, refer to the documentation
         for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -1610,7 +1610,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1620,7 +1620,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         The importance of features is calculated
         using the MDI (Mean Decreased Impurity).
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1632,13 +1632,13 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -1659,7 +1659,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1667,7 +1667,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -1697,7 +1697,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1711,7 +1711,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1728,7 +1728,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     In VerticaPy, balancing a dataset to address class imbalances
     is made straightforward through the
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing`` module. This function
     enables users to rectify skewed class distributions efficiently.
     By specifying the target variable and setting parameters like
@@ -1736,7 +1736,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     equitable representation of classes in their dataset.
     Whether opting for over-sampling, under-sampling, or a combination
     of both, VerticaPy's
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process, empowering users to enhance the
     performance and fairness of their machine learning models trained
     on imbalanced data.
@@ -1807,7 +1807,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1842,9 +1842,9 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1920,7 +1920,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_rf_classifier_report_cutoff.html
 
     You can also use the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
@@ -1973,10 +1973,10 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -2205,7 +2205,7 @@ class RandomForestClassifier(MulticlassClassifier, RandomForest):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.RandomForestClassifier.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.RandomForestClassifier.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -2392,7 +2392,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         each possessing various attributes. For more
         detailed information, refer to the documentation
         for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the average gain of each tree. To determine
@@ -2400,7 +2400,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         tree, normalizes them and applies an activation
         function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2410,7 +2410,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         The importance of features is calculated
         using the average gain of each tree.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2436,13 +2436,13 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -2463,7 +2463,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -2471,7 +2471,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -2501,7 +2501,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -2515,7 +2515,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -2532,7 +2532,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     In VerticaPy, balancing a dataset to address class imbalances
     is made straightforward through the
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing`` module. This function
     enables users to rectify skewed class distributions efficiently.
     By specifying the target variable and setting parameters like
@@ -2540,7 +2540,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     equitable representation of classes in their dataset.
     Whether opting for over-sampling, under-sampling, or a combination
     of both, VerticaPy's
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process, empowering users to enhance the
     performance and fairness of their machine learning models trained
     on imbalanced data.
@@ -2615,7 +2615,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -2650,9 +2650,9 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -2728,7 +2728,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
         :file: SPHINX_DIRECTORY/figures/machine_learning_vertica_xgb_classifier_report_cutoff.html
 
     You can also use the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.XGBClassifier.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.XGBClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
@@ -2781,10 +2781,10 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.XGBClassifier.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.XGBClassifier.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -3023,7 +3023,7 @@ class XGBClassifier(MulticlassClassifier, XGBoost):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.XGBClassifier.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.XGBClassifier.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -3219,7 +3219,7 @@ class IsolationForest(Clustering, Tree):
         each possessing various attributes. For more
         detailed information, refer to the documentation
         for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`.
     psy_: int
         Sampling size used to compute the final score.
     n_estimators_: int
@@ -3228,13 +3228,13 @@ class IsolationForest(Clustering, Tree):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -3249,7 +3249,7 @@ class IsolationForest(Clustering, Tree):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -3257,7 +3257,7 @@ class IsolationForest(Clustering, Tree):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -3319,7 +3319,7 @@ class IsolationForest(Clustering, Tree):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -3342,9 +3342,9 @@ class IsolationForest(Clustering, Tree):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -3539,7 +3539,7 @@ class IsolationForest(Clustering, Tree):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.IsolationForest.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.IsolationForest.to_python`
         method is used to retrieve the anomaly score.
         For specific details on how to
         use this method for different model types, refer to the relevant

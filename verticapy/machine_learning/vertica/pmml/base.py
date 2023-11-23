@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -38,19 +38,19 @@ class PMMLModel(VerticaModel):
     name: str, optional
         Name of the model. The  model must be stored in
         the database. If it is not the case, you can use
-        :py:mod:`verticapy.machine_learning.vertica.import_models`
+        :py:meth:`verticapy.machine_learning.vertica.import_models`
         to import your PMML model.
 
     Attributes
     ----------
     All attributes can be accessed using the
-    :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
+    :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_attributes``
     method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.VerticaModel.get_vertica_attributes``
         method.
     """
 

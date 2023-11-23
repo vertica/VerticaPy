@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -82,7 +82,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         ``BinaryTreeRegressor``. It possess various
         attributes. For more detailed information,
         refer to the documentation for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -90,7 +90,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -98,13 +98,13 @@ class DecisionTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -125,7 +125,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -133,7 +133,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -163,7 +163,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -177,7 +177,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -214,7 +214,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -250,9 +250,9 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -310,7 +310,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
@@ -363,10 +363,10 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -469,7 +469,7 @@ class DecisionTreeRegressor(RandomForestRegressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.DecisionTreeRegressor.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.DecisionTreeRegressor.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -529,7 +529,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         ``BinaryTreeRegressor``. It possess various
         attributes. For more detailed information,
         refer to the documentation for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -537,7 +537,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -545,13 +545,13 @@ class DummyTreeRegressor(RandomForestRegressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -572,7 +572,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -580,7 +580,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -610,7 +610,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -624,7 +624,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -653,7 +653,7 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -688,9 +688,9 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -748,7 +748,7 @@ class DummyTreeRegressor(RandomForestRegressor):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.score`
     function to calculate various regression metrics, with the R-squared being the default.
 
     .. ipython:: python
@@ -801,10 +801,10 @@ class DummyTreeRegressor(RandomForestRegressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestRegressor.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -907,7 +907,7 @@ class DummyTreeRegressor(RandomForestRegressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.DummyTreeRegressor.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.DummyTreeRegressor.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -989,7 +989,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         ``BinaryTreeClassifier``. It possess various
         attributes. For more detailed information,
         refer to the documentation for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -997,7 +997,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1007,13 +1007,13 @@ class DecisionTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -1034,7 +1034,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1042,7 +1042,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -1072,7 +1072,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1086,7 +1086,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1103,7 +1103,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     In VerticaPy, balancing a dataset to address class imbalances
     is made straightforward through the
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing`` module. This function
     enables users to rectify skewed class distributions efficiently.
     By specifying the target variable and setting parameters like
@@ -1111,7 +1111,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     equitable representation of classes in their dataset.
     Whether opting for over-sampling, under-sampling, or a combination
     of both, VerticaPy's
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process, empowering users to enhance the
     performance and fairness of their machine learning models trained
     on imbalanced data.
@@ -1181,7 +1181,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1216,9 +1216,9 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1295,7 +1295,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
 
     You can also use the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
@@ -1348,10 +1348,10 @@ class DecisionTreeClassifier(RandomForestClassifier):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -1580,7 +1580,7 @@ class DecisionTreeClassifier(RandomForestClassifier):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.DecisionTreeClassifier.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.DecisionTreeClassifier.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -1640,7 +1640,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         ``BinaryTreeClassifier``. It possess various
         attributes. For more detailed information,
         refer to the documentation for
-        :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
+        :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`.
     features_importance_: numpy.array
         The importance of features. It is calculated
         using the MDI (Mean Decreased Impurity). To
@@ -1648,7 +1648,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         scores of each tree, normalizes them and applies
         an activation function to scale them.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1658,13 +1658,13 @@ class DummyTreeClassifier(RandomForestClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.base.Tree.get_vertica_attributes``
         method.
 
     Examples
@@ -1685,7 +1685,7 @@ class DummyTreeClassifier(RandomForestClassifier):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1693,7 +1693,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -1723,7 +1723,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1737,7 +1737,7 @@ class DummyTreeClassifier(RandomForestClassifier):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1754,7 +1754,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     In VerticaPy, balancing a dataset to address class imbalances
     is made straightforward through the
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing`` module. This function
     enables users to rectify skewed class distributions efficiently.
     By specifying the target variable and setting parameters like
@@ -1762,7 +1762,7 @@ class DummyTreeClassifier(RandomForestClassifier):
     equitable representation of classes in their dataset.
     Whether opting for over-sampling, under-sampling, or a combination
     of both, VerticaPy's
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process, empowering users to enhance the
     performance and fairness of their machine learning models trained
     on imbalanced data.
@@ -1826,7 +1826,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1861,9 +1861,9 @@ class DummyTreeClassifier(RandomForestClassifier):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1940,7 +1940,7 @@ class DummyTreeClassifier(RandomForestClassifier):
 
 
     You can also use the
-    :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
+    :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.score`
     function to compute any classification metric. The default metric is the accuracy:
 
     .. ipython:: python
@@ -1993,10 +1993,10 @@ class DummyTreeClassifier(RandomForestClassifier):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.ensemble.RandomForestClassifier.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -2210,7 +2210,7 @@ class DummyTreeClassifier(RandomForestClassifier):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.tree.DummyTreeClassifier.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.tree.DummyTreeClassifier.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant

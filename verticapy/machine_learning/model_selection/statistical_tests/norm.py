@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -88,7 +88,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
         # Dataset
         data = np.random.normal(mean, std_dev, N)
 
-    Now we can create the ``vDataFrame``:
+    Now we can create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -116,7 +116,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
 
         from verticapy.machine_learning.model_selection.statistical_tests import jarque_bera
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -190,7 +190,7 @@ def jarque_bera(input_relation: SQLRelation, column: str) -> tuple[float, float]
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_jarque_bera_2.html
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -277,7 +277,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
         # Dataset
         data = np.random.normal(mean, std_dev, N)
 
-    Now we can create the ``vDataFrame``:
+    Now we can create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -305,7 +305,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
 
         from verticapy.machine_learning.model_selection.statistical_tests import kurtosistest
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -380,7 +380,7 @@ def kurtosistest(input_relation: SQLRelation, column: str) -> tuple[float, float
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_kurtosistest_2.html
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -476,7 +476,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         # Dataset
         data = np.random.normal(mean, std_dev, N)
 
-    Now we can create the ``vDataFrame``:
+    Now we can create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -504,7 +504,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         from verticapy.machine_learning.model_selection.statistical_tests import normaltest
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -578,7 +578,7 @@ def normaltest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_normaltest_2.html
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -666,7 +666,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
         # Dataset
         data = np.random.normal(mean, std_dev, N)
 
-    Now we can create the ``vDataFrame``:
+    Now we can create the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -694,7 +694,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
 
         from verticapy.machine_learning.model_selection.statistical_tests import skewtest
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -782,7 +782,7 @@ def skewtest(input_relation: SQLRelation, column: str) -> tuple[float, float]:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/plotting_machine_learning_model_selection_norm_skewtest_2.html
 
-    And simply apply it on the ``vDataFrame``:
+    And simply apply it on the :py:class:`vDataFrame`:
 
     .. ipython:: python
 

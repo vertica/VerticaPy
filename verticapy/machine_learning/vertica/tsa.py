@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -1103,7 +1103,7 @@ class ARIMA(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1119,13 +1119,13 @@ class ARIMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
         method.
 
     Examples
@@ -1140,7 +1140,7 @@ class ARIMA(TimeSeriesModelBase):
     Initialization
     ^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -1148,7 +1148,7 @@ class ARIMA(TimeSeriesModelBase):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -1202,7 +1202,7 @@ class ARIMA(TimeSeriesModelBase):
 
     Though the increasing trend is obvious in our example,
     we can confirm it by the
-    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    :py:meth:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
     (Mann Kendall test) test:
 
     .. code-block:: python
@@ -1247,7 +1247,7 @@ class ARIMA(TimeSeriesModelBase):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1270,9 +1270,9 @@ class ARIMA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1402,7 +1402,7 @@ class ARIMA(TimeSeriesModelBase):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -1458,10 +1458,10 @@ class ARIMA(TimeSeriesModelBase):
 
         Predictions can be made automatically by using the training set,
         in which case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     If you would like to have the 'time-stamps' (ts) in the output then
@@ -1594,7 +1594,7 @@ class ARIMA(TimeSeriesModelBase):
 
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -1815,7 +1815,7 @@ class ARMA(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1831,13 +1831,13 @@ class ARMA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
         method.
 
     Examples
@@ -1852,7 +1852,7 @@ class ARMA(TimeSeriesModelBase):
     Initialization
     ^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -1860,7 +1860,7 @@ class ARMA(TimeSeriesModelBase):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -1914,7 +1914,7 @@ class ARMA(TimeSeriesModelBase):
 
     Though the increasing trend is obvious in our example,
     we can confirm it by the
-    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    :py:meth:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
     (Mann Kendall test) test:
 
     .. code-block:: python
@@ -1959,7 +1959,7 @@ class ARMA(TimeSeriesModelBase):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1982,9 +1982,9 @@ class ARMA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -2105,7 +2105,7 @@ class ARMA(TimeSeriesModelBase):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -2161,10 +2161,10 @@ class ARMA(TimeSeriesModelBase):
 
         Predictions can be made automatically by using the training set,
         in which case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.ARMA.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.tsa.ARMA.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     If you would like to have the 'time-stamps' (ts) in the output then
@@ -2296,7 +2296,7 @@ class ARMA(TimeSeriesModelBase):
 
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -2514,7 +2514,7 @@ class AR(TimeSeriesModelBase):
         are normalized based on their range. Subsequently,
         an activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2530,13 +2530,13 @@ class AR(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
         method.
 
     Examples
@@ -2551,7 +2551,7 @@ class AR(TimeSeriesModelBase):
     Initialization
     ^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -2559,7 +2559,7 @@ class AR(TimeSeriesModelBase):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -2618,7 +2618,7 @@ class AR(TimeSeriesModelBase):
 
     Though the increasing trend is obvious in our example,
     we can confirm it by the
-    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    :py:meth:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
     (Mann Kendall test) test:
 
     .. code-block:: python
@@ -2663,7 +2663,7 @@ class AR(TimeSeriesModelBase):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -2686,9 +2686,9 @@ class AR(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -2805,7 +2805,7 @@ class AR(TimeSeriesModelBase):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.AR.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.AR.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -2853,10 +2853,10 @@ class AR(TimeSeriesModelBase):
 
         Predictions can be made automatically by using the training set,
         in which case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.AR.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.tsa.AR.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     If you would like to have the 'time-stamps' (ts) in the output then
@@ -2984,7 +2984,7 @@ class AR(TimeSeriesModelBase):
 
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -3192,13 +3192,13 @@ class MA(TimeSeriesModelBase):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.tsa.TimeSeriesModelBase.get_vertica_attributes``
         method.
 
     Examples
@@ -3213,7 +3213,7 @@ class MA(TimeSeriesModelBase):
     Initialization
     ^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. ipython:: python
 
@@ -3221,7 +3221,7 @@ class MA(TimeSeriesModelBase):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -3297,7 +3297,7 @@ class MA(TimeSeriesModelBase):
 
     It is obvious there is no trend in our example,
     but we can confirm it by the
-    :py:mod:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
+    :py:meth:`verticapy.machine_learning.model_selection.statistical_tests.mkt`
     (Mann Kendall test) test:
 
     .. code-block:: python
@@ -3343,7 +3343,7 @@ class MA(TimeSeriesModelBase):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -3366,9 +3366,9 @@ class MA(TimeSeriesModelBase):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -3465,7 +3465,7 @@ class MA(TimeSeriesModelBase):
         E.g. ``model.report(metrics = ["mse", "r2"])``.
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.MA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.MA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 
@@ -3513,10 +3513,10 @@ class MA(TimeSeriesModelBase):
 
         Predictions can be made automatically by using the training set,
         in which case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.tsa.MA.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.tsa.MA.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     If you would like to have the 'time-stamps' (ts) in the output then
@@ -3657,7 +3657,7 @@ class MA(TimeSeriesModelBase):
 
 
     You can utilize the
-    :py:mod:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
+    :py:meth:`verticapy.machine_learning.vertica.tsa.ARIMA.score`
     function to calculate various regression metrics, with the explained
     variance being the default.
 

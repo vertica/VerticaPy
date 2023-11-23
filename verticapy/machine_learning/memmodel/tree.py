@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -454,7 +454,7 @@ class Tree(InMemoryModel):
 
 class BinaryTreeRegressor(Tree):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation  of  binary  trees  for regression.
 
     Parameters
@@ -499,7 +499,7 @@ class BinaryTreeRegressor(Tree):
     Final values at leaf nodes are also required.
 
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeRegressor`
     model:
 
     .. ipython:: python
@@ -635,7 +635,7 @@ class BinaryTreeRegressor(Tree):
 
 class BinaryTreeAnomaly(Tree):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation  of  binary  trees  for anomaly detection.
 
     Parameters
@@ -680,7 +680,7 @@ class BinaryTreeAnomaly(Tree):
     child node id's, feature and threshold value to split a node.
     Final values at leaf nodes are also required.
     Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeAnomaly`
     model:
 
     .. ipython:: python
@@ -842,7 +842,7 @@ class BinaryTreeAnomaly(Tree):
 
 class BinaryTreeClassifier(Tree):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation  of  binary  trees  for classification.
 
     Parameters
@@ -888,7 +888,7 @@ class BinaryTreeClassifier(Tree):
     and right child node id's, feature and threshold value to
     split a node. Final values at leaf nodes and name of classes
     are also required. Let's create a
-    :py:mod:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.BinaryTreeClassifier`
     model.
 
     .. ipython:: python
@@ -1062,7 +1062,7 @@ class BinaryTreeClassifier(Tree):
 
 class NonBinaryTree(Tree):
     """
-    :py:mod:`verticapy.machine_learning.memmodel.base.InMemoryModel`
+    :py:meth:`verticapy.machine_learning.memmodel.base.InMemoryModel`
     implementation of non-binary trees.
 
     Parameters
@@ -1129,7 +1129,7 @@ class NonBinaryTree(Tree):
 
     Our non-binary tree is ready, we will now provide
     information about classes and create a
-    :py:mod:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
+    :py:meth:`verticapy.machine_learning.memmodel.tree.NonBinaryTree`
     model.
 
     .. ipython:: python

@@ -1,5 +1,5 @@
 """
-Copyright  (c)  2018-2023 Open Text  or  one  of its
+Copyright  (c)  2018-2024 Open Text  or  one  of its
 affiliates.  Licensed  under  the   Apache  License,
 Version 2.0 (the  "License"); You  may  not use this
 file except in compliance with the License.
@@ -330,7 +330,7 @@ class ElasticNet(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -338,13 +338,13 @@ class ElasticNet(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -359,7 +359,7 @@ class ElasticNet(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -367,7 +367,7 @@ class ElasticNet(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -397,7 +397,7 @@ class ElasticNet(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -411,7 +411,7 @@ class ElasticNet(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -447,7 +447,7 @@ class ElasticNet(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -495,9 +495,9 @@ class ElasticNet(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -598,10 +598,10 @@ class ElasticNet(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -685,7 +685,7 @@ class ElasticNet(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -799,7 +799,7 @@ class Lasso(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -807,13 +807,13 @@ class Lasso(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -828,7 +828,7 @@ class Lasso(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -836,7 +836,7 @@ class Lasso(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -866,7 +866,7 @@ class Lasso(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -880,7 +880,7 @@ class Lasso(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -914,7 +914,7 @@ class Lasso(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -960,9 +960,9 @@ class Lasso(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1063,10 +1063,10 @@ class Lasso(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -1165,7 +1165,7 @@ class Lasso(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -1270,7 +1270,7 @@ class LinearRegression(LinearModel, Regressor):
         the model coefficients, which are normalized
         based on their range. Subsequently, an
         activation function calculates the final score.
-        It is necessary to use the :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`method
+        It is necessary to use the :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`method
         to compute it initially, and the computed values
         will be subsequently utilized for subsequent
         calls.
@@ -1278,13 +1278,13 @@ class LinearRegression(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -1299,7 +1299,7 @@ class LinearRegression(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1307,7 +1307,7 @@ class LinearRegression(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -1337,7 +1337,7 @@ class LinearRegression(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1351,7 +1351,7 @@ class LinearRegression(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1385,7 +1385,7 @@ class LinearRegression(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1430,9 +1430,9 @@ class LinearRegression(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -1559,10 +1559,10 @@ class LinearRegression(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -1661,7 +1661,7 @@ class LinearRegression(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how
         to use this method for different model types, refer to the
@@ -1776,7 +1776,7 @@ class PoissonRegressor(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -1784,13 +1784,13 @@ class PoissonRegressor(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -1805,7 +1805,7 @@ class PoissonRegressor(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -1813,7 +1813,7 @@ class PoissonRegressor(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -1843,7 +1843,7 @@ class PoissonRegressor(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -1857,7 +1857,7 @@ class PoissonRegressor(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -1892,7 +1892,7 @@ class PoissonRegressor(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -1939,9 +1939,9 @@ class PoissonRegressor(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -2042,10 +2042,10 @@ class PoissonRegressor(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -2129,7 +2129,7 @@ class PoissonRegressor(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -2238,7 +2238,7 @@ class Ridge(LinearModel, Regressor):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2246,13 +2246,13 @@ class Ridge(LinearModel, Regressor):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -2267,7 +2267,7 @@ class Ridge(LinearModel, Regressor):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -2275,7 +2275,7 @@ class Ridge(LinearModel, Regressor):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
         of code collisions with other libraries. This precaution is
         necessary because verticapy uses commonly known function names
         like "average" and "median", which can potentially lead to naming
@@ -2305,7 +2305,7 @@ class Ridge(LinearModel, Regressor):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -2319,7 +2319,7 @@ class Ridge(LinearModel, Regressor):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -2353,7 +2353,7 @@ class Ridge(LinearModel, Regressor):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -2398,9 +2398,9 @@ class Ridge(LinearModel, Regressor):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -2526,10 +2526,10 @@ class Ridge(LinearModel, Regressor):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Plots
@@ -2628,7 +2628,7 @@ class Ridge(LinearModel, Regressor):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
@@ -2752,7 +2752,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         based on their range. Subsequently, an
         activation function calculates the final score.
         It is necessary to use the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.features_importance`
         method to compute it initially, and the computed
         values will be subsequently utilized for subsequent
         calls.
@@ -2762,13 +2762,13 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     .. note::
 
         All attributes can be accessed using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_attributes``
         method.
 
     .. note::
 
         Several other attributes can be accessed by using the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.get_vertica_attributes``
         method.
 
     Examples
@@ -2783,7 +2783,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     Load data for machine learning
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    We import ``verticapy``:
+    We import :py:mod:`verticapy`:
 
     .. code-block:: python
 
@@ -2791,7 +2791,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        By assigning an alias to ``verticapy``, we mitigate the risk of code
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
         collisions with other libraries. This precaution is necessary
         because verticapy uses commonly known function names like "average"
         and "median", which can potentially lead to naming conflicts.
@@ -2821,7 +2821,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         skills within the VerticaPy environment.
 
     You can easily divide your dataset into training and testing subsets
-    using the :py:mod:`vDataFrame.train_test_split` method. This is a
+    using the :py:meth:`vDataFrame.train_test_split` method. This is a
     crucial step when preparing your data for machine learning, as it
     allows you to evaluate the performance of your models accurately.
 
@@ -2835,7 +2835,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
         In this case, VerticaPy utilizes seeded randomization to guarantee
         the reproducibility of your data split. However, please be aware
         that this approach may lead to reduced performance. For a more
-        efficient data split, you can use the :py:mod:`vDataFrame.to_db`
+        efficient data split, you can use the :py:meth:`vDataFrame.to_db`
         method to save your results into ``tables`` or ``temporary tables``.
         This will help enhance the overall performance of the process.
 
@@ -2852,7 +2852,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
     In VerticaPy, balancing a dataset to address class imbalances
     is made straightforward through the
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function within the ``preprocessing`` module. This function
     enables users to rectify skewed class distributions efficiently.
     By specifying the target variable and setting parameters like
@@ -2860,7 +2860,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     equitable representation of classes in their dataset.
     Whether opting for over-sampling, under-sampling, or a combination
     of both, VerticaPy's
-    :py:mod:`verticapy.machine_learning.vertica.preprocessing.balance`
+    :py:meth:`verticapy.machine_learning.vertica.preprocessing.balance`
     function streamlines the process, empowering users to enhance the
     performance and fairness of their machine learning models trained
     on imbalanced data.
@@ -2922,7 +2922,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
     .. hint::
 
-        In ``verticapy`` 1.0.x and higher, you do not need to specify the
+        In :py:mod:`verticapy` 1.0.x and higher, you do not need to specify the
         model name, as the name is automatically assigned. If you need to
         re-use the model, you can fetch the model name from the model's
         attributes.
@@ -2967,9 +2967,9 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
     .. important::
 
-        To train a model, you can directly use the ``vDataFrame`` or the
+        To train a model, you can directly use the :py:class:`vDataFrame` or the
         name of the relation stored in the database. The test set is optional
-        and is only used to compute the test metrics. In ``verticapy``, we
+        and is only used to compute the test metrics. In :py:mod:`verticapy`, we
         don't work using ``X`` matrices and ``y`` vectors. Instead, we work
         directly with lists of predictors and the response name.
 
@@ -3097,10 +3097,10 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
 
         Predictions can be made automatically using the test set, in which
         case you don't need to specify the predictors. Alternatively, you
-        can pass only the ``vDataFrame`` to the
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
+        can pass only the :py:class:`vDataFrame` to the
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.predict`
         function, but in this case, it's essential that the column names of
-        the ``vDataFrame`` match the predictors and response name in the
+        the :py:class:`vDataFrame` match the predictors and response name in the
         model.
 
     Probabilities
@@ -3311,7 +3311,7 @@ class LogisticRegression(LinearModelClassifier, BinaryClassifier):
     .. hint::
 
         The
-        :py:mod:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
+        :py:meth:`verticapy.machine_learning.vertica.linear_model.LinearModel.to_python`
         method is used to retrieve predictions,
         probabilities, or cluster distances. For specific details on how to
         use this method for different model types, refer to the relevant
