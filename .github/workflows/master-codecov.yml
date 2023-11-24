@@ -22,7 +22,7 @@ jobs:
         timeout-minutes: 15
         run: |
           docker pull vertica/vertica-ce:latest
-          docker run -d -p 5433:5433 -p 5444:5444 \
+          docker run -d -v /tmp:/tmp -p 5433:5433 -p 5444:5444 \
             --name vertica_docker \
             vertica/vertica-ce
           echo "Vertica startup ..."
