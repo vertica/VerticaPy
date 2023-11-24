@@ -20,6 +20,30 @@ from verticapy._utils._sql._sys import _executeSQL
 def current_session() -> int:
     """
     Returns the current DB session.
+
+    Returns
+    -------
+    int
+        DB session.
+
+    Example
+    -------
+    Displays the current DB session:
+
+    .. ipython:: python
+
+        from verticapy.sql.sys import current_session
+
+        current_session()
+
+    .. note::
+
+        The session is used as an identifier in
+        the VerticaPy logs.
+
+    .. seealso::
+        | :py:meth:`verticapy.sql.sys.username` : current DB username.
+        | :py:meth:`verticapy.sql.sys.has_privileges` : checks user privileges.
     """
     res = _executeSQL(
         query="SELECT /*+LABEL(current_session)*/ CURRENT_SESSION();",
@@ -32,6 +56,30 @@ def current_session() -> int:
 def username() -> str:
     """
     Returns the current DB username.
+
+    Returns
+    -------
+    str
+        Username.
+
+    Example
+    -------
+    Displays the current DB user name:
+
+    .. ipython:: python
+
+        from verticapy.sql.sys import username
+
+        username()
+
+    .. note::
+
+        The username can be important for determining
+        privileges.
+
+    .. seealso::
+        | :py:meth:`verticapy.sql.sys.current_session` : current DB session.
+        | :py:meth:`verticapy.sql.sys.has_privileges` : checks user privileges.
     """
     return _executeSQL(
         query="SELECT /*+LABEL(username)*/ USERNAME();",
@@ -55,8 +103,28 @@ def does_table_exist(table_name: str, schema: str) -> bool:
     -------
     bool
         False if the table doesn't exist,
-        or it exists but the user has no USAGE privilege on it.
+        or it exists but the user has no
+        USAGE privilege on it.
         True otherwise.
+
+    Example
+    -------
+    Checks if a table exist:
+
+    .. ipython:: python
+
+        from verticapy.sql.sys import does_table_exist
+
+        does_table_exist(
+            table_name = "fake_name",
+            schema = "fake_schema",
+        )
+
+    .. note::
+
+        Checks if the table exists, but it will not raise
+        any errors; instead, it returns a boolean value,
+        True or False.
     """
     query = f"SELECT COUNT(*) FROM tables WHERE table_name='{table_name:}' AND table_schema='{schema}';"
     result = _executeSQL(query, title="Does the table exist?", method="fetchfirstelem")
@@ -69,7 +137,8 @@ def has_privileges(
     object_name: str, object_schema: str, privileges: list, raise_error: bool = False
 ) -> bool:
     """
-    Checks if the user has all the privileges on the object_schema.object_name object.
+    Checks if the user has all the privileges on
+    the object_schema.object_name object.
 
     Parameters
     ----------
@@ -80,22 +149,36 @@ def has_privileges(
     privileges: list
         The list of privileges.
     raise_error: bool, optional
-        It raises an error if not all privileges are granted.
+        It raises an error if not all privileges
+        are granted.
 
     Returns
     -------
     bool
-        True if the user has been granted the list of privileges on the object.
+        True if the user has been granted the
+        list of privileges on the object.
         False otherwise.
+
+    Example
+    -------
+    ...
+
+    .. seealso::
+        | :py:meth:`verticapy.sql.sys.current_session` : current DB session.
+        | :py:meth:`verticapy.sql.sys.username` : current DB username.
     """
-    query_superuser = (
-        "SELECT is_super_user from v_catalog.users WHERE user_name = current_user();"
-    )
-    query_grant = (
-        f"SELECT privileges_description FROM grants "
-        f"WHERE object_schema='{object_schema}' AND object_name='{object_name}' AND "
-        "grantee=current_user();"
-    )
+    query_superuser = f"""
+        SELECT 
+            is_super_user 
+        FROM v_catalog.users 
+        WHERE user_name = current_user();"""
+    query_grant = f"""
+        SELECT 
+            privileges_description 
+        FROM grants
+        WHERE object_schema='{object_schema}' 
+          AND object_name='{object_name}'
+          AND grantee=current_user();"""
 
     try:
         is_superuser = _executeSQL(
@@ -127,5 +210,5 @@ def has_privileges(
         return True
     except Exception as exc:
         if raise_error:
-            raise AttributeError("Cheking privileges falied") from exc
+            raise AttributeError("Cheking privileges failed") from exc
         return False

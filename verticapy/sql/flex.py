@@ -50,13 +50,10 @@ def compute_flextable_keys(
 
     Examples
     --------
-    Create and injest a JSON file, then compute its flextable keys and predicted data types:
+    Create a JSON file:
 
     .. ipython:: python
-        :okwarning:
 
-        import verticapy as vp
-        from verticapy.sql import compute_flextable_keys
         import json
 
         data = {
@@ -75,12 +72,65 @@ def compute_flextable_keys(
         with open("nested_columns.json", "w") as json_file:
             json_file.write(str(json_string))
 
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    We create a temporary schema:
+
+    .. ipython:: python
+        :okwarning:
+
         vp.create_schema("temp")
-        @suppress
-        vp.drop("temp.test")
-        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False, materialize = False)
+
+    We injest the JSON file:
+
+    .. ipython:: python
+
+        vdf = vp.read_json(
+            "nested_columns.json",
+            schema = "temp",
+            table_name = "test",
+            flatten_maps = False,
+        )
+
+    Then compute the flex table keys:
+
+    .. ipython:: python
+
+        from verticapy.sql.flex import compute_flextable_keys
+
         compute_flextable_keys(flex_name = "temp.test")
+
+    We drop the temporary table.
+
+    .. ipython:: python
+
         vp.drop("temp.test")
+
+    .. hint::
+
+        Flex tables can be used to identify all the data types
+        needed to ingest the file and can also be employed to
+        flatten a nested JSON file. Explore all the flex functions
+        to understand the possibilities.
+
+    .. seealso::
+        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
+        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
     """
     usecols = format_type(usecols, dtype=list)
     _executeSQL(
@@ -122,7 +172,7 @@ def compute_vmap_keys(
         Input  expression.   You  can  also  specify  a
         vDataFrame  or a customized  relation, but  you
         must  enclose it  with an  alias.  For example,
-        "(SELECT 1) x" is allowed, whereas "(SELECT 1)"
+        ``(SELECT 1) x`` is allowed, whereas ``(SELECT 1)``
         and "SELECT 1" are not.
     vmap_col: str
         VMap column.
@@ -137,23 +187,20 @@ def compute_vmap_keys(
 
     Examples
     --------
-    Create and injest a JSON file, then compute the most frequent keys in the input VMap's 'column1':
+    Create a JSON file:
 
     .. ipython:: python
-        :okwarning:
 
-        import verticapy as vp
-        from verticapy.sql import compute_vmap_keys
         import json
 
         data = {
             "column1": {
                 "subcolumn1A": "value1A",
-                "subcolumn1B": "value1B"
+                "subcolumn1B": "value1B",
             },
             "column2": {
                 "subcolumn2A": "value2A",
-                "subcolumn2B": "value2B"
+                "subcolumn2B": "value2B",
             }
         }
 
@@ -162,10 +209,66 @@ def compute_vmap_keys(
         with open("nested_columns.json", "w") as json_file:
             json_file.write(str(json_string))
 
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    We create a temporary schema:
+
+    .. ipython:: python
+        :okwarning:
+
         vp.create_schema("temp")
-        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False)
+
+    We injest the JSON file:
+
+    .. ipython:: python
+
+        vdf = vp.read_json(
+            "nested_columns.json",
+            schema = "temp",
+            table_name = "test",
+            flatten_maps = False,
+        )
+
+    Then compute the most frequent keys in the
+    input VMap's ``column1``:
+
+    .. ipython:: python
+
+        from verticapy.sql.flex import compute_vmap_keys
+
         compute_vmap_keys(expr = "temp.test", vmap_col = "column1")
+
+    We drop the temporary table.
+
+    .. ipython:: python
+
         vp.drop("temp.test")
+
+    .. hint::
+
+        Flex tables can be used to identify all the data types
+        needed to ingest the file and can also be employed to
+        flatten a nested JSON file. Explore all the flex functions
+        to understand the possibilities.
+
+    .. seealso::
+        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : Computes the flex table keys.
+        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
+        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
     """
     vmap = quote_ident(vmap_col)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):
@@ -208,23 +311,20 @@ def isflextable(table_name: str, schema: str) -> bool:
 
     Examples
     --------
-    Create and injest a JSON file, then check whether it is a flextable:
+    Create a JSON file:
 
     .. ipython:: python
-        :okwarning:
 
-        import verticapy as vp
-        from verticapy.sql import isflextable
         import json
 
         data = {
             "column1": {
                 "subcolumn1A": "value1A",
-                "subcolumn1B": "value1B"
+                "subcolumn1B": "value1B",
             },
             "column2": {
                 "subcolumn2A": "value2A",
-                "subcolumn2B": "value2B"
+                "subcolumn2B": "value2B",
             }
         }
 
@@ -233,10 +333,65 @@ def isflextable(table_name: str, schema: str) -> bool:
         with open("nested_columns.json", "w") as json_file:
             json_file.write(str(json_string))
 
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    We create a temporary schema:
+
+    .. ipython:: python
+        :okwarning:
+
         vp.create_schema("temp")
-        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False, materialize = False)
+
+    We injest the JSON file:
+
+    .. ipython:: python
+
+        vdf = vp.read_json(
+            "nested_columns.json",
+            schema = "temp",
+            table_name = "test",
+            flatten_maps = False,
+        )
+
+    Then check if the table is a flex table:
+
+    .. ipython:: python
+
+        from verticapy.sql.flex import isflextable
+
         isflextable(table_name = "test", schema = "temp")
+
+    We drop the temporary table.
+
+    .. ipython:: python
+
         vp.drop("temp.test")
+
+    .. hint::
+
+        Flex tables can be used to identify all the data types
+        needed to ingest the file and can also be employed to
+        flatten a nested JSON file. Explore all the flex functions
+        to understand the possibilities.
+
+    .. seealso::
+        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : : Computes the flex table keys.
+        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.flex.isvmap` : Checks if the input column is a VMap.
     """
     table_name = quote_ident(table_name)[1:-1]
     schema = quote_ident(schema)[1:-1]
@@ -278,23 +433,20 @@ def isvmap(
 
     Examples
     --------
-    Create and injest a JSON file, then check whether an input column it is a vmap:
+    Create a JSON file:
 
     .. ipython:: python
-        :okwarning:
 
-        import verticapy as vp
-        from verticapy.sql import isvmap
         import json
 
         data = {
             "column1": {
                 "subcolumn1A": "value1A",
-                "subcolumn1B": "value1B"
+                "subcolumn1B": "value1B",
             },
             "column2": {
                 "subcolumn2A": "value2A",
-                "subcolumn2B": "value2B"
+                "subcolumn2B": "value2B",
             }
         }
 
@@ -303,10 +455,65 @@ def isvmap(
         with open("nested_columns.json", "w") as json_file:
             json_file.write(str(json_string))
 
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk of code
+        collisions with other libraries. This precaution is necessary
+        because verticapy uses commonly known function names like "average"
+        and "median", which can potentially lead to naming conflicts.
+        The use of an alias ensures that the functions from verticapy are
+        used as intended without interfering with functions from other
+        libraries.
+
+    We create a temporary schema:
+
+    .. ipython:: python
+        :okwarning:
+
         vp.create_schema("temp")
-        vdf = vp.read_json("nested_columns.json", schema = "temp", table_name = "test", flatten_maps = False)
+
+    We injest the JSON file:
+
+    .. ipython:: python
+
+        vdf = vp.read_json(
+            "nested_columns.json",
+            schema = "temp",
+            table_name = "test",
+            flatten_maps = False,
+        )
+
+    Checking if ``column1`` is a vmap:
+
+    .. ipython:: python
+
+        from verticapy.sql.flex import isvmap
+
         isvmap("temp.test", "column1")
+
+    We drop the temporary table.
+
+    .. ipython:: python
+
         vp.drop("temp.test")
+
+    .. hint::
+
+        Flex tables can be used to identify all the data types
+        needed to ingest the file and can also be employed to
+        flatten a nested JSON file. Explore all the flex functions
+        to understand the possibilities.
+
+    .. seealso::
+        | :py:func:`verticapy.sql.flex.compute_flextable_keys` : Computes the flex table keys.
+        | :py:func:`verticapy.sql.flex.compute_vmap_keys` : : Computes the vmap most frequent keys.
+        | :py:func:`verticapy.sql.flex.isflextable` : Checks if the input relation is a flextable.
     """
     column = quote_ident(column)
     if hasattr(expr, "object_type") and (expr.object_type == "vDataFrame"):

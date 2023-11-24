@@ -3722,8 +3722,8 @@ class IsolationForest(Clustering, Tree):
             Object to use for the prediction. You can
             specify  a customized  relation if it  is
             enclosed  with  an  alias.  For  example,
-            "(SELECT 1) x"   is   valid,    whereas
-            "(SELECT 1)" and "SELECT 1" are invalid.
+            ``(SELECT 1) x``   is   valid,    whereas
+            ``(SELECT 1)`` and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of columns used to deploy the models.
             If empty,  the model  predictors are used.
@@ -3775,8 +3775,8 @@ class IsolationForest(Clustering, Tree):
             Object to use for the prediction. You can
             specify  a customized  relation if it  is
             enclosed  with  an  alias.  For  example,
-            "(SELECT 1) x"   is   valid,    whereas
-            "(SELECT 1)" and "SELECT 1" are invalid.
+            ``(SELECT 1) x``   is   valid,    whereas
+            ``(SELECT 1)`` and "SELECT 1" are invalid.
         X: list, optional
             List of columns used to deploy the models.
             If empty,  the model  predictors are used.

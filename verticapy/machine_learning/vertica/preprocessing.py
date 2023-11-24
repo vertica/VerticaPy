@@ -76,13 +76,11 @@ def balance(
             under-sampling  on  different
             classes so that each class is
             equally represented.
-
         - over:
             Over-samples on  all classes,
             except the most represented
             class, towards the  most
             represented class's cardinality.
-
         - under:
             Under-samples on  all classes,
             except the least represented
@@ -433,8 +431,8 @@ class Preprocessing(Unsupervised):
         vdf: SQLRelation, optional
             Input vDataFrame. You can also specify a customized
             relation,  but you must  enclose it with an  alias.
-            For  example:  "(SELECT 1) x"  is  valid  whereas
-            "(SELECT 1)" and "SELECT 1" are invalid.
+            For  example:  ``(SELECT 1) x``  is  valid  whereas
+            ``(SELECT 1)`` and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 
@@ -468,8 +466,8 @@ class Preprocessing(Unsupervised):
         vdf: SQLRelation
             Input vDataFrame. You can also specify a customized
             relation,  but you must  enclose it with an  alias.
-            For  example:  "(SELECT 1) x"  is  valid  whereas
-            "(SELECT 1)" and "SELECT 1" are invalid.
+            For  example:  ``(SELECT 1) x``  is  valid  whereas
+            ``(SELECT 1)`` and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
 

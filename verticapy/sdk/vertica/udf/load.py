@@ -102,7 +102,7 @@ def import_lib_udf(
                     (math.exp, [float], float, {}, "python_exp"),
                     (math.isclose, [float, float], bool, {"abs_tol": float}, "python_isclose"),
                 ],
-                library_name = "python_math"
+                library_name = "python_math",
             )
 
     .. important::

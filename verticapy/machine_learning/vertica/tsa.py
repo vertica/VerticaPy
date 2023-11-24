@@ -419,7 +419,7 @@ class TimeSeriesModelBase(VerticaModel):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         ts: str, optional
             TS (Time Series)  vDataColumn used to order
@@ -922,7 +922,7 @@ class TimeSeriesModelBase(VerticaModel):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         ts: str, optional
             TS (Time Series)  vDataColumn used to order

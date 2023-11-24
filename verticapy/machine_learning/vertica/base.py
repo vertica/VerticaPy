@@ -1690,7 +1690,7 @@ class BinaryClassifier(Supervised):
             Object used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns  used to deploy the models.
@@ -1747,7 +1747,7 @@ class BinaryClassifier(Supervised):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns  used to deploy the models.
@@ -2413,7 +2413,7 @@ class MulticlassClassifier(Supervised):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns  used to deploy the models.
@@ -2491,7 +2491,7 @@ class MulticlassClassifier(Supervised):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns  used to deploy the models.
@@ -2993,7 +2993,7 @@ class Regressor(Supervised):
             Object  used to run  the prediction.  You can
             also  specify a  customized  relation,  but you
             must  enclose  it with an alias.  For  example,
-            "(SELECT 1) x" is valid, whereas "(SELECT 1)"
+            ``(SELECT 1) x`` is valid, whereas ``(SELECT 1)``
             and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the columns  used to deploy the models.

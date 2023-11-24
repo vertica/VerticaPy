@@ -275,8 +275,8 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a
             customized  relation,  but  you  must  enclose
-            it with an alias.  For example: "(SELECT 1) x"
-            is valid whereas "(SELECT 1)" and "SELECT 1"
+            it with an alias.  For example: ``(SELECT 1) x``
+            is valid whereas ``(SELECT 1)`` and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
@@ -324,8 +324,8 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a
             customized  relation,  but  you  must  enclose
-            it with an alias. For  example: "(SELECT 1) x"
-            is valid whereas "(SELECT 1)" and "SELECT 1"
+            it with an alias. For  example: ``(SELECT 1) x``
+            is valid whereas ``(SELECT 1)`` and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
@@ -364,8 +364,8 @@ class Pipeline:
         vdf: SQLRelation, optional
             Input  vDataFrame.  You  can  also  specify  a
             customized  relation,  but  you  must  enclose
-            it with an alias. For  example: "(SELECT 1) x"
-            is valid whereas "(SELECT 1)" and "SELECT 1"
+            it with an alias. For  example: ``(SELECT 1) x``
+            is valid whereas ``(SELECT 1)`` and "SELECT 1"
             are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.

@@ -45,18 +45,23 @@ def create_schema(
 
     Examples
     --------
+    Create a new schema:
+
     .. ipython:: python
 
-        from verticapy.sql import create_schema
+        from verticapy.sql.create import create_schema
 
-        create_schema(schema = "employees")
+        create_schema(schema = "employees_test")
 
     .. ipython:: python
         :suppress:
 
         from verticapy import drop
 
-        drop("employees.")
+        drop("employees_test")
+
+    .. seealso::
+        | :py:func:`verticapy.sql.create.create_table` : Creates a table.
     """
     try:
         _executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
@@ -115,31 +120,42 @@ def create_table(
 
     Examples
     --------
+    The ``create_table`` function offers multiple options.
+
+    Let's import the function.
+
     .. ipython:: python
 
-        from verticapy.sql import create_table
+        from verticapy.sql.create import create_table
 
-        # Generates the SQL needed to create the Table
+    You can generate the SQL needed to create the table.
+
+    .. ipython:: python
+
         create_table(
             table_name = "employees",
             schema = "public",
             dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"},
-            genSQL = True
+            genSQL = True,
         )
 
-        # Creates the table
+    Or create the table.
+
+    .. ipython:: python
+
         create_table(
             table_name = "employees",
             schema = "public",
-            dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"}
+            dtype = {"name": "VARCHAR(60)", "salary": "FLOAT"},
         )
+
+    The table can be utilized as a vDataFrame.
 
     .. code-block:: python
 
-        %load_ext verticapy.sql
+        import verticapy as vp
 
-        %%sql
-        SELECT * FROM public.employees;
+        vp.vDataFrame("public.employees")
 
     .. ipython:: python
         :suppress:
@@ -155,6 +171,8 @@ def create_table(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_create_create_table.html
 
+    .. seealso::
+        | :py:func:`verticapy.sql.create.create_schema` : Creates a schema.
     """
     if schema.lower() == "v_temp_schema":
         schema = ""

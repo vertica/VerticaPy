@@ -208,8 +208,8 @@ class Decomposition(Preprocessing):
             Input  vDataFrame.   You can  also  specify
             a  customized   relation,   but   you  must
             enclose  it  with  an  alias.  For example:
-            "(SELECT 1) x"    is     valid    whereas
-            "(SELECT 1)" and "SELECT 1" are invalid.
+            ``(SELECT 1) x``    is     valid    whereas
+            ``(SELECT 1)`` and "SELECT 1" are invalid.
         X: SQLColumns, optional
             List of the input vDataColumns.
         n_components: int, optional
