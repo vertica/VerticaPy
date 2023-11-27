@@ -866,7 +866,13 @@ article, article .align-default {
   .sidebar-search-container_top{
     width: 150px;
   }
+/* Cards on Index Page */
+  .custom-card-2 {
+    height: 340px; /* Adjust the desired height */
+    /* Add more styles as needed */
+  }
 }
+
 
 @media (max-width: 90em) {
   .right-content {

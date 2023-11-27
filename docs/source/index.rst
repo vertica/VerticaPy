@@ -47,7 +47,7 @@ a Pythonic way to work with data stored in Vertica.
 
         .. card:: Installation Guide
           :img-top: _static/installation_guide.svg
-          :link: api
+          :link: installation
           :link-type: ref
           :text-align: center
           :class-card: custom-card-2
@@ -64,7 +64,7 @@ a Pythonic way to work with data stored in Vertica.
 
         .. card:: User Guide
           :img-top: _static/user_guide.svg
-          :link: api
+          :link: user_guide
           :link-type: ref
           :text-align: center
           :class-card: custom-card-2
@@ -97,8 +97,7 @@ a Pythonic way to work with data stored in Vertica.
     
       .. card:: Examples
           :img-top: _static/examples.svg
-          :link: api
-          :link-type: ref
+          :link: https://www.vertica.com/python/examples/
           :text-align: center
           :class-card: custom-card-2
           :class-img-top: custom-class-img-top
@@ -113,7 +112,7 @@ a Pythonic way to work with data stored in Vertica.
     
       .. card:: Contribution Guidelines
           :img-top: _static/contribution.svg
-          :link: api
+          :link: contribution_guidelines
           :link-type: ref
           :text-align: center
           :class-card: custom-card-2

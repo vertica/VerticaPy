@@ -16,7 +16,6 @@ User Guide
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
-          :shadow: lg
           :class-footer: user_guide_footer
 
           36 mins
