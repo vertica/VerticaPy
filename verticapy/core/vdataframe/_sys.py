@@ -361,6 +361,48 @@ class vDFSystem(vDFTyping):
         -------
         str
             The formatted current vDataFrame relation.
+
+        Examples
+        ---------
+
+        Let us create a fummy dataset;
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        Now we can check its current relation conveniently by:
+
+        .. ipython:: python
+
+            print(vdf.current_relation())
+
+        If we make any changes to the ``vDataFrame``, those will
+        also be reflected in the ``current_relationship``.
+        For example, we normalize the data:
+
+        .. ipython:: python
+
+            vdf.normalize()
+
+        Let us observe the current relation now:
+
+        .. ipython:: python
+
+            print(vdf.current_relation())
         """
         if reindent:
             return indent_vpy_sql(self._genSQL(split=split))
@@ -375,6 +417,67 @@ class vDFSystem(vDFTyping):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        Aggregate results are cached to optimize
+        computation. Sometimes cached results
+        can be problemtic or not desired. In those
+        cases ``del_catalog`` can be used to delete
+        all cached aggregates.
+
+        Let us look at the below exmaple:
+
+        We have a dummy data:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can create the summary of the ``vDataFrame``
+        using:
+
+        .. code-block:: python
+
+            vdf.describe()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.describe()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_del_catalog.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_del_catalog.html
+
+        No if we look at the cache, we can see the stored values:
+
+        .. ipython:: python
+
+            vdf["val"]._catalog
+
+        In order to erase the stored values we can use:
+
+        .. code-block:: python
+
+            vdf.del_catalog()
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.del_catalog()
+
+        Now there will not be any stored values:
+
+        .. ipython:: python
+
+            vdf["val"]._catalog
         """
         self._update_catalog(erase=True)
         return self
@@ -387,6 +490,25 @@ class vDFSystem(vDFTyping):
         -------
         bool
             True if the vDataFrame has no vDataColumns.
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check if it is empty:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can create the summary of the ``vDataFrame``
+        using:
+
+        .. ipython:: python
+
+            vdf.empty()
         """
         return not self.get_columns()
 
@@ -408,6 +530,36 @@ class vDFSystem(vDFTyping):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check its expected storage:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can check the expected storage of the ``vDataFrame``
+        using:
+
+        .. code-block:: python
+
+            vdf.expected_store_usage()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.expected_store_usage()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_expected_store_usage.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_expected_store_usage.html
         """
         if unit.lower() == "kb":
             div_unit = 1024
@@ -507,6 +659,25 @@ class vDFSystem(vDFTyping):
         -------
         str
             explain plan
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check its Query Plan:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can display the Query Plan of the ``vDataFrame``
+        using:
+
+        .. ipython:: python
+
+            print(vdf.explain())
         """
         result = _executeSQL(
             query=f"""
@@ -538,6 +709,48 @@ class vDFSystem(vDFTyping):
         -------
         str
             information on the vDataFrame modifications
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check modifications:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        Since the ``vDataFrame`` just got created, it will have no
+        modifications. We can check:
+
+        .. ipython:: python
+
+            vdf.info()
+
+        Next we can add 10 to all the values:
+
+        .. ipython:: python
+
+            vdf["val"] = 10 + vdf["val"]
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_info.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_info.html
+
+        We can check the modifications:
+
+        .. ipython:: python
+
+            vdf.info()
         """
         if len(self._vars["history"]) == 0:
             result = "The vDataFrame was never modified."
@@ -559,6 +772,26 @@ class vDFSystem(vDFTyping):
         -------
         TableSample
             result.
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check its memory usage:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can see the memory usage of the ``vDataFrame``
+        using:
+
+        .. ipython:: python
+
+            vdf.memory_usage()
+
         """
         total = sum(sys.getsizeof(v) for v in self._vars) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
@@ -587,6 +820,45 @@ class vDFSystem(vDFTyping):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and swap its columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
+
+
+        We can swap the categorical column and value columns:
+
+        .. code-block:: python
+
+            vdf.swap("val", "cat")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.swap("val", "cat")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap_2.html
         """
         if isinstance(column1, int):
             assert column1 < self.shape()[1], ValueError(
@@ -633,6 +905,38 @@ class vDCSystem(vDCTyping):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and copy one of its columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
+
+
+        We can copy the "val" column, and name the new
+        column:
+
+        .. code-block:: python
+
+            vdf["val"].add_copy("val_copy")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].add_copy("val_copy")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_add_copy.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_add_copy.html
         """
         if name == "":
             raise ValueError("The parameter 'name' must not be empty")
@@ -666,6 +970,26 @@ class vDCSystem(vDCTyping):
         -------
         float
             vDataColumn memory usage (byte)
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check its memory usage:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can see the memory usage of the ``vDataColumn``
+        using:
+
+        .. ipython:: python
+
+            vdf["val"].memory_usage()
+
         """
         total = (
             sys.getsizeof(self)
@@ -686,6 +1010,36 @@ class vDCSystem(vDCTyping):
         -------
         int
             vDataColumn expected store usage.
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and check its expected storage:
+
+        .. code-block:: python
+
+            vdf = vp.vDataFrame({"val": [0, 10, 20]})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
+
+        We can check the expected storage of the ``vDataFrame``
+        using:
+
+        .. code-block:: python
+
+            vdf["val"].store_usage()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf["val"].store_usage()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_vdc_store_usage.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_vdc_store_usage.html
         """
         pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -712,10 +1066,12 @@ class vDCSystem(vDCTyping):
         Renames the vDataColumn by dropping the current vDataColumn
         and creating a copy with the specified name.
 
-        \u26A0 Warning : SQL code generation  will be slower if the
-                         vDataFrame  has been transformed  multiple
-                         times, so it's better practice to use this
-                         method when first preparing your data.
+        .. warning :
+
+            SQL code generation  will be slower if the
+            vDataFrame  has been transformed  multiple
+            times, so it's better practice to use this
+            method when first preparing your data.
 
         Parameters
         ----------
@@ -726,6 +1082,38 @@ class vDCSystem(vDCTyping):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let us create a dummy dataset and rename one of its columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
+
+
+        We can copy the "val" column, and name the new
+        column:
+
+        .. code-block:: python
+
+            vdf["val"].rename("value")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].rename("value")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_rename.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_rename.html
         """
         old_name = quote_ident(self._alias)
         new_name = quote_ident(new_name)[1:-1]
