@@ -16,7 +16,6 @@ User Guide
           :link-type: ref
           :text-align: center
           :class-card: custom-card-8
-          :shadow: lg
           :class-footer: user_guide_footer
 
           36 mins
@@ -32,8 +31,7 @@ User Guide
     .. grid-item::
 
       .. card:: Data Ingestion
-          :link: /notebooks/data_ingestion/index.html
-          :link-type: ref
+          :link: ./notebooks/data_ingestion/index.html
           :text-align: center
           :class-card: custom-card-8
 

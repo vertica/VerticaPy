@@ -87,14 +87,14 @@ h2{
   content: "";
   position: absolute;
   width: 100%;
-  height: 3px;
-  bottom: -5px;
+  height: 10px;
+  bottom: -15px;
   left: 0;
   background-color: #1a6aff;
   transition: all 0.5s ease-in-out;
   transform: scaleX(0);
   visibility: hidden;
-  border-radius: 5px 10px 0 0;
+  border-radius: 10px 10px 0 0;
 }
 
 .top-button:hover {
@@ -365,7 +365,7 @@ h2{
 } /*DEL TESTIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNGGGGG */
 
 .form-group select {
-  width: 100px; /* Adjust the width as needed */
+  /* width: 100px; */
 }
 
 .form-control {
@@ -374,15 +374,19 @@ h2{
   height: calc(1em + 1.375rem + 2px);
   padding: 0rem 0.9375rem;
   font-size: 1rem;
-  size: fixed;
   font-weight: 300;
   line-height: 1;
   color: #3f4d62;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid #3f4d62;
-  border-radius: 0.5rem;
+  border: 0px solid #3f4d62;
+  border-radius: 3rem;
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  appearance: none;
+  background: url('data:image/svg+xml;utf8,<svg fill="black" height="10px" width="10px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path id="XMLID_225_" d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393 c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393 s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"></path> </g></svg>') no-repeat right 5px center;
+  background-size: 15px;
+  padding-right: 25px;
 }
 .form-control:focus {
   color: #495057;
@@ -424,12 +428,15 @@ h2{
   /* margin-top:80px; */
 }
 
-
 /* TESTING TO REDUCE THE SIZE */
 body {
   font-size: 80%;
+  
 }
 
+.sd-card:hover {
+  --sd-color-shadow: #1a6aff;
+}
 
 
 p {
@@ -473,18 +480,21 @@ p {
 /* Cards on Machine Learning page */
 .custom-card-3 {
   height: 215px; /* Adjust the desired height */
-  /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 160px; /* Adjust the desired height */
+  height: 180px; /* Adjust the desired height */
   /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Connectors page */
 .custom-card-5 {
-  height: 265px; /* Adjust the desired height */
+  height: 280px; /* Adjust the desired height */
   /* Add more styles as needed */
 }
 
@@ -561,6 +571,7 @@ p {
     /* position: fixed; */
     /* left: 10px; */
   }
+  /* Cards on Connectors page */
 }
 
 /* To get drop down */
@@ -859,7 +870,21 @@ article, article .align-default {
   .sidebar-search-container_top{
     width: 150px;
   }
+/* Cards on Index Page */
+  .custom-card-2 {
+    height: 340px; /* Adjust the desired height */
+    /* Add more styles as needed */
+  }
+  /* Cards on Vertica page */
+  .custom-card-4 {
+    height: 230px;
+  }
+  .custom-card-5 {
+    height: 400px; /* Adjust the desired height */
+    /* Add more styles as needed */
+  }
 }
+
 
 @media (max-width: 90em) {
   .right-content {

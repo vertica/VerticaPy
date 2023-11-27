@@ -8,12 +8,15 @@ Memory Models
     .. grid-item::
 
         .. card:: Cluster
-          :img-top: _static/clustering.svg
           :link: api.machine_learning.memmodels.clusters
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
+
+          ^^^^
+          Employ clustering algorithms for 
+          grouping data points, revealing inherent patterns
+          within your datasets.
 
 
 
@@ -22,71 +25,82 @@ Memory Models
     .. grid-item::
 
         .. card:: Decomposition
-          :img-top: _static/decomposition.svg
           :link: api.machine_learning.memmodels.decomposition
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
+
+          ^^^^
+          Utilize decomposition techniques to 
+          break down complex data structures, enhancing 
+          understanding and simplifying analysis.
 
 
 
     .. grid-item::
     
         .. card:: Ensemble
-          :img-top: _static/ensemble.svg
           :link: api.machine_learning.memmodels.ensemble
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
+          ^^^^
+          Enhance model performance with ensemble methods 
+          combining multiple models to 
+          achieve superior predictive accuracy.
 
 
     .. grid-item::
     
       .. card:: Linear Model
-          :img-top: _static/linear_model.svg
           :link: api.machine_learning.memmodels.linear_model
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Linear models for straightforward 
+          representations, ideal for scenarios 
+          where simplicity is key.
 
 
     .. grid-item::
     
       .. card:: Naive Bayes
-         :img-top: _static/classification.svg
          :link: api.machine_learning.memmodels.naive_bayes
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
 
+         ^^^^
+         Apply Naive Bayes algorithms for 
+         efficient and rapid classification tasks, particularly 
+         useful for large datasets.
 
     .. grid-item::
     
       .. card:: Preprocessing
-         :img-top: _static/preprcoessing.svg
          :link: api.machine_learning.memmodels.preprocessing
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
+
+         ^^^^
+         Streamline data preparation ensuring optimal input 
+         for machine learning models.
 
     .. grid-item::
     
       .. card:: Trees
-         :img-top: _static/trees.svg
          :link: api.machine_learning.memmodels.trees
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
 
+         ^^^^
+         Harness the power of decision trees
+         to create robust and interpretable models.
 ______
 
 .. toctree::
