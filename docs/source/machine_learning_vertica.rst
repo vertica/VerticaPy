@@ -8,85 +8,90 @@ Vertica
     .. grid-item::
 
         .. card:: Classification
-          :img-top: _static/classification.svg
           :link: api.machine_learning.vertica.classification
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Classify data efficiently with VerticaPy, 
+          enabling accurate decision-making across diverse applications.
 
 
 
     .. grid-item::
 
         .. card:: Regression
-          :img-top: _static/regression.svg
           :link: api.machine_learning.vertica.regression
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Model and analyze variable relationships 
+          effortlessly using VerticaPy's regression 
+          capabilities.
 
     .. grid-item::
     
         .. card:: Time Series
-          :img-top: _static/time_series.svg
           :link: api.machine_learning.vertica.time_series
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Predict and analyze temporal patterns 
+          with ease using VerticaPy's time series functionalities.
 
     .. grid-item::
     
       .. card:: Clustering & Anomolies
-          :img-top: _static/clustering.svg
           :link: api.machine_learning.vertica.clustering
           :link-type: ref
           :text-align: center
           :class-card: custom-card-4
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Efficiently identify patterns and anomalies 
+          with VerticaPy's clustering algorithms.
 
 
     .. grid-item::
     
       .. card:: Decomposition & Preprocessing
-         :img-top: _static/decomposition.svg
          :link: api.machine_learning.vertica.decomposition
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
-
+         
+         ^^^^
+         Simplify analysis with VerticaPy's 
+         features for decomposition and preprocessing.
 
     .. grid-item::
     
       .. card:: Pipeline (Beta)
-         :img-top: _static/pipeline.svg
          :link: api.machine_learning.vertica.pipeline
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
 
+         ^^^^
+         Streamline machine learning workflows 
+         seamlessly with VerticaPy's pipeline capabilities.
 
     .. grid-item::
     
       .. card:: Integrations
-         :img-top: _static/vertica_integration.svg
          :link: api.machine_learning.vertica.integrations
          :link-type: ref
          :text-align: center
          :class-card: custom-card-4
-         :class-img-top: custom-class-img-top
+
+         ^^^^
+         Extend VerticaPy with integrations, in
+         cluding SDKs and extensions, for enhanced functionality.
 ______
 
 .. toctree::

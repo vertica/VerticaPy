@@ -480,13 +480,16 @@ p {
 /* Cards on Machine Learning page */
 .custom-card-3 {
   height: 215px; /* Adjust the desired height */
-  /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Vertica page */
 .custom-card-4 {
-  height: 160px; /* Adjust the desired height */
+  height: 180px; /* Adjust the desired height */
   /* Add more styles as needed */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
 /* Cards on Connectors page */
@@ -870,6 +873,10 @@ article, article .align-default {
   .custom-card-2 {
     height: 340px; /* Adjust the desired height */
     /* Add more styles as needed */
+  }
+  /* Cards on Vertica page */
+  .custom-card-4 {
+    height: 230px;
   }
 }
 

@@ -11,86 +11,91 @@ Machine Learning
     .. grid-item::
 
         .. card:: Memory Models
-          :img-top: _static/memmodel.svg
           :link: api.machine_learning.memmodels
           :link-type: ref
           :text-align: center
           :class-card: custom-card-3
-          :class-img-top: custom-class-img-top
-
+          
+          ^^^^
+          Creates platform-independent machine learning 
+          models that can be easily exported.
           +++
-          Independent ML models
-
+          Learn more
 
 
     .. grid-item::
 
         .. card:: Metrics
-          :img-top: _static/metrics.svg
           :link: api.machine_learning.metrics
           :link-type: ref
           :text-align: center
           :class-card: custom-card-3
-          :class-img-top: custom-class-img-top
+          
+          ^^^^
+          Evaluate model performance with VerticaPy's
+          comprehensive metrics for informed decision-making.
 
           +++
-          Metrics to analyze the models.
+          Learn more
 
     .. grid-item::
     
         .. card:: Model Selection
-          :img-top: _static/api.svg
           :link: api.machine_learning.model_selection
           :link-type: ref
           :text-align: center
           :class-card: custom-card-3
-          :class-img-top: custom-class-img-top
 
-
+          ^^^^
+          Streamline model selection, validation, and 
+          fine-tuning with VerticaPy.
           +++
-          Validation and fine-tuning.
+          Learn more
 
 
     .. grid-item::
     
       .. card:: Vertica
-          :img-top: _static/examples.svg
           :link: api.machine_learning.vertica
           :link-type: ref
           :text-align: center
           :class-card: custom-card-3
-          :class-img-top: custom-class-img-top
 
+          ^^^^
+          Integrate advanced machine learning models 
+          seamlessly with Vertica's power in VerticaPy.
 
           +++
-          ML models using the pwoer of Vertica.
+          Learn more
 
 
     .. grid-item::
     
       .. card:: ML Ops
-         :img-top: _static/ml_ops.svg
          :link: api.machine_learning.ml_ops
          :link-type: ref
          :text-align: center
          :class-card: custom-card-3
-         :class-img-top: custom-class-img-top
 
+         ^^^^
+         Simplify ML operations with VerticaPy, 
+         facilitating deployment, monitoring, and management.
          +++
-         ML supporting operations.
+         Learn more
 
     .. grid-item::
     
       .. card:: Delphi
-         :img-top: _static/automl.svg
          :link: api.machine_learning.auto_ml
          :link-type: ref
          :text-align: center
-         :class-card: custom-card
-         :class-img-top: custom-class-img-top
+         :class-card: custom-card-3
 
+         ^^^^
+         Experience automated model building and 
+         optimization with Delphi in VerticaPy.
          +++
-         Automated ML models
+         Learn more
 
 .. toctree::
    :maxdepth: 1
