@@ -33,7 +33,8 @@ def get_confparser(dsn: Optional[str] = None) -> ConfigParser:
 
     Examples
     --------
-    Get the Config Parser using the VERTICAPY_CONNECTION environment variable:
+    Get the Config Parser using the VERTICAPY_CONNECTION
+    environment variable:
 
     .. ipython:: python
 
@@ -68,7 +69,11 @@ def get_connection_file() -> str:
     -------
     The connection file is used to store all connections:
 
-    .. warning:: Connections are stored in plain text format. In shared environments, it's recommended to create connections manually for added security.
+    .. warning::
+
+        Connections are stored in plain text format. In
+        shared environments, it's recommended to create
+        connections manually for added security.
 
     .. code-block:: python
 

@@ -31,60 +31,68 @@ class QueryProfiler:
     """
     Base class to profile queries.
 
-    The ``QueryProfiler`` is a valuable tool for anyone seeking
-    to comprehend the reasons behind a query's lack of
-    performance. It incorporates a set of functions inspired
-    by the original QPROF project, while introducing an enhanced
-    feature set. This includes the capability to generate graphics
-    and dashboards, facilitating a comprehensive exploration of
-    the data.
+    The :py:class:`QueryProfiler` is a valuable tool for
+    anyone seeking to comprehend the reasons behind
+    a query's lack of performance. It incorporates a
+    set of functions inspired by the original QPROF
+    project, while introducing an enhanced feature
+    set. This includes the capability to generate
+    graphics and dashboards, facilitating a
+    comprehensive exploration of the data.
 
-    Moreover, it offers greater convenience by allowing
-    interaction with an object that encompasses various methods
-    and expanded possibilities. To initiate the process, all that's
-    required is a transaction_id and a statement_id, or simply a
-    query to execute.
+    Moreover, it offers greater convenience by
+    allowing interaction with an object that
+    encompasses various methods and expanded
+    possibilities. To initiate the process, all
+    that's required is a ``transaction_id`` and a
+    ``statement_id``, or simply a query to execute.
 
     Parameters
     ----------
     .. important::
 
-        QueryProfiler can only be instantiated with either a query
-        or a combination of a transaction ID and a statement ID.
-        These parameters cannot be both defined and undefined
-        simultaneously.
+        :py:class:`QueryProfiler` can only be instantiated with
+        either a query or a combination of a transaction
+        ID and a statement ID. These parameters cannot be
+        both defined and undefined simultaneously.
 
     request: str, optional
         Query to run.
-        The option to run a query is available when targeting a query
-        that has not been previously executed in the database.
+        The option to run a query is available when
+        targeting a query that has not been previously
+        executed in the database.
 
         .. warning::
 
-            It's important to exercise caution; if the query is
-            time-consuming, it will require a significant amount
-            of time to execute before proceeding to the next steps.
+            It's important to exercise caution; if the
+            query is time-consuming, it will require a
+            significant amount of time to execute before
+            proceeding to the next steps.
     resource_pool: str, optional
-        Specify the name of the resource pool to utilize when executing
-        the query. Refer to the Vertica documentation for a comprehensive
-        list of available options.
+        Specify the name of the resource pool to utilize
+        when executing the query. Refer to the Vertica
+        documentation for a comprehensive list of available
+        options.
 
         .. note::
 
-            This parameter is used only when 'request' is defined.
+            This parameter is used only when ``request`` is
+            defined.
     transaction_id: int, optional
-        ID of the transaction. It refers to a unique identifier assigned
-        to a specific transaction within the system.
+        ID of the transaction. It refers to a unique
+        identifier assigned to a specific transaction
+        within the system.
     statement_id: int, optional
         ID of the statement.
     add_profile: bool, optional
-        If set to true and the request does not include a profile, this
-        option adds the profile keywords at the beginning of the query
-        before executing it.
+        If set to true and the request does not include a
+        profile, this option adds the profile keywords at
+        the beginning of the query before executing it.
 
         .. note::
 
-            This parameter is used only when 'request' is defined.
+            This parameter is used only when ``request`` is
+            defined.
 
     Attributes
     ----------
@@ -107,7 +115,8 @@ class QueryProfiler:
 
         from verticapy.performance.vertica import QueryProfiler
 
-    There are multiple ways how we can use the Query Profiler.
+    There are multiple ways how we can use the
+    :py:class:`QueryProfiler`.
 
     - From ``transaction_id`` and ``statement_id``
     - From SQL generated from verticapy functions
@@ -227,9 +236,11 @@ class QueryProfiler:
     Executing a QPROF step
     ^^^^^^^^^^^^^^^^^^^^^^^
 
-    Numerous QPROF steps are accessible by directly using the corresponding
-    methods. For instance, step 0 corresponds to the Vertica version, which
-    can be executed using the associated method ``get_version``.
+    Numerous QPROF steps are accessible by directly
+    using the corresponding methods. For instance,
+    step 0 corresponds to the Vertica version, which
+    can be executed using the associated method
+    ``get_version``.
 
     .. ipython:: python
 
@@ -237,11 +248,12 @@ class QueryProfiler:
 
     .. note::
 
-        To explore all available methods, please refer to the 'Methods'
-        section. For additional information, you can also utilize the
-        ``help`` function.
+        To explore all available methods, please refer
+        to the 'Methods' section. For additional information,
+        you can also utilize the ``help`` function.
 
-    It is possible to access the same step by using the ``step`` method.
+    It is possible to access the same step by using the
+    ``step`` method.
 
     .. ipython:: python
 
@@ -250,7 +262,8 @@ class QueryProfiler:
     .. note::
 
         By changing the ``idx`` value above, you
-        can check out all the steps of the Query Profiler.
+        can check out all the steps of the
+        :py:class:`QueryProfiler`.
 
     **SQL Query**
 
@@ -352,7 +365,7 @@ class QueryProfiler:
         :file: SPHINX_DIRECTORY/figures/performance_vertica_query_profiler_cup_node.html
 
     In order to get the results in a tabular form,
-    just switch the ``show`` option to ``False''.
+    just switch the ``show`` option to ``False``.
 
     .. code-block:: python
 
@@ -397,7 +410,7 @@ class QueryProfiler:
 
     **Nodes**
 
-    To get node-wise performance infomation,
+    To get node-wise performance information,
     ``get_qexecution`` can be used:
 
     .. code-block:: python
@@ -643,7 +656,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. ipython:: python
 
@@ -708,7 +721,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -773,7 +786,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -867,7 +880,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -942,7 +955,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -958,7 +971,8 @@ class QueryProfiler:
                 " order by request_duration desc limit 10;"
             )
 
-        We can easily call the function to get the entire query plan:
+        We can easily call the function to get the entire
+        query plan:
 
             .. ipython:: python
 
@@ -1016,22 +1030,19 @@ class QueryProfiler:
             Unit used to draw the chart.
 
             - s:
-                second
-
+                second.
             - m:
-                minute
-
+                minute.
             - h:
-                hour
+                hour.
+
         chart_type: str, optional
             Chart Type.
 
             - bar:
                 Bar Chart.
-
             - barh:
                 Horizontal Bar Chart.
-
             - pie:
                 Pie Chart.
 
@@ -1047,7 +1058,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -1124,9 +1135,9 @@ class QueryProfiler:
 
             - bar:
                 Bar Chart.
-
             - barh:
                 Horizontal Bar Chart.
+
         reverse: bool, optional
             If set to True, the Plotting object
             is returned.
@@ -1142,7 +1153,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -1205,7 +1216,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -1304,15 +1315,15 @@ class QueryProfiler:
             Node name.
         metric: str
             Metric to use. One of the following:
-                - exec_time_ms
-                - est_rows
-                - proc_rows
-                - prod_rows
-                - rle_prod_rows
-                - cstall_us
-                - pstall_us
-                - mem_res_mb
-                - mem_all_mb
+             - exec_time_ms
+             - est_rows
+             - proc_rows
+             - prod_rows
+             - rle_prod_rows
+             - cstall_us
+             - pstall_us
+             - mem_res_mb
+             - mem_all_mb
         path_id: str
             Path ID.
         chart_type: str, optional
@@ -1320,10 +1331,8 @@ class QueryProfiler:
 
             - bar:
                 Bar Chart.
-
             - barh:
                 Horizontal Bar Chart.
-
             - pie:
                 Pie Chart.
 
@@ -1339,7 +1348,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -1399,7 +1408,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 
@@ -1446,7 +1455,7 @@ class QueryProfiler:
         Examples
         ---------
 
-        First, let's import the QueryProfiler object.
+        First, let's import the :py:class:`QueryProfiler` object.
 
         .. code-block:: python
 

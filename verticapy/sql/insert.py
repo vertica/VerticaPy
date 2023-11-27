@@ -69,18 +69,46 @@ def insert_into(
 
     Examples
     --------
+    For this example, we will use the Iris dataset.
+
+    .. code-block:: python
+
+        import verticapy.datasets as vpd
+
+        data = vpd.load_iris()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_iris.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
 
     .. ipython:: python
         :suppress:
 
-        from verticapy.datasets import load_iris
-        iris = load_iris()
+        import verticapy.datasets as vpd
+
+        data = vpd.load_iris()
+
+    We import the ``insert_into`` function and insert
+    different element to the ``iris`` table.
 
     .. ipython:: python
 
         from verticapy.sql import insert_into
 
-        # copy left as default (True): one copy
+    You can insert all the elements at once with a single
+    ``COPY`` statement by using the following command.
+
+    .. ipython:: python
+
         insert_into(
             table_name = "iris",
             schema = "public",
@@ -90,7 +118,11 @@ def insert_into(
             ],
         )
 
-        # copy set to False: multiple inserts
+    If you want to use multiple inserts to avoid a general
+    failure and insert what you can, use the following approach.
+
+    .. ipython:: python
+
         insert_into(
             table_name = "iris",
             schema = "public",
@@ -101,8 +133,11 @@ def insert_into(
             copy = False,
         )
 
-        # genSQL set to True: SQL for inserting data is generated, but not executed
-        # copy set to False: multiple inserts
+    If you want to examine the generated SQL without executing it,
+    use the following command.
+
+    .. ipython:: python
+
         insert_into(
             table_name = "iris",
             schema = "public",
@@ -113,9 +148,13 @@ def insert_into(
             genSQL = True,
         )
 
+    .. note::
+
+        Set ``copy`` to ``False`` for multiple inserts.
+
     .. seealso::
-        | :py:func:`read_json` : Ingests a JSON file using flex tables.
         | :py:func:`read_csv` : Ingests a CSV file using flex tables.
+        | :py:func:`read_json` : Ingests a JSON file using flex tables.
     """
     column_names = format_type(column_names, dtype=list)
     if not schema:

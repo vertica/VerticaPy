@@ -126,8 +126,9 @@ def load_market(schema: Optional[str] = None, name: str = "market") -> vDataFram
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -184,8 +185,9 @@ def load_iris(schema: Optional[str] = None, name: str = "iris") -> vDataFrame:
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -251,8 +253,9 @@ def load_titanic(schema: Optional[str] = None, name: str = "titanic") -> vDataFr
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -326,8 +329,9 @@ def load_winequality(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -401,8 +405,9 @@ def load_airline_passengers(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -454,8 +459,9 @@ def load_amazon(schema: Optional[str] = None, name: str = "amazon") -> vDataFram
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -509,8 +515,9 @@ def load_commodities(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -570,8 +577,9 @@ def load_gapminder(schema: Optional[str] = None, name: str = "gapminder") -> vDa
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -632,8 +640,9 @@ def load_pop_growth(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -695,8 +704,9 @@ def load_smart_meters(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -753,8 +763,9 @@ def load_cities(schema: Optional[str] = None, name: str = "cities") -> vDataFram
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -811,8 +822,9 @@ def load_world(schema: Optional[str] = None, name: str = "world") -> vDataFrame:
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -878,8 +890,9 @@ def load_africa_education(
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
@@ -1066,8 +1079,9 @@ def load_laliga(schema: Optional[str] = None, name: str = "laliga") -> vDataFram
 
     Example
     -------
-    If you call this loader without any arguments, the dataset is
-    loaded using the default schema (public).
+    If you call this loader without any arguments,
+    the dataset is loaded using the default schema
+    (public).
 
     .. code-block:: python
 
