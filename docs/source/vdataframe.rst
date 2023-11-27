@@ -927,6 +927,7 @@ Information
       iloc
       info
       memory_usage
+      expected_store_usage
       numcol
       shape
       tail
