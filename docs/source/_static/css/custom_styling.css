@@ -428,12 +428,15 @@ h2{
   /* margin-top:80px; */
 }
 
-
 /* TESTING TO REDUCE THE SIZE */
 body {
   font-size: 80%;
+  
 }
 
+.sd-card:hover {
+  --sd-color-shadow: #1a6aff;
+}
 
 
 p {
