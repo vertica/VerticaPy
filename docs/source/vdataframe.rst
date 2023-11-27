@@ -955,6 +955,7 @@ Information
       isnum
       isvmap
       memory_usage
+      store_usage
       tail
 
 
