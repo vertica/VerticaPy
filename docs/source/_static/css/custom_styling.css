@@ -494,7 +494,7 @@ p {
 
 /* Cards on Connectors page */
 .custom-card-5 {
-  height: 265px; /* Adjust the desired height */
+  height: 280px; /* Adjust the desired height */
   /* Add more styles as needed */
 }
 
@@ -571,6 +571,7 @@ p {
     /* position: fixed; */
     /* left: 10px; */
   }
+  /* Cards on Connectors page */
 }
 
 /* To get drop down */
@@ -877,6 +878,10 @@ article, article .align-default {
   /* Cards on Vertica page */
   .custom-card-4 {
     height: 230px;
+  }
+  .custom-card-5 {
+    height: 400px; /* Adjust the desired height */
+    /* Add more styles as needed */
   }
 }
 

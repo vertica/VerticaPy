@@ -11,7 +11,7 @@ facilitating flexible data access and compatibility across diverse ecosystems.
 ____
 
 
-.. grid:: 4 4 4 4
+.. grid:: 2 2 3 4
 
 
     .. grid-item::
