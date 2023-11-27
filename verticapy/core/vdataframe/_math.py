@@ -88,6 +88,45 @@ class vDFMath(vDFFilter):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs.html
+
+
+        Now we can convert all to absolute values:
+
+        .. code-block:: python
+
+            vdf.abs()
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.abs()
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs_2.html
         """
         columns = format_type(columns, dtype=list)
         columns = self.numcol() if not columns else self.format_colnames(columns)
@@ -113,50 +152,87 @@ class vDFMath(vDFFilter):
         Adds a new vDataColumn to the vDataFrame by using an advanced
         analytical function on one or two specific vDataColumns.
 
-        \u26A0 Warning : Some analytical  functions can make the vDataFrame
-                         structure  more resource intensive. It is best  to
-                         check  the structure of  the vDataFrame with  the
-                         'current_relation' method and save it with the
-                         'to_db'  method,  uisng  the  parameters
-                         'inplace = True' and 'relation_type = table'.
+        .. warning : 
+        
+            Some analytical  functions can make the vDataFrame
+            structure  more resource intensive. It is best  to
+            check  the structure of  the vDataFrame with  the
+            ``current_relation`` method and save it with the
+            ``to_db``  method,  uisng  the  parameters
+            ``inplace = True`` and ``relation_type = table``.
 
         Parameters
         ----------
         func: str
             Function to apply.
-                aad          : average absolute deviation
-                beta         : Beta Coefficient between 2 vDataColumns
-                count        : number of non-missing elements
-                corr         : Pearson's correlation between 2 vDataColumns
-                cov          : covariance between 2 vDataColumns
-                dense_rank   : dense rank
-                ema          : exponential moving average
-                first_value  : first non null lead
-                iqr          : interquartile range
-                kurtosis     : kurtosis
-                jb           : Jarque-Bera index
-                lead         : next element
-                lag          : previous element
-                last_value   : first non null lag
-                mad          : median absolute deviation
-                max          : maximum
-                mean         : average
-                median       : median
-                min          : minimum
-                mode         : most occurent element
-                q%           : q quantile (ex: 50% for the median)
-                pct_change   : ratio between the current value and the previous one
-                percent_rank : percent rank
-                prod         : product
-                range        : difference between the max and the min
-                rank         : rank
-                row_number   : row number
-                sem          : standard error of the mean
-                skewness     : skewness
-                sum          : sum
-                std          : standard deviation
-                unique       : cardinality (count distinct)
-                var          : variance
+                
+            - aad: 
+                average absolute deviation
+            - beta:
+                Beta Coefficient between 2 vDataColumns
+            - count: 
+                number of non-missing elements
+            - corr:
+                Pearson's correlation between 2 vDataColumns
+            - cov:
+                covariance between 2 vDataColumns
+            - dense_rank:
+                dense rank
+            - ema:
+                exponential moving average
+            - first_value:
+                first non null lead
+            - iqr:
+                interquartile range
+            - kurtosis:
+                kurtosis
+            - jb: 
+                Jarque-Bera index
+            - lead: 
+                next element
+            - lag: 
+                previous element
+            - last_value: 
+                first non null lag
+            - mad: 
+                median absolute deviation
+            - max: 
+                maximum
+            - mean: 
+                average
+            - median : 
+                median
+            - min: 
+                minimum
+            - mode: 
+                most occurent element
+            - q%: 
+                q quantile (ex: 50% for the median)
+            - pct_change: 
+                ratio between the current value and the previous one
+            - percent_rank : 
+                percent rank
+            - prod: 
+                product
+            - range:
+                difference between the max and the min
+            - rank: 
+                rank
+            - row_number: 
+                row number
+            - sem: 
+                standard error of the mean
+            - skewness: 
+                skewness
+            - sum: 
+                sum
+            - std: 
+                standard deviation
+            - unique: 
+                cardinality (count distinct)
+            - var: 
+                variance
+
             Other analytical functions could work if they are part of your DB
             version.
         columns: SQLColumns, optional
@@ -184,6 +260,48 @@ class vDFMath(vDFFilter):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0.0, 10, 20], "cat": ['a', 'a', 'b']})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic.html
+
+
+        A ``max`` function can be conveniently applied using the
+        ``analytic`` function. Below, we can find the maximum 
+        value by each category:
+
+        .. code-block:: python
+
+            vdf.analytic(func="max", columns="val", by = "cat")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.analytic(func="max", columns="val", by = "cat")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic_2.html
+
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self.format_colnames(columns, by)
@@ -475,6 +593,56 @@ class vDFMath(vDFFilter):
          -------
          vDataFrame
             self
+
+        Examples
+        ---------
+
+        Let us work with the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        Now let us apply two functions on the two different columns.
+        
+        - "boat"
+        - "age"
+
+        For the "boat" column, we will encode it to
+        a binary form which makes it easier to process in 
+        certain ML algorithms.
+
+        For the "age" column, we will fill in the missing
+        values based on the columns "pclass" and "sex".
+
+        .. code-block::
+
+            vdf.apply(func = {
+                "boat": "DECODE({}, NULL, 0, 1)",
+                "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
+                }
+            )
+        
+        .. ipython:: python
+            :suppress:
+
+            vdf.apply(func = {
+                "boat": "DECODE({}, NULL, 0, 1)",
+                "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
+                }
+            )
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_apply.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_apply.html
         """
         func = self.format_colnames(func)
         for column in func:
