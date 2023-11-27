@@ -49,14 +49,14 @@ def create_schema(
 
     .. ipython:: python
 
-        from verticapy.sql.create import create_schema
+        from verticapy.sql import create_schema
 
         create_schema(schema = "employees_test")
 
     .. ipython:: python
         :suppress:
 
-        from verticapy import drop
+        from verticapy.sql import drop
 
         drop("employees_test")
 
@@ -126,7 +126,7 @@ def create_table(
 
     .. ipython:: python
 
-        from verticapy.sql.create import create_table
+        from verticapy.sql import create_table
 
     You can generate the SQL needed to create the table.
 

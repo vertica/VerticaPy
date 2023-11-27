@@ -38,7 +38,7 @@ class NaiveBayes(MulticlassClassifier):
         on the distribution.
 
         - For 'gaussian':
-            Key 'type'  must have 'gaussian' as value.
+            Key "type"  must have 'gaussian' as value.
             Each of the model's classes must include a
             dictionary with two keys:
             sigma_sq: Square  root of  the  standard deviation.
@@ -53,7 +53,7 @@ class NaiveBayes(MulticlassClassifier):
                 'S': {'mu': 27.6928120412844,
                 'sigma_sq': 1428.57067393938}}
         - For 'multinomial':
-            Key 'type' must have 'multinomial' as value.
+            Key "type" must have 'multinomial' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
 
@@ -63,7 +63,7 @@ class NaiveBayes(MulticlassClassifier):
                 'Q': 0.910714285714286,
                 'S': 0.878216123499142}
         - For 'bernoulli':
-            Key 'type' must have 'bernoulli' as value.
+            Key "type" must have 'bernoulli' as value.
             Each of the model's classes must be represented
             by a key with its probability as the value.
 
@@ -73,7 +73,7 @@ class NaiveBayes(MulticlassClassifier):
                 'Q': 0.277777777777778,
                 'S': 0.324942791762014}
         - For 'categorical':
-            Key 'type' must have 'categorical' as value.
+            Key "type" must have 'categorical' as value.
             Each  of  the  model's  classes  must  include
             a dictionary with all the feature categories.
 

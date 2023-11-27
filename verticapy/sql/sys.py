@@ -32,7 +32,7 @@ def current_session() -> int:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import current_session
+        from verticapy.sql import current_session
 
         current_session()
 
@@ -68,7 +68,7 @@ def username() -> str:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import username
+        from verticapy.sql import username
 
         username()
 
@@ -113,7 +113,7 @@ def does_table_exist(table_name: str, schema: str) -> bool:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import does_table_exist
+        from verticapy.sql import does_table_exist
 
         does_table_exist(
             table_name = "fake_name",

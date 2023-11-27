@@ -42,24 +42,29 @@ def import_lib_udf(
         List of tuples that includes the different
         functions.
 
-         - function: function
+         - function: 
+            [function]
             Python   Function.
-         - arg_types: dict | list
+         - arg_types: 
+            [dict | list]
             List or dictionary
             of  the function input  types.
             Example: ``{"input1": int, "input2": float}``
             or ``[int, float]``
-         - return_type: type | dict
+         - return_type: 
+            [type | dict]
             Function output type.
             In the case of many  outputs, it
             must be a dictionary including
             all the outputs types and names.
             Example: ``{"result1": int, "result2": float}``
-         - parameters: dict
+         - parameters: 
+            [dict]
             Dictionary of the function
             input optional parameters.
             Example: ``{"param1": int, "param2": str}``
-         - new_name: str
+         - new_name: 
+            [str]
             New   function   name  when
             installed in Vertica.
 
@@ -110,6 +115,19 @@ def import_lib_udf(
         In this example, we utilized a standard Python function.
         If you wish to use a non-standard function, you'll need
         to install it on each node individually.
+
+    .. note::
+
+        For now, Vertica does not allow the installation of the library 
+        from the client side. Additionally, you need to have the right 
+        database privileges. You can use the generated code to move it 
+        to the server and request the administrator with the necessary 
+        privileges to install it. Please look at:
+        :py:func:`verticapy.sdk.vertica.udf.generate_lib_udf`
+        for more information.
+
+    .. seealso::
+        | :py:func:`verticapy.sdk.vertica.udf.generate_lib_udf` : Generates the UDF code.
     """
     directory = os.path.expanduser("~")
     session_name = f"{current_session()}_{username()}"

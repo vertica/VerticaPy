@@ -110,7 +110,7 @@ def compute_flextable_keys(
 
     .. ipython:: python
 
-        from verticapy.sql.flex import compute_flextable_keys
+        from verticapy.sql import compute_flextable_keys
 
         compute_flextable_keys(flex_name = "temp.test")
 
@@ -248,7 +248,7 @@ def compute_vmap_keys(
 
     .. ipython:: python
 
-        from verticapy.sql.flex import compute_vmap_keys
+        from verticapy.sql import compute_vmap_keys
 
         compute_vmap_keys(expr = "temp.test", vmap_col = "column1")
 
@@ -371,7 +371,7 @@ def isflextable(table_name: str, schema: str) -> bool:
 
     .. ipython:: python
 
-        from verticapy.sql.flex import isflextable
+        from verticapy.sql import isflextable
 
         isflextable(table_name = "test", schema = "temp")
 
@@ -493,7 +493,7 @@ def isvmap(
 
     .. ipython:: python
 
-        from verticapy.sql.flex import isvmap
+        from verticapy.sql import isvmap
 
         isvmap("temp.test", "column1")
 
