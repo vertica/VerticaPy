@@ -31,8 +31,7 @@ User Guide
     .. grid-item::
 
       .. card:: Data Ingestion
-          :link: /notebooks/data_ingestion/index.html
-          :link-type: ref
+          :link: ./notebooks/data_ingestion/index.html
           :text-align: center
           :class-card: custom-card-8
 
