@@ -46,43 +46,65 @@ class vDFRolling(vDFCorr):
         advanced  analytical  window function on one or  two
         specific vDataColumns.
 
-        \u26A0 Warning : Some window functions can make the
-                         vDataFrame structure heavier. It is
-                         recommended to always check the current
-                         structure with the 'current_relation'
-                         method and to save it with the 'to_db'
-                         method, using the parameters 'inplace
-                         = True' and 'relation_type = table'.
+        .. warning::
+
+            Some window functions can make the
+            vDataFrame structure heavier. It is
+            recommended to always check the current
+            structure with the ``current_relation``
+            method and to save it with the ``to_db``
+            method, using the parameters ``inplace
+            = True`` and ``relation_type = table``.
 
         Parameters
         ----------
         func: str
             Function to use.
-                aad         : average absolute deviation
-                beta        : Beta Coefficient between 2 vDataColumns
-                count       : number of non-missing elements
-                corr        : Pearson correlation between 2 vDataColumns
-                cov         : covariance between 2 vDataColumns
-                kurtosis    : kurtosis
-                jb          : Jarque-Bera index
-                max         : maximum
-                mean        : average
-                min         : minimum
-                prod        : product
-                range       : difference between the max and the min
-                sem         : standard error of the mean
-                skewness    : skewness
-                sum         : sum
-                std         : standard deviation
-                var         : variance
-                    Other window functions could work if it is part of
-                    the DB version you are using.
+
+            - aad:
+                average absolute deviation
+            - beta:
+                Beta Coefficient between 2 vDataColumns
+            - count       :
+                number of non-missing elements
+            - corr:
+                Pearson correlation between 2 vDataColumns
+            - cov:
+                covariance between 2 vDataColumns
+            - kurtosis:
+                kurtosis
+            - jb:
+                Jarque-Bera index
+            - max:
+                maximum
+            - mean:
+                average
+            - min:
+                minimum
+            - prod:
+                product
+            - range       :
+                difference between the max and the min
+            - sem:
+                standard error of the mean
+            - skewness    :
+                skewness
+            - sum:
+                sum
+            - std:
+                standard deviation
+            - var:
+                variance
+
+            Other window functions could work if it is part of
+            the DB version you are using.
+
         window: list / tuple
             Window Frame Range.
             If set to two integers, computes a Row Window, otherwise
             it computes a Time  Window. For example, if set  to
-            (-5, 1),  the moving  windows will take 5 rows  preceding
-            and one following. If set to ('- 5 minutes', '0 minutes'),
+            ``(-5, 1)``,  the moving  windows will take 5 rows  preceding
+            and one following. If set to ``('- 5 minutes', '0 minutes')``,
             the  moving window  will take all elements of the last  5
             minutes.
         columns: SQLColumns
@@ -94,7 +116,7 @@ class vDFRolling(vDFCorr):
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
             Name of the new vDataColumn.  If empty, a default name is
             generated.
@@ -103,6 +125,72 @@ class vDFRolling(vDFCorr):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has some sale data:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "date": [
+                        "2014-01-01",
+                        "2014-01-02",
+                        "2014-01-03",
+                        "2014-01-04",
+                        "2014-01-05",
+                        "2014-01-06",
+                        "2014-01-07",
+                    ],
+                    "expenses": [40, 10, 12, 54, 98, 132, 50],
+                    "sale": [100, 120, 120, 110, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling_1.html
+
+        Let us make sure the correct data type is assigned:
+
+        .. code-block:: python
+
+            vdf["date"].astype("datetime")
+
+        Now we can use the ``rolling`` function with a
+        custom window size to see the data:
+
+        .. code-block:: python
+
+            vdf.rolling(func = "sum", window = (-1,1), columns = ["sale"])
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["date"].astype("datetime")
+            vdf.rolling(func = "sum", window = (-1,1), columns = ["sale"])
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         if len(window) != 2:
@@ -265,7 +353,7 @@ class vDFRolling(vDFCorr):
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
             Name of the new vDataColumn. If empty, a default name is
             generated.
@@ -274,6 +362,57 @@ class vDFRolling(vDFCorr):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has a value column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 110, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax_1.html
+
+        Now the cummulative maximum of the selected column
+        can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cummax("sale", name = "cummax_sales", order_by = "id")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cummax("sale", name = "cummax_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.cummin` : Cummulative minimum of a selected
+                column of a ``vDataFrame``.
         """
         return self.rolling(
             func="max",
@@ -316,6 +455,57 @@ class vDFRolling(vDFCorr):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has a value column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin_1.html
+
+        Now the cummulative maximum of the selected column
+        can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cummin("sale", name = "cummin_sales", order_by = "id")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cummin("sale", name = "cummin_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.cummax` : Cummulative maximum of a selected
+                column of a ``vDataFrame``.
         """
         return self.rolling(
             func="min",
@@ -358,6 +548,57 @@ class vDFRolling(vDFCorr):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has a value column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod_1.html
+
+        Now the cummulative maximum of the selected column
+        can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cumprod("sale", name = "cumprod_sales", order_by = "id")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cumprod("sale", name = "cumprod_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.cumsum` : Cummulative sum of a selected
+                column of a ``vDataFrame``.
         """
         return self.rolling(
             func="prod",
@@ -400,6 +641,57 @@ class vDFRolling(vDFCorr):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has a value column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum_1.html
+
+        Now the cummulative maximum of the selected column
+        can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cumsum("sale", name = "cumsum_sales", order_by = "id")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cumsum("sale", name = "cumsum_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.cummax` : Cummulative maximum of a selected
+                column of a ``vDataFrame``.
         """
         return self.rolling(
             func="sum",
