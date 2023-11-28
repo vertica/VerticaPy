@@ -46,21 +46,26 @@ class vDFJoinUnionSort(vDFMath):
         Merges the vDataFrame with another vDataFrame or an input
         relation, and returns a new vDataFrame.
 
+        .. warning::
+
+            Appending datasets can potentially increase the structural
+            weight; exercise caution when performing this operation.
+
         Parameters
         ----------
         input_relation: SQLRelation
             Relation to merge with.
         expr1: SQLExpression, optional
-            List of pure-SQL expressions from the current vDataFrame
-            to use during merging. For example,  'CASE WHEN "column"
-            > 3 THEN 2 ELSE NULL END' and  'POWER("column", 2)' will
+            List of pure-SQL expressions from the current ``vDataFrame``
+            to use during merging. For example,  ``CASE WHEN "column"
+            > 3 THEN 2 ELSE NULL END`` and  ``POWER("column", 2)`` will
             work. If empty, all vDataFrame vDataColumns are used.
             Aliases are recommended to avoid auto-naming.
         expr2: SQLExpression, optional
             List of pure-SQL  expressions from the input relation to
             use during the merging.
-            For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END'
-            and 'POWER("column", 2)'  will work.  If empty, all input
+            For example, ``CASE WHEN "column" > 3 THEN 2 ELSE NULL END``
+            and ``POWER("column", 2)``  will work.  If empty, all input
             relation columns are  used. Aliases  are  recommended to
             avoid auto-naming.
         union_all: bool, optional
@@ -71,6 +76,99 @@ class vDFJoinUnionSort(vDFMath):
         -------
         vDataFrame
            vDataFrame of the Union
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create two ``vDataFrames`` which we can
+        merge for this example:
+
+        .. ipython:: python
+
+                vdf = vp.vDataFrame(
+                    {
+                        "score": [12, 11, 13],
+                        "cat": ['A', 'B', 'A'],
+                    }
+                )
+
+                vdf_2 = vp.vDataFrame(
+                    {
+                        "score": [11, 1, 23],
+                        "cat": ['A', 'B', 'B'],
+                    }
+                )
+
+        We can conveniently append the the first ``vDataFrame``
+        with the second one:
+
+        .. code-block:: python
+
+            vdf.append(vdf_2)
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.append(vdf_2)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_append.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_append.html
+
+        We can also apply some SQL expressions on the append
+        using ``expr1`` and ``expr2``. Let us try to
+        limit the maximum value of the second ``vDataFrame``
+        to 20.
+
+        .. code-block:: python
+
+            vdf.append(
+                vdf_2,
+                expr1 = [
+                    'CASE WHEN "score" > 20 THEN 20 ELSE "score" END',
+                    '"cat"',
+                ],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.append(vdf_2, expr1=['CASE WHEN "score" > 20 THEN 20 ELSE "score" END', '"cat"'])
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_append_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_append_2.html
+
+        .. note::
+
+            VerticaPy offers the flexibility to use UNION ALL or simple UNION
+            based on your specific use case. The former includes duplicates,
+            while the latter handles them. Refer to ``union_all`` for more
+            information.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.join` : Joins the
+                ``vDataFrame`` with another one or an input relation.
         """
         expr1, expr2 = format_type(expr1, expr2, dtype=list)
         columns = ", ".join(self.get_columns()) if not expr1 else ", ".join(expr1)
@@ -101,12 +199,14 @@ class vDFJoinUnionSort(vDFMath):
         """
         Joins the vDataFrame with another one or an input relation.
 
-        \u26A0 Warning : Joins  can  make  the  vDataFrame  structure
-                         heavier.  It is recommended that you check
-                         the    current     structure    using    the
-                         'current_relation'  method  and  save  it
-                         with the 'to_db' method, using the parameters
-                         'inplace = True' and 'relation_type = table'.
+        .. warning::
+
+            Joins  can  make  the  vDataFrame  structure
+            heavier.  It is recommended that you check
+            the    current     structure    using    the
+            'current_relation'  method  and  save  it
+            with the 'to_db' method, using the parameters
+            'inplace = True' and 'relation_type = table'.
 
         Parameters
         ----------
@@ -117,47 +217,70 @@ class vDFJoinUnionSort(vDFMath):
             List of 3-tuples. Each tuple must include (key1, key2, operator)
             —where key1 is the key of the vDataFrame, key2 is the key of the
             input relation, and operator is one of the following:
-                         '=' : exact match
-                         '<' : key1  < key2
-                         '>' : key1  > key2
-                        '<=' : key1 <= key2
-                        '>=' : key1 >= key2
-                     'llike' : key1 LIKE '%' || key2 || '%'
-                     'rlike' : key2 LIKE '%' || key1 || '%'
-               'linterpolate': key1 INTERPOLATE key2
-               'rinterpolate': key2 INTERPOLATE key1
+
+            - '=':
+                exact match
+            - '<':
+                key1  < key2
+            - '>':
+                key1  > key2
+            - '<=':
+                key1 <= key2
+            - '>=':
+                key1 >= key2
+            - 'llike':
+                key1 LIKE '%' || key2 || '%'
+            - 'rlike':
+                key2 LIKE '%' || key1 || '%'
+            - 'linterpolate':
+                key1 INTERPOLATE key2
+            - 'rinterpolate':
+                key2 INTERPOLATE key1
+
             Some operators need 5-tuples: (key1, key2, operator, operator2, x)
-            —where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a
+            where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a
             float or an integer, and operator is one of the following:
-                     'jaro' : JARO(key1, key2) operator2 x
-                    'jarow' : JARO_WINCKLER(key1, key2) operator2 x
-                      'lev' : LEVENSHTEIN(key1, key2) operator2 x
+
+            - 'jaro':
+                JARO(key1, key2) operator2 x
+            - 'jarow':
+                JARO_WINCKLER(key1, key2) operator2 x
+            - 'lev':
+                LEVENSHTEIN(key1, key2) operator2 x
 
             If using a dictionary:
             This parameter must include all the different keys. It must be
             similar to the following:
-            {"relationA_key1": "relationB_key1" ...,
-             "relationA_keyk": "relationB_keyk"}
+            ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
             where relationA is the current vDataFrame and relationB is the
             input relation or the input vDataFrame.
+
         on_interpolate: dict, optional
             Dictionary of all unique keys. This is used to join two event
             series together using some ordered attribute. Event series
             joins let you compare values from two series directly, rather
             than having to normalize the series  to the same measurement
             interval. The dict must be similar to the following:
-            {"relationA_key1": "relationB_key1" ...,
-             "relationA_keyk": "relationB_keyk"}
+            ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
             where relationA is the  current vDataFrame and relationB is the
             input relation or the input vDataFrame.
+
         how: str, optional
             Join Type.
-                left    : Left Join.
-                right   : Right Join.
-                cross   : Cross Join.
-                full    : Full Outer Join.
-                natural : Natural Join.
-                inner   : Inner Join.
+
+            - left:
+                Left Join.
+            - right:
+                Right Join.
+            - cross:
+                Cross Join.
+            - full:
+                Full Outer Join.
+            - natural:
+                Natural Join.
+            - inner:
+                Inner Join.
+
         expr1: SQLExpression, optional
             List  of the different columns in pure  SQL to select  from the
             current   vDataFrame,   optionally  as  aliases.   Aliases  are
@@ -166,13 +289,109 @@ class vDFJoinUnionSort(vDFMath):
         expr2: SQLExpression, optional
             List  of the different  columns in pure SQL to select from  the
             input  relation optionally as aliases. Aliases are  recommended
-            to avoid  ambiguous names.  For example: 'column' or 'column AS
-            my_new_alias'.
+            to avoid  ambiguous names.  For example: ``column`` or ``column AS
+            my_new_alias``.
 
         Returns
         -------
         vDataFrame
             object result of the join.
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create two ``vDataFrames`` which we
+        can JOIN for this example:
+
+        .. ipython:: python
+
+            employees_data = vp.vDataFrame(
+                {
+                    "employee_id": [1, 2, 3, 4],
+                    "employee_name": ['Alice', 'Bob', 'Charlie', 'David'],
+                    "department_id": [101, 102, 101, 103],
+                },
+            )
+
+            departments_data = vp.vDataFrame(
+                {
+                    "department_id": [101, 102, 103],
+                    "department_name": ['HR', 'Finance', 'IT'],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = employees_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table1.html
+
+        .. ipython:: python
+            :suppress:
+
+            result = departments_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table2html
+
+        We can conveniently JOIN the two ``vDataFrames``
+        using the key column:
+
+        .. ipython:: python
+
+            result = employees_data.join(
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "inner",
+                expr1 = [
+                    "employee_id AS ID",
+                    "employee_name AS Name",
+                    "department_name AS Dep",
+                ]
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join.html
+
+        .. note::
+
+            VerticaPy provides an array of join options and diverse
+            operators, delivering an exceptional user experience.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.append` : Append a
+                ``vDataFrame`` with another one or an input relation.
         """
         on, on_interpolate = format_type(on, on_interpolate, dtype=dict)
         expr1, expr2 = format_type(expr1, expr2, dtype=list, na_out="*")
@@ -267,20 +486,108 @@ class vDFJoinUnionSort(vDFMath):
     @save_verticapy_logs
     def sort(self, columns: Union[SQLColumns, dict]) -> "vDataFrame":
         """
-        Sorts the vDataFrame using the input vDataColumns.
+        Sorts the ``vDataFrame`` using the input vDataColumns.
 
         Parameters
         ----------
         columns: SQLColumns / dict
-            List  of the  vDataColumns  used to sort  the data,
+            List  of the  ``vDataColumns``  used to sort  the data,
             using asc order or dictionary of all sorting methods.
             For example,  to sort by  "column1" ASC and "column2"
-            DESC,  write  {"column1": "asc", "column2": "desc"}
+            DESC,  write  ``{"column1": "asc", "column2": "desc"}``
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` which we can sort:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "sales": [10, 11, 9, 20, 6],
+                    "cat": ['C', 'B', 'A', 'A', 'B'],
+                },
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort_data.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort_data.html
+
+        We can conveniently sort the ``vDataFrame``
+        using a particular column:
+
+        .. ipython:: python
+
+            vdf.sort({"sales": "asc"})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort.html
+
+        The same operation can also be performed in descending
+        order.
+
+        .. ipython:: python
+
+            vdf.sort({"sales": "desc"})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort_2.html
+
+        .. note::
+
+            Sorting the data is crucial to ensure consistent output.
+            While Vertica forgoes the use of indexes for enhanced
+            performance, it does not guarantee a specific order of
+            data retrieval.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.append` : Append a
+                ``vDataFrame`` with another one or an input relation.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
