@@ -55,8 +55,8 @@ class vDFPivot(vDFJoinUnionSort):
         vmap_col: SQLColumns, optional
             List of VMap columns to flatten.
         limit: int, optional
-            Maximum number of keys to consider for each VMap. Only the
-            most occurent keys are used.
+            Maximum number of keys to consider for each VMap.
+            Only the most occurent keys are used.
         exclude_columns: SQLColumns, optional
             List of VMap columns to exclude.
 
@@ -67,18 +67,31 @@ class vDFPivot(vDFJoinUnionSort):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         For this example, let's generate a dataset
         that has a VMAP in one column:
 
         .. ipython:: python
 
-            import verticapy as vp
-
             vdf = vp.vDataFrame(
                 {
                     "id": [1],
-                    "team": ["country : pk, region : a1"]
+                    "team": ['{"country" : "France", "region" : "IDF"}'],
                 }
             )
 
@@ -93,11 +106,18 @@ class vDFPivot(vDFJoinUnionSort):
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html
 
-        Let's convert the "team" column to vmap:
+        .. note::
+
+            We can observe that our string follows the structure of a
+            JSON. VerticaPy will automatically parse it and determine
+            how to extract the elements.
+
+        In order to utilize Vertica Flex Table auto-parsing, it is
+        necessary to convert the string column 'team' to a vmap.
 
         .. code-block:: python
 
-            vdf["team"].astype('vmap(country,region)')
+            vdf["team"].astype('vmap')
 
         .. ipython:: python
             :suppress:
@@ -116,9 +136,16 @@ class vDFPivot(vDFJoinUnionSort):
 
             vdf.flatten_vmap()
 
-        .. seealso::
-            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
+        .. note::
 
+            This function is applicable for flattening Flex tables VMAP.
+            However, it is advisable to store the final result in a table,
+            as the computations involved can be resource-intensive.
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.merge_similar_names` : Merges
+                columns with similar names.
+            | :py:meth:`verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         vmap_col = format_type(vmap_col, dtype=list)
         if not vmap_col:
@@ -171,21 +198,35 @@ class vDFPivot(vDFJoinUnionSort):
 
         Examples
         --------
-
-        For this example, let's generate a dataset
-        which has two columns that are duplicates
-        with slight change in spelling:
+        Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
 
             import verticapy as vp
 
-                vdf = vp.vDataFrame(
-                    {
-                        "id": [12, 11, 13],
-                        "id_": [12, 11, 13]
-                    }
-                )
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate a dataset
+        which has two columns that are duplicates
+        with slight change in spelling and some
+        missing values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "user.id": [12, None, 13],
+                    "id": [12, 11, None],
+                }
+            )
 
         .. ipython:: python
             :suppress:
@@ -203,12 +244,12 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. code-block:: python
 
-            vdf.merge_similar_names(skip_word = "_")
+            vdf.merge_similar_names(skip_word = "user.")
 
         .. ipython:: python
             :suppress:
 
-            result = vdf.merge_similar_names(skip_word = "_")
+            result = vdf.merge_similar_names(skip_word = "user.")
             html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
@@ -216,8 +257,15 @@ class vDFPivot(vDFJoinUnionSort):
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html
 
+        .. note::
+
+            This function is particularly useful when flattening highly
+            nested JSON files. Such files may contain redundant features
+            and inconsistencies. The function is designed to merge these
+            features, ensuring consistent information.
+
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         columns = self.get_columns()
         skip_word = format_type(skip_word, dtype=list)
@@ -258,6 +306,21 @@ class vDFPivot(vDFJoinUnionSort):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         For this example, let's generate a dataset
         which has multiple columns:
@@ -270,7 +333,7 @@ class vDFPivot(vDFJoinUnionSort):
                     "state": [12, 11, 13],
                     "size":[100, 120, 140],
                     "score": [9, 9.5, 4],
-                    "extra_info": ['Grey', 'Black', 'White']
+                    "extra_info": ['Grey', 'Black', 'White'],
                 }
             )
 
@@ -285,8 +348,8 @@ class vDFPivot(vDFJoinUnionSort):
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow_1.html
 
-        In focus only the quantitites of interest
-        we can use ``narrow``:
+        To focus only on the quantities of interest, we can
+        utilize the ``narrow`` function:
 
         .. code-block:: python
 
@@ -294,7 +357,6 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. ipython:: python
             :suppress:
-
 
             result = vdf.narrow("id", col_name = "state", val_name = "score")
             html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html", "w")
@@ -304,8 +366,15 @@ class vDFPivot(vDFJoinUnionSort):
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html
 
+        .. note::
+
+            The inverse function of ``pivot`` is ``narrow``. With
+            both, you can preprocess the table either vertically
+            or horizontally. These functions utilize pure SQL
+            statements to perform the job.
+
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
         index, columns = format_type(index, columns, dtype=list, na_out=self.numcol())
         index, columns = self.format_colnames(index, columns)
@@ -349,21 +418,25 @@ class vDFPivot(vDFJoinUnionSort):
         prefix: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Returns the Pivot of the vDataFrame using the input aggregation.
+        Returns the Pivot of the vDataFrame using the
+        input aggregation.
 
         Parameters
         ----------
         index: str
-            vDataColumn used to group the elements.
+            ``vDataColumn`` used to group the elements.
         columns: str
-            The vDataColumn used to compute the different categories,
-            which then act as the columns in the pivot table.
+            The ``vDataColumn`` used to compute the
+            different categories, which then act as
+            the columns in the pivot table.
         values: str
-            The vDataColumn whose values populate the new vDataFrame.
+            The vDataColumn whose values populate the
+            new ``vDataFrame``.
         aggr: str, optional
-            Aggregation to use on 'values'.  To use complex aggregations,
-            you must use braces: {}. For example, to aggregate using the
-            aggregation: x -> MAX(x) - MIN(x), write "MAX({}) - MIN({})".
+            Aggregation to use on 'values'.  To use complex
+            aggregations, you must use braces: ``{}``. For
+            example, to aggregate using the aggregation:
+            ``x -> MAX(x) - MIN(x)``, write ``MAX({}) - MIN({})``.
         prefix: str, optional
             The prefix for the pivot table's column names.
 
@@ -374,6 +447,21 @@ class vDFPivot(vDFJoinUnionSort):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         For this example, let's generate a dummy dataset
         representing sales of two items for different dates:
@@ -382,7 +470,12 @@ class vDFPivot(vDFJoinUnionSort):
 
             vdf = vp.vDataFrame(
                 {
-                    "date": ["2014-01-01", "2014-01-02", "2014-01-01", "2014-01-02"],
+                    "date": [
+                        "2014-01-01",
+                        "2014-01-02",
+                        "2014-01-01",
+                        "2014-01-02",
+                    ],
                     "cat": ["A", "A", "B", "B"],
                     "sale": [100, 120, 120, 110],
                 }
@@ -399,7 +492,8 @@ class vDFPivot(vDFJoinUnionSort):
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot_1.html
 
-        To better view the data, we can create a pivot table:
+        To better view the data, we can create a
+        pivot table:
 
         .. code-block:: python
 
@@ -425,6 +519,13 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. raw:: html
             :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot.html
+
+        .. note::
+
+            The inverse function of ``pivot`` is ``narrow``. With
+            both, you can preprocess the table either vertically
+            or horizontally. These functions utilize pure SQL
+            statements to perform the job.
 
         .. seealso::
             | :py:meth:`verticapy.vDataFrame.narrow` : Narrow Table for a ``vDataFrame``.
@@ -472,8 +573,8 @@ class vDFPivot(vDFJoinUnionSort):
         delimiter: Optional[bool] = True,
     ) -> "vDataFrame":
         """
-        Returns exploded vDataFrame of array-like columns in a
-        vDataFrame.
+        Returns exploded vDataFrame of array-like
+        columns in a vDataFrame.
 
         .. versionadded:: 10.0.0
 
@@ -482,13 +583,14 @@ class vDFPivot(vDFJoinUnionSort):
         index: str
             Index used to identify the Row.
         column: str
-            The name of the array-like column to explode.
+            The name of the array-like column to
+            explode.
         prefix: str, optional
-            The prefix for the column names of exploded values
-            defaults to "col_".
+            The prefix for the column names of
+            exploded values defaults to "col_".
         delimeter: str, optional
-            Specify if array-like data is separated by a comma
-            defaults value is True.
+            Specify if array-like data is separated
+            by a comma defaults value is ``True``.
 
         Returns
         -------
@@ -497,21 +599,35 @@ class vDFPivot(vDFJoinUnionSort):
 
         Examples
         --------
-        For this example, let's generate a dataset:
+        Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
 
             import verticapy as vp
 
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate a dataset:
+
+        .. ipython:: python
+
             data = vp.vDataFrame(
                 {
                     "id": [1, 2, 3, 4],
                     "values": [
-                                [70, 80, 90, 5],
-                                [47, 34, 93, 20, 13, 16],
-                                [1, 45, 56, 21, 10, 35, 56, 8, 39],
-                                [89],
-                              ]
+                        [70, 80, 90, 5],
+                        [47, 34, 93, 20, 13, 16],
+                        [1, 45, 56, 21, 10, 35, 56, 8, 39],
+                        [89],
+                    ]
                 }
             )
 
@@ -534,14 +650,14 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. note::
 
-            This function operates on various data types, including arrays
-            and varchar representations of arrays.
-            For arrays with elements separated by commas, as well as varchar
-            representations of arrays with no delimiter (in which case you
-            must specify `delimiter` as `False`).
+            This function operates on various data types, including
+            arrays and varchar representations of arrays.
+            For arrays with elements separated by commas, as well as
+            varchar representations of arrays with no delimiter (in
+            which case you must specify ``delimiter`` as ``False``).
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.pivot` : Pivots the vDataFrame.
         """
 
         # Type check
