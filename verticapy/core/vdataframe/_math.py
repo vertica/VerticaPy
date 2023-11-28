@@ -92,6 +92,21 @@ class vDFMath(vDFFilter):
         Examples
         --------
 
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let us create a dummy dataset with negative values:
 
         .. ipython:: python
@@ -127,6 +142,11 @@ class vDFMath(vDFFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | :py:meth:`verticapy.vDataColumn.abs` : Absolute values for ``vDataColumn``.
         """
         columns = format_type(columns, dtype=list)
         columns = self.numcol() if not columns else self.format_colnames(columns)
@@ -152,8 +172,8 @@ class vDFMath(vDFFilter):
         Adds a new vDataColumn to the vDataFrame by using an advanced
         analytical function on one or two specific vDataColumns.
 
-        .. warning : 
-        
+        .. warning::
+
             Some analytical  functions can make the vDataFrame
             structure  more resource intensive. It is best  to
             check  the structure of  the vDataFrame with  the
@@ -165,12 +185,12 @@ class vDFMath(vDFFilter):
         ----------
         func: str
             Function to apply.
-                
-            - aad: 
+
+            - aad:
                 average absolute deviation
             - beta:
                 Beta Coefficient between 2 vDataColumns
-            - count: 
+            - count:
                 number of non-missing elements
             - corr:
                 Pearson's correlation between 2 vDataColumns
@@ -186,51 +206,51 @@ class vDFMath(vDFFilter):
                 interquartile range
             - kurtosis:
                 kurtosis
-            - jb: 
+            - jb:
                 Jarque-Bera index
-            - lead: 
+            - lead:
                 next element
-            - lag: 
+            - lag:
                 previous element
-            - last_value: 
+            - last_value:
                 first non null lag
-            - mad: 
+            - mad:
                 median absolute deviation
-            - max: 
+            - max:
                 maximum
-            - mean: 
+            - mean:
                 average
-            - median : 
+            - median :
                 median
-            - min: 
+            - min:
                 minimum
-            - mode: 
+            - mode:
                 most occurent element
-            - q%: 
+            - q%:
                 q quantile (ex: 50% for the median)
-            - pct_change: 
+            - pct_change:
                 ratio between the current value and the previous one
-            - percent_rank : 
+            - percent_rank :
                 percent rank
-            - prod: 
+            - prod:
                 product
             - range:
                 difference between the max and the min
-            - rank: 
+            - rank:
                 rank
-            - row_number: 
+            - row_number:
                 row number
-            - sem: 
+            - sem:
                 standard error of the mean
-            - skewness: 
+            - skewness:
                 skewness
-            - sum: 
+            - sum:
                 sum
-            - std: 
+            - std:
                 standard deviation
-            - unique: 
+            - unique:
                 cardinality (count distinct)
-            - var: 
+            - var:
                 variance
 
             Other analytical functions could work if they are part of your DB
@@ -243,17 +263,17 @@ class vDFMath(vDFFilter):
             Either a list of the vDataColumns used to sort (in ascending order)
             the data, or a dictionary of vDataColumns and their sorting
             methods. For example, to sort by "column1" ASC and "column2" DESC,
-            write: {"column1": "asc", "column2": "desc"}
+            write: ``{"column1": "asc", "column2": "desc"}``
         name: str, optional
             Name of  the new vDataColumn. If empty, a default name based on the
             other parameters is generated.
         offset: int, optional
-            Lead/Lag  offset  if parameter 'func' is the function  'lead'/'lag'.
+            Lead/Lag  offset  if parameter ``func`` is the function  'lead'/'lag'.
         x_smoothing: float, optional
             The  smoothing parameter of the 'ema' if the  function is 'ema'. It
             must be a float in the range [0;1].
         add_count: bool, optional
-            If the 'func' is set to 'mode' and this parameter is True, a column
+            If the ``func`` is set to ``mode`` and this parameter is True, a column
             with the mode number of occurences is added to the vDataFrame.
 
         Returns
@@ -263,6 +283,21 @@ class vDFMath(vDFFilter):
 
         Examples
         --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset with negative values:
 
@@ -283,7 +318,7 @@ class vDFMath(vDFFilter):
 
 
         A ``max`` function can be conveniently applied using the
-        ``analytic`` function. Below, we can find the maximum 
+        ``analytic`` function. Below, we can find the maximum
         value by each category:
 
         .. code-block:: python
@@ -302,6 +337,13 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic_2.html
 
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.apply` : Applies each
+                function of the dictionary to the input ``vDataColumns``.
+            | :py:meth:`verticapy.vDataColumn.apply_fun` : Applies a
+                default function to the ``vDataColumn``.
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         columns, by = self.format_colnames(columns, by)
@@ -597,6 +639,21 @@ class vDFMath(vDFFilter):
         Examples
         ---------
 
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
         Let us work with the Titanic dataset:
 
         .. ipython:: python
@@ -609,12 +666,12 @@ class vDFMath(vDFFilter):
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
         Now let us apply two functions on the two different columns.
-        
+
         - "boat"
         - "age"
 
         For the "boat" column, we will encode it to
-        a binary form which makes it easier to process in 
+        a binary form which makes it easier to process in
         certain ML algorithms.
 
         For the "age" column, we will fill in the missing
@@ -627,7 +684,7 @@ class vDFMath(vDFFilter):
                 "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
                 }
             )
-        
+
         .. ipython:: python
             :suppress:
 
@@ -643,6 +700,11 @@ class vDFMath(vDFFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_apply.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | :py:meth:`verticapy.vDataFrame.applymap` : Apply functions to all columns.
         """
         func = self.format_colnames(func)
         for column in func:
@@ -669,6 +731,68 @@ class vDFMath(vDFFilter):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us work with the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        Notice there are some null values for numeric columns
+        such as "age". We can fill these empty values using
+        ``applymap``:
+
+        .. code-block::
+
+            vdf.applymap(
+                func = "COALESCE({}, 0)",
+                numeric_only = True
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.applymap(
+                func = "COALESCE({}, 0)",
+                numeric_only = True
+            )
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_applymap.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_applymap.html
+
+        Now all the ``null`` values are covnerted to 0.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
+            | :py:meth:`verticapy.vDataFrame.apply` : Apply functions using a dictionary.
         """
         function = {}
         columns = self.numcol() if numeric_only else self.get_columns()
@@ -695,6 +819,65 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs.html
+
+
+        Now we can convert all to absolute values:
+
+        .. code-block:: python
+
+            vdf["val"].abs()
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].abs()
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.abs` : Absolute function for entire ``vDataFrame``.
+            | :py:meth:`verticapy.vDataColumn.apply` : Apply functions using SQL.
         """
         return self.apply(func="ABS({})")
 
@@ -714,6 +897,65 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add.html
+
+
+        We can conveniently add 5 to all the values in a column:
+
+        .. code-block:: python
+
+            vdf["val"].add(5)
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].add(5)
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.mul` : Multiply the ``vDataColumn`` by a value.
+            | :py:meth:`verticapy.vDataColumn.div` : Divide the ``vDataColumn`` by a value.
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, {x}, {{}})")
@@ -733,7 +975,13 @@ class vDCMath(vDCFilter):
             Function in pure SQL used to transform the vDataColumn.
             The  function variable must be composed of two  flower
             brackets {}. For example, to apply the function
-            x -> x^2 + 2, use "POWER({}, 2) + 2".
+
+            .. math::
+
+                x -> x^2 + 2,
+
+            use ``"POWER({}, 2) + 2"``.
+
         copy_name: str, optional
             If non-empty, a copy is created using the input name.
 
@@ -741,6 +989,83 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        ---------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us work with the Titanic dataset:
+
+        .. ipython:: python
+
+            from verticapy.datasets import load_titanic
+
+            vdf = load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        Now let us apply a function on the "boat" column.
+
+        For the "boat" column, we will encode it to
+        a binary form which makes it easier to process in
+        certain ML algorithms.
+
+        .. code-block::
+
+            vdf["boat"].apply(func = "DECODE({}, NULL, 0, 1)")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["boat"].apply(func = "DECODE({}, NULL, 0, 1)")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply.html
+
+        We can also make a new column which has the applied function:
+
+        .. code-block::
+
+            vdf["boat"].apply(func = "DECODE({}, NULL, 0, 1)", copy_name = "new_boats")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["boat"].apply(func = "DECODE({}, NULL, 0, 1)", copy_name = "new_boats")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.apply` : Applies each
+                function of the dictionary to the input ``vDataColumns``.
+            | :py:meth:`verticapy.vDataColumn.apply_fun` : Applies a
+                default function to the ``vDataColumn``.
+
         """
         if isinstance(func, StringSQL):
             func = str(func)
@@ -843,50 +1168,145 @@ class vDCMath(vDCFilter):
         ----------
         func: str
             Function to use to transform the vDataColumn.
-                abs          : absolute value
-                acos         : trigonometric inverse cosine
-                asin         : trigonometric inverse sine
-                atan         : trigonometric inverse tangent
-                avg / mean   : average
-                cbrt         : cube root
-                ceil         : value up to the next whole number
-                contain      : checks if 'x' is in the collection
-                count        : number of non-null elements
-                cos          : trigonometric cosine
-                cosh         : hyperbolic cosine
-                cot          : trigonometric cotangent
-                dim          : dimension (only for arrays)
-                exp          : exponential function
-                find         : returns the ordinal position of a
-                               specified element in an array (only
-                               for arrays)
-                floor        : value down to the next whole number
-                len / length : length
-                ln           : natural logarithm
-                log          : logarithm
-                log10        : base 10 logarithm
-                max          : maximum
-                min          : minimum
-                mod          : remainder of a division operation
-                pow          : number raised to the power of another
-                               number
-                round        : rounds a value to a specified number of
-                               decimal places
-                sign         : arithmetic sign
-                sin          : trigonometric sine
-                sinh         : hyperbolic sine
-                sqrt         : arithmetic square root
-                sum          : sum
-                tan          : trigonometric tangent
-                tanh         : hyperbolic tangent
+
+            - abs:
+                absolute value
+            - acos:
+                trigonometric inverse cosine
+            - asin:
+                trigonometric inverse sine
+            - atan:
+                trigonometric inverse tangent
+            - avg / mean:
+                average
+            - cbrt:
+                cube root
+            - ceil:
+                value up to the next whole number
+            - contain:
+                checks if ``x`` is in the collection
+            - count:
+                number of non-null elements
+            - cos:
+                trigonometric cosine
+            - cosh:
+                hyperbolic cosine
+            - cot:
+                trigonometric cotangent
+            - dim:
+                dimension (only for arrays)
+            - exp:
+                exponential function
+            - find:
+                returns the ordinal position of a
+                specified element in an array (only
+                for arrays)
+            - floor:
+                value down to the next whole number
+            - len / length:
+                length
+            - ln:
+                natural logarithm
+            - log:
+                logarithm
+            - log10:
+                base 10 logarithm
+            - max:
+                maximum
+            - min:
+                minimum
+            - mod:
+                remainder of a division operation
+            - pow:
+                number raised to the power of another
+                number
+            - round:
+                rounds a value to a specified number of
+                decimal places
+            - sign:
+                arithmetic sign
+            - sin:
+                trigonometric sine
+            - sinh:
+                hyperbolic sine
+            - sqrt:
+                arithmetic square root
+            - sum:
+                sum
+            - tan:
+                trigonometric tangent
+            - tanh:
+                hyperbolic tangent
+
         x: PythonScalar, optional
             If the function has two arguments (example, power or mod),
-            'x' represents the second argument.
+            ``x`` represents the second argument.
 
         Returns
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with float values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0.2, 10.6, 20.1]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun.html
+
+
+        A ``ceil`` function can be conveniently applied using the
+        ``apply_fun`` function. Below, we can round off the values of
+        "val" column:
+
+        .. code-block:: python
+
+            vdf["val"].apply_fun("ceil")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].apply_fun("ceil")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.applymap` : Applies a function to all ``vDataColumn``s.
+            | :py:meth:`verticapy.vDataColumn.apply` : Applies a function to the ``vDataColumn``.
         """
         if func == "mean":
             func = "avg"
@@ -944,6 +1364,84 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset that has timestamp values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
+                        "1993-11-04 00:00:01",
+                        "1993-11-05 00:00:02",
+                        "1993-11-06 00:00:04",
+                        "1993-11-07 00:00:05",
+                    ],
+                    "val": [0., 1., 2., 4.,5.],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part.html
+
+
+        We can make sure that the column has the correct data type:
+
+        .. code-block:: python
+
+            vdf["time"].astype("datetime")
+
+        Next, we can apply the ``date_part`` function to
+        get the required temporal details:
+
+        .. code-block::
+
+            vdf["time"].date_part(field = "DAY")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["time"].astype("datetime")
+            vdf["time"].date_part(field = "DAY")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.slice` : Slice the ``vDataColumn`` by custom time-steps.
+
         """
         return self.apply(func=f"DATE_PART('{field}', {{}})")
 
@@ -961,6 +1459,66 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with some values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide.html
+
+
+        We can conveniently divide all the values in a column
+        by 5:
+
+        .. code-block:: python
+
+            vdf["val"].div(5)
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].div(5)
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.mul` : Multiply the ``vDataColumn`` by a value.
+            | :py:meth:`verticapy.vDataColumn.add` : Add a value to the ``vDataColumn``.
         """
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func=f"{{}} / ({x})")
@@ -974,6 +1532,65 @@ class vDCMath(vDCFilter):
         -------
         vDataColumn
             vDataColumn that includes the length of each element.
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : ['Hello', 'Meow', 'Gaza', 'New York']})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len.html
+
+
+        We can conveniently get the length of each row
+        in a column:
+
+        .. code-block:: python
+
+            vdf["val"].get_len()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf["val"].get_len()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.date_part` : Extracts
+                a specific TS field  from the ``vDataColumn``.
         """
         cat = self.category()
         if cat == "vmap":
@@ -1008,6 +1625,68 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with float values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [0.21, 11.26, 20.21]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round.html
+
+
+        AWe can conveniently round off the numbers and select the decimal
+        point as well using ``n``:
+
+        .. code-block:: python
+
+            vdf["val"].round(n = 1)
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].round(n = 1)
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.abs` : Get the
+                absolute value of a ``vDataColumn``.
+            | :py:meth:`verticapy.vDataFrame.abs` : Get the
+                absolute value of mutiple ``vDataColumn``.
         """
         return self.apply(func=f"ROUND({{}}, {n})")
 
@@ -1025,6 +1704,66 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with some values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply.html
+
+
+        We can conveniently multiply all the values in a column
+        by 5:
+
+        .. code-block:: python
+
+            vdf["val"].mul(5)
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].mul(5)
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.add` : Add a value to the entire ``vDataColumn``.
+            | :py:meth:`verticapy.vDataColumn.div` : Divide the ``vDataColumn`` by a value.
         """
         return self.apply(func=f"{{}} * ({x})")
 
@@ -1050,6 +1789,86 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset that has timestamp values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
+                        "1993-11-03 00:30:01",
+                        "1993-11-03 00:31:00",
+                        "1993-11-03 01:05:01",
+                        "1993-11-03 01:41:02",
+                        "1993-11-03 01:50:00",
+                    ],
+                    "val": [0., 1., 2., 4., 5., 4.],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice.html
+
+
+        We can make sure that the column has the correct data type:
+
+        .. code-block:: python
+
+            vdf["time"].astype("datetime")
+
+        Next, we can conveniently slice the data into
+        intervals of 30 minutes using:
+
+        .. code-block::
+
+            vdf["time"].slice(30,"minute")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["time"].astype("datetime")
+            vdf["time"].slice(30,"minute")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.date_part` : Extracts
+                a specific TS field  from the ``vDataColumn``.
+
         """
         start_or_end = "START" if (start) else "END"
         unit = unit.upper()
@@ -1073,6 +1892,65 @@ class vDCMath(vDCFilter):
         -------
         vDataFrame
             self._parent
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. code-block:: python
+
+            import verticapy as vp
+
+        .. hint::
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset with negative values:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame({"val" : [10, -10, 20, -2]})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub.html
+
+
+        We can conveniently subract 5 from all the values in a column:
+
+        .. code-block:: python
+
+            vdf["val"].sub(5)
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["val"].sub(5)
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.mul` : Multiply the ``vDataColumn`` by a value.
+            | :py:meth:`verticapy.vDataColumn.add` : Add a value to the entire ``vDataColumn``.
         """
         if self.isdate():
             return self.apply(func=f"TIMESTAMPADD(SECOND, -({x}), {{}})")
