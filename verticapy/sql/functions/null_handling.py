@@ -40,13 +40,29 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [0.8, -1, None, -2, None]})
-        # apply the coalesce function to create a "coalesce_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["coalesce_x"] = vpf.coalesce(df["x"], 777)
         display(df)
 
@@ -63,6 +79,18 @@ def coalesce(expr: SQLExpression, *args) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_null_handling_coalesce.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     category = to_dtype_category(expr)
     expr = [format_magic(expr)]
@@ -89,13 +117,29 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [0, 0, 0.7, 15]})
-        # apply the nullifzero function to create a "nullifzero_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["nullifzero_x"] = vpf.nullifzero(df["x"])
         display(df)
 
@@ -112,6 +156,18 @@ def nullifzero(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_null_handling_nullifzero.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"NULLIFZERO({expr})", cat)
@@ -133,13 +189,29 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [0, None, 0.7, None]})
-        # apply the zeroifnull function to create a "zeroifnull_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["zeroifnull_x"] = vpf.zeroifnull(df["x"])
         display(df)
 
@@ -156,6 +228,18 @@ def zeroifnull(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_null_handling_zeroifnull.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr, cat = format_magic(expr, True)
     return StringSQL(f"ZEROIFNULL({expr})", cat)

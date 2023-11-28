@@ -77,7 +77,7 @@ def drop(
 
     .. ipython:: python
 
-        from verticapy.sql.create import create_table
+        from verticapy.sql import create_table
 
         create_table(
             table_name = "table_example",
@@ -89,7 +89,7 @@ def drop(
 
     .. ipython:: python
 
-        from verticapy.sql.drop import drop
+        from verticapy.sql import drop
 
         drop(name = "public.table_example")
 

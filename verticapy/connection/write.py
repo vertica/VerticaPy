@@ -30,8 +30,8 @@ def change_auto_connection(name: str) -> None:
     name: str
         Name of the new auto connection.
 
-    Example
-    -------
+    Examples
+    --------
     Create a new connection:
 
     .. code-block:: python
@@ -94,8 +94,8 @@ def delete_connection(name: str) -> bool:
         True if the connection was deleted,
         False otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     Create a connection named 'My_New_Vertica_Connection':
 
     .. code-block:: python
@@ -232,8 +232,8 @@ def new_connection(
         For example: ``{'user': 'ENV_USER', 'password'
         : 'ENV_PASSWORD'}``
 
-    Example
-    -------
+    Examples
+    --------
     Create a new connection to VerticaPy:
 
     .. note::

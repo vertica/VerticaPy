@@ -39,13 +39,29 @@ def length(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
-        # Apply the length function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["length_x"] = vpf.length(df["x"])
         display(df)
 
@@ -62,6 +78,18 @@ def length(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_length.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LENGTH({expr})", "int")
@@ -84,13 +112,29 @@ def lower(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
-        # Applying the lower function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["lower_x"] = vpf.lower(df["x"])
         display(df)
 
@@ -107,6 +151,18 @@ def lower(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_lower.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LOWER({expr})", "text")
@@ -136,13 +192,29 @@ def substr(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
-        # Apply the substr function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["substr_x"] = vpf.substr(df["x"], 1, 1)
         display(df)
 
@@ -159,6 +231,18 @@ def substr(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_substr.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     if extent:
@@ -183,13 +267,29 @@ def upper(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["Badr", "Colin", "Fouad", "Arash"]})
-        # Apply the upper function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["upper_x"] = vpf.upper(df["x"])
         display(df)
 
@@ -206,6 +306,18 @@ def upper(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_upper.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"UPPER({expr})", "text")
@@ -237,13 +349,29 @@ def edit_distance(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
-        # Apply the edit distance function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["edit_distance_x"] = vpf.edit_distance(df["x"], 'heyllow')
         display(df)
 
@@ -260,6 +388,18 @@ def edit_distance(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_edit_distance.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -287,13 +427,29 @@ def soundex(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
-        # Apply the soundex function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["soundex_x"] = vpf.soundex(df["x"])
         display(df)
 
@@ -310,6 +466,18 @@ def soundex(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_soundex.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SOUNDEX({expr})", "varchar")
@@ -340,13 +508,29 @@ def soundex_matches(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
-        # Apply the soundex_matches function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["soundex_matches_x"] = vpf.soundex_matches(df["x"], 'heyllow')
         display(df)
 
@@ -363,6 +547,18 @@ def soundex_matches(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_soundex_matches.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -395,13 +591,29 @@ def jaro_distance(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
-        # Apply the jaro distance function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["jaro_distance_x"] = vpf.jaro_distance(df["x"], 'heyllow')
         display(df)
 
@@ -418,6 +630,18 @@ def jaro_distance(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_jaro_distance.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
@@ -447,13 +671,29 @@ def jaro_winkler_distance(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ["hello", "apple", "heroes", "allo"]})
-        # Apply the jaro-winkler function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["jaro_winkler_distance_x"] = vpf.jaro_winkler_distance(df["x"], 'heyllow')
         display(df)
 
@@ -470,6 +710,18 @@ def jaro_winkler_distance(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_string_jaro_winkler_distance.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)

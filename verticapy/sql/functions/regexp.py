@@ -48,14 +48,38 @@ def regexp_count(
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_count function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_count(titanic["name"], '([A-Za-z])+\\.')
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["has_title"] = vpf.regexp_count(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+        )
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -72,6 +96,18 @@ def regexp_count(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_count.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -98,14 +134,38 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_ilike function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_ilike(titanic["name"], '([A-Za-z])+\\.')
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["has_title"] = vpf.regexp_ilike(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+        )
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -122,6 +182,18 @@ def regexp_ilike(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_ilike.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -164,16 +236,39 @@ def regexp_instr(
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_instr function, creating a new "title_start" column
-        titanic["title_start"] = vpf.regexp_instr(titanic["name"],
-                                                 '([A-Za-z])+\\.',
-                                                 return_position = 0)
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["title_start"] = vpf.regexp_instr(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+            return_position = 0,
+        )
         display(titanic[["name", "title_start"]])
 
     .. ipython:: python
@@ -190,6 +285,18 @@ def regexp_instr(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_instr.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -218,14 +325,38 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_like function, creating a new "has_title" column
-        titanic["has_title"] = vpf.regexp_like(titanic["name"], '([A-Za-z])+\\.')
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["has_title"] = vpf.regexp_like(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+        )
         display(titanic[["name", "has_title"]])
 
     .. ipython:: python
@@ -242,6 +373,18 @@ def regexp_like(expr: SQLExpression, pattern: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_like.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)
@@ -283,16 +426,39 @@ def regexp_replace(
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_replace function, creating a new "new_title" column
-        titanic["new_title"] = vpf.regexp_replace(titanic["name"],
-                                                 '([A-Za-z])+\\.',
-                                                 '[title here] ')
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["new_title"] = vpf.regexp_replace(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+            '[title here] ',
+        )
         display(titanic[["name", "new_title"]])
 
     .. ipython:: python
@@ -309,6 +475,18 @@ def regexp_replace(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_replace.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     target = format_magic(target)
@@ -347,15 +525,38 @@ def regexp_substr(
 
     Examples
     --------
+    For this example, we will use the Titanic dataset.
+
     .. code-block:: python
 
         from verticapy.datasets import load_titanic
-        import verticapy.sql.functions as vpf
 
         titanic = load_titanic()
-        # Apply the regexp_substr function, creating a new "title" column
-        titanic["title"] = vpf.regexp_substr(titanic["name"],
-                                            '([A-Za-z])+\\.')
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
+        import verticapy.sql.functions as vpf
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        titanic["title"] = vpf.regexp_substr(
+            titanic["name"],
+            '([A-Za-z])+\\.',
+        )
         display(titanic[["name", "title"]])
 
     .. ipython:: python
@@ -372,6 +573,18 @@ def regexp_substr(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_regexp_regexp_substr.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     pattern = format_magic(pattern)

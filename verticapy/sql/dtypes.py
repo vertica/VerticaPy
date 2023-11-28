@@ -34,8 +34,54 @@ def vertica_python_dtype(
     type_name: str, display_size: int = 0, precision: int = 0, scale: int = 0
 ) -> str:
     """
-    Takes as input the Vertica Python type code and
-    returns its corresponding data type.
+    Takes as input the Vertica Python type code
+    and returns its corresponding data type.
+
+    Parameters
+    ----------
+    type_name: str
+        Type Name.
+    display_size: int, optional
+        Display Size.
+    precision: int, optional
+        Type Precision.
+    scale: int, optional
+        Scale.
+
+    Returns
+    -------
+    str
+        The final type.
+
+    Examples
+    --------
+    Let's import the function before proceeding.
+
+    .. ipython:: python
+
+        from verticapy.sql import vertica_python_dtype
+
+    Let's format a varchar data type.
+
+    .. ipython:: python
+
+        vertica_python_dtype('varchar', 666)
+
+    Let's format a numeric data type.
+
+    .. ipython:: python
+
+        vertica_python_dtype('numeric', precision = 5, scale = 4)
+
+    .. note::
+
+        This function is designed for formatting the cursor-guessed
+        data type. Ensuring the optimal performance of the
+        ``get_data_types`` function is crucial.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.dtypes.get_data_types` : Gets a SQL query data types.
     """
     res = type_name
     has_precision_scale = not (
@@ -92,16 +138,47 @@ def get_data_types(
 
     Examples
     --------
+    Let's import the function before proceeding.
+
     .. ipython:: python
 
         from verticapy.sql import get_data_types
 
-        # returns the data type of multiple columns
-        get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2")
+    You can easily retrieve all the types of the columns
+    in your SQL query by using this function.
 
-        # returns the data type of one column
-        get_data_types("SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2",
-                        column="pclass")
+    .. ipython:: python
+
+        get_data_types(
+            "SELECT "
+            "pclass, embarked, AVG(survived) "
+            "FROM public.titanic "
+            "GROUP BY 1, 2"
+        )
+
+    You can also retrieve the type of a specific column.
+
+    .. ipython:: python
+
+        get_data_types(
+            "SELECT "
+            "pclass, embarked, AVG(survived) "
+            "FROM public.titanic "
+            "GROUP BY 1, 2",
+            column = "pclass",
+        )
+
+    .. note::
+
+        This function is employed to determine the column types
+        in a SQL query. While it's straightforward for tables and
+        views stored in Vertica, for SQL queries, we need to store
+        an empty table to retrieve the final types. Another approach
+        is to directly guess the types from the cursor result.
+
+    .. seealso::
+
+        | :py:func:`verticapy.sql.dtypes.vertica_python_dtype` : Formats the input data type.
     """
     if not (schema):
         schema = conf.get_option("temp_schema")

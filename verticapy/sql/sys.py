@@ -26,13 +26,13 @@ def current_session() -> int:
     int
         DB session.
 
-    Example
-    -------
+    Examples
+    --------
     Displays the current DB session:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import current_session
+        from verticapy.sql import current_session
 
         current_session()
 
@@ -62,13 +62,13 @@ def username() -> str:
     str
         Username.
 
-    Example
-    -------
+    Examples
+    --------
     Displays the current DB user name:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import username
+        from verticapy.sql import username
 
         username()
 
@@ -107,13 +107,13 @@ def does_table_exist(table_name: str, schema: str) -> bool:
         USAGE privilege on it.
         True otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     Checks if a table exist:
 
     .. ipython:: python
 
-        from verticapy.sql.sys import does_table_exist
+        from verticapy.sql import does_table_exist
 
         does_table_exist(
             table_name = "fake_name",
@@ -159,8 +159,8 @@ def has_privileges(
         list of privileges on the object.
         False otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     ...
 
     .. seealso::

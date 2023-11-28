@@ -67,8 +67,8 @@ def connect(section: str, dsn: Optional[str] = None) -> None:
         Path to the file containing the credentials.
         If empty, the  Connection File will be used.
 
-    Example
-    -------
+    Examples
+    --------
     Display all available connections:
 
     .. code-block:: python
@@ -116,8 +116,8 @@ def set_connection(conn: Connection) -> None:
     native   VerticaPy   connection  created   by   the
     'new_connection' function.
 
-    Example
-    -------
+    Examples
+    --------
     Create a connection using the official Vertica Python
     client:
 
@@ -177,8 +177,8 @@ def close_connection() -> None:
     """
     Closes the connection to the database.
 
-    Example
-    -------
+    Examples
+    --------
     Close all current connections:
 
     .. warning::
@@ -219,8 +219,8 @@ def current_connection() -> GlobalConnection:
     VerticaPy  attempts  to connect to a  VerticaLab
     Environment.
 
-    Example
-    -------
+    Examples
+    --------
     Get the current VerticaPy connection:
 
     .. code-block:: python
@@ -282,8 +282,8 @@ def current_cursor() -> Cursor:
     """
     Returns the current database cursor.
 
-    Example
-    -------
+    Examples
+    --------
     Get the current cursor:
 
     .. code-block:: python
@@ -328,8 +328,8 @@ def vertica_connection(section: str, dsn: Optional[str] = None) -> Connection:
     conn
         Database connection.
 
-    Example
-    -------
+    Examples
+    --------
     Create a connection using the input DSN:
 
     .. note::
@@ -364,8 +364,8 @@ def verticapylab_connection() -> Connection:
     conn
         Database connection.
 
-    Example
-    -------
+    Examples
+    --------
     Get the VerticaPyLab connection:
 
     .. note::

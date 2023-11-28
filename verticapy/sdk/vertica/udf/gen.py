@@ -42,24 +42,29 @@ def generate_lib_udf(
         List of tuples that includes the different
         functions.
 
-         - function: function
+         - function:
+            [function]
             Python   Function.
-         - arg_types: dict | list
+         - arg_types:
+            [dict | list]
             List or dictionary
             of  the function input  types.
             Example: ``{"input1": int, "input2": float}``
             or ``[int, float]``
-         - return_type: type | dict
+         - return_type:
+            [type | dict]
             Function output type.
             In the case of many  outputs, it
             must be a dictionary including
             all the outputs types and names.
             Example: ``{"result1": int, "result2": float}``
-         - parameters: dict
+         - parameters:
+            [dict]
             Dictionary of the function
             input optional parameters.
             Example: ``{"param1": int, "param2": str}``
-         - new_name: str
+         - new_name:
+            [str]
             New   function   name  when
             installed in Vertica.
 
@@ -82,8 +87,8 @@ def generate_lib_udf(
     udx_str, sql
         UDF py file, str needed to install the library.
 
-    Example
-    -------
+    Examples
+    --------
     Import the needed modules and generate the UDF:
 
     .. ipython:: python
@@ -113,6 +118,17 @@ def generate_lib_udf(
     .. ipython:: python
 
         print("\\n".join(udx_sql))
+
+    .. note::
+
+        For now, Vertica does not allow the installation of the library
+        from the client side. Additionally, you need to have the right
+        database privileges. You can use the generated code to move it
+        to the server and request the administrator with the necessary
+        privileges to install it.
+
+    .. seealso::
+        | :py:func:`verticapy.sdk.vertica.udf.import_lib_udf` : Imports the UDF.
     """
     include_dependencies = format_type(include_dependencies, dtype=list)
     if not isinstance(include_dependencies, (list)):

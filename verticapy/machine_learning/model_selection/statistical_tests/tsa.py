@@ -1540,8 +1540,8 @@ def seasonal_decompose(
         object containing
         ts, column, TS seasonal part, TS trend, TS noise.
 
-    Example
-    --------
+    Examples
+    ---------
 
     Let us use a dataset that has seasonailty.
     The Airline passengers dataset is a good example.

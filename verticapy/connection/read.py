@@ -31,8 +31,8 @@ def available_connections() -> list[str]:
     list
         all available connections.
 
-    Example
-    -------
+    Examples
+    --------
     Displays all available connections:
 
     .. ipython:: python
@@ -74,8 +74,8 @@ def read_dsn(section: str, dsn: Optional[str] = None) -> dict:
     dict
         dictionary with all the credentials.
 
-    Example
-    -------
+    Examples
+    --------
     Read the DSN information from the ODBCINI environment
     variable:
 
