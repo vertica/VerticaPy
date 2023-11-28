@@ -65,8 +65,8 @@ def get_connection_file() -> str:
     string
         the full path to the auto-connection file.
 
-    Example
-    -------
+    Examples
+    --------
     The connection file is used to store all connections:
 
     .. warning::

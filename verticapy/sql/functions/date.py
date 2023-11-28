@@ -36,13 +36,36 @@ def date(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
-        # apply the date function, creating a "date_x" column
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["date_x"] = vpf.date(df["x"])
         display(df)
 
@@ -59,6 +82,18 @@ def date(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_date.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DATE({expr})", "date")
@@ -80,14 +115,37 @@ def day(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:00:00',
+                    '09-05-1959 03:00:00',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the day function, creating a "day_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["day_x"] = vpf.day(df["x"])
         display(df)
 
@@ -105,6 +163,18 @@ def day(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_day.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAY({expr})", "float")
@@ -127,14 +197,37 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:00:00',
+                    '09-05-1959 03:00:00',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the dayofweek function, creating a "dayofweek_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["dayofweek_x"] = vpf.dayofweek(df["x"])
         display(df)
 
@@ -152,6 +245,18 @@ def dayofweek(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_dayofweek.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAYOFWEEK({expr})", "float")
@@ -174,14 +279,37 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:00:00',
+                    '09-05-1959 03:00:00',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the dayofyear function, creating a "dayofyear_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["dayofyear_x"] = vpf.dayofyear(df["x"])
         display(df)
 
@@ -199,6 +327,18 @@ def dayofyear(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_dayofyear.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DAYOFYEAR({expr})", "float")
@@ -230,14 +370,30 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
+
+    We can now build a dummy dataset.
+
+    .. code-block:: python
 
         df = vDataFrame({"x": ['11-03-1993', '12-03-1993']})
         df["x"].astype("timestamp")
-        # apply the extract function, creating a "months" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["months"] = vpf.extract(df["x"], "MONTH")
         display(df)
 
@@ -255,6 +411,18 @@ def extract(expr: SQLExpression, field: str) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_extract.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"DATE_PART('{field}', {expr})", "int")
@@ -272,13 +440,29 @@ def getdate() -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [1, 2, 3, 4]})
-        # apply the getdate function, creating a "date" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["date"] = vpf.getdate()
         display(df)
 
@@ -295,6 +479,18 @@ def getdate() -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_getdate.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("GETDATE()", "date")
 
@@ -311,13 +507,29 @@ def getutcdate() -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [1, 2, 3, 4]})
-        # apply the getutcdate function, creating a "date" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["date"] = vpf.getutcdate()
         display(df)
 
@@ -334,6 +546,18 @@ def getutcdate() -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_getutcdate.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("GETUTCDATE()", "date")
 
@@ -355,14 +579,37 @@ def hour(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:00:00', '09-05-1959 03:00:00']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:00:00',
+                    '09-05-1959 03:00:00',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the hour function, creating a "hour_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["hour_x"] = vpf.hour(df["x"])
         display(df)
 
@@ -380,6 +627,18 @@ def hour(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_hour.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"HOUR({expr})", "int")
@@ -401,13 +660,29 @@ def interval(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ['1 day', '2 hours']})
-        # apply the interval function, creating a "interval_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["interval_x"] = vpf.interval(df["x"])
         display(df)
 
@@ -424,6 +699,18 @@ def interval(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_interval.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr})::interval", "interval")
@@ -446,14 +733,37 @@ def minute(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:00', '09-05-1959 03:10:00']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:00',
+                    '09-05-1959 03:10:00',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the minute function, creating a "minute_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["minute_x"] = vpf.minute(df["x"])
         display(df)
 
@@ -471,6 +781,18 @@ def minute(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_minute.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MINUTE({expr})", "int")
@@ -493,14 +815,37 @@ def microsecond(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the microsecond function, creating a "microsecond_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["microsecond_x"] = vpf.microsecond(df["x"])
         display(df)
 
@@ -518,6 +863,18 @@ def microsecond(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_microsecond.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MICROSECOND({expr})", "int")
@@ -540,14 +897,37 @@ def month(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the month function, creating a "month_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["month_x"] = vpf.month(df["x"])
         display(df)
 
@@ -565,6 +945,18 @@ def month(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_month.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MONTH({expr})", "int")
@@ -602,21 +994,43 @@ def overlaps(
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"start0": ['11-03-1993'],
-                          "end0": ['12-03-1993'],
-                          "start1": ['11-30-1993'],
-                          "end1": ['11-30-1994']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "start0": ['11-03-1993'],
+                "end0": ['12-03-1993'],
+                "start1": ['11-30-1993'],
+                "end1": ['11-30-1994'],
+            },
+        )
         df["start0"].astype("timestamp")
         df["start1"].astype("timestamp")
         df["end0"].astype("timestamp")
         df["end1"].astype("timestamp")
-        # apply the overlaps function, creating a "overlaps" column
+
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["overlaps"] = vpf.overlaps(df["start0"], df["end0"], df["start1"], df["end1"])
+        display(df)
 
     .. ipython:: python
         :suppress:
@@ -638,6 +1052,18 @@ def overlaps(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_overlaps.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = f"""
         ({format_magic(start0)},
@@ -666,14 +1092,37 @@ def quarter(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the quarter function, creating a "quarter_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["quarter_x"] = vpf.quarter(df["x"])
         display(df)
 
@@ -691,6 +1140,18 @@ def quarter(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_quarter.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"QUARTER({expr})", "int")
@@ -754,14 +1215,30 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
+
+    We can now build a dummy dataset.
+
+    .. code-block:: python
 
         df = vDataFrame({"x": ['11/03/1993', '09/05/1959']})
         df["x"].astype("date")
-        # apply the round_date function, creating a "round_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["round_x"] = vpf.round_date(df["x"], 'MM')
         display(df)
 
@@ -779,6 +1256,18 @@ def round_date(expr: SQLExpression, precision: str = "DD") -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_round_date.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"ROUND({expr}, '{precision}')", "date")
@@ -801,14 +1290,37 @@ def second(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the second function, creating a "second_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["second_x"] = vpf.second(df["x"])
         display(df)
 
@@ -826,6 +1338,18 @@ def second(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_second.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SECOND({expr})", "int")
@@ -848,13 +1372,36 @@ def timestamp(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
-        # apply the timestamp function, creating a "timestamp_x" column
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["timestamp_x"] = vpf.timestamp(df["x"])
         display(df)
 
@@ -871,6 +1418,18 @@ def timestamp(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_timestamp.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"({expr})::timestamp", "date")
@@ -895,14 +1454,37 @@ def week(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the week function, creating a "week_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["week_x"] = vpf.week(df["x"])
         display(df)
 
@@ -920,6 +1502,18 @@ def week(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_week.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"WEEK({expr})", "int")
@@ -942,14 +1536,37 @@ def year(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": ['11-03-1993 12:05:10.23', '09-05-1959 03:10:20.12']})
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [
+                    '11-03-1993 12:05:10.23',
+                    '09-05-1959 03:10:20.12',
+                ],
+            },
+        )
         df["x"].astype("timestamp")
-        # apply the year function, creating a "year_x" column
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["year_x"] = vpf.year(df["x"])
         display(df)
 
@@ -967,6 +1584,18 @@ def year(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_date_year.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"YEAR({expr})", "int")

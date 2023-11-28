@@ -49,16 +49,34 @@ def case_when(*args) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [0.8, -1, 0, -2, 0.5]})
-        # apply the case_when function, creating a "x_pos" column
-        df["x_pos"] = vpf.case_when(df["x"] > 0, 1,
-                                   df["x"] == 0, 0,
-                                   -1)
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        df["x_pos"] = vpf.case_when(
+            df["x"] > 0, 1,
+            df["x"] == 0, 0,
+            -1,
+        )
         display(df)
 
     .. ipython:: python
@@ -76,6 +94,18 @@ def case_when(*args) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_conditional_case_when.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     n = len(args)
     if n < 2:
@@ -129,17 +159,35 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": ['banana', 'apple', 'onion', 'potato']})
-        # apply the decode function, creating a "type_x" column
-        df["type_x"] = vpf.decode(df["x"],
-                        'banana', 'fruit',
-                        'apple', 'fruit',
-                        'vegetable')
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
+        df["type_x"] = vpf.decode(
+            df["x"],
+            'banana', 'fruit',
+            'apple', 'fruit',
+            'vegetable',
+        )
         display(df)
 
     .. ipython:: python
@@ -158,6 +206,18 @@ def decode(expr: SQLExpression, *args) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_conditional_decode.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     n = len(args)
     if n < 2:

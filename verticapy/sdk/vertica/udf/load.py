@@ -42,28 +42,28 @@ def import_lib_udf(
         List of tuples that includes the different
         functions.
 
-         - function: 
+         - function:
             [function]
             Python   Function.
-         - arg_types: 
+         - arg_types:
             [dict | list]
             List or dictionary
             of  the function input  types.
             Example: ``{"input1": int, "input2": float}``
             or ``[int, float]``
-         - return_type: 
+         - return_type:
             [type | dict]
             Function output type.
             In the case of many  outputs, it
             must be a dictionary including
             all the outputs types and names.
             Example: ``{"result1": int, "result2": float}``
-         - parameters: 
+         - parameters:
             [dict]
             Dictionary of the function
             input optional parameters.
             Example: ``{"param1": int, "param2": str}``
-         - new_name: 
+         - new_name:
             [str]
             New   function   name  when
             installed in Vertica.
@@ -81,8 +81,8 @@ def import_lib_udf(
         True  if  the  installation  was  a
         success,  False otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     Import the math module. This example will use the
     `math.exp` and `math.isclose` functions:
 
@@ -118,10 +118,10 @@ def import_lib_udf(
 
     .. note::
 
-        For now, Vertica does not allow the installation of the library 
-        from the client side. Additionally, you need to have the right 
-        database privileges. You can use the generated code to move it 
-        to the server and request the administrator with the necessary 
+        For now, Vertica does not allow the installation of the library
+        from the client side. Additionally, you need to have the right
+        database privileges. You can use the generated code to move it
+        to the server and request the administrator with the necessary
         privileges to install it. Please look at:
         :py:func:`verticapy.sdk.vertica.udf.generate_lib_udf`
         for more information.

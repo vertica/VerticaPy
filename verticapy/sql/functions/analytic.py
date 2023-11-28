@@ -37,13 +37,29 @@ def avg(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the avg function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.avg(df["x"]))])
 
     .. ipython:: python
@@ -58,6 +74,18 @@ def avg(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_avg.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"AVG({expr})", "float")
@@ -84,13 +112,29 @@ def bool_and(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [True, False, True, True]})
-        # apply the bool_and function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.bool_and(df["x"]))])
 
     .. ipython:: python
@@ -105,6 +149,18 @@ def bool_and(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_and.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_AND({expr})", "int")
@@ -129,13 +185,29 @@ def bool_or(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [True, False, True, True]})
-        # apply the bool_or function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.bool_or(df["x"]))])
 
     .. ipython:: python
@@ -150,6 +222,18 @@ def bool_or(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_or.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_OR({expr})", "int")
@@ -174,13 +258,29 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [True, False, True, True]})
-        # apply the bool_xor function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.bool_xor(df["x"]))])
 
     .. ipython:: python
@@ -195,6 +295,18 @@ def bool_xor(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_bool_xor.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"BOOL_XOR({expr})", "int")
@@ -219,14 +331,34 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": [1, 2, 3, 4, 5, 6],
-                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]})
-        # apply the conditional_change_event function
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [1, 2, 3, 4, 5, 6],
+                "y": [11.4, -2.5, 3.5, -4.2, 2, 3],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["cchange_event"] = vpf.conditional_change_event(df["y"] > 0)._over(order_by = [df["x"]])
         display(df)
 
@@ -244,6 +376,18 @@ def conditional_change_event(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_change_event.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_CHANGE_EVENT({expr})", "int")
@@ -267,14 +411,34 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": [1, 2, 3, 4, 5, 6],
-                          "y": [11.4, -2.5, 3.5, -4.2, 2, 3]})
-        # apply the conditional_true_event function
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [1, 2, 3, 4, 5, 6],
+                "y": [11.4, -2.5, 3.5, -4.2, 2, 3],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["ctrue_event"] = vpf.conditional_true_event(df["y"] > 0)._over(order_by = [df["x"]])
         display(df)
 
@@ -292,6 +456,18 @@ def conditional_true_event(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_conditional_true_event.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"CONDITIONAL_TRUE_EVENT({expr})", "int")
@@ -314,13 +490,29 @@ def count(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, None, 12]})
-        # apply the count function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.count(df["x"]))])
 
     .. ipython:: python
@@ -335,6 +527,18 @@ def count(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_count.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"COUNT({expr})", "int")
@@ -359,14 +563,34 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": [1, 2, 3, 4],
-                          "y": [11.4, -2.5, 3.5, -4.2]})
-        # apply the lag function
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [1, 2, 3, 4],
+                "y": [11.4, -2.5, 3.5, -4.2],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["lag"] = vpf.lag(df["y"], 1)._over(order_by = [df["x"]])
         display(df)
 
@@ -384,6 +608,18 @@ def lag(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_lag.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LAG({expr}, {offset})")
@@ -409,14 +645,34 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": [1, 2, 3, 4],
-                          "y": [11.4, -2.5, 3.5, -4.2]})
-        # apply the lead function
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [1, 2, 3, 4],
+                "y": [11.4, -2.5, 3.5, -4.2],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["lead"] = vpf.lead(df["y"], 1)._over(order_by = [df["x"]])
         display(df)
 
@@ -434,6 +690,18 @@ def lead(expr: SQLExpression, offset: int = 1) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_lead.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"LEAD({expr}, {offset})")
@@ -456,13 +724,29 @@ def max(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the max function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.max(df["x"]))])
 
     .. ipython:: python
@@ -477,6 +761,18 @@ def max(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_max.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MAX({expr})", "float")
@@ -499,13 +795,29 @@ def median(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the median function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.median(df["x"]))])
 
     .. ipython:: python
@@ -520,6 +832,18 @@ def median(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_median.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"APPROXIMATE_MEDIAN({expr})", "float")
@@ -542,13 +866,29 @@ def min(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the min function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.min(df["x"]))])
 
     .. ipython:: python
@@ -563,6 +903,18 @@ def min(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_min.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"MIN({expr})", "float")
@@ -587,14 +939,34 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
-        df = vDataFrame({"x": [1, 2, 3, 4],
-                          "y": [11.4, -2.5, 3.5, -4.2]})
-        # apply the nth_value function
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
+        df = vDataFrame(
+            {
+                "x": [1, 2, 3, 4],
+                "y": [11.4, -2.5, 3.5, -4.2],
+            },
+        )
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["nth_value"] = vpf.nth_value(df["y"], 3)._over(order_by = [df["x"]])
         display(df)
 
@@ -612,6 +984,18 @@ def nth_value(expr: SQLExpression, row_number: int) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_nth_value.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"NTH_VALUE({expr}, {row_number})", "int")
@@ -637,13 +1021,29 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the quantile function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.quantile(df["x"], 0.25))])
 
     .. ipython:: python
@@ -658,6 +1058,18 @@ def quantile(expr: SQLExpression, number: float) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_quantile.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(
@@ -679,13 +1091,29 @@ def rank() -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [1, -10, 1000, 7, 7]})
-        # apply the rank function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["rank"] = vpf.rank()._over(order_by = [df["x"]])
         display(df)
 
@@ -702,6 +1130,18 @@ def rank() -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_rank.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("RANK()", "int")
 
@@ -718,13 +1158,29 @@ def row_number() -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [1, -10, 1000, 7, 7]})
-        # apply the row_number function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df["row_number"] = vpf.row_number()._over(order_by = [df["x"]])
         display(df)
 
@@ -741,6 +1197,18 @@ def row_number() -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_row_number.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     return StringSQL("ROW_NUMBER()", "int")
 
@@ -762,13 +1230,29 @@ def std(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the std function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.std(df["x"]))])
 
     .. ipython:: python
@@ -783,6 +1267,18 @@ def std(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_std.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"STDDEV({expr})", "float")
@@ -808,13 +1304,29 @@ def sum(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the sum function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.sum(df["x"]))])
 
     .. ipython:: python
@@ -829,6 +1341,18 @@ def sum(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_sum.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"SUM({expr})", "float")
@@ -851,13 +1375,29 @@ def var(expr: SQLExpression) -> StringSQL:
 
     Examples
     --------
+    First, let's import the vDataFrame in order to
+    create a dummy dataset.
+
     .. code-block:: python
 
         from verticapy import vDataFrame
+
+    Now, let's import the VerticaPy SQL functions.
+
+    .. code-block:: python
+
         import verticapy.sql.functions as vpf
 
+    We can now build a dummy dataset.
+
+    .. code-block:: python
+
         df = vDataFrame({"x": [2, -11, 7, 12]})
-        # apply the var function
+
+    Now, let's go ahead and apply the function.
+
+    .. code-block:: python
+
         df.select([str(vpf.var(df["x"]))])
 
     .. ipython:: python
@@ -872,6 +1412,18 @@ def var(expr: SQLExpression) -> StringSQL:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_functions_analytic_var.html
+
+    .. note::
+
+        It's crucial to utilize VerticaPy SQL functions in coding, as
+        they can be updated over time with new syntax. While SQL
+        functions typically remain stable, they may vary across platforms
+        or versions. VerticaPy effectively manages these changes, a task
+        not achievable with pure SQL.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.vDataFrame.eval` : Evaluates the expression.
     """
     expr = format_magic(expr)
     return StringSQL(f"VARIANCE({expr})", "float")

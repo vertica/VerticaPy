@@ -124,8 +124,8 @@ def load_market(schema: Optional[str] = None, name: str = "market") -> vDataFram
     vDataFrame
         the market vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -183,8 +183,8 @@ def load_iris(schema: Optional[str] = None, name: str = "iris") -> vDataFrame:
     vDataFrame
         the iris vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -251,8 +251,8 @@ def load_titanic(schema: Optional[str] = None, name: str = "titanic") -> vDataFr
     vDataFrame
         the titanic vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -327,8 +327,8 @@ def load_winequality(
     vDataFrame
         the winequality vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -403,8 +403,8 @@ def load_airline_passengers(
     vDataFrame
         the airline passengers vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -457,8 +457,8 @@ def load_amazon(schema: Optional[str] = None, name: str = "amazon") -> vDataFram
     vDataFrame
         the amazon vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -513,8 +513,8 @@ def load_commodities(
     vDataFrame
         the commodities vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -575,8 +575,8 @@ def load_gapminder(schema: Optional[str] = None, name: str = "gapminder") -> vDa
     vDataFrame
         the gapminder vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -638,8 +638,8 @@ def load_pop_growth(
     vDataFrame
         the pop growth vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -702,8 +702,8 @@ def load_smart_meters(
     vDataFrame
         the smart meters vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -761,8 +761,8 @@ def load_cities(schema: Optional[str] = None, name: str = "cities") -> vDataFram
     vDataFrame
         the Cities vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -820,8 +820,8 @@ def load_world(schema: Optional[str] = None, name: str = "world") -> vDataFrame:
     vDataFrame
         the World vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -888,8 +888,8 @@ def load_africa_education(
     vDataFrame
         the Africa Education vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).
@@ -1077,8 +1077,8 @@ def load_laliga(schema: Optional[str] = None, name: str = "laliga") -> vDataFram
     vDataFrame
         the LaLiga vDataFrame.
 
-    Example
-    -------
+    Examples
+    --------
     If you call this loader without any arguments,
     the dataset is loaded using the default schema
     (public).

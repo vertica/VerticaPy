@@ -40,8 +40,8 @@ def set_external_connection(cid: str, rowset: int = 500, symbol: str = "$") -> N
         $$$QUERY$$$, where QUERY represents a custom
         query.
 
-    Example
-    -------
+    Examples
+    --------
     Set up a connection with a database using the alias "pgdb"
 
     .. note::

@@ -26,8 +26,8 @@ def current_session() -> int:
     int
         DB session.
 
-    Example
-    -------
+    Examples
+    --------
     Displays the current DB session:
 
     .. ipython:: python
@@ -62,8 +62,8 @@ def username() -> str:
     str
         Username.
 
-    Example
-    -------
+    Examples
+    --------
     Displays the current DB user name:
 
     .. ipython:: python
@@ -107,8 +107,8 @@ def does_table_exist(table_name: str, schema: str) -> bool:
         USAGE privilege on it.
         True otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     Checks if a table exist:
 
     .. ipython:: python
@@ -159,8 +159,8 @@ def has_privileges(
         list of privileges on the object.
         False otherwise.
 
-    Example
-    -------
+    Examples
+    --------
     ...
 
     .. seealso::
