@@ -160,7 +160,7 @@ class vDFFilter(vDFAgg):
         """
         Balances the dataset using the input method.
 
-        .. warning :
+        .. warning::
 
             If the data is not sorted, the generated
             SQL code may differ between attempts.
@@ -708,7 +708,7 @@ class vDFFilter(vDFAgg):
         Filters the duplicates using a partition by the input
         vDataColumns.
 
-        .. warning :
+        .. warning::
 
             Dropping  duplicates  will make the  vDataFrame
             structure heavier. It is recommended that you

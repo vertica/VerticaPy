@@ -113,14 +113,13 @@ class vDFText(vDFRolling):
             self
 
         Examples
-        ---------
+        --------
 
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
 
             import verticapy as vp
-
 
         Let's generate a small dataset using the following data:
 

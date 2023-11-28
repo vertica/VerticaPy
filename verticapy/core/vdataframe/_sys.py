@@ -363,13 +363,26 @@ class vDFSystem(vDFTyping):
             The formatted current vDataFrame relation.
 
         Examples
-        ---------
-
-        Let us create a fummy dataset;
+        --------
+        Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
 
             import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset;
+
+        .. ipython:: python
 
             vdf = vp.vDataFrame({"val": [0, 10, 20]})
 
@@ -420,14 +433,29 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
-
         Aggregate results are cached to optimize
         computation. Sometimes cached results
         can be problemtic or not desired. In those
         cases ``del_catalog`` can be used to delete
         all cached aggregates.
 
-        Let us look at the below exmaple:
+        Let us look at the below example:
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         We have a dummy data:
 
@@ -438,8 +466,8 @@ class vDFSystem(vDFTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        We can create the summary of the ``vDataFrame``
-        using:
+        We can create the summary of the
+        ``vDataFrame`` using:
 
         .. code-block:: python
 
@@ -494,7 +522,23 @@ class vDFSystem(vDFTyping):
         Examples
         --------
 
-        Let us create a dummy dataset and check if it is empty:
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset and check:
 
         .. code-block:: python
 
@@ -503,8 +547,7 @@ class vDFSystem(vDFTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        We can create the summary of the ``vDataFrame``
-        using:
+        Let's check if it is empty:
 
         .. ipython:: python
 
@@ -533,6 +576,21 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset and check its expected storage:
 
@@ -646,14 +704,14 @@ class vDFSystem(vDFTyping):
     @save_verticapy_logs
     def explain(self, digraph: bool = False) -> str:
         """
-        Provides information on how Vertica is computing the current
-        vDataFrame relation.
+        Provides information on how Vertica is computing
+        the current ``vDataFrame`` relation.
 
         Parameters
         ----------
         digraph: bool, optional
-            If set to True,  returns only the digraph of the explain
-            plan.
+            If set to True,  returns only the digraph of
+            the explain plan.
 
         Returns
         -------
@@ -662,6 +720,21 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset and check its Query Plan:
 
@@ -712,6 +785,21 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset and check modifications:
 
@@ -722,8 +810,8 @@ class vDFSystem(vDFTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        Since the ``vDataFrame`` just got created, it will have no
-        modifications. We can check:
+        Since the ``vDataFrame`` just got created, it will
+        have no modifications. We can check:
 
         .. ipython:: python
 
@@ -775,8 +863,24 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
 
-        Let us create a dummy dataset and check its memory usage:
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset and check its
+        memory usage:
 
         .. code-block:: python
 
@@ -811,9 +915,9 @@ class vDFSystem(vDFTyping):
 
         Parameters
         ----------
-        column1: str / int
+        column1: str | int
             The first  vDataColumn or its index to swap.
-        column2: str / int
+        column2: str | int
             The second vDataColumn or its index to swap.
 
         Returns
@@ -823,12 +927,32 @@ class vDFSystem(vDFTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset and swap its columns:
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+            vdf = vp.vDataFrame(
+                {
+                    "val" : [0, 10, 20],
+                    "cat": ['a', 'b', 'c'],
+                },
+            )
 
         .. ipython:: python
             :suppress:
@@ -840,7 +964,6 @@ class vDFSystem(vDFTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
-
 
         We can swap the categorical column and value columns:
 
@@ -909,18 +1032,23 @@ class vDCSystem(vDCTyping):
         Examples
         --------
 
-        Let us create a dummy dataset and copy one of its columns:
+        Let us create a dummy dataset and copy one
+        of its columns:
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+            vdf = vp.vDataFrame(
+                {
+                    "val" : [0, 10, 20],
+                    "cat": ['a', 'b', 'c'],
+                },
+            )
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
 
-
-        We can copy the "val" column, and name the new
-        column:
+        We can copy the "val" column, and name the
+        new column:
 
         .. code-block:: python
 
@@ -973,6 +1101,21 @@ class vDCSystem(vDCTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
 
         Let us create a dummy dataset and check its memory usage:
 
@@ -989,7 +1132,6 @@ class vDCSystem(vDCTyping):
         .. ipython:: python
 
             vdf["val"].memory_usage()
-
         """
         total = (
             sys.getsizeof(self)
@@ -1013,8 +1155,24 @@ class vDCSystem(vDCTyping):
 
         Examples
         --------
+        Let's begin by importing `VerticaPy`.
 
-        Let us create a dummy dataset and check its expected storage:
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset and check its
+        expected storage:
 
         .. code-block:: python
 
@@ -1023,8 +1181,8 @@ class vDCSystem(vDCTyping):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_current_relation.html
 
-        We can check the expected storage of the ``vDataFrame``
-        using:
+        We can check the expected storage of the
+        ``vDataFrame`` using:
 
         .. code-block:: python
 
@@ -1066,7 +1224,7 @@ class vDCSystem(vDCTyping):
         Renames the vDataColumn by dropping the current vDataColumn
         and creating a copy with the specified name.
 
-        .. warning :
+        .. warning::
 
             SQL code generation  will be slower if the
             vDataFrame  has been transformed  multiple
@@ -1085,19 +1243,39 @@ class vDCSystem(vDCTyping):
 
         Examples
         --------
-
-        Let us create a dummy dataset and rename one of its columns:
+        Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"val" : [0, 10, 20], "cat": ['a', 'b', 'c']})
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a dummy dataset and rename one
+        of its columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "val" : [0, 10, 20],
+                    "cat": ['a', 'b', 'c'],
+                },
+            )
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap.html
 
-
-        We can copy the "val" column, and name the new
-        column:
+        We can copy the "val" column, and name the
+        new column:
 
         .. code-block:: python
 
