@@ -416,6 +416,14 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             print(vdf.current_relation())
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
+            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+                about the different vDataFrame transformations
+
         """
         if reindent:
             return indent_vpy_sql(self._genSQL(split=split))
@@ -506,6 +514,11 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             vdf["val"]._catalog
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         self._update_catalog(erase=True)
         return self
@@ -552,6 +565,11 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             vdf.empty()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         return not self.get_columns()
 
@@ -618,6 +636,12 @@ class vDFSystem(vDFTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_expected_store_usage.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.memory_usage` : ``vDataFrame`` memory usage
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         if unit.lower() == "kb":
             div_unit = 1024
@@ -751,6 +775,11 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             print(vdf.explain())
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+                about the different vDataFrame transformations
         """
         result = _executeSQL(
             query=f"""
@@ -839,6 +868,11 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             vdf.info()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         if len(self._vars["history"]) == 0:
             result = "The vDataFrame was never modified."
@@ -895,6 +929,10 @@ class vDFSystem(vDFTyping):
         .. ipython:: python
 
             vdf.memory_usage()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.expected_store_usage` : Returns the ``vDataFrame`` expected store usage.
 
         """
         total = sum(sys.getsizeof(v) for v in self._vars) + sys.getsizeof(self)
@@ -982,6 +1020,11 @@ class vDFSystem(vDFTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_swap_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+                about the different vDataFrame transformations
         """
         if isinstance(column1, int):
             assert column1 < self.shape()[1], ValueError(
@@ -1065,6 +1108,11 @@ class vDCSystem(vDCTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_add_copy.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.info` : Displays information
+                about the different vDataFrame transformations
         """
         if name == "":
             raise ValueError("The parameter 'name' must not be empty")
@@ -1132,6 +1180,12 @@ class vDCSystem(vDCTyping):
         .. ipython:: python
 
             vdf["val"].memory_usage()
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.memory_usage` : ``vDataFrame`` memory usage
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         total = (
             sys.getsizeof(self)
@@ -1198,6 +1252,12 @@ class vDCSystem(vDCTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_vdc_store_usage.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.memory_usage` : ``vDataColumn`` memory usage
+            | :py:meth:`verticapy.vDataFrame.explain` : Information on how
+                Vertica is computing the current ``vDataFrame`` relation.
         """
         pre_comp = self._parent._get_catalog_value(self._alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -1292,6 +1352,11 @@ class vDCSystem(vDCTyping):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_rename.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.add_copy` : Adds a
+                copy ``vDataColumn`` to the parent vDataFrame.
         """
         old_name = quote_ident(self._alias)
         new_name = quote_ident(new_name)[1:-1]
