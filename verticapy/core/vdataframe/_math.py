@@ -91,7 +91,6 @@ class vDFMath(vDFFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -99,6 +98,7 @@ class vDFMath(vDFFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -124,7 +124,6 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs.html
 
-
         Now we can convert all to absolute values:
 
         .. code-block:: python
@@ -142,6 +141,16 @@ class vDFMath(vDFFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_abs_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "ABS(val)"
 
         .. seealso::
 
@@ -291,6 +300,7 @@ class vDFMath(vDFFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -303,7 +313,12 @@ class vDFMath(vDFFilter):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"val" : [0.0, 10, 20], "cat": ['a', 'a', 'b']})
+            vdf = vp.vDataFrame(
+                {
+                    "val" : [0.0, 10, 20],
+                    "cat": ['a', 'a', 'b'],
+                },
+            )
 
         .. ipython:: python
             :suppress:
@@ -316,19 +331,18 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic.html
 
-
         A ``max`` function can be conveniently applied using the
         ``analytic`` function. Below, we can find the maximum
         value by each category:
 
         .. code-block:: python
 
-            vdf.analytic(func="max", columns="val", by = "cat")
+            vdf.analytic(func = "max", columns = "val", by = "cat")
 
         .. ipython:: python
             :suppress:
 
-            vdf.analytic(func="max", columns="val", by = "cat")
+            vdf.analytic(func = "max", columns = "val", by = "cat")
             result = vdf
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic_2.html", "w")
             html_file.write(result._repr_html_())
@@ -337,6 +351,21 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_analytic_2.html
 
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val_max"] = "MAX(val) OVER (PARTITION BY cat)"
+
+        .. note::
+
+            Aggregations such as ``mode`` can be challenging to compute
+            using pure SQL. This function is designed to simplify the
+            process.
 
         .. seealso::
 
@@ -646,6 +675,7 @@ class vDFMath(vDFFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -665,6 +695,16 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
         Now let us apply two functions on the two different columns.
 
         - "boat"
@@ -680,8 +720,8 @@ class vDFMath(vDFFilter):
         .. code-block::
 
             vdf.apply(func = {
-                "boat": "DECODE({}, NULL, 0, 1)",
-                "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
+                    "boat": "DECODE({}, NULL, 0, 1)",
+                    "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
                 }
             )
 
@@ -689,8 +729,8 @@ class vDFMath(vDFFilter):
             :suppress:
 
             vdf.apply(func = {
-                "boat": "DECODE({}, NULL, 0, 1)",
-                "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
+                    "boat": "DECODE({}, NULL, 0, 1)",
+                    "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
                 }
             )
             result = vdf
@@ -700,6 +740,15 @@ class vDFMath(vDFFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_apply.html
+
+        .. note::
+
+            Applying a function will alter the ``vDataColumns``
+            structure. It's advisable to check the current
+            relation of the ``vDataFrame`` to ensure it aligns
+            with the intended outcome. For more information on
+            achieving that, check out the ``current_relation``
+            documentation.
 
         .. seealso::
 
@@ -722,8 +771,8 @@ class vDFMath(vDFFilter):
             Function to apply.
             The function variable must be composed of two flower
             brackets {}.
-            For example to  apply the function x -> x^2 + 2, use
-            "POWER({}, 2) + 2".
+            For example to  apply the function ``x -> x^2 + 2``,
+            use ``POWER({}, 2) + 2``.
         numeric_only: bool, optional
             If set to True,  only the  numerical columns is used.
 
@@ -734,7 +783,6 @@ class vDFMath(vDFFilter):
 
         Examples
         ---------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -742,6 +790,7 @@ class vDFMath(vDFFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -761,15 +810,25 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
 
-        Notice there are some null values for numeric columns
-        such as "age". We can fill these empty values using
-        ``applymap``:
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Notice there are some ``null`` values for numeric
+        columns such as "age". We can fill these empty values
+        using ``applymap``:
 
         .. code-block::
 
             vdf.applymap(
                 func = "COALESCE({}, 0)",
-                numeric_only = True
+                numeric_only = True,
             )
 
         .. ipython:: python
@@ -777,7 +836,7 @@ class vDFMath(vDFFilter):
 
             vdf.applymap(
                 func = "COALESCE({}, 0)",
-                numeric_only = True
+                numeric_only = True,
             )
             result = vdf
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_applymap.html", "w")
@@ -787,7 +846,16 @@ class vDFMath(vDFFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_applymap.html
 
-        Now all the ``null`` values are covnerted to 0.
+        Now all the ``null`` values are converted to 0.
+
+        .. note::
+
+            Applying a function will alter the ``vDataColumns``
+            structure. It's advisable to check the current
+            relation of the ``vDataFrame`` to ensure it aligns
+            with the intended outcome. For more information on
+            achieving that, check out the ``current_relation``
+            documentation.
 
         .. seealso::
 
@@ -822,7 +890,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -830,6 +897,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -855,7 +923,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs.html
 
-
         Now we can convert all to absolute values:
 
         .. code-block:: python
@@ -873,6 +940,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_abs_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "ABS(val)"
 
         .. seealso::
 
@@ -900,7 +977,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -908,6 +984,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -933,7 +1010,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add.html
 
-
         We can conveniently add 5 to all the values in a column:
 
         .. code-block:: python
@@ -951,6 +1027,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_add_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "val + 5"
 
         .. seealso::
 
@@ -980,7 +1066,7 @@ class vDCMath(vDCFilter):
 
                 x -> x^2 + 2,
 
-            use ``"POWER({}, 2) + 2"``.
+            use ``POWER({}, 2) + 2``.
 
         copy_name: str, optional
             If non-empty, a copy is created using the input name.
@@ -992,7 +1078,6 @@ class vDCMath(vDCFilter):
 
         Examples
         ---------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1000,6 +1085,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1018,6 +1104,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
 
         Now let us apply a function on the "boat" column.
 
@@ -1045,7 +1141,10 @@ class vDCMath(vDCFilter):
 
         .. code-block::
 
-            vdf["boat"].apply(func = "DECODE({}, NULL, 0, 1)", copy_name = "new_boats")
+            vdf["boat"].apply(
+                func = "DECODE({}, NULL, 0, 1)",
+                copy_name = "new_boats",
+            )
 
         .. ipython:: python
             :suppress:
@@ -1058,6 +1157,15 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_2.html
+
+        .. note::
+
+            Applying a function will alter the ``vDataColumns``
+            structure. It's advisable to check the current
+            relation of the ``vDataFrame`` to ensure it aligns
+            with the intended outcome. For more information on
+            achieving that, check out the ``current_relation``
+            documentation.
 
         .. seealso::
 
@@ -1249,7 +1357,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1257,6 +1364,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1282,7 +1390,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun.html
 
-
         A ``ceil`` function can be conveniently applied using the
         ``apply_fun`` function. Below, we can round off the values of
         "val" column:
@@ -1302,6 +1409,15 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_apply_fun_2.html
+
+        .. note::
+
+            Applying a function will alter the ``vDataColumns``
+            structure. It's advisable to check the current
+            relation of the ``vDataFrame`` to ensure it aligns
+            with the intended outcome. For more information on
+            achieving that, check out the ``current_relation``
+            documentation.
 
         .. seealso::
 
@@ -1354,11 +1470,10 @@ class vDCMath(vDCFilter):
         ----------
         field: str
             The field to extract. It must be one of the following:
-            CENTURY / DAY / DECADE / DOQ  / DOW / DOY / EPOCH / HOUR
-            / ISODOW / ISOWEEK / ISOYEAR / MICROSECONDS / MILLENNIUM
-            / MILLISECONDS  /  MINUTE  /  MONTH  / QUARTER /  SECOND
-            / TIME ZONE  /  TIMEZONE_HOUR /  TIMEZONE_MINUTE /  WEEK
-            / YEAR
+            century | day | decade | doq | dow | doy | epoch | hour
+            | isodow | isoweek | isoyear | microseconds | millennium
+            | milliseconds | minute | month | quarter | second | time
+             zone | timezone_hour | timezone_minute | week | year
 
         Returns
         -------
@@ -1367,7 +1482,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1375,6 +1489,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1411,7 +1526,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part.html
 
-
         We can make sure that the column has the correct data type:
 
         .. code-block:: python
@@ -1423,13 +1537,13 @@ class vDCMath(vDCFilter):
 
         .. code-block::
 
-            vdf["time"].date_part(field = "DAY")
+            vdf["time"].date_part(field = "day")
 
         .. ipython:: python
             :suppress:
 
             vdf["time"].astype("datetime")
-            vdf["time"].date_part(field = "DAY")
+            vdf["time"].date_part(field = "day")
             result = vdf
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part_2.html", "w")
             html_file.write(result._repr_html_())
@@ -1438,12 +1552,21 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_date_part_2.html
 
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "DATE_PART('DAY', val)"
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataColumn.slice` : Slice the ``vDataColumn`` by custom time-steps.
-
         """
-        return self.apply(func=f"DATE_PART('{field}', {{}})")
+        return self.apply(func=f"DATE_PART('{field.upper()}', {{}})")
 
     @save_verticapy_logs
     def div(self, x: PythonNumber) -> "vDataFrame":
@@ -1462,7 +1585,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1470,6 +1592,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1495,7 +1618,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide.html
 
-
         We can conveniently divide all the values in a column
         by 5:
 
@@ -1515,6 +1637,16 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_divide_2.html
 
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "val / 5"
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataColumn.mul` : Multiply the ``vDataColumn`` by a value.
@@ -1525,17 +1657,17 @@ class vDCMath(vDCFilter):
 
     def get_len(self) -> "vDataColumn":
         """
-        Returns a new vDataColumn that represents the length of
-        each element.
+        Returns a new ``vDataColumn`` that represents the
+        length of each element.
 
         Returns
         -------
         vDataColumn
-            vDataColumn that includes the length of each element.
+            vDataColumn that includes the length of each
+            element.
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1543,6 +1675,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1555,7 +1688,11 @@ class vDCMath(vDCFilter):
 
         .. ipython:: python
 
-            vdf = vp.vDataFrame({"val" : ['Hello', 'Meow', 'Gaza', 'New York']})
+            vdf = vp.vDataFrame(
+                {
+                    "val" : ['Hello', 'Meow', 'Gaza', 'New York'],
+                },
+            )
 
         .. ipython:: python
             :suppress:
@@ -1567,7 +1704,6 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len.html
-
 
         We can conveniently get the length of each row
         in a column:
@@ -1586,6 +1722,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_get_len_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "LENGTH(val)"
 
         .. seealso::
 
@@ -1628,7 +1774,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1636,6 +1781,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1661,7 +1807,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round.html
 
-
         AWe can conveniently round off the numbers and select the decimal
         point as well using ``n``:
 
@@ -1680,6 +1825,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_round_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "ROUND(val, 1)"
 
         .. seealso::
 
@@ -1707,7 +1862,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1715,6 +1869,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1740,7 +1895,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply.html
 
-
         We can conveniently multiply all the values in a column
         by 5:
 
@@ -1759,6 +1913,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_multiply_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "val * 5"
 
         .. seealso::
 
@@ -1800,6 +1964,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1837,7 +2002,6 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice.html
 
-
         We can make sure that the column has the correct data type:
 
         .. code-block:: python
@@ -1849,13 +2013,13 @@ class vDCMath(vDCFilter):
 
         .. code-block::
 
-            vdf["time"].slice(30,"minute")
+            vdf["time"].slice(30, "minute")
 
         .. ipython:: python
             :suppress:
 
             vdf["time"].astype("datetime")
-            vdf["time"].slice(30,"minute")
+            vdf["time"].slice(30, "minute")
             result = vdf
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice_2.html", "w")
             html_file.write(result._repr_html_())
@@ -1863,6 +2027,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_slice_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "TIME_SLICE(val, 30, 'MINUTE')"
 
         .. seealso::
 
@@ -1895,7 +2069,6 @@ class vDCMath(vDCFilter):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. code-block:: python
@@ -1903,6 +2076,7 @@ class vDCMath(vDCFilter):
             import verticapy as vp
 
         .. hint::
+
             By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
             of code collisions with other libraries. This precaution is
             necessary because verticapy uses commonly known function names
@@ -1928,8 +2102,8 @@ class vDCMath(vDCFilter):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub.html
 
-
-        We can conveniently subract 5 from all the values in a column:
+        We can conveniently substract 5 from all the values
+        in a column:
 
         .. code-block:: python
 
@@ -1946,6 +2120,16 @@ class vDCMath(vDCFilter):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_math_vdc_sub_2.html
+
+        .. note::
+
+            While the same task can be accomplished using pure SQL (see below),
+            adopting a Pythonic approach can offer greater convenience and help
+            avoid potential syntax errors.
+
+            .. code-block:: python
+
+                vdf["val"] = "val - 5"
 
         .. seealso::
 
