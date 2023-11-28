@@ -42,67 +42,195 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by using an
-        advanced  analytical  window function on one or  two
-        specific vDataColumns.
+        Adds a new ``vDataColumn`` to the ``vDataFrame`` by
+        using an advanced  analytical  window function on
+        one or  two specific ``vDataColumns``.
 
-        \u26A0 Warning : Some window functions can make the
-                         vDataFrame structure heavier. It is
-                         recommended to always check the current
-                         structure with the 'current_relation'
-                         method and to save it with the 'to_db'
-                         method, using the parameters 'inplace
-                         = True' and 'relation_type = table'.
+        .. warning::
+
+            Some window functions can make the
+            vDataFrame structure heavier. It is
+            recommended to always check the current
+            structure with the ``current_relation``
+            method and to save it with the ``to_db``
+            method, using the parameters ``inplace
+            = True`` and ``relation_type = table``.
+
+        .. warning::
+
+            Make use of the ``order_by`` parameter to sort
+            your data. Otherwise, you might encounter unexpected
+            results, as Vertica does not work with indexes, and
+            the data may be randomly shuffled.
 
         Parameters
         ----------
         func: str
             Function to use.
-                aad         : average absolute deviation
-                beta        : Beta Coefficient between 2 vDataColumns
-                count       : number of non-missing elements
-                corr        : Pearson correlation between 2 vDataColumns
-                cov         : covariance between 2 vDataColumns
-                kurtosis    : kurtosis
-                jb          : Jarque-Bera index
-                max         : maximum
-                mean        : average
-                min         : minimum
-                prod        : product
-                range       : difference between the max and the min
-                sem         : standard error of the mean
-                skewness    : skewness
-                sum         : sum
-                std         : standard deviation
-                var         : variance
-                    Other window functions could work if it is part of
-                    the DB version you are using.
+
+            - aad:
+                average absolute deviation
+            - beta:
+                Beta Coefficient between 2 vDataColumns
+            - count:
+                number of non-missing elements
+            - corr:
+                Pearson correlation between 2 vDataColumns
+            - cov:
+                covariance between 2 vDataColumns
+            - kurtosis:
+                kurtosis
+            - jb:
+                Jarque-Bera index
+            - max:
+                maximum
+            - mean:
+                average
+            - min:
+                minimum
+            - prod:
+                product
+            - range:
+                difference between the max and the min
+            - sem:
+                standard error of the mean
+            - skewness:
+                skewness
+            - sum:
+                sum
+            - std:
+                standard deviation
+            - var:
+                variance
+
+            Other window functions could work if it is part of
+            the DB version you are using.
+
         window: list / tuple
             Window Frame Range.
             If set to two integers, computes a Row Window, otherwise
             it computes a Time  Window. For example, if set  to
-            (-5, 1),  the moving  windows will take 5 rows  preceding
-            and one following. If set to ('- 5 minutes', '0 minutes'),
+            ``(-5, 1)``,  the moving  windows will take 5 rows  preceding
+            and one following. If set to ``('- 5 minutes', '0 minutes')``,
             the  moving window  will take all elements of the last  5
             minutes.
         columns: SQLColumns
-            Input vDataColumns. Must be a list of one or two elements.
+            Input ``vDataColumns``. Must be a list of one or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
-        order_by: dict / list, optional
+        order_by: dict | list, optional
             List of the vDataColumns used to sort the data using
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new vDataColumn.  If empty, a default name is
-            generated.
+            Name of the new ``vDataColumn``.  If empty, a default name
+            is generated.
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate
+        the following dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "date": [
+                        "2014-01-01",
+                        "2014-01-02",
+                        "2014-01-03",
+                        "2014-01-04",
+                        "2014-01-05",
+                        "2014-01-06",
+                        "2014-01-07",
+                    ],
+                    "expenses": [40, 10, 12, 54, 98, 132, 50],
+                    "sale": [100, 120, 120, 110, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling_1.html
+
+        Let us make sure the correct data type is assigned:
+
+        .. code-block:: python
+
+            vdf["date"].astype("datetime")
+
+        We can now employ the ``rolling`` function,
+        specifying a custom window size, to visualize
+        the data.
+
+        .. code-block:: python
+
+            vdf.rolling(
+                func = "sum",
+                window = (-1,1),
+                columns = ["sale"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["date"].astype("datetime")
+            vdf.rolling(func = "sum", window = (-1,1), columns = ["sale"])
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_rolling.html
+
+        .. note::
+
+            Rolling windows are valuable in time-series data for creating
+            features because they allow us to analyze a specified number
+            of past data points at each step. This approach is useful
+            for capturing trends over time, adapting to different time
+            scales, and smoothing out noise in the data. By applying
+            aggregation functions within these windows, such as calculating
+            averages or sums, we can generate new features that provide
+            insights into the historical patterns of the dataset.
+            These features, based on past observations, contribute to
+            building more informed and predictive models, enhancing
+            our understanding of the underlying trends in the data.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic` : Advanced Analytical functions.
         """
         columns, by, order_by = format_type(columns, by, order_by, dtype=list)
         if len(window) != 2:
@@ -251,29 +379,120 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the
-        cumulative maximum of the input vDataColumn.
+        Adds a new ``vDataColumn`` to the ``vDataFrame``
+        by computing the cumulative maximum of the input
+        ``vDataColumn``.
+
+        .. warning::
+
+            Make use of the ``order_by`` parameter to sort
+            your data. Otherwise, you might encounter unexpected
+            results, as Vertica does not work with indexes, and
+            the data may be randomly shuffled.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn.
+            Input ``vDataColumn``.
         by: list, optional
             vDataColumns used in the partition.
-        order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using
+        order_by: dict | list, optional
+            List of the ``vDataColumns`` used to sort the data using
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is
-            generated.
+            Name of the new ``vDataColumn``. If empty, a default name
+            is generated.
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate
+        the following dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 110, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax_1.html
+
+        Now the cummulative maximum of the selected
+        column can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cummax(
+                "sale",
+                name = "cummax_sales",
+                order_by = "id",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cummax("sale", name = "cummax_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummax.html
+
+        .. note::
+
+            Rolling windows are valuable in time-series data for creating
+            features because they allow us to analyze a specified number
+            of past data points at each step. This approach is useful
+            for capturing trends over time, adapting to different time
+            scales, and smoothing out noise in the data. By applying
+            aggregation functions within these windows, such as calculating
+            averages or sums, we can generate new features that provide
+            insights into the historical patterns of the dataset.
+            These features, based on past observations, contribute to
+            building more informed and predictive models, enhancing
+            our understanding of the underlying trends in the data.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.rolling` : Advanced analytical
+                window function.
         """
         return self.rolling(
             func="max",
@@ -293,29 +512,120 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the
-        cumulative minimum of the input vDataColumn.
+        Adds a new ``vDataColumn`` to the ``vDataFrame``
+        by computing the cumulative minimum of the input
+        ``vDataColumn``.
+
+        .. warning::
+
+            Make use of the ``order_by`` parameter to sort
+            your data. Otherwise, you might encounter unexpected
+            results, as Vertica does not work with indexes, and
+            the data may be randomly shuffled.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn.
+            Input ``vDataColumn``.
         by: list, optional
             vDataColumns used in the partition.
-        order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using
+        order_by: dict | list, optional
+            List of the ``vDataColumns`` used to sort the data using
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is
-            generated.
+            Name of the new ``vDataColumn``. If empty, a default name
+            is generated.
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate
+        the following dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin_1.html
+
+        Now the cummulative maximum of the selected
+        column can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cummin(
+                "sale",
+                name = "cummin_sales",
+                order_by = "id",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cummin("sale", name = "cummin_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cummin.html
+
+        .. note::
+
+            Rolling windows are valuable in time-series data for creating
+            features because they allow us to analyze a specified number
+            of past data points at each step. This approach is useful
+            for capturing trends over time, adapting to different time
+            scales, and smoothing out noise in the data. By applying
+            aggregation functions within these windows, such as calculating
+            averages or sums, we can generate new features that provide
+            insights into the historical patterns of the dataset.
+            These features, based on past observations, contribute to
+            building more informed and predictive models, enhancing
+            our understanding of the underlying trends in the data.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.rolling` : Advanced analytical
+                window function.
         """
         return self.rolling(
             func="min",
@@ -335,29 +645,120 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the
-        cumulative product of the input vDataColumn.
+        Adds a new ``vDataColumn`` to the ``vDataFrame``
+        by computing the cumulative product of the input
+        ``vDataColumn``.
+
+        .. warning::
+
+            Make use of the ``order_by`` parameter to sort
+            your data. Otherwise, you might encounter unexpected
+            results, as Vertica does not work with indexes, and
+            the data may be randomly shuffled.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn.
+            Input ``vDataColumn``.
         by: list, optional
             vDataColumns used in the partition.
-        order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using
+        order_by: dict | list, optional
+            List of the ``vDataColumns`` used to sort the data using
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is
-            generated.
+            Name of the new ``vDataColumn``. If empty, a default name
+            is generated.
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate
+        the following dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod_1.html
+
+        Now the cummulative maximum of the selected
+        column can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cumprod(
+                "sale",
+                name = "cumprod_sales",
+                order_by = "id",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cumprod("sale", name = "cumprod_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumprod.html
+
+        .. note::
+
+            Rolling windows are valuable in time-series data for creating
+            features because they allow us to analyze a specified number
+            of past data points at each step. This approach is useful
+            for capturing trends over time, adapting to different time
+            scales, and smoothing out noise in the data. By applying
+            aggregation functions within these windows, such as calculating
+            averages or sums, we can generate new features that provide
+            insights into the historical patterns of the dataset.
+            These features, based on past observations, contribute to
+            building more informed and predictive models, enhancing
+            our understanding of the underlying trends in the data.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.rolling` : Advanced analytical
+                window function.
         """
         return self.rolling(
             func="prod",
@@ -377,29 +778,120 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame by computing the
-        cumulative sum of the input vDataColumn.
+        Adds a new ``vDataColumn`` to the ``vDataFrame``
+        by computing the cumulative sum of the input
+        ``vDataColumn``.
+
+        .. warning::
+
+            Make use of the ``order_by`` parameter to sort
+            your data. Otherwise, you might encounter unexpected
+            results, as Vertica does not work with indexes, and
+            the data may be randomly shuffled.
 
         Parameters
         ----------
         column: str
-            Input vDataColumn.
+            Input ``vDataColumn``.
         by: list, optional
             vDataColumns used in the partition.
-        order_by: dict / list, optional
-            List of the vDataColumns used to sort the data using
+        order_by: dict | list, optional
+            List of the ``vDataColumns`` used to sort the data using
             ascending/descending order or a dictionary of all the
             sorting methods.
             For example, to sort by "column1" ASC and "column2" DESC,
-            use: {"column1": "asc", "column2": "desc"}.
+            use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new vDataColumn. If empty, a default name is
-            generated.
+            Name of the new ``vDataColumn``. If empty, a default name
+            is generated.
 
         Returns
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, let's generate
+        the following dataset:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [0, 1, 2, 3, 4, 5, 6],
+                    "sale": [100, 120, 120, 50, 100, 90, 80],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum_1.html
+
+        Now the cummulative maximum of the selected
+        column can be easily calculated:
+
+        .. code-block:: python
+
+            vdf.cumsum(
+                "sale",
+                name = "cumsum_sales",
+                order_by = "id",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.cumsum("sale", name = "cumsum_sales", order_by = "id")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_cumsum.html
+
+        .. note::
+
+            Rolling windows are valuable in time-series data for creating
+            features because they allow us to analyze a specified number
+            of past data points at each step. This approach is useful
+            for capturing trends over time, adapting to different time
+            scales, and smoothing out noise in the data. By applying
+            aggregation functions within these windows, such as calculating
+            averages or sums, we can generate new features that provide
+            insights into the historical patterns of the dataset.
+            These features, based on past observations, contribute to
+            building more informed and predictive models, enhancing
+            our understanding of the underlying trends in the data.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.rolling` : Advanced analytical
+                window function.
         """
         return self.rolling(
             func="sum",
