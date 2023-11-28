@@ -927,6 +927,7 @@ Information
       iloc
       info
       memory_usage
+      expected_store_usage
       numcol
       shape
       tail
@@ -954,6 +955,7 @@ Information
       isnum
       isvmap
       memory_usage
+      store_usage
       tail
 
 

@@ -1999,7 +1999,7 @@ class LocalOutlierFactor(VerticaModel):
     Sander. This object is using pure SQL to compute all
     the distances and final score.
 
-    .. warning :
+    .. warning::
 
         This   algorithm   uses  a   CROSS  JOIN
         during   computation  and  is  therefore

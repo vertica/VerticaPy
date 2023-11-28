@@ -1948,7 +1948,7 @@ class DBSCAN(VerticaModel):
     compute the distances and neighbors, and uses Python to
     compute the cluster propagation (non-scalable phase).
 
-    .. warning :
+    .. warning::
 
         This   algorithm   uses  a   CROSS  JOIN
         during   computation  and  is  therefore
