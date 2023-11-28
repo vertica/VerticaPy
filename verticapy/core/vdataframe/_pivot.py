@@ -43,10 +43,12 @@ class vDFPivot(vDFJoinUnionSort):
         """
         Flatten the selected VMap. A new vDataFrame is returned.
 
-        \u26A0 Warning : This  function  might  have  a  long  runtime
-                         and can make your  vDataFrame less performant.
-                         It makes many calls to the MAPLOOKUP function,
-                         which can be slow if your VMap is large.
+        .. warning::
+
+            This  function  might  have  a  long  runtime
+            and can make your  vDataFrame less performant.
+            It makes many calls to the MAPLOOKUP function,
+            which can be slow if your VMap is large.
 
         Parameters
         ----------
@@ -62,6 +64,61 @@ class vDFPivot(vDFJoinUnionSort):
         -------
         vDataFrame
             object with the flattened VMaps.
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        that has a VMAP in one column:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [1],
+                    "team": ["country : pk, region : a1"]
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html
+
+        Let's convert the "team" column to vmap:
+
+        .. code-block:: python
+
+            vdf["team"].astype('vmap(country,region)')
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap.html
+
+        Now we can flatten the vmap:
+
+        .. code-block::
+
+            vdf.flatten_vmap()
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
+
         """
         vmap_col = format_type(vmap_col, dtype=list)
         if not vmap_col:
@@ -102,15 +159,65 @@ class vDFPivot(vDFJoinUnionSort):
         skip_word: str / list, optional
             List  of words to  exclude  from  the provided column  names.
             For example,     if      two      columns      are     named
-            'age.information.phone'  and  'age.phone' AND  skip_word  is
-            set  to  ['.information'],  then  the  two  columns are
+            'age.information.phone'  and  'age.phone' AND  ``skip_word``  is
+            set  to  ``['.information']``,  then  the  two  columns are
             merged  together  with  the   following  COALESCE  statement:
-            COALESCE("age.phone", "age.information.phone") AS "age.phone"
+            ``COALESCE("age.phone", "age.information.phone") AS "age.phone"``
 
         Returns
         -------
         vDataFrame
             An object containing the merged element.
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        which has two columns that are duplicates
+        with slight change in spelling:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+                vdf = vp.vDataFrame(
+                    {
+                        "id": [12, 11, 13],
+                        "id_": [12, 11, 13]
+                    }
+                )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html
+
+        In order to remove the redundant column, we
+        can combine them using ``merge_similar_names``:
+
+        .. code-block:: python
+
+            vdf.merge_similar_names(skip_word = "_")
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.merge_similar_names(skip_word = "_")
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
         """
         columns = self.get_columns()
         skip_word = format_type(skip_word, dtype=list)
@@ -148,6 +255,57 @@ class vDFPivot(vDFJoinUnionSort):
         -------
         vDataFrame
             the narrow table object.
+
+        Examples
+        --------
+
+        For this example, let's generate a dataset
+        which has multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "id": [12, 11, 13],
+                    "state": [12, 11, 13],
+                    "size":[100, 120, 140],
+                    "score": [9, 9.5, 4],
+                    "extra_info": ['Grey', 'Black', 'White']
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow_1.html
+
+        In focus only the quantitites of interest
+        we can use ``narrow``:
+
+        .. code-block:: python
+
+            vdf.narrow("id", col_name = "state", val_name = "score")
+
+        .. ipython:: python
+            :suppress:
+
+
+            result = vdf.narrow("id", col_name = "state", val_name = "score")
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
         """
         index, columns = format_type(index, columns, dtype=list, na_out=self.numcol())
         index, columns = self.format_colnames(index, columns)
@@ -213,6 +371,63 @@ class vDFPivot(vDFJoinUnionSort):
         -------
         vDataFrame
             the pivot table object.
+
+        Examples
+        --------
+
+        For this example, let's generate a dummy dataset
+        representing sales of two items for different dates:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "date": ["2014-01-01", "2014-01-02", "2014-01-01", "2014-01-02"],
+                    "cat": ["A", "A", "B", "B"],
+                    "sale": [100, 120, 120, 110],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot_1.html
+
+        To better view the data, we can create a pivot table:
+
+        .. code-block:: python
+
+            vdf.pivot(
+                index = "date",
+                columns = "cat",
+                values = "sale",
+                aggr = "avg",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.pivot(
+                index = "date",
+                columns = "cat",
+                values = "sale",
+                aggr = "avg",
+            )
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot.html
+
+        .. seealso::
+            | :py:meth:`verticapy.vDataFrame.narrow` : Narrow Table for a ``vDataFrame``.
         """
         if isinstance(prefix, NoneType):
             prefix = ""
@@ -310,12 +525,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = data.explode_array(index = "id", column = "values")
-            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html", "w")
+            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_explode_array_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html
+            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_explode_array_table.html
 
         .. note::
 
@@ -326,7 +541,7 @@ class vDFPivot(vDFJoinUnionSort):
             must specify `delimiter` as `False`).
 
         .. seealso::
-            | :py:meth:`verticapy.vDataColumn.pivot` : pivot vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.pivot` : pivot vDataFrame.
         """
 
         # Type check
