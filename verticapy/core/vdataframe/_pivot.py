@@ -99,12 +99,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap_1.html
 
         .. note::
 
@@ -122,19 +122,31 @@ class vDFPivot(vDFJoinUnionSort):
         .. ipython:: python
             :suppress:
 
+            vdf["team"].astype('vmap')
             result = vdf
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_flat_vmap.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap.html
 
         Now we can flatten the vmap:
 
         .. code-block::
 
-            vdf.flatten_vmap()
+            vdf.flat_vmap()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.flat_vmap()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_flat_vmap_2.html
 
         .. note::
 
@@ -232,12 +244,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_merge_similar_names_1.html
 
         In order to remove the redundant column, we
         can combine them using ``merge_similar_names``:
@@ -250,12 +262,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf.merge_similar_names(skip_word = "user.")
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_merge_similar_names.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_merge_similar_names.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_merge_similar_names.html
 
         .. note::
 
@@ -341,12 +353,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow_1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_narrow_1.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow_1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_narrow_1.html
 
         To focus only on the quantities of interest, we can
         utilize the ``narrow`` function:
@@ -359,12 +371,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf.narrow("id", col_name = "state", val_name = "score")
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_narrow.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_narrow.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_narrow.html
 
         .. note::
 
@@ -485,12 +497,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = vdf
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot_1.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_pivot_1.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot_1.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_pivot_1.html
 
         To better view the data, we can create a
         pivot table:
@@ -513,12 +525,12 @@ class vDFPivot(vDFJoinUnionSort):
                 values = "sale",
                 aggr = "avg",
             )
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_pivot.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_pivot.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_pivot.html
 
         .. note::
 
@@ -641,12 +653,12 @@ class vDFPivot(vDFJoinUnionSort):
             :suppress:
 
             result = data.explode_array(index = "id", column = "values")
-            html_file = open("/project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_explode_array_table.html", "w")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
 
         .. raw:: html
-            :file: /project/data/VerticaPy/docs/figures/core_vDataFrame_vDFPivot_explode_array_table.html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_vDFPivot_explode_array_table.html
 
         .. note::
 
