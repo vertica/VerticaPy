@@ -365,6 +365,11 @@ class vDFJoinUnionSort(vDFMath):
         - RIGHT JOIN
         - FULL JOIN
 
+        After that we will also have a look at:
+
+        - Other operators
+        - Jaro-Winkler
+        
         INNER JOIN
         ^^^^^^^^^^^
 
@@ -551,6 +556,88 @@ class vDFJoinUnionSort(vDFMath):
 
             VerticaPy provides an array of join options and diverse
             operators, delivering an exceptional user experience.
+
+        JARO-WINKLER
+        ^^^^^^^^^^^^
+
+        VerticaPy also allows you to JOIN tables using the
+        Jaro-Winkler method. It is a string similarity metric
+        used to compare the similarity between two strings.
+        This method can be particularly useful in scenarios
+        where slight spelling mistakes are expected between
+        keys of different tables.
+
+        Let us create two tables for this example:
+
+        .. ipython:: python
+
+            users_data = vp.vDataFrame(
+                {
+                    "user_id": [1, 2, 3],
+                    "email": ['alice@email.com', 'bob@email.com', 'charlie@email.com'],
+                    "username": ['Ali', 'Bob', 'Charlie'],
+                    "age": [25, 30, 22],
+                },
+            )
+
+            orders_data = vp.vDataFrame(
+                {
+                    "order_id": [101, 102, 103],
+                    "email": ['Alice@email.com', 'bob@email.com', 'charlee@email.com'],
+                    "product_name": ['Laptop', 'Headphones', 'Smartphone'],
+                    "quantity": [2, 1, 3],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = users_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_1.html
+
+        .. ipython:: python
+            :suppress:
+
+            result = orders_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2.html
+
+        Notice that some emails are not correctly spelled,
+        so we can use the ``jarow`` option to JOIN them:
+
+        .. ipython:: python
+
+            result = users_data.join(
+                input_relation = orders_data,
+                on = [("email", "email", "jarow", ">=", 0.9)],
+                how = "inner",
+                expr1 = [
+                    "user_id AS ID",
+                    "username AS Name",
+                    "email",
+                ],
+                expr2 = ["product_name AS Item", "quantity AS Qty"]
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = orders_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2_result.html
 
         .. seealso::
 
