@@ -174,8 +174,9 @@ class vDFRead(vDFUtils):
 
     def idisplay(self) -> None:
         """
-        This  method  displays  the interactive  table. It is used  when
-        you don't want to activate interactive tables for all vDataFrames.
+        This  method  displays  the interactive  table.
+        It is used  when you don't want to activate
+        interactive tables for all ``vDataFrames``.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -186,13 +187,72 @@ class vDFRead(vDFUtils):
         Parameters
         ----------
         exclude_columns: SQLColumns, optional
-            List of the vDataColumns names to exclude from
-            the final list.
+            List of the vDataColumns names to
+            exclude from the final list.
 
         Returns
         -------
         List
             List of all vDataFrame columns.
+
+        Examples
+        ---------
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [1, 2, 3],
+                    "col3": [1, 2, 3],
+                    "col4": [1, 2, 3],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_get_columns_data.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_get_columns_data.html
+
+        We can get the column names by:
+
+        .. ipython:: python
+
+            vdf.get_columns()
+
+        Some columns could also be directly excluded:
+
+        .. ipython:: python
+
+            vdf.get_columns(exclude_columns = "col1")
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataColumn.tail` : Get tail of the ``vDataFrame``.
         """
         exclude_columns = format_type(exclude_columns, dtype=list)
         exclude_columns_ = [
@@ -218,6 +278,52 @@ class vDFRead(vDFUtils):
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to see only the starting rows,
+        we can use the ``head`` function:
+
+        .. code-block::
+
+            data.head()
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.head()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_head.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_head.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataColumn.head` : Get head of the ``vDataColumn``.
+            | :py:meth:`verticapy.vDataFrame.tail` : Get tail of the ``vDataFrame``.
         """
         return self.iloc(limit=limit, offset=0)
 
@@ -225,8 +331,8 @@ class vDFRead(vDFUtils):
         self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
     ) -> TableSample:
         """
-        Returns a part of the vDataFrame (delimited by an offset
-        and a limit).
+        Returns a part of the ``vDataFrame`` (delimited
+        by an ``offset`` and a ``limit``).
 
         Parameters
         ----------
@@ -235,14 +341,68 @@ class vDFRead(vDFUtils):
         offset: int, optional
             Number of elements to skip.
         columns: SQLColumns, optional
-            A list containing the names of the vDataColumns to
-            include in the result.  If empty, all vDataColumns
+            A list containing the names of the
+            ``vDataColumns`` to include in the
+            result.  If empty, all ``vDataColumns``
             are selected.
 
         Returns
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to get the custom rows we can
+        use the ``iloc`` function. In order to get
+        3 rows starting from the 10th row, we can
+        use the following:
+
+        .. code-block::
+
+            data.iloc(3, 9)
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.iloc(3, 9)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html
+
+        .. note::
+
+            This function appends a OFFSET and a LIMIT
+            statements at the end of the query generated
+            by VerticaPy.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
         """
         columns = format_type(columns, dtype=list, na_out=self.get_columns())
         columns = self.format_colnames(columns)
@@ -291,12 +451,78 @@ class vDFRead(vDFUtils):
 
     def shape(self) -> tuple[int, int]:
         """
-        Returns the number of rows and columns of the vDataFrame.
+        Returns the number of rows and columns of the
+        ``vDataFrame``.
 
         Returns
         -------
         tuple
             (number of lines, number of columns)
+
+        Examples
+        ---------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3],
+                    "col2": [1, 2, 3],
+                    "col3": [1, 2, 3],
+                    "col4": [1, 2, 3],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_shape.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_shape.html
+
+        We can get the shape of the ``vDataFrame`` by:
+
+        .. ipython:: python
+
+            vdf.shape()
+
+        .. note::
+
+            This function differs from the ``pandas`` ``shape``
+            attribute since the size can be dynamically adjusted
+            based on live modifications to the relation, such as
+            the ingestion of new data or alterations to the
+            relation.
+
+            If you want to ensure the stability of the relation,
+            you can create a temporary local table or a table in
+            a schema where only you have privileges.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.iloc` : Select rows from the ``vDataFrame``.
         """
         m = len(self.get_columns())
         pre_comp = self._get_catalog_value("VERTICAPY_COUNT")
@@ -317,7 +543,7 @@ class vDFRead(vDFUtils):
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the vDataFrame.
+        Returns the tail of the ``vDataFrame``.
 
         Parameters
         ----------
@@ -328,25 +554,132 @@ class vDFRead(vDFUtils):
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to see only the last columns,
+        we can use the ``tail`` function:
+
+        .. code-block::
+
+            data.tail()
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.tail()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_tail.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_tail.html
+
+        .. note::
+
+            This function appends a OFFSET statement at
+            the end of the query generated by VerticaPy.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataColumn.tail` : Get tail of the ``vDataColumn``.
         """
         return self.iloc(limit=limit, offset=-1)
 
     @save_verticapy_logs
     def select(self, columns: SQLColumns) -> "vDataFrame":
         """
-        Returns a copy of the vDataFrame with only the selected
-        vDataColumns.
+        Returns a copy of the ``vDataFrame`` with only
+        the selected ``vDataColumns``.
 
         Parameters
         ----------
         columns: SQLColumns
-            List of the vDataColumns to  select. You can also
-            provide customized expressions.
+            List of the ``vDataColumns`` to  select. You
+            can also provide customized expressions.
 
         Returns
         -------
         vDataFrame
             object with only the selected columns.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to get the custom rows we can
+        use the ``iloc`` function. In order to get
+        3 rows starting from the 10th row, we can
+        use the following:
+
+        .. code-block::
+
+            data.select(["pclass", "age"])
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.select(["pclass", "age"])
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_select.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_select.html
+
+        .. note::
+
+            The same can be achieved by using square
+            brackets directly.
+
+            .. code-block::
+
+                data[["pclass", "age"]]
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.iloc` : Get custom rows from a ``vDataFrame``.
         """
         columns = format_type(columns, dtype=list)
         for i in range(len(columns)):
@@ -499,7 +832,7 @@ class vDCRead:
 
     def head(self, limit: int = 5) -> TableSample:
         """
-        Returns the head of the vDataColumn.
+        Returns the head of the ``vDataColumn``.
 
         Parameters
         ----------
@@ -510,13 +843,69 @@ class vDCRead:
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to see only the starting columns,
+        we can use the ``head`` function:
+
+        .. code-block::
+
+            data["age"].head()
+
+        .. ipython:: python
+            :suppress:
+
+            result = data["age"].head()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_head.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_head.html
+
+        .. note::
+
+            This function appends a LIMIT statement at
+            the end of the query generated by VerticaPy.
+
+        .. note::
+
+            This function appends a LIMIT statement at
+            the end of the query generated by VerticaPy.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataColumn.tail` : Get tail of the ``vDataColumn``.
         """
         return self.iloc(limit=limit)
 
     def iloc(self, limit: int = 5, offset: int = 0) -> TableSample:
         """
-        Returns a part of the vDataColumn (delimited by an offset
-        and a limit).
+        Returns a part of the ``vDataColumn`` (delimited
+        by an ``offset`` and a ``limit``).
 
         Parameters
         ----------
@@ -529,6 +918,60 @@ class vDCRead:
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to get the custom rows we can
+        use the ``iloc`` function. In order to get
+        3 rows starting from the 10th row, we can
+        use the following:
+
+        .. code-block::
+
+            data["age"].iloc(3, 9)
+
+        .. ipython:: python
+            :suppress:
+
+            result = data["age"].iloc(3, 9)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html
+
+        .. note::
+
+            This function appends a OFFSET and a LIMIT
+            statements at the end of the query generated
+            by VerticaPy.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataFrame.iloc` : Select rows from the ``vDataFrame``.
         """
         if offset < 0:
             offset = max(0, self._parent.shape()[0] - limit)
@@ -554,7 +997,8 @@ class vDCRead:
     @save_verticapy_logs
     def nlargest(self, n: int = 10) -> TableSample:
         """
-        Returns the n largest vDataColumn elements.
+        Returns the ``n`` largest ``vDataColumn``
+        elements.
 
         Parameters
         ----------
@@ -565,6 +1009,59 @@ class vDCRead:
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to get 5 rows with the highest/largest
+        value  arranged in descending order, we can use
+        the ``nlargest`` function:
+
+        .. code-block::
+
+            data["age"].nlargest(n = 5)
+
+        .. ipython:: python
+            :suppress:
+
+            result = data["age"].nlargest(n = 5)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_nlargest.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_nlargest.html
+
+        .. note::
+
+            This function can be employed to explore the dataset,
+            and the output is a ``TableSample``—an in-memory
+            object containing the result.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataFrame.nsmallest` : Select the smallest values of a column from the ``vDataFrame``.
         """
         query = f"""
             SELECT 
@@ -583,7 +1080,8 @@ class vDCRead:
     @save_verticapy_logs
     def nsmallest(self, n: int = 10) -> TableSample:
         """
-        Returns the n smallest elements in the vDataColumn.
+        Returns the ``n`` smallest elements in the
+        ``vDataColumn``.
 
         Parameters
         ----------
@@ -594,6 +1092,59 @@ class vDCRead:
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to get 5 rows with the lowest/smallest
+        value  arranged in ascending order, we can use
+        the ``nsmallest`` function:
+
+        .. code-block::
+
+            data["age"].nsmallest(n = 5)
+
+        .. ipython:: python
+            :suppress:
+
+            result = data["age"].nsmallest(n = 5)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_nsmallest.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_nsmallest.html
+
+        .. note::
+
+            This function can be employed to explore the dataset,
+            and the output is a ``TableSample``—an in-memory
+            object containing the result.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataFrame.nlargest` : Select the largest values of a column from the ``vDataFrame``.
         """
         return TableSample.read_sql(
             f"""
@@ -609,7 +1160,7 @@ class vDCRead:
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the vDataColumn.
+        Returns the tail of the ``vDataColumn``.
 
         Parameters
         ----------
@@ -620,5 +1171,56 @@ class vDCRead:
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        In order to see only the starting rows,
+        we can use the ``tail`` function:
+
+        .. code-block::
+
+            data["age"].tail()
+
+        .. ipython:: python
+            :suppress:
+
+            result = data["age"].tail()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_tail.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_tail.html
+
+        .. note::
+
+            This function appends a OFFSET statement at
+            the end of the query generated by VerticaPy.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
+            | :py:meth:`verticapy.vDataFrame.tail` : Get tail of the ``vDataFrame``.
         """
         return self.iloc(limit=limit, offset=-1)
