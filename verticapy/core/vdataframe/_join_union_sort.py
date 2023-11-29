@@ -197,26 +197,29 @@ class vDFJoinUnionSort(vDFMath):
         expr2: Optional[SQLExpression] = None,
     ) -> "vDataFrame":
         """
-        Joins the vDataFrame with another one or an input relation.
+        Joins the ``vDataFrame`` with another one or an
+        input relation.
 
         .. warning::
 
             Joins  can  make  the  vDataFrame  structure
             heavier.  It is recommended that you check
             the    current     structure    using    the
-            'current_relation'  method  and  save  it
-            with the 'to_db' method, using the parameters
-            'inplace = True' and 'relation_type = table'.
+            ``current_relation``  method  and  save  it
+            with the ``to_db`` method, using the parameters
+            ``inplace = True`` and ``relation_type = table``.
 
         Parameters
         ----------
         input_relation: SQLRelation
             Relation to join with.
-        on: tuple / dict / list, optional
+        on: tuple | dict | list, optional
             If using a list:
-            List of 3-tuples. Each tuple must include (key1, key2, operator)
-            —where key1 is the key of the vDataFrame, key2 is the key of the
-            input relation, and operator is one of the following:
+            List of 3-tuples. Each tuple must include
+            (key1, key2, operator) — where ``key1`` is
+            the key of the ``vDataFrame``, ``key2`` is
+            the key of the ``input_relation``, and
+            ``operator`` is one of the following:
 
             - '=':
                 exact match
@@ -237,33 +240,40 @@ class vDFJoinUnionSort(vDFMath):
             - 'rinterpolate':
                 key2 INTERPOLATE key1
 
-            Some operators need 5-tuples: (key1, key2, operator, operator2, x)
-            where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a
-            float or an integer, and operator is one of the following:
+            Some operators need 5-tuples:
+            ``(key1, key2, operator, operator2, x)``
+            where  ``operator2`` is  a simple operator
+            ``(=, >, <, <=, >=)``, x is a ``float`` or
+            an ``integer``, and ``operator`` is one of the
+            following:
 
             - 'jaro':
-                JARO(key1, key2) operator2 x
+                ``JARO(key1, key2) operator2 x``
             - 'jarow':
-                JARO_WINCKLER(key1, key2) operator2 x
+                ``JARO_WINCKLER(key1, key2) operator2 x``
             - 'lev':
-                LEVENSHTEIN(key1, key2) operator2 x
+                ``LEVENSHTEIN(key1, key2) operator2 x``
 
             If using a dictionary:
-            This parameter must include all the different keys. It must be
-            similar to the following:
+            This parameter must include all the different
+            keys. It must be similar to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where relationA is the current vDataFrame and relationB is the
-            input relation or the input vDataFrame.
+            where ``relationA`` is the current ``vDataFrame``
+            and ``relationB`` is the ``input_relation`` or
+            the input ``vDataFrame``.
 
         on_interpolate: dict, optional
-            Dictionary of all unique keys. This is used to join two event
-            series together using some ordered attribute. Event series
-            joins let you compare values from two series directly, rather
-            than having to normalize the series  to the same measurement
-            interval. The dict must be similar to the following:
+            Dictionary of all unique keys. This is used
+            to join two event series together using some
+            ordered attribute. Event series joins let you
+            compare values from two series directly, rather
+            than having to normalize the series to the same
+            measurement interval. The dict must be similar
+            to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where relationA is the  current vDataFrame and relationB is the
-            input relation or the input vDataFrame.
+            where ``relationA`` is the current ``vDataFrame``
+            and ``relationB`` is the ``input_relation`` or the
+            input ``vDataFrame``.
 
         how: str, optional
             Join Type.
@@ -282,15 +292,17 @@ class vDFJoinUnionSort(vDFMath):
                 Inner Join.
 
         expr1: SQLExpression, optional
-            List  of the different columns in pure  SQL to select  from the
-            current   vDataFrame,   optionally  as  aliases.   Aliases  are
-            recommended to avoid  ambiguous names. For example: 'column' or
-            'column AS my_new_alias'.
+            List of the different columns in pure SQL
+            to select from the current ``vDataFrame``,
+            optionally as aliases. Aliases are recommended
+            to avoid ambiguous names. For example: ``column``
+            or ``column AS my_new_alias``.
         expr2: SQLExpression, optional
-            List  of the different  columns in pure SQL to select from  the
-            input  relation optionally as aliases. Aliases are  recommended
-            to avoid  ambiguous names.  For example: ``column`` or ``column AS
-            my_new_alias``.
+            List of the different columns in pure SQL
+            to select from the current ``vDataFrame``,
+            optionally as aliases. Aliases are recommended
+            to avoid ambiguous names. For example: ``column``
+            or ``column AS my_new_alias``.
 
         Returns
         -------
@@ -367,8 +379,8 @@ class vDFJoinUnionSort(vDFMath):
 
         After that we will also have a look at:
 
-        - Other operators
-        - Jaro-Winkler
+        - Other operators.
+        - Special operators like Jaro-Winkler.
 
         INNER JOIN
         ^^^^^^^^^^^
@@ -413,7 +425,8 @@ class vDFJoinUnionSort(vDFMath):
         result, and matching rows from the ``input_relation``
         are included if they exist. If there is no match,
         the columns from the input relation will contain
-        ``NULL`` values for the corresponding rows in the result.
+        ``NULL`` values for the corresponding rows in the
+        result.
 
         .. ipython:: python
 
@@ -528,7 +541,7 @@ class vDFJoinUnionSort(vDFMath):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table_3.html
 
         Notice the names are a bit different than the "department_name"
-        column in the previosu ``department_data`` table. In such cases
+        column in the previous ``department_data`` table. In such cases
         we can utilize the ``llike`` operator:
 
         .. ipython:: python
@@ -625,7 +638,7 @@ class vDFJoinUnionSort(vDFMath):
                     "username AS Name",
                     "email",
                 ],
-                expr2 = ["product_name AS Item", "quantity AS Qty"]
+                expr2 = ["product_name AS Item", "quantity AS Qty"],
             )
 
         .. ipython:: python
