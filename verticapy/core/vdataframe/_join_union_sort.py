@@ -369,7 +369,7 @@ class vDFJoinUnionSort(vDFMath):
 
         - Other operators
         - Jaro-Winkler
-        
+
         INNER JOIN
         ^^^^^^^^^^^
 
