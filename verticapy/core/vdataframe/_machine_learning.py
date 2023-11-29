@@ -62,6 +62,69 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             the output vDataFrame.
+
+        Examples
+        ---------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "cats": ["A", "B", "C"],
+                    "reps": [2, 4, 8]
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_add_duplicates.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_add_duplicates.html
+
+        We can add duplicates by the weight column:
+
+        .. code-block:: python
+
+            vdf.add_duplicates("reps")
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.add_duplicates("reps")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_add_duplicates_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_add_duplicates_result.html
+
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the complete disjunctive table of the vDataFrame.
         """
         if isinstance(weight, str):
             weight = self.format_colnames(weight)
@@ -113,9 +176,11 @@ class vDFMachineLearning(vDFScaler):
         the 'discretize' method. Applying PCA on TCDT leads to MCA
         (Multiple correspondence analysis).
 
-        \u26A0 Warning : This method can become computationally
-                         expensive  when used with  categorical
-                         variables with many categories.
+        .. warning:: 
+        
+            This method can become computationally
+            expensive  when used with  categorical
+            variables with many categories.
 
         Parameters
         ----------
@@ -138,6 +203,68 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             the CDT relation.
+
+        Examples
+        ---------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "cats": ["A", "B", "C", "A", "B", "C"],
+                    "vals": [2, 4, 8, 1, 4, 2]
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt.html
+
+        We can create the complete disjunctive table of the vDataFrame:
+
+        .. code-block:: python
+
+            vdf.cdt(tcdt = False)
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.cdt(tcdt = False)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt_result.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the complete disjunctive table of the vDataFrame.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) > 0:
@@ -202,10 +329,14 @@ class vDFMachineLearning(vDFScaler):
         method: str, optional
             The  method  with which to discretize the  numerical
             vDataColumns, one of the following:
-                same_width : Computes  bins of regular  width.
-                smart      : Uses a  random forest model on a
-                             response column to find the best
-                             interval for discretization.
+
+            - same_width:
+                Computes  bins of regular  width.
+            - smart:
+                Uses a  random forest model on a
+                response column to find the best
+                interval for discretization.
+
         RFmodel_params: dict, optional
             Dictionary  of the  parameters of the random  forest
             model used to compute  the best splits  when 'method'
@@ -221,6 +352,53 @@ class vDFMachineLearning(vDFScaler):
         -------
         NonBinaryTree
             An independent model containing the result.
+
+        Examples
+        ---------
+
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can conveniently get the CHAID tree:
+
+        .. code-block::
+
+            tree = data.chaid(
+                response = "survived",
+                columns = ["sex", "pclass"]
+            )
+            tree.plot_tree()
+
+        .. ipython:: python
+            :suppress:
+
+            tree = data.chaid(
+                response = "survived",
+                columns = ["sex", "pclass"]
+            )
+            res = tree.plot_tree()
+            res.render(filename='figures/core_vDataFrame_ml_chaid_tree', format='png')
+
+        .. image:: /../figures/core_vDataFrame_ml_chaid_tree.png
+
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         if "process" not in kwargs or kwargs["process"]:
@@ -377,6 +555,37 @@ class vDFMachineLearning(vDFScaler):
         -------
         list
             columns picked by the CHAID algorithm.
+
+        Examples
+        ---------
+        
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can conveniently get the CHAID columns:
+
+        .. ipython:: python
+
+            data.chaid_columns()
+
         """
         columns = format_type(columns, dtype=list)
         columns_tmp = columns.copy()
@@ -443,6 +652,65 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             self
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` that has some outliers:
+
+        .. ipython:: python
+
+            import numpy as np
+
+            data = np.random.normal(loc=0, scale=1, size=10)
+            data = np.append(data, [100])
+            vdf = vp.vDataFrame({"vals": data})
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers.html
+
+        Now we can see which values are outliers by
+        using the ``outliers`` function:
+
+        .. code-block:: python
+
+            vdf.outliers()
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.outliers()
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers_2.html  
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.outliers_plot` : Plots the outliers.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns) if (columns) else self.numcol()
@@ -499,10 +767,14 @@ class vDFMachineLearning(vDFScaler):
         method: str, optional
             The  method  with which to discretize the  numerical
             vDataColumns, one of the following:
-                same_width : Computes  bins of regular  width.
-                smart      : Uses a  random forest model on a
-                             response column to find the best
-                             interval for discretization.
+
+            - same_width:
+                Computes  bins of regular  width.
+            - smart:
+                Uses a  random forest model on a
+                response column to find the best
+                interval for discretization.
+
         RFmodel_params: dict, optional
             Dictionary  of the  parameters of the random  forest
             model used to compute  the best splits  when 'method'
@@ -512,12 +784,59 @@ class vDFMachineLearning(vDFScaler):
             function trains a random forest classifier.
             For example,  to train a random forest with 20 trees
             and a maximum depth of 10, use:
-                {"n_estimators": 20, "max_depth": 10}
+            ``{"n_estimators": 20, "max_depth": 10}``
 
         Returns
         -------
         TableSample
             result.
+
+        Examples
+        ---------
+        
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        We can conveniently get the chi-squared term
+        using the pivot table:
+
+        .. code-block:: python
+
+            data.pivot_table_chi2(response = "survived")
+
+        .. ipython:: python
+            :suppress:
+
+            result = data.pivot_table_chi2(response = "survived")
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_pivot_table_chi2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_pivot_table_chi2.html  
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the 
+                complete disjunctive table of the vDataFrame.
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         columns = format_type(columns, dtype=list)
@@ -603,6 +922,71 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             the Polynomial object.
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "col1": [1, 2, 3], 
+                    "col2": [1, 2, 3], 
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb.html
+
+        We can create a new ``vDataFrame`` that has a
+        combination of the original columns using the
+        ``polynomial_comb`` function:
+
+        .. ipython:: python
+
+            new_vdf = vdf.polynomial_comb(r = 2)
+
+        .. ipython:: python
+            :suppress:
+
+            result = new_vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb_2.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.add_duplicates` : Add duplicates of values
+                based on weights.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -643,27 +1027,34 @@ class vDFMachineLearning(vDFScaler):
             pairs.
         method: str, optional
             Method used to recommend.
-                count  : Each item will be recommended based on
-                         frequencies of the  different pairs of
-                         items.
-                avg    : Each item will be recommended based on
-                         the  average rating of  the  different
-                         item  pairs  with  a differing  second
-                         element.
-                median : Each item will be recommended based on
-                         the  median  rating of  the  different
-                         item  pairs  with a  differing  second
-                         element.
+
+            - count:
+                Each item will be recommended based on
+                frequencies of the  different pairs of
+                items.
+            - avg:
+                Each item will be recommended based on
+                the  average rating of  the  different
+                item  pairs  with  a differing  second
+                element.
+            - median:
+                Each item will be recommended based on
+                the  median  rating of  the  different
+                item  pairs  with a  differing  second
+                element.
+
         rating: str / tuple, optional
             Input vDataColumn including the items rating.
             If the 'rating' type is 'tuple', it must be composed
             of 3 elements:
-                (r_vdf, r_item_id, r_name) where:
-                     - r_vdf is an input vDataFrame.
-                     - r_item_id is an  input vDataColumn which
-                       must includes the same id as 'item_id'.
-                     - r_name is an input vDataColumn including
-                       the items rating.
+
+            (r_vdf, r_item_id, r_name) where:
+            - r_vdf is an input vDataFrame.
+            - r_item_id is an  input vDataColumn which
+                must includes the same id as 'item_id'.
+            - r_name is an input vDataColumn including
+                the items rating.
+
         ts: str, optional
             TS (Time Series)  vDataColumn used to order the data.
             The vDataColumn type must be date (date, datetime,
@@ -758,62 +1149,304 @@ class vDFMachineLearning(vDFScaler):
             Prediction.
         metric: str
             The metric used to compute the score.
-                --- For Classification ---
-                accuracy    : Accuracy
-                auc         : Area Under the Curve
-                              (ROC)
-                ba          : Balanced Accuracy
-                              = (tpr + tnr) / 2
-                best_cutoff : Cutoff  which  optimised
-                              the ROC Curve prediction.
-                bm          : Informedness
-                              = tpr + tnr - 1
-                csi         : Critical  Success  Index
-                              = tp / (tp + fn + fp)
-                f1          : F1 Score
-                fdr         : False Discovery Rate = 1 - ppv
-                fm          : Fowlkes–Mallows index
-                              = sqrt(ppv * tpr)
-                fnr         : False Negative Rate
-                              = fn / (fn + tp)
-                for         : False Omission Rate = 1 - npv
-                fpr         : False Positive Rate
-                              = fp / (fp + tn)
-                logloss     : Log Loss
-                lr+         : Positive Likelihood Ratio
-                              = tpr / fpr
-                lr-         : Negative Likelihood Ratio
-                              = fnr / tnr
-                dor         : Diagnostic Odds Ratio
-                mcc         : Matthews Correlation
-                              Coefficient
-                mk          : Markedness
-                              = ppv + npv - 1
-                npv         : Negative Predictive Value
-                              = tn / (tn + fn)
-                prc_auc     : Area Under the Curve
-                              (PRC)
-                precision   : Precision
-                              = tp / (tp + fp)
-                pt          : Prevalence Threshold
-                              = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
-                recall      : Recall
-                              = tp / (tp + fn)
-                specificity : Specificity
-                              = tn / (tn + fp)
-                --- For Regression ---
-                max    : Max Error
-                mae    : Mean Absolute Error
-                median : Median Absolute Error
-                mse    : Mean Squared Error
-                msle   : Mean Squared Log Error
-                r2     : R squared coefficient
-                var    : Explained Variance
+
+            **For Classification**
+
+            - accuracy:
+                Accuracy
+            - auc:
+                Area Under the Curve (ROC)
+            - ba:
+                Balanced Accuracy
+                
+                .. math::
+
+                    (tpr + tnr) / 2
+
+            - best_cutoff:
+                Cutoff  which  optimised
+                the ROC Curve prediction.
+            - bm:
+                Informedness
+                
+                .. math::
+
+                    tpr + tnr - 1
+
+            - csi:
+                Critical  Success  Index
+                
+                .. math::
+                    
+                    tp / (tp + fn + fp)
+
+            - f1:
+                F1 Score
+            - fdr:
+                False Discovery Rate
+                
+                .. math::
+                    
+                    1 - ppv
+
+            - fm:
+                Fowlkes–Mallows index
+                .. math::
+                
+                    sqrt(ppv * tpr)
+
+            - fnr:
+                False Negative Rate
+                .. math::
+                
+                    fn / (fn + tp)
+
+            - for:
+                False Omission Rate
+                
+                .. math::
+                    
+                    1 - npv
+
+            - fpr:
+                False Positive Rate
+
+                .. math::
+
+                    fp / (fp + tn)
+
+            - logloss:
+                Log Loss
+            - lr+:
+                Positive Likelihood Ratio
+                
+                .. math::
+                
+                    tpr / fpr
+
+            - lr-:
+                Negative Likelihood Ratio
+                
+                .. math::
+                    
+                    fnr / tnr
+
+            - dor:
+                Diagnostic Odds Ratio
+            - mcc:
+                Matthews Correlation Coefficient
+            - mk:
+                Markedness
+
+                .. math::
+                
+                    ppv + npv - 1
+
+            - npv:
+                Negative Predictive Value
+
+                .. math::
+                
+                    tn / (tn + fn)
+
+            - prc_auc:
+                Area Under the Curve (PRC)
+            - precision:
+                Precision
+
+                .. math::
+                
+                    tp / (tp + fp)
+
+            - pt:
+                Prevalence Threshold
+
+                .. math::
+                
+                    sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+
+            - recall:
+                Recall
+                
+                .. math::
+                    tp / (tp + fn)
+
+            - specificity:
+                Specificity
+                
+                .. math::
+                
+                    tn / (tn + fp)
+
+            **For Regression**
+
+            - max: Max Error
+            - mae: Mean Absolute Error
+            - median: Median Absolute Error
+            - mse: Mean Squared Error
+            - msle: Mean Squared Log Error
+            - r2: R squared coefficient
+            - var: Explained Variance
 
         Returns
         -------
         float
             score.
+
+        Examples
+        ---------
+
+        Let us build a quick ML model and access the score
+        of its predictions.
+
+        Load data for machine learning
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        For this example, we will use the winequality dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_winequality()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_winequality.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        You can easily divide your dataset into training and testing subsets
+        using the :py:meth:`vDataFrame.train_test_split` method.
+
+        .. code-block:: python
+
+            data = vpd.load_winequality()
+            train, test = data.train_test_split(test_size = 0.2)
+
+        .. ipython:: python
+            :suppress:
+
+                import verticapy as vp
+                import verticapy.datasets as vpd
+                data = vpd.load_winequality()
+                train, test = data.train_test_split(test_size = 0.2)
+
+        Model Initialization
+        ^^^^^^^^^^^^^^^^^^^^^
+
+        First we import the ``LinearRegression`` model:
+
+        .. code-block::
+
+            from verticapy.machine_learning.vertica import LinearRegression
+
+        Then we can create the model:
+
+        .. code-block::
+
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            from verticapy.machine_learning.vertica import LinearRegression
+            model = LinearRegression(
+                tol = 1e-6,
+                max_iter = 100,
+                solver = 'Newton',
+                fit_intercept = True,
+            )
+
+        Model Training
+        ^^^^^^^^^^^^^^^
+
+        We can now fit the model:
+
+        .. ipython:: python
+
+            model.fit(
+                train,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "quality",
+                test,
+            )
+
+        Prediction
+        ^^^^^^^^^^^
+
+        Prediction is straight-forward:
+
+        .. ipython:: python
+            :suppress:
+
+            result = model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_score_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. code-block:: python
+
+            result = model.predict(
+                test,
+                [
+                    "fixed_acidity",
+                    "volatile_acidity",
+                    "citric_acid",
+                    "residual_sugar",
+                    "chlorides",
+                    "density"
+                ],
+                "prediction",
+            )
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_score_1.html
+
+        Score
+        ^^^^^^
+
+        Finally we can calculate the score:
+
+        .. ipython:: python
+
+            result.score("quality", "prediction", metric = "r2")
+
+        .. seealso::
+
+            | :py:meth:`verticapy.machine_learning.vertica.LinearRegression` : 
+                Linear Regression model.
+
         """
         y_true, y_score = self.format_colnames(y_true, y_score)
         args = [y_true, y_score, self._genSQL()]
