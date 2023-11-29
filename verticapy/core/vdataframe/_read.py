@@ -174,8 +174,9 @@ class vDFRead(vDFUtils):
 
     def idisplay(self) -> None:
         """
-        This  method  displays  the interactive  table. It is used  when
-        you don't want to activate interactive tables for all vDataFrames.
+        This  method  displays  the interactive  table.
+        It is used  when you don't want to activate
+        interactive tables for all ``vDataFrames``.
         """
         return display(HTML(self.copy()._repr_html_(interactive=True)))
 
@@ -186,8 +187,8 @@ class vDFRead(vDFUtils):
         Parameters
         ----------
         exclude_columns: SQLColumns, optional
-            List of the vDataColumns names to exclude from
-            the final list.
+            List of the vDataColumns names to
+            exclude from the final list.
 
         Returns
         -------
@@ -196,7 +197,6 @@ class vDFRead(vDFUtils):
 
         Examples
         ---------
-
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -222,7 +222,7 @@ class vDFRead(vDFUtils):
                     "col1": [1, 2, 3],
                     "col2": [1, 2, 3],
                     "col3": [1, 2, 3],
-                    "col4": [1, 2, 3]
+                    "col4": [1, 2, 3],
                 }
             )
 
@@ -248,7 +248,6 @@ class vDFRead(vDFUtils):
         .. ipython:: python
 
             vdf.get_columns(exclude_columns = "col1")
-
 
         .. seealso::
 
@@ -282,7 +281,6 @@ class vDFRead(vDFUtils):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -333,8 +331,8 @@ class vDFRead(vDFUtils):
         self, limit: int = 5, offset: int = 0, columns: Optional[SQLColumns] = None
     ) -> TableSample:
         """
-        Returns a part of the vDataFrame (delimited by an offset
-        and a limit).
+        Returns a part of the ``vDataFrame`` (delimited
+        by an ``offset`` and a ``limit``).
 
         Parameters
         ----------
@@ -343,8 +341,9 @@ class vDFRead(vDFUtils):
         offset: int, optional
             Number of elements to skip.
         columns: SQLColumns, optional
-            A list containing the names of the vDataColumns to
-            include in the result.  If empty, all vDataColumns
+            A list containing the names of the
+            ``vDataColumns`` to include in the
+            result.  If empty, all ``vDataColumns``
             are selected.
 
         Returns
@@ -354,7 +353,6 @@ class vDFRead(vDFUtils):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -395,6 +393,12 @@ class vDFRead(vDFUtils):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html
+
+        .. note::
+
+            This function appends a OFFSET and a LIMIT
+            statements at the end of the query generated
+            by VerticaPy.
 
         .. seealso::
 
@@ -447,7 +451,8 @@ class vDFRead(vDFUtils):
 
     def shape(self) -> tuple[int, int]:
         """
-        Returns the number of rows and columns of the vDataFrame.
+        Returns the number of rows and columns of the
+        ``vDataFrame``.
 
         Returns
         -------
@@ -482,7 +487,7 @@ class vDFRead(vDFUtils):
                     "col1": [1, 2, 3],
                     "col2": [1, 2, 3],
                     "col3": [1, 2, 3],
-                    "col4": [1, 2, 3]
+                    "col4": [1, 2, 3],
                 }
             )
 
@@ -497,11 +502,23 @@ class vDFRead(vDFUtils):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_shape.html
 
-        We can get the shape of the ``vDataFrame``by:
+        We can get the shape of the ``vDataFrame`` by:
 
         .. ipython:: python
 
             vdf.shape()
+
+        .. note::
+
+            This function differs from the ``pandas`` ``shape``
+            attribute since the size can be dynamically adjusted
+            based on live modifications to the relation, such as
+            the ingestion of new data or alterations to the
+            relation.
+
+            If you want to ensure the stability of the relation,
+            you can create a temporary local table or a table in
+            a schema where only you have privileges.
 
         .. seealso::
 
@@ -526,7 +543,7 @@ class vDFRead(vDFUtils):
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the vDataFrame.
+        Returns the tail of the ``vDataFrame``.
 
         Parameters
         ----------
@@ -540,7 +557,6 @@ class vDFRead(vDFUtils):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -580,6 +596,11 @@ class vDFRead(vDFUtils):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_tail.html
 
+        .. note::
+
+            This function appends a OFFSET statement at
+            the end of the query generated by VerticaPy.
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
@@ -590,14 +611,14 @@ class vDFRead(vDFUtils):
     @save_verticapy_logs
     def select(self, columns: SQLColumns) -> "vDataFrame":
         """
-        Returns a copy of the vDataFrame with only the selected
-        vDataColumns.
+        Returns a copy of the ``vDataFrame`` with only
+        the selected ``vDataColumns``.
 
         Parameters
         ----------
         columns: SQLColumns
-            List of the vDataColumns to  select. You can also
-            provide customized expressions.
+            List of the ``vDataColumns`` to  select. You
+            can also provide customized expressions.
 
         Returns
         -------
@@ -606,7 +627,6 @@ class vDFRead(vDFUtils):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -647,6 +667,15 @@ class vDFRead(vDFUtils):
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_select.html
+
+        .. note::
+
+            The same can be achieved by using square
+            brackets directly.
+
+            .. code-block::
+
+                data[["pclass", "age"]]
 
         .. seealso::
 
@@ -803,7 +832,7 @@ class vDCRead:
 
     def head(self, limit: int = 5) -> TableSample:
         """
-        Returns the head of the vDataColumn.
+        Returns the head of the ``vDataColumn``.
 
         Parameters
         ----------
@@ -817,7 +846,6 @@ class vDCRead:
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -857,6 +885,16 @@ class vDCRead:
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_head.html
 
+        .. note::
+
+            This function appends a LIMIT statement at
+            the end of the query generated by VerticaPy.
+
+        .. note::
+
+            This function appends a LIMIT statement at
+            the end of the query generated by VerticaPy.
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.head` : Get head of the ``vDataFrame``.
@@ -866,8 +904,8 @@ class vDCRead:
 
     def iloc(self, limit: int = 5, offset: int = 0) -> TableSample:
         """
-        Returns a part of the vDataColumn (delimited by an offset
-        and a limit).
+        Returns a part of the ``vDataColumn`` (delimited
+        by an ``offset`` and a ``limit``).
 
         Parameters
         ----------
@@ -883,7 +921,6 @@ class vDCRead:
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -925,6 +962,12 @@ class vDCRead:
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_iloc.html
 
+        .. note::
+
+            This function appends a OFFSET and a LIMIT
+            statements at the end of the query generated
+            by VerticaPy.
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
@@ -954,7 +997,8 @@ class vDCRead:
     @save_verticapy_logs
     def nlargest(self, n: int = 10) -> TableSample:
         """
-        Returns the n largest vDataColumn elements.
+        Returns the ``n`` largest ``vDataColumn``
+        elements.
 
         Parameters
         ----------
@@ -968,7 +1012,6 @@ class vDCRead:
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -1009,6 +1052,12 @@ class vDCRead:
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_nlargest.html
 
+        .. note::
+
+            This function can be employed to explore the dataset,
+            and the output is a ``TableSample``—an in-memory
+            object containing the result.
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
@@ -1031,7 +1080,8 @@ class vDCRead:
     @save_verticapy_logs
     def nsmallest(self, n: int = 10) -> TableSample:
         """
-        Returns the n smallest elements in the vDataColumn.
+        Returns the ``n`` smallest elements in the
+        ``vDataColumn``.
 
         Parameters
         ----------
@@ -1045,7 +1095,6 @@ class vDCRead:
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -1086,6 +1135,12 @@ class vDCRead:
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_nsmallest.html
 
+        .. note::
+
+            This function can be employed to explore the dataset,
+            and the output is a ``TableSample``—an in-memory
+            object containing the result.
+
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.select` : Select columns from the ``vDataFrame``.
@@ -1105,7 +1160,7 @@ class vDCRead:
 
     def tail(self, limit: int = 5) -> TableSample:
         """
-        Returns the tail of the vDataColumn.
+        Returns the tail of the ``vDataColumn``.
 
         Parameters
         ----------
@@ -1119,7 +1174,6 @@ class vDCRead:
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -1158,6 +1212,11 @@ class vDCRead:
 
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_read_vDCRead_tail.html
+
+        .. note::
+
+            This function appends a OFFSET statement at
+            the end of the query generated by VerticaPy.
 
         .. seealso::
 
