@@ -357,9 +357,8 @@ class vDFJoinUnionSort(vDFMath):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table2.html
 
-
-        Let us look at the different type of JOINs available
-        below:
+        Let us look at the different type of JOINs
+        available below:
 
         - INNER JOIN
         - LEFT JOIN
@@ -388,7 +387,7 @@ class vDFJoinUnionSort(vDFMath):
                     "employee_id AS ID",
                     "employee_name AS Name",
                 ],
-                expr2 = ["department_name AS Dep"]
+                expr2 = ["department_name AS Dep"],
             )
 
         .. ipython:: python
@@ -414,11 +413,11 @@ class vDFJoinUnionSort(vDFMath):
         .. ipython:: python
 
             left_join_result = employees_data.join(
-                input_relation=departments_data,
-                on=[("department_id", "department_id", "=")],
-                how="left",
-                expr1=["employee_id AS ID", "employee_name AS Name"],
-                expr2=["department_name AS Dep"]
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "left",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
             )
 
         .. ipython:: python
@@ -446,11 +445,11 @@ class vDFJoinUnionSort(vDFMath):
         .. ipython:: python
 
             right_join_result = employees_data.join(
-                input_relation=departments_data,
-                on=[("department_id", "department_id", "=")],
-                how="right",
-                expr1=["employee_id AS ID", "employee_name AS Name"],
-                expr2=["department_name AS Dep"]
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "right",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
             )
 
         .. ipython:: python
@@ -479,11 +478,11 @@ class vDFJoinUnionSort(vDFMath):
         .. ipython:: python
 
             full_join_result = employees_data.join(
-                input_relation=departments_data,
-                on=[("department_id", "department_id", "=")],
-                how="full",
-                expr1=["employee_id AS ID", "employee_name AS Name"],
-                expr2=["department_name AS Dep"]
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "full",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
             )
 
         .. ipython:: python
@@ -512,7 +511,6 @@ class vDFJoinUnionSort(vDFMath):
                 }
             )
 
-
         .. ipython:: python
             :suppress:
 
@@ -524,7 +522,6 @@ class vDFJoinUnionSort(vDFMath):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table_3.html
 
-
         Notice the names are a bit different than the "department_name"
         column in the previosu ``department_data`` table. In such cases
         we can utilize the ``llike`` operator:
@@ -532,11 +529,11 @@ class vDFJoinUnionSort(vDFMath):
         .. ipython:: python
 
             department_join = departments_data.join(
-                input_relation=additional_departments_data,
-                on=[("department_name", "department", "llike")],
-                how="inner",
-                expr1=["department_id AS ID", "department_name AS Dep"],
-                expr2=["department_size AS Size"]
+                input_relation = additional_departments_data,
+                on = [("department_name", "department", "llike")],
+                how = "inner",
+                expr1 = ["department_id AS ID", "department_name AS Dep"],
+                expr2 = ["department_size AS Size"],
             )
 
         .. ipython:: python
@@ -554,10 +551,6 @@ class vDFJoinUnionSort(vDFMath):
 
             VerticaPy provides an array of join options and diverse
             operators, delivering an exceptional user experience.
-
-
-        LEFT JOIN
-        ^^^^^^^^^^
 
         .. seealso::
 
