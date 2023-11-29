@@ -64,15 +64,34 @@ def coordinate_converter(
 
     Examples
     --------
+    For this example, we will use the Cities dataset.
+
     .. code-block:: python
 
-        from verticapy.sql.geo import coordinate_converter
-        from verticapy.datasets import load_cities
+        import verticapy.datasets as vpd
 
-        cities = load_cities()
+        cities = vpd.load_cities()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Let's extract the latitude and longitude.
+
+    .. code-block:: python
+
         cities["lat"] = "ST_X(geometry)"
         cities["lon"] = "ST_Y(geometry)"
-        cities
+        display(cities)
 
     .. ipython:: python
         :suppress:
@@ -92,11 +111,16 @@ def coordinate_converter(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_1.html
 
+    Let's leverage the coordinate_converter function to
+    calculate Euclidean distances. We'll project the
+    latitude and longitude into x, y coordinates.
+
     .. code-block:: python
 
-        # Converting lon, lat to x, y
+        from verticapy.sql.geo import coordinate_converter
+
         convert_xy = coordinate_converter(cities, "lon", "lat")
-        convert_xy
+        display(convert_xy)
 
     .. ipython:: python
         :suppress:
@@ -109,11 +133,12 @@ def coordinate_converter(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_2.html
 
+    We can effortlessly reverse the operation.
+
     .. code-block:: python
 
-        # Converting x, y to lon, lat
-        convert_reverse_xy = coordinate_converter(convert_xy, "lon", "lat", reverse=True)
-        convert_reverse_xy
+        convert_reverse_xy = coordinate_converter(convert_xy, "lon", "lat", reverse = True)
+        display(convert_reverse_xy)
 
     .. ipython:: python
         :suppress:
@@ -124,6 +149,12 @@ def coordinate_converter(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_coordinate_converter_3.html
+
+    .. note::
+
+        This function can be employed to operate on the Euclidean
+        plane instead of a sphere, significantly improving
+        computation speed.
     """
     x, y = vdf.format_colnames(x, y)
 
@@ -158,21 +189,21 @@ def intersect(
     Parameters
     ----------
     vdf: SQLRelation
-        vDataFrame used to compute the spatial join.
+        ``vDataFrame`` used to compute the spatial join.
     index: str
         Name of the index.
     gid: str
         An  integer  column  or integer that  uniquely
-        identifies the spatial object(s) of g or x and
-        y.
+        identifies the spatial object(s) of ``g`` or
+        ``x`` and ``y``.
     g: str, optional
         A  geometry  or  geography (WGS84) column that
-        contains points. The g column can contain only
-        point geometries or geographies.
+        contains points. The ``g`` column can contain
+        only point geometries or geographies.
     x: str, optional
-        x-coordinate or longitude.
+        ``x``-coordinate or longitude.
     y: str, optional
-        y-coordinate or latitude.
+        ``y``-coordinate or latitude.
 
     Returns
     -------
@@ -181,16 +212,40 @@ def intersect(
 
     Examples
     --------
+    For this example, we will use the Cities and World
+    dataset.
+
     .. code-block:: python
 
-        from verticapy.sql.geo import intersect, create_index
-        from verticapy.datasets import load_world, load_cities
+        import verticapy.datasets as vpd
 
-        world = load_world()
+        cities = vpd.load_cities()
+        world = vpd.load_world()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_world.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Let's preprocess the datasets by extracting latitude
+    and longitude values and creating an index.
+
+    .. code-block:: python
+
         world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
         display(world)
 
-        cities = load_cities()
         cities["id"] = "ROW_NUMBER() OVER (ORDER BY city)"
         cities["lat"] = "ST_X(geometry)"
         cities["lon"] = "ST_Y(geometry)"
@@ -221,9 +276,12 @@ def intersect(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html
 
+    Let's create the geo-index.
+
     .. code-block:: python
 
-        # Creating Index
+        from verticapy.sql.geo import create_index
+
         create_index(world, "id", "geometry", "world_polygons", True)
 
     .. ipython:: python
@@ -236,9 +294,14 @@ def intersect(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
 
+    Let's calculate the intersection between the
+    cities and the various countries by using the
+    GEOMETRY data type.
+
     .. code-block:: python
 
-        # Intersect using Geometry
+        from verticapy.sql.geo import intersect
+
         intersect(cities, "world_polygons", "id", "geometry")
 
     .. ipython:: python
@@ -251,9 +314,11 @@ def intersect(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html
 
+    The same can be done using directly the longitude
+    and latitude.
+
     .. code-block:: python
 
-        # Intersect using Latitude and Longitude
         intersect(cities, "world_polygons", "id", x="lat", y="lon")
 
     .. ipython:: python
@@ -265,6 +330,14 @@ def intersect(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
+
+    .. note::
+
+        For geospatial functions, Vertica utilizes indexing to
+        expedite computations, especially considering the
+        potentially extensive size of polygons.
+        This is a unique optimization approach employed by
+        Vertica in these scenarios.
     """
     x, y, gid, g = vdf.format_colnames(x, y, gid, g)
 
@@ -306,27 +379,44 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         Number of bins used to cut the longitude
         and the latitude.  Split  polygons  have
         approximated  edges, and greater  values
-        for  nbins  leads to more  accurate  and
+        for ``nbins`` leads to more  accurate and
         precise edge approximations.
 
     Returns
     -------
     vDataFrame
-        output  vDataFrame that includes the new
-        polygons.
+        output ``vDataFrame`` that includes the
+        new polygons.
 
     Examples
     --------
+    We import :py:mod:`verticapy`:
+
     .. code-block:: python
 
         import verticapy as vp
-        from verticapy.sql.geo import split_polygon_n
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    Let's use the following polygon.
+
+    .. code-block:: python
 
         p = 'POLYGON ((121.334030916 31.5081948415, 121.334030917 31.5079167872, 121.333748304 31.5081948413, 121.334030916 31.5081948415))'
         poly = vp.vDataFrame({"triangle": [p]})
         poly["triangle"].apply("ST_GeomFromText({})")
-        poly["triangle"].geo_plot(color="white",
-                                  edgecolor="black")
+        poly["triangle"].geo_plot(
+            color="white",
+            edgecolor="black",
+        )
 
     .. ipython:: python
         :suppress:
@@ -341,9 +431,15 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         @savefig sql_geo_functions_split_polygon_n.png
         poly
 
+    Now, let's proceed to split the polygon
+    into multiple parts.
+
     .. code-block:: python
 
+        from verticapy.sql.geo import split_polygon_n
+
         split_p = split_polygon_n(p)
+        display(split_p)
 
     .. ipython:: python
         :suppress:
@@ -356,10 +452,14 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_functions_split_polygon_n.html
 
+    Let's visualize it.
+
     .. code-block:: python
 
-        split_p["geom"].geo_plot(color="white",
-                                 edgecolor="black")
+        split_p["geom"].geo_plot(
+            color="white",
+            edgecolor="black",
+        )
 
     .. ipython:: python
         :suppress:
@@ -367,6 +467,13 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
         split_p["geom"].geo_plot(color="white", edgecolor="black")
         @savefig sql_geo_functions_split_polygon_n_2.png
         split_p
+
+    .. note::
+
+        This function can be employed to partition the space into
+        multiple smaller segments, enabling more precise analysis.
+        It proves particularly useful for use cases such as analyzing
+        density.
     """
     sql = f"""SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 

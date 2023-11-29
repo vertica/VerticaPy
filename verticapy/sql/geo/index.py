@@ -46,7 +46,7 @@ def create_index(
     gid: str
         Name  of  an   integer  column  that  uniquely
         identifies the polygon.
-        The gid cannot be NULL.
+        The gid cannot be ``NULL``.
     g: str
         Name of a geometry or geography (WGS84) column
         or  expression  that   contains  polygons  and
@@ -60,7 +60,7 @@ def create_index(
         overwrite the index, if an index exists.
     max_mem_mb: int, optional
         A positive integer that  assigns a limit to the
-        amount of memory in megabytes that create_index
+        amount of memory in megabytes that ``create_index``
         can allocate during index construction.
     skip_nonindexable_polygons: bool, optional
         In rare cases, intricate polygons (for instance,
@@ -68,7 +68,7 @@ def create_index(
         spikes) cannot be indexed. These polygons are
         considered non-indexable.
         When set to False,  non-indexable polygons cause
-        the  index creation  to fail. When set to  True,
+        the index creation to fail. When set to ``True``,
         index   creation  can   succeed   by   excluding
         non-indexable polygons from the index.
 
@@ -79,46 +79,132 @@ def create_index(
 
     Examples
     --------
+    For this example, we will use the Cities and World
+    dataset.
+
     .. code-block:: python
 
-        from verticapy.sql.geo import create_index
-        from verticapy.datasets import load_world
+        import verticapy.datasets as vpd
 
-        world = load_world()
+        cities = vpd.load_cities()
+        world = vpd.load_world()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_world.html
+
+    .. note::
+
+        VerticaPy offers a wide range of sample datasets that are
+        ideal for training and testing purposes. You can explore
+        the full list of available datasets in the :ref:`api.datasets`,
+        which provides detailed information on each dataset
+        and how to use them effectively. These datasets are invaluable
+        resources for honing your data analysis and machine learning
+        skills within the VerticaPy environment.
+
+    Let's preprocess the datasets by extracting latitude
+    and longitude values and creating an index.
+
+    .. code-block:: python
+
         world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
+        display(world)
+
+        cities["id"] = "ROW_NUMBER() OVER (ORDER BY city)"
+        cities["lat"] = "ST_X(geometry)"
+        cities["lon"] = "ST_Y(geometry)"
+        display(cities)
 
     .. ipython:: python
         :suppress:
 
-        from verticapy.sql.geo import create_index
-        from verticapy.datasets import load_world
-
+        from verticapy.sql.geo import intersect, create_index
+        from verticapy.datasets import load_world, load_cities
+        from verticapy import set_option
         world = load_world()
         world["id"] = "ROW_NUMBER() OVER(ORDER BY country, pop_est)"
-        #raw directive was throwing error because of unicode symbol
-        #in the country column
-        world["country"].drop()
-        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_create_index.html", "w")
+        cities = load_cities()
+        cities["id"] = "ROW_NUMBER() OVER (ORDER BY city)"
+        cities["lat"] = "ST_X(geometry)"
+        cities["lon"] = "ST_Y(geometry)"
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_1.html", "w")
         html_file.write(world._repr_html_())
+        html_file.close()
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html", "w")
+        html_file.write(cities._repr_html_())
         html_file.close()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/sql_geo_index_create_index.html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_1.html
 
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_2.html
+
+    Let's create the geo-index.
 
     .. code-block:: python
+
+        from verticapy.sql.geo import create_index
 
         create_index(world, "id", "geometry", "world_polygons", True)
 
     .. ipython:: python
         :suppress:
 
-        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_index_create_index_2.html", "w")
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html", "w")
         html_file.write(create_index(world, "id", "geometry", "world_polygons", True)._repr_html_())
         html_file.close()
 
     .. raw:: html
-        :file: SPHINX_DIRECTORY/figures/sql_geo_index_create_index_2.html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
+
+    Let's calculate the intersection between the
+    cities and the various countries by using the
+    GEOMETRY data type.
+
+    .. code-block:: python
+
+        from verticapy.sql.geo import intersect
+
+        intersect(cities, "world_polygons", "id", "geometry")
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html", "w")
+        html_file.write(intersect(cities, "world_polygons", "id", "geometry")._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_3.html
+
+    The same can be done using directly the longitude
+    and latitude.
+
+    .. code-block:: python
+
+        intersect(cities, "world_polygons", "id", x="lat", y="lon")
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html", "w")
+        html_file.write(intersect(cities, "world_polygons", "id", x="lat", y="lon")._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/sql_geo_functions_intersect_4.html
+
+    .. note::
+
+        For geospatial functions, Vertica utilizes indexing to
+        expedite computations, especially considering the
+        potentially extensive size of polygons.
+        This is a unique optimization approach employed by
+        Vertica in these scenarios.
     """
     gid, g = vdf.format_colnames(gid, g)
     query = f"""
@@ -152,7 +238,7 @@ def describe_index(
         Boolean that specifies whether to list
         the polygons  in the index.  If set to
         True,   the  function  returns  a
-        vDataFrame instead of a TableSample.
+        ``vDataFrame`` instead of a ``TableSample``.
 
     Returns
     -------
@@ -161,11 +247,12 @@ def describe_index(
 
     Examples
     --------
+    Describes all indexes:
+
     .. code-block:: python
 
         from verticapy.sql.geo import describe_index
 
-        # Describes all indexes
         describe_index()
 
     .. ipython:: python
@@ -180,9 +267,10 @@ def describe_index(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_1.html
 
+    Describes a specific index:
+
     .. code-block:: python
 
-        # Describes a specific index
         describe_index("world_polygons")
 
     .. ipython:: python
@@ -195,11 +283,14 @@ def describe_index(
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_2.html
 
+    Describes all geometries of a specific index:
+
     .. code-block:: python
 
-        # Describes all geometries of a specific index
-        describe_index("world_polygons",
-                        list_polygons = True)
+        describe_index(
+            "world_polygons",
+            list_polygons = True,
+        )
 
     .. ipython:: python
         :suppress:
@@ -210,6 +301,14 @@ def describe_index(
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_describe_index_3.html
+
+    .. note::
+
+        For geospatial functions, Vertica utilizes indexing to
+        expedite computations, especially considering the
+        potentially extensive size of polygons.
+        This is a unique optimization approach employed by
+        Vertica in these scenarios.
     """
     if not name:
         query = f"SELECT STV_Describe_Index () OVER ()"
@@ -254,11 +353,12 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
     Examples
     --------
+    Describes all indexes:
+
     .. code-block:: python
 
-        from verticapy.sql.geo import rename_index, describe_index
+        from verticapy.sql.geo import describe_index
 
-        # Describes all indexes
         describe_index()
 
     .. ipython:: python
@@ -273,15 +373,19 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_1.html
 
+    Renames a specific index:
+
     .. ipython:: python
         :okwarning:
 
-        # Renames a specific index
+        from verticapy.sql.geo import rename_index
+
         rename_index("world_polygons", "world_polygons_new")
+
+    Index now has the new name:
 
     .. code-block:: python
 
-        # Index now has the new name
         describe_index()
 
     .. ipython:: python
@@ -293,6 +397,14 @@ def rename_index(source: str, dest: str, overwrite: bool = False) -> bool:
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/sql_geo_index_rename_index_2.html
+
+    .. note::
+
+        For geospatial functions, Vertica utilizes indexing to
+        expedite computations, especially considering the
+        potentially extensive size of polygons.
+        This is a unique optimization approach employed by
+        Vertica in these scenarios.
     """
 
     try:
