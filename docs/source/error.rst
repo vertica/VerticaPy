@@ -14,7 +14,6 @@ Errors
 
    ConversionError
    EmptyParameter
-   EnvironmentError
    ExtensionError
    FunctionError
    MissingColumn
