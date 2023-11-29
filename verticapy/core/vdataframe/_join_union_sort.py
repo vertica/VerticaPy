@@ -197,26 +197,29 @@ class vDFJoinUnionSort(vDFMath):
         expr2: Optional[SQLExpression] = None,
     ) -> "vDataFrame":
         """
-        Joins the vDataFrame with another one or an input relation.
+        Joins the ``vDataFrame`` with another one or an
+        input relation.
 
         .. warning::
 
             Joins  can  make  the  vDataFrame  structure
             heavier.  It is recommended that you check
             the    current     structure    using    the
-            'current_relation'  method  and  save  it
-            with the 'to_db' method, using the parameters
-            'inplace = True' and 'relation_type = table'.
+            ``current_relation``  method  and  save  it
+            with the ``to_db`` method, using the parameters
+            ``inplace = True`` and ``relation_type = table``.
 
         Parameters
         ----------
         input_relation: SQLRelation
             Relation to join with.
-        on: tuple / dict / list, optional
+        on: tuple | dict | list, optional
             If using a list:
-            List of 3-tuples. Each tuple must include (key1, key2, operator)
-            —where key1 is the key of the vDataFrame, key2 is the key of the
-            input relation, and operator is one of the following:
+            List of 3-tuples. Each tuple must include
+            (key1, key2, operator) — where ``key1`` is
+            the key of the ``vDataFrame``, ``key2`` is
+            the key of the ``input_relation``, and
+            ``operator`` is one of the following:
 
             - '=':
                 exact match
@@ -237,33 +240,40 @@ class vDFJoinUnionSort(vDFMath):
             - 'rinterpolate':
                 key2 INTERPOLATE key1
 
-            Some operators need 5-tuples: (key1, key2, operator, operator2, x)
-            where  operator2 is  a simple operator (=, >, <, <=, >=), x is  a
-            float or an integer, and operator is one of the following:
+            Some operators need 5-tuples:
+            ``(key1, key2, operator, operator2, x)``
+            where  ``operator2`` is  a simple operator
+            ``(=, >, <, <=, >=)``, x is a ``float`` or
+            an ``integer``, and ``operator`` is one of the
+            following:
 
             - 'jaro':
-                JARO(key1, key2) operator2 x
+                ``JARO(key1, key2) operator2 x``
             - 'jarow':
-                JARO_WINCKLER(key1, key2) operator2 x
+                ``JARO_WINCKLER(key1, key2) operator2 x``
             - 'lev':
-                LEVENSHTEIN(key1, key2) operator2 x
+                ``LEVENSHTEIN(key1, key2) operator2 x``
 
             If using a dictionary:
-            This parameter must include all the different keys. It must be
-            similar to the following:
+            This parameter must include all the different
+            keys. It must be similar to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where relationA is the current vDataFrame and relationB is the
-            input relation or the input vDataFrame.
+            where ``relationA`` is the current ``vDataFrame``
+            and ``relationB`` is the ``input_relation`` or
+            the input ``vDataFrame``.
 
         on_interpolate: dict, optional
-            Dictionary of all unique keys. This is used to join two event
-            series together using some ordered attribute. Event series
-            joins let you compare values from two series directly, rather
-            than having to normalize the series  to the same measurement
-            interval. The dict must be similar to the following:
+            Dictionary of all unique keys. This is used
+            to join two event series together using some
+            ordered attribute. Event series joins let you
+            compare values from two series directly, rather
+            than having to normalize the series to the same
+            measurement interval. The dict must be similar
+            to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where relationA is the  current vDataFrame and relationB is the
-            input relation or the input vDataFrame.
+            where ``relationA`` is the current ``vDataFrame``
+            and ``relationB`` is the ``input_relation`` or the
+            input ``vDataFrame``.
 
         how: str, optional
             Join Type.
@@ -282,15 +292,17 @@ class vDFJoinUnionSort(vDFMath):
                 Inner Join.
 
         expr1: SQLExpression, optional
-            List  of the different columns in pure  SQL to select  from the
-            current   vDataFrame,   optionally  as  aliases.   Aliases  are
-            recommended to avoid  ambiguous names. For example: 'column' or
-            'column AS my_new_alias'.
+            List of the different columns in pure SQL
+            to select from the current ``vDataFrame``,
+            optionally as aliases. Aliases are recommended
+            to avoid ambiguous names. For example: ``column``
+            or ``column AS my_new_alias``.
         expr2: SQLExpression, optional
-            List  of the different  columns in pure SQL to select from  the
-            input  relation optionally as aliases. Aliases are  recommended
-            to avoid  ambiguous names.  For example: ``column`` or ``column AS
-            my_new_alias``.
+            List of the different columns in pure SQL
+            to select from the current ``vDataFrame``,
+            optionally as aliases. Aliases are recommended
+            to avoid ambiguous names. For example: ``column``
+            or ``column AS my_new_alias``.
 
         Returns
         -------
@@ -330,8 +342,8 @@ class vDFJoinUnionSort(vDFMath):
 
             departments_data = vp.vDataFrame(
                 {
-                    "department_id": [101, 102, 103],
-                    "department_name": ['HR', 'Finance', 'IT'],
+                    "department_id": [101, 102, 104],
+                    "department_name": ['HR', 'Finance', 'Marketing'],
                 }
             )
 
@@ -355,10 +367,32 @@ class vDFJoinUnionSort(vDFMath):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table2html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table2.html
+
+        Let us look at the different type of JOINs
+        available below:
+
+        - INNER JOIN
+        - LEFT JOIN
+        - RIGHT JOIN
+        - FULL JOIN
+
+        After that we will also have a look at:
+
+        - Other operators.
+        - Special operators like Jaro-Winkler.
+
+        INNER JOIN
+        ^^^^^^^^^^^
 
         We can conveniently JOIN the two ``vDataFrames``
-        using the key column:
+        using the key column. Let us perform an INNER JOIN.
+        INNER JOIN is executed to combine rows from both
+        the main table and the ``input_relation`` based on
+        a specified condition. Only the rows with matching
+        values in the specified column are included in the
+        result. If there is no match, those rows are
+        excluded from the output.
 
         .. ipython:: python
 
@@ -369,8 +403,8 @@ class vDFJoinUnionSort(vDFMath):
                 expr1 = [
                     "employee_id AS ID",
                     "employee_name AS Name",
-                    "department_name AS Dep",
-                ]
+                ],
+                expr2 = ["department_name AS Dep"],
             )
 
         .. ipython:: python
@@ -383,10 +417,240 @@ class vDFJoinUnionSort(vDFMath):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join.html
 
+        LEFT JOIN
+        ^^^^^^^^^^
+
+        Similarly we can perform a LEFT JOIN which ensures that
+        all rows from the main table are included in the
+        result, and matching rows from the ``input_relation``
+        are included if they exist. If there is no match,
+        the columns from the input relation will contain
+        ``NULL`` values for the corresponding rows in the
+        result.
+
+        .. ipython:: python
+
+            left_join_result = employees_data.join(
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "left",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = left_join_result
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_left_join.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_left_join.html
+
+        RIGHT JOIN
+        ^^^^^^^^^^^
+
+        A RIGHT JOIN is employed to include all rows
+        from the ``input_relation`` in the result,
+        regardless of whether there are matching values
+        in the main table. Rows from the main table are
+        included if there are matching values, and for
+        non-matching rows, the columns from the main
+        table will contain NULL values in the result.
+
+        .. ipython:: python
+
+            right_join_result = employees_data.join(
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "right",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = right_join_result
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_right_join.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_right_join.html
+
+        FULL JOIN
+        ^^^^^^^^^^
+
+        A FULL JOIN is utilized to include all rows
+        from both the main table and the ``input_relation``
+        in the result. Matching rows are included based
+        on the specified condition, and for non-matching
+        rows in either table, the columns from the non-matching
+        side will contain NULL values in the result.
+        This ensures that all rows from both tables are
+        represented in the output.
+
+        .. ipython:: python
+
+            full_join_result = employees_data.join(
+                input_relation = departments_data,
+                on = [("department_id", "department_id", "=")],
+                how = "full",
+                expr1 = ["employee_id AS ID", "employee_name AS Name"],
+                expr2 = ["department_name AS Dep"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = full_join_result
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_full_join.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_full_join.html
+
+        OTHER OPERATORS
+        ^^^^^^^^^^^^^^^^
+
+        Let us explore some additional features of joins.
+        For that let us create another table:
+
+        .. ipython:: python
+
+            additional_departments_data = vp.vDataFrame(
+                {
+                    "department_size": [12, 8, 8, 10],
+                    "department": ['HR', 'Fin', 'Mar', 'IT'],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = additional_departments_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table_3.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_table_3.html
+
+        Notice the names are a bit different than the "department_name"
+        column in the previous ``department_data`` table. In such cases
+        we can utilize the ``llike`` operator:
+
+        .. ipython:: python
+
+            department_join = departments_data.join(
+                input_relation = additional_departments_data,
+                on = [("department_name", "department", "llike")],
+                how = "inner",
+                expr1 = ["department_id AS ID", "department_name AS Dep"],
+                expr2 = ["department_size AS Size"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = full_join_result
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_llike.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_llike.html
+
         .. note::
 
             VerticaPy provides an array of join options and diverse
             operators, delivering an exceptional user experience.
+
+        JARO-WINKLER
+        ^^^^^^^^^^^^
+
+        VerticaPy also allows you to JOIN tables using the
+        Jaro-Winkler method. It is a string similarity metric
+        used to compare the similarity between two strings.
+        This method can be particularly useful in scenarios
+        where slight spelling mistakes are expected between
+        keys of different tables.
+
+        Let us create two tables for this example:
+
+        .. ipython:: python
+
+            users_data = vp.vDataFrame(
+                {
+                    "user_id": [1, 2, 3],
+                    "email": ['alice@email.com', 'bob@email.com', 'charlie@email.com'],
+                    "username": ['Ali', 'Bob', 'Charlie'],
+                    "age": [25, 30, 22],
+                },
+            )
+
+            orders_data = vp.vDataFrame(
+                {
+                    "order_id": [101, 102, 103],
+                    "email": ['Alice@email.com', 'bob@email.com', 'charlee@email.com'],
+                    "product_name": ['Laptop', 'Headphones', 'Smartphone'],
+                    "quantity": [2, 1, 3],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = users_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_1.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_1.html
+
+        .. ipython:: python
+            :suppress:
+
+            result = orders_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2.html
+
+        Notice that some emails are not correctly spelled,
+        so we can use the ``jarow`` option to JOIN them:
+
+        .. ipython:: python
+
+            result = users_data.join(
+                input_relation = orders_data,
+                on = [("email", "email", "jarow", ">=", 0.9)],
+                how = "inner",
+                expr1 = [
+                    "user_id AS ID",
+                    "username AS Name",
+                    "email",
+                ],
+                expr2 = ["product_name AS Item", "quantity AS Qty"],
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = orders_data
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_join_jarow_2_result.html
 
         .. seealso::
 
