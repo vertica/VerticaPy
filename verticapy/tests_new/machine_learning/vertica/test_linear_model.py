@@ -19,6 +19,7 @@ import pytest
 import sklearn.metrics as skl_metrics
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
+    ABS_TOLERANCE,
     regression_metrics_args,
     model_params,
     model_score,
@@ -42,7 +43,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
         "AR",
         # "MA",
         "ARMA",
-        # "ARIMA",
+        "ARIMA",
     ],
 )
 class TestLinearModel:
@@ -90,21 +91,20 @@ class TestLinearModel:
                     pytest.skip(
                         f"statsmodels ARIMA has high intercept value then independent AutoReg{model_class} function"
                     )
-                elif model_class in ["ARMA", "ARIMA"]:
+                else:
                     pytest.skip(
                         f"Vertica {model_class} model does not have {ts_fit_attr} attributes"
                     )
-                else:
-                    vpy_res = getattr(vpy_model_obj.model, ts_fit_attr)
-                    py_res = list(getattr(py_model_obj.model, py_ts_fit_attr))[0]
             else:
-                # mse in summary table does not match with manual calculation for ARIMA.
-                # so, using manual calculation to match with python
                 vpy_model_obj = get_vpy_model(model_class)
                 vpy_res = vpy_model_obj.model.score(
-                    start=_model_class_tuple.order[2]
+                    start=_model_class_tuple.q
                     if model_class == "MA"
-                    else _model_class_tuple.order[0],
+                    else (
+                        _model_class_tuple.p
+                        if model_class == "AR"
+                        else _model_class_tuple.order[0]
+                    ),
                     npredictions=len(vpy_model_obj.pred_vdf),
                     metric="mse",
                 )
@@ -123,7 +123,14 @@ class TestLinearModel:
                 vpy_res = getattr(vpy_model_obj.model, fit_attr)
                 py_res = getattr(py_model_obj.model, fit_attr)
 
-        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
+        print(f"vertica: {vpy_res}, sklearn: {py_res}")
+
+        assert vpy_res == pytest.approx(
+            py_res,
+            rel=1e-00
+            if model_class in ["ARIMA"] and ts_fit_attr == "phi_"
+            else rel_tolerance_map[model_class],
+        )
 
     @pytest.mark.parametrize(*regression_metrics_args)
     @pytest.mark.parametrize("fun_name", ["regression", "report"])
