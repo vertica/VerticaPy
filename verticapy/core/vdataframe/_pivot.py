@@ -436,14 +436,15 @@ class vDFPivot(vDFJoinUnionSort):
         Parameters
         ----------
         index: str
-            ``vDataColumn`` used to group the elements.
+            :py:class:`vDataColumn` used to group the
+            elements.
         columns: str
-            The ``vDataColumn`` used to compute the
-            different categories, which then act as
+            The :py:class:`vDataColumn` used to compute
+            the different categories, which then act as
             the columns in the pivot table.
         values: str
             The vDataColumn whose values populate the
-            new ``vDataFrame``.
+            new :py:class:`vDataFrame`.
         aggr: str, optional
             Aggregation to use on 'values'.  To use complex
             aggregations, you must use braces: ``{}``. For
@@ -540,7 +541,8 @@ class vDFPivot(vDFJoinUnionSort):
             statements to perform the job.
 
         .. seealso::
-            | :py:meth:`verticapy.vDataFrame.narrow` : Narrow Table for a ``vDataFrame``.
+            | :py:meth:`verticapy.vDataFrame.narrow` :
+                Narrow Table for a :py:class:`vDataFrame`.
         """
         if isinstance(prefix, NoneType):
             prefix = ""

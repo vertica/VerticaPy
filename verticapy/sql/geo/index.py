@@ -238,7 +238,8 @@ def describe_index(
         Boolean that specifies whether to list
         the polygons  in the index.  If set to
         True,   the  function  returns  a
-        ``vDataFrame`` instead of a ``TableSample``.
+        :py:class:`vDataFrame` instead of a
+        :py:class:`TableSample`.
 
     Returns
     -------

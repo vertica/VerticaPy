@@ -37,7 +37,7 @@ Introduction
           12 mins
           ^^^^^^^^
 
-          Unlock the potential of the Virtual DataFrame (``vDataFrame``). 
+          Unlock the potential of the Virtual DataFrame (:py:class:`vDataFrame`). 
           Explore our core object, discovering its role in storing and 
           manipulating data. Delve into its efficiency to optimize your 
           data manipulation processes and elevate your analytical 

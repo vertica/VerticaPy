@@ -77,8 +77,8 @@ class vDataFrame(vDFAnimatedPlot):
 
     Parameters
     ----------
-    input_relation: str / TableSample / pandas.DataFrame
-                       / list / numpy.ndarray / dict, optional
+    input_relation: str | TableSample | pandas.DataFrame
+                    | list | numpy.ndarray | dict, optional
         If the input_relation is of type str, it must represent
         the relation  (view, table, or temporary table) used to
         create the object.

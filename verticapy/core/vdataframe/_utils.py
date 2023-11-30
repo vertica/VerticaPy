@@ -96,7 +96,6 @@ class vDFUtils(PlottingUtils):
 
         Examples
         ---------
-
         We import :py:mod:`verticapy`:
 
         .. ipython:: python
