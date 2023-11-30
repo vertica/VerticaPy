@@ -75,13 +75,16 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, let's generate a dataset
         that has a VMAP in one column:
@@ -218,13 +221,16 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, let's generate a dataset
         which has two columns that are duplicates
@@ -326,13 +332,16 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, let's generate a dataset
         which has multiple columns:
@@ -468,13 +477,16 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, let's generate a dummy dataset
         representing sales of two items for different dates:
@@ -621,13 +633,16 @@ class vDFPivot(vDFJoinUnionSort):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, let's generate a dataset:
 

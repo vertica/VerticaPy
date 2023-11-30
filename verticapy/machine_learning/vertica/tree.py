@@ -133,13 +133,15 @@ class DecisionTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-        of code collisions with other libraries. This precaution is
-        necessary because verticapy uses commonly known function names
-        like "average" and "median", which can potentially lead to naming
-        conflicts. The use of an alias ensures that the functions from
-        verticapy are used as intended without interfering with functions
-        from other libraries.
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
 
     For this example, we will use the winequality dataset.
 
@@ -580,13 +582,15 @@ class DummyTreeRegressor(RandomForestRegressor):
 
     .. hint::
 
-        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-        of code collisions with other libraries. This precaution is
-        necessary because verticapy uses commonly known function names
-        like "average" and "median", which can potentially lead to naming
-        conflicts. The use of an alias ensures that the functions from
-        verticapy are used as intended without interfering with functions
-        from other libraries.
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
 
     For this example, we will use the winequality dataset.
 

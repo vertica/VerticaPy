@@ -32,9 +32,10 @@ def generate_lib_udf(
     create_file: bool = False,
 ) -> tuple[str, str]:
     """
-    Generates the code needed to install a library of
-    Python functions.  It uses the Vertica SDK to
-    create UDFs of the input functions.
+    Generates the code needed to install
+    a library of Python functions. It uses
+    the Vertica SDK to create UDFs of the
+    input functions.
 
     Parameters
     ----------
@@ -42,29 +43,24 @@ def generate_lib_udf(
         List of tuples that includes the different
         functions.
 
-         - function:
-            [function]
-            Python   Function.
-         - arg_types:
-            [dict | list]
+         - function, function:
+            Python Function.
+         - arg_types, dict | list:
             List or dictionary
             of  the function input  types.
             Example: ``{"input1": int, "input2": float}``
             or ``[int, float]``
-         - return_type:
-            [type | dict]
+         - return_type, type | dict:
             Function output type.
             In the case of many  outputs, it
             must be a dictionary including
             all the outputs types and names.
             Example: ``{"result1": int, "result2": float}``
-         - parameters:
-            [dict]
+         - parameters, dict:
             Dictionary of the function
             input optional parameters.
             Example: ``{"param1": int, "param2": str}``
-         - new_name:
-            [str]
+         - new_name, str:
             New   function   name  when
             installed in Vertica.
 
@@ -85,11 +81,13 @@ def generate_lib_udf(
     Returns
     -------
     udx_str, sql
-        UDF py file, str needed to install the library.
+        UDF py file, str needed to
+        install the library.
 
     Examples
     --------
-    Import the needed modules and generate the UDF:
+    Import the needed modules and
+    generate the UDF:
 
     .. ipython:: python
 
