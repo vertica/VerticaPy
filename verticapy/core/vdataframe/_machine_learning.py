@@ -47,12 +47,14 @@ class vDFMachineLearning(vDFScaler):
         self, weight: Union[int, str], use_gcd: bool = True
     ) -> "vDataFrame":
         """
-        Duplicates the vDataFrame using the input weight.
+        Duplicates the :py:class:`vDataFrame` using
+        the input weight.
 
         Parameters
         ----------
-        weight: str / integer
-            vDataColumn or integer representing the weight.
+        weight: str | integer
+            :py:class:`vDataColumn` or ``integer``
+            representing the weight.
         use_gcd: bool
             If set to True,  uses the GCD (Greatest Common
             Divisor) to reduce all common weights to avoid
@@ -61,11 +63,10 @@ class vDFMachineLearning(vDFScaler):
         Returns
         -------
         vDataFrame
-            the output vDataFrame.
+            the output :py:class:`vDataFrame`.
 
         Examples
         ---------
-
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -82,15 +83,16 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` with multiple columns:
+        Let us create a :py:class:`vDataFrame`
+        with multiple columns:
 
         .. ipython:: python
 
             vdf = vp.vDataFrame(
                 {
                     "cats": ["A", "B", "C"],
-                    "reps": [2, 4, 8]
-                }
+                    "reps": [2, 4, 8],
+                },
             )
 
         .. ipython:: python
@@ -121,11 +123,20 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_add_duplicates_result.html
 
+        .. note::
+
+            VerticaPy will find the greatest common divisor (gcd)
+            of the weight column to normalize the weights by it,
+            ensuring a meaningful minimum number of occurrences.
+            It will then duplicate the different values.
+            This function can be highly valuable in machine
+            learning for preprocessing and increasing the weight
+            of specific rows.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the
-                complete disjunctive table of the vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.sample` :
+                Sampling the Dataset.
         """
         if isinstance(weight, str):
             weight = self.format_colnames(weight)
@@ -174,8 +185,9 @@ class vDFMachineLearning(vDFScaler):
         """
         Returns the complete  disjunctive table of  the vDataFrame.
         Numerical  features  are transformed  to categorical using
-        the 'discretize' method. Applying PCA on TCDT leads to MCA
-        (Multiple correspondence analysis).
+        the :py:meth:`verticapy.vDataFrame.discretize` method.
+        Applying PCA on TCDT leads to MCA (Multiple correspondence
+        analysis).
 
         .. warning::
 
@@ -206,8 +218,7 @@ class vDFMachineLearning(vDFScaler):
             the CDT relation.
 
         Examples
-        ---------
-
+        --------
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -224,15 +235,17 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` with multiple columns:
+        Let us create a :py:class:`vDataFrame`
+        with multiple columns:
 
         .. ipython:: python
 
             vdf = vp.vDataFrame(
                 {
+                    "id": [0, 1, 2, 3, 4, 5],
                     "cats": ["A", "B", "C", "A", "B", "C"],
-                    "vals": [2, 4, 8, 1, 4, 2]
-                }
+                    "vals": [2, 4, 8, 1, 4, 2],
+                },
             )
 
         .. ipython:: python
@@ -246,16 +259,17 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt.html
 
-        We can create the complete disjunctive table of the vDataFrame:
+        We can create the complete disjunctive
+        table of the :py:class:`vDataFrame`:
 
         .. code-block:: python
 
-            vdf.cdt(tcdt = False)
+            vdf.cdt(columns=["cats", "vals"], tcdt = False)
 
         .. ipython:: python
             :suppress:
 
-            result = vdf.cdt(tcdt = False)
+            result = vdf.cdt(columns=["cats", "vals"], tcdt = False)
             html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt_result.html", "w")
             html_file.write(result._repr_html_())
             html_file.close()
@@ -263,10 +277,39 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_cdt_result.html
 
+        Same can be done to create the transformed
+        complete disjunctive table of the
+        :py:class:`vDataFrame`:
+
+        .. code-block:: python
+
+            vdf.cdt(columns=["cats", "vals"], tcdt = True)
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf.cdt(columns=["cats", "vals"], tcdt = True)
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_tcdt_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_tcdt_result.html
+
+        .. note::
+
+            This method can be useful to build an MCA (Multiple
+            Correspondence Analysis) model based on a PCA
+            (Principal Component Analysis) one. The transformed
+            complete disjunctive table refers to a table used
+            in MCA, where the original categorical data is
+            transformed into binary indicators to represent
+            the absence or presence of categories.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.chaid` : Returns a CHAID
-                (Chi-square Automatic Interaction Detector) tree.
+            | :py:class:`verticapy.machine_learning.vertica.PCA` :
+                Principal Component Analysis.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) > 0:
@@ -357,7 +400,6 @@ class vDFMachineLearning(vDFScaler):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -385,7 +427,7 @@ class vDFMachineLearning(vDFScaler):
 
             tree = data.chaid(
                 response = "survived",
-                columns = ["sex", "pclass"]
+                columns = ["sex", "pclass"],
             )
             tree.plot_tree()
 
@@ -401,11 +443,17 @@ class vDFMachineLearning(vDFScaler):
 
         .. image:: /../figures/core_vDataFrame_ml_chaid_tree.png
 
+        .. note::
+
+            The result is an :py:class:`verticapy.machine_learning.memmodel.InMemoryModel`
+            model. Refer to :py:class:`verticapy.machine_learning.memmodel.NonBinaryTree`
+            for more information on the different methods
+            and possibilities.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.chaid_columns` : Returns
-                the columns picked by the CHAID algorithm
-
+            | :py:meth:`verticapy.vDataFrame.chaid_columns` :
+                Returns the columns picked by the CHAID algorithm
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         if "process" not in kwargs or kwargs["process"]:
@@ -546,17 +594,17 @@ class vDFMachineLearning(vDFScaler):
         self, columns: Optional[SQLColumns] = None, max_cardinality: int = 16
     ) -> list[str]:
         """
-        Function used to simplify the code. It returns the columns
-        picked by the CHAID algorithm.
+        Function used to simplify the code. It returns
+        the columns picked by the CHAID algorithm.
 
         Parameters
         ----------
         columns: SQLColumns
             List of the vDataColumn names.
         max_cardinality: int, optional
-            The maximum number of categories for each categorical
-            column. Categorical columns with a higher cardinality
-            are discarded.
+            The maximum number of categories for each
+            categorical column. Categorical columns
+            with a higher cardinality are discarded.
 
         Returns
         -------
@@ -565,7 +613,6 @@ class vDFMachineLearning(vDFScaler):
 
         Examples
         ---------
-
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -593,10 +640,16 @@ class vDFMachineLearning(vDFScaler):
 
             data.chaid_columns()
 
+        .. note::
+
+            This function is invoked by the CHAID function at
+            each step to obtain the potential columns used for
+            the split.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.chaid` : Returns a CHAID
-                (Chi-square Automatic Interaction Detector) tree.
+            | :py:meth:`verticapy.vDataFrame.chaid` :
+                Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
         """
         columns = format_type(columns, dtype=list)
         columns_tmp = columns.copy()
@@ -643,27 +696,31 @@ class vDFMachineLearning(vDFScaler):
         robust: bool = False,
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn labeled with 0 or 1, where 1 indicates
-        that the recoard is a global outlier.
+        Adds a new :py:class:`vDataColumn` labeled
+        with 0 or 1, where 1 indicates that the record
+        is a global outlier.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List  of the vDataColumns names. If empty, all  numerical
-            vDataColumns are used.
+            List  of the :py:class:`vDataColumn` names.
+            If empty, all  numerical :py:class:`vDataColumn`
+            are used.
         name: str, optional
-            Name of the new vDataColumn.
+            Name of the new :py:class:`vDataColumn`.
         threshold: float, optional
             Threshold equal to the critical score.
         robust: bool
-            If set to True, uses the Robust Z-Score instead of the
-            Z-Score.
+            If set to True, uses the Robust Z-Score
+            instead of the Z-Score.
 
         Returns
         -------
         vDataFrame
             self
 
+        Examples
+        --------
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -680,13 +737,18 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` that has some outliers:
+        Let us create a :py:class:`vDataFrame`
+        that has some outliers:
 
         .. ipython:: python
 
             import numpy as np
 
-            data = np.random.normal(loc=0, scale=1, size=10)
+            data = np.random.normal(
+                loc = 0,
+                scale = 1,
+                size = 10,
+            )
             data = np.append(data, [100])
             vdf = vp.vDataFrame({"vals": data})
 
@@ -701,8 +763,9 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers.html
 
-        Now we can see which values are outliers by
-        using the ``outliers`` function:
+        Now we can see which values are outliers
+        by using the :py:meth:`verticapy.vDataFrame.outliers`
+        method:
 
         .. code-block:: python
 
@@ -719,9 +782,16 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers_2.html
 
+        .. note::
+
+            This function can only identify global outliers in
+            the distribution. For other types of outliers, it
+            is recommended to create machine learning models.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.outliers_plot` : Plots the outliers.
+            | :py:meth:`verticapy.vDataFrame.outliers_plot` :
+                Plots the outliers.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns) if (columns) else self.numcol()
@@ -760,24 +830,26 @@ class vDFMachineLearning(vDFScaler):
         RFmodel_params: Optional[dict] = None,
     ) -> TableSample:
         """
-        Returns the chi-square term using the pivot table of the
-        response vDataColumn against the input vDataColumns.
+        Returns the chi-square term using the pivot
+        table of the response :py:class:`vDataColumn`
+        against the input :py:class:`vDataColumn`.
 
         Parameters
         ----------
         response: str
-            Categorical response vDataColumn.
+            Categorical response :py:class:`vDataColumn`.
         columns: SQLColumns
-            List of the vDataColumn names. The maximum number of
-            categories  for  each   categorical   column  is  16;
-            categorical  columns  with a higher cardinality  are
-            discarded.
+            List of the vDataColumn names. The maximum
+            number of categories for  each categorical
+            column is 16; categorical  columns  with a
+            higher cardinality are discarded.
         nbins: int, optional
-            Integer in the range [2,16], the number of bins used
-            to discretize the numerical features.
+            Integer in the range [2,16], the number of
+            bins used to discretize the numerical features.
         method: str, optional
-            The  method  with which to discretize the  numerical
-            vDataColumns, one of the following:
+            The  method  with which to discretize the
+            numerical :py:class:`vDataColumn`, one of the
+            following:
 
             - same_width:
                 Computes  bins of regular  width.
@@ -787,14 +859,16 @@ class vDFMachineLearning(vDFScaler):
                 interval for discretization.
 
         RFmodel_params: dict, optional
-            Dictionary  of the  parameters of the random  forest
-            model used to compute  the best splits  when 'method'
-            is 'smart'. If the response column is numerical (but
-            not  of type int or bool), this function trains  and
-            uses  a random  forest  regressor.  Otherwise,  this
-            function trains a random forest classifier.
-            For example,  to train a random forest with 20 trees
-            and a maximum depth of 10, use:
+            Dictionary  of the  parameters of the
+            random  forest model used to compute
+            the best splits  when ``method = smart``.
+            If the response column is numerical (but
+            not  of type ``int`` or ``bool``), this
+            function trains  and uses a
+            ``RandomForestRegressor``. Otherwise, this
+            function trains a ``RandomForestClassifier``.
+            For example,  to train a random forest with
+            20 trees and a maximum depth of 10, use:
             ``{"n_estimators": 20, "max_depth": 10}``
 
         Returns
@@ -826,8 +900,8 @@ class vDFMachineLearning(vDFScaler):
             resources for honing your data analysis and machine learning
             skills within the VerticaPy environment.
 
-        We can conveniently get the chi-squared term
-        using the pivot table:
+        We can conveniently get the chi-squared
+        term using the pivot table:
 
         .. code-block:: python
 
@@ -844,10 +918,14 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_pivot_table_chi2.html
 
+        .. note::
+
+            This function is employed to construct CHAID trees.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the
-                complete disjunctive table of the vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.chaid` :
+                Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
         columns = format_type(columns, dtype=list)
@@ -917,15 +995,17 @@ class vDFMachineLearning(vDFScaler):
         self, columns: Optional[SQLColumns] = None, r: int = 2
     ) -> "vDataFrame":
         """
-        Returns a vDataFrame containing thedifferent product
-        combinations  of   the  input  vDataColumns.  This
-        function is ideal for bivariate analysis.
+        Returns a vDataFrame containing the different
+        product combinations  of   the  input
+        :py:class:`vDataColumn`. This function is ideal for
+        bivariate analysis.
 
         Parameters
         ----------
         columns: SQLColumns, optional
-            List of the vDataColumns names. If empty, all
-            numerical vDataColumns are used.
+            List of the :py:class:`vDataColumn` names.
+            If empty, all numerical :py:class:`vDataColumn`
+            are used.
         r: int, optional
             Degree of the polynomial.
 
@@ -953,14 +1033,16 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` with multiple columns:
+        Let us create a :py:class:`vDataFrame`
+        with multiple columns:
 
         .. ipython:: python
 
             vdf = vp.vDataFrame(
                 {
                     "col1": [1, 2, 3],
-                    "col2": [1, 2, 3],
+                    "col2": [0, 7, 8],
+                    "col3": [3, 11, 93],
                 }
             )
 
@@ -975,9 +1057,10 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb.html
 
-        We can create a new ``vDataFrame`` that has a
-        combination of the original columns using the
-        ``polynomial_comb`` function:
+        We can create a new :py:class:`vDataFrame` that
+        has a combination of the original columns using
+        the :py:meth:`verticapy.vDataFrame.polynomial_comb`
+        method:
 
         .. ipython:: python
 
@@ -994,10 +1077,19 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_polynomial_comb_2.html
 
+        .. note::
+
+            This function is highly useful for data preparation, as
+            certain combinations of variables may be relevant for
+            predicting a specific column. It can be beneficial to
+            combine it with a correlation matrix to determine if
+            any of the created combinations can influence the
+            response column.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.add_duplicates` : Add duplicates of values
-                based on weights.
+            | :py:meth:`verticapy.vDataFrame.corr` :
+                Computes the correlation matrix.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) == 0:
@@ -1030,12 +1122,15 @@ class vDFMachineLearning(vDFScaler):
         Parameters
         ----------
         unique_id: str
-            Input  vDataColumn corresponding  to a unique  ID.
-            It is a primary key.
+            Input :py:class:`vDataColumn` corresponding to a
+            unique ID. It serves as a primary key in another
+            dataset. In our context, it represents an operation,
+            such as a basket ID, which includes multiple sub-
+            transactions.
         item_id: str
-            Input vDataColumn corresponding to an item ID. It
-            is a secondary key  used to compute the different
-            pairs.
+            Input :py:class:`vDataColumn` corresponding to an
+            item ID. It is a secondary key  used to compute the
+            different pairs.
         method: str, optional
             Method used to recommend.
 
@@ -1054,33 +1149,33 @@ class vDFMachineLearning(vDFScaler):
                 item  pairs  with a  differing  second
                 element.
 
-        rating: str / tuple, optional
-            Input ``vDataColumn`` including the items rating.
-            If the 'rating' type is 'tuple', it must be composed
-            of 3 elements:
+        rating: str | tuple, optional
+            Input :py:class:`vDataColumn` including the items
+            rating. If the ``rating`` type is ``tuple``, it
+            must be composed of 3 elements:
 
             (r_vdf, r_item_id, r_name) where:
 
-            **r_vdf** is an input vDataFrame.
+            **r_vdf** is an input :py:class:`vDataFrame`.
 
-            **r_item_id** is an  input ``vDataColumn`` which
-            must includes the same id as 'item_id'.
+            **r_item_id** is an  input :py:class:`vDataColumn`
+            which must includes the same id as ``item_id``.
 
-            **r_name** is an input ``vDataColumn`` including
-            the items rating.
+            **r_name** is an input :py:class:`vDataColumn`
+            including the items rating.
 
         ts: str, optional
             TS (Time Series) vDataColumn used to order the data.
             The vDataColumn type must be date (date, datetime,
             timestamp...) or numerical.
-        start_date: str / PythonNumber / date, optional
-            Input Start Date. For example, time = '03-11-1993' will
-            filter the data when 'ts'  is less than November 1993
-            the 3rd.
-        end_date: str / PythonNumber / date, optional
-            Input End Date.  For example,  time = '03-11-1993' will
-            filter the data when 'ts' is greater than November 1993
-            the 3rd.
+        start_date: str | PythonNumber | date, optional
+            Input Start Date. For example, ``time = '03-11-1993'``
+            will filter the data when ``ts``  is less than
+            November 1993 the 3rd.
+        end_date: str | PythonNumber | date, optional
+            Input End Date.  For example,  ``time = '03-11-1993'``
+            will filter the data when ``ts`` is greater
+            than November 1993 the 3rd.
 
         Returns
         -------
@@ -1106,8 +1201,8 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` which has some purchase
-        transaction data:
+        Let us create a :py:class:`vDataFrame` which has
+        some purchase transaction data:
 
         - transaction_id:
             Unique ID for a transaction.
@@ -1139,16 +1234,16 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest.html
 
-
-        We can easily create the recommen table from the above data:
+        We can easily create the recommend
+        table from the above data:
 
         .. ipython:: python
 
             recommendations = vdf.recommend(
-                unique_id="transaction_id",
-                item_id="item_id",
-                method="avg",
-                rating="rating",
+                unique_id = "transaction_id",
+                item_id = "item_id",
+                method = "avg",
+                rating = "rating",
             )
 
         .. ipython:: python
@@ -1162,10 +1257,15 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_result.html
 
+        .. note::
+
+            This function is highly useful for basket analysis
+            and can be employed to derive valuable recommendations.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.add_duplicates` : Add duplicates of values
-                based on weights.
+            | :py:meth:`verticapy.vDataFrame.add_duplicates` :
+                Add duplicates of values based on weights.
         """
         unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
@@ -1232,8 +1332,8 @@ class vDFMachineLearning(vDFScaler):
         metric: Literal[tuple(FUNCTIONS_DICTIONNARY)],
     ) -> float:
         """
-        Computes the score using the input columns and the
-        input metric.
+        Computes the score using the input columns
+        and the input metric.
 
         Parameters
         ----------
@@ -1247,11 +1347,11 @@ class vDFMachineLearning(vDFScaler):
             **For Classification**
 
             - accuracy:
-                Accuracy
+                Accuracy.
             - auc:
-                Area Under the Curve (ROC)
+                Area Under the Curve (ROC).
             - ba:
-                Balanced Accuracy
+                Balanced Accuracy.
 
                 .. math::
 
@@ -1261,14 +1361,14 @@ class vDFMachineLearning(vDFScaler):
                 Cutoff  which  optimised
                 the ROC Curve prediction.
             - bm:
-                Informedness
+                Informedness.
 
                 .. math::
 
                     tpr + tnr - 1
 
             - csi:
-                Critical  Success  Index
+                Critical  Success  Index.
 
                 .. math::
 
@@ -1277,96 +1377,96 @@ class vDFMachineLearning(vDFScaler):
             - f1:
                 F1 Score
             - fdr:
-                False Discovery Rate
+                False Discovery Rate.
 
                 .. math::
 
                     1 - ppv
 
             - fm:
-                Fowlkes–Mallows index
+                Fowlkes–Mallows index.
                 .. math::
 
                     sqrt(ppv * tpr)
 
             - fnr:
-                False Negative Rate
+                False Negative Rate.
                 .. math::
 
                     fn / (fn + tp)
 
             - for:
-                False Omission Rate
+                False Omission Rate.
 
                 .. math::
 
                     1 - npv
 
             - fpr:
-                False Positive Rate
+                False Positive Rate.
 
                 .. math::
 
                     fp / (fp + tn)
 
             - logloss:
-                Log Loss
+                Log Loss.
             - lr+:
-                Positive Likelihood Ratio
+                Positive Likelihood Ratio.
 
                 .. math::
 
                     tpr / fpr
 
             - lr-:
-                Negative Likelihood Ratio
+                Negative Likelihood Ratio.
 
                 .. math::
 
                     fnr / tnr
 
             - dor:
-                Diagnostic Odds Ratio
+                Diagnostic Odds Ratio.
             - mcc:
-                Matthews Correlation Coefficient
+                Matthews Correlation Coefficient.
             - mk:
-                Markedness
+                Markedness.
 
                 .. math::
 
                     ppv + npv - 1
 
             - npv:
-                Negative Predictive Value
+                Negative Predictive Value.
 
                 .. math::
 
                     tn / (tn + fn)
 
             - prc_auc:
-                Area Under the Curve (PRC)
+                Area Under the Curve (PRC).
             - precision:
-                Precision
+                Precision.
 
                 .. math::
 
                     tp / (tp + fp)
 
             - pt:
-                Prevalence Threshold
+                Prevalence Threshold.
 
                 .. math::
 
                     sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
 
             - recall:
-                Recall
+                Recall.
 
                 .. math::
                     tp / (tp + fn)
 
             - specificity:
-                Specificity
+                Specificity.
 
                 .. math::
 
@@ -1374,13 +1474,13 @@ class vDFMachineLearning(vDFScaler):
 
             **For Regression**
 
-            - max: Max Error
-            - mae: Mean Absolute Error
-            - median: Median Absolute Error
-            - mse: Mean Squared Error
-            - msle: Mean Squared Log Error
-            - r2: R squared coefficient
-            - var: Explained Variance
+            - max: Max Error.
+            - mae: Mean Absolute Error.
+            - median: Median Absolute Error.
+            - mse: Mean Squared Error.
+            - msle: Mean Squared Log Error.
+            - r2: R squared coefficient.
+            - var: Explained Variance.
 
         Returns
         -------
@@ -1390,8 +1490,8 @@ class vDFMachineLearning(vDFScaler):
         Examples
         ---------
 
-        Let us build a quick ML model and calculate the score
-        of its predictions.
+        Let us build a quick ML model and calculate
+        the score of its predictions.
 
         Load data for machine learning
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1417,8 +1517,9 @@ class vDFMachineLearning(vDFScaler):
             resources for honing your data analysis and machine learning
             skills within the VerticaPy environment.
 
-        You can easily divide your dataset into training and testing subsets
-        using the :py:meth:`vDataFrame.train_test_split` method.
+        You can easily divide your dataset into training
+        and testing subsets using the
+        :py:meth:`vDataFrame.train_test_split` method.
 
         .. code-block:: python
 
@@ -1436,7 +1537,9 @@ class vDFMachineLearning(vDFScaler):
         Model Initialization
         ^^^^^^^^^^^^^^^^^^^^^
 
-        First we import the ``LinearRegression`` model:
+        First we import the
+        :py:class:`verticapy.vertica.machine_learning.LinearRegression`
+        model:
 
         .. code-block::
 
@@ -1530,17 +1633,27 @@ class vDFMachineLearning(vDFScaler):
         Score
         ^^^^^^
 
-        Finally we can calculate the score:
+        Finally we can calculate the scores:
 
         .. ipython:: python
 
+            # R2
             result.score("quality", "prediction", metric = "r2")
+            #  MSE
+            result.score("quality", "prediction", metric = "mse")
+            #  Max Error
+            result.score("quality", "prediction", metric = "max")
+
+        .. note::
+
+            If the prediction is already part of the dataset,
+            there is no need to use a model to compute a
+            prediction column. Use your column directly.
 
         .. seealso::
 
-            | :py:meth:`verticapy.machine_learning.vertica.LinearRegression` :
+            | :py:class:`verticapy.machine_learning.vertica.LinearRegression` :
                 Linear Regression model.
-
         """
         y_true, y_score = self.format_colnames(y_true, y_score)
         args = [y_true, y_score, self._genSQL()]
@@ -1555,19 +1668,21 @@ class vDFMachineLearning(vDFScaler):
         name: str = "session_id",
     ) -> "vDataFrame":
         """
-        Adds a new vDataColumn to the vDataFrame that
-        corresponds to  sessions  (user  activity during  a
-        specific  time). A  session  ends when  ts - lag(ts)
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` that corresponds to
+        sessions (user activity during  a specific
+        time). A session ends when ``ts - lag(ts)``
         is greater than a specific threshold.
 
         Parameters
         ----------
         ts: str
-            vDataColumn used  as timeline. It is used to
-            order the data. It can be a numerical or type
-            date (date,   datetime,   timestamp...) vDataColumn.
+            :py:class:`vDataColumn` used  as timeline.
+            It is used to order the data. It can be a
+            numerical or type date (``date``, ``datetime``,
+            ``timestamp``...) :py:class:`vDataColumn`.
         by: SQLColumns, optional
-            vDataColumns used in the partition.
+            :py:class:`vDataColumn` used in the partition.
         session_threshold: str, optional
             This parameter is the threshold that determines
             the end of the session. For example, if it is set to
@@ -1583,7 +1698,6 @@ class vDFMachineLearning(vDFScaler):
 
         Examples
         --------
-
         Let's begin by importing `VerticaPy`.
 
         .. ipython:: python
@@ -1600,7 +1714,8 @@ class vDFMachineLearning(vDFScaler):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` with multiple columns:
+        Let us create a :py:class:`vDataFrame`
+        with multiple columns:
 
         .. ipython:: python
 
@@ -1616,7 +1731,7 @@ class vDFMachineLearning(vDFScaler):
                         "1993-11-03 01:45:01",
                     ],
                     "val": [0., 1., 2., 4., 5., 5.5, 6., 8],
-                }
+                },
             )
 
         We can make sure the correct data type is assigned:
@@ -1637,14 +1752,14 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize.html
 
-        Now we can create sessions based on custom
-        time intervals:
+        Now we can create sessions based on
+        custom time intervals:
 
         .. code-block:: python
 
             vdf.sessionize(
                 ts = "time",
-                session_threshold = "15 minutes"
+                session_threshold = "15 minutes",
             )
 
         .. ipython:: python
@@ -1662,10 +1777,19 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize_result.html
 
+        .. note::
+
+            This method is particularly useful when dealing with
+            clickstream analytics, enabling the creation of sessions
+            as part of data preparation for machine learning.
+            It helps understand user behaviors and interactions as
+            they navigate through applications, for example.
+
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.analytic` : Use an advanced analytical
-                function on one or two specific ``vDataColumns``
+            | :py:meth:`verticapy.vDataFrame.analytic` :
+                Use an advanced analytical function on one or
+                two specific :py:class:`vDataColumn`.
         """
         by = format_type(by, dtype=list)
         by, ts = self.format_colnames(by, ts)
@@ -1688,18 +1812,19 @@ class vDFMachineLearning(vDFScaler):
         """
         Creates two vDataFrames (train/test), which can be used
         to  evaluate a model. The intersection between the train
-        and test set is empty only if you speicfy a unique order_by.
+        and test set is empty only if you specify a unique
+        ``order_by``.
 
         Parameters
         ----------
         test_size: float, optional
             Proportion of the test set  compared to the training
             set.
-        order_by: str / dict / list, optional
-            List of the vDataColumns used to sort the data, using
-            asc order or a dictionary of all sorting methods.  For
-            example,  to sort by "column1" ASC and "column2"  DESC,
-            write: ``{"column1": "asc", "column2": "desc"}``
+        order_by: str | dict | list, optional
+            List of the :py:class:`vDataColumn` used to sort the data,
+            using asc order or a ``dictionary`` of all sorting methods.
+            For example,  to sort by "column1" ASC and "column2"
+            DESC, write: ``{"column1": "asc", "column2": "desc"}``
             Without this parameter,  the seeded random number used
             to split the data into train and test cannot guarantee
             that no collision will occur. Using this parameter
@@ -1713,8 +1838,7 @@ class vDFMachineLearning(vDFScaler):
             (train vDataFrame, test vDataFrame)
 
         Examples
-        ---------
-
+        --------
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -1740,11 +1864,12 @@ class vDFMachineLearning(vDFScaler):
 
         .. ipython:: python
 
-            len(data)
+            data.shape()
 
-
-        Now, we can easily divide the dataset into training and testing subsets
-        using the :py:meth:`vDataFrame.train_test_split` method.
+        Now, we can easily divide the dataset into
+        training and testing subsets using the
+        :py:meth:`vDataFrame.train_test_split`
+        method.
 
         .. ipython:: python
 
@@ -1754,18 +1879,27 @@ class vDFMachineLearning(vDFScaler):
 
         .. ipython:: python
 
-            len(train)
+            train.shape()
 
         And test set:
 
         .. ipython:: python
 
-            len(test)
+            test.shape()
+
+        .. warning::
+
+            This function utilizes seeded random values
+            to ensure reproducibility, requiring an index
+            to prevent collisions. It is highly recommended
+            to save the results as tables using the
+            :py:meth:`vDataFrame.to_db` method to expedite
+            the process and ensure consistent results.
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.sample` : Downsamples the input ``vDataFrame``.
-
+            | :py:meth:`verticapy.vDataFrame.sample` :
+                Downsamples the input :py:class:`vDataFrame`.
         """
         order_by = format_type(order_by, dtype=list)
         order_by = self._get_sort_syntax(order_by)
