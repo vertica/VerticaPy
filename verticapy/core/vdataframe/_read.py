@@ -308,7 +308,7 @@ class vDFRead(vDFUtils):
         In order to see only the starting rows,
         we can use the ``head`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data.head()
 
@@ -384,7 +384,7 @@ class vDFRead(vDFUtils):
         3 rows starting from the 10th row, we can
         use the following:
 
-        .. code-block::
+        .. code-block:: python
 
             data.iloc(3, 9)
 
@@ -590,7 +590,7 @@ class vDFRead(vDFUtils):
         In order to see only the last columns,
         we can use the ``tail`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data.tail()
 
@@ -665,7 +665,7 @@ class vDFRead(vDFUtils):
         3 rows starting from the 10th row, we can
         use the following:
 
-        .. code-block::
+        .. code-block:: python
 
             data.select(["pclass", "age"])
 
@@ -685,7 +685,7 @@ class vDFRead(vDFUtils):
             The same can be achieved by using square
             brackets directly.
 
-            .. code-block::
+            .. code-block:: python
 
                 data[["pclass", "age"]]
 
@@ -883,7 +883,7 @@ class vDCRead:
         In order to see only the starting columns,
         we can use the ``head`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data["age"].head()
 
@@ -962,7 +962,7 @@ class vDCRead:
         3 rows starting from the 10th row, we can
         use the following:
 
-        .. code-block::
+        .. code-block:: python
 
             data["age"].iloc(3, 9)
 
@@ -1054,7 +1054,7 @@ class vDCRead:
         value  arranged in descending order, we can use
         the ``nlargest`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data["age"].nlargest(n = 5)
 
@@ -1139,7 +1139,7 @@ class vDCRead:
         value  arranged in ascending order, we can use
         the ``nsmallest`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data["age"].nsmallest(n = 5)
 
@@ -1219,7 +1219,7 @@ class vDCRead:
         In order to see only the starting rows,
         we can use the ``tail`` function:
 
-        .. code-block::
+        .. code-block:: python
 
             data["age"].tail()
 

@@ -79,9 +79,29 @@ MINIMUM_VERTICA_VERSION = {
 
 def check_minimum_version(func: Callable) -> Callable:
     """
-    check_minimum_version decorator. It simplifies
-    the code by checking whether the feature is
-    available in the user's version.
+    check_minimum_version decorator. It
+    simplifies the code by checking
+    whether the feature is available
+    in the user's version.
+
+    You can utilize the decorator as
+    follows.
+
+    .. code-block:: python
+
+        from verticapy._utils._sql._vertica_version import check_minimum_version
+
+        @check_minimum_version
+        def function(...):
+            ...
+
+    .. note::
+
+        VerticaPy will automatically check the version
+        in the ``MINIMUM_VERTICA_VERSION`` dictionary.
+        Ensure to update the dictionary to accommodate
+        your specific function name. For classes,
+        place it above the ``__init__`` function.
     """
 
     @wraps(func)
@@ -104,15 +124,48 @@ def vertica_version(condition: Optional[list] = None) -> tuple[int, int, int, in
     Parameters
     ----------
     condition: list, optional
-        List of the minimal version information. If the
-        current version is not greater or equal to this
-        version, the function raises an error.
+        List of the minimal version
+        information. If the current
+        version is not greater or
+        equal to this version, the
+        function raises an error.
 
     Returns
     -------
     tuple
-        List containing the version information.
-        MAJOR, MINOR, PATCH, POST
+        List containing the version
+        information.
+        ``(MAJOR, MINOR, PATCH, POST)``
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._vertica_version import vertica_version
+
+        # Function Example.
+        vertica_version()
+
+    .. note::
+
+        Utilize the condition parameter if you want
+        to raise an error when the condition is not
+        met. The following code will raise an error
+        if the Vertica version is less than 23.3.
+
+        .. code-block:: python
+
+            vertica_version(condition = (23, 3, 0))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     condition = format_type(condition, dtype=list)
     if len(condition) > 0:

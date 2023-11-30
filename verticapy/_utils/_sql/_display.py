@@ -27,6 +27,38 @@ if conf.get_import_success("IPython"):
 def print_query(query: str, title: Optional[str] = None) -> None:
     """
     Displays the input query.
+
+    Parameters
+    ----------
+    query: str
+        SQL Query.
+    title: str, optional
+        Query title.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._display import print_query
+
+        # Generating a query.
+        query = "SELECT col1, SUM(col2) FROM my_table GROUP BY 1;"
+
+        # Function example.
+        print_query(
+            query,
+            title = "Computing the sum of col2 by col1.",
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     screen_columns = shutil.get_terminal_size().columns
     query_print = clean_query(query)
@@ -44,6 +76,30 @@ def print_query(query: str, title: Optional[str] = None) -> None:
 def print_time(elapsed_time: float) -> None:
     """
     Displays the input time.
+
+    Parameters
+    ----------
+    elapsed_time: float
+        Query Elapsed Time.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._display import elapsed_time
+
+        # Function example.
+        elapsed_time(4.12789)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     screen_columns = shutil.get_terminal_size().columns
     if conf.get_import_success("IPython"):
