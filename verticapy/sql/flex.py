@@ -93,22 +93,26 @@ def compute_flextable_keys(
     .. ipython:: python
         :okwarning:
 
+        vp.drop("temp", method = "schema")
         vp.create_schema("temp")
 
     We injest the JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         vdf = vp.read_json(
             "nested_columns.json",
             schema = "temp",
             table_name = "test",
             flatten_maps = False,
+            materialize = False
         )
 
     Then compute the flex table keys:
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.sql import compute_flextable_keys
 
@@ -190,6 +194,7 @@ def compute_vmap_keys(
     Create a JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         import json
 
@@ -235,6 +240,7 @@ def compute_vmap_keys(
     We injest the JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         vdf = vp.read_json(
             "nested_columns.json",
@@ -247,6 +253,7 @@ def compute_vmap_keys(
     input VMap's ``column1``:
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.sql import compute_vmap_keys
 
@@ -255,6 +262,7 @@ def compute_vmap_keys(
     We drop the temporary table.
 
     .. ipython:: python
+        :okwarning:
 
         vp.drop("temp.test")
 
@@ -359,6 +367,7 @@ def isflextable(table_name: str, schema: str) -> bool:
     We injest the JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         vdf = vp.read_json(
             "nested_columns.json",
@@ -370,6 +379,7 @@ def isflextable(table_name: str, schema: str) -> bool:
     Then check if the table is a flex table:
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.sql import isflextable
 
@@ -436,6 +446,7 @@ def isvmap(
     Create a JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         import json
 
@@ -481,6 +492,7 @@ def isvmap(
     We injest the JSON file:
 
     .. ipython:: python
+        :okwarning:
 
         vdf = vp.read_json(
             "nested_columns.json",
@@ -492,6 +504,7 @@ def isvmap(
     Checking if ``column1`` is a vmap:
 
     .. ipython:: python
+        :okwarning:
 
         from verticapy.sql import isvmap
 

@@ -5,14 +5,25 @@ vDataFrame
 =================
 
 
-vDataFrame
-------------
+.. tab:: vDataFrame
 
-.. currentmodule:: verticapy
+   vDataFrame
+   ------------
 
-.. autoclass:: vDataFrame
-   :members:
+   .. currentmodule:: verticapy
 
+   .. autoclass:: vDataFrame
+      :members:
+
+.. tab:: vDataColumn
+
+   vDataColumn
+   ------------
+
+   .. currentmodule:: verticapy
+
+   .. autoclass:: vDataColumn
+      :members:
 
 ______
 
