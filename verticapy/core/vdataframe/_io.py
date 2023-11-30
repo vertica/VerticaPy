@@ -56,6 +56,73 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             The copy of the vDataFrame.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's create a copy of data vDataFrame and name it data_copy
+
+        .. code-block:: python
+
+            data_copy = data.copy()
+
+            display(data_copy)
+
+        .. ipython:: python
+            :suppress:
+
+            data_copy = data.copy()
+            res = data_copy
+            html_file = open("figures/core_vDataFrame_io1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io1.html
         """
         return copy.deepcopy(self)
 
@@ -74,6 +141,108 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             vDataFrame of the loading.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's save the current structure.
+
+        .. code-block:: python
+
+            data.save()
+
+        Let's perform some operations on the vDataframe
+
+        .. code-block:: python
+
+            data.filter("age < 30")
+            data.normalize()
+
+        .. ipython:: python
+            :suppress:
+
+            data.save()
+            data.filter("age < 30")
+            res = data.normalize()
+            html_file = open("figures/core_vDataFrame_io_load1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_load1.html
+
+        .. note::
+            You can observe that 699 element(s) were filtered out
+            from the vDataFrame.
+
+        Now, let's load the last saved vDataFrame
+
+        .. code-block:: python
+
+            data.load()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.load()
+            html_file = open("figures/core_vDataFrame_io_load2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_load2.html
+
+        .. note::
+            You can observe that the last saved state of
+            vDataFrame having 1234 elements has been loaded.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.save` : Saves the current vDataFrame structure.
         """
         save = self._vars["saving"][offset]
         vdf = pickle.loads(save)
@@ -89,6 +258,108 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's save the current structure.
+
+        .. code-block:: python
+
+            data.save()
+
+        Let's perform some operations on the vDataframe
+
+        .. code-block:: python
+
+            data.filter("age < 30")
+            data.normalize()
+
+        .. ipython:: python
+            :suppress:
+
+            data.save()
+            data.filter("age < 30")
+            res = data.normalize()
+            html_file = open("figures/core_vDataFrame_io_save1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_save1.html
+
+        .. note::
+            You can observe that 699 element(s) were filtered out
+            from the vDataFrame.
+
+        Now, let's load the last saved vDataFrame
+
+        .. code-block:: python
+
+            data.load()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.load()
+            html_file = open("figures/core_vDataFrame_io_save2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_save2.html
+
+        .. note::
+            You can observe that the last saved state of
+            vDataFrame having 1234 elements has been loaded.
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.load` : Loads a saved vDataFrame structure.
         """
         vdf = self.copy()
         self._vars["saving"] += [pickle.dumps(vdf)]
@@ -148,6 +419,90 @@ class vDFInOut(vDFSystem):
         str or list
             JSON str or list (n_files>1) if 'path' is not defined;
             otherwise, nothing.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's do some transformations.
+
+        .. code-block:: python
+
+            data.get_dummies()
+            data.normalize()
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data.get_dummies()
+            res = data.normalize()
+            html_file = open("figures/core_vDataFrame_io_tocsv1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tocsv1.html
+
+        Let's create the CSV file of the current vDataFrame.
+
+        .. ipython:: python
+
+            data[0:2].to_csv()
+
+        Let's create 2 CSV files and sort the elements by "name".
+
+        .. ipython:: python
+
+            data[0:2].to_csv(n_files = 2, order_by="name")
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.to_db` : Saves the current structure of vDataFrame to the Vertica Database.
+            | :py:meth:`verticapy.vDataFrame.to_json` : Creates a JSON file of the current vDataFrame structure.
         """
         order_by, usecols, new_header = format_type(
             order_by, usecols, new_header, dtype=list
@@ -301,6 +656,160 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's do some transformations.
+
+        .. code-block:: python
+
+            data.get_dummies()
+            data.normalize()
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data.get_dummies()
+            res = data.normalize()
+            html_file = open("figures/core_vDataFrame_io_todb1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_todb1.html
+
+        Let's save the result in the Database.
+
+        .. code-block:: python
+
+            data.to_db(name = '"public"."data_normalized"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table")
+
+            vp.vDataFrame('"public"."data_normalized"')
+
+        .. ipython:: python
+            :suppress:
+            :okexcept:
+
+            data.to_db(name = '"public"."data_normalized"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table")
+
+            res = vp.vDataFrame('"public"."data_normalized"')
+            html_file = open("figures/core_vDataFrame_io_todb2.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_todb2.html
+
+        Let's add a split column in the final relation.
+
+        .. code-block:: python
+
+            data.to_db(name = '"public"."data_norm_split"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table",
+                nb_split = 3)
+
+            vp.vDataFrame('"public"."data_norm_split"')
+
+        .. ipython:: python
+            :suppress:
+            :okexcept:
+
+            data.to_db(name = '"public"."data_norm_split"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table",
+                nb_split = 3)
+
+            res = vp.vDataFrame('"public"."data_norm_split"')
+            html_file = open("figures/core_vDataFrame_io_todb3.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_todb3.html
+
+        Let's use conditions to filter data.
+
+        .. code-block:: python
+
+            data.to_db(name = '"public"."data_norm_filter"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table",
+                db_filter = "sex = 'female'")
+
+            vp.vDataFrame('"public"."data_norm_filter"')
+
+        .. ipython:: python
+            :suppress:
+            :okexcept:
+
+            data.to_db(name = '"public"."data_norm_filter"',
+                usecols = ["fare", "sex", "survived"],
+                relation_type = "table",
+                db_filter = "sex = 'female'")
+
+            res = vp.vDataFrame('"public"."data_norm_filter"')
+            html_file = open("figures/core_vDataFrame_io_todb4.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_todb4.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.to_csv` : Creates a CSV file of the current vDataFrame structure.
+            | :py:meth:`verticapy.vDataFrame.to_json` : Creates a JSON file of the current vDataFrame structure.
         """
         relation_type = relation_type.lower()
         usecols, order_by = format_type(usecols, order_by, dtype=list)
@@ -402,7 +911,9 @@ class vDFInOut(vDFSystem):
         """
         Converts the vDataFrame to a Geopandas DataFrame.
 
-        \u26A0 Warning : The data will be loaded in memory.
+        .. warning::
+
+            The data will be loaded in memory.
 
         Parameters
         ----------
@@ -416,6 +927,75 @@ class vDFInOut(vDFSystem):
         geopandas.GeoDataFrame
             The geopandas.GeoDataFrame of the current vDataFrame
             relation.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the World dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_world()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_world.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_world()
+
+        Let's convert the vDataFrame to a Geopandas DataFrame.
+
+        .. code-block:: python
+
+            data.to_geopandas(geometry = "geometry")
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.to_geopandas(geometry = "geometry")
+            html_file = open("figures/core_vDataFrame_io_gp.html", "w")
+            html_file.write(res.to_html(max_rows = 2, justify = "center"))
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_gp.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.to_db` : Saves the current structure of vDataFrame to the Vertica Database.
+            | :py:meth:`verticapy.vDataFrame.to_json` : Creates a JSON file of the current vDataFrame structure.
         """
         if not conf.get_import_success("geopandas"):
             raise ImportError(
@@ -481,6 +1061,90 @@ class vDFInOut(vDFSystem):
         str or list
             JSON str or list (n_files>1) if 'path' is not defined;
             otherwise, nothing.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's do some transformations.
+
+        .. code-block:: python
+
+            data.get_dummies()
+            data.normalize()
+
+        .. ipython:: python
+            :suppress:
+            :okwarning:
+
+            data.get_dummies()
+            res = data.normalize()
+            html_file = open("figures/core_vDataFrame_io_tojson1.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tojson1.html
+
+        Let's create the JSON file of the current vDataFrame.
+
+        .. ipython:: python
+
+            data[0:2].to_json()
+
+        Let's create 2 JSON files and sort the elements by "name".
+
+        .. ipython:: python
+
+            data[0:2].to_json(n_files = 2, order_by="name")
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.to_db` : Saves the current structure of vDataFrame to the Vertica Database.
+            | :py:meth:`verticapy.vDataFrame.to_csv` : Creates a CSV file of the current vDataFrame structure.
         """
         order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
@@ -562,12 +1226,67 @@ class vDFInOut(vDFSystem):
         """
         Converts the vDataFrame to a Python list.
 
-        \u26A0 Warning : The data will be loaded in memory.
+        .. warning::
+
+            The data will be loaded in memory.
 
         Returns
         -------
         List
             The list of the current vDataFrame relation.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's convert the vDataFrame to a Python list.
+
+        .. ipython:: python
+
+            data[0:2].to_list()
         """
         res = _executeSQL(
             query=f"""
@@ -595,12 +1314,67 @@ class vDFInOut(vDFSystem):
         """
         Converts the vDataFrame to a Numpy array.
 
-        \u26A0 Warning : The data will be loaded in memory.
+        .. warning::
+
+            The data will be loaded in memory.
 
         Returns
         -------
         numpy.array
             The numpy array of the current vDataFrame relation.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's convert the vDataFrame to a Numpy array.
+
+        .. ipython:: python
+
+            data[0:2].to_numpy()
         """
         return np.array(self.to_list())
 
@@ -609,12 +1383,78 @@ class vDFInOut(vDFSystem):
         """
         Converts the vDataFrame to a pandas DataFrame.
 
-        \u26A0 Warning : The data will be loaded in memory.
+        .. warning::
+
+            The data will be loaded in memory.
 
         Returns
         -------
         pandas.DataFrame
             The pandas.DataFrame of the current vDataFrame relation.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's convert the vDataFrame to a Pandas DataFrame.
+
+        .. code-block:: python
+
+            data.to_pandas()
+
+        .. ipython:: python
+            :suppress:
+
+            res = data.to_pandas()
+            html_file = open("figures/core_vDataFrame_io_tp.html", "w")
+            html_file.write(res.to_html(max_rows = 6, justify = "center"))
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tp.html
         """
         data = _executeSQL(
             query=f"""
@@ -659,19 +1499,23 @@ class vDFInOut(vDFSystem):
             directory must not already exist, and the current user must
             have write permissions on it.
             The destination can be one of the following file systems:
-                HDFS File System
-                S3 Object Store
-                Google Cloud Storage (GCS) Object Store
-                Azure Blob Storage Object Store
-                Linux file system (either an NFS mount or local storage
-                on each node)
+
+            - HDFS File System
+            - S3 Object Store
+            - Google Cloud Storage (GCS) Object Store
+            - Azure Blob Storage Object Store
+            - Linux file system (either an NFS mount or local storage
+              on each node)
+
         compression: str, optional
             Column compression type, one the following:
-                Snappy (default)
-                gzip
-                Brotli
-                zstd
-                Uncompressed
+
+            - Snappy (default)
+            - gzip
+            - Brotli
+            - zstd
+            - Uncompressed
+
         rowGroupSizeMB: int, optional
             The  uncompressed size,  in MB, of exported  row  groups, an
             integer value in the range [1, fileSizeMB]. If fileSizeMB is
@@ -718,6 +1562,63 @@ class vDFInOut(vDFSystem):
         -------
         TableSample
             An object containing the number of rows exported.
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's export the vDataFrame to Parquet file.
+
+        .. code-block:: python
+
+            data.to_parquet(directory = "titanic_parquet")
+
+        .. note::
+
+            It will export vDataframe to parquet file at provided directory.
         """
         order_by, by = format_type(order_by, by, dtype=list)
         if rowGroupSizeMB <= 0:
@@ -761,6 +1662,82 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Titanic dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        Let's save the vDataFrame to a Python pickle file.
+
+        .. code-block:: python
+
+            data.to_pickle("vdf_data.p")
+
+        Let's unpickle the vDataframe from Python pickle file and view it.
+
+        .. code-block:: python
+
+            import pickle
+
+            vdf = pickle.load(open("vdf_data.p", "rb"))
+
+            vdf
+
+        .. ipython:: python
+            :suppress:
+
+            data.to_pickle("vdf_data.p")
+            import pickle
+            res = pickle.load(open("vdf_data.p", "rb"))
+            html_file = open("figures/core_vDataFrame_io_pickle.html", "w")
+            html_file.write(res._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_pickle.html
         """
         pickle.dump(self, open(name, "wb"))
         return self
@@ -788,6 +1765,7 @@ class vDFInOut(vDFSystem):
 
         Parameters
         ----------
+
         name: str
             Name of the SHP file.
         path: str
@@ -801,8 +1779,8 @@ class vDFInOut(vDFSystem):
             index (if an index exists).
         shape: str, optional
             Must be one of the following spatial classes:
-                Point, Polygon, Linestring, Multipoint,
-                Multipolygon, Multilinestring.
+            Point, Polygon, Linestring, Multipoint,
+            Multipolygon, Multilinestring.
             Polygons and Multipolygons always have a clockwise
             orientation.
 
@@ -810,6 +1788,65 @@ class vDFInOut(vDFSystem):
         -------
         vDataFrame
             self
+
+        Examples
+        ---------
+
+        We import :py:mod:`verticapy`:
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        For this example, we will use the Cities dataset.
+
+        .. code-block:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_cities()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_cities.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        .. ipython:: python
+            :suppress:
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_cities()
+
+        Let's create the SHP file of the current vDataFrame.
+
+        .. code-block:: python
+
+            data.to_shp(name = "cities",
+              path = "/home/dbadmin/",
+              shape = "Point")
+
+        .. note::
+
+            It will create "cities.shp" file at provided path.
         """
         usecols = format_type(usecols, dtype=list)
         query = f"""
