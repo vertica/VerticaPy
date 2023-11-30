@@ -129,11 +129,11 @@ class vDataFrame(vDFAnimatedPlot):
         Each   vDataColumn  of  the  vDataFrame  is  accessible   by
         specifying its name between brackets. For example, to access
         the vDataColumn "myVC": ``vDataFrame["myVC"]``.
-    
+
     Examples
     ---------
 
-    Though there are many ways to create a ``vDataFrame``, 
+    Though there are many ways to create a ``vDataFrame``,
     but here we will only look at creating ``vDataFrame``:
 
     - From dictionary
@@ -188,9 +188,9 @@ class vDataFrame(vDFAnimatedPlot):
     .. ipython:: python
 
         import numpy as np
-        
+
         vdf = vp.vDataFrame(
-            np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), 
+            np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
             usecols = ["col_A","col_B","col_C"]
         )
 
@@ -453,13 +453,13 @@ class vDataColumn(vDCPlot, StringSQL):
 
     Attributes
     ----------
-    alias, str: 
+    alias, str:
         vDataColumn alias.
-    catalog, dict: 
+    catalog, dict:
         Catalog of pre-computed aggregations.
-    parent, vDataFrame: 
+    parent, vDataFrame:
         Parent of the vDataColumn.
-    transformations, str: 
+    transformations, str:
         List of the different transformations.
     """
 
