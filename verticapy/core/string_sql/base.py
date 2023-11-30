@@ -23,7 +23,273 @@ from verticapy._utils._sql._format import format_magic, format_type
 
 class StringSQL:
     """
-    Class used to represent SQL strings.
+    This class is utilized to represent SQL strings, with
+    :py:class:`vDataColumn`, for instance, inheriting from
+    this class. Its purpose is to streamline SQL operations
+    in Python, enabling the use of Python operators with
+    specific SQL strings to simplify operations and enhance
+    the usability of the generated SQL.
+
+    Parameters
+    ----------
+    alias: str
+        Name of the :py:class:`StringSQL`.
+    category: str, optional
+        Category of the :py:class:`StringSQL`. This parameter
+        is crucial for performing accurate operations. For
+        instance, it plays a significant role in distinguishing
+        between the treatment of floats and text data.
+    init_transf: str, optional
+        Initial Transformation. It is employed to streamline
+        certain operations on :py:class:`vDataColumn`.
+
+    Attributes
+    ----------
+    No relevant attributes present.
+
+    Examples
+    --------
+    We import :py:mod:`verticapy`:
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    Let's create various :py:class:`StringSQL` objects.
+
+    .. ipython:: python
+
+        num1 = vp.StringSQL('numerical_col1', 'float')
+        num2 = vp.StringSQL('numerical_col2', 'int')
+        num3 = vp.StringSQL('numerical_col3', 'int')
+        str1 = vp.StringSQL('varchar_col1', 'text')
+        str2 = vp.StringSQL('varchar_col2', 'text')
+        bool1 = vp.StringSQL('bool_col1', 'bool')
+        bool2 = vp.StringSQL('bool_col2', 'bool')
+
+    The :py:class:`StringSQL` representation is a
+    straightforward string.
+
+    .. ipython:: python
+
+        display(num1)
+        display(str1)
+        display(bool1)
+
+    Exploring Mathematical Operators
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    All mathematical operators are supported
+    for numerical :py:class:`StringSQL`.
+
+    .. ipython:: python
+
+        import math
+
+        # Mathematical Functions
+        abs(num1)
+        round(num1, 3)
+        math.floor(num1)
+        math.ceil(num1)
+
+        # Unary Operators
+        - num1
+        + num1
+        ~ num1
+
+        # Binary Operators
+        num1 == num2
+        num1 != num2
+        num1 + num2
+        num1 - num2
+        num1 / num2
+        num1 // num2
+        num1 * num2
+        num1 ** num2
+        num2 % num3
+        num1 > num2
+        num1 >= num2
+        num1 < num2
+        num1 <= num2
+
+        # Extension
+        num1._between(num2, num3)
+
+    .. note::
+
+        Most mathematical operators can be applied
+        to the date datatype.
+
+    Exploring String Operators
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    A lot of operators are supported
+    for text data-type :py:class:`StringSQL`.
+
+    .. ipython:: python
+
+        # Equality and Inequality
+        str1 == str2
+        str1 != str2
+
+        # Concatenating two strings
+        str1 + str2
+
+        # Repeating a string
+        str1 * 3
+
+    Exploring Boolean Operators
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    A lot of operators are supported
+    for boolean data-type :py:class:`StringSQL`.
+
+    .. ipython:: python
+
+        # Equality and Inequality
+        bool1 == bool2
+        bool1 != bool2
+
+        # AND
+        bool1 & bool2
+
+        # OR
+        bool1 | bool2
+
+    .. important::
+
+        The '&' and '|' operators in :py:class:`StringSQL`
+        are distinct from the Python 'and' and 'or'
+        operators.
+
+        In Python, 'and' and 'or' are logical operators
+        used for boolean expressions. They perform short
+        -circuit evaluation, meaning that the second
+        operand is only evaluated if necessary.
+
+        In :py:class:`StringSQL`, '&' and '|' are used for
+        boolean concatenation, not logical operations.
+        They combine two :py:class:`StringSQL` without
+        short-circuiting, meaning both sides of the
+        operator are always evaluated.
+
+    General Operators
+    ^^^^^^^^^^^^^^^^^^
+
+    Some general operators are available for
+    all types.
+
+    .. ipython:: python
+
+        # IN
+        str1._in(['A', 'B', 'C'])
+
+        # NOT IN
+        str1._not_in(['A', 'B', 'C'])
+
+        # DISTINCT
+        str1._distinct()
+
+        # ALIAS
+        str1._as('new_name')
+
+    .. note::
+
+        The result is a :py:class:`StringSQL` object
+        that can be reused iteratively until we obtain
+        the final SQL statement.
+
+    Using VerticaPy SQL Functions
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Numerous SQL functions are accessible in the
+    :mod:`verticapy.sql.functions` module. In this
+    example, we will utilize the ``min`` and ``max``
+    aggregations to normalize the 'num1' column.
+    We will utilize a partition by 'str1' to normalize
+    within this specific partition.
+
+    .. ipython:: python
+
+        (num1 - vpf.min(num1)._over([str1])) / (vpf.max(num1)._over([str1]) - vpf.min(num1)._over([str1]))
+
+    .. note::
+
+        The ``_over`` operator also includes an
+        ``order_by`` parameter for sorting using
+        a specific column.
+
+    Combining the different Operators
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    It is possible to combine as many operators as
+    desired, as long as they adhere to SQL logic.
+    This allows the building of SQL expressions
+    using a Pythonic structure.
+
+    .. ipython:: python
+
+        # Example of a numerical expression
+        round(abs((num1 ** (num2 + num3)) - 15), 2)
+
+        # Example of a string expression
+        ((str1 + str2) ** 2)._in(['ABAB', 'ACAC'])
+
+    .. note::
+
+        It is recommended to use these operators to
+        construct VerticaPy code, as they adapt
+        seamlessly to the corresponding SQL database.
+        These functionalities are easily maintainable
+        and extendable.
+
+    Examples Using vDataFrame
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    :py:class:`vDataColumn` inherit from
+    :py:class:`StringSQL`, enabling operations
+    on :py:class:`vDataFrame` in a pandas-like
+    manner.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+        vdf = vp.vDataFrame(
+            {
+                "num1": [10, 20, 30, 40],
+                "num2": [5, 10, 15, 20],
+            },
+        )
+        vdf["num3"] = abs(vdf["num1"] * 2 - 5 * vdf["num2"] / 2)
+
+    Let's display the result. It is noteworthy that
+    the generated SQL was applied and utilized by
+    the :py:class:`vDataFrame`.
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_string_sql_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_string_sql_1.html
+
+    For more examples, refer to the
+    :py:class:`vDataFrame` class.
     """
 
     @property
@@ -31,7 +297,10 @@ class StringSQL:
         return "StringSQL"
 
     def __init__(
-        self, alias, category: Optional[str] = None, init_transf: Optional[str] = None
+        self,
+        alias: str,
+        category: Optional[str] = None,
+        init_transf: Optional[str] = None,
     ) -> None:
         self._alias = alias
         self._category = category

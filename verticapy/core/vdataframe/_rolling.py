@@ -42,9 +42,10 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new ``vDataColumn`` to the ``vDataFrame`` by
-        using an advanced  analytical  window function on
-        one or  two specific ``vDataColumns``.
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` by using an advanced
+        analytical  window function on one or two
+        specific :py:class:`vDataColumn`.
 
         .. warning::
 
@@ -106,7 +107,7 @@ class vDFRolling(vDFCorr):
             Other window functions could work if it is part of
             the DB version you are using.
 
-        window: list / tuple
+        window: list | tuple
             Window Frame Range.
             If set to two integers, computes a Row Window, otherwise
             it computes a Time  Window. For example, if set  to
@@ -115,7 +116,8 @@ class vDFRolling(vDFCorr):
             the  moving window  will take all elements of the last  5
             minutes.
         columns: SQLColumns
-            Input ``vDataColumns``. Must be a list of one or two elements.
+            Input :py:class:`vDataColumn`. Must be a list of one
+            or two elements.
         by: SQLColumns, optional
             vDataColumns used in the partition.
         order_by: dict | list, optional
@@ -125,8 +127,8 @@ class vDFRolling(vDFCorr):
             For example, to sort by "column1" ASC and "column2" DESC,
             use: ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new ``vDataColumn``.  If empty, a default name
-            is generated.
+            Name of the new :py:class:`vDataColumn`. If empty, a
+            default name is generated.
 
         Returns
         -------
@@ -379,9 +381,10 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new ``vDataColumn`` to the ``vDataFrame``
-        by computing the cumulative maximum of the input
-        ``vDataColumn``.
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` by computing the
+        cumulative maximum of the input
+        :py:class:`vDataColumn`.
 
         .. warning::
 
@@ -393,18 +396,19 @@ class vDFRolling(vDFCorr):
         Parameters
         ----------
         column: str
-            Input ``vDataColumn``.
+            Input :py:class:`vDataColumn`.
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict | list, optional
-            List of the ``vDataColumns`` used to sort the data using
-            ascending/descending order or a dictionary of all the
-            sorting methods.
-            For example, to sort by "column1" ASC and "column2" DESC,
-            use: ``{"column1": "asc", "column2": "desc"}``.
+            List of the :py:class:`vDataColumn` used to
+            sort the data using ascending/descending order
+            or a dictionary of all the sorting methods.
+            For example, to sort by "column1" ASC and
+            "column2" DESC, use:
+            ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new ``vDataColumn``. If empty, a default name
-            is generated.
+            Name of the new :py:class:`vDataColumn`. If
+            empty, a default name is generated.
 
         Returns
         -------
@@ -512,9 +516,10 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new ``vDataColumn`` to the ``vDataFrame``
-        by computing the cumulative minimum of the input
-        ``vDataColumn``.
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` by computing the
+        cumulative minimum of the input
+        :py:class:`vDataColumn`.
 
         .. warning::
 
@@ -526,18 +531,19 @@ class vDFRolling(vDFCorr):
         Parameters
         ----------
         column: str
-            Input ``vDataColumn``.
+            Input :py:class:`vDataColumn`.
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict | list, optional
-            List of the ``vDataColumns`` used to sort the data using
-            ascending/descending order or a dictionary of all the
-            sorting methods.
-            For example, to sort by "column1" ASC and "column2" DESC,
-            use: ``{"column1": "asc", "column2": "desc"}``.
+            List of the :py:class:`vDataColumn` used to
+            sort the data using ascending/descending order
+            or a dictionary of all the sorting methods.
+            For example, to sort by "column1" ASC and
+            "column2" DESC, use:
+            ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new ``vDataColumn``. If empty, a default name
-            is generated.
+            Name of the new :py:class:`vDataColumn`. If
+            empty, a default name is generated.
 
         Returns
         -------
@@ -645,9 +651,10 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new ``vDataColumn`` to the ``vDataFrame``
-        by computing the cumulative product of the input
-        ``vDataColumn``.
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` by computing the
+        cumulative product of the input
+        :py:class:`vDataColumn`.
 
         .. warning::
 
@@ -659,18 +666,19 @@ class vDFRolling(vDFCorr):
         Parameters
         ----------
         column: str
-            Input ``vDataColumn``.
+            Input :py:class:`vDataColumn`.
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict | list, optional
-            List of the ``vDataColumns`` used to sort the data using
-            ascending/descending order or a dictionary of all the
-            sorting methods.
-            For example, to sort by "column1" ASC and "column2" DESC,
-            use: ``{"column1": "asc", "column2": "desc"}``.
+            List of the :py:class:`vDataColumn` used to
+            sort the data using ascending/descending order
+            or a dictionary of all the sorting methods.
+            For example, to sort by "column1" ASC and
+            "column2" DESC, use:
+            ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new ``vDataColumn``. If empty, a default name
-            is generated.
+            Name of the new :py:class:`vDataColumn`. If
+            empty, a default name is generated.
 
         Returns
         -------
@@ -778,9 +786,10 @@ class vDFRolling(vDFCorr):
         name: Optional[str] = None,
     ) -> "vDataFrame":
         """
-        Adds a new ``vDataColumn`` to the ``vDataFrame``
-        by computing the cumulative sum of the input
-        ``vDataColumn``.
+        Adds a new :py:class:`vDataColumn` to the
+        :py:class:`vDataFrame` by computing the
+        cumulative sum of the input
+        :py:class:`vDataColumn`.
 
         .. warning::
 
@@ -792,18 +801,19 @@ class vDFRolling(vDFCorr):
         Parameters
         ----------
         column: str
-            Input ``vDataColumn``.
+            Input :py:class:`vDataColumn`.
         by: list, optional
             vDataColumns used in the partition.
         order_by: dict | list, optional
-            List of the ``vDataColumns`` used to sort the data using
-            ascending/descending order or a dictionary of all the
-            sorting methods.
-            For example, to sort by "column1" ASC and "column2" DESC,
-            use: ``{"column1": "asc", "column2": "desc"}``.
+            List of the :py:class:`vDataColumn` used to
+            sort the data using ascending/descending order
+            or a dictionary of all the sorting methods.
+            For example, to sort by "column1" ASC and
+            "column2" DESC, use:
+            ``{"column1": "asc", "column2": "desc"}``.
         name: str, optional
-            Name of the new ``vDataColumn``. If empty, a default name
-            is generated.
+            Name of the new :py:class:`vDataColumn`. If
+            empty, a default name is generated.
 
         Returns
         -------

@@ -189,7 +189,8 @@ def intersect(
     Parameters
     ----------
     vdf: SQLRelation
-        ``vDataFrame`` used to compute the spatial join.
+        :py:class:`vDataFrame` used to compute the
+        spatial join.
     index: str
         Name of the index.
     gid: str
@@ -385,8 +386,8 @@ def split_polygon_n(p: str, nbins: int = 100) -> vDataFrame:
     Returns
     -------
     vDataFrame
-        output ``vDataFrame`` that includes the
-        new polygons.
+        output :py:class:`vDataFrame` that includes
+        the new polygons.
 
     Examples
     --------

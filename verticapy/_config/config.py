@@ -33,13 +33,103 @@ from verticapy.errors import OptionError
 
 def get_import_success(module: str) -> bool:
     """
-    Confirms whether a module was successfully
-    imported.
+    Confirms whether a module was
+    successfully imported.
+
+    Parameters
+    ----------
+    module: str
+        Module name.
+
+    Returns
+    -------
+    bool
+        True if the module is installed
+        correctly.
+
+    Examples
+    --------
+    Let's perform two checks: one for an existing
+    module and one for a non-existent one.
+
+    .. ipython:: python
+
+        # Importing the function
+        from verticapy._config.config import get_import_success
+
+        # Checking an existing module
+        get_import_success('verticapy')
+
+        # Checking a fake module
+        get_import_success('fake_module_test')
+
+    .. note::
+
+        This function is used to test if optional
+        modules are installed to enhance VerticaPy
+        capabilities.
     """
     return not isinstance(importlib.util.find_spec(module), NoneType)
 
 
 class Option:
+    """
+    New Option.
+
+    Parameters
+    ----------
+    key: str
+        Option name.
+    defval: Any
+        The default value.
+    doc: str
+        Option documentation.
+    validator: Callable
+        Function to check the input in
+        case of option change.
+    map_: dict, optional
+        Dictionary to Map to the Right Value.
+
+    Attributes
+    ----------
+    The attributes are identical to the input
+    parameters.
+
+    Examples
+    --------
+    The following option is a string that can
+    take one of three values: 'A', 'B', or 'C'.
+
+    .. ipython:: python
+
+        # Importing the validator.
+        from verticapy._config.validators import in_validator
+
+        # Importing the Option class
+        from verticapy._config.config import Option
+
+        # Building the Option
+        Option(
+            "abc_test", # Option Name
+            "A", # Default Value
+            "ABC Checker.", # Doc
+            in_validator(["A", "B", "C"]), # Validator
+        )
+
+    .. note::
+
+        This class is utilized to create consistent
+        options that can be used throughout the entire
+        API.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.register_option` :
+            Registers the input option.
+        | :py:meth:`verticapy.set_option` :
+            Sets VerticaPy options.
+    """
+
     key: str
     val: Any
     defval: Any
@@ -69,11 +159,94 @@ _all_options: dict[str, Option] = {}
 def get_option(key: str) -> Any:
     """
     Returns the value of a specified option.
+
+    Parameters
+    ----------
+    key: str
+        Option name.
+
+    Returns
+    -------
+    Any
+        The selected option.
+
+    Examples
+    --------
+    Let's get the value of an existing option.
+
+    .. ipython:: python
+
+        # Importing the function
+        from verticapy._config.config import get_option
+
+        # Checking the 'plotting_lib' option
+        get_option('plotting_lib')
+
+    .. note::
+
+        This function is utilized to get the options
+        that can be used throughout the entire API.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.set_option` :
+            Sets VerticaPy options.
     """
     return _all_options[key].val
 
 
 def register_option(op: Option) -> None:
+    """
+    Registers the input option.
+
+    Parameters
+    ----------
+    op: Option
+        Option to register.
+
+    Examples
+    --------
+    The following option is a string that can
+    take one of three values: 'A', 'B', or 'C'.
+
+    .. ipython:: python
+
+        # Importing the validator.
+        from verticapy._config.validators import in_validator
+
+        # Importing the Option class
+        from verticapy._config.config import Option
+
+        # Building the Option
+        opt = Option(
+            "abc_test", # Option Name
+            "A", # Default Value
+            "ABC Checker.", # Doc
+            in_validator(["A", "B", "C"]), # Validator
+        )
+        display(opt)
+
+    Now, let's register the option.
+
+    .. ipython:: python
+
+        # Importing the function
+        from verticapy._config.config import register_option
+
+        # Registering the option
+        register_option(opt)
+
+    .. note::
+
+        This function is utilized to create consistent
+        options that can be used throughout the entire
+        API.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.set_option` :
+            Sets VerticaPy options.
+    """
     _all_options[op.key] = op
 
 
@@ -86,46 +259,58 @@ def set_option(key: str, value: Any = None) -> None:
     key: str
         Option to set, one of the following:
 
-         - cache: bool
+         - cache:
+            [bool]
             If set to True, vDataFrames save the
             computed aggregations in-memory.
-         - colors: list
+         - colors:
+            [list]
             List of colors used to draw the graphics.
-         - color_style: str
+         - color_style:
+            [str]
             Style used to color the graphics, one of the
             following:
             "rgb", "sunset", "retro", "shimbg", "swamp",
             "med", "orchid", "magenta", "orange",
             "vintage", "vivid", "berries", "refreshing",
             "summer", "tropical", "india", "default".
-         - count_on: bool
-            If set to True, the total number of rows in
-            vDataFrames and TableSamples is computed and
-            displayed in the footer (if ``footer_on is True``).
-         - footer_on: bool
-            If set to True, vDataFrames and TableSamples
-            show a footer that includes information about
-            the displayed rows and columns.
-         - interactive: bool
-            If set to True, VerticaPy outputs are displayed
-            in interactive tables.
-         - label_separator: str
+         - count_on:
+            [bool]
+            If set to ``True``, the total number of rows in
+            :py:class:`vDataFrame` and :py:class:`TableSample`
+            is computed and displayed in the footer (if
+            ``footer_on is True``).
+         - footer_on:
+            [bool]
+            If set to ``True``, :py:class:`vDataFrame` and
+            :py:class:`TableSample` show a footer that includes
+            information about the displayed rows and columns.
+         - interactive:
+            [bool]
+            If set to ``True``, VerticaPy outputs are
+            displayed in interactive tables.
+         - label_separator:
+            [str]
             Separator used to separate the query label from
             the ``label_suffix``. The default value is ``__``.
-         - label_suffix: str
+         - label_suffix:
+            [str]
             Label suffix to add to VerticaPy's query labels.
             It can be useful to track some specific activities.
             For example: Looking which user runs some specific
             VerticaPy functions. The default value is ``None``.
-         - max_columns: int
+         - max_columns:
+            [int]
             Maximum number of columns to display. If the
             specified value is invalid, ``max_columns`` is
             not changed.
-         - max_rows: int
+         - max_rows:
+            [int]
             Maximum number of rows to display. If the
             specified value is invalid, ``max_row`` is
             not changed.
-         - mode: str
+         - mode:
+            [str]
             Display mode for VerticaPy outputs, either:
 
             **full**:
@@ -133,33 +318,41 @@ def set_option(key: str, value: Any = None) -> None:
 
             **light**:
                 Minimalist display mode.
-         - percent_bar: bool
-            If set to True, the percent of non-missing
+         - percent_bar:
+            [bool]
+            If set to ``True``, the percent of non-missing
             values is displayed.
-         - print_info: bool
-            If set to True, information is printed each
-            time the vDataFrame is modified.
-         - random_state: int
+         - print_info:
+            [bool]
+            If set to ``True``, information is printed each
+            time the :py:class:`vDataFrame` is modified.
+         - random_state:
+            [int]
             Integer used to seed random number generation
             in VerticaPy.
-         - save_query_profile: bool
-            If set to True, all function calls are stored in
-            the query profile table. This makes it possible
+         - save_query_profile:
+            [bool]
+            If set to ``True``, all function calls are stored
+            in the query profile table. This makes it possible
             to differentiate the VerticaPy logs from the
-            Vertica logs. If set to False, this functionality
+            Vertica logs. If set to ``False``, this functionality
             is deactivated.
-         - sql_on: bool
-            If set to True, displays all SQL queries.
-         - temp_schema: str
+         - sql_on:
+            [bool]
+            If set to ``True``, displays all SQL queries.
+         - temp_schema:
+            [str]
             Specifies the temporary schema that certain
-            methods/functions use to create intermediate
+            methods / functions use to create intermediate
             objects, if needed.
-         - time_on: bool
-            If set to True, displays the elasped time for
-            all SQL queries.
-         - tqdm: bool
-            If set to True, a loading bar is displayed when
-            using iterative functions.
+         - time_on:
+            [bool]
+            If set to ``True``, displays the elasped time
+            for all SQL queries.
+         - tqdm:
+            [bool]
+            If set to ``True``, a loading bar is displayed
+            when using iterative functions.
 
     value: object, optional
         New value of the option.
@@ -168,7 +361,10 @@ def set_option(key: str, value: Any = None) -> None:
     --------
     Import and load the titanic dataset:
 
-    .. hint:: VerticaPy provides multiple datasets, all of which have loaders in the datasets module.
+    .. hint::
+
+        VerticaPy provides multiple datasets, all of
+        which have loaders in the datasets module.
 
     .. code-block:: python
 
@@ -200,8 +396,9 @@ def set_option(key: str, value: Any = None) -> None:
     Customize vDataFrame Display Settings
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    Turn on the ``count_on`` option, which displays the
-    total number of elements in the dataset:
+    Turn on the ``count_on`` option, which
+    displays the total number of elements
+    in the dataset:
 
     .. code-block:: python
 
@@ -213,7 +410,7 @@ def set_option(key: str, value: Any = None) -> None:
         Exercise caution when enabling this option,
         as it may result in decreased performance.
         VerticaPy will perform calculations to determine
-        the number of elements in a displayed vDataFrame,
+        the number of elements in a displayed :py:class:`vDataFrame`,
         which can have an impact on overall system performance.
 
     .. ipython:: python
@@ -249,8 +446,9 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. note::
 
-        By setting this parameter, we retrieve fewer elements
-        from the database, resulting in faster visualization.
+        By setting this parameter, we retrieve
+        fewer elements from the database, resulting
+        in faster visualization.
 
     .. code-block:: python
 
@@ -277,10 +475,12 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. warning::
 
-        Exercise caution when using high values for ``max_rows``
-        and ``max_columns`` options, as it may lead to an excessive
-        amount of data being loaded into memory. This can potentially
-        slow down your notebook's performance.
+        Exercise caution when using high
+        values for ``max_rows`` and ``max_columns``
+        options, as it may lead to an excessive
+        amount of data being loaded into memory.
+        This can potentially slow down your
+        notebook's performance.
 
     .. ipython:: python
         :suppress:
@@ -302,9 +502,10 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. hint::
 
-        The light mode option streamlines the display of vDataFrame,
-        creating a more minimalistic appearance that can enhance the
-        fluidity of your notebook.
+        The light mode option streamlines the
+        display of :py:class:`vDataFrame`, creating
+        a more minimalistic appearance that can
+        enhance the fluidity of your notebook.
 
     .. ipython:: python
         :suppress:
@@ -360,8 +561,8 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. note::
 
-        Vertica sometimes caches the SQL query, resulting
-        in no displayed SQL.
+        Vertica sometimes caches the SQL query,
+        resulting in no displayed SQL.
 
     .. code-block:: python
 
@@ -387,8 +588,8 @@ def set_option(key: str, value: Any = None) -> None:
     Seed Randomness
     ^^^^^^^^^^^^^^^^
 
-    Sets the seed for the random number generator and
-    seeds the random state:
+    Sets the seed for the random number
+    generator and seeds the random state:
 
     .. ipython:: python
 
@@ -402,8 +603,8 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. important::
 
-        The API will exclusively use these colors for
-        drawing graphics.
+        The API will exclusively use these colors
+        for drawing graphics.
 
     .. ipython:: python
 
@@ -421,9 +622,9 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. warning::
 
-        This can be unstable if not enough colors are provided.
-        It is advised to use the plotting library color options
-        to switch colors.
+        This can be unstable if not enough colors are
+        provided. It is advised to use the plotting
+        library color options to switch colors.
 
     .. ipython:: python
         :suppress:
@@ -437,10 +638,11 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. important::
 
-        The temporary schema is utilized to create elements that
-        should be dropped at the end of function execution. In
-        the case of error, the element might still exist and will
-        need to be manually dropped.
+        The temporary schema is utilized to create
+        elements that should be dropped at the end
+        of function execution. In the case of error,
+        the element might still exist and will need
+        to be manually dropped.
 
     .. ipython:: python
 
@@ -448,12 +650,20 @@ def set_option(key: str, value: Any = None) -> None:
 
     .. hint::
 
-        The ``cache`` option enables you to cache the aggregations,
-        speeding up the process. However, it should only be used on
-        static tables; otherwise, the statistics might become biased.
+        The ``cache`` option enables you to cache
+        the aggregations, speeding up the process.
+        However, it should only be used on static
+        tables; otherwise, the statistics might
+        become biased.
 
-    For a full list of the available options, see the list for the
-    ``key`` parameter at the top of the page.
+    For a full list of the available options, see
+    the list for the ``key`` parameter at the top
+    of the page.
+
+    .. seealso::
+
+        | :py:meth:`verticapy.get_option` :
+            Returns the value of a specified option.
     """
     if key in _all_options:
         op = _all_options[key]

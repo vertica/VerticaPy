@@ -110,14 +110,14 @@ _____
 SQL
 -----
 
-- ``vDataFramesSQL`` is deprecated. Now, ``vDataFrame`` can be used directly to create ```vDataFrame``s from SQL. For example:
+- ``vDataFramesSQL`` is deprecated. Now, :py:class:`vDataFrame` can be used directly to create `:py:class:`vDataFrame`s from SQL. For example:
 
 .. code-block:: python
 
   import verticapy as vp
   vp.vDataFrame("(SELECT pclass, embarked, AVG(survived) FROM public.titanic GROUP BY 1, 2) x")
 
-The new format supports other methods for creating ``vDataFrame``s.
+The new format supports other methods for creating :py:class:`vDataFrame`s.
 
 .. code-block:: python
 
@@ -214,7 +214,7 @@ Import structures have changed. The code has been completely restructured, which
 
 The new structure has the following parent folders:
 
-- Core [includes ``vDataFrame``, parsers ``string_sql``, and ``tablesample``]
+- Core [includes :py:class:`vDataFrame`, parsers ``string_sql``, and ``tablesample``]
 - Machine Learning [includes model selection, metrics, memmodels, and also all the ML functions of Vertica]
 - SQL [includes dtypes, insert, drop, etc.]
 - Jupyter [includes extensions such as magic SQL and magic chart]
@@ -304,7 +304,7 @@ Others
 
 - Now we use the DISTRIBUTED_SEEDED_RANDOM function instead of SEEDED_RANDOM in Vertica versions higher than 23.
 - Some new functions taht help in viewing and using nested data:
-  - ``explode_array`` is a ``vDataFrame`` function that allows users to expand the contents of a nested column.
+  - ``explode_array`` is a :py:class:`vDataFrame` function that allows users to expand the contents of a nested column.
 - Changes that do not affect the user experience include:
 
   - Code restructuring to improve readability and better collaboration using PEP8 standard.

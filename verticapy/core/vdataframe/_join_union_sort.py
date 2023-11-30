@@ -56,10 +56,11 @@ class vDFJoinUnionSort(vDFMath):
         input_relation: SQLRelation
             Relation to merge with.
         expr1: SQLExpression, optional
-            List of pure-SQL expressions from the current ``vDataFrame``
-            to use during merging. For example,  ``CASE WHEN "column"
-            > 3 THEN 2 ELSE NULL END`` and  ``POWER("column", 2)`` will
-            work. If empty, all vDataFrame vDataColumns are used.
+            List of pure-SQL expressions from the current
+            :py:class:`vDataFrame` to use during merging.
+            For example,  ``CASE WHEN "column" > 3 THEN 2 ELSE
+            NULL END`` and  ``POWER("column", 2)`` will work.
+            If empty, all vDataFrame vDataColumns are used.
             Aliases are recommended to avoid auto-naming.
         expr2: SQLExpression, optional
             List of pure-SQL  expressions from the input relation to
@@ -95,7 +96,7 @@ class vDFJoinUnionSort(vDFMath):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create two ``vDataFrames`` which we can
+        Let us create two :py:class:`vDataFrame` which we can
         merge for this example:
 
         .. ipython:: python
@@ -114,8 +115,8 @@ class vDFJoinUnionSort(vDFMath):
                     }
                 )
 
-        We can conveniently append the the first ``vDataFrame``
-        with the second one:
+        We can conveniently append the the first
+        :py:class:`vDataFrame` with the second one:
 
         .. code-block:: python
 
@@ -134,8 +135,8 @@ class vDFJoinUnionSort(vDFMath):
 
         We can also apply some SQL expressions on the append
         using ``expr1`` and ``expr2``. Let us try to
-        limit the maximum value of the second ``vDataFrame``
-        to 20.
+        limit the maximum value of the second
+        :py:class:`vDataFrame` to 20.
 
         .. code-block:: python
 
@@ -168,7 +169,8 @@ class vDFJoinUnionSort(vDFMath):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.join` : Joins the
-                ``vDataFrame`` with another one or an input relation.
+                :py:class:`vDataFrame` with another one or an
+                ``input_relation``.
         """
         expr1, expr2 = format_type(expr1, expr2, dtype=list)
         columns = ", ".join(self.get_columns()) if not expr1 else ", ".join(expr1)
@@ -197,8 +199,8 @@ class vDFJoinUnionSort(vDFMath):
         expr2: Optional[SQLExpression] = None,
     ) -> "vDataFrame":
         """
-        Joins the ``vDataFrame`` with another one or an
-        input relation.
+        Joins the :py:class:`vDataFrame` with another
+        one or an ``input_relation``.
 
         .. warning::
 
@@ -217,9 +219,9 @@ class vDFJoinUnionSort(vDFMath):
             If using a list:
             List of 3-tuples. Each tuple must include
             (key1, key2, operator) — where ``key1`` is
-            the key of the ``vDataFrame``, ``key2`` is
-            the key of the ``input_relation``, and
-            ``operator`` is one of the following:
+            the key of the :py:class:`vDataFrame`,
+            ``key2`` is the key of the ``input_relation``,
+            and ``operator`` is one of the following:
 
             - '=':
                 exact match
@@ -258,9 +260,9 @@ class vDFJoinUnionSort(vDFMath):
             This parameter must include all the different
             keys. It must be similar to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where ``relationA`` is the current ``vDataFrame``
+            where ``relationA`` is the current :py:class:`vDataFrame`
             and ``relationB`` is the ``input_relation`` or
-            the input ``vDataFrame``.
+            the input :py:class:`vDataFrame`.
 
         on_interpolate: dict, optional
             Dictionary of all unique keys. This is used
@@ -271,9 +273,9 @@ class vDFJoinUnionSort(vDFMath):
             measurement interval. The dict must be similar
             to the following:
             ``{"relationA_key1": "relationB_key1" ...,"relationA_keyk": "relationB_keyk"}``
-            where ``relationA`` is the current ``vDataFrame``
+            where ``relationA`` is the current :py:class:`vDataFrame`
             and ``relationB`` is the ``input_relation`` or the
-            input ``vDataFrame``.
+            input :py:class:`vDataFrame`.
 
         how: str, optional
             Join Type.
@@ -293,13 +295,13 @@ class vDFJoinUnionSort(vDFMath):
 
         expr1: SQLExpression, optional
             List of the different columns in pure SQL
-            to select from the current ``vDataFrame``,
+            to select from the current :py:class:`vDataFrame`,
             optionally as aliases. Aliases are recommended
             to avoid ambiguous names. For example: ``column``
             or ``column AS my_new_alias``.
         expr2: SQLExpression, optional
             List of the different columns in pure SQL
-            to select from the current ``vDataFrame``,
+            to select from the current :py:class:`vDataFrame`,
             optionally as aliases. Aliases are recommended
             to avoid ambiguous names. For example: ``column``
             or ``column AS my_new_alias``.
@@ -327,7 +329,7 @@ class vDFJoinUnionSort(vDFMath):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create two ``vDataFrames`` which we
+        Let us create two :py:class:`vDataFrame` which we
         can JOIN for this example:
 
         .. ipython:: python
@@ -385,7 +387,7 @@ class vDFJoinUnionSort(vDFMath):
         INNER JOIN
         ^^^^^^^^^^^
 
-        We can conveniently JOIN the two ``vDataFrames``
+        We can conveniently JOIN the two :py:class:`vDataFrame`
         using the key column. Let us perform an INNER JOIN.
         INNER JOIN is executed to combine rows from both
         the main table and the ``input_relation`` based on
@@ -655,7 +657,8 @@ class vDFJoinUnionSort(vDFMath):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.append` : Append a
-                ``vDataFrame`` with another one or an input relation.
+                :py:class:`vDataFrame` with another one or an
+                ``input_relation``.
         """
         on, on_interpolate = format_type(on, on_interpolate, dtype=dict)
         expr1, expr2 = format_type(expr1, expr2, dtype=list, na_out="*")
@@ -750,15 +753,17 @@ class vDFJoinUnionSort(vDFMath):
     @save_verticapy_logs
     def sort(self, columns: Union[SQLColumns, dict]) -> "vDataFrame":
         """
-        Sorts the ``vDataFrame`` using the input vDataColumns.
+        Sorts the :py:class:`vDataFrame` using the input
+        :py:class:`vDataColumn`.
 
         Parameters
         ----------
-        columns: SQLColumns / dict
-            List  of the  ``vDataColumns``  used to sort  the data,
-            using asc order or dictionary of all sorting methods.
-            For example,  to sort by  "column1" ASC and "column2"
-            DESC,  write  ``{"column1": "asc", "column2": "desc"}``
+        columns: SQLColumns | dict
+            List  of the  :py:class:`vDataColumn`  used to sort
+            the data, using asc order or dictionary of all sorting
+            methods. For example, to sort by "column1" ASC and
+            "column2" DESC, write:
+            ``{"column1": "asc", "column2": "desc"}``
 
         Returns
         -------
@@ -783,7 +788,8 @@ class vDFJoinUnionSort(vDFMath):
             verticapy are used as intended without interfering with functions
             from other libraries.
 
-        Let us create a ``vDataFrame`` which we can sort:
+        Let us create a :py:class:`vDataFrame` which
+        we can sort:
 
         .. ipython:: python
 
@@ -805,7 +811,7 @@ class vDFJoinUnionSort(vDFMath):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_join_union_sort_sort_data.html
 
-        We can conveniently sort the ``vDataFrame``
+        We can conveniently sort the :py:class:`vDataFrame`
         using a particular column:
 
         .. ipython:: python
@@ -851,7 +857,8 @@ class vDFJoinUnionSort(vDFMath):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.append` : Append a
-                ``vDataFrame`` with another one or an input relation.
+                :py:class:`vDataFrame` with another one or an
+                ``input_relation``.
         """
         columns = format_type(columns, dtype=list)
         columns = self.format_colnames(columns)
