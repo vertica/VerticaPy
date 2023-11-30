@@ -124,7 +124,8 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the complete disjunctive table of the vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the
+                complete disjunctive table of the vDataFrame.
         """
         if isinstance(weight, str):
             weight = self.format_colnames(weight)
@@ -176,8 +177,8 @@ class vDFMachineLearning(vDFScaler):
         the 'discretize' method. Applying PCA on TCDT leads to MCA
         (Multiple correspondence analysis).
 
-        .. warning:: 
-        
+        .. warning::
+
             This method can become computationally
             expensive  when used with  categorical
             variables with many categories.
@@ -264,7 +265,8 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the complete disjunctive table of the vDataFrame.
+            | :py:meth:`verticapy.vDataFrame.chaid` : Returns a CHAID
+                (Chi-square Automatic Interaction Detector) tree.
         """
         columns = format_type(columns, dtype=list)
         if len(columns) > 0:
@@ -346,7 +348,7 @@ class vDFMachineLearning(vDFScaler):
             function trains a random forest classifier.
             For example,  to train a random forest with 20 trees
             and a maximum depth of 10, use:
-                {"n_estimators": 20, "max_depth": 10}
+            ``{"n_estimators": 20, "max_depth": 10}``
 
         Returns
         -------
@@ -398,6 +400,11 @@ class vDFMachineLearning(vDFScaler):
             res.render(filename='figures/core_vDataFrame_ml_chaid_tree', format='png')
 
         .. image:: /../figures/core_vDataFrame_ml_chaid_tree.png
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.chaid_columns` : Returns
+                the columns picked by the CHAID algorithm
 
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
@@ -558,7 +565,7 @@ class vDFMachineLearning(vDFScaler):
 
         Examples
         ---------
-        
+
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -586,6 +593,10 @@ class vDFMachineLearning(vDFScaler):
 
             data.chaid_columns()
 
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.chaid` : Returns a CHAID
+                (Chi-square Automatic Interaction Detector) tree.
         """
         columns = format_type(columns, dtype=list)
         columns_tmp = columns.copy()
@@ -706,7 +717,7 @@ class vDFMachineLearning(vDFScaler):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers_2.html  
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_outliers_2.html
 
         .. seealso::
 
@@ -793,7 +804,7 @@ class vDFMachineLearning(vDFScaler):
 
         Examples
         ---------
-        
+
         For this example, we will use the Titanic dataset.
 
         .. ipython:: python
@@ -831,11 +842,11 @@ class vDFMachineLearning(vDFScaler):
             html_file.close()
 
         .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_pivot_table_chi2.html  
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_pivot_table_chi2.html
 
         .. seealso::
 
-            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the 
+            | :py:meth:`verticapy.vDataFrame.cdt` : Returns the
                 complete disjunctive table of the vDataFrame.
         """
         RFmodel_params = format_type(RFmodel_params, dtype=dict)
@@ -948,8 +959,8 @@ class vDFMachineLearning(vDFScaler):
 
             vdf = vp.vDataFrame(
                 {
-                    "col1": [1, 2, 3], 
-                    "col2": [1, 2, 3], 
+                    "col1": [1, 2, 3],
+                    "col2": [1, 2, 3],
                 }
             )
 
@@ -1044,19 +1055,22 @@ class vDFMachineLearning(vDFScaler):
                 element.
 
         rating: str / tuple, optional
-            Input vDataColumn including the items rating.
+            Input ``vDataColumn`` including the items rating.
             If the 'rating' type is 'tuple', it must be composed
             of 3 elements:
 
             (r_vdf, r_item_id, r_name) where:
-            - r_vdf is an input vDataFrame.
-            - r_item_id is an  input vDataColumn which
-                must includes the same id as 'item_id'.
-            - r_name is an input vDataColumn including
-                the items rating.
+
+            **r_vdf** is an input vDataFrame.
+
+            **r_item_id** is an  input ``vDataColumn`` which
+            must includes the same id as 'item_id'.
+
+            **r_name** is an input ``vDataColumn`` including
+            the items rating.
 
         ts: str, optional
-            TS (Time Series)  vDataColumn used to order the data.
+            TS (Time Series) vDataColumn used to order the data.
             The vDataColumn type must be date (date, datetime,
             timestamp...) or numerical.
         start_date: str / PythonNumber / date, optional
@@ -1072,6 +1086,86 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             The vDataFrame of the recommendation.
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` which has some purchase
+        transaction data:
+
+        - transaction_id:
+            Unique ID for a transaction.
+
+        - item_id:
+            The unique ID for different items that were purchased.
+
+        - rating:
+            Rating provided by the user for the item purchased.
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "transaction_id": [1, 1, 1, 2, 2, 3, 3, 3],
+                    "item_id": ["A", "B", "C", "B", "C", "A", "B", "C"],
+                    "rating": [8, 5, 1, 6, 2, 9, 4, 3],
+                }
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest.html
+
+
+        We can easily create the recommen table from the above data:
+
+        .. ipython:: python
+
+            recommendations = vdf.recommend(
+                unique_id="transaction_id",
+                item_id="item_id",
+                method="avg",
+                rating="rating",
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            result = recommendations
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_result.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.add_duplicates` : Add duplicates of values
+                based on weights.
         """
         unique_id, item_id, ts = self.format_colnames(unique_id, item_id, ts)
         vdf = self.copy()
@@ -1158,7 +1252,7 @@ class vDFMachineLearning(vDFScaler):
                 Area Under the Curve (ROC)
             - ba:
                 Balanced Accuracy
-                
+
                 .. math::
 
                     (tpr + tnr) / 2
@@ -1168,44 +1262,44 @@ class vDFMachineLearning(vDFScaler):
                 the ROC Curve prediction.
             - bm:
                 Informedness
-                
+
                 .. math::
 
                     tpr + tnr - 1
 
             - csi:
                 Critical  Success  Index
-                
+
                 .. math::
-                    
+
                     tp / (tp + fn + fp)
 
             - f1:
                 F1 Score
             - fdr:
                 False Discovery Rate
-                
+
                 .. math::
-                    
+
                     1 - ppv
 
             - fm:
                 Fowlkes–Mallows index
                 .. math::
-                
+
                     sqrt(ppv * tpr)
 
             - fnr:
                 False Negative Rate
                 .. math::
-                
+
                     fn / (fn + tp)
 
             - for:
                 False Omission Rate
-                
+
                 .. math::
-                    
+
                     1 - npv
 
             - fpr:
@@ -1219,16 +1313,16 @@ class vDFMachineLearning(vDFScaler):
                 Log Loss
             - lr+:
                 Positive Likelihood Ratio
-                
+
                 .. math::
-                
+
                     tpr / fpr
 
             - lr-:
                 Negative Likelihood Ratio
-                
+
                 .. math::
-                    
+
                     fnr / tnr
 
             - dor:
@@ -1239,14 +1333,14 @@ class vDFMachineLearning(vDFScaler):
                 Markedness
 
                 .. math::
-                
+
                     ppv + npv - 1
 
             - npv:
                 Negative Predictive Value
 
                 .. math::
-                
+
                     tn / (tn + fn)
 
             - prc_auc:
@@ -1255,27 +1349,27 @@ class vDFMachineLearning(vDFScaler):
                 Precision
 
                 .. math::
-                
+
                     tp / (tp + fp)
 
             - pt:
                 Prevalence Threshold
 
                 .. math::
-                
+
                     sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
 
             - recall:
                 Recall
-                
+
                 .. math::
                     tp / (tp + fn)
 
             - specificity:
                 Specificity
-                
+
                 .. math::
-                
+
                     tn / (tn + fp)
 
             **For Regression**
@@ -1296,7 +1390,7 @@ class vDFMachineLearning(vDFScaler):
         Examples
         ---------
 
-        Let us build a quick ML model and access the score
+        Let us build a quick ML model and calculate the score
         of its predictions.
 
         Load data for machine learning
@@ -1444,7 +1538,7 @@ class vDFMachineLearning(vDFScaler):
 
         .. seealso::
 
-            | :py:meth:`verticapy.machine_learning.vertica.LinearRegression` : 
+            | :py:meth:`verticapy.machine_learning.vertica.LinearRegression` :
                 Linear Regression model.
 
         """
@@ -1486,6 +1580,92 @@ class vDFMachineLearning(vDFScaler):
         -------
         vDataFrame
             self
+
+        Examples
+        --------
+
+        Let's begin by importing `VerticaPy`.
+
+        .. ipython:: python
+
+            import verticapy as vp
+
+        .. hint::
+
+            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+            of code collisions with other libraries. This precaution is
+            necessary because verticapy uses commonly known function names
+            like "average" and "median", which can potentially lead to naming
+            conflicts. The use of an alias ensures that the functions from
+            verticapy are used as intended without interfering with functions
+            from other libraries.
+
+        Let us create a ``vDataFrame`` with multiple columns:
+
+        .. ipython:: python
+
+            vdf = vp.vDataFrame(
+                {
+                    "time": [
+                        "1993-11-03 00:00:00",
+                        "1993-11-03 00:14:00",
+                        "1993-11-03 00:07:00",
+                        "1993-11-03 01:00:00",
+                        "1993-11-03 01:05:05",
+                        "1993-11-03 01:15:05",
+                        "1993-11-03 01:45:01",
+                    ],
+                    "val": [0., 1., 2., 4., 5., 5.5, 6., 8],
+                }
+            )
+
+        We can make sure the correct data type is assigned:
+
+        .. code-block:: python
+
+            vdf["time"].astype("datetime")
+
+        .. ipython:: python
+            :suppress:
+
+            vdf["time"].astype("datetime")
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize.html
+
+        Now we can create sessions based on custom
+        time intervals:
+
+        .. code-block:: python
+
+            vdf.sessionize(
+                ts = "time",
+                session_threshold = "15 minutes"
+            )
+
+        .. ipython:: python
+            :suppress:
+
+            vdf.sessionize(
+                ts = "time",
+                session_threshold = "15 minutes"
+            )
+            result = vdf
+            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize_result.html", "w")
+            html_file.write(result._repr_html_())
+            html_file.close()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_sessionize_result.html
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.analytic` : Use an advanced analytical
+                function on one or two specific ``vDataColumns``
         """
         by = format_type(by, dtype=list)
         by, ts = self.format_colnames(by, ts)
@@ -1519,7 +1699,7 @@ class vDFMachineLearning(vDFScaler):
             List of the vDataColumns used to sort the data, using
             asc order or a dictionary of all sorting methods.  For
             example,  to sort by "column1" ASC and "column2"  DESC,
-            write: {"column1": "asc", "column2": "desc"}
+            write: ``{"column1": "asc", "column2": "desc"}``
             Without this parameter,  the seeded random number used
             to split the data into train and test cannot guarantee
             that no collision will occur. Using this parameter
@@ -1531,6 +1711,61 @@ class vDFMachineLearning(vDFScaler):
         -------
         tuple
             (train vDataFrame, test vDataFrame)
+
+        Examples
+        ---------
+
+        For this example, we will use the Titanic dataset.
+
+        .. ipython:: python
+
+            import verticapy.datasets as vpd
+
+            data = vpd.load_titanic()
+
+        .. raw:: html
+            :file: SPHINX_DIRECTORY/figures/datasets_loaders_load_titanic.html
+
+        .. note::
+
+            VerticaPy offers a wide range of sample datasets that are
+            ideal for training and testing purposes. You can explore
+            the full list of available datasets in the :ref:`api.datasets`,
+            which provides detailed information on each dataset
+            and how to use them effectively. These datasets are invaluable
+            resources for honing your data analysis and machine learning
+            skills within the VerticaPy environment.
+
+        Let us check the size of the dataset:
+
+        .. ipython:: python
+
+            len(data)
+
+
+        Now, we can easily divide the dataset into training and testing subsets
+        using the :py:meth:`vDataFrame.train_test_split` method.
+
+        .. ipython:: python
+
+            train, test = data.train_test_split(test_size = 0.2)
+
+        We can confirm the size of the train set:
+
+        .. ipython:: python
+
+            len(train)
+
+        And test set:
+
+        .. ipython:: python
+
+            len(test)
+
+        .. seealso::
+
+            | :py:meth:`verticapy.vDataFrame.sample` : Downsamples the input ``vDataFrame``.
+
         """
         order_by = format_type(order_by, dtype=list)
         order_by = self._get_sort_syntax(order_by)
