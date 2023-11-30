@@ -614,6 +614,7 @@ def set_option(key: str, value: Any = None) -> None:
     .. ipython:: python
         :suppress:
 
+        set_option("plotting_lib", "plotly")
         fig = titanic.hist(["pclass", "survived"])
         fig.write_html("SPHINX_DIRECTORY/figures/_config_config_set_option_hist.html")
 
