@@ -221,6 +221,7 @@ class StringSQL:
 
     .. ipython:: python
 
+        import verticapy.sql.functions as vpf
         (num1 - vpf.min(num1)._over([str1])) / (vpf.max(num1)._over([str1]) - vpf.min(num1)._over([str1]))
 
     .. note::
