@@ -53,23 +53,25 @@ class vDFFill(vDFPivot):
         numeric_only: bool = False,
     ) -> "vDataFrame":
         """
-        Fills missing elements in vDataColumns using specific rules.
+        Fills missing elements in :py:class:`vDataColumn`
+        using specific rules.
 
         Parameters
         ----------
         val: dict, optional
-            Dictionary of values. The dictionary must be similar to the
-            following:
-            {"column1": val1 ..., "columnk": valk}.
-            Each  key  of  the dictionary must be a vDataColumn. The
-            missing values of the input vDataColumns are replaced by
-            the input value.
+            Dictionary of values. The ``dictionary``
+            must be similar to the following:
+            ``{"column1": val1 ..., "columnk": valk}``.
+            Each key of the ``dictionary`` must be
+            a :py:class:`vDataColumn` . The missing
+            values of the input :py:class:`vDataColumn`
+            are replaced by the input value.
         method: dict, optional
             Method used to impute the missing values.
 
             - auto:
                 Mean for the numerical and Mode for the
-                categorical vDataColumns.
+                categorical :py:class:`vDataColumn`.
             - mean:
                 Average.
             - median:
@@ -77,14 +79,19 @@ class vDFFill(vDFPivot):
             - mode:
                 Mode (most occurent element).
             - 0ifnull:
-                0 when the vDataColumn is null, 1 otherwise.
+                0 when the :py:class:`vDataColumn`
+                is ``None``, 1 otherwise.
 
-            More Methods are available in the vDataFrame[].fillna method.
+            More Methods are available in the
+            :py:meth:`vDataColumn.fillna` method.
         numeric_only: bool, optional
-            If parameters 'val' and 'method' are empty and 'numeric_only'
-            is  set  to True, all numerical  vDataColumns are imputed by
-            their average. If set to False, all categorical vDataColumns
-            are also imputed by their mode.
+            If parameters 'val' and 'method' are
+            empty and 'numeric_only' is set to
+            ``True``, all numerical :py:class:`vDataColumn`
+            are imputed by their average. If set
+            to ``False``, all categorical
+            :py:class:`vDataColumn` are also
+            imputed by their mode.
 
         Returns
         -------
@@ -102,13 +109,16 @@ class vDFFill(vDFPivot):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -123,13 +133,16 @@ class vDFFill(vDFPivot):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can see the count of each column to check
         if any column has missing values.
@@ -268,13 +281,16 @@ class vDFFill(vDFPivot):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use a dummy time-series data:
 
@@ -313,13 +329,16 @@ class vDFFill(vDFPivot):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can see that there is no data for the 3rd second.
         To fill this, we can use the ``interpolate`` function
@@ -427,13 +446,16 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use a dummy time-series data:
 
@@ -454,13 +476,16 @@ class vDCFill(vDCMath):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can see that there are some extreme values in the data.
         We may need to clip those values at extremes. For this we can
@@ -556,13 +581,16 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use a dummy data that has one outlier:
 
@@ -583,13 +611,16 @@ class vDCFill(vDCMath):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can see that there are some extreme values in the data.
         We may need to remove those values. For this we can
@@ -757,13 +788,16 @@ class vDCFill(vDCMath):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -777,13 +811,16 @@ class vDCFill(vDCMath):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         We can see the count of each column to check
         if any column has missing values.

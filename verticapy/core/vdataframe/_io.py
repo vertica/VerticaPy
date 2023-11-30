@@ -50,12 +50,12 @@ pickle.DEFAULT_PROTOCOL = 4
 class vDFInOut(vDFSystem):
     def copy(self) -> "vDataFrame":
         """
-        Returns a deep copy of the ``vDataFrame``.
+        Returns a deep copy of the :py:class:`vDataFrame`.
 
         Returns
         -------
         vDataFrame
-            The copy of the ``vDataFrame``.
+            The copy of the :py:class:`vDataFrame`.
 
         Examples
         ---------
@@ -67,13 +67,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -88,13 +91,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -103,7 +109,8 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's create a copy of data ``vDataFrame``
+        Let's create a copy of data
+        :py:class:`vDataFrame`
         and name it data_copy
 
         .. code-block:: python
@@ -126,15 +133,15 @@ class vDFInOut(vDFSystem):
         .. note::
 
             This function creates a deep copy of the
-            ``vDataFrame``. It enables you to make
-            modifications without altering the main
-            ``vDataFrame``.
+            :py:class:`vDataFrame`. It enables you to
+            make modifications without altering the
+            main :py:class:`vDataFrame`.
 
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_pickle` :
-                Saves the ``vDataFrame`` to a Python
-                pickle file.
+                Saves the :py:class:`vDataFrame` to a
+                Python pickle file.
         """
         return copy.deepcopy(self)
 
@@ -142,7 +149,7 @@ class vDFInOut(vDFSystem):
     def load(self, offset: int = -1) -> "vDataFrame":
         """
         Loads a previous structure of the
-        ``vDataFrame``.
+        :py:class:`vDataFrame`.
 
         Parameters
         ----------
@@ -165,13 +172,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -186,13 +196,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -232,7 +245,8 @@ class vDFInOut(vDFSystem):
             You can observe that 699 element(s) were
             filtered out from the vDataFrame.
 
-        Now, let's load the last saved ``vDataFrame``.
+        Now, let's load the last saved
+        :py:class:`vDataFrame`.
 
         .. code-block:: python
 
@@ -252,13 +266,13 @@ class vDFInOut(vDFSystem):
         .. note::
 
             You can observe that the last saved state of
-            ``vDataFrame`` having 1234 elements has been
-            loaded.
+            :py:class:`vDataFrame` having 1234 elements
+            has been loaded.
 
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.save` :
-                Saves the current ``vDataFrame``
+                Saves the current :py:class:`vDataFrame`
                 structure.
         """
         save = self._vars["saving"][offset]
@@ -268,9 +282,10 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def save(self) -> "vDataFrame":
         """
-        Saves the current structure of the ``vDataFrame``.
-        This function is useful for loading previous
-        transformations.
+        Saves the current structure of the
+        :py:class:`vDataFrame`.
+        This function is useful for loading
+        previous transformations.
 
         Returns
         -------
@@ -287,13 +302,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -308,13 +326,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -352,9 +373,10 @@ class vDFInOut(vDFSystem):
 
         .. note::
             You can observe that 699 element(s) were
-            filtered out from the ``vDataFrame``.
+            filtered out from the :py:class:`vDataFrame`.
 
-        Now, let's load the last saved ``vDataFrame``.
+        Now, let's load the last saved
+        :py:class:`vDataFrame`.
 
         .. code-block:: python
 
@@ -374,13 +396,14 @@ class vDFInOut(vDFSystem):
         .. note::
 
             You can observe that the last saved state of
-            ``vDataFrame`` having 1234 elements has been
-            loaded.
+            :py:class:`vDataFrame` having 1234 elements
+            has been loaded.
 
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.load` :
-                Loads a saved ``vDataFrame`` structure.
+                Loads a saved :py:class:`vDataFrame`
+                structure.
         """
         vdf = self.copy()
         self._vars["saving"] += [pickle.dumps(vdf)]
@@ -401,7 +424,7 @@ class vDFInOut(vDFSystem):
     ) -> Union[None, str, list[str]]:
         """
         Creates  a CSV  file  or  folder of CSV
-        files of  the  current ``vDataFrame``
+        files of  the  current :py:class:`vDataFrame`
         relation.
 
         Parameters
@@ -422,23 +445,24 @@ class vDFInOut(vDFSystem):
             Char that will enclose the ``str``
             values.
         usecols: SQLColumns, optional
-            ``vDataColumns`` to select from the
-            final ``vDataFrame`` relation.
-            If empty, all ``vDataColumns`` are
+            :py:class:`vDataColumn` to select from
+            the final :py:class:`vDataFrame` relation.
+            If empty, all :py:class:`vDataColumn` are
             selected.
         header: bool, optional
             If set to ``False``, no header is
             written in the CSV file.
         new_header: list, optional
             List of columns used to replace
-            ``vDataColumns`` name in the CSV.
+            :py:class:`vDataColumn` name in
+            the CSV.
         order_by: SQLColumns | dict, optional
-            List of the ``vDataColumns`` used
-            to sort  the data, using asc order
-            or a ``dictionary`` of all sorting
-            methods. For example, to sort by
-            "column1" ASC and "column2" DESC,
-            write:
+            List of the :py:class:`vDataColumn`
+            used to sort  the data, using asc
+            order or a ``dictionary`` of all
+            sorting methods. For example, to
+            sort by "column1" ASC and "column2"
+            DESC, write:
             ``{"column1": "asc", "column2": "desc"}``
         n_files: int, optional
             Integer greater than or equal to 1,
@@ -453,7 +477,7 @@ class vDFInOut(vDFSystem):
         Returns
         -------
         str or list
-            JSON str or list (``n_files>1``) if
+            JSON str or list (``n_files > 1``) if
             ``path`` is not defined; otherwise,
             nothing.
 
@@ -467,13 +491,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -488,13 +515,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -524,7 +554,7 @@ class vDFInOut(vDFSystem):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tocsv1.html
 
         Let's create the CSV file of the current
-        ``vDataFrame``.
+        :py:class:`vDataFrame`.
 
         .. ipython:: python
 
@@ -551,11 +581,12 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_db` :
-                Saves the current structure of ``vDataFrame``
-                to the Vertica Database.
+                Saves the current structure of
+                :py:class:`vDataFrame` to the
+                Vertica Database.
             | :py:meth:`verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
         """
         order_by, usecols, new_header = format_type(
             order_by, usecols, new_header, dtype=list
@@ -663,8 +694,9 @@ class vDFInOut(vDFSystem):
         segmented_by: Optional[SQLColumns] = None,
     ) -> "vDataFrame":
         """
-        Saves the ``vDataFrame`` current
-        relation to the Vertica database.
+        Saves the :py:class:`vDataFrame`
+        current relation to the Vertica
+        database.
 
         Parameters
         ----------
@@ -675,9 +707,9 @@ class vDFInOut(vDFSystem):
             Use  double  quotes '"' to avoid
             errors due to special characters.
         usecols: SQLColumns, optional
-            ``vDataColumns`` to select from the
-            final ``vDataFrame`` relation. If
-            empty, all ``vDataColumns`` are
+            :py:class:`vDataColumn` to select from the
+            final :py:class:`vDataFrame` relation. If
+            empty, all :py:class:`vDataColumn` are
             selected.
         relation_type: str, optional
             Type of the relation.
@@ -693,8 +725,9 @@ class vDFInOut(vDFSystem):
              - insert:
                 Inserts into an existing table.
         inplace: bool, optional
-            If set to ``True``, the ``vDataFrame``
-            is replaced with the new relation.
+            If set to ``True``, the
+            :py:class:`vDataFrame` is replaced
+            with the new relation.
         db_filter: SQLExpression, optional
             Filter used before  creating the
             relation in the DB. It can be a
@@ -710,10 +743,11 @@ class vDFInOut(vDFSystem):
             where each category represents ``1 / nb_split``
             of the entire distribution.
         order_by: SQLColumns | dict, optional
-            List of the ``vDataColumns`` used to sort
-            the data, using asc order or a dictionary
-            of all sorting methods. For example, to
-            sort by "column1" ASC and "column2" DESC, write:
+            List of the :py:class:`vDataColumn` used to
+            sort the data, using asc order or a
+            ``dictionary`` of all sorting methods.
+            For example, to sort by "column1"
+            ASC and "column2" DESC, write:
             ``{"column1": "asc", "column2": "desc"}``
         segmented_by: SQLColumns, optional
             This  parameter is only  used when
@@ -738,13 +772,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -759,13 +796,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -885,22 +925,22 @@ class vDFInOut(vDFSystem):
         .. note::
 
             The :py:meth:`vDataFrame.to_db` method enables
-            you to save the ``vDataFrame`` into various
-            types of relations, including views, temporary
-            tables, temporary local tables, and regular
-            tables. It also allows for inserting elements
-            into an existing table, as well as ordering
-            and segmenting the data using the ``order_by``
-            and ``segmented_by`` parameters.
+            you to save the :py:class:`vDataFrame` into
+            various types of relations, including views,
+            temporary tables, temporary local tables, and
+            regular tables. It also allows for inserting
+            elements into an existing table, as well as
+            ordering and segmenting the data using the
+            ``order_by`` and ``segmented_by`` parameters.
 
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
             | :py:meth:`verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
         """
         relation_type = relation_type.lower()
         usecols, order_by = format_type(usecols, order_by, dtype=list)
@@ -1000,12 +1040,13 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_geopandas(self, geometry: str) -> "GeoDataFrame":
         """
-        Converts the ``vDataFrame`` to a
-        Geopandas ``DataFrame``.
+        Converts the :py:class:`vDataFrame`
+        to a Geopandas ``DataFrame``.
 
         .. warning::
 
-            The data will be loaded in memory.
+            The data will be loaded
+            in memory.
 
         Parameters
         ----------
@@ -1019,7 +1060,8 @@ class vDFInOut(vDFSystem):
         -------
         geopandas.GeoDataFrame
             The ``geopandas.GeoDataFrame`` of
-            the current ``vDataFrame`` relation.
+            the current :py:class:`vDataFrame`
+            relation.
 
         Examples
         ---------
@@ -1031,13 +1073,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the World dataset.
 
@@ -1052,13 +1097,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1067,7 +1115,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_world()
 
-        Let's convert the ``vDataFrame``
+        Let's convert the :py:class:`vDataFrame`
         to a Geopandas ``DataFrame``.
 
         .. code-block:: python
@@ -1094,11 +1142,12 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_db` :
-                Saves the current structure of ``vDataFrame``
-                to the Vertica Database.
+                Saves the current structure of
+                :py:class:`vDataFrame` to the
+                Vertica Database.
             | :py:meth:`verticapy.vDataFrame.to_json` :
                 Creates a JSON file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
         """
         if not conf.get_import_success("geopandas"):
             raise ImportError(
@@ -1136,7 +1185,7 @@ class vDFInOut(vDFSystem):
     ) -> Union[None, str, list[str]]:
         """
         Creates  a JSON file or folder of JSON
-        files of the  current ``vDataFrame``
+        files of the  current :py:class:`vDataFrame`
         relation.
 
         Parameters
@@ -1151,12 +1200,13 @@ class vDFInOut(vDFSystem):
                 overwritten.
         usecols: SQLColumns, optional
             vDataColumns to select from the final
-            ``vDataFrame`` relation. If empty, all
-            ``vDataColumns`` are selected.
+            :py:class:`vDataFrame` relation. If
+            empty, all :py:class:`vDataColumn`
+            are selected.
         order_by: str | dict | list, optional
-            List of the ``vDataColumns`` used to
-            sort the data, using asc order or
-            ``dictionary`` of all sorting methods.
+            List of the :py:class:`vDataColumn`
+            used to sort the data, using asc order
+            or ``dictionary`` of all sorting methods.
             For example, to sort by "column1" ASC
             and "column2" DESC, write:
             ``{"column1": "asc", "column2": "desc"}``
@@ -1187,13 +1237,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1208,13 +1261,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1244,7 +1300,7 @@ class vDFInOut(vDFSystem):
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_io_tojson1.html
 
         Let's create the JSON file of the
-        current ``vDataFrame``.
+        current :py:class:`vDataFrame`.
 
         .. ipython:: python
 
@@ -1274,11 +1330,12 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_db` :
-                Saves the current structure of ``vDataFrame``
-                to the Vertica Database.
+                Saves the current structure of
+                :py:class:`vDataFrame` to the
+                Vertica Database.
             | :py:meth:`verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
         """
         order_by, usecols = format_type(order_by, usecols, dtype=list)
         if n_files < 1:
@@ -1358,8 +1415,8 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_list(self) -> list:
         """
-        Converts the ``vDataFrame`` to a Python
-        ``list``.
+        Converts the :py:class:`vDataFrame`
+        to a Python ``list``.
 
         .. warning::
 
@@ -1369,7 +1426,8 @@ class vDFInOut(vDFSystem):
         -------
         List
             The list of the current
-            ``vDataFrame`` relation.
+            :py:class:`vDataFrame`
+            relation.
 
         Examples
         ---------
@@ -1381,13 +1439,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1402,13 +1463,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1417,7 +1481,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's convert the ``vDataFrame``
+        Let's convert the :py:class:`vDataFrame`
         to a Python ``list``.
 
         .. ipython:: python
@@ -1438,7 +1502,8 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_numpy` :
-                Exports the ``vDataFrame`` to a ``numpy.array``.
+                Exports the :py:class:`vDataFrame` to
+                a ``numpy.array``.
         """
         res = _executeSQL(
             query=f"""
@@ -1464,8 +1529,8 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_numpy(self) -> np.ndarray:
         """
-        Converts the ``vDataFrame`` to
-        a ``numpy.array``.
+        Converts the :py:class:`vDataFrame`
+        to a ``numpy.array``.
 
         .. warning::
 
@@ -1476,7 +1541,7 @@ class vDFInOut(vDFSystem):
         -------
         numpy.array
             The ``numpy.array`` of the
-            current ``vDataFrame``
+            current :py:class:`vDataFrame`
             relation.
 
         Examples
@@ -1490,13 +1555,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1511,13 +1579,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1547,7 +1618,8 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_pandas` :
-                Exports the ``vDataFrame`` to a ``pandas.DataFrame``.
+                Exports the :py:class:`vDataFrame`
+                to a ``pandas.DataFrame``.
         """
         return np.array(self.to_list())
 
@@ -1566,7 +1638,8 @@ class vDFInOut(vDFSystem):
         -------
         pandas.DataFrame
             The ``pandas.DataFrame`` of the
-            current ``vDataFrame`` relation.
+            current :py:class:`vDataFrame`
+            relation.
 
         Examples
         ---------
@@ -1578,13 +1651,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1599,13 +1675,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1614,7 +1693,7 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's convert the ``vDataFrame``
+        Let's convert the :py:class:`vDataFrame`
         to a ``pandas.DataFrame``.
 
         .. code-block:: python
@@ -1641,7 +1720,8 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_numpy` :
-                Exports the ``vDataFrame`` to a ``numpy.array``.
+                Exports the :py:class:`vDataFrame` to a
+                ``numpy.array``.
         """
         data = _executeSQL(
             query=f"""
@@ -1750,11 +1830,11 @@ class vDFInOut(vDFSystem):
             as int96 physical type (``True``) or int64
             physical type (``False``).
         by: SQLColumns, optional
-            ``vDataColumns`` used in the partition.
+            :py:class:`vDataColumn` used in the partition.
         order_by: str | dict | list, optional
             If specified as a ``list``: the ``list``
-            of ``vDataColumns`` useed to sort the
-            data in ascending order.
+            of :py:class:`vDataColumn` useed to sort
+            the data in ascending order.
             If specified as a ``dictionary``:
             a ``dictionary`` of all sorting methods.
             For example, to sort by "column1" ASC
@@ -1777,13 +1857,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1798,13 +1881,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1827,11 +1913,12 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_db` :
-                Saves the current structure of ``vDataFrame``
-                to the Vertica Database.
+                Saves the current structure of
+                :py:class:`vDataFrame` to the
+                Vertica Database.
             | :py:meth:`verticapy.vDataFrame.to_csv` :
                 Creates a CSV file of the current
-                ``vDataFrame`` structure.
+                :py:class:`vDataFrame` structure.
         """
         order_by, by = format_type(order_by, by, dtype=list)
         if rowGroupSizeMB <= 0:
@@ -1862,8 +1949,8 @@ class vDFInOut(vDFSystem):
     @save_verticapy_logs
     def to_pickle(self, name: str) -> "vDataFrame":
         """
-        Saves the ``vDataFrame`` to a
-        Python pickle file.
+        Saves the :py:class:`vDataFrame`
+        to a Python pickle file.
 
         Parameters
         ----------
@@ -1891,13 +1978,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Titanic dataset.
 
@@ -1912,13 +2002,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -1927,8 +2020,8 @@ class vDFInOut(vDFSystem):
 
             data = vpd.load_titanic()
 
-        Let's save the ``vDataFrame`` to a
-        Python pickle file.
+        Let's save the :py:class:`vDataFrame`
+        to a Python pickle file.
 
         .. code-block:: python
 
@@ -1959,17 +2052,18 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            The structure of the ``vDataFrame`` is saved
-            and can be reused in another environment.
-            However, the connection cannot be saved, and
-            when unpickling the vDataFrame, you will
-            still need to connect to the database and
-            have access to data with the same structure.
+            The structure of the :py:class:`vDataFrame`
+            is saved and can be reused in another
+            environment. However, the connection cannot
+            be saved, and when unpickling the
+            :py:class:`vDataFrame`, you will still need
+            to connect to the database and have access
+            to data with the same structure.
 
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.save` :
-                Saves the current ``vDataFrame``
+                Saves the current :py:class:`vDataFrame`
                 structure.
         """
         pickle.dump(self, open(name, "wb"))
@@ -1993,9 +2087,9 @@ class vDFInOut(vDFSystem):
     ) -> "vDataFrame":
         """
         Creates a SHP file of the current
-        ``vDataFrame`` relation. For the
-        moment, files will be exported in
-        the Vertica server.
+        :py:class:`vDataFrame` relation. For
+        the moment, files will be exported
+        in the Vertica server.
 
         Parameters
         ----------
@@ -2005,10 +2099,10 @@ class vDFInOut(vDFSystem):
             Absolute path where the SHP file
             is created.
         usecols: list, optional
-            ``vDataColumns`` to select from
-            the final ``vDataFrame`` relation.
-            If  empty, all ``vDataColumns``
-            are selected.
+            :py:class:`vDataColumn` to select
+            from the final :py:class:`vDataFrame`
+            relation. If  empty, all
+            :py:class:`vDataColumn` are selected.
         overwrite: bool, optional
             If set to ``True``, the function
             overwrites the index (if an index
@@ -2036,13 +2130,16 @@ class vDFInOut(vDFSystem):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         For this example, we will use the Cities dataset.
 
@@ -2057,13 +2154,16 @@ class vDFInOut(vDFSystem):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         .. ipython:: python
             :suppress:
@@ -2073,7 +2173,7 @@ class vDFInOut(vDFSystem):
             data = vpd.load_cities()
 
         Let's create the SHP file of the
-        current ``vDataFrame``.
+        current :py:class:`vDataFrame`.
 
         .. code-block:: python
 
@@ -2091,8 +2191,9 @@ class vDFInOut(vDFSystem):
         .. seealso::
 
             | :py:meth:`verticapy.vDataFrame.to_db` :
-                Saves the current structure of ``vDataFrame``
-                to the Vertica Database.
+                Saves the current structure of
+                :py:class:`vDataFrame` to the
+                Vertica Database.
         """
         usecols = format_type(usecols, dtype=list)
         query = f"""

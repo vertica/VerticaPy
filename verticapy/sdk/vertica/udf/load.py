@@ -42,29 +42,24 @@ def import_lib_udf(
         List of tuples that includes the different
         functions.
 
-         - function:
-            [function]
+         - function, function:
             Python   Function.
-         - arg_types:
-            [dict | list]
+         - arg_types, dict | list:
             List or dictionary
             of  the function input  types.
             Example: ``{"input1": int, "input2": float}``
             or ``[int, float]``
-         - return_type:
-            [type | dict]
+         - return_type, type | dict:
             Function output type.
             In the case of many  outputs, it
             must be a dictionary including
             all the outputs types and names.
             Example: ``{"result1": int, "result2": float}``
-         - parameters:
-            [dict]
+         - parameters, dict:
             Dictionary of the function
             input optional parameters.
             Example: ``{"param1": int, "param2": str}``
-         - new_name:
-            [str]
+         - new_name, str:
             New   function   name  when
             installed in Vertica.
 
@@ -78,8 +73,9 @@ def import_lib_udf(
     Returns
     -------
     bool
-        True  if  the  installation  was  a
-        success,  False otherwise.
+        ``True`` if the installation
+        was a success, ``False``
+        otherwise.
 
     Examples
     --------

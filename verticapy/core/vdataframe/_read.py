@@ -205,13 +205,16 @@ class vDFRead(vDFUtils):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -297,13 +300,16 @@ class vDFRead(vDFUtils):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to see only the starting rows,
         we can use the ``head`` function:
@@ -371,13 +377,16 @@ class vDFRead(vDFUtils):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to get the custom rows we can
         use the ``iloc`` function. In order to get
@@ -476,13 +485,16 @@ class vDFRead(vDFUtils):
 
         .. hint::
 
-            By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
-            of code collisions with other libraries. This precaution is
-            necessary because verticapy uses commonly known function names
-            like "average" and "median", which can potentially lead to naming
-            conflicts. The use of an alias ensures that the functions from
-            verticapy are used as intended without interfering with functions
-            from other libraries.
+            By assigning an alias to :py:mod:`verticapy`,
+            we mitigate the risk of code collisions with
+            other libraries. This precaution is necessary
+            because verticapy uses commonly known function
+            names like "average" and "median", which can
+            potentially lead to naming conflicts. The use
+            of an alias ensures that the functions from
+            :py:mod:`verticapy` are used as intended
+            without interfering with functions from other
+            libraries.
 
         Let us create a :py:class:`vDataFrame`
         with multiple columns:
@@ -579,13 +591,16 @@ class vDFRead(vDFUtils):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to see only the last columns,
         we can use the ``tail`` function:
@@ -652,13 +667,16 @@ class vDFRead(vDFUtils):
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to get the custom rows we can
         use the ``iloc`` function. In order to get
@@ -872,13 +890,16 @@ class vDCRead:
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to see only the starting columns,
         we can use the ``head`` function:
@@ -949,13 +970,16 @@ class vDCRead:
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to get the custom rows we can
         use the ``iloc`` function. In order to get
@@ -1042,13 +1066,16 @@ class vDCRead:
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to get 5 rows with the highest/largest
         value  arranged in descending order, we can use
@@ -1127,13 +1154,16 @@ class vDCRead:
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to get 5 rows with the lowest/smallest
         value  arranged in ascending order, we can use
@@ -1208,13 +1238,16 @@ class vDCRead:
 
         .. note::
 
-            VerticaPy offers a wide range of sample datasets that are
-            ideal for training and testing purposes. You can explore
-            the full list of available datasets in the :ref:`api.datasets`,
-            which provides detailed information on each dataset
-            and how to use them effectively. These datasets are invaluable
-            resources for honing your data analysis and machine learning
-            skills within the VerticaPy environment.
+            VerticaPy offers a wide range of sample
+            datasets that are ideal for training
+            and testing purposes. You can explore
+            the full list of available datasets in
+            the :ref:`api.datasets`, which provides
+            detailed information on each dataset and
+            how to use them effectively. These datasets
+            are invaluable resources for honing your
+            data analysis and machine learning skills
+            within the VerticaPy environment.
 
         In order to see only the starting rows,
         we can use the ``tail`` function:
