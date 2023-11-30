@@ -832,7 +832,7 @@ class vDFSystem(vDFTyping):
 
         Let us create a dummy dataset and check modifications:
 
-        .. code-block:: python
+        .. ipython:: python
 
             vdf = vp.vDataFrame({"val": [0, 10, 20]})
 
@@ -1253,20 +1253,9 @@ class vDCSystem(vDCTyping):
         We can check the expected storage of the
         :py:class:`vDataFrame` using:
 
-        .. code-block:: python
+        .. ipython:: python
 
             vdf["val"].store_usage()
-
-        .. ipython:: python
-            :suppress:
-
-            result = vdf["val"].store_usage()
-            html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_sys_vdc_store_usage.html", "w")
-            html_file.write(result._repr_html_())
-            html_file.close()
-
-        .. raw:: html
-            :file: SPHINX_DIRECTORY/figures/core_vDataFrame_sys_vdc_store_usage.html
 
         .. seealso::
 
