@@ -78,7 +78,7 @@ class vDataFrame(vDFAnimatedPlot):
     Parameters
     ----------
 
-    input_relation: str / TableSample / pandas.DataFrame / list / numpy.ndarray / dict, optional
+    input_relation: str | TableSample | pandas.DataFrame | list | numpy.ndarray | dict, optional
         If the input_relation is of type str, it must represent
         the relation  (view, table, or temporary table) used to
         create the object.
@@ -136,8 +136,8 @@ class vDataFrame(vDFAnimatedPlot):
     Though there are many ways to create a ``vDataFrame``,
     but here we will only look at creating ``vDataFrame``:
 
-    - From dictionary
-    - From numpy.array
+    - From ``dictionary``
+    - From ``numpy.array``
 
     Let's begin by importing `VerticaPy`.
 
@@ -165,8 +165,8 @@ class vDataFrame(vDFAnimatedPlot):
         vdf = vp.vDataFrame(
             {
                 "cats": ["A", "B", "C"],
-                "reps": [2, 4, 8]
-            }
+                "reps": [2, 4, 8],
+            },
         )
 
     .. ipython:: python
@@ -181,9 +181,9 @@ class vDataFrame(vDFAnimatedPlot):
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html
 
     Numpy Array
-    ^^^^^^^^^^^
+    ^^^^^^^^^^^^
 
-    We can also use a numpy array:
+    We can also use a ``numpy.array``:
 
     .. ipython:: python
 
@@ -191,7 +191,7 @@ class vDataFrame(vDFAnimatedPlot):
 
         vdf = vp.vDataFrame(
             np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
-            usecols = ["col_A","col_B","col_C"]
+            usecols = ["col_A","col_B","col_C"],
         )
 
     .. ipython:: python
