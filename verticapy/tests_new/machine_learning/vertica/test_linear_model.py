@@ -19,7 +19,7 @@ import pytest
 import sklearn.metrics as skl_metrics
 from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import (
     rel_tolerance_map,
-    ABS_TOLERANCE,
+    abs_tolerance_map,
     regression_metrics_args,
     model_params,
     model_score,
@@ -41,7 +41,7 @@ from verticapy.tests_new.machine_learning.vertica.test_base_model_methods import
         # "LinearSVR",
         "PoissonRegressor",
         "AR",
-        # "MA",
+        "MA",
         "ARMA",
         "ARIMA",
     ],
@@ -125,12 +125,7 @@ class TestLinearModel:
 
         print(f"vertica: {vpy_res}, sklearn: {py_res}")
 
-        assert vpy_res == pytest.approx(
-            py_res,
-            rel=1e-00
-            if model_class in ["ARIMA"] and ts_fit_attr == "phi_"
-            else rel_tolerance_map[model_class],
-        )
+        assert vpy_res == pytest.approx(py_res, rel=rel_tolerance_map[model_class])
 
     @pytest.mark.parametrize(*regression_metrics_args)
     @pytest.mark.parametrize("fun_name", ["regression", "report"])

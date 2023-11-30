@@ -21,6 +21,7 @@ from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     ABS_TOLERANCE,
     rel_tolerance_map,
+    abs_tolerance_map,
 )
 from vertica_highcharts.highcharts.highcharts import Highchart
 import plotly
