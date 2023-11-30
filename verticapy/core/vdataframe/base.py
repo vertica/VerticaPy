@@ -77,8 +77,8 @@ class vDataFrame(vDFAnimatedPlot):
 
     Parameters
     ----------
-    input_relation: str | TableSample | pandas.DataFrame
-                    | list | numpy.ndarray | dict, optional
+
+    input_relation: str / TableSample / pandas.DataFrame / list / numpy.ndarray / dict, optional
         If the input_relation is of type str, it must represent
         the relation  (view, table, or temporary table) used to
         create the object.
@@ -92,6 +92,7 @@ class vDataFrame(vDFAnimatedPlot):
         If it is a pandas.DataFrame, a temporary local table is
         created. Otherwise, the vDataFrame is created using the
         generated SQL code of multiple UNIONs.
+
     usecols: SQLColumns, optional
         When input_relation is not an array-like type:
         List of columns used to create the object. As Vertica
@@ -127,7 +128,82 @@ class vDataFrame(vDFAnimatedPlot):
     vDataColumns : vDataColumn
         Each   vDataColumn  of  the  vDataFrame  is  accessible   by
         specifying its name between brackets. For example, to access
-        the vDataColumn "myVC": vDataFrame["myVC"].
+        the vDataColumn "myVC": ``vDataFrame["myVC"]``.
+    
+    Examples
+    ---------
+
+    Though there are many ways to create a ``vDataFrame``, 
+    but here we will only look at creating ``vDataFrame``:
+
+    - From dictionary
+    - From numpy.array
+
+    Let's begin by importing `VerticaPy`.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`, we mitigate the risk
+        of code collisions with other libraries. This precaution is
+        necessary because verticapy uses commonly known function names
+        like "average" and "median", which can potentially lead to naming
+        conflicts. The use of an alias ensures that the functions from
+        verticapy are used as intended without interfering with functions
+        from other libraries.
+
+    Dictionary
+    ^^^^^^^^^^^
+
+    This is the most direct way to create a ``vDataFrame``:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "cats": ["A", "B", "C"],
+                "reps": [2, 4, 8]
+            }
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html
+
+    Numpy Array
+    ^^^^^^^^^^^
+
+    We can also use a numpy array:
+
+    .. ipython:: python
+
+        import numpy as np
+        
+        vdf = vp.vDataFrame(
+            np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), 
+            usecols = ["col_A","col_B","col_C"]
+        )
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_2.html
     """
 
     @property
@@ -377,10 +453,14 @@ class vDataColumn(vDCPlot, StringSQL):
 
     Attributes
     ----------
-    alias, str           : vDataColumn alias.
-    catalog, dict        : Catalog of pre-computed aggregations.
-    parent, vDataFrame   : Parent of the vDataColumn.
-    transformations, str : List of the different transformations.
+    alias, str: 
+        vDataColumn alias.
+    catalog, dict: 
+        Catalog of pre-computed aggregations.
+    parent, vDataFrame: 
+        Parent of the vDataColumn.
+    transformations, str: 
+        List of the different transformations.
     """
 
     @property
