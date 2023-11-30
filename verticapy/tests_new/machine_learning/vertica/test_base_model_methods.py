@@ -21,6 +21,7 @@ from verticapy.tests_new.machine_learning.vertica import (
     REL_TOLERANCE,
     ABS_TOLERANCE,
     rel_tolerance_map,
+    abs_tolerance_map,
 )
 from vertica_highcharts.highcharts.highcharts import Highchart
 import plotly
@@ -211,9 +212,9 @@ def model_params(model_class):
             ],
         ),
         "AR": (
-            "order, method, penalty, c, missing, npredictions",
+            "p, method, penalty, c, missing, npredictions",
             [
-                ((3, 0, 0), "ols", "none", 1, "linear_interpolation", 144),
+                (3, "ols", "none", 1, "linear_interpolation", 144),
             ],
         ),
         "MA": (
@@ -261,8 +262,10 @@ def regression_report_none(
     vpy_model_obj = get_vpy_model(model_class)
 
     if model_class in ["AR", "MA", "ARMA", "ARIMA"]:
-        if model_class == "MA":
-            p_val = _model_class_tuple.order[2]
+        if model_class == "AR":
+            p_val = _model_class_tuple.p
+        elif model_class == "MA":
+            p_val = _model_class_tuple.q
         else:
             p_val = _model_class_tuple.order[0]
 
@@ -567,7 +570,7 @@ def model_score(
     elif model_class == "AR":
         vpy_model_obj = get_vpy_model(
             model_class,
-            p=_model_class_tuple.order[0],
+            p=_model_class_tuple.p,
             method=_model_class_tuple.method,
             penalty=_model_class_tuple.penalty,
             C=_model_class_tuple.c,
@@ -575,7 +578,7 @@ def model_score(
         )
         vpy_score = vpy_model_obj.model.score(
             metric=vpy_metric_name[0],
-            start=_model_class_tuple.order[0],
+            start=_model_class_tuple.p,
             npredictions=_model_class_tuple.npredictions,
         )
     elif model_class == "MA":
@@ -754,7 +757,14 @@ def model_score(
         "ARMA",
         "ARIMA",
     ]:
-        py_model_obj = get_py_model(model_class, order=_model_class_tuple.order)
+        if model_class == "AR":
+            _order = (_model_class_tuple.p, 0, 0)
+        elif model_class == "MA":
+            _order = (0, 0, _model_class_tuple.q)
+        else:
+            _order = _model_class_tuple.order
+
+        py_model_obj = get_py_model(model_class, order=_order)
         metrics_map = _metrics(model_class, model_obj=py_model_obj)
         py_score = metrics_map[py_metric_name]
     else:

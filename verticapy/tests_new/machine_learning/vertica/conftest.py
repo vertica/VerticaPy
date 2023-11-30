@@ -704,7 +704,7 @@ def get_py_model_fixture(winequality_vpy_fun, titanic_vd_fun, airline_vd_fun):
             if model_class == "AR":
                 p_val = kwargs.get("p", 3)
             elif model_class == "MA":
-                p_val = kwargs.get("order", (0, 0, 1))[2]
+                p_val = kwargs.get("q", 1)
             elif model_class == "ARMA":
                 p_val = kwargs.get("order", (2, 0, 1))[0]
             elif model_class == "ARIMA":
