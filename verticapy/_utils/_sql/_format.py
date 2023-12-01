@@ -520,6 +520,22 @@ def _format_keys(
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import _format_keys
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     for key in d:
         for l in d[key]["l"]:
@@ -564,6 +580,30 @@ def format_query(
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # indent_sql = False
+        format_query(query = sql, indent_sql = False)
+
+        # indent_sql = True
+        format_query(query = sql, indent_sql = True)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
@@ -659,6 +699,27 @@ def clean_query(query: SQLExpression) -> SQLExpression:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import clean_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(clean_query(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(query, list):
         return [clean_query(q) for q in query]
@@ -693,6 +754,27 @@ def erase_comment(query: SQLExpression) -> SQLExpression:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import erase_comment
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(erase_comment(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query = re.sub(r"--.+(\n|\Z)", "", query)
     query = re.sub(r"/\*(.+?)\*/", "", query)
@@ -716,6 +798,27 @@ def erase_label(query: SQLExpression) -> SQLExpression:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import erase_label
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(erase_label(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
@@ -740,6 +843,27 @@ def extract_subquery(query: SQLExpression) -> SQLExpression:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_subquery
+
+        # Generating a SQL query.
+        sql  = "(Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable -- simple query example) subtable2;"
+
+        # Example.
+        print(extract_subquery(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query_tmp = clean_query(query)
     query_tmp = erase_comment(query_tmp)
@@ -768,6 +892,32 @@ def extract_and_rename_subquery(query: SQLExpression, alias: str) -> SQLExpressi
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_and_rename_subquery
+
+        # Generating a SQL query.
+        sql  = "(Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable -- simple query example) subtable2;"
+
+        # Example.
+        print(
+            extract_and_rename_subquery(
+                sql,
+                alias = 'new_alias',
+            ),
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query_tmp = extract_subquery(query)
     query_clean = clean_query(query)
@@ -794,6 +944,22 @@ def extract_precision_scale(ctype: str) -> tuple:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_precision_scale
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if "(" not in ctype:
         return (0, 0)
@@ -839,6 +1005,22 @@ def format_magic(
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_magic
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     object_type = None
     if hasattr(x, "object_type"):
@@ -884,6 +1066,22 @@ def format_schema_table(schema: str, table_name: str) -> str:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_schema_table
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if not schema:
         schema = conf.get_option("temp_schema")
@@ -915,6 +1113,22 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_type
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     res = ()
     for arg in args:
@@ -957,6 +1171,27 @@ def indent_vpy_sql(query: SQLExpression) -> SQLExpression:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import indent_vpy_sql
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(indent_vpy_sql(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -1023,6 +1258,22 @@ def list_strip(L: list) -> list:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import list_strip
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     return [val.strip() for val in L]
 
@@ -1045,6 +1296,22 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import quote_ident
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(column, str):
         tmp_column = str(column)
@@ -1093,6 +1360,34 @@ def replace_label(
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import replace_label
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(
+            indent_vpy_sql(
+                sql,
+                new_label = 'label_test',
+                separator = '_',
+                suffix = 'verticapy_sf',
+            ),
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(separator, NoneType):
         separator = ""
@@ -1137,6 +1432,48 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import verticapy.
+        import verticapy as vp
+
+        # Import the function.
+        from verticapy._utils._sql._format import replace_vars_in_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/ :col "
+        sql += "from :my_in_memory_object; "
+        sql += "-- simple query example"
+
+        # Generating some variables.
+        d = vp.TableSample({"a": [1, 2, 3], "b": ['A', 'B', 'C']})
+        col = 'a'
+
+        # Building the dictionary of variables.
+        vars = {
+            "my_in_memory_object": d,
+            "col": col,
+        }
+
+        # Example.
+        print(replace_vars_in_query(sql, locals_dict = vars))
+
+    .. note::
+
+        This function will automatically detect the
+        local variables' types and build the SQL
+        query that represents them in the final
+        query. It will store large objects in a
+        local temporary table to represent them.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -1174,6 +1511,8 @@ def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpress
                 val = val.current_relation()
             elif object_type == "TableSample":
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
+            elif isinstance(val, dict):
+                ...
             elif isinstance(val, pd.DataFrame):
                 val = read_pd(val).current_relation()
             elif isinstance(val, list):
@@ -1205,6 +1544,22 @@ def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
 
     Examples
     --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import schema_relation
+
+        #
+        ...
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(relation, str):
         rel_transf = relation.replace('""', "__verticapy_doublequotes_")
