@@ -525,9 +525,16 @@ class vDataFrame(vDFAnimatedPlot):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html
 
+    .. note::
+
+        Explore :py:class:`vDataFrame`
+        and :py:class:`vDataColumn`
+        different methods to see more
+        examples.
+
     .. seealso::
 
-        :py:class:`vDataColumn` :
+        | :py:class:`vDataColumn` :
             Columns of :py:class:`vDataFrame` object.
     """
 
@@ -854,7 +861,7 @@ class vDataColumn(vDCPlot, StringSQL):
 
     .. seealso::
 
-        :py:class:`vDataFrame` :
+        | :py:class:`vDataFrame` :
             Main VerticaPy dataset object.
     """
 

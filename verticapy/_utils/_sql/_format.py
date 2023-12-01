@@ -488,10 +488,86 @@ Main function
 
 
 def _format_keys(
-    d: dict, sql: str, mkd: str, tag_l: str, tag_r: str
-) -> tuple[str, str]:
+    d: dict, sql: SQLExpression, mkd: str, tag_l: str, tag_r: str
+) -> tuple[SQLExpression, str]:
     """
-    Function to simplify the code.
+    Format the input SQL query and
+    its Markdown representation by
+    using the input tags and rules.
+
+    Parameters
+    ----------
+    d: dict
+        ``dictionary`` including
+        the different rules to
+        format the input SQL
+        query.
+    sql: SQLExpression
+        SQL Query.
+    mkd: str
+        Markdown Representation
+        of the SQL Query.
+    tag_l: str
+        HTML left TAG.
+    tag_r: str
+        HTML right TAG.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import _format_keys
+
+        # Generating some variables.
+
+        # Key words to consider.
+        # "l" represents left authorized characters
+        # "r" represents right authorized characters
+        # Example: if "r" includes " ", spaced are
+        # authorized at the left side.
+        SQL_KEYWORDS = {
+            "FROM": {"l": (" ",), "r": (" ",)},
+            "GROUP BY": {"l": (" ",), "r": (" ",)},
+            "SELECT": {"l": ("", " "), "r": (" ",)},
+        }
+        # Tags: Only used to generate the final markdown.
+        KEYWORDS_TAG_L = '<b style="color: #C695C6;">'
+        KEYWORDS_TAG_R = "</b>"
+
+        # incorrectly formatted SQL query.
+        sql = "selecT col1, SUM(col2) fRoM my_table group BY 1;"
+
+        # incorrectly formatted SQL query including a <b> tag.
+        html_sql = "selecT col1, <b>SUM(col2)</b> fRoM my_table group BY 1;"
+
+        # Example
+        sql, html_sql = _format_keys(
+            SQL_KEYWORDS, sql, html_sql, KEYWORDS_TAG_L, KEYWORDS_TAG_R
+        )
+        print(sql)
+        print(html_sql)
+
+    .. note::
+
+        This function is used to create
+        well-formatted SQL queries and
+        markdowns.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     for key in d:
         for l in d[key]["l"]:
@@ -512,7 +588,54 @@ def format_query(
     query: SQLExpression, indent_sql: bool = True, print_sql: bool = True
 ) -> SQLExpression:
     """
-    Query Formatter.
+    Query Formatter. It is used
+    to display nicely a SQL query
+    using different colors for all
+    the different SQL elements.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    indent_sql: bool, optional
+        If set to ``True`` the SQL
+        Query will be formatted.
+    print_sql: bool, optional
+        If set to ``True`` the SQL
+        Query will be printed.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # indent_sql = False
+        format_query(query = sql, indent_sql = False)
+
+        # indent_sql = True
+        format_query(query = sql, indent_sql = True)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     display_success = print_sql and conf.get_import_success("IPython")
     res = clean_query(query)
@@ -589,9 +712,46 @@ Utils
 
 def clean_query(query: SQLExpression) -> SQLExpression:
     """
-    Cleans the input query by erasing comments, spaces,
+    Cleans the input query by
+    erasing comments, spaces,
     and other unnecessary characters.
-    Comments using '/*' and '*/' are left in the query.
+    Comments using '/*' and '*/'
+    are left in the query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        Correctly Formatted
+        SQL query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import clean_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(clean_query(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(query, list):
         return [clean_query(q) for q in query]
@@ -609,18 +769,88 @@ def clean_query(query: SQLExpression) -> SQLExpression:
         return query.strip().replace("\xa0", " ")
 
 
-def erase_comment(query: str) -> str:
+def erase_comment(query: SQLExpression) -> SQLExpression:
     """
-    Removes comments from the input query.
+    Removes comments from the input
+    SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query without comments.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import erase_comment
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(erase_comment(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query = re.sub(r"--.+(\n|\Z)", "", query)
     query = re.sub(r"/\*(.+?)\*/", "", query)
     return query.strip()
 
 
-def erase_label(query: str) -> str:
+def erase_label(query: SQLExpression) -> SQLExpression:
     """
-    Removes labels from the input query.
+    Removes labels from the input
+    SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query without labels.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import erase_label
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(erase_label(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     labels = re.findall(r"\/\*\+LABEL(.*?)\*\/", query)
     for label in labels:
@@ -628,9 +858,44 @@ def erase_label(query: str) -> str:
     return query.strip()
 
 
-def extract_subquery(query: str) -> str:
+def extract_subquery(query: SQLExpression) -> SQLExpression:
     """
-    Extracts the SQL subquery from the input query.
+    Extracts the SQL subquery from
+    the input SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query subquery.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_subquery
+
+        # Generating a SQL query.
+        sql  = "(Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable -- simple query example) subtable2;"
+
+        # Example.
+        print(extract_subquery(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query_tmp = clean_query(query)
     query_tmp = erase_comment(query_tmp)
@@ -639,10 +904,52 @@ def extract_subquery(query: str) -> str:
     return query.strip()
 
 
-def extract_and_rename_subquery(query: str, alias: str) -> str:
+def extract_and_rename_subquery(query: SQLExpression, alias: str) -> SQLExpression:
     """
-    Extracts the SQL subquery from the input query
-    and renames it.
+    Extracts the SQL subquery from
+    the input SQL query and renames
+    it.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    alias: str
+        New alias.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query with new alias.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_and_rename_subquery
+
+        # Generating a SQL query.
+        sql  = "(Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable -- simple query example) subtable2;"
+
+        # Example.
+        print(
+            extract_and_rename_subquery(
+                sql,
+                alias = 'new_alias',
+            ),
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query_tmp = extract_subquery(query)
     query_clean = clean_query(query)
@@ -654,8 +961,43 @@ def extract_and_rename_subquery(query: str, alias: str) -> str:
 
 def extract_precision_scale(ctype: str) -> tuple:
     """
-    Extracts the precision and scale from the
-    input SQL type.
+    Extracts the precision and
+    scale from the input SQL type.
+
+    Parameters
+    ----------
+    ctype: str
+        SQL data type.
+
+    Returns
+    -------
+    tuple
+        ``(precision, scale)``.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import extract_precision_scale
+
+        # varchar
+        extract_precision_scale('varchar')
+
+        # varchar(80)
+        extract_precision_scale('varchar(80)')
+
+        # numeric(4, 6)
+        extract_precision_scale('numeric(4, 6)')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if "(" not in ctype:
         return (0, 0)
@@ -672,9 +1014,63 @@ def format_magic(
     x: Any, return_cat: bool = False, cast_float_int_to_str: bool = False
 ) -> Any:
     """
-    Formats  the input element using SQL rules.
-    Ex: None values are represented by NULL and
-        string are enclosed by single quotes "'"
+    Formats  the input element using
+    SQL rules.
+
+    .. note::
+
+        For example: ``None`` values
+        are represented by ``NULL``
+        and ``string`` are enclosed
+        by single quotes "'".
+
+    Parameters
+    ----------
+    x: Any
+        Element to format.
+    return_cat: bool, optional
+        If set to ``True``, the category
+        is also returned.
+    cast_float_int_to_str: bool, optional
+        If set to ``True``, ``float``
+        and ``int`` will be treated
+        as ``str``.
+
+    Returns
+    -------
+    Any
+        Formatted Element.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_magic
+
+        # None.
+        format_magic(None)
+
+        # float.
+        format_magic(55.5)
+
+        # str.
+        format_magic('verticapy_test')
+
+        # float & cast_float_int_to_str = True.
+        format_magic(55.5, cast_float_int_to_str = True)
+
+        # return_cat = True
+        format_magic(55.5, return_cat = True)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     object_type = None
     if hasattr(x, "object_type"):
@@ -700,8 +1096,47 @@ def format_magic(
 
 def format_schema_table(schema: str, table_name: str) -> str:
     """
-    Returns the formatted relation. If the schema is not
-    defined, the 'public' schema is used.
+    Returns the formatted relation.
+    If the schema is not defined,
+    the 'public' ``schema`` is
+    used.
+
+    Parameters
+    ----------
+    schema: str
+        Input ``schema``.
+    table_name: str
+        Input relation name.
+
+    Returns
+    -------
+    str
+        Final Formatted
+        Relation Name.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_schema_table
+
+        # Example
+        format_schema_table('my verticapy schema', 'table-test')
+
+    .. note::
+
+        This function uses double quotes
+        to format the final relation.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if not schema:
         schema = conf.get_option("temp_schema")
@@ -710,9 +1145,54 @@ def format_schema_table(schema: str, table_name: str) -> str:
 
 def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None) -> Any:
     """
-    Format the input objects by using the input type. This
-    simplifies the code because many functions check
-    types and instantiate the corresponding object.
+    Format the input objects by using
+    the input type. This simplifies the
+    code because many functions check
+    types and instantiate the corresponding
+    object.
+
+    Parameters
+    ----------
+    *args
+        Element to format.
+    dtype: type
+        The type used for the formatting.
+    na_out: Any, optional
+        How ``None`` values should be
+        formatted.
+
+    Returns
+    -------
+    Any
+        Formatted Element.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import format_type
+
+        # Generating some variables
+        x = 'column_name'
+
+        # list
+        format_type(x, dtype = list, na_out = 'null')
+
+        # None
+        format_type(None, dtype = list,)
+
+        # Multiple arguments
+        format_type(x, None, 1, dtype = list, na_out = 'null')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     res = ()
     for arg in args:
@@ -739,9 +1219,43 @@ def format_type(*args, dtype: Literal[NoneType, dict, list], na_out: Any = None)
         return res
 
 
-def indent_vpy_sql(query: str) -> str:
+def indent_vpy_sql(query: SQLExpression) -> SQLExpression:
     """
     Indents the input SQL query.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+
+    Returns
+    -------
+    SQLExpression
+        Indented SQL query.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import indent_vpy_sql
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(indent_vpy_sql(sql))
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -793,8 +1307,37 @@ def indent_vpy_sql(query: str) -> str:
 
 def list_strip(L: list) -> list:
     """
-    Erases all the start / end spaces from the
-    input list.
+    Erases all the start / end
+    spaces from the input ``list``.
+
+    Parameters
+    ----------
+    L: list
+        Input ``list``.
+
+    Returns
+    -------
+    list
+        Stripped ``list``.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import list_strip
+
+        # Example
+        list_strip([' A ', ' B', ' C    '])
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     return [val.strip() for val in L]
 
@@ -814,6 +1357,31 @@ def quote_ident(column: Optional[SQLColumns], lower: bool = False) -> SQLColumns
     -------
     str
         Formatted column name.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import quote_ident
+
+        # str
+        quote_ident('my table test')
+
+        # str - lower = True
+        quote_ident('My TABLE test', lower = True)
+
+        # list
+        quote_ident(['my table test', 'my column-test'])
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(column, str):
         tmp_column = str(column)
@@ -841,7 +1409,55 @@ def replace_label(
     suffix: Optional[str] = None,
 ) -> str:
     """
-    Replace the current query's label by a new one.
+    Replace the current query's
+    label by a new one.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    new_label: str, optional
+        New Label.
+    separator: str, optional
+        Label separator.
+    suffix: str, optional
+        Label suffix.
+
+    Returns
+    -------
+    SQLExpression
+        SQL query with the new label.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import replace_label
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/  *"
+        sql += "from (SELECT 1   AS id,  30 as age) "
+        sql += "subtable; -- simple query example"
+
+        # Example.
+        print(
+            indent_vpy_sql(
+                sql,
+                new_label = 'label_test',
+                separator = '_',
+                suffix = 'verticapy_sf',
+            ),
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(separator, NoneType):
         separator = ""
@@ -859,12 +1475,75 @@ def replace_label(
     return query.strip()
 
 
-def replace_vars_in_query(query: str, locals_dict: dict) -> str:
+def replace_vars_in_query(query: SQLExpression, locals_dict: dict) -> SQLExpression:
     """
-    Replaces the input variables with their respective SQL
-    representations. If a input variable does not have a
-    SQL representation, it is materialised by a temporary
-    local table.
+    Replaces the input variables with
+    their respective SQL representations.
+    If a input variable does not have a
+    SQL representation, it is materialised
+    by a temporary local table.
+
+    Parameters
+    ----------
+    query: SQLExpression
+        SQL Query.
+    locals_dict: dict
+        Dictionary which includes all
+        the elements to include in the
+        final query. It can be ``lists``,
+        ``numpy.array`` or even
+        ``pandas.DataFrame``.
+
+    Returns
+    -------
+    SQLExpression
+        Formatted SQL query with
+        all the replaced elements.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import verticapy.
+        import verticapy as vp
+
+        # Import the function.
+        from verticapy._utils._sql._format import replace_vars_in_query
+
+        # Generating a SQL query.
+        sql  = "Select /*+LABEL('my_label')*/ :col "
+        sql += "from :my_in_memory_object; "
+        sql += "-- simple query example"
+
+        # Generating some variables.
+        d = vp.TableSample({"a": [1, 2, 3], "b": ['A', 'B', 'C']})
+        col = 'a'
+
+        # Building the dictionary of variables.
+        vars = {
+            "my_in_memory_object": d,
+            "col": col,
+        }
+
+        # Example.
+        print(replace_vars_in_query(sql, locals_dict = vars))
+
+    .. note::
+
+        This function will automatically detect the
+        local variables' types and build the SQL
+        query that represents them in the final
+        query. It will store large objects in a
+        local temporary table to represent them.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     variables, query_tmp = re.findall(r"(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
@@ -902,6 +1581,8 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
                 val = val.current_relation()
             elif object_type == "TableSample":
                 val = f"({val.to_sql()}) VERTICAPY_SUBTABLE"
+            elif isinstance(val, dict):
+                ...
             elif isinstance(val, pd.DataFrame):
                 val = read_pd(val).current_relation()
             elif isinstance(val, list):
@@ -912,9 +1593,53 @@ def replace_vars_in_query(query: str, locals_dict: dict) -> str:
 
 def schema_relation(relation: Any, do_quote: bool = True) -> tuple[str, str]:
     """
-    Extracts the schema and the table from the input
-    relation. If the input relation does not have a schema,
-    the temporary schema is used.
+    Extracts the schema and the
+    table from the input ``relation``.
+    If the input ``relation`` does
+    not have a schema, the temporary
+    schema is used.
+
+    Parameters
+    ----------
+    relation: str
+        Input relation.
+    do_quote: bool, optional
+        Adds quote to the output
+        to be correctly formatted.
+
+    Returns
+    -------
+    tuple
+        ``(schema, relation_name)``.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._format import schema_relation
+
+        # usual formatting
+        schema_relation('my_schema.my_table')
+
+        # weird formatting
+        schema_relation('"my table"."test..verticapy"')
+
+    .. note::
+
+        This function is used to extract the
+        table and the schema from the input
+        relation. It is one of the mostly
+        used function.
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if isinstance(relation, str):
         rel_transf = relation.replace('""', "__verticapy_doublequotes_")
