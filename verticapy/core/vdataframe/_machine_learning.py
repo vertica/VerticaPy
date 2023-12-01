@@ -1136,22 +1136,23 @@ class vDFMachineLearning(vDFScaler):
         end_date: PythonScalar = "",
     ) -> "vDataFrame":
         """
-        Recommend items based on the Collaborative Filtering
-        (CF) technique.  The implementation  is the  same as
-        APRIORI algorithm,  but is limited to pairs of items.
+        Recommend items based on the Collaborative
+        Filtering (CF) technique.  The implementation
+        is the same as APRIORI algorithm, but is
+        limited to pairs of items.
 
         Parameters
         ----------
         unique_id: str
-            Input :py:class:`vDataColumn` corresponding to a
-            unique ID. It serves as a primary key in another
-            dataset. In our context, it represents an operation,
-            such as a basket ID, which includes multiple sub-
-            transactions.
+            Input :py:class:`vDataColumn` corresponding
+            to a unique ID. It serves as a primary key
+            in another dataset. In our context, it
+            represents an operation, such as a basket ID,
+            which includes multiple sub-transactions.
         item_id: str
-            Input :py:class:`vDataColumn` corresponding to an
-            item ID. It is a secondary key  used to compute the
-            different pairs.
+            Input :py:class:`vDataColumn` corresponding
+            to an item ID. It is a secondary key used to
+            compute the different pairs.
         method: str, optional
             Method used to recommend.
 
@@ -1171,9 +1172,9 @@ class vDFMachineLearning(vDFScaler):
                 element.
 
         rating: str | tuple, optional
-            Input :py:class:`vDataColumn` including the items
-            rating. If the ``rating`` type is ``tuple``, it
-            must be composed of 3 elements:
+            Input :py:class:`vDataColumn` including the
+            items rating. If the ``rating`` type is
+            ``tuple``, it must be composed of 3 elements:
 
             (r_vdf, r_item_id, r_name) where:
 
@@ -1186,13 +1187,14 @@ class vDFMachineLearning(vDFScaler):
             including the items rating.
 
         ts: str, optional
-            TS (Time Series) vDataColumn used to order the data.
-            The vDataColumn type must be date (date, datetime,
-            timestamp...) or numerical.
+            TS (Time Series) :py:class:`vDataColumn`
+            used to order the data. The
+            :py:class:`vDataColumn` type must be date
+            (date, datetime, timestamp...) or numerical.
         start_date: str | PythonNumber | date, optional
             Input Start Date. For example, ``time = '03-11-1993'``
-            will filter the data when ``ts``  is less than
-            November 1993 the 3rd.
+            will filter the data when ``ts``  is less
+            than November 1993 the 3rd.
         end_date: str | PythonNumber | date, optional
             Input End Date.  For example,  ``time = '03-11-1993'``
             will filter the data when ``ts`` is greater
@@ -1201,7 +1203,8 @@ class vDFMachineLearning(vDFScaler):
         Returns
         -------
         vDataFrame
-            The vDataFrame of the recommendation.
+            The :py:class:`vDataFrame`
+            of the recommendation.
 
         Examples
         --------
@@ -1225,17 +1228,19 @@ class vDFMachineLearning(vDFScaler):
             without interfering with functions from other
             libraries.
 
-        Let us create a :py:class:`vDataFrame` which has
-        some purchase transaction data:
+        Let us create a :py:class:`vDataFrame`
+        which has some purchase transaction data:
 
         - transaction_id:
             Unique ID for a transaction.
 
         - item_id:
-            The unique ID for different items that were purchased.
+            The unique ID for different items that
+            were purchased.
 
         - rating:
-            Rating provided by the user for the item purchased.
+            Rating provided by the user for the item
+            purchased.
 
         .. ipython:: python
 
@@ -1244,7 +1249,7 @@ class vDFMachineLearning(vDFScaler):
                     "transaction_id": [1, 1, 1, 2, 2, 3, 3, 3],
                     "item_id": ["A", "B", "C", "B", "C", "A", "B", "C"],
                     "rating": [8, 5, 1, 6, 2, 9, 4, 3],
-                }
+                },
             )
 
         .. ipython:: python
@@ -1283,11 +1288,12 @@ class vDFMachineLearning(vDFScaler):
 
         .. note::
 
-            This function is highly useful for basket analysis
-            and can be employed to derive valuable recommendations.
+            This function is highly useful for basket
+            analysis and can be employed to derive
+            valuable recommendations.
 
-        Let's look at another example involving timestamp
-        values:
+        Let's look at another example
+        involving timestamp values:
 
         .. ipython:: python
 
@@ -1305,8 +1311,9 @@ class vDFMachineLearning(vDFScaler):
                         "2021-1-4",
                         "2021-1-21",
                         "2021-1-21",
-                        "2021-1-21"]
-                }
+                        "2021-1-21",
+                    ],
+                },
             )
 
         .. ipython:: python
@@ -1320,16 +1327,16 @@ class vDFMachineLearning(vDFScaler):
         .. raw:: html
             :file: SPHINX_DIRECTORY/figures/core_vDataFrame_ml_suggest_2.html
 
-        hen we can use the timestamp column to
-        filter the recommendation results:
+        Then we can use the timestamp column
+        to filter the recommendation results:
 
         .. ipython:: python
 
             recommendations = vdf.recommend(
-                unique_id="transaction_id",
-                item_id="item_id",
-                method="avg",
-                rating="rating",
+                unique_id = "transaction_id",
+                item_id = "item_id",
+                method = "avg",
+                rating = "rating",
                 ts = "date",
                 start_date = "2021-1-1",
                 end_date = "2021-1-5",

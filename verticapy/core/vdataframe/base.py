@@ -160,9 +160,9 @@ class vDataFrame(vDFAnimatedPlot):
 
     Examples
     ---------
-
-    In this example, we will look at some of the
-    ways how we can create a ``vDataFrame``.
+    In this example, we will look
+    at some of the ways how we can
+    create a :py:class:`vDataFrame`.
 
     - From ``dictionary``
     - From ``numpy.array``
@@ -170,15 +170,18 @@ class vDataFrame(vDFAnimatedPlot):
     - From SQL Query
     - From a table
 
-    After that we will also look at the mathematical
-    operators that are available:
+    After that we will also look at
+    the mathematical operators that
+    are available:
 
     - Pandas-Like
     - SQL-Like
 
-    Lastly, we will look at some examples
-    of applications of functions that be applied
-    directly on the :py:class:`vDataFrame`.
+    Lastly, we will look at some
+    examples of applications of
+    functions that be applied
+    directly on the
+    :py:class:`vDataFrame`.
 
     ----
 
@@ -203,8 +206,8 @@ class vDataFrame(vDFAnimatedPlot):
     Dictionary
     ^^^^^^^^^^^
 
-    This is the most direct way to create a
-    :py:class:`vDataFrame`:
+    This is the most direct way to
+    create a :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -236,8 +239,18 @@ class vDataFrame(vDFAnimatedPlot):
         import numpy as np
 
         vdf = vp.vDataFrame(
-            np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
-            usecols = ["col_A","col_B","col_C"],
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ],
+            ),
+            usecols = [
+                "col_A",
+                "col_B",
+                "col_C",
+            ],
         )
 
     .. ipython:: python
@@ -262,9 +275,11 @@ class vDataFrame(vDFAnimatedPlot):
         import pandas as pd
 
         # Create the data dictionary
-        data = {'Name': ['John', 'Ali', 'Pheona'],
-                'Age': [25, 30, 22],
-                'City': ['New York', 'Gaza', 'Los Angeles']}
+        data = {
+            'Name': ['John', 'Ali', 'Pheona'],
+            'Age': [25, 30, 22],
+            'City': ['New York', 'Gaza', 'Los Angeles'],
+        }
 
         # Create the Pandas DataFrame object
         df = pd.DataFrame(data)
@@ -328,8 +343,8 @@ class vDataFrame(vDFAnimatedPlot):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html
 
-    Mathermatical Opeartors
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    Mathematical Operators
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
     We can use all the common mathematical
     operators on the :py:class:`vDataFrame`.
@@ -337,7 +352,8 @@ class vDataFrame(vDFAnimatedPlot):
     Pandas-Like
     ^^^^^^^^^^^^
 
-    First let us re-create a simple :py:class:`vDataFrame`:
+    First let us re-create a simple
+    :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -348,8 +364,8 @@ class vDataFrame(vDFAnimatedPlot):
             },
         )
 
-    In order to search for a specific string value of
-    a specific column:
+    In order to search for a specific
+    string value of a specific column:
 
     .. ipython:: python
 
@@ -365,8 +381,8 @@ class vDataFrame(vDFAnimatedPlot):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
 
-    Similarly we can perform a mathermatical operation
-    as well for numerical columns:
+    Similarly we can perform a mathematical
+    operations as well for numerical columns:
 
     .. ipython:: python
 
@@ -382,7 +398,7 @@ class vDataFrame(vDFAnimatedPlot):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
 
-    Both opeartors could also be combined:
+    Both operators could also be combined:
 
     .. ipython:: python
 
@@ -398,7 +414,7 @@ class vDataFrame(vDFAnimatedPlot):
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html
 
-    We can also perform mathematical claculations
+    We can also perform mathematical calculations
     on the elements inside the :py:class:`vDataFrame`
     quite conveniently:
 
@@ -424,16 +440,18 @@ class vDataFrame(vDFAnimatedPlot):
     on the :py:class:`vDataFrame` using
     :py:class:`StringSQL`. This adds a new
     level of flexibility to the :py:class:`vDataFrame`.
-    :py:class:`StringSQL` allows the user to generate
-    formatted SQL queries in a string form. Since any
-    SQL query in string format can be passed to the
-    :py:class:`vDataFrame`, you can seamlessly pass the output
-    of :py:class:`StringSQL` directly to the `vDataFrame`.
+    :py:class:`StringSQL` allows the user
+    to generate formatted SQL queries in
+    a string form. Since any SQL query in
+    string format can be passed to the
+    :py:class:`vDataFrame`, you can seamlessly
+    pass the output of :py:class:`StringSQL`
+    directly to the :py:class:`vDataFrame`.
 
     .. ipython:: python
 
         # Create the SQL Query using StringSQL
-        sql_query = vp.StringSQL("reps > 2 ")
+        sql_query = vp.StringSQL("reps > 2")
 
         # Get the output as a vDataFrame
         result = vdf[sql_query]
@@ -453,7 +471,8 @@ class vDataFrame(vDFAnimatedPlot):
         Have a look at :py:class:`StringSQL`
         for more details.
 
-    Another example of a slightly advanced SQL Query could be:
+    Another example of a slightly
+    advanced SQL Query could be:
 
     .. ipython:: python
 
@@ -492,7 +511,7 @@ class vDataFrame(vDFAnimatedPlot):
         # Create vDataFrame
         vdf = load_titanic()
 
-        # Sumamrize the vDataFrame
+        # Summarize the vDataFrame
         vdf.describe()
 
     .. ipython:: python
@@ -508,7 +527,8 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. seealso::
 
-        :py:class:`vDataColumn`
+        :py:class:`vDataColumn` :
+            Columns of :py:class:`vDataFrame` object.
     """
 
     @property
@@ -734,38 +754,108 @@ class vDataFrame(vDFAnimatedPlot):
 
 class vDataColumn(vDCPlot, StringSQL):
     """
-    Python object that stores all user transformations. If   the
-    vDataFrame  represents the entire relation, a vDataColumn can
-    be seen  as  one  column of  that  relation. Through its
-    abstractions, vDataColumns simplify several processes.
+    Python object that stores all user
+    transformations. If the :py:class:`vDataFrame`
+    represents the entire relation, a
+    :py:class:`vDataColumn` can be seen
+    as one column of that relation.
+    Through its abstractions, :py:class:`vDataColumn`
+    simplify several processes.
 
     Parameters
     ----------
     alias: str
-        vDataColumn alias.
+        :py:class:`vDataColumn` alias.
     transformations: list, optional
-        List of the different  transformations. Each transformation
-        must be similar to the following: (function, type, category)
+        List of the different  transformations.
+        Each transformation must be similar to
+        the following: ``(function, type, category)``
     parent: vDataFrame, optional
-        Parent of the vDataColumn. One vDataFrame can have multiple
-        children vDataColumns, whereas one vDataColumn can only have
-        one parent.
+        Parent of the :py:class:`vDataColumn`.
+        One :py:class:`vDataFrame` can have
+        multiple children :py:class:`vDataColumn`,
+        whereas one :py:class:`vDataColumn` can
+        only have one parent.
     catalog: dict, optional
-        Catalog where each key corresponds to an aggregation.
-        vDataColumns will memorize the already computed aggregations
-        to increase performance. The catalog is updated when the
-        parent vDataFrame is modified.
+        Catalog where each key corresponds to an
+        aggregation. :py:class:`vDataColumn` will
+        memorize the already computed aggregations
+        to increase performance. The catalog is
+        updated when the parent :py:class:`vDataFrame`
+        is modified.
 
     Attributes
     ----------
     alias, str:
-        vDataColumn alias.
+        :py:class:`vDataColumn` alias.
     catalog, dict:
         Catalog of pre-computed aggregations.
     parent, vDataFrame:
-        Parent of the vDataColumn.
+        Parent of the :py:class:`vDataColumn`.
     transformations, str:
         List of the different transformations.
+
+    Examples
+    --------
+    Let's begin by importing `VerticaPy`.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
+
+    Let's create a :py:class:`vDataFrame`
+    with two :py:class:`vDataColumn`:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "cats": ["A", "B", "C"],
+                "reps": [2, 4, 8],
+            },
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html
+
+    "cats" and "reps" are :py:class:`vDataColumn`
+    objects. They can be accessed the same way as
+    a ``dictionary`` or a ``pandas.DataFrame``.
+    They represent the columns of the entire
+    relation.
+
+    For example, the following code will access
+    the :py:class:`vDataColumn` "cats":
+
+    .. code-block:: python
+
+        vdf["cats"]
+
+    .. note::
+
+        :py:class:`vDataColumn` are columns inside a
+        :py:class:`vDataFrame`; they have their own
+        methods but cannot exist without a parent
+        :py:class:`vDataFrame`. Please refer to
+        :py:class:`vDataFrame` to see an entire
+        example.
+
+    .. seealso::
+
+        :py:class:`vDataFrame` :
+            Main VerticaPy dataset object.
     """
 
     @property
