@@ -160,14 +160,30 @@ class vDataFrame(vDFAnimatedPlot):
 
     Examples
     ---------
-
-    Though there are many ways to
-    create a :py:class:`vDataFrame`,
-    but here we will only look at
-    creating :py:class:`vDataFrame`:
+    In this example, we will look
+    at some of the ways how we can
+    create a :py:class:`vDataFrame`.
 
     - From ``dictionary``
     - From ``numpy.array``
+    - From ``pandas.DataFrame``
+    - From SQL Query
+    - From a table
+
+    After that we will also look at
+    the mathematical operators that
+    are available:
+
+    - Pandas-Like
+    - SQL-Like
+
+    Lastly, we will look at some
+    examples of applications of
+    functions that be applied
+    directly on the
+    :py:class:`vDataFrame`.
+
+    ----
 
     Let's begin by importing `VerticaPy`.
 
@@ -190,8 +206,8 @@ class vDataFrame(vDFAnimatedPlot):
     Dictionary
     ^^^^^^^^^^^
 
-    This is the most direct way to create a
-    :py:class:`vDataFrame`:
+    This is the most direct way to
+    create a :py:class:`vDataFrame`:
 
     .. ipython:: python
 
@@ -223,8 +239,18 @@ class vDataFrame(vDFAnimatedPlot):
         import numpy as np
 
         vdf = vp.vDataFrame(
-            np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
-            usecols = ["col_A","col_B","col_C"],
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ],
+            ),
+            usecols = [
+                "col_A",
+                "col_B",
+                "col_C",
+            ],
         )
 
     .. ipython:: python
@@ -237,6 +263,272 @@ class vDataFrame(vDFAnimatedPlot):
 
     .. raw:: html
         :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_2.html
+
+    Pandas DataFrame
+    ^^^^^^^^^^^^^^^^^
+
+    We can also use a ``pandas.DataFrame`` object:
+
+    .. ipython:: python
+
+        # Import Pandas library
+        import pandas as pd
+
+        # Create the data dictionary
+        data = {
+            'Name': ['John', 'Ali', 'Pheona'],
+            'Age': [25, 30, 22],
+            'City': ['New York', 'Gaza', 'Los Angeles'],
+        }
+
+        # Create the Pandas DataFrame object
+        df = pd.DataFrame(data)
+
+        # Create a vDataFrame
+        vdf = vp.vDataFrame(df)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_3.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_3.html
+
+    SQL Query
+    ^^^^^^^^^^
+
+    We can also use a SQL Query:
+
+    .. ipython:: python
+
+        # Write a SQL Query to fetch three rows from the Titanic table
+        sql_query = "SELECT age, sex FROM public.titanic LIMIT 3;"
+
+        # Create a vDataFrame
+        vdf = vp.vDataFrame(sql_query)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html
+
+    Table
+    ^^^^^^
+
+    A table can also be directly ingested:
+
+    .. ipython:: python
+
+        # Create a vDataFrame from the titanic table in public schema
+        vdf = vp.vDataFrame("public.titanic")
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_4.html
+
+    Mathematical Operators
+    ~~~~~~~~~~~~~~~~~~~~~~~
+
+    We can use all the common mathematical
+    operators on the :py:class:`vDataFrame`.
+
+    Pandas-Like
+    ^^^^^^^^^^^^
+
+    First let us re-create a simple
+    :py:class:`vDataFrame`:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "cats": ["A", "B", "C"],
+                "reps": [2, 4, 8],
+            },
+        )
+
+    In order to search for a specific
+    string value of a specific column:
+
+    .. ipython:: python
+
+        result = vdf[vdf["cats"] == "A"]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
+
+    Similarly we can perform a mathematical
+    operations as well for numerical columns:
+
+    .. ipython:: python
+
+        result = vdf[vdf["reps"] > 2]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5.html
+
+    Both operators could also be combined:
+
+    .. ipython:: python
+
+        result = vdf[vdf["reps"] > 2][vdf["cats"] == "C"]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_5_2.html
+
+    We can also perform mathematical calculations
+    on the elements inside the :py:class:`vDataFrame`
+    quite conveniently:
+
+    .. ipython:: python
+
+        vdf["new"] = abs(vdf["reps"] * 4 - 100)
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_6.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_6.html
+
+    SQL-Like
+    ^^^^^^^^^
+
+    SQL queries can be directly applied
+    on the :py:class:`vDataFrame` using
+    :py:class:`StringSQL`. This adds a new
+    level of flexibility to the :py:class:`vDataFrame`.
+    :py:class:`StringSQL` allows the user
+    to generate formatted SQL queries in
+    a string form. Since any SQL query in
+    string format can be passed to the
+    :py:class:`vDataFrame`, you can seamlessly
+    pass the output of :py:class:`StringSQL`
+    directly to the :py:class:`vDataFrame`.
+
+    .. ipython:: python
+
+        # Create the SQL Query using StringSQL
+        sql_query = vp.StringSQL("reps > 2")
+
+        # Get the output as a vDataFrame
+        result = vdf[sql_query]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html
+
+    .. note::
+
+        Have a look at :py:class:`StringSQL`
+        for more details.
+
+    Another example of a slightly
+    advanced SQL Query could be:
+
+    .. ipython:: python
+
+        # Create the SQL Query using StringSQL
+        sql_query = vp.StringSQL("reps BETWEEN 3 AND 8 AND cats = 'B'")
+
+        # Get the output as a vDataFrame
+        result = vdf[sql_query]
+
+    .. ipython:: python
+        :suppress:
+
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_8.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_8.html
+
+    ----
+
+    Direct Functions
+    ~~~~~~~~~~~~~~~~~
+
+    There are many methods that can be directly
+    used by :py:class:`vDataFrame`. Let us look
+    at how conveiently we can call them. Here is
+    an example of the :py:meth:`vDataFrame.describe`
+    method:
+
+    .. ipython:: python
+
+        # Import the dataset
+        from verticapy.datasets import load_titanic
+
+        # Create vDataFrame
+        vdf = load_titanic()
+
+        # Summarize the vDataFrame
+        vdf.describe()
+
+    .. ipython:: python
+        :suppress:
+
+        result = vdf.describe()
+        html_file = open("SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html", "w")
+        html_file.write(result._repr_html_())
+        html_file.close()
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_7.html
+
+    .. seealso::
+
+        :py:class:`vDataColumn` :
+            Columns of :py:class:`vDataFrame` object.
     """
 
     @property
@@ -462,38 +754,108 @@ class vDataFrame(vDFAnimatedPlot):
 
 class vDataColumn(vDCPlot, StringSQL):
     """
-    Python object that stores all user transformations. If   the
-    vDataFrame  represents the entire relation, a vDataColumn can
-    be seen  as  one  column of  that  relation. Through its
-    abstractions, vDataColumns simplify several processes.
+    Python object that stores all user
+    transformations. If the :py:class:`vDataFrame`
+    represents the entire relation, a
+    :py:class:`vDataColumn` can be seen
+    as one column of that relation.
+    Through its abstractions, :py:class:`vDataColumn`
+    simplify several processes.
 
     Parameters
     ----------
     alias: str
-        vDataColumn alias.
+        :py:class:`vDataColumn` alias.
     transformations: list, optional
-        List of the different  transformations. Each transformation
-        must be similar to the following: (function, type, category)
+        List of the different  transformations.
+        Each transformation must be similar to
+        the following: ``(function, type, category)``
     parent: vDataFrame, optional
-        Parent of the vDataColumn. One vDataFrame can have multiple
-        children vDataColumns, whereas one vDataColumn can only have
-        one parent.
+        Parent of the :py:class:`vDataColumn`.
+        One :py:class:`vDataFrame` can have
+        multiple children :py:class:`vDataColumn`,
+        whereas one :py:class:`vDataColumn` can
+        only have one parent.
     catalog: dict, optional
-        Catalog where each key corresponds to an aggregation.
-        vDataColumns will memorize the already computed aggregations
-        to increase performance. The catalog is updated when the
-        parent vDataFrame is modified.
+        Catalog where each key corresponds to an
+        aggregation. :py:class:`vDataColumn` will
+        memorize the already computed aggregations
+        to increase performance. The catalog is
+        updated when the parent :py:class:`vDataFrame`
+        is modified.
 
     Attributes
     ----------
     alias, str:
-        vDataColumn alias.
+        :py:class:`vDataColumn` alias.
     catalog, dict:
         Catalog of pre-computed aggregations.
     parent, vDataFrame:
-        Parent of the vDataColumn.
+        Parent of the :py:class:`vDataColumn`.
     transformations, str:
         List of the different transformations.
+
+    Examples
+    --------
+    Let's begin by importing `VerticaPy`.
+
+    .. ipython:: python
+
+        import verticapy as vp
+
+    .. hint::
+
+        By assigning an alias to :py:mod:`verticapy`,
+        we mitigate the risk of code collisions with
+        other libraries. This precaution is necessary
+        because verticapy uses commonly known function
+        names like "average" and "median", which can
+        potentially lead to naming conflicts. The use
+        of an alias ensures that the functions from
+        :py:mod:`verticapy` are used as intended without
+        interfering with functions from other libraries.
+
+    Let's create a :py:class:`vDataFrame`
+    with two :py:class:`vDataColumn`:
+
+    .. ipython:: python
+
+        vdf = vp.vDataFrame(
+            {
+                "cats": ["A", "B", "C"],
+                "reps": [2, 4, 8],
+            },
+        )
+
+    .. raw:: html
+        :file: SPHINX_DIRECTORY/figures/core_vDataFrame_base_1.html
+
+    "cats" and "reps" are :py:class:`vDataColumn`
+    objects. They can be accessed the same way as
+    a ``dictionary`` or a ``pandas.DataFrame``.
+    They represent the columns of the entire
+    relation.
+
+    For example, the following code will access
+    the :py:class:`vDataColumn` "cats":
+
+    .. code-block:: python
+
+        vdf["cats"]
+
+    .. note::
+
+        :py:class:`vDataColumn` are columns inside a
+        :py:class:`vDataFrame`; they have their own
+        methods but cannot exist without a parent
+        :py:class:`vDataFrame`. Please refer to
+        :py:class:`vDataFrame` to see an entire
+        example.
+
+    .. seealso::
+
+        :py:class:`vDataFrame` :
+            Main VerticaPy dataset object.
     """
 
     @property
