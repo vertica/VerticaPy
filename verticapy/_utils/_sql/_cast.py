@@ -25,8 +25,60 @@ def to_varchar(
     column: str = "{}",
 ) -> str:
     """
-    Uses the correct SQL function to convert
-    the input column to VARCHAR.
+    Uses the correct SQL function to
+    convert the input column to VARCHAR.
+
+    Parameters
+    ----------
+    category: str
+        Data Type category.
+    column: str, optional
+        Column to format.
+
+    Returns
+    -------
+    str
+        correctly formatted column.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._cast import to_varchar
+
+        # binary
+        to_varchar(
+            category = 'binary',
+            column = 'col',
+        )
+
+        # vmap
+        to_varchar(
+            category = 'vmap',
+            column = 'col',
+        )
+
+        # spatial
+        to_varchar(
+            category = 'spatial',
+            column = 'col',
+        )
+
+        # text
+        to_varchar(
+            category = 'text',
+            column = 'col',
+        )
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     map_dict = {
         "vmap": f"MAPTOSTRING({column})",
@@ -42,8 +94,46 @@ def to_dtype_category(
     expr: type,
 ) -> Literal["float", "int", "text", "date", "complex", "undefined"]:
     """
-    Returns the category associated with
-    the Python input type.
+    Returns the category associated
+    with the Python input type.
+
+    Parameters
+    ----------
+    expr: type
+        Data Type.
+
+    Returns
+    -------
+    str
+        VerticaPy category.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._cast import to_dtype_category
+
+        # float
+        to_dtype_category(float)
+
+        # list
+        to_dtype_category(list)
+
+        # dict
+        to_dtype_category(dict)
+
+        # str
+        to_dtype_category(str)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if hasattr(expr, "category"):
         category = expr.category()
@@ -65,8 +155,43 @@ def to_dtype_category(
 
 def to_sql_dtype(dtype: Union[type, str]) -> Union[type, str]:
     """
-    Returns the SQL type associated to the
-    input Python type.
+    Returns the SQL type associated
+    to the input Python type.
+
+    Parameters
+    ----------
+    dtype: type | str
+        Data Type to format.
+
+    Returns
+    -------
+    type | str
+        Correctly Formatted Data Type.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._cast import to_sql_dtype
+
+        # float
+        to_sql_dtype(float)
+
+        # list
+        to_sql_dtype(list)
+
+        # dict
+        to_sql_dtype(dict)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     if dtype in (str, "str", "string"):
         dtype = "varchar"
@@ -110,10 +235,48 @@ def to_category(
     "undefined",
 ]:
     """
-    Returns the category associated to the
-    input SQL type.
+    Returns the category associated
+    to the input SQL type.
+
+    Parameters
+    ----------
+    ctype: str, optional
+        Vertica Column Data Type.
+
+    Returns
+    -------
+    str
+        Column category.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._cast import to_category
+
+        # array
+        to_category('array')
+
+        # bigint
+        to_category('bigint')
+
+        # geometry
+        to_category('geometry')
+
+        # varchar
+        to_category('varchar')
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
-    ctype = ctype.lower().strip()
+    ctype = str(ctype).lower().strip()
     if ctype != "":
         if ctype.startswith(("array", "row", "set")):
             return "complex"

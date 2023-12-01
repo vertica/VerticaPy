@@ -21,22 +21,48 @@ from verticapy._utils._sql._format import format_type, quote_ident
 
 def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
     """
-    Excludes the input lists of prefixes from the
-    input name and then returns the new name.
-    When there is a match, the other elements of
-    the list are ignored.
+    Excludes the input ``lists`` of
+    prefixes from the input name
+    and then returns the new name.
+    When there is a match, the other
+    elements of the ``list`` are
+    ignored.
 
     Parameters
     ----------
     name: str
         Input name.
     prefix: list, optional
-        List of prefixes.
+        ``list`` of prefixes.
 
     Returns
     -------
     name
-        The name without the prefixes.
+        The name without the
+        prefixes.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import erase_prefix_in_name
+
+        # Generates a name and a list of words.
+        name = 'country.city.lat'
+        prefix = ['country.city.', 'customer.age.']
+
+        # Example.
+        erase_prefix_in_name(name, prefix)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     prefix = format_type(prefix, dtype=list)
     new_name = name
@@ -50,22 +76,47 @@ def erase_prefix_in_name(name: str, prefix: Optional[list] = None) -> str:
 
 def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
     """
-    Excludes the input lists of suffixes from the
-    input name and then returns the new name.
-    When there is a match, the other elements of
-    the list are ignored.
+    Excludes the input ``lists`` of
+    suffixes from the input name and
+    then returns the new name.
+    When there is a match, the other
+    elements of the ``list`` are ignored.
 
     Parameters
     ----------
     name: str
         Input name.
     suffix: list, optional
-        List of suffixes.
+        ``list`` of suffixes.
 
     Returns
     -------
     name
-        The name without the suffixes.
+        The name without the
+        suffixes.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import erase_suffix_in_name
+
+        # Generates a name and a list of words.
+        name = 'country.city.lat'
+        suffix = ['.city.lat', '.customer.age']
+
+        # Example.
+        erase_suffix_in_name(name, suffix)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     suffix = format_type(suffix, dtype=list)
     new_name = name
@@ -79,22 +130,47 @@ def erase_suffix_in_name(name: str, suffix: Optional[list] = None) -> str:
 
 def erase_word_in_name(name: str, word: Optional[list] = None) -> str:
     """
-    Excludes the input lists of words from the
-    input name and then returns the new name.
-    When there is a match, the other elements
-    of the list are ignored.
+    Excludes the input ``lists``
+    of words from the input name
+    and then returns the new name.
+    When there is a match, the other
+    elements of the list are ignored.
 
     Parameters
     ----------
     name: str
         Input name.
     word: list, optional
-        List of words.
+        ``list`` of words.
 
     Returns
     -------
     name
-        The name without the input words.
+        The name without
+        the input words.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import erase_word_in_name
+
+        # Generates a name and a list of words.
+        name = 'country.city.lat'
+        word = ['city.', 'customer.']
+
+        # Example.
+        erase_word_in_name(name, word)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     word = format_type(word, dtype=list)
     for w in word:
@@ -112,35 +188,67 @@ def erase_in_name(
     order: Optional[list] = None,
 ) -> str:
     """
-    Excludes the input lists of suffixes and
-    prefixes from the input name and then
-    returns the new name. When there is a match,
-    the other elements of the list are ignored.
+    Excludes the input ``lists``
+    of suffixes and prefixes from
+    the input name and then returns
+    the new name. When there is a match,
+    the other elements of the ``list``
+    are ignored.
 
     Parameters
     ----------
     name: str
         Input name.
     suffix: list, optional
-        List of suffixes.
+        ``list`` of suffixes.
     prefix: list, optional
-        List of prefixes.
+        ``list`` of prefixes.
     word: list, optional
-        List of words.
+        ``list`` of words.
     order: list, optional
         The order of the process.
-            s: suffix
-            p: prefix
-            w: word
-        For example, the list ["p", "s", "w"] will
-        start by excluding the prefixes, then
-        suffixes, and finally the input words.
+
+         - s:
+            suffix.
+         - p:
+            prefix.
+         - w:
+            word.
+        For example, the ``list``
+        ``["p", "s", "w"]`` will
+        start by excluding the
+        prefixes, then suffixes,
+        and finally the input words.
 
     Returns
     -------
     name
-        The name without the prefixes, suffixes
+        The name without the
+        prefixes, suffixes
         and input words.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import erase_in_name
+
+        # Generates a name and a list of words.
+        name = 'country.city.lat'
+        word = ['city.', 'customer.']
+
+        # Example.
+        erase_in_name(name, word=word)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     suffix, prefix, word = format_type(suffix, prefix, word, dtype=list)
@@ -164,9 +272,12 @@ def is_similar_name(
     order: Optional[list] = None,
 ) -> bool:
     """
-    Excludes the input lists of suffixes, prefixes
-    and words from the input names and then returns
-    a boolean for whether the new names are similar.
+    Excludes the input ``lists``
+    of suffixes, prefixes and
+    words from the input names
+    and then returns a ``boolean``
+    for whether the new names are
+    similar.
 
     Parameters
     ----------
@@ -175,26 +286,55 @@ def is_similar_name(
     name2: str
         Second name to compare.
     skip_suffix: list, optional
-        List of suffixes to exclude.
+        ``list`` of suffixes to exclude.
     skip_prefix: list, optional
-        List of prefixes to exclude.
+        ``list`` of prefixes to exclude.
     skip_word: list, optional
-        List of words to exclude.
+        ``list`` of words to exclude.
     order: list, optional
         The order of the process.
-            s: suffix
-            p: prefix
-            w: word
-        For example, the list ["p", "s", "w"] will start
-        by excluding the prefixes, then suffixes, and
-        finally the input words.
 
+         - s:
+            suffix.
+         - p:
+            prefix.
+         - w:
+            word.
+        For example, the ``list``
+        ``["p", "s", "w"]`` will
+        start by excluding the
+        prefixes, then suffixes,
+        and finally the input words.
 
     Returns
     -------
     bool
-        True if the two names are similar, false
-        otherwise.
+        ``True`` if the two names
+        are similar, false otherwise.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import is_similar_name
+
+        # Generates two names and a list of words.
+        name1 = 'country.city.lat'
+        name2 = 'country.lat'
+        word = ['city.', 'customer.']
+
+        # Example.
+        is_similar_name(name1, name2, skip_word = word)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
@@ -226,36 +366,70 @@ def belong_to_group(
     order: Optional[list] = None,
 ) -> bool:
     """
-    Excludes the input lists of suffixes, prefixes
-    and words from the  input name and looks if it
-    belongs to a specific group.
+    Excludes the input ``lists``
+    of suffixes, prefixes and $
+    words from the input name and
+    looks if it belongs to a specific
+    group.
 
     Parameters
     ----------
     name: str
         Input Name.
     group: list
-        List of names.
+        ``list`` of names.
     skip_suffix: list, optional
-        List of suffixes to exclude.
+        ``list`` of suffixes to exclude.
     skip_prefix: list, optional
-        List of prefixes to exclude.
+        ``list`` of prefixes to exclude.
     skip_word: list, optional
-        List of words to exclude.
+        ``list`` of words to exclude.
     order: list, optional
         The order of the process.
-            s: suffix
-            p: prefix
-            w: word
-        For example, the list ["p", "s", "w"] will
-        start by excluding the prefixes, then
-        suffixes, and finally the input words.
+
+         - s:
+            suffix.
+         - p:
+            prefix.
+         - w:
+            word.
+        For example, the ``list``
+        ``["p", "s", "w"]`` will
+        start by excluding the
+        prefixes, then suffixes,
+        and finally the input words.
 
     Returns
     -------
     bool
-        True if the name belong to the input group,
-        false otherwise.
+        ``True`` if the name
+        belong to the input
+        group, ``False``
+        otherwise.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import belong_to_group
+
+        # Generates a name, a group and a list of words.
+        name = 'country.city.lat'
+        group = ['lat', 'lon', 'x', 'y']
+        word = ['country.city.', 'country.region.']
+
+        # Example.
+        belong_to_group(name, group, skip_word = word)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
@@ -282,32 +456,62 @@ def group_similar_names(
     order: Optional[list] = None,
 ) -> dict:
     """
-    Creates groups of similar names using the input
-    column names.
+    Creates groups of similar names
+    using the input column names.
 
     Parameters
     ----------
     colnames: list
-        List of input names.
+        ``list`` of input names.
     skip_suffix: list, optional
-        List of suffixes to exclude.
+        ``list`` of suffixes to exclude.
     skip_prefix: list, optional
-        List of prefixes to exclude.
+        ``list`` of prefixes to exclude.
     skip_word: list, optional
-        List of words to exclude.
+        ``list`` of words to exclude.
     order: list, optional
         The order of the process.
-            s: suffix
-            p: prefix
-            w: word
-        For example, the list ["p", "s", "w"] will
-        start by excluding the prefixes, then
-        suffixes, and finally the input words.
+
+         - s:
+            suffix.
+         - p:
+            prefix.
+         - w:
+            word.
+        For example, the ``list``
+        ``["p", "s", "w"]`` will
+        start by excluding the
+        prefixes, then suffixes,
+        and finally the input words.
 
     Returns
     -------
     dict
-        dictionary including the different groups.
+        ``dictionary`` including
+        the different groups.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import group_similar_names
+
+        # Generates a list of names and a list of words.
+        names = ['country.city.lat', 'lat', 'country.region.lat', 'lon']
+        word = ['country.city.', 'country.region.']
+
+        # Example.
+        group_similar_names(names, skip_word = word)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     order = format_type(order, dtype=list, na_out=["p", "s", "w"])
     skip_suffix, skip_prefix, skip_word = format_type(
@@ -331,19 +535,46 @@ def group_similar_names(
 
 def gen_coalesce(group_dict: dict) -> str:
     """
-    Generates the SQL statement to merge the
-    groups together.
+    Generates the SQL statement
+    to merge the groups together.
 
     Parameters
     ----------
     group_dict: dict
-        Dictionary including the different
-        groups.
+        ``dictionary`` including
+        the different groups.
 
     Returns
     -------
     str
         SQL statement.
+
+    Examples
+    --------
+    The following code demonstrates
+    the usage of the function.
+
+    .. ipython:: python
+
+        # Import the function.
+        from verticapy._utils._sql._merge import gen_coalesce, group_similar_names
+
+        # Generates a list of names and a list of words.
+        names = ['country.city.lat', 'lat', 'country.region.lat', 'lon']
+        word = ['country.city.', 'country.region.']
+
+        # Creating the dictionary.
+        d = group_similar_names(names, skip_word = word)
+        print(d)
+
+        # Example
+        gen_coalesce(d)
+
+    .. note::
+
+        These functions serve as utilities to
+        construct others, simplifying the overall
+        code.
     """
     result = []
     for g in group_dict:

@@ -46,7 +46,19 @@ def get_header_names(path: str, sep: str) -> list[str]:
         # Import the function.
         from verticapy._utils._parsers import get_header_names
 
-        ...
+        # Creating a CSV example.
+        file_name = 'verticapy_test_parsers.csv'
+        f = open(file_name, 'a')
+        f.write("A;B;C;D")
+        f.close()
+
+        # Example.
+        get_header_names(file_name, sep = ';')
+
+        # Deleting the CSV file.
+        import os
+
+        os.remove(file_name)
 
     .. note::
 
