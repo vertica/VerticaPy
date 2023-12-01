@@ -1506,7 +1506,7 @@ class vDFMachineLearning(vDFScaler):
 
                     1 - NPV
 
-            - FPR:
+            - fpr:
                 False Positive Rate.
 
                 .. math::
@@ -1526,14 +1526,14 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    TPR / FPR
+                    \\frac{TPR}{FPR}
 
             - lr-:
                 Negative Likelihood Ratio.
 
                 .. math::
 
-                    FNR / TNR
+                    \\frac{FNR}{TNR}
 
             - dor:
                 Diagnostic Odds Ratio.
@@ -1544,6 +1544,11 @@ class vDFMachineLearning(vDFScaler):
 
             - mcc:
                 Matthews Correlation Coefficient.
+
+                .. math::
+
+                    \\frac{TP \\times TN - FP \\times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+
             - mk:
                 Markedness.
 
@@ -1556,7 +1561,7 @@ class vDFMachineLearning(vDFScaler):
 
                 .. math::
 
-                    TN / (TN + FN)
+                    \\frac{TN}{TN + FN}
 
             - prc_auc:
                 Area Under the Curve (PRC).

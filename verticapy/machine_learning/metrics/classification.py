@@ -4665,20 +4665,28 @@ def classification_report(
         report.
 
         - accuracy:
-            Accuracy
+            Accuracy.
+
+            .. math::
+
+                \\frac{TP + TN}{TP + TN + FP + FN}
 
         - aic:
             Akaike's  Information  Criterion
 
         - auc:
-            Area Under the Curve (ROC)
-
-        - ba:
-            Balanced Accuracy
+            Area Under the Curve (ROC).
 
             .. math::
 
-                ba = (tpr + tnr) / 2
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                \\frac{TPR + TNR}{2}
 
         - best_cutoff:
             Cutoff  which optimised the  ROC
@@ -4692,14 +4700,14 @@ def classification_report(
 
             .. math::
 
-                tpr + tnr - 1
+                TPR + TNR - 1
 
         - csi:
             Critical Success Index
 
             .. math::
 
-                csi = tp / (tp + fn + fp)
+                \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
@@ -4709,49 +4717,64 @@ def classification_report(
 
             .. math::
 
-                1 - ppv
+                1 - PPV
 
         - fm:
             Fowlkes-Mallows index
 
             .. math::
 
-                fm = sqrt(ppv * tpr)
+                \\sqrt{PPV * TPR}
 
         - fnr:
             False Negative Rate
 
             .. math::
 
-                fnr = fn / (fn + tp)
+                \\frac{FN}{FN + TP}
 
         - for:
-            False Omission Rate = 1 - npv
+            False Omission Rate
+
+            .. math::
+
+                1 - NPV
 
         - fpr:
+            False Positive Rate
+
             .. math::
 
-                False Positive Rate = fp / (fp + tn)
+                \\frac{FP}{FP + TN}
 
         - logloss:
-            Log Loss
+            Log Loss.
+
+            .. math::
+
+                -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
 
         - lr+:
-            Positive Likelihood Ratio
+            Positive Likelihood Ratio.
 
             .. math::
 
-                lr+ = tpr / fpr
+                \\frac{TPR}{FPR}
 
         - lr-:
-            Negative Likelihood Ratio
+            Negative Likelihood Ratio.
 
             .. math::
 
-                lr- = fnr / tnr
+                \\frac{FNR}{TNR}
 
         - dor:
-            Diagnostic Odds Ratio
+            Diagnostic Odds Ratio.
+
+            .. math::
+
+                \\frac{TP \\times TN}{FP \\times FN}
 
         - mc:
             Matthews Correlation Coefficient
@@ -4761,37 +4784,44 @@ def classification_report(
 
             .. math::
 
-                mk = ppv + npv - 1
+                PPV + NPV - 1
 
         - npv:
             Negative Predictive Value
 
             .. math::
 
-                npv = tn / (tn + fn)
+                \\frac{TN}{TN + FN}
 
         - prc_auc:
             Area Under the Curve (PRC)
 
         - precision:
+            Precision
+
             .. math::
 
-                Precision = tp / (tp + fp)
+                TP / (TP + FP)
 
         - pt:
-            Prevalence Threshold
+            Prevalence Threshold.
 
             .. math::
 
-                pt = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
-            .. math::
+            Recall.
 
-                Recall = tp / (tp + fn)
+            .. math::
+                TP / (TP + FN)
 
         - specificity:
-            Specificity = tn / (tn + fp)
+            Specificity.
+
+            .. math::
+
+                TN / (TN + FP)
 
     labels: ArrayLike, optional
         List of the response column categories to use.

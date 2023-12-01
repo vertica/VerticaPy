@@ -89,31 +89,39 @@ def randomized_features_search_cv(
         For Classification:
 
         - accuracy:
-            Accuracy
-
-        - auc:
-            Area Under the Curve (ROC)
-
-        - ba:
-            Balanced Accuracy
+            Accuracy.
 
             .. math::
 
-                ba = (tpr + tnr) / 2
+                \\frac{TP + TN}{TP + TN + FP + FN}
+
+        - auc:
+            Area Under the Curve (ROC).
+
+            .. math::
+
+                AUC = \int_{0}^{1} TPR(FPR) \, dFPR
+
+        - ba:
+            Balanced Accuracy.
+
+            .. math::
+
+                \\frac{TPR + TNR}{2}
 
         - bm:
             Informedness
 
             .. math::
 
-                tpr + tnr - 1
+                TPR + TNR - 1
 
         - csi:
             Critical Success Index
 
             .. math::
 
-                csi = tp / (tp + fn + fp)
+                \\frac{TP}{TP + FN + FP}
 
         - f1:
             F1 Score
@@ -123,49 +131,63 @@ def randomized_features_search_cv(
 
             .. math::
 
-                1 - ppv
+                1 - PPV
 
         - fm:
             Fowlkes-Mallows index
 
             .. math::
 
-                fm = sqrt(ppv * tpr)
+                \\sqrt{PPV * TPR}
 
         - fnr:
             False Negative Rate
 
             .. math::
 
-                fnr = fn / (fn + tp)
+                \\frac{FN}{FN + TP}
 
         - for:
-            False Omission Rate = 1 - npv
+            False Omission Rate
 
+                .. math::
+
+                    1 - NPV
         - fpr:
+            False Positive Rate
+
             .. math::
 
-                False Positive Rate = fp / (fp + tn)
+                \\frac{FP}{FP + TN}
 
         - logloss:
             Log Loss
 
+            .. math::
+
+                -\\frac{1}{N} \sum_{i=1}^{N} \left( y_i \log(p_i) + (1 - y_i) \log(1 - p_i) \\right)
+
+
         - lr+:
-            Positive Likelihood Ratio
+            Positive Likelihood Ratio.
 
             .. math::
 
-                lr+ = tpr / fpr
+                \\frac{TPR}{FPR}
 
         - lr-:
-            Negative Likelihood Ratio
+            Negative Likelihood Ratio.
 
             .. math::
 
-                lr- = fnr / tnr
+                \\frac{FNR}{TNR}
 
         - dor:
-            Diagnostic Odds Ratio
+            Diagnostic Odds Ratio.
+
+            .. math::
+
+                \\frac{TP \\times TN}{FP \\times FN}
 
         - mcc:
             Matthews Correlation Coefficient
@@ -175,60 +197,111 @@ def randomized_features_search_cv(
 
             .. math::
 
-                mk = ppv + npv - 1
+                PPV + NPV - 1
 
         - npv:
             Negative Predictive Value
 
             .. math::
 
-                npv = tn / (tn + fn)
+                \\frac{TN}{TN + FN}
 
         - prc_auc:
             Area Under the Curve (PRC)
 
         - precision:
+            Precision
+
             .. math::
 
-                Precision = tp / (tp + fp)
+                TP / (TP + FP)
 
         - pt:
-            Prevalence Threshold
+            Prevalence Threshold.
 
             .. math::
 
-                pt = sqrt(fpr) / (sqrt(tpr) + sqrt(fpr))
+                \\frac{\\sqrt{FPR}}{\\sqrt{TPR} + \\sqrt{FPR}}
 
         - recall:
-            .. math::
+            Recall.
 
-                Recall = tp / (tp + fn)
+            .. math::
+                TP / (TP + FN)
 
         - specificity:
+            Specificity.
+
             .. math::
 
-                Specificity = tn / (tn + fp)
+                TN / (TN + FP)
 
         For Regression:
 
+
         - max:
-            Max error
+            Max Error.
+
+            .. math::
+
+                \max_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
         - mae:
-            Mean absolute error
+            Mean Absolute Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
+
         - median:
-            Median absolute error
+            Median Absolute Error.
+
+            .. math::
+
+                \\text{median}_{i=1}^{n} \left| y_i - \hat{y}_i \\right|
+
         - mse:
-            Mean squared error
+            Mean Squared Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} \left( y_i - \hat{y}_i \\right)^2
+
         - msle:
-            Mean squared log error
+            Mean Squared Log Error.
+
+            .. math::
+
+                \\frac{1}{n} \sum_{i=1}^{n} (\log(1 + y_i) - \log(1 + \hat{y}_i))^2
+
         - r2:
-            R-squared coefficient
+            R squared coefficient.
+
+            .. math::
+
+                1 - \\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \\bar{y})^2}
+
         - r2a:
             R2 adjusted
+
+            .. math::
+
+                1 - \\frac{(1 - R^2)(n - 1)}{n - k - 1}
+
+        - var:
+            Explained Variance.
+
+            .. math::
+
+                1 - \\frac{Var(y - \hat{y})}{Var(y)}
+
         - rmse:
             Root-mean-squared error
-        - var:
-            Explained variance
+
+            .. math::
+
+                \sqrt{\\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
 
     cv: int, optional
         Number of folds.
